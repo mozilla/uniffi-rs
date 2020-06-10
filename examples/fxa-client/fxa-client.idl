@@ -1,0 +1,134 @@
+enum DeviceCapability {
+  "SEND_TAB",
+};
+
+enum DeviceType {
+  "DESKTOP",
+  "MOBILE",
+};
+
+enum IncomingDeviceCommandType {
+  "TAB_RECEIVED",
+};
+
+enum AccountEventType {
+  "INCOMING_DEVICE_COMMAND",
+  "PROFILE_UPDATED",
+  "DEVICE_CONNECTED",
+  "ACCOUNT_AUTH_STATE_CHANGED",
+  "DEVICE_DISCONNECTED",
+  "ACCOUNT_DESTROYED",
+};
+
+dictionary ProfileInfo {
+  // XXX TODO: probably some of these should be `required`?
+  string uid;
+  string email;
+  string display_name;
+  string avatar;
+  boolean avatar_default;
+};
+
+dictionary AccessTokenInfo {
+  required string scope;
+  required string token;
+  ScopedKey key;
+  required uint64 expires_at;
+};
+
+dictionary ScopedKey {
+  required string kty;
+  required string scope;
+  required string k;
+  required string kid;
+};
+
+dictionary IntrospectInfo {
+  required boolean active = false;
+};
+
+dictionary DeviceInfo {
+  required string id;
+  required string display_name;
+  required DeviceType type;
+  required boolean is_current_device;
+  uint64 last_access_time;
+  PushSubscription push_subscription;
+  required boolean push_endpoint_expired;
+  sequence<DeviceCapability> capabilities;
+};
+
+dictionary TabHistoryEntry {
+  required string title;
+  required string url;
+};
+
+dictionary SendTabData {
+  DeviceInfo from;
+  sequence<TabHistoryEntry> entries;
+};
+
+dictionary IncomingDeviceCommand {
+  IncomingDeviceCommandType type;
+  SendTabData data; /* eventually a union type..? */
+};
+
+dictionary DeviceConnectedData {
+  string name;
+};
+
+dictionary DeviceDisconnecedData {
+  required string id;
+  required boolean is_local_device;
+};
+
+dictionary AccountEvent {
+  AccountEventType type;
+  // No support for union types yet...
+  // (IncomingDeviceCommand or DeviceConnectedData or DeviceDisconnectesData) data;
+};
+
+dictionary MigrationState {
+  string blah = "blah";
+};
+
+interface FirefoxAccount {
+  constructor(string content_url, string client_id, string redirect_uri, optional string token_server_url_override);
+  /*static FirefoxAccont fromJSON(string json); TODO: alternative constructors */
+  string toJSON();
+
+  string getPairingAuthorityURL();
+  string getTokenServerEndpointURL();
+  string getConnectionSuccessURL();
+  string getManageAccountURL();
+  string getManageDevicesURL();
+
+  string beginOAuthFlow(sequence<string> scopes);
+  string beginPairingFlow(string pairingUrl, sequence<string> scopes);
+  void completeOAuthFlow(string code, string state);
+  void disconnect();
+
+  IntrospectInfo checkAuthorizationStatus();
+  AccessTokenInfo getAccessToken(string scope, optional u32 ttl);
+  string getSessionToken(); // really whish we weren't exposing this... :-(
+  string getCurrentDeviceId();
+  string authorizeOAuthCode(string client_id, sequence<string> scopes, string state, optional string access_type = "online");
+  void clearAccessTokenCache();
+
+  string copyFromSessionToken(string sessionToken, string kSync, string kXCS); // needs better return type...
+  string migrateFromSessionToken(string sessionToken, string kSync, string kXCS); // needs better return type...
+  string retryMigrateFromSessionToken(); // needs better return type...
+  MigrationState isInMigrationState();
+
+  ProfileInfo getProfile(optional boolean ignoreCache=false);
+
+  void initializeDevice(string name, DeviceType type, sequence<DeviceCapability> supportedCapabilities);
+  void ensureCapabilities(sequence<DeviceCapability> supportedCapabilities);
+  void setDevicePushSubscription(string endpoint, string publicKey, string authKey);
+  void setDeviceDisplayName(string display_name);
+  sequence<DeviceInfo> getDevices(optional boolean ignoreCache = false);
+  sequence<AccountEvent> handlePushMessage(string payload);
+
+  sequence<IncomingDeviceCommand> pollDeviceCommands();
+  void sendSingleTab(string target_device_id, string title, string url);
+};

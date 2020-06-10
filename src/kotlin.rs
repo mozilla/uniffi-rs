@@ -25,7 +25,7 @@ use super::types;
 // Trust me, you don't want to mess with it!
 
 // TODO: how to declare package namespace? Probably when calling the generator.
-package mozilla.appservices.example;
+package uniffi.example;
 
 import com.sun.jna.Library
 import com.sun.jna.Pointer
