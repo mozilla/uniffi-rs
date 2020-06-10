@@ -1,0 +1,17 @@
+[package]
+name = "uniffi-example-arithmetic"
+edition = "2018"
+version = "0.1.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = "1.0"
+log = "0.4"
+ffi-support = "0.4"
+
+[build-dependencies]
+uniffi = {path = "../../"}

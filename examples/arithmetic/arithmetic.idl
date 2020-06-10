@@ -1,0 +1,10 @@
+
+enum Overflow {
+  "WRAPPING",
+  "SATURATING",
+};
+
+namespace Arithmetic {
+  u64 add(u64 a, u64 b, optional Overflow overflow = "WRAPPING");
+  u64 sub(u64 a, u64 b, optional Overflow overflow = "WRAPPING");
+};
