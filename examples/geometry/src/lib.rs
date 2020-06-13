@@ -12,7 +12,16 @@ impl Geometry {
   }
 
   fn intersection(ln1: Line, ln2: Line) -> Point {
-    // XXX TODO: actually implement this.
-    Point { x: 13, y: 42 }
+    // TODO: yuck, should be able to take &Line as argument here
+    // and have rust figure it out with a bunch of annotations...
+    let g1 = Geometry::gradient(ln1.clone());
+    let z1 = ln1.p1.y - g1 * ln1.p1.x;
+    let g2 = Geometry::gradient(ln2.clone());
+    let z2 = ln2.p1.y - g1 * ln2.p1.x;
+    let i = (z2 - z1) / (g1 - g2);
+    Point {
+      x: i,
+      y: g1 * i + z1,
+    }
   }
 }

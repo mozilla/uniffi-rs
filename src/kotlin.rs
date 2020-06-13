@@ -93,13 +93,18 @@ internal interface _UniFFILib : Library {
       {%- endfor %}
     ) {
       companion object {
+          // XXX TODO: put this in a `Record` superclass
           internal fun deserializeFromRust(rbuf: RustBuffer.ByValue): {{ rec.name() }} {
              val buf = rbuf.asByteBuffer()!!
-             val item = {{ rec.name() }}.deserializeItemFromRust(buf)
-             if (buf.hasRemaining()) {
-                 throw RuntimeException("junk remaining in record buffer, something is very wrong!!")
-             }
-             return item
+             try {
+                val item = {{ rec.name() }}.deserializeItemFromRust(buf)
+                if (buf.hasRemaining()) {
+                    throw RuntimeException("junk remaining in record buffer, something is very wrong!!")
+                }
+                return item
+            } finally {
+                _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_free().name() }}(rbuf)
+            }
           }
           internal fun deserializeItemFromRust(buf: ByteBuffer): {{ rec.name() }} {
               return {{ rec.name() }}(

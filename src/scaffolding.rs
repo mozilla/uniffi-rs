@@ -62,7 +62,7 @@ define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }});
 {% endfor %}
 
 {% for rec in ci.iter_record_definitions() %}
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub struct {{ rec.name() }} {
       {%- for field in rec.fields() %}
         pub {{ field.name() }}: {{ field.type_()|decl_rs -}},
