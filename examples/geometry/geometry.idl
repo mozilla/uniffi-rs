@@ -1,0 +1,16 @@
+
+dictionary Point {
+  u32 x;
+  u32 y;
+};
+
+dictionary Line {
+  Point p1;
+  Point p2;
+};
+
+namespace Geometry {
+  u32 gradient(Line ln);
+  // XXX TODO: technically optional, for parallel lines
+  Point intersection(Line ln1, Line ln2);
+};

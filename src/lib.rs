@@ -14,12 +14,13 @@ use std::{
 use anyhow::bail;
 use anyhow::Result;
 
-pub mod types;
+pub mod interface;
 pub mod scaffolding;
 pub mod kotlin;
+pub mod support;
 
-use scaffolding::ComponentInterfaceScaffolding;
-use kotlin::ComponentInterfaceKotlinWrapper;
+use scaffolding::RustScaffolding;
+use kotlin::KotlinWrapper;
 
 fn slurp_file(file_name: &str) -> Result<String> {
     let mut contents = String::new();
@@ -35,13 +36,13 @@ fn slurp_file(file_name: &str) -> Result<String> {
 pub fn generate_component_scaffolding(idl_file: &str) {
     println!("cargo:rerun-if-changed={}", idl_file);
     let idl = slurp_file(idl_file).unwrap();
-    let component= idl.parse::<types::ComponentInterface>().unwrap();
+    let component= idl.parse::<interface::ComponentInterface>().unwrap();
     let mut filename = Path::new(idl_file).file_stem().unwrap().to_os_string();
     filename.push(".uniffi.rs");
     let mut out_file = PathBuf::from(env::var("OUT_DIR").unwrap());
     out_file.push(filename);
     let mut f = File::create(out_file).unwrap();
-    write!(f, "{}", ComponentInterfaceScaffolding::new(&component)).unwrap();
+    write!(f, "{}", RustScaffolding::new(&component)).unwrap();
 }
 
 
@@ -50,13 +51,13 @@ pub fn generate_component_scaffolding(idl_file: &str) {
 // Writing into the OUT_DIR is probably not the write thing for foreign language bindings.
 pub fn generate_kotlin_bindings(idl_file: &str) {
     let idl = slurp_file(idl_file).unwrap();
-    let component= idl.parse::<types::ComponentInterface>().unwrap();
+    let component= idl.parse::<interface::ComponentInterface>().unwrap();
     let mut filename = Path::new(idl_file).file_stem().unwrap().to_os_string();
     filename.push(".kt");
     let mut out_file = PathBuf::from(env::var("OUT_DIR").unwrap());
     out_file.push(filename);
     let mut f = File::create(out_file).unwrap();
-    write!(f, "{}", ComponentInterfaceKotlinWrapper::new(&component)).unwrap();
+    write!(f, "{}", KotlinWrapper::new(kotlin::Config{package_name: "uniffi_test".to_string()}, &component)).unwrap();
 }
 
 

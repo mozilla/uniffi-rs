@@ -7,6 +7,7 @@ edition = "2018"
 
 [dependencies]
 weedle = "0.11"
+bytes = "0.5.4"
 ffi-support = "0.4"
 anyhow = "1.0"
 askama = "0.9"

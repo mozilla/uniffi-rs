@@ -6,7 +6,7 @@ the following so far:
 
 * [`./arithmetic.idl`](./arithmetic.idl), the component interface definition which exposes two
   plain functions "add" and "sub". This is processed by functions in [`./build.rs`](./build.rs)
-  to generate Rust scaffolding for the component, and some Kotlin bindings.
+  to generate Rust scaffolding for the component.
 * [`./src/lib.rs`](./src/lib.rs), the core implementation of the component in Rust. This basically
   pulls in the generated Rust scaffolding via `include!()` and fills in function implementations.
 * A tiny example program in [`./main.kt`](./main.kt) that imports the component in Kotlin, calls
