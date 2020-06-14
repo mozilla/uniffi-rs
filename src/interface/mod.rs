@@ -32,6 +32,22 @@
 //! language binding generated from the same `ComponentInterface` using the same version of this
 //! crate, then there should be no opportunities for them to disagree on how they should interact.
 //!
+//! General and incomplete TODO list for this thing:
+//!
+//!   * It should prevent user error and the possibility of generating bad code by doing (at least)
+//!     the following checks:
+//!       * No duplicate names (types, methods, args, etc)
+//!       * No Shadowing of builtin names, or names we use in code generation
+//!     We expect that if the user actually does one of these things, then they *should* get a compile
+//!     error when trying to build the component, because the codegen will be invalid. But we can't
+//!     guarantee that there's not some edge-case where it produces valid-but-incorrect code.
+//!
+//!   * There is a *lot* of cloning going on, in the spirit of "first make it work". There's probably
+//!     a good opportunity here for e.g. interned strings, but we're nowhere near the point were we need
+//!     that kind of optimization just yet.
+//!
+//!   * Error messages leave a lot to be desired (and we currently panc on errors parsing the WebIDL).
+//!     If this were to be a real thing we'd need to invest in more empathetic error messages.
 
 use std::io::prelude::*;
 use std::{

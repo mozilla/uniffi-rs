@@ -44,11 +44,10 @@ pub enum TypeReference {
     Double,
     String,
     Bytes,
-    // TODO: it would be lovely to use interned strings here, but that's complicated unsafe
-    // business in rust so I'm defering it for now.
     Object(String),
     Record(String),
     Enum(String),
+    Optional(Box<TypeReference>),
     Sequence(Box<TypeReference>),
 }
 
@@ -190,10 +189,11 @@ impl TypeResolver for weedle::types::AttributedType<'_> {
 
 impl<T: TypeResolver> TypeResolver for weedle::types::MayBeNull<T> {
     fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
-        if self.q_mark.is_some() {
-            bail!("nullable types are not supported yet");
-        }
-        self.type_.resolve_type_definition(ci)
+        let type_ = self.type_.resolve_type_definition(ci)?;
+        Ok(match self.q_mark {
+            None => type_,
+            Some(_) => TypeReference::Optional(Box::new(type_)),
+        })
     }
 }
 

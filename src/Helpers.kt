@@ -82,6 +82,13 @@ open class RustBuffer : Structure() {
     }
 }
 
+public fun Boolean.Companion.deserializeItemFromRust(buf: ByteBuffer): Boolean {
+    return buf.get().toInt() != 0
+}
+
+public fun Byte.Companion.deserializeItemFromRust(buf: ByteBuffer): Byte {
+    return buf.get()
+}
 
 public fun Int.Companion.deserializeItemFromRust(buf: ByteBuffer): Int {
     return buf.getInt()
@@ -117,4 +124,17 @@ public fun Double.serializeForRustSize(): Int {
 
 public fun Double.serializeForRustInto(buf: ByteBuffer) {
     buf.putDouble(this)
+}
+
+public fun<T> T?.serializeForRustSize(): Int {
+    if (this === null) return 1
+    return 1 + this.serializeForRustSize()
+}
+
+public fun<T> T?.serializeForRustInto(buf: ByteBuffer) {
+    if (this === null) buf.put(0)
+    else {
+        buf.put(1)
+        this.serializeForRustInto(buf)
+    }
 }

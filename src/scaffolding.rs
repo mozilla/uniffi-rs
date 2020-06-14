@@ -26,18 +26,13 @@ use super::interface::*;
 // Trust me, you don't want to mess with it!
 
 use anyhow::{bail, Result, Error};
-use std::convert::{TryFrom, TryInto};
-use ffi_support::{
-    define_bytebuffer_destructor, define_handle_map_deleter, define_string_destructor, ByteBuffer,
-    ConcurrentHandleMap, ExternError, FfiStr
-};
 
 #[no_mangle]
-pub extern "C" fn {{ ci.ffi_bytebuffer_alloc().name() }}(size: u32) -> ByteBuffer {
-    ByteBuffer::new_with_size(size.max(0) as usize)
+pub extern "C" fn {{ ci.ffi_bytebuffer_alloc().name() }}(size: u32) -> ffi_support::ByteBuffer {
+    ffi_support::ByteBuffer::new_with_size(size.max(0) as usize)
 }
 
-define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }});
+ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }});
 
 {% for e in ci.iter_enum_definitions() %}
 
@@ -47,9 +42,12 @@ define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }});
     {%- endfor %}
     }
 
-    impl TryFrom<u32> for {{ e.name() }} {
-        type Error = anyhow::Error;
-        fn try_from(v: u32) -> Result<{{ e.name() }}, anyhow::Error> {
+    unsafe impl uniffi::support::ViaFfi for {{ e.name() }} {
+        type Value = u32;
+        fn into_ffi_value(self) -> Self::Value {
+            self as Self::Value
+        }
+        fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
             Ok(match v {
                 {%- for value in e.values() %}
                 {{ loop.index }} => {{ e.name() }}::{{ value }},
@@ -69,7 +67,7 @@ define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }});
       {%- endfor %}
     }
 
-    impl uniffi::support::records::Serializable for &{{ rec.name() }} {
+    impl uniffi::support::records::Serializable for {{ rec.name() }} {
         fn serialize_into(&self, buf: &mut uniffi::support::records::Serializer) {
           {%- for field in rec.fields() %}
             buf.serialize(&self.{{ field.name() }});
@@ -87,22 +85,7 @@ define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }});
         }
     }
 
-    impl std::convert::TryFrom<ByteBuffer> for {{ rec.name() }} {
-        type Error = anyhow::Error;
-        fn try_from(buf: ByteBuffer) -> Result<Self, anyhow::Error> {
-            let bytes = buf.into_vec();
-            let mut buf = uniffi::support::records::Deserializer::new(bytes.as_slice());
-            buf.deserialize_fully()
-        }
-    }
-
-    impl std::convert::From<{{ rec.name() }}> for ByteBuffer {
-        fn from(rec: {{ rec.name() }}) -> ByteBuffer {
-            let mut buf = uniffi::support::records::Serializer::new();
-            buf.serialize(&rec);
-            ByteBuffer::from_vec(buf.finalize())
-        }
-    }
+    impl uniffi::support::records::Record for {{ rec.name() }} {}
 {% endfor %}
 
 {%- for func in ci.iter_function_definitions() %}
@@ -112,11 +95,11 @@ define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }});
         #[no_mangle]
         pub extern "C" fn {{ func.ffi_func().name() }}(
             {%- for arg in func.ffi_func().arguments() %}
-            {{ arg.name() }}: {{ arg.type_()|decl_c_argument }},
+            {{ arg.name() }}: {{ arg.type_()|decl_c }},
             {%- endfor %}
-        ) -> {{ return_type|decl_c_return }} {
+        ) -> {{ return_type|decl_c }} {
             log::debug!("{{ func.ffi_func().name() }}");
-            let _retval = {{ func.name() }}(
+            let _retval: {{ return_type|decl_rs }} = {{ func.name() }}(
                 {%- for arg in func.arguments() %}
                 {{ arg.name()|lift_rs(arg.type_()) }},
                 {%- endfor %}
@@ -129,7 +112,7 @@ define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }});
         #[no_mangle]
         pub extern "C" fn {{ func.ffi_func().name() }}(
             {%- for arg in func.ffi_func().arguments() %}
-            {{ arg.name() }}: {{ arg.type_()|decl_c_argument }},
+            {{ arg.name() }}: {{ arg.type_()|decl_c }},
             {%- endfor %}
         ) {
             log::debug!("{{ func.ffi_func().name() }}");
@@ -164,61 +147,75 @@ mod filters {
     use std::fmt;
     use super::*;
 
-    pub fn decl_c_argument(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn decl_rs(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::Boolean => "u8".to_string(),
+            // These can be passed directly over the FFI without conversion.
             TypeReference::U32 => "u32".to_string(),
             TypeReference::U64 => "u64".to_string(),
             TypeReference::Float => "f32".to_string(),
             TypeReference::Double => "f64".to_string(),
-            TypeReference::Enum(_) => "u32".to_string(),
-            TypeReference::String => "FfiStr<'_>".to_string(),
-            TypeReference::Record(_) => "ByteBuffer".to_string(),
-            _ => format!("() /* [TODO: decl_c_argument({:?})] */", type_),
-        })
-    }
-
-    pub fn decl_c_return(type_: &TypeReference) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            TypeReference::String => "TODO".to_string(), // XXX TODO: I think this needs to be a ByteBuffer in return position...
-            _ => decl_c_argument(type_)?
-        })
-    }
-
-    pub fn decl_rs(type_: &TypeReference) -> Result<String, askama::Error> {
-        Ok(match type_ {
+            TypeReference::Boolean => "u8".to_string(),
+            // While these need conversion, and will require special handling below
+            // when lifting/lowering.
+            TypeReference::String => "&str".to_string(),
             TypeReference::Enum(name) => name.clone(),
             TypeReference::Record(name) => name.clone(),
-            _ => decl_c_argument(type_)?
+            TypeReference::Optional(t) => format!("Option<{}>", decl_rs(t)?),
+            _ => panic!("[TODO: decl_rs({:?})]", type_),
+        })
+    }
+
+    pub fn decl_c(type_: &TypeReference) -> Result<String, askama::Error> {
+        Ok(match type_ {
+            TypeReference::String => "FfiStr<'_>".to_string(),
+            TypeReference::Enum(_) => "u32".to_string(),
+            TypeReference::Record(_) => "ffi_support::ByteBuffer".to_string(),
+            TypeReference::Optional(_) => "ffi_support::ByteBuffer".to_string(),
+            _ => decl_rs(type_)?
         })
     }
 
     pub fn lower_rs(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
-        let nm = nm.to_string();
+        // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
+        // implementations of the functions that we're wrapping (and also to type-check our generated code).
+        Ok(format!("<{} as uniffi::support::ViaFfi>::into_ffi_value({})", decl_rs(type_)?, nm))
+        // XXX TODO: could we use IntoFfi here, instead of all of this machinery?
+        // We'll probably need it when it comes to error handling.
+        // I think we need it so the rust compiler can disambiguate things that return as the same type (e.g. bytebuffer).
+        /*let nm = nm.to_string();
         Ok(match type_ {
-            TypeReference::Boolean => format!("(if ({}) {{ 1 }} else {{ 0 }})", nm),
             TypeReference::U32 => nm,
             TypeReference::U64 => nm,
             TypeReference::Float => nm,
             TypeReference::Double => nm,
-            TypeReference::Enum(_) => format!("({} as u32)", nm),
-            TypeReference::Record(_) => format!("{}.into()", nm),
-            _ => format!("() /* [TODO: LOWER_RS {:?}] */", type_),
-        })
+            TypeReference::Boolean => format!("(if ({}) {{ 1 }} else {{ 0 }})", nm),
+            // It's important that we explicitly name the type when using into() here,
+            // so that the rust compiler knows what type of thing we're trying to list to
+            // (and can thus properly type-check the user-provided function definitions)
+            TypeReference::Enum(type_name) => format!("{}::into::<u32>({})", type_name, nm),
+            TypeReference::Record(type_name) => format!("{}::into::<ByteBuffer>({})", type_name, nm),
+            TypeReference::Optional(t) => format!("{}::into::<ByteBuffer>({})", decl_rs(t)?, nm),
+            _ => panic!("[TODO: LOWER_RS {:?}]", type_),
+        })*/
     }
 
     pub fn lift_rs( nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
-        let nm = nm.to_string();
-        Ok(match type_ {
-            TypeReference::Boolean => format!("({} != 0)", nm),
+        // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
+        // implementations of the functions that we're wrapping (and also to type-check our generated code).
+        Ok(format!("<{} as uniffi::support::ViaFfi>::try_from_ffi_value({}).unwrap()", decl_rs(type_)?, nm)) // Error handling later...
+        /*Ok(match type_ {
             TypeReference::U32 => nm,
             TypeReference::U64 => nm,
             TypeReference::Float => nm,
             TypeReference::Double => nm,
-            TypeReference::Enum(type_name) => format!("{}::try_from({}).unwrap()", type_name, nm), // Error handling later...
+            // It's important that we explicitly name the type when using try_from() here,
+            // so that the rust compiler knows what type of thing we're trying to list to
+            // (and can thus properly type-check the user-provided function definitions)
+            TypeReference::Enum(type_name) =>
             TypeReference::Record(type_name) => format!("{}::try_from({}).unwrap()", type_name, nm), // Error handling later...
-            _ => format!("() /* [TODO: LIFT_RS {:?}] */", type_),
-        })
+            TypeReference::Optional(_) => format!("{}.try_into().unwrap()", nm), // Error handling later...
+            _ => panic!("[TODO: LIFT_RS {:?}]", type_),
+        })*/
     }
 }
 

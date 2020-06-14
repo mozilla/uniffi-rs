@@ -1,7 +1,7 @@
 
 namespace geometry {
   double gradient(Line ln);
-  Point intersection(Line ln1, Line ln2);
+  Point? intersection(Line ln1, Line ln2);
 };
 
 dictionary Point {

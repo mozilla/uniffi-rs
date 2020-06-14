@@ -70,6 +70,32 @@ internal interface _UniFFILib : Library {
     {% endfor -%}
 }
 
+// Misc helpers that need to interpolate details from the ComponentInterface.
+
+internal fun Any?.serializeForRust(): RustBuffer.ByValue {
+    val buf = _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_alloc().name() }}(this.serializeForRustSize())
+    try {
+        this.serializeForRustInto(buf.asByteBuffer()!!)
+        return buf
+    } catch (e: Throwable) {
+        _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_free().name() }}(buf)
+        throw e;
+    }
+}
+
+public fun<T> deserializeFromRust(rbuf: RustBuffer.ByValue, deserializeItemFromRust: (ByteBuffer) -> T): T {
+    val buf = rbuf.asByteBuffer()!!
+    try {
+       val item = deserializeItemFromRust(buf)
+       if (buf.hasRemaining()) {
+           throw RuntimeException("junk remaining in record buffer, something is very wrong!!")
+       }
+       return item
+    } finally {
+        _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_free().name() }}(rbuf)
+    }
+}
+
 // Public interface members begin here.
 
 {% for e in ci.iter_enum_definitions() %}
@@ -100,23 +126,10 @@ internal interface _UniFFILib : Library {
       {%- endfor %}
     ) {
       companion object {
-          // XXX TODO: put this in a `Record` superclass
-          internal fun deserializeFromRust(rbuf: RustBuffer.ByValue): {{ rec.name() }} {
-             val buf = rbuf.asByteBuffer()!!
-             try {
-                val item = {{ rec.name() }}.deserializeItemFromRust(buf)
-                if (buf.hasRemaining()) {
-                    throw RuntimeException("junk remaining in record buffer, something is very wrong!!")
-                }
-                return item
-            } finally {
-                _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_free().name() }}(rbuf)
-            }
-          }
           internal fun deserializeItemFromRust(buf: ByteBuffer): {{ rec.name() }} {
               return {{ rec.name() }}(
                 {%- for field in rec.fields() %}
-                {{ field.type_()|decl_kt }}.deserializeItemFromRust(buf){% if loop.last %}{% else %},{% endif %}
+                {{ "buf"|deserialize_item_kt(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
                 {%- endfor %}
               )
           }
@@ -213,22 +226,24 @@ mod filters {
             TypeReference::Bytes => "RustBuffer.ByValue".to_string(),
             TypeReference::Enum(_) => "Int".to_string(),
             TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
-            _ => format!("Unit /* [TODO: decl_c_argument({:?})] */", type_),
+            TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
+            _ => panic!("[TODO: decl_c_argument({:?})]", type_),
         })
     }
 
     pub fn decl_c_return(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::String => "String".to_string(), // XXX TODO: I think this needs to be a ByteBuffer in return position...
-            TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
+            TypeReference::String => "String".to_string(), // XXX TODO: I think maybe needs to be a ByteBuffer in return position..?
             _ => decl_c_argument(type_)?
         })
     }
 
     pub fn decl_kt(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
+            TypeReference::Boolean => "Boolean".to_string(),
             TypeReference::Enum(name) => name.clone(),
             TypeReference::Record(name) => name.clone(),
+            TypeReference::Optional(t) => format!("{}?", decl_kt(t)?),
             _ => decl_c_argument(type_)?
         })
     }
@@ -245,7 +260,8 @@ mod filters {
             TypeReference::Bytes => nm,
             TypeReference::Enum(_) => format!("{}.ordinal", nm),
             TypeReference::Record(_) => format!("{}.serializeForRust()", nm),
-            _ => format!("Unit /* [TODO: LOWER_KT {:?}] */", type_),
+            TypeReference::Optional(_) => format!("{}.serializeForRust()", nm),
+            _ => panic!("[TODO: LOWER_KT {:?}]", type_),
         })
     }
 
@@ -259,8 +275,22 @@ mod filters {
             TypeReference::Double => nm,
             TypeReference::String => nm,
             TypeReference::Enum(type_name) => format!("{}.fromOrdinal({})", type_name, nm),
-            TypeReference::Record(type_name) => format!("{}.deserializeFromRust({})", type_name, nm),
-            _ => format!("Unit /* [TODO: LIFT_KT {:?}] */", type_),
+            TypeReference::Record(_)
+            | TypeReference::Optional(_) => {
+                format!("deserializeFromRust({}) {{ buf -> {} }}", nm, deserialize_item_kt(&"buf", type_)?)
+            },
+            _ => panic!("[TODO: LIFT_KT {:?}]", type_),
+        })
+    }
+
+    pub fn deserialize_item_kt(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
+        let nm = nm.to_string();
+        Ok(match type_ {
+            TypeReference::Optional(t) => {
+                // I dont think there's a way to write a generic T?.deserializeItemFromRust() in Kotlin..?
+                format!("(if (Boolean.deserializeItemFromRust({})) {{ {} }} else {{ null }})", nm, deserialize_item_kt(&nm, t)?)
+            },
+            _ => format!("{}.deserializeItemFromRust({})", decl_kt(type_)?, nm)
         })
     }
 }
