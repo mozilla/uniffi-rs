@@ -32,7 +32,7 @@ inline fun <reified Lib : Library> loadIndirect(
     // XXX TODO: This will probably grow some magic for resolving megazording in future.
     // E.g. we might start by looking for the named component in `libuniffi.so` and if
     // that fails, fall back to loading it separately from `lib${componentName}.so`.
-    return Native.load<Lib>(componentName, Lib::class.java)
+    return Native.load<Lib>("uniffi_${componentName}", Lib::class.java)
 }
 
 
@@ -92,6 +92,29 @@ public fun Int.serializeForRustSize(): Int {
 }
 
 public fun Int.serializeForRustInto(buf: ByteBuffer) {
-    println("SERIALIZING ${this}")
     buf.putInt(this)
+}
+
+public fun Float.Companion.deserializeItemFromRust(buf: ByteBuffer): Float {
+    return buf.getFloat()
+}
+
+public fun Float.serializeForRustSize(): Int {
+    return 4
+}
+
+public fun Float.serializeForRustInto(buf: ByteBuffer) {
+    buf.putFloat(this)
+}
+
+public fun Double.Companion.deserializeItemFromRust(buf: ByteBuffer): Double {
+    return buf.getDouble()
+}
+
+public fun Double.serializeForRustSize(): Int {
+    return 8
+}
+
+public fun Double.serializeForRustInto(buf: ByteBuffer) {
+    buf.putDouble(this)
 }

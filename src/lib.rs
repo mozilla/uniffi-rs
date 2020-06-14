@@ -57,7 +57,8 @@ pub fn generate_kotlin_bindings(idl_file: &str) {
     let mut out_file = PathBuf::from(env::var("OUT_DIR").unwrap());
     out_file.push(filename);
     let mut f = File::create(out_file).unwrap();
-    write!(f, "{}", KotlinWrapper::new(kotlin::Config{package_name: "uniffi_test".to_string()}, &component)).unwrap();
+    let config = kotlin::Config::from(&component);
+    write!(f, "{}", KotlinWrapper::new(config, &component)).unwrap();
 }
 
 

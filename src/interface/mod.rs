@@ -62,10 +62,11 @@ use types::TypeResolver;
 pub struct ComponentInterface {
     /// A map of all the nameable types used in the interface (including type aliases)
     types: HashMap<String, TypeReference>,
+    namespace: String,
     /// The high-level API provided by the component.
-    namespaces: Vec<Namespace>,
     enums: Vec<Enum>,
     records: Vec<Record>,
+    functions: Vec<Function>,
     objects: Vec<Object>,
 }
 
@@ -81,16 +82,16 @@ impl<'ci> ComponentInterface {
         types::TypeFinder::find_type_definitions(&defns, &mut ci)?;
         // With those names resolved, we can build a complete representation of the API.
         APIBuilder::process(&defns, &mut ci)?;
+        if ci.namespace.len() == 0 {
+            bail!("missing namespace definition");
+        }
         // Now that the high-level API is settled, we can derive the low-level FFI.
         ci.derive_ffi_funcs()?;
         Ok(ci)
     }
 
-    // XXX TODO: figure out Iterator<Item=Object> and lifetimes and what-not
-    // rather than cloning and returning a vector.
-
-    pub fn iter_namespace_definitions(&self) -> Vec<Namespace> {
-        self.namespaces.iter().cloned().collect()
+    pub fn namespace(&self) -> &str {
+        self.namespace.as_str()
     }
 
     pub fn iter_enum_definitions(&self) -> Vec<Enum> {
@@ -101,18 +102,17 @@ impl<'ci> ComponentInterface {
         self.records.iter().cloned().collect()
     }
 
+    pub fn iter_function_definitions(&self) -> Vec<Function> {
+        self.functions.iter().cloned().collect()
+    }
+
     pub fn iter_object_definitions(&self) -> Vec<Object> {
         self.objects.iter().cloned().collect()
     }
 
-    pub fn ffi_library_name(&self) -> String {
-        // XXX TODO: how to set this?
-        "uniffi_example_geometry".to_string()
-    }
-
     pub fn ffi_bytebuffer_alloc(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("{}_bytebuffer_alloc", self.ffi_function_prefix()),
+            name: format!("{}_bytebuffer_alloc", self.namespace()),
             arguments: vec![Argument {
                 name: "size".to_string(),
                 type_: TypeReference::U32,
@@ -125,7 +125,7 @@ impl<'ci> ComponentInterface {
 
     pub fn ffi_bytebuffer_free(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("{}_bytebuffer_free", self.ffi_function_prefix()),
+            name: format!("{}_bytebuffer_free", self.namespace()),
             arguments: vec![Argument {
                 name: "buf".to_string(),
                 type_: TypeReference::Bytes,
@@ -146,23 +146,18 @@ impl<'ci> ComponentInterface {
                     .chain(obj.methods.iter().map(|f| f.ffi_func.clone()))
             })
             .flatten()
+            .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
             .chain(
-                self.namespaces
+                vec![self.ffi_bytebuffer_alloc(), self.ffi_bytebuffer_free()]
                     .iter()
-                    .map(|ns| ns.functions.iter().map(|f| f.ffi_func.clone()))
-                    .flatten(),
-            ).chain(vec![self.ffi_bytebuffer_alloc(), self.ffi_bytebuffer_free()].iter().cloned())
+                    .cloned(),
+            )
             .collect()
     }
 
     //
     // Private methods for building a ComponentInterface.
     //
-
-    fn ffi_function_prefix(&self) -> &str {
-        // XXX TODO: how to declare this? does it need one?
-        "arithmetic"
-    }
 
     fn get_type_definition(&self, name: &str) -> Option<TypeReference> {
         self.types.get(name).cloned()
@@ -179,8 +174,10 @@ impl<'ci> ComponentInterface {
     }
 
     fn add_namespace_definition(&mut self, defn: Namespace) -> Result<()> {
-        // XXX TODO: reject duplicates? there shouldn't be any thanks to type-finding pass.
-        self.namespaces.push(defn);
+        if self.namespace.len() != 0 {
+            bail!("duplicate namespace definition");
+        }
+        self.namespace.push_str(&defn.name);
         Ok(())
     }
 
@@ -196,6 +193,12 @@ impl<'ci> ComponentInterface {
         Ok(())
     }
 
+    fn add_function_definition(&mut self, defn: Function) -> Result<()> {
+        // XXX TODO: reject duplicates.
+        self.functions.push(defn);
+        Ok(())
+    }
+
     fn add_object_definition(&mut self, defn: Object) -> Result<()> {
         // XXX TODO: reject duplicates? there shouldn't be any thanks to type-finding pass.
         self.objects.push(defn);
@@ -203,9 +206,9 @@ impl<'ci> ComponentInterface {
     }
 
     fn derive_ffi_funcs(&mut self) -> Result<()> {
-        let ci_prefix = self.ffi_function_prefix().to_string();
-        for ns in self.namespaces.iter_mut() {
-            ns.derive_ffi_funcs(&ci_prefix)?;
+        let ci_prefix = self.namespace().to_string();
+        for func in self.functions.iter_mut() {
+            func.derive_ffi_func(&ci_prefix)?;
         }
         for obj in self.objects.iter_mut() {
             obj.derive_ffi_funcs(&ci_prefix)?;
@@ -247,7 +250,7 @@ impl<U, T: APIConverter<U>> APIConverter<Vec<U>> for Vec<T> {
 impl APIBuilder for weedle::Definition<'_> {
     fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
         match self {
-            weedle::Definition::Namespace(d) => ci.add_namespace_definition(d.convert(ci)?),
+            weedle::Definition::Namespace(d) => d.process(ci),
             weedle::Definition::Enum(d) => ci.add_enum_definition(d.convert(ci)?),
             weedle::Definition::Dictionary(d) => ci.add_record_definition(d.convert(ci)?),
             weedle::Definition::Interface(d) => ci.add_object_definition(d.convert(ci)?),
@@ -256,36 +259,42 @@ impl APIBuilder for weedle::Definition<'_> {
     }
 }
 
-/// A namespace is simply a collection of stand-alone functions. It looks similar to
-/// an interface but cannot be instantiated. It might not be a good fit for our needs
-/// but it's the WebIDL way for defining stand-alone functions so let's start there.
+/// A namespace is currently just a name, but might hold more metadata about
+/// the component in future.
+///
+/// In WebIDL, each `namespace` declares a set of functions and attriutes that
+/// are exposed as a global object, and there can be any number of such definitions.
+///
+/// For our purposes, we expect just a single `namespace` declaration, which defines
+/// properties of the component as a whole. It can contain functions but these will
+/// be exposed as individual plain functions on the component.
+///
+/// Yeah, this is a bit of mis-match between WebIDL and our notion of a component,
+/// but it's close enough to get us up and running for now.
+///
 #[derive(Debug, Clone)]
 pub struct Namespace {
     name: String,
-    functions: Vec<Function>,
 }
 
-impl Namespace {
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-    pub fn functions(&self) -> Vec<&Function> {
-        self.functions.iter().collect()
-    }
-
-    fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
-        for func in self.functions.iter_mut() {
-            func.derive_ffi_func(ci_prefix, &self.name)?
+impl APIBuilder for weedle::NamespaceDefinition<'_> {
+    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
+        if self.attributes.is_some() {
+            bail!("namespace attributes are not supported yet");
+        }
+        ci.add_namespace_definition(Namespace {
+            name: self.identifier.0.to_string(),
+        })?;
+        for func in self.members.body.convert(ci)? {
+            ci.add_function_definition(func)?;
         }
         Ok(())
     }
-
-    fn ffi_function_prefix(&self) -> &str {
-        &self.name
-    }
 }
 
-// Represents an individual function in a namespace.
+
+
+// Represents a standalone function.
 //
 // The in FFI, this will be a standalone function.
 #[derive(Debug, Clone)]
@@ -296,7 +305,7 @@ pub struct Function {
     ffi_func: FFIFunction,
 }
 
-impl Function{
+impl Function {
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -310,10 +319,8 @@ impl Function{
         &self.ffi_func
     }
 
-    fn derive_ffi_func(&mut self, ci_prefix: &str, ns_prefix: &str) -> Result<()> {
+    fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
         self.ffi_func.name.push_str(ci_prefix);
-        self.ffi_func.name.push_str("_");
-        self.ffi_func.name.push_str(ns_prefix);
         self.ffi_func.name.push_str("_");
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.clone();
@@ -360,18 +367,6 @@ impl FFIFunction {
     }
     pub fn return_type(&self) -> Option<&TypeReference> {
         self.return_type.as_ref()
-    }
-}
-
-impl APIConverter<Namespace> for weedle::NamespaceDefinition<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Namespace> {
-        if self.attributes.is_some() {
-            bail!("namespace attributes are not supported yet");
-        }
-        Ok(Namespace {
-            name: self.identifier.0.to_string(),
-            functions: self.members.body.convert(ci)?,
-        })
     }
 }
 

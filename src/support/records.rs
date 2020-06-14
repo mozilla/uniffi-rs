@@ -37,6 +37,13 @@ impl Serializable for &u32 {
   }
 }
 
+impl Serializable for &f64 {
+  fn serialize_into(&self, buf: &mut Serializer) {
+    buf.buffer.put_f64(**self);
+  }
+}
+
+
 
 pub struct Deserializer<'a> {
   buffer: &'a[u8],
@@ -44,7 +51,6 @@ pub struct Deserializer<'a> {
 
 impl<'a> Deserializer<'a> {
   pub fn new(buf: &'a[u8]) -> Self {
-    println!("Deserializer from buf of {:?} bytes {:?}", buf.len(), buf);
     Deserializer {
       buffer: buf
     }
@@ -55,7 +61,6 @@ impl<'a> Deserializer<'a> {
     if self.buffer.remaining() != 0 {
       panic!("junk data left in buffer after deserializing")
     }
-    println!("Deserialized record {:?}", retval);
     retval
   }
 
@@ -79,7 +84,14 @@ impl Deserializable for u32 {
   fn deserialize_from(buf: &mut Deserializer) -> Result<Self> {
     buf.check_remaining(4)?;
     let v = buf.buffer.get_u32();
-    println!("DESER {}", v);
+    Ok(v)
+  }
+}
+
+impl Deserializable for f64 {
+  fn deserialize_from(buf: &mut Deserializer) -> Result<Self> {
+    buf.check_remaining(8)?;
+    let v = buf.buffer.get_f64();
     Ok(v)
   }
 }

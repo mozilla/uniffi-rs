@@ -40,6 +40,8 @@ pub enum TypeReference {
     S32,
     U64,
     S64,
+    Float,
+    Double,
     String,
     Bytes,
     // TODO: it would be lovely to use interned strings here, but that's complicated unsafe
@@ -161,6 +163,7 @@ impl TypeResolver for weedle::types::NonAnyType<'_> {
             weedle::types::NonAnyType::Boolean(t) => t.resolve_type_definition(ci),
             weedle::types::NonAnyType::Identifier(t) => t.resolve_type_definition(ci),
             weedle::types::NonAnyType::Integer(t) => t.resolve_type_definition(ci),
+            weedle::types::NonAnyType::FloatingPoint(t) => t.resolve_type_definition(ci),
             weedle::types::NonAnyType::Sequence(t) => t.resolve_type_definition(ci),
             _ => bail!("no support for type {:?}", self),
         }
@@ -200,9 +203,12 @@ impl TypeResolver for weedle::types::IntegerType {
     }
 }
 
-impl TypeResolver for weedle::term::Boolean {
+impl TypeResolver for weedle::types::FloatingPointType {
     fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
-        Ok(TypeReference::Boolean)
+        match self {
+            weedle::types::FloatingPointType::Float(t) => t.resolve_type_definition(ci),
+            weedle::types::FloatingPointType::Double(t) => t.resolve_type_definition(ci),
+        }
     }
 }
 
@@ -223,5 +229,29 @@ impl TypeResolver for weedle::common::Identifier<'_> {
                 }
             }
         }
+    }
+}
+
+impl TypeResolver for weedle::term::Boolean {
+    fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
+        Ok(TypeReference::Boolean)
+    }
+}
+
+impl TypeResolver for weedle::types::FloatType {
+    fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
+        if let Some(_) = self.unrestricted {
+            bail!("we don't support `unrestricted float`");
+        }
+        Ok(TypeReference::Float)
+    }
+}
+
+impl TypeResolver for weedle::types::DoubleType {
+    fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
+        if let Some(_) = self.unrestricted {
+            bail!("we don't support `unrestricted double`");
+        }
+        Ok(TypeReference::Double)
     }
 }

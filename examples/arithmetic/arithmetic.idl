@@ -4,7 +4,7 @@ enum Overflow {
   "SATURATING",
 };
 
-namespace Arithmetic {
+namespace arithmetic {
   u64 add(u64 a, u64 b, optional Overflow overflow = "WRAPPING");
   u64 sub(u64 a, u64 b, optional Overflow overflow = "WRAPPING");
 };

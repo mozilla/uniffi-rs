@@ -105,47 +105,43 @@ define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }});
     }
 {% endfor %}
 
-{% for ns in ci.iter_namespace_definitions() %}
-    // Namespace {{ ns.name() }}
-    enum {{ ns.name() }}{}
-    {%- for func in ns.functions() %}
-        {%- match func.ffi_func().return_type() -%}
-        {%- when Some with (return_type) %}
+{%- for func in ci.iter_function_definitions() %}
+    {%- match func.ffi_func().return_type() -%}
+    {%- when Some with (return_type) %}
 
-            #[no_mangle]
-            pub extern "C" fn {{ func.ffi_func().name() }}(
-              {%- for arg in func.ffi_func().arguments() %}
-                {{ arg.name() }}: {{ arg.type_()|decl_c_argument }},
-              {%- endfor %}
-            ) -> {{ return_type|decl_c_return }} {
-                println!("{{ func.ffi_func().name() }}");
-                let _retval = {{ ns.name() }}::{{ func.name() }}(
-                  {%- for arg in func.arguments() %}
-                    {{ arg.name()|lift_rs(arg.type_()) }},
-                  {%- endfor %}
-                );
-                {{ "_retval"|lower_rs(return_type) }}
-            }
+        #[no_mangle]
+        pub extern "C" fn {{ func.ffi_func().name() }}(
+            {%- for arg in func.ffi_func().arguments() %}
+            {{ arg.name() }}: {{ arg.type_()|decl_c_argument }},
+            {%- endfor %}
+        ) -> {{ return_type|decl_c_return }} {
+            log::debug!("{{ func.ffi_func().name() }}");
+            let _retval = {{ func.name() }}(
+                {%- for arg in func.arguments() %}
+                {{ arg.name()|lift_rs(arg.type_()) }},
+                {%- endfor %}
+            );
+            {{ "_retval"|lower_rs(return_type) }}
+        }
 
-        {% when None %}
+    {% when None %}
 
-            #[no_mangle]
-            pub extern "C" fn {{ func.ffi_func().name() }}(
-              {%- for arg in func.ffi_func().arguments() %}
-                {{ arg.name() }}: {{ arg.type_()|decl_c_argument }},
-              {%- endfor %}
-            ) {
-                println!("{{ func.ffi_func().name() }}");
-                {{ ns.name() }}::{{ func.name() }}(
-                  {%- for arg in func.arguments() %}
-                    {{ arg.name()|lift_rs(arg.type_()) }},
-                  {%- endfor %}
-                );
-            }
+        #[no_mangle]
+        pub extern "C" fn {{ func.ffi_func().name() }}(
+            {%- for arg in func.ffi_func().arguments() %}
+            {{ arg.name() }}: {{ arg.type_()|decl_c_argument }},
+            {%- endfor %}
+        ) {
+            log::debug!("{{ func.ffi_func().name() }}");
+            {{ func.name() }}(
+                {%- for arg in func.arguments() %}
+                {{ arg.name()|lift_rs(arg.type_()) }},
+                {%- endfor %}
+            );
+        }
 
-        {% endmatch %}
-    {% endfor -%}
-{% endfor %}
+    {% endmatch %}
+{% endfor -%}
 
 {% for obj in ci.iter_object_definitions() %}
  // TODO: record ({{ "{:?}"|format(obj)}})
@@ -171,8 +167,10 @@ mod filters {
     pub fn decl_c_argument(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
             TypeReference::Boolean => "u8".to_string(),
-            TypeReference::U64 => "u64".to_string(),
             TypeReference::U32 => "u32".to_string(),
+            TypeReference::U64 => "u64".to_string(),
+            TypeReference::Float => "f32".to_string(),
+            TypeReference::Double => "f64".to_string(),
             TypeReference::Enum(_) => "u32".to_string(),
             TypeReference::String => "FfiStr<'_>".to_string(),
             TypeReference::Record(_) => "ByteBuffer".to_string(),
@@ -199,8 +197,10 @@ mod filters {
         let nm = nm.to_string();
         Ok(match type_ {
             TypeReference::Boolean => format!("(if ({}) {{ 1 }} else {{ 0 }})", nm),
-            TypeReference::U64 => nm,
             TypeReference::U32 => nm,
+            TypeReference::U64 => nm,
+            TypeReference::Float => nm,
+            TypeReference::Double => nm,
             TypeReference::Enum(_) => format!("({} as u32)", nm),
             TypeReference::Record(_) => format!("{}.into()", nm),
             _ => format!("() /* [TODO: LOWER_RS {:?}] */", type_),
@@ -211,8 +211,10 @@ mod filters {
         let nm = nm.to_string();
         Ok(match type_ {
             TypeReference::Boolean => format!("({} != 0)", nm),
-            TypeReference::U64 => nm,
             TypeReference::U32 => nm,
+            TypeReference::U64 => nm,
+            TypeReference::Float => nm,
+            TypeReference::Double => nm,
             TypeReference::Enum(type_name) => format!("{}::try_from({}).unwrap()", type_name, nm), // Error handling later...
             TypeReference::Record(type_name) => format!("{}::try_from({}).unwrap()", type_name, nm), // Error handling later...
             _ => format!("() /* [TODO: LIFT_RS {:?}] */", type_),

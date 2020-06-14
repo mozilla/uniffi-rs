@@ -7,6 +7,7 @@ license = "MPL-2.0"
 
 [lib]
 crate-type = ["cdylib"]
+name = "uniffi_geometry"
 
 [dependencies]
 anyhow = "1.0"

@@ -4,17 +4,16 @@
 
 include!(concat!(env!("OUT_DIR"), "/arithmetic.uniffi.rs"));
 
-impl Arithmetic {
-  pub fn add(a: u64, b: u64, overflow: Overflow) -> u64 {
-    match overflow {
-      Overflow::WRAPPING => a.overflowing_add(b).0,
-      Overflow::SATURATING => a.saturating_add(b),
-    }
+fn add(a: u64, b: u64, overflow: Overflow) -> u64 {
+  match overflow {
+    Overflow::WRAPPING => a.overflowing_add(b).0,
+    Overflow::SATURATING => a.saturating_add(b),
   }
-  pub fn sub(a: u64, b: u64, overflow: Overflow) -> u64 {
-    match overflow {
-      Overflow::WRAPPING => a.overflowing_sub(b).0,
-      Overflow::SATURATING => a.saturating_sub(b),
-    }
+}
+
+fn sub(a: u64, b: u64, overflow: Overflow) -> u64 {
+  match overflow {
+    Overflow::WRAPPING => a.overflowing_sub(b).0,
+    Overflow::SATURATING => a.saturating_sub(b),
   }
 }
