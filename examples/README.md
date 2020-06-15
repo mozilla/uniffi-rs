@@ -6,7 +6,7 @@ what we're up to with this crate.
 
 Newcomers are recommended to explore them in the following order:
 
-* [`./arithmetic/`](./arithmetc/) is the most minimal example - just some plain functions that operate
+* [`./arithmetic/`](./arithmetic/) is the most minimal example - just some plain functions that operate
   on integers, and a simple enum.
 * [`./geometry/`](./geometry/) shows how to use records and nullable types for working with more complex
   data.
