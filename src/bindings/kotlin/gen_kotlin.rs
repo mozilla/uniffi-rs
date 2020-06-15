@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::io::prelude::*;
 use std::{
     env,
     collections::HashMap,
@@ -17,8 +16,11 @@ use anyhow::bail;
 use anyhow::Result;
 use askama::Template;
 
-use super::interface::*;
+use crate::interface::*;
 
+// Some config options for it the caller wants to customize the generated Kotlin.
+// Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
+// sine the details of the underlying component are entirely determined by the `ComponentInterface`.
 pub struct Config {
     pub package_name: String
 }
@@ -38,39 +40,107 @@ impl Config {
 
 package {{ config.package_name }};
 
+// Common helper code.
+//
+// Ideally this would live in a separate .kt file where it can be unittested etc
+// in isolation, and perhaps even published as a re-useable package.
+//
+// However, it's important that the detils of how this helper code works (e.g. the
+// way that different builtin types are passed across the FFI) exactly match what's
+// expected by the rust code on the other side of the interface. In practice right
+// now that means come from the exact some version of `uniffi` that was used to
+// compile the rust component. The easiest way to ensure this is to bundle the Kotlin
+// helpers directly inline.
+
 import com.sun.jna.Library
-import mozilla.appservices.support.uniffi.loadIndirect
-import mozilla.appservices.support.uniffi.RustBuffer
-import mozilla.appservices.support.uniffi.serializeForRustSize
-import mozilla.appservices.support.uniffi.serializeForRustInto
-import mozilla.appservices.support.uniffi.deserializeItemFromRust
+import com.sun.jna.Native
+import com.sun.jna.Pointer
+import com.sun.jna.Structure
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
-internal typealias _Handle = Long
-
-// A JNA Library to expose the extern-C FFI definitions.
-// This is an implementation detail which will be called internally by the public API.
-
-internal interface _UniFFILib : Library {
-    companion object {
-        internal var INSTANCE: _UniFFILib = loadIndirect(componentName = "{{ ci.namespace() }}")
-    }
-
-    {% for func in ci.iter_ffi_function_definitions() -%}
-        fun {{ func.name() }}(
-        {%- for arg in func.arguments() %}
-            {{ arg.name() }}: {{ arg.type_()|decl_c_argument }}{% if loop.last %}{% else %},{% endif %}
-        {%- endfor %}
-        // TODO: When we implement error handling, there will be an out error param here.
-        ) {%- match func.return_type() -%}
-        {%- when Some with (type_) %}
-            : {{ type_|decl_c_return }}
-        {% when None -%}
-        {%- endmatch %}
-    {% endfor -%}
+inline fun <reified Lib : Library> loadIndirect(
+    componentName: String
+): Lib {
+    // XXX TODO: This will probably grow some magic for resolving megazording in future.
+    // E.g. we might start by looking for the named component in `libuniffi.so` and if
+    // that fails, fall back to loading it separately from `lib${componentName}.so`.
+    return Native.load<Lib>("uniffi_${componentName}", Lib::class.java)
 }
 
-// Misc helpers that need to interpolate details from the ComponentInterface.
+@Structure.FieldOrder("len", "data")
+open class RustBuffer : Structure() {
+    @JvmField var len: Long = 0
+    @JvmField var data: Pointer? = null
+
+    class ByValue : RustBuffer(), Structure.ByValue
+
+    @Suppress("TooGenericExceptionThrown")
+    fun asByteBuffer(): ByteBuffer? {
+        return this.data?.let {
+            val buf = it.getByteBuffer(0, this.len)
+            buf.order(ByteOrder.BIG_ENDIAN)
+            return buf
+        }
+    }
+}
+
+public fun Boolean.Companion.deserializeItemFromRust(buf: ByteBuffer): Boolean {
+    return buf.get().toInt() != 0
+}
+
+public fun Byte.Companion.deserializeItemFromRust(buf: ByteBuffer): Byte {
+    return buf.get()
+}
+
+public fun Int.Companion.deserializeItemFromRust(buf: ByteBuffer): Int {
+    return buf.getInt()
+}
+
+public fun Int.serializeForRustSize(): Int {
+    return 4
+}
+
+public fun Int.serializeForRustInto(buf: ByteBuffer) {
+    buf.putInt(this)
+}
+
+public fun Float.Companion.deserializeItemFromRust(buf: ByteBuffer): Float {
+    return buf.getFloat()
+}
+
+public fun Float.serializeForRustSize(): Int {
+    return 4
+}
+
+public fun Float.serializeForRustInto(buf: ByteBuffer) {
+    buf.putFloat(this)
+}
+
+public fun Double.Companion.deserializeItemFromRust(buf: ByteBuffer): Double {
+    return buf.getDouble()
+}
+
+public fun Double.serializeForRustSize(): Int {
+    return 8
+}
+
+public fun Double.serializeForRustInto(buf: ByteBuffer) {
+    buf.putDouble(this)
+}
+
+public fun<T> T?.serializeForRustSize(): Int {
+    if (this === null) return 1
+    return 1 + this.serializeForRustSize()
+}
+
+public fun<T> T?.serializeForRustInto(buf: ByteBuffer) {
+    if (this === null) buf.put(0)
+    else {
+        buf.put(1)
+        this.serializeForRustInto(buf)
+    }
+}
 
 internal fun Any?.serializeForRust(): RustBuffer.ByValue {
     val buf = _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_alloc().name() }}(this.serializeForRustSize())
@@ -94,6 +164,28 @@ public fun<T> deserializeFromRust(rbuf: RustBuffer.ByValue, deserializeItemFromR
     } finally {
         _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_free().name() }}(rbuf)
     }
+}
+
+// A JNA Library to expose the extern-C FFI definitions.
+// This is an implementation detail which will be called internally by the public API.
+
+internal interface _UniFFILib : Library {
+    companion object {
+        internal var INSTANCE: _UniFFILib = loadIndirect(componentName = "{{ ci.namespace() }}")
+    }
+
+    {% for func in ci.iter_ffi_function_definitions() -%}
+        fun {{ func.name() }}(
+        {%- for arg in func.arguments() %}
+            {{ arg.name() }}: {{ arg.type_()|decl_c_argument }}{% if loop.last %}{% else %},{% endif %}
+        {%- endfor %}
+        // TODO: When we implement error handling, there will be an out error param here.
+        ) {%- match func.return_type() -%}
+        {%- when Some with (type_) %}
+            : {{ type_|decl_c_return }}
+        {% when None -%}
+        {%- endmatch %}
+    {% endfor -%}
 }
 
 // Public interface members begin here.

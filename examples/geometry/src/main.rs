@@ -3,5 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 fn main() {
-    uniffi::generate_component_scaffolding("./src/arithmetic.idl").unwrap();
+    let idl = include_str!("geometry.idl");
+    uniffi::run_bindings_helper(idl).unwrap();
 }

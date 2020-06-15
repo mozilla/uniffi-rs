@@ -67,25 +67,25 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
       {%- endfor %}
     }
 
-    impl uniffi::support::records::Serializable for {{ rec.name() }} {
-        fn serialize_into(&self, buf: &mut uniffi::support::records::Serializer) {
+    impl uniffi::support::Lowerable for {{ rec.name() }} {
+        fn lower_into<B: uniffi::support::BufMut>(&self, buf: &mut B) {
           {%- for field in rec.fields() %}
-            buf.serialize(&self.{{ field.name() }});
+            uniffi::support::Lowerable::lower_into(&self.{{ field.name() }}, buf);
           {%- endfor %}
         }
     }
 
-    impl uniffi::support::records::Deserializable for {{ rec.name() }} {
-        fn deserialize_from(buf: &mut uniffi::support::records::Deserializer) -> Result<Self, Error> {
+    impl uniffi::support::Liftable for {{ rec.name() }} {
+        fn try_lift_from<B: uniffi::support::Buf>(buf: &mut B) -> Result<Self, Error> {
           Ok(Self {
             {%- for field in rec.fields() %}
-                {{ field.name() }}: buf.deserialize()?,
+                {{ field.name() }}: <{{ field.type_()|decl_rs }} as uniffi::support::Liftable>::try_lift_from(buf)?,
             {%- endfor %}
           })
         }
     }
 
-    impl uniffi::support::records::Record for {{ rec.name() }} {}
+    impl uniffi::support::ViaFfiUsingByteBuffer for {{ rec.name() }} {}
 {% endfor %}
 
 {%- for func in ci.iter_function_definitions() %}
@@ -127,10 +127,8 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
 {% endfor -%}
 
 {% for obj in ci.iter_object_definitions() %}
- // TODO: record ({{ "{:?}"|format(obj)}})
+ // TODO: object ({{ "{:?}"|format(obj)}})
 {% endfor %}
-
-// XXX TODO: string, bytes etc destructors if necessary
 "#)]
 pub struct RustScaffolding<'a> {
   ci: &'a ComponentInterface,

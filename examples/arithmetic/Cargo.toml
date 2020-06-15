@@ -13,6 +13,7 @@ name = "uniffi_arithmetic"
 anyhow = "1.0"
 log = "0.4"
 ffi-support = "0.4"
+uniffi = {path = "../../"}
 
 [build-dependencies]
 uniffi = {path = "../../"}

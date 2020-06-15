@@ -62,6 +62,12 @@ continues to evolve.
   * Use some runtime helpers to hook it up to the compiled FFI from the component crate.
 
 
+## Status
+
+This is all very experimental and incomplete, but we do have some basic examples working, implementing
+functions in Rust and calling them from Kotlin.  Take a look in the [`./examples/`](./examples/) directory
+to see them in action.
+
 ## Component Interface Definition
 
 We'll abstractly specify the API of a component using the syntax of [WebIDL](https://en.wikipedia.org/wiki/Web_IDL),
@@ -80,7 +86,7 @@ In the future, we may be able to generate the Interface Definition from annotati
 started using a separate file.
 
 The prototype implementation of parsing an IDL file into an in-memory representation of the component's
-APIs is in [./src/types.rs](./src/types.rs). See [`arithmetic.idl`](./examples/arithmetic/arithmetic.idl)
+APIs is in [./src/types.rs](./src/types.rs). See [`arithmetic.idl`](./examples/arithmetic/src/arithmetic.idl)
 for a simple example that actually works today, or see [`fxa-client.idl`](./examples/fxa-client/fxa-client.idl)
 for an aspirational example of an interface for a real-world component.
 
@@ -256,7 +262,7 @@ to be used from the component's build file.
 
 #### Kotlin Bindings Generation
 
-Currently a very *very* hacky attempt in [./src/kotlin.rs](./src/kotlin.rs),
+Currently a very *very* hacky attempt in [./src/bindings/kotlin/](./src/bindings/kotlin),
 and it's not yet clear exactly how we should expose this for consumers. As
 something done from the component's build script? As a standlone executable
 that can translate an IDL file into the bindings?
