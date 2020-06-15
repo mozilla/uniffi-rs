@@ -4,7 +4,7 @@ This directory contains some small example components implemented using uniffi. 
 more as a living test environment than user-facing docs, but hopefully it gives you a bit of an idea of
 what we're up to with this crate.
 
-Newcomers are recommented to explore them in the following order:
+Newcomers are recommended to explore them in the following order:
 
 * [`./arithmetic/`](./arithmetc/) is the most minimal example - just some plain functions that operate
   on integers, and a simple enum.
