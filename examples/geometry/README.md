@@ -12,7 +12,7 @@ It's designed to exercise our support for structured data types; for example it 
 * [`./src/main.rs`](./src/main.rs) generates a helper executable that can be used for working with
   foreign language bindings, while guaranteeing that those bindings use the same version of `uniffi`
   as the compiled component.
-* A tiny example kotlin script in [`./example.kts`](./kotlin.kts) that imports the component, calls
+* A tiny example kotlin script in [`./example.kts`](./example.kts) that imports the component, calls
   some of its methods and prints the results.
 
 If you want to try it out, you will need:
