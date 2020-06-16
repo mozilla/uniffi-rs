@@ -153,7 +153,7 @@ mod filters {
             TypeReference::Float => "f32".to_string(),
             TypeReference::Double => "f64".to_string(),
             TypeReference::Boolean => "u8".to_string(),
-            // While these need conversion, and will require special handling below
+            // These types need conversion, and will require special handling below
             // when lifting/lowering.
             TypeReference::String => "&str".to_string(),
             TypeReference::Enum(name) => name.clone(),
@@ -177,43 +177,12 @@ mod filters {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         Ok(format!("<{} as uniffi::support::ViaFfi>::into_ffi_value({})", decl_rs(type_)?, nm))
-        // XXX TODO: could we use IntoFfi here, instead of all of this machinery?
-        // We'll probably need it when it comes to error handling.
-        // I think we need it so the rust compiler can disambiguate things that return as the same type (e.g. bytebuffer).
-        /*let nm = nm.to_string();
-        Ok(match type_ {
-            TypeReference::U32 => nm,
-            TypeReference::U64 => nm,
-            TypeReference::Float => nm,
-            TypeReference::Double => nm,
-            TypeReference::Boolean => format!("(if ({}) {{ 1 }} else {{ 0 }})", nm),
-            // It's important that we explicitly name the type when using into() here,
-            // so that the rust compiler knows what type of thing we're trying to list to
-            // (and can thus properly type-check the user-provided function definitions)
-            TypeReference::Enum(type_name) => format!("{}::into::<u32>({})", type_name, nm),
-            TypeReference::Record(type_name) => format!("{}::into::<ByteBuffer>({})", type_name, nm),
-            TypeReference::Optional(t) => format!("{}::into::<ByteBuffer>({})", decl_rs(t)?, nm),
-            _ => panic!("[TODO: LOWER_RS {:?}]", type_),
-        })*/
     }
 
     pub fn lift_rs( nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         Ok(format!("<{} as uniffi::support::ViaFfi>::try_from_ffi_value({}).unwrap()", decl_rs(type_)?, nm)) // Error handling later...
-        /*Ok(match type_ {
-            TypeReference::U32 => nm,
-            TypeReference::U64 => nm,
-            TypeReference::Float => nm,
-            TypeReference::Double => nm,
-            // It's important that we explicitly name the type when using try_from() here,
-            // so that the rust compiler knows what type of thing we're trying to list to
-            // (and can thus properly type-check the user-provided function definitions)
-            TypeReference::Enum(type_name) =>
-            TypeReference::Record(type_name) => format!("{}::try_from({}).unwrap()", type_name, nm), // Error handling later...
-            TypeReference::Optional(_) => format!("{}.try_into().unwrap()", nm), // Error handling later...
-            _ => panic!("[TODO: LIFT_RS {:?}]", type_),
-        })*/
     }
 }
 
