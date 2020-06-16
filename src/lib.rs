@@ -5,19 +5,17 @@
 use std::io::prelude::*;
 use std::{
     env,
-    collections::HashMap,
-    convert::TryFrom, convert::TryInto,
     fs::File,
     path::{Path, PathBuf},
 };
 
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
-use anyhow::anyhow;
 
+pub mod bindings;
 pub mod interface;
 pub mod scaffolding;
-pub mod bindings;
 pub mod support;
 
 use scaffolding::RustScaffolding;
@@ -35,14 +33,23 @@ pub(crate) fn slurp_file(file_name: &str) -> Result<String> {
 
 pub fn generate_component_scaffolding(idl_file: &str) -> Result<()> {
     println!("cargo:rerun-if-changed={}", idl_file);
-    let idl = slurp_file(idl_file).map_err(|_| anyhow::anyhow!("Failed to read IDL from {}", &idl_file))?;
-    let component= idl.parse::<interface::ComponentInterface>().map_err(|e| anyhow::anyhow!("Failed to parse IDL: {}", e))?;
-    let mut filename = Path::new(idl_file).file_stem().ok_or_else(|| anyhow!("not a file"))?.to_os_string();
+    let idl = slurp_file(idl_file)
+        .map_err(|_| anyhow::anyhow!("Failed to read IDL from {}", &idl_file))?;
+    let component = idl
+        .parse::<interface::ComponentInterface>()
+        .map_err(|e| anyhow::anyhow!("Failed to parse IDL: {}", e))?;
+    let mut filename = Path::new(idl_file)
+        .file_stem()
+        .ok_or_else(|| anyhow!("not a file"))?
+        .to_os_string();
     filename.push(".uniffi.rs");
-    let mut out_file = PathBuf::from(env::var("OUT_DIR").map_err(|_| anyhow::anyhow!("No $OUT_DIR specified"))?);
+    let mut out_file =
+        PathBuf::from(env::var("OUT_DIR").map_err(|_| anyhow::anyhow!("No $OUT_DIR specified"))?);
     out_file.push(filename);
-    let mut f = File::create(out_file).map_err(|e| anyhow!("Failed to create output file: {:?}", e))?;
-    write!(f, "{}", RustScaffolding::new(&component)).map_err(|e| anyhow!("Failed to write output file: {:?}", e))
+    let mut f =
+        File::create(out_file).map_err(|e| anyhow!("Failed to create output file: {:?}", e))?;
+    write!(f, "{}", RustScaffolding::new(&component))
+        .map_err(|e| anyhow!("Failed to write output file: {:?}", e))
 }
 
 // Call this when generating forgein language bindings from the command-line.
@@ -52,17 +59,18 @@ pub fn generate_component_scaffolding(idl_file: &str) -> Result<()> {
 // bindings using a different IDL file or a different version of uniffi than
 // was used to generate the underlying component.
 
+const POSSIBLE_LANGUAGES: [&str; 2] = ["kotlin", "python"];
+
 pub fn run_bindings_helper(idl: &str) -> Result<()> {
-    let curdir = std::env::current_dir().map_err(|_| anyhow!("program has no current directory for some reason"))?;
+    let curdir = std::env::current_dir()
+        .map_err(|_| anyhow!("program has no current directory for some reason"))?;
     let default_target_dir = match std::env::current_exe() {
         Err(_) => curdir,
         Ok(exe) => match exe.parent() {
             None => curdir,
             Some(p) => p.to_path_buf(),
-        }
+        },
     };
-    // TODO: handle some nice command-line options for different languages.
-    // For now we just always compile .kt bindings into a .jar file.
     let app = clap::App::new("uniffi")
         .about("Foreign language bindings generator for Rust")
         .arg(
@@ -74,9 +82,26 @@ pub fn run_bindings_helper(idl: &str) -> Result<()> {
         )
         .subcommand(clap::SubCommand::with_name("generate")
                         .about("Generate foreign language bindings (currently only for kotlin)")
+                        .arg(
+                            clap::Arg::with_name("language")
+                                .takes_value(true)
+                                .long("--language")
+                                .short("-l")
+                                .multiple(true)
+                                .possible_values(&POSSIBLE_LANGUAGES)
+                                .help("Foreign language(s) for which to build bindings")
+                        )
         )
         .subcommand(clap::SubCommand::with_name("exec")
                         .about("Execute foreign language code with component bindings (currently only for kotlin)")
+                        .arg(
+                            clap::Arg::with_name("language")
+                                .takes_value(true)
+                                .long("--language")
+                                .short("-l")
+                                .possible_values(&POSSIBLE_LANGUAGES)
+                                .help("Foreign language interpreter to invoke")
+                        )
                         .arg(
                             clap::Arg::with_name("script")
                                 .takes_value(true)
@@ -86,17 +111,71 @@ pub fn run_bindings_helper(idl: &str) -> Result<()> {
 
     let matches = app.get_matches();
     match matches.subcommand() {
-        ("generate", Some(m)) => {
-            println!("Parsing IDL...");
-            let ci= idl.parse::<interface::ComponentInterface>()?;
-            println!("Generating Kotlin bindings...");
-            bindings::kotlin::compile_kotlin_bindings(&ci, matches.value_of("target_dir").unwrap())?;
-            println!("Done!");
-        },
-        ("exec", Some(m)) => {
-            bindings::kotlin::run_kotlin_script(matches.value_of("target_dir").unwrap(), m.value_of("script"))?;
-        },
+        ("generate", Some(m)) => run_bindings_generate_subcommand(&idl, &matches, m)?,
+        ("exec", Some(m)) => run_bindings_exec_subcommand(&matches, m)?,
         _ => println!("No command specified; try `--help` for some help."),
+    }
+    Ok(())
+}
+
+fn run_bindings_generate_subcommand(
+    idl: &str,
+    top_level_args: &clap::ArgMatches,
+    command_args: &clap::ArgMatches,
+) -> Result<()> {
+    let target_dir = top_level_args.value_of("target_dir").unwrap();
+    println!("Parsing IDL...");
+    let ci = idl.parse::<interface::ComponentInterface>()?;
+    let languages: Vec<&str> = match command_args.values_of("language") {
+        None => POSSIBLE_LANGUAGES.iter().cloned().collect(),
+        Some(ls) => ls.collect(),
+    };
+    for lang in languages {
+        match &lang {
+            &"kotlin" => {
+                println!("Generating Kotlin bindings...");
+                bindings::kotlin::compile_kotlin_bindings(&ci, target_dir)?;
+            },
+            &"python" => {
+                println!("Generating Python bindings...");
+                bindings::python::write_python_bindings(&ci, target_dir)?;
+            },
+            _ => bail!("Somehow tried to generate bindings for unsupported language {}", lang)
+        }
+    }
+    println!("Done!");
+    Ok(())
+}
+
+fn run_bindings_exec_subcommand(
+    top_level_args: &clap::ArgMatches,
+    command_args: &clap::ArgMatches,
+) -> Result<()> {
+    let target_dir = top_level_args.value_of("target_dir").unwrap();
+    let script_file = command_args.value_of("script");
+    let lang = match command_args.value_of("language") {
+        Some(lang) => lang,
+        None => {
+            // Try to guess language based on script file extension.
+            if let None = script_file {
+                bail!("No script file and no language specified, so I don't know what language shell to start")
+            }
+            let script_file_buf = PathBuf::from(script_file.unwrap());
+            let ext = script_file_buf.extension().unwrap_or_default();
+            if ext == "kts" { "kotlin" } else if ext == "py" { "python" } else {
+                bail!("Cannot guess language of script file, please specify it explicitly")
+            }
+        }
+    };
+    match &lang {
+        &"kotlin" => {
+            bindings::kotlin::run_kotlin_script(target_dir, script_file)?;
+        },
+        &"python" => {
+            bindings::python::run_python_script(target_dir, script_file)?;
+
+        },
+        _ => bail!("Somehow tried to launch interpreter for unsupported language {}", lang)
     }
     Ok(())
 }

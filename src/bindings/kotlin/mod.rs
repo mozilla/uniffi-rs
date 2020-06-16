@@ -37,7 +37,6 @@ pub fn compile_kotlin_bindings(ci: &ComponentInterface, out_dir: &str) -> Result
     let mut kt_file = std::env::temp_dir();
     kt_file.push(format!("{}.kt", ci.namespace()));
     let mut f = File::create(&kt_file).map_err(|e| anyhow!("Failed to create .kt tempfile: {:?}", e))?;
-    let config = Config::from(&ci);
     write!(f, "{}", generate_kotlin_bindings(&ci)?).map_err(|e| anyhow!("Failed to write Kotlin bindings: {:?}", e))?;
     let mut jar_file = PathBuf::from(out_dir);
     jar_file.push(format!("{}.jar", ci.namespace()));
