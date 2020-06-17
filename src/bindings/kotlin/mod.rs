@@ -30,14 +30,22 @@ pub fn generate_kotlin_bindings(ci: &ComponentInterface) -> Result<String> {
     KotlinWrapper::new(config, &ci).render().map_err(|_| anyhow::anyhow!("failed to render kotlin bindings"))
 }
 
+pub fn write_kotlin_bindings(ci: &ComponentInterface, out_dir: &str) -> Result<()> {
+    let mut kt_file = PathBuf::from(out_dir);
+    kt_file.push(format!("{}.kt", ci.namespace()));
+    let mut f = File::create(&kt_file).map_err(|e| anyhow!("Failed to create .kt file: {:?}", e))?;
+    write!(f, "{}", generate_kotlin_bindings(&ci)?).map_err(|e| anyhow!("Failed to write kotlin bindings: {:?}", e))?;
+    Ok(())
+}
+
 // Generate kotlin bindings for the given ComponentInterface, then use the kotlin
 // command-line tools to compile them into a .jar file.
 
 pub fn compile_kotlin_bindings(ci: &ComponentInterface, out_dir: &str) -> Result<()> {
-    let mut kt_file = std::env::temp_dir();
+    let mut kt_file = PathBuf::from(out_dir);
     kt_file.push(format!("{}.kt", ci.namespace()));
-    let mut f = File::create(&kt_file).map_err(|e| anyhow!("Failed to create .kt tempfile: {:?}", e))?;
-    write!(f, "{}", generate_kotlin_bindings(&ci)?).map_err(|e| anyhow!("Failed to write Kotlin bindings: {:?}", e))?;
+    let mut f = File::create(&kt_file).map_err(|e| anyhow!("Failed to create .kt file: {:?}", e))?;
+    write!(f, "{}", generate_kotlin_bindings(&ci)?).map_err(|e| anyhow!("Failed to write kotlin bindings: {:?}", e))?;
     let mut jar_file = PathBuf::from(out_dir);
     jar_file.push(format!("{}.jar", ci.namespace()));
     let status = std::process::Command::new("kotlinc")

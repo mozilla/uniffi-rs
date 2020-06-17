@@ -58,6 +58,7 @@ import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.concurrent.atomic.AtomicLong
 
 // This is how we find and load the dynamic library provided by the component.
 // For now we just look it up by name.
@@ -332,7 +333,7 @@ internal interface _UniFFILib : Library {
     ) {
       companion object {
           // XXX TODO: put this in a superclass maybe?
-          internal fun lift(rbuf: RustBuffer.ByValue) {
+          internal fun lift(rbuf: RustBuffer.ByValue): {{ rec.name() }} {
               return liftFromRustBuffer(rbuf) { buf -> {{ rec.name() }}.liftFrom(buf) }
           }
 
@@ -377,8 +378,8 @@ internal interface _UniFFILib : Library {
         ): {{ return_type|decl_kt }} {
             val _retval = _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
                 {%- for arg in func.arguments() %}
-                    {{ arg.name()|lower_kt(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
-                    {%- endfor %}
+                {{ arg.name()|lower_kt(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                {%- endfor %}
             )
             return {{ "_retval"|lift_kt(return_type) }}
         }
@@ -392,8 +393,8 @@ internal interface _UniFFILib : Library {
         ) {
             UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
                 {%- for arg in func.arguments() %}
-                    {{ arg.name()|lower_kt(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
-                    {%- endfor %}
+                {{ arg.name()|lower_kt(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                {%- endfor %}
             )
         }
 
@@ -401,7 +402,37 @@ internal interface _UniFFILib : Library {
 {% endfor %}
 
 {% for obj in ci.iter_object_definitions() %}
- // TODO: object ({{ "{:?}"|format(obj)}})
+class {{ obj.name() }}(handle: Long) {
+    private var handle: AtomicLong = AtomicLong(handle)
+    {%- for cons in obj.constructors() %}
+    constructor({% for arg in cons.arguments() %}{{ arg.name() }}: {{ arg.type_()|decl_kt }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}) :
+        this(
+            _UniFFILib.INSTANCE.{{ cons.ffi_func().name() }}(
+                {%- for arg in cons.arguments() %}
+                {{ arg.name()|lower_kt(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                {%- endfor %}
+            )
+        )
+    {%- endfor %}
+
+    // XXX TODO: destructors or equivalent.
+
+    {%- for meth in obj.methods() %}
+    fun {{ meth.name() }}(
+        {% for arg in meth.arguments() %}
+        {{ arg.name() }}: {{ arg.type_()|decl_kt }}{% if loop.last %}{% else %}, {% endif %}
+        {% endfor %}
+    ): {% match meth.return_type() %}{% when Some with (type_) %}{{ type_|decl_kt }}{% when None %}Unit{% endmatch %} {
+        val _retval = _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
+            this.handle.get(){% if meth.arguments().len() > 0 %},{% endif %}
+            {%- for arg in meth.arguments() %}
+            {{ arg.name()|lower_kt(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {%- endfor %}
+        )
+        {% match meth.return_type() %}{% when Some with (return_type) %}return {{ "_retval"|lift_kt(return_type) }}{% else %}{% endmatch %}
+    }
+    {%- endfor %}
+}
 {% endfor %}
 "#)]
 pub struct KotlinWrapper<'a> {
@@ -441,6 +472,7 @@ mod filters {
             TypeReference::Enum(_) => "Int".to_string(),
             TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
+            TypeReference::Object(_) => "Long".to_string(),
             _ => decl_kt(type_)?,
         })
     }

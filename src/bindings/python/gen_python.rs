@@ -221,7 +221,35 @@ def {{ func.name() }}({% for arg in func.arguments() %}{{ arg.name() }}{% if loo
 {% endfor %}
 
 {% for obj in ci.iter_object_definitions() %}
- # TODO: object ({{ "{:?}"|format(obj)}})
+class {{ obj.name() }}(object):
+    # XXX TODO: support for multiple constructors...
+    {%- for cons in obj.constructors() %}
+    def __init__(self, {% for arg in cons.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
+        {%- for arg in cons.arguments() %}
+        {{ arg.name()|coerce_py(arg.type_()) }}
+        {%- endfor %}
+        self._handle = _UniFFILib.{{ cons.ffi_func().name() }}(
+            {%- for arg in cons.arguments() %}
+            {{ arg.name()|lower_py(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {%- endfor %}
+        )
+    {%- endfor %}
+
+    # XXX TODO: destructors or equivalent.
+
+    {%- for meth in obj.methods() %}
+    def {{ meth.name() }}(self, {% for arg in meth.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
+        {%- for arg in meth.arguments() %}
+        {{ arg.name()|coerce_py(arg.type_()) }}
+        {%- endfor %}
+        _retval = _UniFFILib.{{ meth.ffi_func().name() }}(
+            self._handle,
+            {%- for arg in meth.arguments() %}
+            {{ arg.name()|lower_py(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {%- endfor %}
+        )
+        return {% match meth.return_type() %}{% when Some with (return_type) %}{{ "_retval"|lift_py(return_type) }}{% else %}None{% endmatch %}
+    {%- endfor %}
 {% endfor %}
 
 __all__ = [
@@ -233,6 +261,9 @@ __all__ = [
     {%- endfor %}
     {%- for func in ci.iter_function_definitions() %}
     "{{ func.name() }}",
+    {%- endfor %}
+    {%- for obj in ci.iter_object_definitions() %}
+    "{{ obj.name() }}",
     {%- endfor %}
 ]
 "###)]
@@ -261,6 +292,7 @@ mod filters {
             TypeReference::Enum(_) => "ctypes.c_uint32".to_string(),
             TypeReference::Record(_) => "RustBuffer".to_string(),
             TypeReference::Optional(_) => "RustBuffer".to_string(),
+            TypeReference::Object(_) => "ctypes.c_uint64".to_string(),
             _ => panic!("[TODO: decl_c({:?})", type_),
         })
     }

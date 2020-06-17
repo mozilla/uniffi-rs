@@ -1,0 +1,20 @@
+[package]
+name = "uniffi-example-sprites"
+edition = "2018"
+version = "0.1.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+
+[lib]
+crate-type = ["cdylib"]
+name = "uniffi_sprites"
+
+[dependencies]
+anyhow = "1.0"
+log = "0.4"
+ffi-support = "0.4"
+uniffi = {path = "../../"}
+lazy_static = "1.4"
+
+[build-dependencies]
+uniffi = {path = "../../"}

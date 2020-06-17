@@ -308,8 +308,6 @@ impl APIBuilder for weedle::NamespaceDefinition<'_> {
     }
 }
 
-
-
 // Represents a standalone function.
 //
 // The in FFI, this will be a standalone function.
@@ -499,6 +497,18 @@ pub struct Object {
 }
 
 impl Object {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn constructors(&self) -> Vec<&Constructor> {
+        self.constructors.iter().collect()
+    }
+
+    pub fn methods(&self) -> Vec<&Method> {
+        self.methods.iter().collect()
+    }
+
     fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
         for cons in self.constructors.iter_mut() {
             cons.derive_ffi_func(ci_prefix, &self.name)?
@@ -522,6 +532,18 @@ pub struct Constructor {
 }
 
 impl Constructor {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn arguments(&self) -> Vec<&Argument> {
+        self.arguments.iter().collect()
+    }
+
+    pub fn ffi_func(&self) -> &FFIFunction {
+        &self.ffi_func
+    }
+
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
         self.ffi_func.name.push_str(ci_prefix);
         self.ffi_func.name.push_str("_");
@@ -529,7 +551,7 @@ impl Constructor {
         self.ffi_func.name.push_str("_");
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.clone();
-        self.ffi_func.return_type = None;
+        self.ffi_func.return_type = Some(TypeReference::Object(obj_prefix.to_string()));
         Ok(())
     }
 }
@@ -547,13 +569,42 @@ pub struct Method {
 }
 
 impl Method {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn arguments(&self) -> Vec<&Argument> {
+        self.arguments.iter().collect()
+    }
+
+    pub fn return_type(&self) -> Option<&TypeReference> {
+        self.return_type.as_ref()
+    }
+
+    pub fn ffi_func(&self) -> &FFIFunction {
+        &self.ffi_func
+    }
+
+    pub fn first_argument(&self) -> Argument {
+        Argument {
+            name: "handle".to_string(),
+            type_: TypeReference::Object(self.name.clone()),
+            optional: false,
+            default: None,
+        }
+    }
+
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
         self.ffi_func.name.push_str(ci_prefix);
         self.ffi_func.name.push_str("_");
         self.ffi_func.name.push_str(obj_prefix);
         self.ffi_func.name.push_str("_");
         self.ffi_func.name.push_str(&self.name);
-        self.ffi_func.arguments = self.arguments.clone();
+        self.ffi_func.arguments = vec![self.first_argument()]
+            .iter()
+            .cloned()
+            .chain(self.arguments.iter().cloned())
+            .collect();
         self.ffi_func.return_type = self.return_type.clone();
         Ok(())
     }

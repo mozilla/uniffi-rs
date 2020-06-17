@@ -10,5 +10,7 @@ Newcomers are recommended to explore them in the following order:
   on integers, and a simple enum.
 * [`./geometry/`](./geometry/) shows how to use records and nullable types for working with more complex
   data.
+* [`./sprites/`](./sprites/) shows how to work with stateful objects that have methods, in classical
+  object-oriented style.
 * [`./fxa-client`](./fxa-client/) doesn't work yet, but it contains aspirational example of what the IDL
   might look like for an actual real-world component.

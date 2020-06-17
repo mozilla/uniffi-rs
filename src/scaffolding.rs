@@ -127,7 +127,59 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
 {% endfor -%}
 
 {% for obj in ci.iter_object_definitions() %}
- // TODO: object ({{ "{:?}"|format(obj)}})
+
+lazy_static::lazy_static! {
+  static ref UNIFFI_HANDLE_MAP_{{ obj.name() }}: ffi_support::ConcurrentHandleMap<{{ obj.name() }}> = ffi_support::ConcurrentHandleMap::new();
+}
+
+// XXX TODO: destructors.
+// These will need to be defined as another FFI function on the Object struct, and included automatically
+// in the set of all FFI functions for use by the bindings.
+// define_handle_map_deleter!(UNIFFI_HANDLE_MAP_{{ obj.name() }}, {{ obj.name() }}_free);
+
+
+{%- for cons in obj.constructors() %}
+    #[no_mangle]
+    pub extern "C" fn {{ cons.ffi_func().name() }}(
+        {%- for arg in cons.ffi_func().arguments() %}
+        {{ arg.name() }}: {{ arg.type_()|decl_c }},
+        {%- endfor %}
+    ) -> u64 {
+        log::debug!("{{ cons.ffi_func().name() }}");
+        let mut err: ffi_support::ExternError = Default::default(); // XXX TODO: error handling!
+        let _handle = UNIFFI_HANDLE_MAP_{{ obj.name() }}.insert_with_output(&mut err, || {
+            let obj = {{ obj.name() }}::{{ cons.name() }}(
+                {%- for arg in cons.arguments() %}
+                {{ arg.name()|lift_rs(arg.type_()) }},
+                {%- endfor %}
+            );
+            obj
+        });
+        _handle
+    }
+{% endfor %}
+
+{%- for meth in obj.methods() %}
+    #[no_mangle]
+    pub extern "C" fn {{ meth.ffi_func().name() }}(
+        {%- for arg in meth.ffi_func().arguments() %}
+        {{ arg.name() }}: {{ arg.type_()|decl_c }},
+        {%- endfor %}
+    ) -> {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|decl_c }}{% else %}(){% endmatch %} {
+        log::debug!("{{ meth.ffi_func().name() }}");
+        let mut err: ffi_support::ExternError = Default::default(); // XXX TODO: error handling!
+        UNIFFI_HANDLE_MAP_{{ obj.name() }}.call_with_output_mut(&mut err, {{ meth.first_argument().name() }}, |obj| {
+            let _retval = {{ obj.name() }}::{{ meth.name() }}(
+                obj,
+                {%- for arg in meth.arguments() %}
+                {{ arg.name()|lift_rs(arg.type_()) }},
+                {%- endfor %}
+            );
+            {% match meth.return_type() %}{% when Some with (return_type) %}{{ "_retval"|lower_rs(return_type) }}{% else %}{% endmatch %}
+        })
+    }
+{% endfor %}
+
 {% endfor %}
 "#)]
 pub struct RustScaffolding<'a> {
@@ -138,8 +190,6 @@ impl<'a> RustScaffolding<'a> {
         Self { ci }
     }
 }
-
-
 
 mod filters {
     use std::fmt;
@@ -169,6 +219,7 @@ mod filters {
             TypeReference::Enum(_) => "u32".to_string(),
             TypeReference::Record(_) => "ffi_support::ByteBuffer".to_string(),
             TypeReference::Optional(_) => "ffi_support::ByteBuffer".to_string(),
+            TypeReference::Object(_) => "u64".to_string(),
             _ => decl_rs(type_)?
         })
     }
@@ -185,136 +236,3 @@ mod filters {
         Ok(format!("<{} as uniffi::support::ViaFfi>::try_from_ffi_value({}).unwrap()", decl_rs(type_)?, nm)) // Error handling later...
     }
 }
-
-/*
-#[derive(Template)]
-#[template(ext="rs", escape="none", source=r#"
-lazy_static::lazy_static! {
-  static ref UNIFFI_HANDLE_MAP_{{ self.struct_name() }}: ConcurrentHandleMap<{{ self.struct_name() }}> = ConcurrentHandleMap::new();
-}
-// XXX TODO: interpolate name prefix from containing environment.
-define_handle_map_deleter!(UNIFFI_HANDLE_MAP_{{ self.struct_name() }}, {{ self.struct_name() }}_free,);
-
-{%- for m in self.members() %}
-    {{ m.render().unwrap() }}
-{% endfor -%}
-"#)]
-struct ObjectScaffolding<'a> {
-    ci: &'a types::ComponentInterface,
-    obj: &'a types::ObjectType,
-}
-impl<'a> ObjectScaffolding<'a> {
-    fn boxed(ci: &'a types::ComponentInterface, obj: &'a types::ObjectType) -> Box<dyn askama::Template + 'a> {
-        Box::new(Self { ci, obj })
-    }
-
-    fn struct_name(&self) -> &'a str {
-        &self.obj.name
-    }
-
-    fn members(&self) -> Vec<Box<dyn askama::Template + 'a>> {
-        self.obj.members.iter().map(|m|{
-            match m {
-                types::ObjectTypeMember::Constructor(cons) => ObjectConstructorScaffolding::boxed(self.ci, self.obj, cons),
-                types::ObjectTypeMember::Method(meth) => ObjectMethodScaffolding::boxed(self.ci, self.obj, meth),
-            }
-        }).collect()
-    }
-}
-#[derive(Template)]
-#[template(ext="rs", escape="none", source=r#"
-#[no_mangle]
-pub extern "C" fn {{ self.ffi_name() }}(
-  {%- for arg in cons.argument_types %}
-    {{ arg.ffi_name() }}: {{ arg.typ.resolve(ci)|type_decl }},
-  {%- endfor %}
-  err: &mut ExternError,
-) -> u64 {
-    log::debug!("{{ self.ffi_name() }}");
-    UNIFFI_HANDLE_MAP_{{ obj.name }}.insert_with_output(err, || {
-        {{ obj.name }}::{{ cons.name }}(
-          {%- for arg in cons.argument_types %}
-           {{ arg.ffi_name()|type_lift(arg.typ.resolve(ci)) }},
-        {%- endfor %}
-        )
-    })
-}
-"#)]
-struct ObjectConstructorScaffolding<'a> {
-    ci: &'a types::ComponentInterface,
-    obj: &'a types::ObjectType,
-    cons: &'a types::ObjectTypeConstructor,
-}
-
-impl<'a> ObjectConstructorScaffolding<'a> {
-    fn boxed(ci: &'a types::ComponentInterface, obj: &'a types::ObjectType, cons: &'a types::ObjectTypeConstructor) -> Box<dyn askama::Template + 'a> {
-        Box::new(Self { ci, obj, cons })
-    }
-
-    fn ffi_name(&self) -> String {
-        format!("{}_{}", self.obj.name, self.cons.name)
-    }
-}
-
-#[derive(Template)]
-#[template(ext="rs", escape="none", source=r#"
-#[no_mangle]
-pub extern "C" fn {{ self.ffi_name() }}(
-  handle u64,
-  {%- for arg in meth.argument_types %}
-    {{ arg.ffi_name() }}: {{ arg.typ.resolve(ci)|type_decl }},
-  {%- endfor %}
-  err: &mut ExternError,
-)
-  {%- match meth.return_type -%}
-  {%- when Some with (typ) %}
-    -> {{ typ.resolve(ci)|type_decl }}
-  {% when None -%}
-  {%- endmatch %}
-{
-    log::debug!("{{ self.ffi_name() }}");
-    UNIFFI_HANDLE_MAP_{{ obj.name }}.call_with_result_mut(err, handle, |val| {
-        let r = val.{{ meth.name }}(
-          {%- for arg in meth.argument_types %}
-           {{ arg.ffi_name()|type_lift(arg.typ.resolve(ci)) }},
-        {%- endfor %}
-        );
-        {%- match meth.return_type -%}
-        {%- when Some with (typ) %}
-        {{ "r"|type_lower(typ.resolve(ci)) }}
-        {% when None -%}
-        r
-        {%- endmatch %}
-    })
-}"#)]
-struct ObjectMethodScaffolding<'a> {
-    ci: &'a types::ComponentInterface,
-    obj: &'a types::ObjectType,
-    meth: &'a types::ObjectTypeMethod,
-}
-
-impl<'a> ObjectMethodScaffolding<'a> {
-    fn boxed(ci: &'a types::ComponentInterface, obj: &'a types::ObjectType, meth: &'a types::ObjectTypeMethod) -> Box<dyn askama::Template + 'a> {
-        Box::new(Self {ci, obj, meth })
-    }
-
-    fn ffi_name(&self) -> String {
-        format!("{}_{}", self.obj.name, self.meth.name)
-    }
-}
-
-#[derive(Template)]
-#[template(ext="rs", escape="none", source=r#"
-TODO: RECORD {{ rec.name }}
-"#)]
-struct RecordScaffolding<'a> {
-    ci: &'a types::ComponentInterface,
-    rec: &'a types::RecordType,
-}
-
-impl<'a> RecordScaffolding<'a> {
-    fn boxed(ci: &'a types::ComponentInterface, rec: &'a types::RecordType) -> Box<dyn askama::Template + 'a> {
-        Box::new(Self { ci, rec })
-    }
-}
-*/
