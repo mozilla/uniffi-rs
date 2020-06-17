@@ -135,12 +135,15 @@ fn run_bindings_generate_subcommand(
             &"kotlin" => {
                 println!("Generating Kotlin bindings...");
                 bindings::kotlin::compile_kotlin_bindings(&ci, target_dir)?;
-            },
+            }
             &"python" => {
                 println!("Generating Python bindings...");
                 bindings::python::write_python_bindings(&ci, target_dir)?;
-            },
-            _ => bail!("Somehow tried to generate bindings for unsupported language {}", lang)
+            }
+            _ => bail!(
+                "Somehow tried to generate bindings for unsupported language {}",
+                lang
+            ),
         }
     }
     println!("Done!");
@@ -162,7 +165,11 @@ fn run_bindings_exec_subcommand(
             }
             let script_file_buf = PathBuf::from(script_file.unwrap());
             let ext = script_file_buf.extension().unwrap_or_default();
-            if ext == "kts" { "kotlin" } else if ext == "py" { "python" } else {
+            if ext == "kts" {
+                "kotlin"
+            } else if ext == "py" {
+                "python"
+            } else {
                 bail!("Cannot guess language of script file, please specify it explicitly")
             }
         }
@@ -170,12 +177,14 @@ fn run_bindings_exec_subcommand(
     match &lang {
         &"kotlin" => {
             bindings::kotlin::run_kotlin_script(target_dir, script_file)?;
-        },
+        }
         &"python" => {
             bindings::python::run_python_script(target_dir, script_file)?;
-
-        },
-        _ => bail!("Somehow tried to launch interpreter for unsupported language {}", lang)
+        }
+        _ => bail!(
+            "Somehow tried to launch interpreter for unsupported language {}",
+            lang
+        ),
     }
     Ok(())
 }

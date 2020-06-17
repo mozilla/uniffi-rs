@@ -10,6 +10,6 @@ dictionary Point {
 };
 
 dictionary Line {
-  Point p1;
-  Point p2;
+  Point start;
+  Point end;
 };

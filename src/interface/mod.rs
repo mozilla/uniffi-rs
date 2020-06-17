@@ -49,21 +49,8 @@
 //!   * Error messages leave a lot to be desired (and we currently panc on errors parsing the WebIDL).
 //!     If this were to be a real thing we'd need to invest in more empathetic error messages.
 
-use std::io::prelude::*;
-use std::{
-    collections::hash_map::Entry,
-    collections::HashMap,
-    collections::HashSet,
-    convert::TryFrom,
-    convert::TryInto,
-    default::Default,
-    env,
-    fs::File,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{collections::hash_map::Entry, collections::HashMap, str::FromStr};
 
-use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 
@@ -458,7 +445,7 @@ impl Enum {
 }
 
 impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Enum> {
+    fn convert(&self, _ci: &ComponentInterface) -> Result<Enum> {
         if self.attributes.is_some() {
             bail!("enum attributes are not supported yet");
         }
@@ -754,7 +741,7 @@ pub enum Literal {
 }
 
 impl APIConverter<Literal> for weedle::literal::DefaultValue<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Literal> {
+    fn convert(&self, _ci: &ComponentInterface) -> Result<Literal> {
         Ok(match self {
             weedle::literal::DefaultValue::Boolean(b) => Literal::Boolean(b.0),
             weedle::literal::DefaultValue::String(s) => Literal::String(s.0.to_string()),

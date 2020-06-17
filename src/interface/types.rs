@@ -8,19 +8,6 @@
 
 //! # Our basic typesystem for defining a component interface.
 
-use std::io::prelude::*;
-use std::{
-    env,
-    collections::HashMap,
-    collections::HashSet,
-    convert::TryFrom, convert::TryInto,
-    fs::File,
-    path::{Path, PathBuf},
-    str::FromStr,
-    default::Default
-};
-
-use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 
@@ -51,7 +38,6 @@ pub enum TypeReference {
     Sequence(Box<TypeReference>),
 }
 
-
 fn resolve_builtin_type(id: &weedle::common::Identifier<'_>) -> Option<TypeReference> {
     match id.0.as_ref() {
         "string" => Some(TypeReference::String),
@@ -67,18 +53,15 @@ fn resolve_builtin_type(id: &weedle::common::Identifier<'_>) -> Option<TypeRefer
     }
 }
 
-
 pub(crate) trait TypeFinder {
     fn find_type_definitions(&self, ci: &mut ComponentInterface) -> Result<()>;
 }
-
 
 // Hrm, maybe this should be just a normal method on the ComponentInterface
 // rather than  fancy trait? We'll see how it goes...
 pub(crate) trait TypeResolver {
     fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference>;
 }
-
 
 impl<T: TypeFinder> TypeFinder for Vec<T> {
     fn find_type_definitions(&self, ci: &mut ComponentInterface) -> Result<()> {
@@ -128,7 +111,10 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
             bail!("no typedef attributes are currently supported");
         }
         match resolve_builtin_type(&self.identifier) {
-            Some(_) => bail!("please don't try to redefine builtin types, kthxbye ({:?})", self),
+            Some(_) => bail!(
+                "please don't try to redefine builtin types, kthxbye ({:?})",
+                self
+            ),
             None => {
                 // For now, we assume that the typedef must refer to an already-defined type, which means
                 // we can look it up in the ComponentInterface. This should suffice for our needs for
@@ -139,19 +125,14 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
     }
 }
 
-
 impl TypeResolver for weedle::types::Type<'_> {
     fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
         match self {
-            weedle::types::Type::Single(t) => {
-                match t {
-                    weedle::types::SingleType::Any(_) => bail!("no support for `any` types"),
-                    weedle::types::SingleType::NonAny(t) => t.resolve_type_definition(ci),
-                }
+            weedle::types::Type::Single(t) => match t {
+                weedle::types::SingleType::Any(_) => bail!("no support for `any` types"),
+                weedle::types::SingleType::NonAny(t) => t.resolve_type_definition(ci),
             },
-            weedle::types::Type::Union(t) => {
-                bail!("no support for union types yet")
-            },
+            weedle::types::Type::Union(_) => bail!("no support for union types yet"),
         }
     }
 }
@@ -198,8 +179,11 @@ impl<T: TypeResolver> TypeResolver for weedle::types::MayBeNull<T> {
 }
 
 impl TypeResolver for weedle::types::IntegerType {
-    fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
-        bail!("integer types not implemented ({:?}); consider using u8, u16, u32 or u64", self)
+    fn resolve_type_definition(&self, _ci: &ComponentInterface) -> Result<TypeReference> {
+        bail!(
+            "integer types not implemented ({:?}); consider using u8, u16, u32 or u64",
+            self
+        )
     }
 }
 
@@ -214,7 +198,9 @@ impl TypeResolver for weedle::types::FloatingPointType {
 
 impl TypeResolver for weedle::types::SequenceType<'_> {
     fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
-        Ok(TypeReference::Sequence(Box::new(self.generics.body.as_ref().resolve_type_definition(ci)?)))
+        Ok(TypeReference::Sequence(Box::new(
+            self.generics.body.as_ref().resolve_type_definition(ci)?,
+        )))
     }
 }
 
@@ -222,24 +208,22 @@ impl TypeResolver for weedle::common::Identifier<'_> {
     fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
         match resolve_builtin_type(self) {
             Some(type_) => Ok(type_),
-            None => {
-                match ci.get_type_definition(self.0) {
-                    Some(type_) => Ok(type_),
-                    None => bail!("unknown type reference: {}", self.0),
-                }
-            }
+            None => match ci.get_type_definition(self.0) {
+                Some(type_) => Ok(type_),
+                None => bail!("unknown type reference: {}", self.0),
+            },
         }
     }
 }
 
 impl TypeResolver for weedle::term::Boolean {
-    fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
+    fn resolve_type_definition(&self, _ci: &ComponentInterface) -> Result<TypeReference> {
         Ok(TypeReference::Boolean)
     }
 }
 
 impl TypeResolver for weedle::types::FloatType {
-    fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
+    fn resolve_type_definition(&self, _ci: &ComponentInterface) -> Result<TypeReference> {
         if let Some(_) = self.unrestricted {
             bail!("we don't support `unrestricted float`");
         }
@@ -248,7 +232,7 @@ impl TypeResolver for weedle::types::FloatType {
 }
 
 impl TypeResolver for weedle::types::DoubleType {
-    fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<TypeReference> {
+    fn resolve_type_definition(&self, _ci: &ComponentInterface) -> Result<TypeReference> {
         if let Some(_) = self.unrestricted {
             bail!("we don't support `unrestricted double`");
         }

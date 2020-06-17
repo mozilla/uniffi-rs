@@ -2,18 +2,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-include!(concat!(env!("OUT_DIR"), "/arithmetic.uniffi.rs"));
+// Flag to let calling code specify a particular behaviour of integer overflow,
+// since rust has such nice support for these.
+enum Overflow {
+    WRAPPING,
+    SATURATING,
+}
 
 fn add(a: u64, b: u64, overflow: Overflow) -> u64 {
-  match overflow {
-    Overflow::WRAPPING => a.overflowing_add(b).0,
-    Overflow::SATURATING => a.saturating_add(b),
-  }
+    match overflow {
+        Overflow::WRAPPING => a.overflowing_add(b).0,
+        Overflow::SATURATING => a.saturating_add(b),
+    }
 }
 
 fn sub(a: u64, b: u64, overflow: Overflow) -> u64 {
-  match overflow {
-    Overflow::WRAPPING => a.overflowing_sub(b).0,
-    Overflow::SATURATING => a.saturating_sub(b),
-  }
+    match overflow {
+        Overflow::WRAPPING => a.overflowing_sub(b).0,
+        Overflow::SATURATING => a.saturating_sub(b),
+    }
 }
+
+include!(concat!(env!("OUT_DIR"), "/arithmetic.uniffi.rs"));
