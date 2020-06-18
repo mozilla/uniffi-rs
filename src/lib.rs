@@ -81,7 +81,7 @@ pub fn run_bindings_helper(idl: &str) -> Result<()> {
                 .help("Path to directory into which to write output file(s)")
         )
         .subcommand(clap::SubCommand::with_name("generate")
-                        .about("Generate foreign language bindings (currently only for kotlin)")
+                        .about("Generate foreign language bindings")
                         .arg(
                             clap::Arg::with_name("language")
                                 .takes_value(true)
@@ -93,7 +93,7 @@ pub fn run_bindings_helper(idl: &str) -> Result<()> {
                         )
         )
         .subcommand(clap::SubCommand::with_name("exec")
-                        .about("Execute foreign language code with component bindings (currently only for kotlin)")
+                        .about("Execute foreign language code with component bindings")
                         .arg(
                             clap::Arg::with_name("language")
                                 .takes_value(true)
