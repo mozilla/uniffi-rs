@@ -3,6 +3,5 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 fn main() {
-    let idl = include_str!("sprites.idl");
-    uniffi::run_bindings_helper(idl).unwrap();
+    uniffi::run_bindgen_for_component("sprites").unwrap();
 }

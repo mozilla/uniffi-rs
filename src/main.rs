@@ -3,5 +3,5 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 fn main() {
-    uniffi::run_bindgen_for_component("geometry").unwrap();
+    uniffi::run_bindgen_command().unwrap();
 }

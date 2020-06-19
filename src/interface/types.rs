@@ -10,13 +10,14 @@
 
 use anyhow::bail;
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
 use super::ComponentInterface;
 
 /// Represents all the different types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
 /// of their internal structure apart from what type of thing they are (record, enum, etc).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TypeReference {
     Boolean,
     U8,

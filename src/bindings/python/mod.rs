@@ -2,7 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{fs::File, io::Write, path::PathBuf};
+use std::{
+    ffi::{OsStr, OsString},
+    fs::File,
+    io::Write,
+    path::PathBuf,
+};
 
 use anyhow::anyhow;
 use anyhow::bail;
@@ -25,7 +30,7 @@ pub fn generate_python_bindings(ci: &ComponentInterface) -> Result<String> {
 
 // Generate python bindings for the given ComponentInterface, then
 
-pub fn write_python_bindings(ci: &ComponentInterface, out_dir: &str) -> Result<()> {
+pub fn write_python_bindings(ci: &ComponentInterface, out_dir: &OsStr) -> Result<()> {
     let mut py_file = PathBuf::from(out_dir);
     py_file.push(format!("{}.py", ci.namespace()));
     let mut f =
@@ -38,11 +43,13 @@ pub fn write_python_bindings(ci: &ComponentInterface, out_dir: &str) -> Result<(
 // Execute the specifed kotlin script, with classpath based on the generated
 // artifacts in the given output directory.
 
-pub fn run_python_script(out_dir: &str, script_file: Option<&str>) -> Result<()> {
-    let mut pythonpath = std::env::var("PYTHONPATH").unwrap_or_else(|_| String::from(""));
+pub fn run_python_script(out_dir: Option<&OsStr>, script_file: Option<&str>) -> Result<()> {
+    let mut pythonpath = std::env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
     // This lets java find the compiled library for the rust component.
-    pythonpath.push_str(":");
-    pythonpath.push_str(out_dir);
+    if let Some(out_dir) = out_dir {
+        pythonpath.push(":");
+        pythonpath.push(out_dir);
+    }
     let mut cmd = std::process::Command::new("python3");
     cmd.env("PYTHONPATH", pythonpath);
     if let Some(script) = script_file {
