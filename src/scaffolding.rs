@@ -182,7 +182,8 @@ lazy_static::lazy_static! {
 // Putting it in a custom section like this is a little trick from wasm-bingen that I quite liked.
 {% let ci_data = ci.to_bincode() %}
 #[no_mangle]
-#[link_section = ".uniffi_interface_definition"]
+#[cfg_attr(any(target_os="macos", target_os="ios"), link_section = "DATA,.uniffi_idl")]
+#[cfg_attr(not(any(target_os="macos", target_os="ios")), link_section = ".uniffi_idl")]
 pub static UNIFFI_INTERFACE_DEFINITION: [u8;{{ ci_data.len() }}] = [{% for c in ci_data.as_slice() %}{{ c }},{% endfor %}];
 "#####
 )]

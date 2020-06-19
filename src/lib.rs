@@ -344,12 +344,12 @@ fn get_component_interface_from_library(lib_file: &std::ffi::OsStr) -> Result<in
     use object::read::{Object, ObjectSection};
     let lib_bytes = std::fs::read(lib_file)?;
     let lib = object::read::File::parse(lib_bytes.as_slice())?;
-    let idl_section = lib.section_by_name(".uniffi_interface_definition");
+    let idl_section = lib.section_by_name(".uniffi_idl");
     Ok(match idl_section {
-        None => bail!("Not a uniffi library: no `.uniffi_interface_definition` section found"),
+        None => bail!("Not a uniffi library: no `.uniffi_idl` section found"),
         Some(idl_section) => match idl_section.uncompressed_data() {
             Err(_) => bail!(
-                "Not a uniffi library: missing or corrupt `.uniffi_interface_definition` section"
+                "Not a uniffi library: missing or corrupt `.uniffi_idl` section"
             ),
             Ok(defn) => interface::ComponentInterface::from_bincode(&defn)?,
         },
@@ -380,12 +380,12 @@ fn current_target_dir() -> Result<PathBuf> {
 
 // XXX TODO: this hard-coding of library file extension probably won't work well
 // for cross-compiling (or for windows, sorry :markh...)
-#[cfg(any(target_os = "ios", target_os = "macosx"))]
+#[cfg(any(target_os = "ios", target_os = "macos"))]
 fn library_name(component_name: &str) -> String {
     format!("libuniffi_{}.dylib", component_name)
 }
 
-#[cfg(not(any(target_os = "ios", target_os = "macosx")))]
+#[cfg(not(any(target_os = "ios", target_os = "macos")))]
 fn library_name(component_name: &str) -> String {
     format!("libuniffi_{}.so", component_name)
 }
