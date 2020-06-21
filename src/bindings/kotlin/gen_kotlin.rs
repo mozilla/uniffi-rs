@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use askama::Template;
+use heck::{ CamelCase, MixedCase };
 
 use crate::interface::*;
 
@@ -365,7 +366,7 @@ internal interface _UniFFILib : Library {
     {%- match func.return_type() -%}
     {%- when Some with (return_type) %}
 
-        fun {{ func.name() }}(
+        fun {{ func.name()|fn_name_kt }}(
             {%- for arg in func.arguments() %}
                 {{ arg.name() }}: {{ arg.type_()|decl_kt }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
@@ -380,7 +381,7 @@ internal interface _UniFFILib : Library {
 
     {% when None -%}
 
-        fun {{ func.name() }}(
+        fun {{ func.name()|fn_name_kt }}(
             {%- for arg in func.arguments() %}
                 {{ arg.name() }}: {{ arg.type_()|decl_kt }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
@@ -412,7 +413,7 @@ class {{ obj.name() }}(handle: Long) {
     // XXX TODO: destructors or equivalent.
 
     {%- for meth in obj.methods() %}
-    fun {{ meth.name() }}(
+    fun {{ meth.name()|fn_name_kt }}(
         {% for arg in meth.arguments() %}
         {{ arg.name() }}: {{ arg.type_()|decl_kt }}{% if loop.last %}{% else %}, {% endif %}
         {% endfor %}
@@ -470,6 +471,10 @@ mod filters {
             TypeReference::Object(_) => "Long".to_string(),
             _ => decl_kt(type_)?,
         })
+    }
+
+    pub fn fn_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_mixed_case())
     }
 
     pub fn lower_kt(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {

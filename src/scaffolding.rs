@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use askama::Template;
+use heck::{ CamelCase, SnakeCase };
 
 use super::interface::*;
 
@@ -100,7 +101,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
         log::debug!("{{ func.ffi_func().name() }}");
         // If the provided function does not match the signature specified in the IDL
         // then this attempt to cal it will not compile, and will give guideance as to why.
-        let _retval = {{ func.name() }}(
+        let _retval = {{ func.name()|fn_name_rs }}(
             {%- for arg in func.arguments() %}
             {{ arg.name()|lift_rs(arg.type_()) }},
             {%- endfor %}
@@ -164,7 +165,7 @@ lazy_static::lazy_static! {
         // If the method does not have the same signature as declared in the IDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
         UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_output_mut(&mut err, {{ meth.first_argument().name() }}, |obj| {
-            let _retval = {{ obj.name() }}::{{ meth.name() }}(
+            let _retval = {{ obj.name() }}::{{ meth.name()|fn_name_rs }}(
                 obj,
                 {%- for arg in meth.arguments() %}
                 {{ arg.name()|lift_rs(arg.type_()) }},
@@ -227,6 +228,10 @@ mod filters {
             TypeReference::Object(_) => "u64".to_string(),
             _ => decl_rs(type_)?,
         })
+    }
+
+    pub fn fn_name_rs(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_snake_case())
     }
 
     pub fn lower_rs(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {

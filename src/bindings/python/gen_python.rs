@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use askama::Template;
+use heck::SnakeCase;
 
 use crate::interface::*;
 
@@ -206,7 +207,7 @@ class {{ rec.name() }}(object):
 {% endfor %}
 
 {% for func in ci.iter_function_definitions() %}
-def {{ func.name() }}({% for arg in func.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
+def {{ func.name()|fn_name_py }}({% for arg in func.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
     {%- for arg in func.arguments() %}
     {{ arg.name()|coerce_py(arg.type_()) }}
     {%- endfor %}
@@ -236,7 +237,7 @@ class {{ obj.name() }}(object):
     # XXX TODO: destructors or equivalent.
 
     {%- for meth in obj.methods() %}
-    def {{ meth.name() }}(self, {% for arg in meth.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
+    def {{ meth.name()|fn_name_py }}(self, {% for arg in meth.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
         {%- for arg in meth.arguments() %}
         {{ arg.name()|coerce_py(arg.type_()) }}
         {%- endfor %}
@@ -258,7 +259,7 @@ __all__ = [
     "{{ record.name() }}",
     {%- endfor %}
     {%- for func in ci.iter_function_definitions() %}
-    "{{ func.name() }}",
+    "{{ func.name()|fn_name_py }}",
     {%- endfor %}
     {%- for obj in ci.iter_object_definitions() %}
     "{{ obj.name() }}",
@@ -294,6 +295,10 @@ mod filters {
             TypeReference::Object(_) => "ctypes.c_uint64".to_string(),
             _ => panic!("[TODO: decl_c({:?})", type_),
         })
+    }
+
+    pub fn fn_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_snake_case())
     }
 
     pub fn coerce_py(
