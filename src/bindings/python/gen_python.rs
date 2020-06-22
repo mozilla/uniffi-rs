@@ -127,6 +127,12 @@ class RustBufferStream(object):
     def putDouble(self, v):
         self._pack_into(8, ">d", v)
 
+    def getInt(self):
+        return self._unpack_from(4, ">i")
+
+    def putInt(self, v):
+        self._pack_into(8, ">i", v)
+        
 def liftOptional(rbuf, liftFrom):
     return liftFromOptional(RustBufferStream(rbuf), liftFrom)
 
@@ -345,6 +351,7 @@ mod filters {
         type_: &TypeReference,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
+            TypeReference::U32 => "4".to_string(),
             TypeReference::Double => "8".to_string(),
             TypeReference::Record(type_name) => format!("{}._lowersIntoSize({})", type_name, nm),
             _ => panic!("[TODO: lowers_into_size_py({:?})]", type_),
@@ -357,6 +364,7 @@ mod filters {
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
             TypeReference::Double => format!("{}.putDouble({})", target, nm),
+            TypeReference::U32 => format!("{}.putInt({})", target, nm),
             TypeReference::Record(type_name) => {
                 format!("{}._lowerInto({}, {})", type_name, nm, target)
             }
@@ -387,6 +395,7 @@ mod filters {
         type_: &TypeReference,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
+            TypeReference::U32 => format!("{}.getInt()", nm),
             TypeReference::Double => format!("{}.getDouble()", nm),
             TypeReference::Record(type_name) => format!("{}._liftFrom({})", type_name, nm),
             _ => panic!("[TODO: lift_from_py({:?})]", type_),
