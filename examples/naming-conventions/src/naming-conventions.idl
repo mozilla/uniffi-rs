@@ -1,0 +1,13 @@
+
+namespace naming_conventions {
+  snake_case_object snake_case_method(u32 id);
+  CamelCaseObject camelCaseMethod(u32 id);
+};
+
+dictionary snake_case_object {
+  u32 id;
+};
+
+dictionary CamelCaseObject {
+  u32 id;
+};

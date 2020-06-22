@@ -1,0 +1,19 @@
+[package]
+name = "uniffi-example-naming-conventions"
+edition = "2018"
+version = "0.1.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+
+[lib]
+crate-type = ["cdylib"]
+name = "uniffi_naming_conventions"
+
+[dependencies]
+anyhow = "1.0"
+log = "0.4"
+ffi-support = "0.4"
+uniffi = {path = "../../"}
+
+[build-dependencies]
+uniffi = {path = "../../"}
