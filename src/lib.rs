@@ -59,7 +59,7 @@ pub fn generate_component_scaffolding(idl_file: &str) -> Result<()> {
 // bindings using a different IDL file or a different version of uniffi than
 // was used to generate the underlying component.
 
-const POSSIBLE_LANGUAGES: [&str; 2] = ["kotlin", "python"];
+const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift"];
 
 pub fn run_bindings_helper(idl: &str) -> Result<()> {
     let curdir = std::env::current_dir()
@@ -131,14 +131,18 @@ fn run_bindings_generate_subcommand(
         Some(ls) => ls.collect(),
     };
     for lang in languages {
-        match &lang {
-            &"kotlin" => {
+        match lang {
+            "kotlin" => {
                 println!("Generating Kotlin bindings...");
                 bindings::kotlin::compile_kotlin_bindings(&ci, target_dir)?;
             }
-            &"python" => {
+            "python" => {
                 println!("Generating Python bindings...");
                 bindings::python::write_python_bindings(&ci, target_dir)?;
+            }
+            "swift" => {
+                println!("Generating Swift bindings...");
+                bindings::swift::write_swift_bindings(&ci, target_dir)?;
             }
             _ => bail!(
                 "Somehow tried to generate bindings for unsupported language {}",
