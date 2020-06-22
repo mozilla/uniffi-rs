@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use askama::Template;
-use heck::SnakeCase;
+use heck::{ SnakeCase, CamelCase };
 
 use crate::interface::*;
 
@@ -220,7 +220,7 @@ def {{ func.name()|fn_name_py }}({% for arg in func.arguments() %}{{ arg.name() 
 {% endfor %}
 
 {% for obj in ci.iter_object_definitions() %}
-class {{ obj.name() }}(object):
+class {{ obj.name()|decl_name_py }}(object):
     # XXX TODO: support for multiple constructors...
     {%- for cons in obj.constructors() %}
     def __init__(self, {% for arg in cons.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
@@ -295,6 +295,10 @@ mod filters {
             TypeReference::Object(_) => "ctypes.c_uint64".to_string(),
             _ => panic!("[TODO: decl_c({:?})", type_),
         })
+    }
+
+    pub fn decl_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_camel_case())
     }
 
     pub fn fn_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {

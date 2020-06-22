@@ -35,7 +35,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
 // of items as declared in the rust code, but no harm will come from it.
 
 {% for e in ci.iter_enum_definitions() %}
-    unsafe impl uniffi::support::ViaFfi for {{ e.name() }} {
+    unsafe impl uniffi::support::ViaFfi for {{ e.name()|decl_name_rs }} {
         type Value = u32;
         fn into_ffi_value(self) -> Self::Value {
             match self {
@@ -63,7 +63,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
 // compiler will complain with a type error.
 
 {% for rec in ci.iter_record_definitions() %}
-    impl uniffi::support::Lowerable for {{ rec.name() }} {
+    impl uniffi::support::Lowerable for {{ rec.name()|decl_name_rs }} {
         fn lower_into<B: uniffi::support::BufMut>(&self, buf: &mut B) {
             // If the provided struct doesn't match the fields declared in the IDL, then
             // the generated code here will fail to compile with somewhat helpful error.
@@ -73,7 +73,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
         }
     }
 
-    impl uniffi::support::Liftable for {{ rec.name() }} {
+    impl uniffi::support::Liftable for {{ rec.name()|decl_name_rs }} {
         fn try_lift_from<B: uniffi::support::Buf>(buf: &mut B) -> anyhow::Result<Self> {
           Ok(Self {
             {%- for field in rec.fields() %}
@@ -83,7 +83,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
         }
     }
 
-    impl uniffi::support::ViaFfiUsingByteBuffer for {{ rec.name() }} {}
+    impl uniffi::support::ViaFfiUsingByteBuffer for {{ rec.name()|decl_name_rs }} {}
 {% endfor %}
 
 // For each top-level function declared in the IDL, we assume the caller has provided a corresponding
@@ -212,8 +212,8 @@ mod filters {
             // These types need conversion, and will require special handling below
             // when lifting/lowering.
             TypeReference::String => "&str".to_string(),
-            TypeReference::Enum(name) => name.clone(),
-            TypeReference::Record(name) => name.clone(),
+            TypeReference::Enum(name) => decl_name_rs(name)?,
+            TypeReference::Record(name) => decl_name_rs(name)?,
             TypeReference::Optional(t) => format!("Option<{}>", decl_rs(t)?),
             _ => panic!("[TODO: decl_rs({:?})]", type_),
         })
@@ -228,6 +228,10 @@ mod filters {
             TypeReference::Object(_) => "u64".to_string(),
             _ => decl_rs(type_)?,
         })
+    }
+
+    pub fn decl_name_rs(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_camel_case())
     }
 
     pub fn fn_name_rs(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
