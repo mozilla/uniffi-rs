@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//! # Uniffi: easily build cross-platform software components in Rust
+//! # Uniffi: easily build cross-language software components in Rust
 //!
 //! This is a highly-experimental crate for building cross-language software components
 //! in Rust, based on things we've learned and patterns we've developed in the
@@ -27,7 +27,7 @@
 //! in a `.idl` file, where it can be processed by the tools from this crate.
 //! For example you might define an interface like this:
 //!
-//! ```
+//! ```text
 //! namespace example {
 //!   u32 foo(u32 bar);
 //! }
@@ -44,7 +44,7 @@
 //! as a standard-looking Rust crate, using functions and structs and so-on. For example
 //! an implementation of the above Component Interface might look like this:
 //!
-//! ```
+//! ```text
 //! fn foo(bar: u32): u32 {
 //!     // TODO: a better example!
 //!     bar + 42
@@ -63,14 +63,14 @@
 //! to process your `.idl` file. This will generate some rust code to be included in the top-level source
 //! code of your crate. If your IDL file is named `example.idl`, then your build script would call:
 //!
-//! ```
+//! ```text
 //! uniffi::generate_component_scaffolding("./src/arithmetic.idl")
 //! ```
 //!
 //! This would output a rust file named `example.uniffi.rs`, ready to be
 //! included into the code of your rust crate like this:
 //!
-//! ```
+//! ```text
 //! include!(concat!(env!("OUT_DIR"), "/example.uniffi.rs"));
 //! ```
 //!
@@ -82,7 +82,7 @@
 //! string "uniffi_". For this example component, the necessary config in `Cargo.toml` would
 //! be:
 //!
-//! ```
+//! ```text
 //! [lib]
 //! crate-type = ["cdylib"]
 //! name = "uniffi_example"
@@ -103,7 +103,7 @@
 //! To help ensure this is done with appropriate config for your component, add a `src/main.rs`
 //! script to call `uniffi::run_bindgen_for_component`, like this:
 //!
-//! ```
+//! ```text
 //! fn main() {
 //!    uniffi::run_bindgen_for_component("example").unwrap();
 //!}
@@ -112,7 +112,7 @@
 //! Then you can generate bindings using `cargo run generate` in your crate. For example, to
 //! generate python bindings for the example component, run:
 //!
-//! ```
+//! ```text
 //! cargo run generate -l python
 //! ```
 //!
@@ -245,7 +245,10 @@ pub fn run_bindgen_helper(component_name: Option<&str>) -> Result<()> {
     Ok(())
 }
 
-fn run_bindings_generate_subcommand(default_lib_file: Option<std::ffi::OsString>, command_args: &clap::ArgMatches) -> Result<()> {
+fn run_bindings_generate_subcommand(
+    default_lib_file: Option<std::ffi::OsString>,
+    command_args: &clap::ArgMatches,
+) -> Result<()> {
     let lib_file = match command_args.value_of_os("lib_file") {
         Some(lib_file) => lib_file.to_os_string(),
         None => match default_lib_file {
@@ -258,7 +261,8 @@ fn run_bindings_generate_subcommand(default_lib_file: Option<std::ffi::OsString>
         None => PathBuf::from(&lib_file)
             .parent()
             .ok_or_else(|| anyhow!("Library file has no parent directory"))?
-            .as_os_str().to_os_string(),
+            .as_os_str()
+            .to_os_string(),
     };
     println!("Extracting Interface Definition from {:?}", lib_file);
     let ci = get_component_interface_from_library(&lib_file)?;
@@ -340,7 +344,9 @@ fn run_bindings_exec_subcommand(
 // `ComponentInterface that was stored therein. This returns an error if the file does
 // not contain a `ComponentInterface` definition or if it was generated with an incompatible
 // version of `uniffi`.
-fn get_component_interface_from_library(lib_file: &std::ffi::OsStr) -> Result<interface::ComponentInterface> {
+fn get_component_interface_from_library(
+    lib_file: &std::ffi::OsStr,
+) -> Result<interface::ComponentInterface> {
     use object::read::{Object, ObjectSection};
     let lib_bytes = std::fs::read(lib_file)?;
     let lib = object::read::File::parse(lib_bytes.as_slice())?;
@@ -348,9 +354,7 @@ fn get_component_interface_from_library(lib_file: &std::ffi::OsStr) -> Result<in
     Ok(match idl_section {
         None => bail!("Not a uniffi library: no `.uniffi_idl` section found"),
         Some(idl_section) => match idl_section.uncompressed_data() {
-            Err(_) => bail!(
-                "Not a uniffi library: missing or corrupt `.uniffi_idl` section"
-            ),
+            Err(_) => bail!("Not a uniffi library: missing or corrupt `.uniffi_idl` section"),
             Ok(defn) => interface::ComponentInterface::from_bincode(&defn)?,
         },
     })

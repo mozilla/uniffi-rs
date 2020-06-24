@@ -55,6 +55,8 @@ use anyhow::bail;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
+pub mod idl;
+
 pub mod types;
 pub use types::TypeReference;
 use types::TypeResolver;
