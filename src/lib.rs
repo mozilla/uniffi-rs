@@ -168,13 +168,11 @@ fn run_bindings_exec_subcommand(
                 bail!("No script file and no language specified, so I don't know what language shell to start")
             }
             let script_file_buf = PathBuf::from(script_file.unwrap());
-            let ext = script_file_buf.extension().unwrap_or_default();
-            if ext == "kts" {
-                "kotlin"
-            } else if ext == "py" {
-                "python"
-            } else {
-                bail!("Cannot guess language of script file, please specify it explicitly")
+            match script_file_buf.extension().unwrap_or_default().to_str() {
+                Some("kts") => "kotlin",
+                Some("py") => "python",
+                Some("swift") => "swift",
+                _ => bail!("Cannot guess language of script file, please specify it explicitly"),
             }
         }
     };
