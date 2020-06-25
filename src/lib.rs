@@ -143,6 +143,9 @@ fn run_bindings_generate_subcommand(
             "swift" => {
                 println!("Generating Swift bindings...");
                 bindings::swift::write_swift_bindings(&ci, target_dir)?;
+
+                println!("Compiling generated Swift bindings into module...");
+                bindings::swift::compile_swift_module(&ci, target_dir)?;
             }
             _ => bail!(
                 "Somehow tried to generate bindings for unsupported language {}",
@@ -176,12 +179,15 @@ fn run_bindings_exec_subcommand(
             }
         }
     };
-    match &lang {
-        &"kotlin" => {
+    match lang {
+        "kotlin" => {
             bindings::kotlin::run_kotlin_script(target_dir, script_file)?;
         }
-        &"python" => {
+        "python" => {
             bindings::python::run_python_script(target_dir, script_file)?;
+        }
+        "swift" => {
+            bindings::swift::run_swift_script(target_dir, script_file)?;
         }
         _ => bail!(
             "Somehow tried to launch interpreter for unsupported language {}",
