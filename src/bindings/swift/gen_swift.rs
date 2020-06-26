@@ -127,10 +127,14 @@ extension RustBuffer {
 }
 
 enum InternalError: Error {
-    // Can't read past the end of the buffer.
+    // Reading the requested value would read past the end of the buffer.
     case bufferOverflow
-    // Junk left in buffer after deserializing.
+    // The buffer still has data after lifting its containing value.
     case incompleteData
+    // Unexpected tag byte for `Optional`; should be 0 or 1.
+    case unexpectedOptionalTag
+    // Unexpected integer that doesn't correspond to an enum case.
+    case unexpectedEnumCase
 }
 
 // A helper class to extract a byte stream from a `Data`.
@@ -230,32 +234,44 @@ protocol Lowerable {
     func lower<B: MutableByteBuffer>(into buf: B)
 }
 
-// Lifts a value from a Rust buffer.
-func liftFromRustBuffer<T: Liftable>(_ buf: RustBuffer) throws -> T {
-    let reader = DataReader(data: Data(rustBuffer: buf))
-    let value = try T.lift(from: reader)
-    if reader.hasRemaining() {
-        throw InternalError.incompleteData
+// Types conforming to `Primitive` pass themselves directly over the FFI.
+// Roughly equivalent to the `ViaFfi` implementations for primitives in Rust.
+protocol Primitive {}
+
+extension Primitive {
+    static func fromFFIValue(_ v: Self) throws -> Self {
+        return v
     }
-    buf.deallocate()
-    return value
+
+    func toFFIValue() -> Self {
+        return self
+    }
 }
 
-// Lowers a value into a Rust buffer.
-func lowerIntoRustBuffer<T: Lowerable>(_ value: T) -> RustBuffer {
-    let writer = DataWriter()
-    value.lower(into: writer)
-    return RustBuffer(bytes: writer.bytes)
+// Types conforming to `Serializable` pass themselves over the FFI using byte
+// buffers. Roughly equivalent to the `ViaFfiUsingByteBuffer` trait on the Rust
+// side.
+protocol Serializable: Liftable & Lowerable {}
+
+extension Serializable {
+    static func fromFFIValue(_ buf: RustBuffer) throws -> Self {
+      let reader = DataReader(data: Data(rustBuffer: buf))
+      let value = try Self.lift(from: reader)
+      if reader.hasRemaining() {
+          throw InternalError.incompleteData
+      }
+      buf.deallocate()
+      return value
+    }
+
+    func toFFIValue() -> RustBuffer {
+      let writer = DataWriter()
+      self.lower(into: writer)
+      return RustBuffer(bytes: writer.bytes)
+    }
 }
 
-// Implement `Liftable` and `Lowerable` for built-in types, along with
-// extension methods for `toFFIValue` and `fromFFIValue`. These are equivalent
-// to their Rust counterparts in the `ViaFfi` trait. Unlike Rust, Swift doesn't
-// have blanket implementations (the feature we want is called "parameterized
-// protocols"), so we can't make any type `T: Liftable & Lowerable` conform to a
-// hypothetical `ViaFFIUsingByteBuffer` protocol. Instead, we write out
-// `intoFFIValue` and `fromFFIValue` by hand, and implement non-primitive ones
-// using `lowerIntoRustBuffer` and `liftFromRustBuffer`.
+// Implement our protocols for the built-in types that we use.
 
 extension Bool: Liftable, Lowerable {
     static func lift<B: ByteBuffer>(from buf: B) throws -> Bool {
@@ -275,7 +291,7 @@ extension Bool: Liftable, Lowerable {
     }
 }
 
-extension UInt8: Liftable, Lowerable {
+extension UInt8: Liftable, Lowerable, Primitive {
     static func lift<B: ByteBuffer>(from buf: B) throws -> UInt8 {
         return try self.fromFFIValue(buf.readInt())
     }
@@ -283,17 +299,9 @@ extension UInt8: Liftable, Lowerable {
     func lower<B: MutableByteBuffer>(into buf: B) {
         buf.writeInt(self.toFFIValue())
     }
-
-    static func fromFFIValue(_ v: UInt8) throws -> UInt8 {
-        return v
-    }
-
-    func toFFIValue() -> UInt8 {
-        return self
-    }
 }
 
-extension UInt32: Liftable, Lowerable {
+extension UInt32: Liftable, Lowerable, Primitive {
     static func lift<B: ByteBuffer>(from buf: B) throws -> UInt32 {
         return try self.fromFFIValue(buf.readInt())
     }
@@ -301,17 +309,9 @@ extension UInt32: Liftable, Lowerable {
     func lower<B: MutableByteBuffer>(into buf: B) {
         buf.writeInt(self.toFFIValue())
     }
-
-    static func fromFFIValue(_ v: UInt32) throws -> UInt32 {
-        return v
-    }
-
-    func toFFIValue() -> UInt32 {
-        return self
-    }
 }
 
-extension UInt64: Liftable, Lowerable {
+extension UInt64: Liftable, Lowerable, Primitive {
     static func lift<B: ByteBuffer>(from buf: B) throws -> UInt64 {
         return try self.fromFFIValue(buf.readInt())
     }
@@ -319,17 +319,9 @@ extension UInt64: Liftable, Lowerable {
     func lower<B: MutableByteBuffer>(into buf: B) {
         buf.writeInt(self.toFFIValue())
     }
-
-    static func fromFFIValue(_ v: UInt64) throws -> UInt64 {
-        return v
-    }
-
-    func toFFIValue() -> UInt64 {
-        return self
-    }
 }
 
-extension Double: Liftable, Lowerable {
+extension Double: Liftable, Lowerable, Primitive {
     static func lift<B: ByteBuffer>(from buf: B) throws -> Double {
         return try self.fromFFIValue(buf.readDouble())
     }
@@ -337,30 +329,15 @@ extension Double: Liftable, Lowerable {
     func lower<B: MutableByteBuffer>(into buf: B) {
         buf.writeDouble(self.toFFIValue())
     }
-
-    static func fromFFIValue(_ v: Double) throws -> Double {
-        return v
-    }
-
-    func toFFIValue() -> Double {
-        return self
-    }
 }
 
 extension Optional: Liftable where Wrapped: Liftable {
     static func lift<B: ByteBuffer>(from buf: B) throws -> Self {
         switch try buf.readInt() as UInt8 {
-        case 0:
-            return nil
-        case 1:
-            return try Wrapped.lift(from: buf)
-        default:
-            fatalError()
+        case 0: return nil
+        case 1: return try Wrapped.lift(from: buf)
+        default: throw InternalError.unexpectedOptionalTag
         }
-    }
-
-    static func fromFFIValue(_ buf: RustBuffer) throws -> Self {
-        return try liftFromRustBuffer(buf)
     }
 }
 
@@ -373,11 +350,9 @@ extension Optional: Lowerable where Wrapped: Lowerable {
         buf.writeInt(1)
         value.lower(into: buf)
     }
-
-    func toFFIValue() -> RustBuffer {
-        lowerIntoRustBuffer(self)
-    }
 }
+
+extension Optional: Serializable where Wrapped: Liftable & Lowerable {}
 
 // Public interface members begin here.
 
@@ -396,7 +371,7 @@ extension Optional: Lowerable where Wrapped: Lowerable {
           {% for value in e.values() %}
           case {{ loop.index }}: return .{{ value|decl_enum_variant_swift }}
           {% endfor %}
-          default: fatalError()
+          default: throw InternalError.unexpectedEnumCase
           }
         }
 
@@ -415,7 +390,7 @@ extension Optional: Lowerable where Wrapped: Lowerable {
 {%- endfor -%}
 
 {%- for rec in ci.iter_record_definitions() %}
-    public struct {{ rec.name() }}: Lowerable, Liftable {
+    public struct {{ rec.name() }}: Lowerable, Liftable, Serializable {
       {%- for field in rec.fields() %}
       let {{ field.name() }}: {{ field.type_()|decl_swift }}
       {%- endfor %}
@@ -440,18 +415,10 @@ extension Optional: Lowerable where Wrapped: Lowerable {
         )
       }
 
-      static func fromFFIValue(_ buf: RustBuffer) throws -> {{ rec.name() }} {
-        return try liftFromRustBuffer(buf)
-      }
-
       func lower<B: MutableByteBuffer>(into buf: B) {
         {%- for field in rec.fields() %}
         {{ field.name() }}.lower(into: buf)
         {%- endfor %}
-      }
-
-      func toFFIValue() -> RustBuffer {
-        lowerIntoRustBuffer(self)
       }
     }
 {% endfor %}
@@ -462,6 +429,8 @@ extension Optional: Lowerable where Wrapped: Lowerable {
     {%- when Some with (return_type) %}
 
         public func {{ func.name() }}(
+            // TODO: More considered handling of labels (don't emit them
+            // for single-argument functions; others?)
             {%- for arg in func.arguments() %}
                 {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
