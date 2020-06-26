@@ -159,6 +159,11 @@ class DataReader: ByteBuffer {
         return value.bigEndian
     }
 
+    func readDouble() throws -> Double {
+        let bitPattern: UInt64 = try readInt()
+        return Double(bitPattern: bitPattern)
+    }
+
     @inlinable
     func hasRemaining() -> Bool {
         return offset < data.count
@@ -179,6 +184,10 @@ class DataWriter: MutableByteBuffer {
         var value = value.bigEndian
         let _ = withUnsafeBytes(of: &value, { bytes.append(contentsOf: $0) })
     }
+
+    func writeDouble(_ value: Double) {
+        writeInt(value.bitPattern)
+    }
 }
 
 // A byte buffer reads data from a sequence of bytes.
@@ -187,6 +196,11 @@ protocol ByteBuffer {
     // order, and advances the offset on success. Throws if reading `T` would
     // advance the offset past the end of the buffer.
     func readInt<T: FixedWidthInteger>() throws -> T
+
+    // Reads the next eight bytes at the current offset, interpreting them as
+    // a double, and advances the offset on success. Throws if trying to read a
+    // double at the current offset would advance past the end of the buffer.
+    func readDouble() throws -> Double
 
     // Indicates if the offset has reached the end of the buffer.
     func hasRemaining() -> Bool
@@ -197,6 +211,10 @@ protocol MutableByteBuffer {
     // Writes a fixed-with integer `T` at the current offset, in big-endian
     // order.
     func writeInt<T: FixedWidthInteger>(_ value: T)
+
+    // Writes the bit pattern for a double at the current offset, in big-endian
+    // order.
+    func writeDouble(_ value: Double)
 }
 
 // Types conforming to `Liftable` know how to deserialize ("lift") themselves
@@ -311,6 +329,24 @@ extension UInt64: Liftable, Lowerable {
     }
 }
 
+extension Double: Liftable, Lowerable {
+    static func lift<B: ByteBuffer>(from buf: B) throws -> Double {
+        return try self.fromFFIValue(buf.readDouble())
+    }
+
+    func lower<B: MutableByteBuffer>(into buf: B) {
+        buf.writeDouble(self.toFFIValue())
+    }
+
+    static func fromFFIValue(_ v: Double) throws -> Double {
+        return v
+    }
+
+    func toFFIValue() -> Double {
+        return self
+    }
+}
+
 extension Optional: Liftable where Wrapped: Liftable {
     static func lift<B: ByteBuffer>(from buf: B) throws -> Self {
         switch try buf.readInt() as UInt8 {
@@ -384,10 +420,22 @@ extension Optional: Lowerable where Wrapped: Lowerable {
       let {{ field.name() }}: {{ field.type_()|decl_swift }}
       {%- endfor %}
 
+      // Default memberwise initializers are never public by default, so we
+      // declare one manually.
+      public init(
+        {%- for field in rec.fields() %}
+        {{ field.name() }}: {{ field.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+        {%- endfor %}
+      ) {
+        {%- for field in rec.fields() %}
+        self.{{ field.name() }} = {{ field.name() }}
+        {%- endfor %}
+      }
+
       static func lift<B: ByteBuffer>(from buf: B) throws -> {{ rec.name() }} {
         return try {{ rec.name() }}(
           {%- for field in rec.fields() %}
-          {{ "buf"|lift_from_swift(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+          {{ field.name() }}: {{ "buf"|lift_from_swift(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
           {%- endfor %}
         )
       }
@@ -441,6 +489,65 @@ extension Optional: Lowerable where Wrapped: Lowerable {
         }
 
     {%- endmatch %}
+{% endfor %}
+
+{% for obj in ci.iter_object_definitions() %}
+
+    public class {{ obj.name() }} {
+        private let handle: UInt64
+
+        {%- for cons in obj.constructors() %}
+        public init(
+            {%- for arg in cons.arguments() %}
+            {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+            {%- endfor %}
+        ) {
+            self.handle = {{ cons.ffi_func().name() }}(
+                {%- for arg in cons.arguments() %}
+                {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                {%- endfor %}
+            );
+        }
+        {%- endfor %}
+
+        // XXX TODO: destructors or equivalent.
+
+        {%- for meth in obj.methods() %}
+        {%- match meth.return_type() -%}
+        {%- when Some with (return_type) %}
+
+            public func {{ meth.name() }}(
+                {% for arg in meth.arguments() %}
+                {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+                {% endfor %}
+            ) -> {{ return_type|decl_swift }} {
+                let _retval = {{ meth.ffi_func().name() }}(
+                    self.handle{% if meth.arguments().len() > 0 %},{% endif %}
+                    {%- for arg in meth.arguments() %}
+                    {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                    {%- endfor %}
+                )
+                return try! {{ "_retval"|lift_swift(return_type) }}
+            }
+
+        {% when None -%}
+
+            public func {{ meth.name() }}(
+                {% for arg in meth.arguments() %}
+                {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+                {% endfor %}
+            ) {
+                {{ meth.ffi_func().name() }}(
+                    self.handle{% if meth.arguments().len() > 0 %},{% endif %}
+                    {%- for arg in meth.arguments() %}
+                    {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                    {%- endfor %}
+                )
+            }
+
+        {%- endmatch %}
+        {%- endfor %}
+    }
 {% endfor %}
 "#
 )]

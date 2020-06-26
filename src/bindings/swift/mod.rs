@@ -125,20 +125,39 @@ pub fn compile_swift_module(ci: &ComponentInterface, out_dir: &str) -> Result<()
 pub fn run_swift_script(out_dir: &str, script_file: Option<&str>) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
-    let mut module_map_file = out_path;
-    module_map_file.push("uniffi_arithmetic.modulemap");
+    // TODO: Don't hard-code library names for the REPL.
+    const LIBS: &[&str] = &["-larithmetic", "-lgeometry", "-lsprites"];
+    const MODULE_MAPS: &[&str] = &[
+        "uniffi_arithmetic.modulemap",
+        "uniffi_geometry.modulemap",
+        "uniffi_sprites.modulemap",
+    ];
+    let cc_options: Vec<OsString> = MODULE_MAPS
+        .iter()
+        .flat_map(|module_map| {
+            let mut module_map_file = out_path.clone();
+            module_map_file.push(module_map);
+            if !module_map_file.exists() {
+                // Missing module maps (for example, `uniffi_arithmetic` when we're
+                // running the `geometry` example) will fail, so ignore maps that
+                // don't exist. Gross!
+                return Vec::new();
+            }
 
-    let mut module_map_file_option = OsString::from("-fmodule-map-file=");
-    module_map_file_option.push(module_map_file.as_os_str());
+            let mut option = OsString::from("-fmodule-map-file=");
+            option.push(module_map_file.as_os_str());
+
+            vec![OsString::from("-Xcc"), option]
+        })
+        .collect();
 
     let mut cmd = std::process::Command::new("swift");
     cmd.arg("-I")
         .arg(out_dir)
         .arg("-L")
         .arg(out_dir)
-        .arg("-larithmetic") // TODO: Don't hard-code these example names!
-        .arg("-Xcc")
-        .arg(module_map_file_option);
+        .args(LIBS)
+        .args(cc_options);
     if let Some(script) = script_file {
         cmd.arg(script);
     }
