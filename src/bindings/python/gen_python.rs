@@ -42,6 +42,7 @@ impl Config {
 # compile the rust component. The easiest way to ensure this is to bundle the Python
 # helpers directly inline like we're doing here.
 
+import sys
 import ctypes
 import enum
 import struct
@@ -55,8 +56,13 @@ import contextlib
 # that fails, fall back to loading it separately from `lib${componentName}.so`.
 
 def loadIndirect(componentName):
-    # XXX TODO: different naming conventions on different platforms.
-    return getattr(ctypes.cdll, "libuniffi_{}.dylib".format(componentName))
+    if sys.platform == "linux":
+        libname = "libuniffi_{}.so"
+    elif sys.platform == "darwin":
+        libname = "libuniffi_{}.dylib"
+    elif sys.platform.startswith("win"):
+        libname = "libuniffi_{}.dll"
+    return getattr(ctypes.cdll, libname.format(componentName))
 
 # This is a helper for safely working with byte buffers returned from the Rust code.
 # It's basically a wrapper around a length and a data pointer, corresponding to the

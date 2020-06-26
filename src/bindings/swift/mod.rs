@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use std::{
-    ffi::OsString,
+    ffi::{OsStr, OsString},
     fs::File,
     io::Write,
     path::{Path, PathBuf},
@@ -44,7 +44,7 @@ fn generate_module_map(ci: &ComponentInterface, header_path: &Path) -> Result<St
 }
 
 /// ...
-pub fn write_swift_bindings(ci: &ComponentInterface, out_dir: &str) -> Result<()> {
+pub fn write_swift_bindings(ci: &ComponentInterface, out_dir: &OsStr) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
     let mut header_file = out_path.clone();
@@ -76,7 +76,7 @@ pub fn write_swift_bindings(ci: &ComponentInterface, out_dir: &str) -> Result<()
 }
 
 /// ...
-pub fn compile_swift_module(ci: &ComponentInterface, out_dir: &str) -> Result<()> {
+pub fn compile_swift_module(ci: &ComponentInterface, out_dir: &OsStr) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
     let mut module_map_file = out_path.clone();
@@ -122,9 +122,7 @@ pub fn compile_swift_module(ci: &ComponentInterface, out_dir: &str) -> Result<()
     Ok(())
 }
 
-pub fn run_swift_script(out_dir: &str, script_file: Option<&str>) -> Result<()> {
-    let out_path = PathBuf::from(out_dir);
-
+pub fn run_swift_script(out_dir: Option<&OsStr>, script_file: Option<&str>) -> Result<()> {
     // TODO: Don't hard-code library names for the REPL.
     const LIBS: &[&str] = &["-larithmetic", "-lgeometry", "-lsprites"];
     const MODULE_MAPS: &[&str] = &[
@@ -132,35 +130,42 @@ pub fn run_swift_script(out_dir: &str, script_file: Option<&str>) -> Result<()> 
         "uniffi_geometry.modulemap",
         "uniffi_sprites.modulemap",
     ];
-    let cc_options: Vec<OsString> = MODULE_MAPS
-        .iter()
-        .flat_map(|module_map| {
-            let mut module_map_file = out_path.clone();
-            module_map_file.push(module_map);
-            if !module_map_file.exists() {
-                // Missing module maps (for example, `uniffi_arithmetic` when we're
-                // running the `geometry` example) will fail, so ignore maps that
-                // don't exist. Gross!
-                return Vec::new();
-            }
-
-            let mut option = OsString::from("-fmodule-map-file=");
-            option.push(module_map_file.as_os_str());
-
-            vec![OsString::from("-Xcc"), option]
-        })
-        .collect();
 
     let mut cmd = std::process::Command::new("swift");
-    cmd.arg("-I")
-        .arg(out_dir)
-        .arg("-L")
-        .arg(out_dir)
-        .args(LIBS)
-        .args(cc_options);
+    cmd.args(LIBS);
+
+    if let Some(out_dir) = out_dir {
+        let out_path = PathBuf::from(out_dir);
+        let cc_options: Vec<OsString> = MODULE_MAPS
+            .iter()
+            .flat_map(|module_map| {
+                let mut module_map_file = out_path.clone();
+                module_map_file.push(module_map);
+                if !module_map_file.exists() {
+                    // Missing module maps (for example, `uniffi_arithmetic` when we're
+                    // running the `geometry` example) will fail, so ignore maps that
+                    // don't exist. Gross!
+                    return Vec::new();
+                }
+
+                let mut option = OsString::from("-fmodule-map-file=");
+                option.push(module_map_file.as_os_str());
+
+                vec![OsString::from("-Xcc"), option]
+            })
+            .collect();
+
+        cmd.arg("-I")
+            .arg(out_dir)
+            .arg("-L")
+            .arg(out_dir)
+            .args(cc_options);
+    }
+
     if let Some(script) = script_file {
         cmd.arg(script);
     }
+
     let status = cmd
         .spawn()
         .map_err(|_| anyhow::anyhow!("failed to spawn `swift`"))?
@@ -169,5 +174,6 @@ pub fn run_swift_script(out_dir: &str, script_file: Option<&str>) -> Result<()> 
     if !status.success() {
         bail!("running `swift` failed")
     }
+
     Ok(())
 }

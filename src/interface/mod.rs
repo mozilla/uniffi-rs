@@ -53,6 +53,7 @@ use std::{collections::hash_map::Entry, collections::HashMap, str::FromStr};
 
 use anyhow::bail;
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
 pub mod types;
 pub use types::TypeReference;
@@ -61,8 +62,12 @@ use types::TypeResolver;
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
 ///
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ComponentInterface {
+    /// Every ComponentInterface gets tagged with the version of uniffi used to create it.
+    /// This helps us avoid using a lib compiled with one version together with bindings created
+    /// using a different version, which might introduce unsafety.
+    uniffi_version: String,
     /// A map of all the nameable types used in the interface (including type aliases)
     types: HashMap<String, TypeReference>,
     namespace: String,
@@ -77,6 +82,7 @@ impl<'ci> ComponentInterface {
     /// Parse a `ComponentInterface` from a string containing a WebIDL definition.
     pub fn from_webidl(idl: &str) -> Result<Self> {
         let mut ci = Self::default();
+        ci.uniffi_version = env!("CARGO_PKG_VERSION").to_string();
         // There's some lifetime thing with the errors returned from weedle::parse
         // that life is too short to figure out; unwrap and move on.
         let defns = weedle::parse(idl.trim()).unwrap();
@@ -91,6 +97,23 @@ impl<'ci> ComponentInterface {
         // Now that the high-level API is settled, we can derive the low-level FFI.
         ci.derive_ffi_funcs()?;
         Ok(ci)
+    }
+
+    pub fn from_bincode(data: &[u8]) -> Result<Self> {
+        match bincode::deserialize::<ComponentInterface>(data) {
+            Err(_) => bail!("Unable to deserialize ComponentInterface; maybe this data is from a different version of uniffi?"),
+            Ok(ci) => {
+                if ci.uniffi_version !=env!("CARGO_PKG_VERSION") {
+                    bail!("It's not safe to use a ComponentInterface built with a different version of uniffi (this is v{}, interface is from v{})", env!("CARGO_PKG_VERSION"), ci.uniffi_version);
+                }
+                Ok(ci)
+            }
+        }
+    }
+
+    pub fn to_bincode(&self) -> Vec<u8> {
+        // Serialization of this struct is infallible.
+        bincode::serialize(self).unwrap()
     }
 
     pub fn namespace(&self) -> &str {
@@ -275,7 +298,7 @@ impl APIBuilder for weedle::Definition<'_> {
 /// Yeah, this is a bit of mis-match between WebIDL and our notion of a component,
 /// but it's close enough to get us up and running for now.
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Namespace {
     name: String,
 }
@@ -298,7 +321,7 @@ impl APIBuilder for weedle::NamespaceDefinition<'_> {
 // Represents a standalone function.
 //
 // The in FFI, this will be a standalone function.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Function {
     name: String,
     arguments: Vec<Argument>,
@@ -333,7 +356,7 @@ impl Function {
 // Represents an argument to a function/constructor/method call.
 //
 // Each argument has a name and a type, along with some optional metadata.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Argument {
     name: String,
     type_: TypeReference,
@@ -352,7 +375,7 @@ impl Argument {
 
 // Represents an "extern C"-style function that will be part of the FFI.
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct FFIFunction {
     name: String,
     arguments: Vec<Argument>,
@@ -429,7 +452,7 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
 
 // Represents a simple C-style enum.
 // In the FFI these are turned into a simple u32.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Enum {
     name: String,
     values: Vec<String>,
@@ -476,7 +499,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
 ///
 /// TODO:
 ///  - maybe "Class" would be a better name than "Object" here?
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Object {
     name: String,
     constructors: Vec<Constructor>,
@@ -511,7 +534,7 @@ impl Object {
 //
 // In the FFI, this will be a function that returns a handle for an instance
 // of the corresponding object type.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Constructor {
     name: String,
     arguments: Vec<Argument>,
@@ -547,7 +570,7 @@ impl Constructor {
 //
 // The in FFI, this will be a function whose first argument is a handle for an
 // instance of the corresponding object type.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Method {
     name: String,
     return_type: Option<TypeReference>,
@@ -668,7 +691,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
 // In the FFI these are represented as a ByteBuffer, which one side explicitly
 // serializes the data into and the other serializes it out of. So I guess they're
 // kind of like "pass by clone" values.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Record {
     name: String,
     fields: Vec<Field>,
@@ -683,7 +706,7 @@ impl Record {
     }
 }
 // Represents an individual field on a Record.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Field {
     name: String,
     type_: TypeReference,
@@ -733,7 +756,7 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
 
 // Represents a literal value.
 // Used for e.g. default argument values.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Literal {
     Boolean(bool),
     String(String),

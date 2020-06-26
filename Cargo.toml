@@ -5,6 +5,10 @@ authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 edition = "2018"
 
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/main.rs"
+
 [dependencies]
 weedle = "0.11"
 bytes = "0.5.4"
@@ -13,3 +17,6 @@ anyhow = "1.0"
 askama = "0.9"
 heck = "0.3"
 clap = "2.33"
+object = "0.20"
+serde = "1.0"
+bincode = "1.2.1"
