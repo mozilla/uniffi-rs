@@ -163,9 +163,14 @@ class DataReader: ByteBuffer {
         return value.bigEndian
     }
 
+    @inlinable
+    func readFloat() throws -> Float {
+        return Float(bitPattern: try readInt())
+    }
+
+    @inlinable
     func readDouble() throws -> Double {
-        let bitPattern: UInt64 = try readInt()
-        return Double(bitPattern: bitPattern)
+        return Double(bitPattern: try readInt())
     }
 
     @inlinable
@@ -189,6 +194,12 @@ class DataWriter: MutableByteBuffer {
         let _ = withUnsafeBytes(of: &value, { bytes.append(contentsOf: $0) })
     }
 
+    @inlinable
+    func writeFloat(_ value: Float) {
+        writeInt(value.bitPattern)
+    }
+
+    @inlinable
     func writeDouble(_ value: Double) {
         writeInt(value.bitPattern)
     }
@@ -318,6 +329,16 @@ extension UInt64: Liftable, Lowerable, Primitive {
 
     func lower<B: MutableByteBuffer>(into buf: B) {
         buf.writeInt(self.toFFIValue())
+    }
+}
+
+extension Float: Liftable, Lowerable, Primitive {
+    static func lift<B: ByteBuffer>(from buf: B) throws -> Double {
+        return try self.fromFFIValue(buf.readFloat())
+    }
+
+    func lower<B: MutableByteBuffer>(into buf: B) {
+        buf.writeFloat(self.toFFIValue())
     }
 }
 
