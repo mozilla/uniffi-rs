@@ -126,6 +126,7 @@ extension RustBuffer {
     }
 }
 
+// Serialization and deserialization errors.
 enum InternalError: Error {
     // Reading the requested value would read past the end of the buffer.
     case bufferOverflow
@@ -137,8 +138,8 @@ enum InternalError: Error {
     case unexpectedEnumCase
 }
 
-// A helper class to extract a byte stream from a `Data`.
-class DataReader: ByteBuffer {
+// A helper class to read values out of a byte buffer.
+class Reader {
     let data: Data
     var offset: Data.Index
 
@@ -147,6 +148,9 @@ class DataReader: ByteBuffer {
         self.offset = 0
     }
 
+    // Reads an integer at the current offset, in big-endian order, and advances
+    // the offset on success. Throws if reading the integer would move the
+    // offset past the end of the buffer.
     func readInt<T: FixedWidthInteger>() throws -> T {
         let range = offset..<offset + MemoryLayout<T>.size
         guard data.count >= range.upperBound else {
@@ -163,24 +167,27 @@ class DataReader: ByteBuffer {
         return value.bigEndian
     }
 
+    // Reads a float at the current offset.
     @inlinable
     func readFloat() throws -> Float {
         return Float(bitPattern: try readInt())
     }
 
+    // Reads a float at the current offset.
     @inlinable
     func readDouble() throws -> Double {
         return Double(bitPattern: try readInt())
     }
 
+    // Indicates if the offset has reached the end of the buffer.
     @inlinable
     func hasRemaining() -> Bool {
         return offset < data.count
     }
 }
 
-// A helper class to write bytes into a `Data`.
-class DataWriter: MutableByteBuffer {
+// A helper class to write values into a byte buffer.
+class Writer {
     var bytes: [UInt8]
     var offset: Array<UInt8>.Index
 
@@ -189,6 +196,7 @@ class DataWriter: MutableByteBuffer {
         self.offset = 0
     }
 
+    // Writes an integer in big-endian order.
     func writeInt<T: FixedWidthInteger>(_ value: T) {
         var value = value.bigEndian
         let _ = withUnsafeBytes(of: &value, { bytes.append(contentsOf: $0) })
@@ -205,44 +213,17 @@ class DataWriter: MutableByteBuffer {
     }
 }
 
-// A byte buffer reads data from a sequence of bytes.
-protocol ByteBuffer {
-    // Reads a fixed-with integer `T` at the current offset, in big-endian
-    // order, and advances the offset on success. Throws if reading `T` would
-    // advance the offset past the end of the buffer.
-    func readInt<T: FixedWidthInteger>() throws -> T
-
-    // Reads the next eight bytes at the current offset, interpreting them as
-    // a double, and advances the offset on success. Throws if trying to read a
-    // double at the current offset would advance past the end of the buffer.
-    func readDouble() throws -> Double
-
-    // Indicates if the offset has reached the end of the buffer.
-    func hasRemaining() -> Bool
-}
-
-// A mutable byte buffer writes data into a sequence of bytes.
-protocol MutableByteBuffer {
-    // Writes a fixed-with integer `T` at the current offset, in big-endian
-    // order.
-    func writeInt<T: FixedWidthInteger>(_ value: T)
-
-    // Writes the bit pattern for a double at the current offset, in big-endian
-    // order.
-    func writeDouble(_ value: Double)
-}
-
 // Types conforming to `Liftable` know how to deserialize ("lift") themselves
 // from a byte buffer. This is equivalent to the `Liftable` trait on the Rust
 // side.
 protocol Liftable {
-    static func lift<B: ByteBuffer>(from buf: B) throws -> Self
+    static func lift(from: Reader) throws -> Self
 }
 
 // Types conforming to `Lowerable` know how to serialize ("lower") themselves
 // into a byte buffer. Equivalent to the `Lowerable` trait on the Rust side.
 protocol Lowerable {
-    func lower<B: MutableByteBuffer>(into buf: B)
+    func lower(into: Writer)
 }
 
 // Types conforming to `Primitive` pass themselves directly over the FFI.
@@ -260,13 +241,12 @@ extension Primitive {
 }
 
 // Types conforming to `Serializable` pass themselves over the FFI using byte
-// buffers. Roughly equivalent to the `ViaFfiUsingByteBuffer` trait on the Rust
-// side.
+// buffers. Roughly equivalent to the `ViaFfiUsingByteBuffer` trait in Rust.
 protocol Serializable: Liftable & Lowerable {}
 
 extension Serializable {
     static func fromFFIValue(_ buf: RustBuffer) throws -> Self {
-      let reader = DataReader(data: Data(rustBuffer: buf))
+      let reader = Reader(data: Data(rustBuffer: buf))
       let value = try Self.lift(from: reader)
       if reader.hasRemaining() {
           throw InternalError.incompleteData
@@ -276,7 +256,7 @@ extension Serializable {
     }
 
     func toFFIValue() -> RustBuffer {
-      let writer = DataWriter()
+      let writer = Writer()
       self.lower(into: writer)
       return RustBuffer(bytes: writer.bytes)
     }
@@ -285,11 +265,11 @@ extension Serializable {
 // Implement our protocols for the built-in types that we use.
 
 extension Bool: Liftable, Lowerable {
-    static func lift<B: ByteBuffer>(from buf: B) throws -> Bool {
+    static func lift(from buf: Reader) throws -> Bool {
         return try self.fromFFIValue(buf.readInt())
     }
 
-    func lower<B: MutableByteBuffer>(into buf: B) {
+    func lower(into buf: Writer) {
         buf.writeInt(self.toFFIValue())
     }
 
@@ -303,57 +283,57 @@ extension Bool: Liftable, Lowerable {
 }
 
 extension UInt8: Liftable, Lowerable, Primitive {
-    static func lift<B: ByteBuffer>(from buf: B) throws -> UInt8 {
+    static func lift(from buf: Reader) throws -> UInt8 {
         return try self.fromFFIValue(buf.readInt())
     }
 
-    func lower<B: MutableByteBuffer>(into buf: B) {
+    func lower(into buf: Writer) {
         buf.writeInt(self.toFFIValue())
     }
 }
 
 extension UInt32: Liftable, Lowerable, Primitive {
-    static func lift<B: ByteBuffer>(from buf: B) throws -> UInt32 {
+    static func lift(from buf: Reader) throws -> UInt32 {
         return try self.fromFFIValue(buf.readInt())
     }
 
-    func lower<B: MutableByteBuffer>(into buf: B) {
+    func lower(into buf: Writer) {
         buf.writeInt(self.toFFIValue())
     }
 }
 
 extension UInt64: Liftable, Lowerable, Primitive {
-    static func lift<B: ByteBuffer>(from buf: B) throws -> UInt64 {
+    static func lift(from buf: Reader) throws -> UInt64 {
         return try self.fromFFIValue(buf.readInt())
     }
 
-    func lower<B: MutableByteBuffer>(into buf: B) {
+    func lower(into buf: Writer) {
         buf.writeInt(self.toFFIValue())
     }
 }
 
 extension Float: Liftable, Lowerable, Primitive {
-    static func lift<B: ByteBuffer>(from buf: B) throws -> Double {
+    static func lift(from buf: Reader) throws -> Float {
         return try self.fromFFIValue(buf.readFloat())
     }
 
-    func lower<B: MutableByteBuffer>(into buf: B) {
+    func lower(into buf: Writer) {
         buf.writeFloat(self.toFFIValue())
     }
 }
 
 extension Double: Liftable, Lowerable, Primitive {
-    static func lift<B: ByteBuffer>(from buf: B) throws -> Double {
+    static func lift(from buf: Reader) throws -> Double {
         return try self.fromFFIValue(buf.readDouble())
     }
 
-    func lower<B: MutableByteBuffer>(into buf: B) {
+    func lower(into buf: Writer) {
         buf.writeDouble(self.toFFIValue())
     }
 }
 
 extension Optional: Liftable where Wrapped: Liftable {
-    static func lift<B: ByteBuffer>(from buf: B) throws -> Self {
+    static func lift(from buf: Reader) throws -> Self {
         switch try buf.readInt() as UInt8 {
         case 0: return nil
         case 1: return try Wrapped.lift(from: buf)
@@ -363,7 +343,7 @@ extension Optional: Liftable where Wrapped: Liftable {
 }
 
 extension Optional: Lowerable where Wrapped: Lowerable {
-    func lower<B: MutableByteBuffer>(into buf: B) {
+    func lower(into buf: Writer) {
         guard let value = self else {
             buf.writeInt(0)
             return
@@ -378,166 +358,164 @@ extension Optional: Serializable where Wrapped: Liftable & Lowerable {}
 // Public interface members begin here.
 
 {% for e in ci.iter_enum_definitions() %}
-    public enum {{ e.name() }}: Lowerable, Liftable {
+public enum {{ e.name() }}: Lowerable, Liftable {
+    {% for value in e.values() %}
+    case {{ value|decl_enum_variant_swift }}
+    {% endfor %}
+
+    static func lift(from buf: Reader) throws -> {{ e.name() }} {
+        return try {{ e.name() }}.fromFFIValue(UInt32.lift(from: buf))
+    }
+
+    static func fromFFIValue(_ number: UInt32) throws -> {{ e.name() }} {
+        switch number {
         {% for value in e.values() %}
-        case {{ value|decl_enum_variant_swift }}
+        case {{ loop.index }}: return .{{ value|decl_enum_variant_swift }}
         {% endfor %}
-
-        static func lift<B: ByteBuffer>(from buf: B) throws -> {{ e.name() }} {
-          return try {{ e.name() }}.fromFFIValue(UInt32.lift(from: buf))
-        }
-
-        static func fromFFIValue(_ number: UInt32) throws -> {{ e.name() }} {
-          switch number {
-          {% for value in e.values() %}
-          case {{ loop.index }}: return .{{ value|decl_enum_variant_swift }}
-          {% endfor %}
-          default: throw InternalError.unexpectedEnumCase
-          }
-        }
-
-        func lower<B: MutableByteBuffer>(into buf: B) {
-          self.toFFIValue().lower(into: buf)
-        }
-
-        func toFFIValue() -> UInt32 {
-          switch self {
-          {% for value in e.values() %}
-          case .{{ value|decl_enum_variant_swift }}: return {{ loop.index }}
-          {% endfor %}
-          }
+        default: throw InternalError.unexpectedEnumCase
         }
     }
+
+    func lower(into buf: Writer) {
+        self.toFFIValue().lower(into: buf)
+    }
+
+    func toFFIValue() -> UInt32 {
+        switch self {
+        {% for value in e.values() %}
+        case .{{ value|decl_enum_variant_swift }}: return {{ loop.index }}
+        {% endfor %}
+        }
+    }
+}
 {%- endfor -%}
 
 {%- for rec in ci.iter_record_definitions() %}
-    public struct {{ rec.name() }}: Lowerable, Liftable, Serializable {
-      {%- for field in rec.fields() %}
-      let {{ field.name() }}: {{ field.type_()|decl_swift }}
-      {%- endfor %}
+public struct {{ rec.name() }}: Lowerable, Liftable, Serializable {
+    {%- for field in rec.fields() %}
+    let {{ field.name() }}: {{ field.type_()|decl_swift }}
+    {%- endfor %}
 
-      // Default memberwise initializers are never public by default, so we
-      // declare one manually.
-      public init(
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
         {%- for field in rec.fields() %}
         {{ field.name() }}: {{ field.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
         {%- endfor %}
-      ) {
+    ) {
         {%- for field in rec.fields() %}
         self.{{ field.name() }} = {{ field.name() }}
         {%- endfor %}
-      }
+    }
 
-      static func lift<B: ByteBuffer>(from buf: B) throws -> {{ rec.name() }} {
+    static func lift(from buf: Reader) throws -> {{ rec.name() }} {
         return try {{ rec.name() }}(
-          {%- for field in rec.fields() %}
-          {{ field.name() }}: {{ "buf"|lift_from_swift(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
-          {%- endfor %}
+            {%- for field in rec.fields() %}
+            {{ field.name() }}: {{ "buf"|lift_from_swift(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {%- endfor %}
         )
-      }
+    }
 
-      func lower<B: MutableByteBuffer>(into buf: B) {
+    func lower(into buf: Writer) {
         {%- for field in rec.fields() %}
         {{ field.name() }}.lower(into: buf)
         {%- endfor %}
-      }
     }
+}
 {% endfor %}
 
 {% for func in ci.iter_function_definitions() %}
+{%- match func.return_type() -%}
+{%- when Some with (return_type) %}
 
-    {%- match func.return_type() -%}
-    {%- when Some with (return_type) %}
+public func {{ func.name() }}(
+    // TODO: More considered handling of labels (don't emit them
+    // for single-argument functions; others?)
+    {%- for arg in func.arguments() %}
+    {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+    {%- endfor %}
+) -> {{ return_type|decl_swift }} {
+    let _retval = {{ func.ffi_func().name() }}(
+        {%- for arg in func.arguments() %}
+        {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+        {%- endfor %}
+    )
+    return try! {{ "_retval"|lift_swift(return_type) }}
+}
 
-        public func {{ func.name() }}(
-            // TODO: More considered handling of labels (don't emit them
-            // for single-argument functions; others?)
-            {%- for arg in func.arguments() %}
-                {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
-            {%- endfor %}
-        ) -> {{ return_type|decl_swift }} {
-            let _retval = {{ func.ffi_func().name() }}(
-                {%- for arg in func.arguments() %}
-                {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
-                {%- endfor %}
-            )
-            return try! {{ "_retval"|lift_swift(return_type) }}
-        }
+{% when None -%}
 
-    {% when None -%}
+public func {{ func.name() }}(
+    {%- for arg in func.arguments() %}
+    {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+    {%- endfor %}
+) {
+    {{ func.ffi_func().name() }}(
+        {%- for arg in func.arguments() %}
+        {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+        {%- endfor %}
+    )
+}
 
-        public func {{ func.name() }}(
-            {%- for arg in func.arguments() %}
-                {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
-            {%- endfor %}
-        ) {
-            {{ func.ffi_func().name() }}(
-                {%- for arg in func.arguments() %}
-                {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
-                {%- endfor %}
-            )
-        }
-
-    {%- endmatch %}
+{%- endmatch %}
 {% endfor %}
 
 {% for obj in ci.iter_object_definitions() %}
+public class {{ obj.name() }} {
+    private let handle: UInt64
 
-    public class {{ obj.name() }} {
-        private let handle: UInt64
-
-        {%- for cons in obj.constructors() %}
-        public init(
+    {%- for cons in obj.constructors() %}
+    public init(
+        {%- for arg in cons.arguments() %}
+        {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+        {%- endfor %}
+    ) {
+        self.handle = {{ cons.ffi_func().name() }}(
             {%- for arg in cons.arguments() %}
-            {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+            {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
-        ) {
-            self.handle = {{ cons.ffi_func().name() }}(
-                {%- for arg in cons.arguments() %}
-                {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
-                {%- endfor %}
-            );
-        }
-        {%- endfor %}
-
-        // XXX TODO: destructors or equivalent.
-
-        {%- for meth in obj.methods() %}
-        {%- match meth.return_type() -%}
-        {%- when Some with (return_type) %}
-
-            public func {{ meth.name() }}(
-                {% for arg in meth.arguments() %}
-                {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
-                {% endfor %}
-            ) -> {{ return_type|decl_swift }} {
-                let _retval = {{ meth.ffi_func().name() }}(
-                    self.handle{% if meth.arguments().len() > 0 %},{% endif %}
-                    {%- for arg in meth.arguments() %}
-                    {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
-                    {%- endfor %}
-                )
-                return try! {{ "_retval"|lift_swift(return_type) }}
-            }
-
-        {% when None -%}
-
-            public func {{ meth.name() }}(
-                {% for arg in meth.arguments() %}
-                {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
-                {% endfor %}
-            ) {
-                {{ meth.ffi_func().name() }}(
-                    self.handle{% if meth.arguments().len() > 0 %},{% endif %}
-                    {%- for arg in meth.arguments() %}
-                    {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
-                    {%- endfor %}
-                )
-            }
-
-        {%- endmatch %}
-        {%- endfor %}
+        );
     }
+    {%- endfor %}
+
+    // XXX TODO: destructors or equivalent.
+
+    {%- for meth in obj.methods() %}
+    {%- match meth.return_type() -%}
+    {%- when Some with (return_type) %}
+
+    public func {{ meth.name() }}(
+        {% for arg in meth.arguments() %}
+        {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+        {% endfor %}
+    ) -> {{ return_type|decl_swift }} {
+        let _retval = {{ meth.ffi_func().name() }}(
+            self.handle{% if meth.arguments().len() > 0 %},{% endif %}
+            {%- for arg in meth.arguments() %}
+            {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {%- endfor %}
+        )
+        return try! {{ "_retval"|lift_swift(return_type) }}
+    }
+
+    {% when None -%}
+
+    public func {{ meth.name() }}(
+        {% for arg in meth.arguments() %}
+        {{ arg.name() }}: {{ arg.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+        {% endfor %}
+    ) {
+        {{ meth.ffi_func().name() }}(
+            self.handle{% if meth.arguments().len() > 0 %},{% endif %}
+            {%- for arg in meth.arguments() %}
+            {{ arg.name()|lower_swift(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {%- endfor %}
+        )
+    }
+
+    {%- endmatch %}
+    {%- endfor %}
+}
 {% endfor %}
 "#
 )]
