@@ -149,10 +149,10 @@ _UniFFILib = loadIndirect(componentName="{{ ci.namespace() }}")
 {%- for func in ci.iter_ffi_function_definitions() %}
 _UniFFILib.{{ func.name() }}.argtypes = (
     {%- for arg in func.arguments() %}
-    {{ arg.type_()|decl_c }},
+    {{ arg.type_()|type_c }},
     {%- endfor %}
 )
-_UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|decl_c }}{% when None %}None{% endmatch %}
+_UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|type_c }}{% when None %}None{% endmatch %}
 {%- endfor %}
 
 # Public interface members begin here.
@@ -226,7 +226,7 @@ def {{ func.name()|fn_name_py }}({% for arg in func.arguments() %}{{ arg.name() 
 {% endfor %}
 
 {% for obj in ci.iter_object_definitions() %}
-class {{ obj.name()|decl_name_py }}(object):
+class {{ obj.name()|class_name_py }}(object):
     # XXX TODO: support for multiple constructors...
     {%- for cons in obj.constructors() %}
     def __init__(self, {% for arg in cons.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
@@ -287,7 +287,7 @@ mod filters {
     use super::*;
     use std::fmt;
 
-    pub fn decl_c(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_c(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
             TypeReference::U32 => "ctypes.c_uint32".to_string(),
             TypeReference::U64 => "ctypes.c_uint64".to_string(),
@@ -299,11 +299,11 @@ mod filters {
             TypeReference::Record(_) => "RustBuffer".to_string(),
             TypeReference::Optional(_) => "RustBuffer".to_string(),
             TypeReference::Object(_) => "ctypes.c_uint64".to_string(),
-            _ => panic!("[TODO: decl_c({:?})", type_),
+            _ => panic!("[TODO: type_c({:?})", type_),
         })
     }
 
-    pub fn decl_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn class_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 

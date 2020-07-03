@@ -274,23 +274,23 @@ internal interface _UniFFILib : Library {
     {% for func in ci.iter_ffi_function_definitions() -%}
         fun {{ func.name() }}(
         {%- for arg in func.arguments() %}
-            {{ arg.name() }}: {{ arg.type_()|decl_c }}{% if loop.last %}{% else %},{% endif %}
+            {{ arg.name() }}: {{ arg.type_()|type_c }}{% if loop.last %}{% else %},{% endif %}
         {%- endfor %}
         // TODO: When we implement error handling, there will be an out error param here.
-        ): {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|decl_c }}{% when None %}Unit{% endmatch %}
+        ): {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|type_c }}{% when None %}Unit{% endmatch %}
     {% endfor -%}
 }
 
 // Public interface members begin here.
 
 {% for e in ci.iter_enum_definitions() %}
-    enum class {{ e.name()|decl_name_kt }} {
+    enum class {{ e.name()|class_name_kt }} {
         {% for value in e.values() %}
         {{ value }}{% if loop.last %};{% else %},{% endif %}
         {% endfor %}
 
         companion object {
-            internal fun lift(n: Int): {{ e.name()|decl_name_kt }} {
+            internal fun lift(n: Int): {{ e.name()|class_name_kt }} {
                 return when (n) {
                   {% for value in e.values() %}
                   {{ loop.index }} -> {{ value }}
@@ -301,8 +301,8 @@ internal interface _UniFFILib : Library {
                 }
             }
 
-            internal fun liftFrom(buf: ByteBuffer): {{ e.name()|decl_name_kt }} {
-                return {{ e.name()|decl_name_kt }}.lift(Int.liftFrom(buf))
+            internal fun liftFrom(buf: ByteBuffer): {{ e.name()|class_name_kt }} {
+                return {{ e.name()|class_name_kt }}.lift(Int.liftFrom(buf))
             }
         }
 
@@ -321,19 +321,19 @@ internal interface _UniFFILib : Library {
 {%- endfor -%}
 
 {%- for rec in ci.iter_record_definitions() %}
-    data class {{ rec.name()|decl_name_kt }} (
+    data class {{ rec.name()|class_name_kt }} (
       {%- for field in rec.fields() %}
-        val {{ field.name() }}: {{ field.type_()|decl_kt }}{% if loop.last %}{% else %},{% endif %}
+        val {{ field.name() }}: {{ field.type_()|type_kt }}{% if loop.last %}{% else %},{% endif %}
       {%- endfor %}
     ) {
       companion object {
           // XXX TODO: put this in a superclass maybe?
-          internal fun lift(rbuf: RustBuffer.ByValue): {{ rec.name()|decl_name_kt }} {
-              return liftFromRustBuffer(rbuf) { buf -> {{ rec.name()|decl_name_kt }}.liftFrom(buf) }
+          internal fun lift(rbuf: RustBuffer.ByValue): {{ rec.name()|class_name_kt }} {
+              return liftFromRustBuffer(rbuf) { buf -> {{ rec.name()|class_name_kt }}.liftFrom(buf) }
           }
 
-          internal fun liftFrom(buf: ByteBuffer): {{ rec.name()|decl_name_kt }} {
-              return {{ rec.name()|decl_name_kt }}(
+          internal fun liftFrom(buf: ByteBuffer): {{ rec.name()|class_name_kt }} {
+              return {{ rec.name()|class_name_kt }}(
                 {%- for field in rec.fields() %}
                 {{ "buf"|lift_from_kt(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
                 {%- endfor %}
@@ -368,9 +368,9 @@ internal interface _UniFFILib : Library {
 
         fun {{ func.name()|fn_name_kt }}(
             {%- for arg in func.arguments() %}
-                {{ arg.name() }}: {{ arg.type_()|decl_kt }}{% if loop.last %}{% else %},{% endif %}
+                {{ arg.name() }}: {{ arg.type_()|type_kt }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
-        ): {{ return_type|decl_kt }} {
+        ): {{ return_type|type_kt }} {
             val _retval = _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
                 {%- for arg in func.arguments() %}
                 {{ arg.name()|lower_kt(arg.type_()) }}{% if loop.last %}{% else %},{% endif %}
@@ -383,7 +383,7 @@ internal interface _UniFFILib : Library {
 
         fun {{ func.name()|fn_name_kt }}(
             {%- for arg in func.arguments() %}
-                {{ arg.name() }}: {{ arg.type_()|decl_kt }}{% if loop.last %}{% else %},{% endif %}
+                {{ arg.name() }}: {{ arg.type_()|type_kt }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         ) {
             UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
@@ -397,10 +397,10 @@ internal interface _UniFFILib : Library {
 {% endfor %}
 
 {% for obj in ci.iter_object_definitions() %}
-class {{ obj.name()|decl_name_kt }}(handle: Long) {
+class {{ obj.name()|class_name_kt }}(handle: Long) {
     private var handle: AtomicLong = AtomicLong(handle)
     {%- for cons in obj.constructors() %}
-    constructor({% for arg in cons.arguments() %}{{ arg.name() }}: {{ arg.type_()|decl_kt }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}) :
+    constructor({% for arg in cons.arguments() %}{{ arg.name() }}: {{ arg.type_()|type_kt }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}) :
         this(
             _UniFFILib.INSTANCE.{{ cons.ffi_func().name() }}(
                 {%- for arg in cons.arguments() %}
@@ -415,9 +415,9 @@ class {{ obj.name()|decl_name_kt }}(handle: Long) {
     {%- for meth in obj.methods() %}
     fun {{ meth.name()|fn_name_kt }}(
         {% for arg in meth.arguments() %}
-        {{ arg.name() }}: {{ arg.type_()|decl_kt }}{% if loop.last %}{% else %}, {% endif %}
+        {{ arg.name() }}: {{ arg.type_()|type_kt }}{% if loop.last %}{% else %}, {% endif %}
         {% endfor %}
-    ): {% match meth.return_type() %}{% when Some with (type_) %}{{ type_|decl_kt }}{% when None %}Unit{% endmatch %} {
+    ): {% match meth.return_type() %}{% when Some with (type_) %}{{ type_|type_kt }}{% when None %}Unit{% endmatch %} {
         val _retval = _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
             this.handle.get(){% if meth.arguments().len() > 0 %},{% endif %}
             {%- for arg in meth.arguments() %}
@@ -445,7 +445,7 @@ mod filters {
     use super::*;
     use std::fmt;
 
-    pub fn decl_kt(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_kt(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
             // These native Kotlin types map nicely to the FFI without conversion.
             TypeReference::U32 => "Int".to_string(),
@@ -455,25 +455,25 @@ mod filters {
             TypeReference::Bytes => "RustBuffer.ByValue".to_string(),
             // These types need conversation, and special handling for lifting/lowering.
             TypeReference::Boolean => "Boolean".to_string(),
-            TypeReference::Enum(name) => decl_name_kt(name)?,
-            TypeReference::Record(name) => decl_name_kt(name)?,
-            TypeReference::Optional(t) => format!("{}?", decl_kt(t)?),
-            _ => panic!("[TODO: decl_kt({:?})]", type_),
+            TypeReference::Enum(name) => class_name_kt(name)?,
+            TypeReference::Record(name) => class_name_kt(name)?,
+            TypeReference::Optional(t) => format!("{}?", type_kt(t)?),
+            _ => panic!("[TODO: type_kt({:?})]", type_),
         })
     }
 
-    pub fn decl_c(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_c(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
             TypeReference::Boolean => "Byte".to_string(),
             TypeReference::Enum(_) => "Int".to_string(),
             TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Object(_) => "Long".to_string(),
-            _ => decl_kt(type_)?,
+            _ => type_kt(type_)?,
         })
     }
 
-    pub fn decl_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn class_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 
@@ -534,7 +534,7 @@ mod filters {
                 nm,
                 lift_from_kt(&"buf", t)?
             ),
-            _ => format!("{}.lift({})", decl_kt(type_)?, nm),
+            _ => format!("{}.lift({})", type_kt(type_)?, nm),
         })
     }
 
@@ -549,7 +549,7 @@ mod filters {
                 nm,
                 lift_from_kt(&"buf", t)?
             ),
-            _ => format!("{}.liftFrom({})", decl_kt(type_)?, nm),
+            _ => format!("{}.liftFrom({})", type_kt(type_)?, nm),
         })
     }
 }

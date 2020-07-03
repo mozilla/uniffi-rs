@@ -35,7 +35,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
 // of items as declared in the rust code, but no harm will come from it.
 
 {% for e in ci.iter_enum_definitions() %}
-    unsafe impl uniffi::support::ViaFfi for {{ e.name()|decl_name_rs }} {
+    unsafe impl uniffi::support::ViaFfi for {{ e.name()|class_name_rs }} {
         type Value = u32;
         fn into_ffi_value(self) -> Self::Value {
             match self {
@@ -63,7 +63,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
 // compiler will complain with a type error.
 
 {% for rec in ci.iter_record_definitions() %}
-    impl uniffi::support::Lowerable for {{ rec.name()|decl_name_rs }} {
+    impl uniffi::support::Lowerable for {{ rec.name()|class_name_rs }} {
         fn lower_into<B: uniffi::support::BufMut>(&self, buf: &mut B) {
             // If the provided struct doesn't match the fields declared in the IDL, then
             // the generated code here will fail to compile with somewhat helpful error.
@@ -73,17 +73,17 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
         }
     }
 
-    impl uniffi::support::Liftable for {{ rec.name()|decl_name_rs }} {
+    impl uniffi::support::Liftable for {{ rec.name()|class_name_rs }} {
         fn try_lift_from<B: uniffi::support::Buf>(buf: &mut B) -> anyhow::Result<Self> {
           Ok(Self {
             {%- for field in rec.fields() %}
-                {{ field.name() }}: <{{ field.type_()|decl_rs }} as uniffi::support::Liftable>::try_lift_from(buf)?,
+                {{ field.name() }}: <{{ field.type_()|type_rs }} as uniffi::support::Liftable>::try_lift_from(buf)?,
             {%- endfor %}
           })
         }
     }
 
-    impl uniffi::support::ViaFfiUsingByteBuffer for {{ rec.name()|decl_name_rs }} {}
+    impl uniffi::support::ViaFfiUsingByteBuffer for {{ rec.name()|class_name_rs }} {}
 {% endfor %}
 
 // For each top-level function declared in the IDL, we assume the caller has provided a corresponding
@@ -95,9 +95,9 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
     #[no_mangle]
     pub extern "C" fn {{ func.ffi_func().name() }}(
         {%- for arg in func.ffi_func().arguments() %}
-        {{ arg.name() }}: {{ arg.type_()|decl_c }},
+        {{ arg.name() }}: {{ arg.type_()|type_c }},
         {%- endfor %}
-    ) -> {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|decl_c }}{% else %}(){% endmatch %} {
+    ) -> {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_c }}{% else %}(){% endmatch %} {
         log::debug!("{{ func.ffi_func().name() }}");
         // If the provided function does not match the signature specified in the IDL
         // then this attempt to cal it will not compile, and will give guideance as to why.
@@ -134,7 +134,7 @@ lazy_static::lazy_static! {
     #[no_mangle]
     pub extern "C" fn {{ cons.ffi_func().name() }}(
         {%- for arg in cons.ffi_func().arguments() %}
-        {{ arg.name() }}: {{ arg.type_()|decl_c }},
+        {{ arg.name() }}: {{ arg.type_()|type_c }},
         {%- endfor %}
     ) -> u64 {
         log::debug!("{{ cons.ffi_func().name() }}");
@@ -157,9 +157,9 @@ lazy_static::lazy_static! {
     #[no_mangle]
     pub extern "C" fn {{ meth.ffi_func().name() }}(
         {%- for arg in meth.ffi_func().arguments() %}
-        {{ arg.name() }}: {{ arg.type_()|decl_c }},
+        {{ arg.name() }}: {{ arg.type_()|type_c }},
         {%- endfor %}
-    ) -> {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|decl_c }}{% else %}(){% endmatch %} {
+    ) -> {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_c }}{% else %}(){% endmatch %} {
         log::debug!("{{ meth.ffi_func().name() }}");
         let mut err: ffi_support::ExternError = Default::default(); // XXX TODO: error handling!
         // If the method does not have the same signature as declared in the IDL, then
@@ -201,7 +201,7 @@ mod filters {
     use super::*;
     use std::fmt;
 
-    pub fn decl_rs(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_rs(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
             // These can be passed directly over the FFI without conversion.
             TypeReference::U32 => "u32".to_string(),
@@ -212,25 +212,25 @@ mod filters {
             // These types need conversion, and will require special handling below
             // when lifting/lowering.
             TypeReference::String => "&str".to_string(),
-            TypeReference::Enum(name) => decl_name_rs(name)?,
-            TypeReference::Record(name) => decl_name_rs(name)?,
-            TypeReference::Optional(t) => format!("Option<{}>", decl_rs(t)?),
-            _ => panic!("[TODO: decl_rs({:?})]", type_),
+            TypeReference::Enum(name) => class_name_rs(name)?,
+            TypeReference::Record(name) => class_name_rs(name)?,
+            TypeReference::Optional(t) => format!("Option<{}>", type_rs(t)?),
+            _ => panic!("[TODO: type_rs({:?})]", type_),
         })
     }
 
-    pub fn decl_c(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_c(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
             TypeReference::String => "FfiStr<'_>".to_string(),
             TypeReference::Enum(_) => "u32".to_string(),
             TypeReference::Record(_) => "ffi_support::ByteBuffer".to_string(),
             TypeReference::Optional(_) => "ffi_support::ByteBuffer".to_string(),
             TypeReference::Object(_) => "u64".to_string(),
-            _ => decl_rs(type_)?,
+            _ => type_rs(type_)?,
         })
     }
 
-    pub fn decl_name_rs(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn class_name_rs(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 
@@ -243,7 +243,7 @@ mod filters {
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         Ok(format!(
             "<{} as uniffi::support::ViaFfi>::into_ffi_value({})",
-            decl_rs(type_)?,
+            type_rs(type_)?,
             nm
         ))
     }
@@ -253,7 +253,7 @@ mod filters {
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         Ok(format!(
             "<{} as uniffi::support::ViaFfi>::try_from_ffi_value({}).unwrap()",
-            decl_rs(type_)?,
+            type_rs(type_)?,
             nm
         )) // Error handling later...
     }
