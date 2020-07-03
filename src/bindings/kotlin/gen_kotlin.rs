@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use askama::Template;
-use heck::{ CamelCase, MixedCase };
+use heck::{ CamelCase, MixedCase, ShoutySnakeCase };
 
 use crate::interface::*;
 
@@ -286,37 +286,24 @@ internal interface _UniFFILib : Library {
 {% for e in ci.iter_enum_definitions() %}
     enum class {{ e.name()|class_name_kt }} {
         {% for value in e.values() %}
-        {{ value }}{% if loop.last %};{% else %},{% endif %}
+        {{ value|enum_name_kt }}{% if loop.last %};{% else %},{% endif %}
         {% endfor %}
 
         companion object {
-            internal fun lift(n: Int): {{ e.name()|class_name_kt }} {
-                return when (n) {
-                  {% for value in e.values() %}
-                  {{ loop.index }} -> {{ value }}
-                  {% endfor %}
-                  else -> {
-                      throw RuntimeException("invalid enum value, something is very wrong!!")
-                  }
+            internal fun lift(n: Int) =
+                try { values()[n - 1] }
+                catch (e: IndexOutOfBoundsException) {
+                    throw RuntimeException("invalid enum value, something is very wrong!!", e)
                 }
-            }
 
-            internal fun liftFrom(buf: ByteBuffer): {{ e.name()|class_name_kt }} {
-                return {{ e.name()|class_name_kt }}.lift(Int.liftFrom(buf))
-            }
+            internal fun liftFrom(buf: ByteBuffer) = lift(Int.liftFrom(buf))
         }
 
-        internal fun lower(): Int {
-            return this.ordinal
-        }
+        internal fun lower() = this.ordinal + 1
 
-        internal fun lowersIntoSize(): Int {
-            return 4
-        }
+        internal fun lowersIntoSize() = 4
 
-        internal fun lowerInto(buf: ByteBuffer) {
-            this.ordinal.lowerInto(buf)
-        }
+        internal fun lowerInto(buf: ByteBuffer) = this.lower().lowerInto(buf)
     }
 {%- endfor -%}
 
@@ -479,6 +466,10 @@ mod filters {
 
     pub fn fn_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
+    }
+
+    pub fn enum_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_shouty_snake_case())
     }
 
     pub fn lower_kt(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {

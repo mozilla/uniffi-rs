@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use askama::Template;
-use heck::{ SnakeCase, CamelCase };
+use heck::{ SnakeCase, CamelCase, ShoutySnakeCase };
 
 use crate::interface::*;
 
@@ -160,7 +160,7 @@ _UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Som
 {% for e in ci.iter_enum_definitions() %}
 class {{ e.name() }}(enum.Enum):
     {% for value in e.values() -%}
-    {{ value }} = {{ loop.index }}
+    {{ value|enum_name_py }} = {{ loop.index }}
     {% endfor -%}
 {%- endfor -%}
 
@@ -309,6 +309,10 @@ mod filters {
 
     pub fn fn_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_snake_case())
+    }
+
+    pub fn enum_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_shouty_snake_case())
     }
 
     pub fn coerce_py(

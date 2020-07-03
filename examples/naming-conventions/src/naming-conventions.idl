@@ -1,7 +1,16 @@
+enum Case {
+  "snake_case",
+  "UpperCamelCase",
+  "camelCase",
+  "SHOUTY_SNAKE_CASE",
+};
 
 namespace naming_conventions {
-  snake_case_object snake_case_method(u32 id);
-  CamelCaseObject camelCaseMethod(u32 id);
+  snake_case_object snake_case_method(u32 id, Case src);
+  CamelCaseObject camelCaseMethod(u32 id, Case src);
+
+  Case get_snake_case();
+  Case getCamelCase();
 };
 
 dictionary snake_case_object {

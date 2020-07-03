@@ -12,12 +12,27 @@ struct CamelCaseObject {
     id: u32,
 }
 
-fn camelCaseMethod(id: u32) -> CamelCaseObject {
+enum Case {
+    snake_case,
+    UpperCamelCase,
+    camelCase,
+    SHOUTY_SNAKE_CASE,
+}
+
+fn camelCaseMethod(id: u32, _from: Case) -> CamelCaseObject {
     CamelCaseObject { id }
 }
 
-fn snake_case_method(id: u32) -> snake_case_object {
+fn snake_case_method(id: u32, _from: Case) -> snake_case_object {
     snake_case_object { id }
+}
+
+fn get_snake_case() -> Case {
+    Case::snake_case
+}
+
+fn getCamelCase() -> Case {
+    Case::UpperCamelCase
 }
 
 include!(concat!(env!("OUT_DIR"), "/naming-conventions.uniffi.rs"));
