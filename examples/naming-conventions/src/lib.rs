@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #[derive(Debug, Clone)]
-struct SnakeCaseObject {
+struct snake_case_object {
     id: u32,
 }
 
@@ -12,12 +12,12 @@ struct CamelCaseObject {
     id: u32,
 }
 
-fn camel_case_method(id: u32) -> CamelCaseObject {
+fn camelCaseMethod(id: u32) -> CamelCaseObject {
     CamelCaseObject { id }
 }
 
-fn snake_case_method(id: u32) -> SnakeCaseObject {
-    SnakeCaseObject { id }
+fn snake_case_method(id: u32) -> snake_case_object {
+    snake_case_object { id }
 }
 
 include!(concat!(env!("OUT_DIR"), "/naming-conventions.uniffi.rs"));

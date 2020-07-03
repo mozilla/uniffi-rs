@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use askama::Template;
-use heck::{ CamelCase, SnakeCase };
 
 use super::interface::*;
 
@@ -35,7 +34,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
 // of items as declared in the rust code, but no harm will come from it.
 
 {% for e in ci.iter_enum_definitions() %}
-    unsafe impl uniffi::support::ViaFfi for {{ e.name()|class_name_rs }} {
+    unsafe impl uniffi::support::ViaFfi for {{ e.name() }} {
         type Value = u32;
         fn into_ffi_value(self) -> Self::Value {
             match self {
@@ -63,7 +62,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
 // compiler will complain with a type error.
 
 {% for rec in ci.iter_record_definitions() %}
-    impl uniffi::support::Lowerable for {{ rec.name()|class_name_rs }} {
+    impl uniffi::support::Lowerable for {{ rec.name() }} {
         fn lower_into<B: uniffi::support::BufMut>(&self, buf: &mut B) {
             // If the provided struct doesn't match the fields declared in the IDL, then
             // the generated code here will fail to compile with somewhat helpful error.
@@ -73,7 +72,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
         }
     }
 
-    impl uniffi::support::Liftable for {{ rec.name()|class_name_rs }} {
+    impl uniffi::support::Liftable for {{ rec.name() }} {
         fn try_lift_from<B: uniffi::support::Buf>(buf: &mut B) -> anyhow::Result<Self> {
           Ok(Self {
             {%- for field in rec.fields() %}
@@ -83,7 +82,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
         }
     }
 
-    impl uniffi::support::ViaFfiUsingByteBuffer for {{ rec.name()|class_name_rs }} {}
+    impl uniffi::support::ViaFfiUsingByteBuffer for {{ rec.name() }} {}
 {% endfor %}
 
 // For each top-level function declared in the IDL, we assume the caller has provided a corresponding
@@ -101,7 +100,7 @@ ffi_support::define_bytebuffer_destructor!({{ ci.ffi_bytebuffer_free().name() }}
         log::debug!("{{ func.ffi_func().name() }}");
         // If the provided function does not match the signature specified in the IDL
         // then this attempt to cal it will not compile, and will give guideance as to why.
-        let _retval = {{ func.name()|fn_name_rs }}(
+        let _retval = {{ func.name() }}(
             {%- for arg in func.arguments() %}
             {{ arg.name()|lift_rs(arg.type_()) }},
             {%- endfor %}
@@ -165,7 +164,7 @@ lazy_static::lazy_static! {
         // If the method does not have the same signature as declared in the IDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
         UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_output_mut(&mut err, {{ meth.first_argument().name() }}, |obj| {
-            let _retval = {{ obj.name() }}::{{ meth.name()|fn_name_rs }}(
+            let _retval = {{ obj.name() }}::{{ meth.name() }}(
                 obj,
                 {%- for arg in meth.arguments() %}
                 {{ arg.name()|lift_rs(arg.type_()) }},
@@ -212,8 +211,8 @@ mod filters {
             // These types need conversion, and will require special handling below
             // when lifting/lowering.
             TypeReference::String => "&str".to_string(),
-            TypeReference::Enum(name) => class_name_rs(name)?,
-            TypeReference::Record(name) => class_name_rs(name)?,
+            TypeReference::Enum(name) => name.clone(),
+            TypeReference::Record(name) => name.clone(),
             TypeReference::Optional(t) => format!("Option<{}>", type_rs(t)?),
             _ => panic!("[TODO: type_rs({:?})]", type_),
         })
@@ -228,14 +227,6 @@ mod filters {
             TypeReference::Object(_) => "u64".to_string(),
             _ => type_rs(type_)?,
         })
-    }
-
-    pub fn class_name_rs(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_camel_case())
-    }
-
-    pub fn fn_name_rs(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_snake_case())
     }
 
     pub fn lower_rs(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
