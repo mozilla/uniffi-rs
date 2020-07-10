@@ -6,6 +6,7 @@ jobs:
   Check Rust formatting:
     docker:
       - image: circleci/rust:latest
+    resource_class: small
     steps:
       - checkout
       - run: rustup component add rustfmt
@@ -14,6 +15,7 @@ jobs:
   Lint Rust with clippy:
     docker:
       - image: circleci/rust:latest
+    resource_class: small
     steps:
       - checkout
       - run: rustup component add clippy
@@ -22,7 +24,9 @@ jobs:
   Rust and Foreign Language tests:
     docker:
       - image: rfkelly/uniffi-ci:latest
+    resource_class: small
     steps:
+      - run: cat ~/.profile >> $BASH_ENV
       - checkout
       - run: cargo test
 
