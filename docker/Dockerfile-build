@@ -58,3 +58,13 @@ RUN mkdir -p /tmp/setup-kotlin \
     && echo ". /home/circleci/.sdkman/bin/sdkman-init.sh" >> /home/circleci/.profile \
     && cd ../ \
     && rm -rf ./setup-kotlin
+
+RUN mkdir -p /tmp/setup-jna \
+    && cd /tmp/setup-jna \
+    && curl -o jna.jar https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.6.0/jna-5.6.0.jar \
+    # XXX TODO: should check a sha256sum or something here...
+    && sudo mv jna.jar /opt \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar\"" >> /home/circleci/.bashrc \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar\"" >> /home/circleci/.profile \
+    && cd ../ \
+    && rm -rf ./setup-jna

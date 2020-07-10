@@ -65,8 +65,8 @@ continues to evolve.
 ## Status
 
 This is all very experimental and incomplete, but we do have some basic examples working, implementing
-functions in Rust and calling them from Kotlin.  Take a look in the [`./examples/`](./examples/) directory
-to see them in action.
+functions in Rust and calling them from Kotlin, Swift, and Python.
+Take a look in the [`./examples/`](./examples/) directory to see them in action.
 
 ## Component Interface Definition
 

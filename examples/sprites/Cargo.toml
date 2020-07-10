@@ -13,8 +13,9 @@ name = "uniffi_sprites"
 anyhow = "1.0"
 log = "0.4"
 ffi-support = "0.4"
-uniffi = {path = "../../"}
 lazy_static = "1.4"
+uniffi = {path = "../../uniffi"}
+uniffi_macros = {path = "../../uniffi_macros"}
 
 [build-dependencies]
-uniffi = {path = "../../"}
+uniffi = {path = "../../uniffi"}

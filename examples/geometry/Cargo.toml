@@ -13,7 +13,8 @@ name = "uniffi_geometry"
 anyhow = "1.0"
 log = "0.4"
 ffi-support = "0.4"
-uniffi = {path = "../../"}
+uniffi = {path = "../../uniffi"}
+uniffi_macros = {path = "../../uniffi_macros"}
 
 [build-dependencies]
-uniffi = {path = "../../"}
+uniffi = {path = "../../uniffi"}
