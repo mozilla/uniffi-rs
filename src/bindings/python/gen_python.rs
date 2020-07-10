@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use askama::Template;
+use heck::{ SnakeCase, CamelCase, ShoutySnakeCase };
 
 use crate::interface::*;
 
@@ -126,6 +127,12 @@ class RustBufferStream(object):
     def putDouble(self, v):
         self._pack_into(8, ">d", v)
 
+    def getInt(self):
+        return self._unpack_from(4, ">i")
+
+    def putInt(self, v):
+        self._pack_into(8, ">i", v)
+        
 def liftOptional(rbuf, liftFrom):
     return liftFromOptional(RustBufferStream(rbuf), liftFrom)
 
@@ -142,10 +149,10 @@ _UniFFILib = loadIndirect(componentName="{{ ci.namespace() }}")
 {%- for func in ci.iter_ffi_function_definitions() %}
 _UniFFILib.{{ func.name() }}.argtypes = (
     {%- for arg in func.arguments() %}
-    {{ arg.type_()|decl_c }},
+    {{ arg.type_()|type_c }},
     {%- endfor %}
 )
-_UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|decl_c }}{% when None %}None{% endmatch %}
+_UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|type_c }}{% when None %}None{% endmatch %}
 {%- endfor %}
 
 # Public interface members begin here.
@@ -153,7 +160,7 @@ _UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Som
 {% for e in ci.iter_enum_definitions() %}
 class {{ e.name() }}(enum.Enum):
     {% for value in e.values() -%}
-    {{ value }} = {{ loop.index }}
+    {{ value|enum_name_py }} = {{ loop.index }}
     {% endfor -%}
 {%- endfor -%}
 
@@ -206,7 +213,7 @@ class {{ rec.name() }}(object):
 {% endfor %}
 
 {% for func in ci.iter_function_definitions() %}
-def {{ func.name() }}({% for arg in func.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
+def {{ func.name()|fn_name_py }}({% for arg in func.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
     {%- for arg in func.arguments() %}
     {{ arg.name()|coerce_py(arg.type_()) }}
     {%- endfor %}
@@ -219,7 +226,7 @@ def {{ func.name() }}({% for arg in func.arguments() %}{{ arg.name() }}{% if loo
 {% endfor %}
 
 {% for obj in ci.iter_object_definitions() %}
-class {{ obj.name() }}(object):
+class {{ obj.name()|class_name_py }}(object):
     # XXX TODO: support for multiple constructors...
     {%- for cons in obj.constructors() %}
     def __init__(self, {% for arg in cons.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
@@ -236,7 +243,7 @@ class {{ obj.name() }}(object):
     # XXX TODO: destructors or equivalent.
 
     {%- for meth in obj.methods() %}
-    def {{ meth.name() }}(self, {% for arg in meth.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
+    def {{ meth.name()|fn_name_py }}(self, {% for arg in meth.arguments() %}{{ arg.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
         {%- for arg in meth.arguments() %}
         {{ arg.name()|coerce_py(arg.type_()) }}
         {%- endfor %}
@@ -258,7 +265,7 @@ __all__ = [
     "{{ record.name() }}",
     {%- endfor %}
     {%- for func in ci.iter_function_definitions() %}
-    "{{ func.name() }}",
+    "{{ func.name()|fn_name_py }}",
     {%- endfor %}
     {%- for obj in ci.iter_object_definitions() %}
     "{{ obj.name() }}",
@@ -280,7 +287,7 @@ mod filters {
     use super::*;
     use std::fmt;
 
-    pub fn decl_c(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_c(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
             TypeReference::U32 => "ctypes.c_uint32".to_string(),
             TypeReference::U64 => "ctypes.c_uint64".to_string(),
@@ -292,8 +299,20 @@ mod filters {
             TypeReference::Record(_) => "RustBuffer".to_string(),
             TypeReference::Optional(_) => "RustBuffer".to_string(),
             TypeReference::Object(_) => "ctypes.c_uint64".to_string(),
-            _ => panic!("[TODO: decl_c({:?})", type_),
+            _ => panic!("[TODO: type_c({:?})", type_),
         })
+    }
+
+    pub fn class_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_camel_case())
+    }
+
+    pub fn fn_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_snake_case())
+    }
+
+    pub fn enum_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_shouty_snake_case())
     }
 
     pub fn coerce_py(
@@ -336,6 +355,7 @@ mod filters {
         type_: &TypeReference,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
+            TypeReference::U32 => "4".to_string(),
             TypeReference::Double => "8".to_string(),
             TypeReference::Record(type_name) => format!("{}._lowersIntoSize({})", type_name, nm),
             _ => panic!("[TODO: lowers_into_size_py({:?})]", type_),
@@ -348,6 +368,7 @@ mod filters {
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
             TypeReference::Double => format!("{}.putDouble({})", target, nm),
+            TypeReference::U32 => format!("{}.putInt({})", target, nm),
             TypeReference::Record(type_name) => {
                 format!("{}._lowerInto({}, {})", type_name, nm, target)
             }
@@ -378,6 +399,7 @@ mod filters {
         type_: &TypeReference,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
+            TypeReference::U32 => format!("{}.getInt()", nm),
             TypeReference::Double => format!("{}.getDouble()", nm),
             TypeReference::Record(type_name) => format!("{}._liftFrom({})", type_name, nm),
             _ => panic!("[TODO: lift_from_py({:?})]", type_),
