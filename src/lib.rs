@@ -180,7 +180,7 @@ pub fn run_bindgen_command() -> Result<()> {
     run_bindgen_helper(None)
 }
 
-const POSSIBLE_LANGUAGES: [&str; 2] = ["kotlin", "python"];
+const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift"];
 
 pub fn run_bindgen_helper(component_name: Option<&str>) -> Result<()> {
     let default_lib_file = match component_name {
@@ -267,20 +267,27 @@ fn run_bindings_generate_subcommand(default_lib_file: Option<std::ffi::OsString>
         Some(ls) => ls.collect(),
     };
     for lang in languages {
-        match &lang {
-            &"kotlin" => {
+        match lang {
+            "kotlin" => {
                 println!(
                     "Generating Kotlin bindings into {}",
                     out_dir.to_str().unwrap_or("[UNPRINTABLE]")
                 );
                 bindings::kotlin::compile_kotlin_bindings(&ci, &out_dir)?;
             }
-            &"python" => {
+            "python" => {
                 println!(
                     "Generating Python bindings {}",
                     out_dir.to_str().unwrap_or("[UNPRINTABLE]")
                 );
                 bindings::python::write_python_bindings(&ci, &out_dir)?;
+            }
+            "swift" => {
+                println!("Generating Swift bindings...");
+                bindings::swift::write_swift_bindings(&ci, &out_dir)?;
+
+                println!("Compiling generated Swift bindings into module...");
+                bindings::swift::compile_swift_module(&ci, &out_dir)?;
             }
             _ => bail!(
                 "Somehow tried to generate bindings for unsupported language {}",
@@ -311,22 +318,23 @@ fn run_bindings_exec_subcommand(
                 bail!("No script file and no language specified, so I don't know what language shell to start")
             }
             let script_file_buf = PathBuf::from(script_file.unwrap());
-            let ext = script_file_buf.extension().unwrap_or_default();
-            if ext == "kts" {
-                "kotlin"
-            } else if ext == "py" {
-                "python"
-            } else {
-                bail!("Cannot guess language of script file, please specify it explicitly")
+            match script_file_buf.extension().unwrap_or_default().to_str() {
+                Some("kts") => "kotlin",
+                Some("py") => "python",
+                Some("swift") => "swift",
+                _ => bail!("Cannot guess language of script file, please specify it explicitly"),
             }
         }
     };
-    match &lang {
-        &"kotlin" => {
+    match lang {
+        "kotlin" => {
             bindings::kotlin::run_kotlin_script(target_dir, script_file)?;
         }
-        &"python" => {
+        "python" => {
             bindings::python::run_python_script(target_dir, script_file)?;
+        }
+        "swift" => {
+            bindings::swift::run_swift_script(target_dir, script_file)?;
         }
         _ => bail!(
             "Somehow tried to launch interpreter for unsupported language {}",
