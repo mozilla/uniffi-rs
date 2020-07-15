@@ -46,7 +46,7 @@ mod filters {
 
     pub fn type_c(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::String => "FfiStr<'_>".to_string(),
+            TypeReference::String => "ffi_support::FfiStr<'_>".to_string(),
             TypeReference::Enum(_) => "u32".to_string(),
             TypeReference::Record(_) => "ffi_support::ByteBuffer".to_string(),
             TypeReference::Optional(_) => "ffi_support::ByteBuffer".to_string(),
