@@ -1,0 +1,39 @@
+# Build all the things we need for CI
+
+version: 2.1
+
+jobs:
+  Check Rust formatting:
+    docker:
+      - image: circleci/rust:latest
+    steps:
+      - checkout
+      - run: rustup component add rustfmt
+      - run: rustfmt --version
+      - run: cargo fmt -- --check
+  Lint Rust with clippy:
+    docker:
+      - image: circleci/rust:latest
+    steps:
+      - checkout
+      - run: rustup component add clippy
+      - run: cargo clippy --version
+      - run: cargo clippy --all --all-targets
+  Rust and Foreign Language tests:
+    docker:
+      - image: rfkelly/uniffi-ci:latest
+    steps:
+      - checkout
+      - run: cargo test
+
+workflows:
+  version: 2
+  check-formatting:
+    jobs:
+      - Check Rust formatting
+  clippy:
+    jobs:
+      - Lint Rust with clippy
+  run-tests:
+    jobs:
+      - Rust and Foreign Language tests
