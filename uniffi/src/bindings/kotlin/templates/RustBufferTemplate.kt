@@ -12,21 +12,16 @@ open class RustBuffer : Structure() {
     class ByValue : RustBuffer(), Structure.ByValue
 
     companion object {
-        internal fun alloc(size: Int): RustBuffer.ByValue {
-            return _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_alloc().name() }}(size)
-        }
+        internal fun alloc(size: Int) =
+            _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_alloc().name() }}(size)
 
-        internal fun free(buf: RustBuffer.ByValue) {
-            return _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_free().name() }}(buf)
-        }
+        internal fun free(buf: RustBuffer.ByValue) =
+            _UniFFILib.INSTANCE.{{ ci.ffi_bytebuffer_free().name() }}(buf)
     }
 
     @Suppress("TooGenericExceptionThrown")
-    fun asByteBuffer(): ByteBuffer? {
-        return this.data?.let {
-            val buf = it.getByteBuffer(0, this.len)
-            buf.order(ByteOrder.BIG_ENDIAN)
-            return buf
+    fun asByteBuffer() = 
+        this.data?.getByteBuffer(0, this.len)?.also {
+            it.order(ByteOrder.BIG_ENDIAN)
         }
-    }
 }

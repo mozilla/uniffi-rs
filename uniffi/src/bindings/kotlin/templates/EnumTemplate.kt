@@ -1,6 +1,6 @@
 enum class {{ e.name()|class_name_kt }} {
     {% for value in e.values() %}
-    {{ value|enum_name_kt }}{% if loop.last %};{% else %},{% endif %}
+    {{ value|enum_variant_kt }}{% if loop.last %};{% else %},{% endif %}
     {% endfor %}
 
     companion object {

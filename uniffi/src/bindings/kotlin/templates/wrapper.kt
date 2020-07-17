@@ -32,19 +32,24 @@ import java.util.concurrent.atomic.AtomicLong
 {% include "NamespaceLibraryTemplate.kt" %}
 
 // Public interface members begin here.
-
+// Public facing enums
 {% for e in ci.iter_enum_definitions() %}
 {% include "EnumTemplate.kt" %}
 {%- endfor -%}
 
+// Public facing records
 {%- for rec in ci.iter_record_definitions() %}
 {% include "RecordTemplate.kt" %}
 {% endfor %}
 
+// Namespace functions
 {% for func in ci.iter_function_definitions() %}
 {% include "TopLevelFunctionTemplate.kt" %}
 {% endfor %}
 
+// Objects
 {% for obj in ci.iter_object_definitions() %}
 {% include "ObjectTemplate.kt" %}
 {% endfor %}
+
+{% import "macros.kt" as kt %}
