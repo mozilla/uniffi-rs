@@ -2,29 +2,35 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use uniffi_macros::*;
+
 // https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
 // Silence, clippy!
 const EPSILON: f64 = 0.0001f64;
 
+#[uniffi_export_record]
 #[derive(Debug, Clone)]
 struct Point {
     x: f64,
     y: f64,
 }
 
+#[uniffi_export_record]
 #[derive(Debug, Clone)]
 struct Line {
     start: Point,
     end: Point,
 }
 
-fn gradient(ln: Line) -> f64 {
+#[uniffi_export_fn]
+pub fn gradient(ln: Line) -> f64 {
     let rise = ln.end.y - ln.start.y;
     let run = ln.end.x - ln.start.x;
     rise / run
 }
 
-fn intersection(ln1: Line, ln2: Line) -> Option<Point> {
+#[uniffi_export_fn]
+pub fn intersection(ln1: Line, ln2: Line) -> Option<Point> {
     // TODO: yuck, should be able to take &Line as argument here
     // and have rust figure it out with a bunch of annotations...
     let g1 = gradient(ln1.clone());
@@ -40,5 +46,3 @@ fn intersection(ln1: Line, ln2: Line) -> Option<Point> {
     let x = (z2 - z1) / (g1 - g2);
     Some(Point { x, y: g1 * x + z1 })
 }
-
-include!(concat!(env!("OUT_DIR"), "/geometry.uniffi.rs"));

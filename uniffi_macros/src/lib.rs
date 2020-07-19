@@ -8,6 +8,7 @@
 //! we'll put some other code-annotation helper macros in here at some point.
 
 use quote::{format_ident, quote};
+use std::convert::TryFrom;
 use std::env;
 use std::path::PathBuf;
 use syn::{punctuated::Punctuated, LitStr, Token};
@@ -72,4 +73,196 @@ impl syn::parse::Parse for FilePaths {
                 .collect(),
         ))
     }
+}
+
+/// A macro to statically check consistency between names in the rust layer
+/// and the generated API.
+///
+/// Given a Rust type exported via uniffi, you can statically assert the exported
+/// name of the type like this:
+///
+/// ```
+/// uniffi_assert_type_name!(ExampleType, "ExampleType");
+/// ```
+///
+/// If the generated API does not export that type under the given name, this
+/// will generate a compile-time error. (It won't be a particularly *helpful*
+/// error, unfortunately, at least until the `const_panic` feature is stabilised).
+///
+/// The uniffi proc macros can only operate based on local information, which
+/// means that the generated API defintion for a function must declare its types
+/// based on the *textual* type names used in the exported rust function. This
+/// raises the risk of code like the following compiling successfully, but failing
+/// to generate a consistent API definition:
+///
+/// ```
+/// #[uniffi_export_record]
+/// pub struct Example {
+///     v: u32,
+/// }
+///
+/// type Renamed = Example;
+///
+/// #[uniffi_export_fn]
+/// pub fn my_example(arg: Renamed) -> u32 {
+///   arg.v
+/// }
+/// ```
+///
+/// The generated API definition for the `my_export` function would declare an
+/// argument type of `Renamed`, which does not correspond to any types in the API.
+/// By emitting a static assertion about the exported name of the type, we can
+/// prevent this code from compiling at all.
+#[proc_macro]
+pub fn uniffi_assert_type_name(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let TypeAndName {
+        typ,
+        sep_token,
+        name,
+    } = syn::parse_macro_input!(input as TypeAndName);
+    let name = name.value();
+    // We need to generate a `const` expression that is true iff the given
+    // name matches the name on the `ViaFfi` trait for the given type.
+    // Luckily, rust allows us to do the following in a const context:
+    //  * access the length of a static string
+    //  * access the underlying bytes of a static string
+    //  * compare two `u8`s for equality.
+    // That's enough for a very verbose byte-by-byte equality check
+    // against a known string.
+    let mut checks: Vec<proc_macro2::TokenStream> = vec![quote! {
+        NAME.len() == #name.len()
+    }];
+    if name.len() > 0 {
+        checks.extend(name.as_bytes().iter().enumerate().map(|(i, v)| {
+            let i = syn::Index::from(i);
+            quote! {
+                NAME.as_bytes()[#i] == #v
+            }
+        }));
+    }
+    let assertion = quote! {
+        static_assertions::const_assert!({
+            const NAME: &'static str = <#typ as uniffi::support::ViaFfi>::NAME;
+            #(#checks)&&*
+        });
+    };
+    assertion.into()
+}
+
+#[derive(Debug)]
+struct TypeAndName {
+    typ: syn::Type,
+    sep_token: Token![,],
+    name: syn::LitStr,
+}
+
+impl syn::parse::Parse for TypeAndName {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        Ok(TypeAndName {
+            typ: input.parse()?,
+            sep_token: input.parse()?,
+            name: input.parse()?,
+        })
+    }
+}
+
+#[proc_macro_attribute]
+pub fn uniffi_export_enum(
+    attrs: proc_macro::TokenStream,
+    body: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    if !attrs.is_empty() {
+        panic!("Macro attrs not supported, and this needs better error reporting")
+    }
+    let item = syn::parse_macro_input!(body as syn::ItemEnum);
+    match uniffi::macros::EnumDefinition::try_from(&item) {
+        Err(e) => e.to_compile_error(),
+        Ok(defn) => quote! {
+            #item
+            #defn
+        },
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
+pub fn uniffi_export_fn(
+    attrs: proc_macro::TokenStream,
+    body: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    if !attrs.is_empty() {
+        panic!("Macro attrs not supported, and this needs better error reporting")
+    }
+    let item = syn::parse_macro_input!(body as syn::ItemFn);
+    match uniffi::macros::FunctionDefinition::try_from(&item) {
+        Err(e) => e.to_compile_error(),
+        Ok(defn) => quote! {
+            #item
+            #defn
+        },
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
+pub fn uniffi_export_record(
+    attrs: proc_macro::TokenStream,
+    body: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    if !attrs.is_empty() {
+        panic!("Macro attrs not supported, and this needs better error reporting")
+    }
+    let item = syn::parse_macro_input!(body as syn::ItemStruct);
+    let parsed = format!("RECORD {:?}", item);
+    match uniffi::macros::RecordDefinition::try_from(&item) {
+        Err(e) => e.to_compile_error(),
+        Ok(defn) => quote! {
+            #[doc=#parsed]
+            #item
+            #defn
+        },
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
+pub fn uniffi_export_class(
+    attrs: proc_macro::TokenStream,
+    body: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    if !attrs.is_empty() {
+        panic!("Macro attrs not supported, and this needs better error reporting")
+    }
+    let item = syn::parse_macro_input!(body as syn::ItemStruct);
+    let parsed = format!("CLASS {:?}", item);
+    match uniffi::macros::RecordDefinition::try_from(&item) {
+        Err(e) => e.to_compile_error(),
+        Ok(defn) => quote! {
+            #[doc=#parsed]
+            #item
+            #defn
+        },
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
+pub fn uniffi_export_methods(
+    attrs: proc_macro::TokenStream,
+    body: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    if !attrs.is_empty() {
+        panic!("Macro attrs not supported, and this needs better error reporting")
+    }
+    let item = syn::parse_macro_input!(body as syn::ItemImpl);
+    let parsed = format!("METHODS {:?}", item);
+    match uniffi::macros::MethodDefinitions::try_from(&item) {
+        Err(e) => e.to_compile_error(),
+        Ok(defns) => quote! {
+            #[doc=#parsed]
+            #item
+            #defns
+        },
+    }
+    .into()
 }

@@ -119,6 +119,7 @@ pub unsafe trait ViaFfi: Sized {
     type Value;
     fn into_ffi_value(self) -> Self::Value;
     fn try_from_ffi_value(v: Self::Value) -> Result<Self>;
+    const NAME: &'static str;
 }
 
 macro_rules! impl_via_ffi_for_primitive {
@@ -127,6 +128,7 @@ macro_rules! impl_via_ffi_for_primitive {
       type Value = Self;
       #[inline] fn into_ffi_value(self) -> Self::Value { self }
       #[inline] fn try_from_ffi_value(v: Self::Value) -> Result<Self> { Ok(v) }
+      const NAME: &'static str = "";
     }
   )+}
 }
@@ -145,6 +147,7 @@ unsafe impl<T: ViaFfiUsingByteBuffer> ViaFfi for T {
     fn try_from_ffi_value(v: Self::Value) -> anyhow::Result<Self> {
         try_lift(v)
     }
+    const NAME: &'static str = "";
 }
 
 unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
@@ -157,4 +160,5 @@ unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
     fn try_from_ffi_value(v: Self::Value) -> anyhow::Result<Self> {
         try_lift(v)
     }
+    const NAME: &'static str = "";
 }

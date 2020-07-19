@@ -2,22 +2,27 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// A point in two-dimensional space.
+use uniffi_macros::*;
+
+/// A point in two-dimensional space.
+#[uniffi_export_record]
 #[derive(Debug, Clone)]
-struct Point {
+pub struct Point {
     x: f64,
     y: f64,
 }
 
-// A magnitude and direction in two-dimensional space.
-// For simplicity we represent this as a point relative to the origin.
+/// A magnitude and direction in two-dimensional space.
+/// For simplicity we represent this as a point relative to the origin.
+#[uniffi_export_record]
 #[derive(Debug, Clone)]
-struct Vector {
+pub struct Vector {
     dx: f64,
     dy: f64,
 }
 
-// Move from the given Point, according to the given Vector.
+/// Move from the given Point, according to the given Vector.
+#[uniffi_export_fn]
 fn translate(p: Point, v: Vector) -> Point {
     Point {
         x: p.x + v.dx,
@@ -25,31 +30,31 @@ fn translate(p: Point, v: Vector) -> Point {
     }
 }
 
-// An entity in our imaginary world, which occupies a position in space
-// and which can move about over time.
-#[derive(Debug, Clone)]
-struct Sprite {
+/// An entity in our imaginary world, which occupies a position in space
+/// and which can move about over time.
+#[uniffi_export_class]
+#[derive(Debug)]
+pub struct Sprite {
     current_position: Point,
 }
 
+#[uniffi_export_methods]
 impl Sprite {
-    fn new(initial_position: Point) -> Sprite {
+    pub fn new(initial_position: Point) -> Sprite {
         Sprite {
             current_position: initial_position,
         }
     }
 
-    fn get_position(&self) -> Point {
+    pub fn get_position(&self) -> Point {
         self.current_position.clone()
     }
 
-    fn move_to(&mut self, position: Point) {
+    pub fn move_to(&mut self, position: Point) {
         self.current_position = position;
     }
 
-    fn move_by(&mut self, direction: Vector) {
+    pub fn move_by(&mut self, direction: Vector) {
         self.current_position = translate(self.current_position.clone(), direction)
     }
 }
-
-include!(concat!(env!("OUT_DIR"), "/sprites.uniffi.rs"));

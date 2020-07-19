@@ -134,6 +134,7 @@ use anyhow::Result;
 
 pub mod bindings;
 pub mod interface;
+pub mod macros;
 pub mod scaffolding;
 pub mod support;
 
