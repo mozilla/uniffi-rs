@@ -44,7 +44,16 @@ class RustBufferStream(object):
         return self._unpack_from(4, ">i")
 
     def putInt(self, v):
-        self._pack_into(8, ">i", v)
+        self._pack_into(4, ">i", v)
+
+    def getString(self):
+        numBytes = self.getInt()
+        return self._unpack_from(numBytes, ">{}s".format(numBytes)).decode('utf-8')
+    def putString(self, v):
+        valueBytes = v.encode('utf-8')
+        numBytes = len(valueBytes)
+        self.putInt(numBytes)
+        self._pack_into(numBytes, ">{}s".format(numBytes), valueBytes)
         
 def liftOptional(rbuf, liftFrom):
     return liftFromOptional(RustBufferStream(rbuf), liftFrom)
@@ -53,3 +62,9 @@ def liftFromOptional(buf, liftFrom):
     if buf.getByte() == b"\x00":
         return None
     return liftFrom(buf)
+
+def liftString(cPtr):
+    try:
+        return ctypes.cast(cPtr, ctypes.c_char_p).value.decode('utf-8')
+    finally:
+        _UniFFILib.{{ ci.ffi_string_free().name() }}(cPtr)

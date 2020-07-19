@@ -45,7 +45,7 @@ lazy_static::lazy_static! {
         {%- for arg in meth.ffi_func().arguments() %}
         {{ arg.name() }}: {{ arg.type_()|type_c }},
         {%- endfor %}
-    ) -> {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_c }}{% else %}(){% endmatch %} {
+    ) -> {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|ret_type_c }}{% else %}(){% endmatch %} {
         log::debug!("{{ meth.ffi_func().name() }}");
         let mut err: ffi_support::ExternError = Default::default(); // XXX TODO: error handling!
         // If the method does not have the same signature as declared in the IDL, then

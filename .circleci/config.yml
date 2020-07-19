@@ -24,7 +24,7 @@ jobs:
   Rust and Foreign Language tests:
     docker:
       - image: rfkelly/uniffi-ci:latest
-    resource_class: small
+    resource_class: medium
     steps:
       - run: cat ~/.profile >> $BASH_ENV
       - checkout

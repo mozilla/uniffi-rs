@@ -47,8 +47,9 @@ mod filters {
             TypeReference::Float => "Float".to_string(),
             TypeReference::Double => "Double".to_string(),
             TypeReference::Bytes => "RustBuffer.ByValue".to_string(),
-            // These types need conversation, and special handling for lifting/lowering.
+            // These types need conversion, and special handling for lifting/lowering.
             TypeReference::Boolean => "Boolean".to_string(),
+            TypeReference::String => "String".to_string(),
             TypeReference::Enum(name) => class_name_kt(name)?,
             TypeReference::Record(name) => class_name_kt(name)?,
             TypeReference::Optional(t) => format!("{}?", type_kt(t)?),
@@ -63,6 +64,24 @@ mod filters {
             TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Object(_) => "Long".to_string(),
+            TypeReference::String => "String".to_string(),
+            // We use a Pointer here specifically for the `free` function
+            // In a perfect world we wouldn't need an extra variant
+            // but our Rust bindings require `Pointer` for the free function
+            // and `String` for other string-accepting functions.
+            TypeReference::RawStringPointer => "Pointer".to_string(),
+            _ => type_kt(type_)?,
+        })
+    }
+
+    pub fn ret_type_c(type_: &TypeReference) -> Result<String, askama::Error> {
+        Ok(match type_ {
+            TypeReference::Boolean => "Byte".to_string(),
+            TypeReference::Enum(_) => "Int".to_string(),
+            TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
+            TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
+            TypeReference::Object(_) => "Long".to_string(),
+            TypeReference::String => "Pointer".to_string(),
             _ => type_kt(type_)?,
         })
     }

@@ -3,6 +3,10 @@
 
 {% include "RustBuffer.rs" %}
 
+// We add support for freeing strings, some crates won't need this, but it seems safe
+// enough to include anyways since strings are such a common use case.
+ffi_support::define_string_destructor!({{ ci.ffi_string_free().name() }});
+
 // For each enum declared in the IDL, we assume the caller as provided a corresponding
 // rust `enum`. We provide the traits for sending it across the FFI, which will fail to
 // compile if the provided struct has a different shape to the one declared in the IDL.
