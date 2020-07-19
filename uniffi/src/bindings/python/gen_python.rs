@@ -46,6 +46,7 @@ mod filters {
             TypeReference::Float => "ctypes.c_float".to_string(),
             TypeReference::Double => "ctypes.c_double".to_string(),
             TypeReference::Boolean => "ctypes.c_byte".to_string(),
+            TypeReference::String => "ctypes.c_char_p".to_string(),
             TypeReference::Bytes => "RustBuffer".to_string(),
             TypeReference::Enum(_) => "ctypes.c_uint32".to_string(),
             TypeReference::Record(_) => "RustBuffer".to_string(),
@@ -76,6 +77,7 @@ mod filters {
             | TypeReference::U64
             | TypeReference::Float
             | TypeReference::Double
+            | TypeReference::String
             | TypeReference::Boolean => format!("{} = {}", nm, nm),
             TypeReference::Enum(type_name) => format!("{} = {}({})", nm, type_name, nm),
             TypeReference::Record(type_name) => format!("{} = {}._coerce({})", nm, type_name, nm),
@@ -92,6 +94,7 @@ mod filters {
             | TypeReference::Double
             | TypeReference::Boolean => nm.to_string(),
             TypeReference::Enum(_) => format!("{}.value", nm),
+            TypeReference::String => format!("{}.encode('utf-8')", nm),
             TypeReference::Record(type_name) => format!("{}._lower({})", type_name, nm),
             TypeReference::Optional(_type) => format!(
                 "lowerOptional({}, lambda buf, v: {})",
@@ -136,6 +139,7 @@ mod filters {
             | TypeReference::Double
             | TypeReference::Boolean => format!("{}", nm),
             TypeReference::Enum(type_name) => format!("{}({})", type_name, nm),
+            TypeReference::String => format!("{}.decode('utf-8')", nm), // TODO: Figure out the freeing...
             TypeReference::Record(type_name) => format!("{}._lift({})", type_name, nm),
             TypeReference::Optional(type_) => format!(
                 "liftOptional({}, lambda buf: {})",

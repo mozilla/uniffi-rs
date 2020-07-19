@@ -12,5 +12,7 @@ Newcomers are recommended to explore them in the following order:
   data.
 * [`./sprites/`](./sprites/) shows how to work with stateful objects that have methods, in classical
   object-oriented style.
+* [`./todolist`](./todolist/) Simple todolist that only adds items and shows the last item, meant to show how interacting with strings works.
+  might look like for an actual real-world component.
 * [`./fxa-client`](./fxa-client/) doesn't work yet, but it contains aspirational example of what the IDL
   might look like for an actual real-world component.

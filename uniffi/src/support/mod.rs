@@ -158,3 +158,35 @@ unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
         try_lift(v)
     }
 }
+
+unsafe impl<'a> ViaFfi for &'a str {
+    type Value = ffi_support::FfiStr<'a>;
+    fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
+        Ok(v.as_str())
+    }
+
+    // Hmmmm this should never happen since there is asymmetry with strings
+    // We typically go FfiStr -> &str for argumetns and 
+    // String -> *mut c_char for return values. 
+    // One thing to consider is if we should split this trait into two traits?
+    // But this might not we worth it since most types have symmetry.... aaaaaaaaah.
+    fn into_ffi_value(self) -> Self::Value {
+        unsafe {ffi_support::FfiStr::from_raw(self.as_ptr() as *const i8)}
+    }
+}
+
+unsafe impl  ViaFfi for String {
+    type Value = *mut std::os::raw::c_char;
+    fn into_ffi_value(self) -> Self::Value {
+        ffi_support::rust_string_to_c(self)
+    }
+
+    // Hmmmm this should never happen since there is asymmetry with strings
+    // We typically go FfiStr -> &str for argumetns and 
+    // String -> *mut c_char for return values. 
+    // One thing to consider is if we should split this trait into two traits?
+    // But this might not we worth it since most types have symmetry.... aaaaaaaaah.
+    fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
+        Ok(unsafe {ffi_support::FfiStr::from_raw(v).into_string()})
+    }
+}

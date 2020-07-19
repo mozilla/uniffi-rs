@@ -109,6 +109,15 @@ protocol Lowerable {
     func lower(into: Writer)
 }
 
+extension String {
+    static func fromFFIValue(_ v: UnsafeMutablePointer<CChar>?) throws -> Self {
+        String(cString: v!)
+    }
+    func toFFIValue() -> Self {
+        self
+    }
+}
+
 // Types conforming to `Primitive` pass themselves directly over the FFI.
 // Roughly equivalent to the `ViaFfi` implementations for primitives in Rust.
 protocol Primitive {}

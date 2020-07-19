@@ -84,6 +84,29 @@ mod filters {
             TypeReference::Float => "float".into(),
             TypeReference::Double => "double".into(),
             TypeReference::Bytes => "RustBuffer".into(),
+            TypeReference::String => "char const *_Nullable".into(),
+            // Our FFI lowers Booleans into bytes, to work around JNA bugs.
+            // We'll lift these up into Booleans on the Swift side.
+            TypeReference::Boolean => "uint8_t".into(),
+            // These types need conversion, and special handling for lifting/lowering.
+            TypeReference::Enum(_) => "uint32_t".into(),
+            TypeReference::Record(_) => "RustBuffer".into(),
+            TypeReference::Optional(_) => "RustBuffer".into(),
+            TypeReference::Object(_) => "uint64_t".into(),
+            _ => panic!("[TODO: decl_c({:?})", type_),
+        })
+    }
+
+    /// Declares a C type in the bridging header.
+    pub fn ret_c(type_: &TypeReference) -> Result<String, askama::Error> {
+        Ok(match type_ {
+            // These native types map nicely to the FFI without conversion.
+            TypeReference::U32 => "uint32_t".into(),
+            TypeReference::U64 => "uint64_t".into(),
+            TypeReference::Float => "float".into(),
+            TypeReference::Double => "double".into(),
+            TypeReference::Bytes => "RustBuffer".into(),
+            TypeReference::String => "char *_Nullable".into(),
             // Our FFI lowers Booleans into bytes, to work around JNA bugs.
             // We'll lift these up into Booleans on the Swift side.
             TypeReference::Boolean => "uint8_t".into(),
@@ -103,6 +126,7 @@ mod filters {
             TypeReference::U64 => "UInt64".into(),
             TypeReference::Float => "Float".into(),
             TypeReference::Double => "Double".into(),
+            TypeReference::String => "String".into(),
             // TypeReference::Bytes => "Data".into(),
             TypeReference::Boolean => "Bool".into(),
             TypeReference::Enum(name) => name.into(),

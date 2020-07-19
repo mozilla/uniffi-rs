@@ -12,7 +12,7 @@ typedef struct RustBuffer {
 } RustBuffer;
 
 {% for func in ci.iter_ffi_function_definitions() -%}
-    {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|decl_c }}{% when None %}void{% endmatch %} {{ func.name() }}(
+    {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ret_c }}{% when None %}void{% endmatch %} {{ func.name() }}(
       {%- for arg in func.arguments() %}
       {{ arg.type_()|decl_c }} {{ arg.name() }}{% if loop.last %}{% else %},{% endif %}
       {%- endfor %}

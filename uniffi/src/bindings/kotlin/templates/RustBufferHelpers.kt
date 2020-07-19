@@ -141,6 +141,10 @@ fun Double.lowerInto(buf: ByteBuffer) {
     buf.putDouble(this)
 }
 
+fun String.lower(): String {
+    return this
+}
+
 fun<T> lowerOptional(v: T?, lowersIntoSize: (T) -> Int, lowerInto: (T, ByteBuffer) -> Unit): RustBuffer.ByValue {
     return lowerIntoRustBuffer(v, { v -> lowersIntoSizeOptional(v, lowersIntoSize) }, { v, buf -> lowerIntoOptional(v, buf, lowerInto) })
 }

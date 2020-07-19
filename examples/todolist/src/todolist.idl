@@ -1,0 +1,8 @@
+namespace todolist {
+};
+
+interface TodoList {
+    constructor();
+    void add_item(string todo);
+    string get_last();
+};
