@@ -84,7 +84,7 @@ mod filters {
             TypeReference::Float => "float".into(),
             TypeReference::Double => "double".into(),
             TypeReference::Bytes => "RustBuffer".into(),
-            TypeReference::String => "char const *_Nullable".into(),
+            TypeReference::String | TypeReference::CString => "char const *_Nonnull".into(),
             // Our FFI lowers Booleans into bytes, to work around JNA bugs.
             // We'll lift these up into Booleans on the Swift side.
             TypeReference::Boolean => "uint8_t".into(),
@@ -106,7 +106,7 @@ mod filters {
             TypeReference::Float => "float".into(),
             TypeReference::Double => "double".into(),
             TypeReference::Bytes => "RustBuffer".into(),
-            TypeReference::String => "char *_Nullable".into(),
+            TypeReference::String => "char *_Nonnull".into(),
             // Our FFI lowers Booleans into bytes, to work around JNA bugs.
             // We'll lift these up into Booleans on the Swift side.
             TypeReference::Boolean => "uint8_t".into(),

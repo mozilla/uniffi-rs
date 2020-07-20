@@ -31,6 +31,12 @@ pub enum TypeReference {
     Float,
     Double,
     String,
+    // I don't like this too much since it's not a part of the IDL, and hopefully I can get rid of it
+    // But keeping it for the draft until I have a better idea
+    // on how to model the freeing. Normal Kotlin functions that take
+    // strings take a "String" across the ffi, but the "free" function
+    // takes a "Pointer".
+    CString,
     Bytes,
     Object(String),
     Record(String),

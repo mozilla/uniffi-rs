@@ -110,8 +110,11 @@ protocol Lowerable {
 }
 
 extension String {
-    static func fromFFIValue(_ v: UnsafeMutablePointer<CChar>?) throws -> Self {
-        String(cString: v!)
+    static func fromFFIValue(_ v: UnsafeMutablePointer<CChar>) throws -> Self {
+        defer {
+            {{ ci.ffi_string_free().name() }}(v)
+        }
+        return String(cString: v)
     }
     func toFFIValue() -> Self {
         self

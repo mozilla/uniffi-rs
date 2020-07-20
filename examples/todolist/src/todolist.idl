@@ -1,8 +1,13 @@
 namespace todolist {
 };
 
+dictionary TodoEntry {
+    string text;
+};
+
 interface TodoList {
     constructor();
     void add_item(string todo);
+    void add_entry(TodoEntry entry);
     string get_last();
 };

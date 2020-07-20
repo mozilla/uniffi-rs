@@ -65,6 +65,7 @@ mod filters {
             TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Object(_) => "Long".to_string(),
             TypeReference::String => "String".to_string(),
+            TypeReference::CString => "Pointer".to_string(),
             _ => type_kt(type_)?,
         })
     }
@@ -76,7 +77,7 @@ mod filters {
             TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Object(_) => "Long".to_string(),
-            TypeReference::String => "Pointer?".to_string(),
+            TypeReference::String => "Pointer".to_string(),
             _ => type_kt(type_)?,
         })
     }
@@ -146,7 +147,6 @@ mod filters {
                 nm,
                 lift_from_kt(&"buf", t)?
             ),
-            TypeReference::String => format!("{}!!.getString(0, \"utf8\")", nm), // TODO: Implement freeing the allocated string, and maybe error out instead of the !!
             _ => format!("{}.lift({})", type_kt(type_)?, nm),
         })
     }

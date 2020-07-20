@@ -162,6 +162,19 @@ impl<'ci> ComponentInterface {
         }
     }
 
+    pub fn ffi_string_free(&self) -> FFIFunction {
+        FFIFunction {
+            name: format!("{}_string_free", self.namespace()),
+            arguments: vec![Argument {
+                name: "str".to_string(),
+                type_: TypeReference::CString,
+                optional: false,
+                default: None,
+            }],
+            return_type: None,
+        }
+    }
+
     pub fn iter_ffi_function_definitions(&self) -> Vec<FFIFunction> {
         self.objects
             .iter()
@@ -174,9 +187,13 @@ impl<'ci> ComponentInterface {
             .flatten()
             .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
             .chain(
-                vec![self.ffi_bytebuffer_alloc(), self.ffi_bytebuffer_free()]
-                    .iter()
-                    .cloned(),
+                vec![
+                    self.ffi_bytebuffer_alloc(),
+                    self.ffi_bytebuffer_free(),
+                    self.ffi_string_free(),
+                ]
+                .iter()
+                .cloned(),
             )
             .collect()
     }

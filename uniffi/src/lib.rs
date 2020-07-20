@@ -206,7 +206,7 @@ pub fn run_bindgen_helper(component_name: Option<&str>) -> Result<()> {
                 .arg(
                     clap::Arg::with_name("lib_file")
                         .takes_value(true)
-                        .required(default_lib_file.is_some())
+                        .required(default_lib_file.is_none())
                         .help("compiled uniffi library to generate bindings for"),
                 )
                 .arg(
