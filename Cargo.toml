@@ -5,4 +5,5 @@ members = [
   "examples/arithmetic",
   "examples/geometry",
   "examples/sprites",
+  "examples/todolist"
 ]

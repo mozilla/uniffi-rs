@@ -46,6 +46,13 @@ mod filters {
             TypeReference::Float => "ctypes.c_float".to_string(),
             TypeReference::Double => "ctypes.c_double".to_string(),
             TypeReference::Boolean => "ctypes.c_byte".to_string(),
+            // We use a c_void_p instead of a c_char_p since python seems to
+            // create it's own string if we use c_char_p, and that prevents us
+            // from freeing. I could be wrong, but that's what I got from this:
+            // https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
+            TypeReference::String | TypeReference::RawStringPointer => {
+                "ctypes.c_void_p".to_string()
+            }
             TypeReference::Bytes => "RustBuffer".to_string(),
             TypeReference::Enum(_) => "ctypes.c_uint32".to_string(),
             TypeReference::Record(_) => "RustBuffer".to_string(),
@@ -76,6 +83,8 @@ mod filters {
             | TypeReference::U64
             | TypeReference::Float
             | TypeReference::Double
+            | TypeReference::String
+            | TypeReference::RawStringPointer
             | TypeReference::Boolean => format!("{} = {}", nm, nm),
             TypeReference::Enum(type_name) => format!("{} = {}({})", nm, type_name, nm),
             TypeReference::Record(type_name) => format!("{} = {}._coerce({})", nm, type_name, nm),
@@ -92,6 +101,7 @@ mod filters {
             | TypeReference::Double
             | TypeReference::Boolean => nm.to_string(),
             TypeReference::Enum(_) => format!("{}.value", nm),
+            TypeReference::String => format!("{}.encode('utf-8')", nm),
             TypeReference::Record(type_name) => format!("{}._lower({})", type_name, nm),
             TypeReference::Optional(_type) => format!(
                 "lowerOptional({}, lambda buf, v: {})",
@@ -109,6 +119,7 @@ mod filters {
         Ok(match type_ {
             TypeReference::U32 => "4".to_string(),
             TypeReference::Double => "8".to_string(),
+            TypeReference::String => format!("4 + len({}.encode('utf-8'))", nm),
             TypeReference::Record(type_name) => format!("{}._lowersIntoSize({})", type_name, nm),
             _ => panic!("[TODO: lowers_into_size_py({:?})]", type_),
         })
@@ -121,6 +132,7 @@ mod filters {
         Ok(match type_ {
             TypeReference::Double => format!("{}.putDouble({})", target, nm),
             TypeReference::U32 => format!("{}.putInt({})", target, nm),
+            TypeReference::String => format!("{}.putString({})", target, nm),
             TypeReference::Record(type_name) => {
                 format!("{}._lowerInto({}, {})", type_name, nm, target)
             }
@@ -136,6 +148,7 @@ mod filters {
             | TypeReference::Double
             | TypeReference::Boolean => format!("{}", nm),
             TypeReference::Enum(type_name) => format!("{}({})", type_name, nm),
+            TypeReference::String => format!("liftString({})", nm),
             TypeReference::Record(type_name) => format!("{}._lift({})", type_name, nm),
             TypeReference::Optional(type_) => format!(
                 "liftOptional({}, lambda buf: {})",
@@ -154,6 +167,7 @@ mod filters {
             TypeReference::U32 => format!("{}.getInt()", nm),
             TypeReference::Double => format!("{}.getDouble()", nm),
             TypeReference::Record(type_name) => format!("{}._liftFrom({})", type_name, nm),
+            TypeReference::String => format!("{}.getString()", nm),
             _ => panic!("[TODO: lift_from_py({:?})]", type_),
         })
     }

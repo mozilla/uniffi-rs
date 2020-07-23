@@ -9,7 +9,7 @@ pub extern "C" fn {{ func.ffi_func().name() }}(
     {%- for arg in func.ffi_func().arguments() %}
     {{ arg.name() }}: {{ arg.type_()|type_c }},
     {%- endfor %}
-) -> {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_c }}{% else %}(){% endmatch %} {
+) -> {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|ret_type_c }}{% else %}(){% endmatch %} {
     log::debug!("{{ func.ffi_func().name() }}");
     // If the provided function does not match the signature specified in the IDL
     // then this attempt to cal it will not compile, and will give guideance as to why.

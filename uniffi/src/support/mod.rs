@@ -5,6 +5,7 @@
 use anyhow::{bail, Result};
 pub use bytes::buf::{Buf, BufMut};
 use ffi_support::ByteBuffer;
+use std::convert::TryFrom;
 
 pub mod tests;
 
@@ -156,5 +157,63 @@ unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
     #[inline]
     fn try_from_ffi_value(v: Self::Value) -> anyhow::Result<Self> {
         try_lift(v)
+    }
+}
+
+unsafe impl<'a> ViaFfi for &'a str {
+    type Value = ffi_support::FfiStr<'a>;
+    fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
+        Ok(v.as_str())
+    }
+
+    // This should never happen since there is asymmetry with strings
+    // We typically go FfiStr -> &str for argumetns and
+    // String -> *mut c_char for return values.
+    // We panic for now, the ViaFfi triat will be
+    // broken down to IntoFfi and TryFromFfi to prevent us from having
+    // to add this
+    fn into_ffi_value(self) -> Self::Value {
+        panic!("Invalid conversion. into_ffi_value should not be called on a &str, a String -> *mut c_char conversion should be used instead.")
+    }
+}
+
+unsafe impl ViaFfi for String {
+    type Value = *mut std::os::raw::c_char;
+    fn into_ffi_value(self) -> Self::Value {
+        ffi_support::rust_string_to_c(self)
+    }
+
+    // This should never happen since there is asymmetry with strings
+    // We typically go FfiStr -> &str for argumetns and
+    // String -> *mut c_char for return values.
+    // We panic for now, the ViaFfi triat will be
+    // broken down to IntoFfi and TryFromFfi to prevent us from having
+    // to add this
+    fn try_from_ffi_value(_: Self::Value) -> Result<Self> {
+        panic!("Invalid conversion. try_from_ffi_value should not be called on a c_char, an FfiStr<'_> -> &str conversion should be used instead.")
+    }
+}
+
+impl Lowerable for String {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        let len = u32::try_from(self.len()).unwrap();
+        buf.put_u32(len); // We limit strings to u32::MAX bytes
+        buf.put(self.as_bytes());
+    }
+}
+
+// Having this be for &str instead of String would have been nice for consistency but...
+// it seems very dangerous and only possible with some unsafe magic
+// and having a slice referencing the buffer seems like a recipie for
+// disaster... so we have a String here instead.
+impl Liftable for String {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 4)?;
+        let len = buf.get_u32();
+        check_remaining(buf, len as usize)?;
+        let bytes = &buf.bytes()[..len as usize];
+        let res = String::from_utf8(bytes.to_vec())?;
+        buf.advance(len as usize);
+        Ok(res)
     }
 }

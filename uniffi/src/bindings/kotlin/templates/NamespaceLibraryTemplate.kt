@@ -25,6 +25,6 @@ internal interface _UniFFILib : Library {
             {{ arg.name() }}: {{ arg.type_()|type_c }}{% if loop.last %}{% else %},{% endif %}
         {%- endfor %}
         // TODO: When we implement error handling, there will be an out error param here.
-        ): {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|type_c }}{% when None %}Unit{% endmatch %}
+        ): {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ret_type_c }}{% when None %}Unit{% endmatch %}
     {% endfor -%}
 }

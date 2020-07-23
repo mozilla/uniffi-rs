@@ -141,6 +141,37 @@ fun Double.lowerInto(buf: ByteBuffer) {
     buf.putDouble(this)
 }
 
+fun String.lower(): String {
+    return this
+}
+
+fun String.lowerInto(buf: ByteBuffer) {
+    val byteArr = this.toByteArray()
+    buf.putInt(byteArr.size)
+    buf.put(byteArr)
+}
+
+fun String.Companion.liftFrom(buf: ByteBuffer): String {
+    val len = Int.liftFrom(buf)
+    val byteArr = ByteArray(len)
+    buf.get(byteArr)
+    return byteArr.toString(Charsets.UTF_8)
+}
+
+fun String.lowersIntoSize(): Int {
+    return this.toByteArray().size + 4
+}
+
+fun String.Companion.lift(ptr: Pointer): String {
+    try {
+        return ptr.getString(0, "utf8")
+    } finally {
+        _UniFFILib.INSTANCE.{{ ci.ffi_string_free().name() }}(ptr)
+    }
+}
+
+
+
 fun<T> lowerOptional(v: T?, lowersIntoSize: (T) -> Int, lowerInto: (T, ByteBuffer) -> Unit): RustBuffer.ByValue {
     return lowerIntoRustBuffer(v, { v -> lowersIntoSizeOptional(v, lowersIntoSize) }, { v, buf -> lowerIntoOptional(v, buf, lowerInto) })
 }

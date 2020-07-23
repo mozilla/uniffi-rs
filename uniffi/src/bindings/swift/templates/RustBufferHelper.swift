@@ -49,6 +49,21 @@ class Reader {
         offset = range.upperBound
         return value.bigEndian
     }
+    
+    // Reads an arbitrary number of bytes, to be used to read
+    // raw bytes, this is useful when lifting strings
+    func readBytes(count: Int) throws -> Array<UInt8> {
+        let range = offset..<(offset+count)
+        guard data.count >= range.upperBound else {
+            throw InternalError.bufferOverflow
+        }
+        var value = [UInt8](repeating: 0, count: count)
+        value.withUnsafeMutableBufferPointer({ buffer in 
+            data.copyBytes(to: buffer, from: range)
+        })
+        offset = range.upperBound
+        return value
+    }
 
     // Reads a float at the current offset.
     @inlinable
@@ -79,6 +94,10 @@ class Writer {
         self.offset = 0
     }
 
+    func writeBytes<S>(_ byteArr: S) where S: Sequence, S.Element == UInt8 {
+        bytes.append(contentsOf: byteArr)
+    }
+
     // Writes an integer in big-endian order.
     func writeInt<T: FixedWidthInteger>(_ value: T) {
         var value = value.bigEndian
@@ -107,6 +126,29 @@ protocol Liftable {
 // into a byte buffer. Equivalent to the `Lowerable` trait on the Rust side.
 protocol Lowerable {
     func lower(into: Writer)
+}
+
+extension String: Liftable, Lowerable {
+    static func fromFFIValue(_ v: UnsafeMutablePointer<CChar>) throws -> Self {
+        defer {
+            {{ ci.ffi_string_free().name() }}(v)
+        }
+        return String(cString: v)
+    }
+    func toFFIValue() -> Self {
+        self
+    }
+
+    static func lift(from buf: Reader) throws -> Self {
+        let len: UInt32 = try buf.readInt()
+        return String(bytes: try buf.readBytes(count: Int(len)), encoding: String.Encoding.utf8)!
+    }
+
+    func lower(into buf: Writer) {
+        let len = UInt32(self.utf8.count)
+        buf.writeInt(len)
+        buf.writeBytes(self.utf8)
+    }
 }
 
 // Types conforming to `Primitive` pass themselves directly over the FFI.
