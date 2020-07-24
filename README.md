@@ -1,6 +1,6 @@
 # uniffi
 
-This is a little experiment in building cross-platform components in rust, based on things
+This is a little experiment in building cross-platform components in Rust, based on things
 we've learned in the [mozilla/application-services](https://github.com/mozilla/application-services)
 project.
 
@@ -21,7 +21,7 @@ And of course, we want to do this in a way that's convenient, maintainable, and 
 
 ## How?
 
-Our current approach to building shared components in rust involves writing a lot
+Our current approach to building shared components in Rust involves writing a lot
 of boilerplate code by hand. Take the [fxa-client component](https://github.com/mozilla/application-services/tree/master/components/fxa-client)
 as an example, which contains:
 
@@ -81,7 +81,7 @@ proposal (henceforth "WIT"). WIT aims to solve a very similarly-shaped problem t
 with here, and by organizing this work around similar concepts, we might make it easier to one day
 replace all of this with direct use of WIT tooling.
 
-In the future, we may be able to generate the Interface Definition from annotations on the rust code
+In the future, we may be able to generate the Interface Definition from annotations on the Rust code
 (in the style of `wasm_bindgen` or perhaps the [`cxx` crate](https://github.com/dtolnay/cxx)) rather than from a separate IDL file. But it's much easier to get
 started using a separate file.
 
@@ -173,7 +173,7 @@ via an opaque byte buffer, with the calling side serializing the record into the
 side deserializing it. Buffers are always freed by the host language side (using a provided destructor
 function for buffers that originate from Rust).
 
-When generating the component scaffolding, we'll turn the record description into a rust `struct`
+When generating the component scaffolding, we'll turn the record description into a Rust `struct`
 with appropriate fields, and helper methods for serializing/deserializing from a byte buffer.
 
 When generating language-specific bindings, records become a "data class" or similar construct,
@@ -195,11 +195,11 @@ interface MyObject {
 }
 ```
 
-In current hand-written compoinents we use ad-hoc Protobuf messages for this, e.g. the fxa-client
+In current hand-written components we use ad-hoc Protobuf messages for this, e.g. the fxa-client
 component has an `AccountEvent` record for a single event and an `AccountEvents` record for a list
 of them. Since we're auto-generating things we'll instead use a more generic, re-useable implementation.
 
-In the FFI layer, these operate similarly to records, passing back and forth via an opque bytebuffer.
+In the FFI layer, these operate similarly to records, passing back and forth via an opaque bytebuffer.
 
 When generating the component scaffolding, we'll try to use Rust's rich iterator support to accept
 any iterable as a sequence return value. Sequence arguments will arrive as Vecs.
@@ -221,7 +221,7 @@ enum AccountEventType {
 };
 ```
 
-In the FFI layer these will be  encoded into an unsigned integer type.
+In the FFI layer these will be encoded into an unsigned integer type.
 
 When generating the component scaffolding, these will become a Rust enum in the obvious fashion.
 
@@ -229,7 +229,7 @@ When generating language-specific bindings, these will show up however it's most
 enum to show up in that language.
 
 There is also more sophisticated stuff in there, like union types and nullable
-types. I haven't really thought about how to map those on to what we need.
+types. We haven't really thought about how to map those on to what we need.
 
 #### TODO: Nullable types
 
@@ -244,7 +244,7 @@ any details of how they might show up in a sensible way on both sides of the gen
 
 #### TODO: Callbacks
 
-WebIDL has some syntax for them, but I haven't looked at this in any detail
+WebIDL has some syntax for them, but we haven't looked at this in any detail
 at all. It seems hard, but also extremely valuable because handling callbacks
 across the FFI boundary has been a pain point for us in the past.
 
