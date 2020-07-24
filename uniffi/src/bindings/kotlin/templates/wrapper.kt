@@ -37,6 +37,9 @@ import java.util.concurrent.atomic.AtomicLong
 {% include "EnumTemplate.kt" %}
 {%- endfor -%}
 
+// Error definitions
+{% include "ErrorTemplate.kt" %}
+
 // Public facing records
 {%- for rec in ci.iter_record_definitions() %}
 {% include "RecordTemplate.kt" %}

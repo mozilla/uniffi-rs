@@ -76,6 +76,7 @@ pub struct ComponentInterface {
     records: Vec<Record>,
     functions: Vec<Function>,
     objects: Vec<Object>,
+    errors: Vec<Error>,
 }
 
 impl<'ci> ComponentInterface {
@@ -136,6 +137,10 @@ impl<'ci> ComponentInterface {
         self.objects.to_vec()
     }
 
+    pub fn iter_error_definitions(&self) -> Vec<Error> {
+        self.errors.to_vec()
+    }
+
     pub fn ffi_bytebuffer_alloc(&self) -> FFIFunction {
         FFIFunction {
             name: format!("{}_bytebuffer_alloc", self.namespace()),
@@ -147,6 +152,7 @@ impl<'ci> ComponentInterface {
                 default: None,
             }],
             return_type: Some(TypeReference::Bytes),
+            has_out_err: false,
         }
     }
 
@@ -161,6 +167,7 @@ impl<'ci> ComponentInterface {
                 default: None,
             }],
             return_type: None,
+            has_out_err: false,
         }
     }
 
@@ -175,6 +182,7 @@ impl<'ci> ComponentInterface {
                 default: None,
             }],
             return_type: None,
+            has_out_err: false,
         }
     }
 
@@ -228,26 +236,27 @@ impl<'ci> ComponentInterface {
     }
 
     fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
-        // XXX TODO: reject duplicates? there shouldn't be any thanks to type-finding pass.
         self.enums.push(defn);
         Ok(())
     }
 
     fn add_record_definition(&mut self, defn: Record) -> Result<()> {
-        // XXX TODO: reject duplicates? there shouldn't be any thanks to type-finding pass.
         self.records.push(defn);
         Ok(())
     }
 
     fn add_function_definition(&mut self, defn: Function) -> Result<()> {
-        // XXX TODO: reject duplicates.
         self.functions.push(defn);
         Ok(())
     }
 
     fn add_object_definition(&mut self, defn: Object) -> Result<()> {
-        // XXX TODO: reject duplicates? there shouldn't be any thanks to type-finding pass.
         self.objects.push(defn);
+        Ok(())
+    }
+
+    fn add_error_definition(&mut self, defn: Error) -> Result<()> {
+        self.errors.push(defn);
         Ok(())
     }
 
@@ -297,7 +306,16 @@ impl APIBuilder for weedle::Definition<'_> {
     fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
         match self {
             weedle::Definition::Namespace(d) => d.process(ci),
-            weedle::Definition::Enum(d) => ci.add_enum_definition(d.convert(ci)?),
+            weedle::Definition::Enum(d) => {
+                // We check if the enum represents an error...
+                if let Some(attrs) = &d.attributes {
+                    let attributes = Attributes::try_from(attrs)?;
+                    if attributes.contains_error_attr() {
+                        return ci.add_error_definition(d.convert(ci)?);
+                    }
+                }
+                ci.add_enum_definition(d.convert(ci)?)
+            }
             weedle::Definition::Dictionary(d) => ci.add_record_definition(d.convert(ci)?),
             weedle::Definition::Interface(d) => ci.add_object_definition(d.convert(ci)?),
             _ => bail!("don't know how to deal with {:?}", self),
@@ -347,6 +365,7 @@ pub struct Function {
     arguments: Vec<Argument>,
     return_type: Option<TypeReference>,
     ffi_func: FFIFunction,
+    attributes: Attributes,
 }
 
 impl Function {
@@ -363,12 +382,19 @@ impl Function {
         &self.ffi_func
     }
 
+    pub fn throws(&self) -> Option<&str> {
+        self.attributes.get_throws_err()
+    }
+
     fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
         self.ffi_func.name.push_str(ci_prefix);
         self.ffi_func.name.push_str("_");
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.clone();
         self.ffi_func.return_type = self.return_type.clone();
+        // Theoritically this should always be true
+        // but it's this way until we implement handling for panics
+        self.ffi_func.has_out_err = self.throws().is_some();
         Ok(())
     }
 }
@@ -404,6 +430,10 @@ pub struct FFIFunction {
     name: String,
     arguments: Vec<Argument>,
     return_type: Option<TypeReference>,
+    // We use this to determine if the C binding will require
+    // an `out error` parameter. All functions should require it,
+    // However, the buffer_alloc, buffer_free and string_free do not.
+    has_out_err: bool,
 }
 
 impl FFIFunction {
@@ -415,6 +445,10 @@ impl FFIFunction {
     }
     pub fn return_type(&self) -> Option<&TypeReference> {
         self.return_type.as_ref()
+    }
+
+    pub fn has_out_err(&self) -> bool {
+        self.has_out_err
     }
 }
 
@@ -429,9 +463,6 @@ impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {
 
 impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> {
     fn convert(&self, ci: &ComponentInterface) -> Result<Function> {
-        if self.attributes.is_some() {
-            bail!("no interface member attributes supported yet");
-        }
         Ok(Function {
             name: match self.identifier {
                 None => bail!("anonymous functions are not supported {:?}", self),
@@ -443,6 +474,10 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
             },
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
+            attributes: match &self.attributes {
+                Some(attr) => Attributes::try_from(attr)?,
+                None => Attributes(Vec::new()),
+            },
         })
     }
 }
@@ -468,6 +503,7 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
                     .iter()
                     .any(|attr| match attr {
                         Attribute::ByRef => true,
+                        _ => false,
                     }),
             },
             optional: self.optional.is_some(),
@@ -475,6 +511,21 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
                 None => None,
                 Some(v) => Some(v.value.convert(ci)?),
             },
+        })
+    }
+}
+
+impl APIConverter<Error> for weedle::EnumDefinition<'_> {
+    fn convert(&self, _ci: &ComponentInterface) -> Result<Error> {
+        Ok(Error {
+            name: self.identifier.0.to_string(),
+            values: self
+                .values
+                .body
+                .list
+                .iter()
+                .map(|v| v.0.to_string())
+                .collect(),
         })
     }
 }
@@ -498,9 +549,6 @@ impl Enum {
 
 impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
     fn convert(&self, _ci: &ComponentInterface) -> Result<Enum> {
-        if self.attributes.is_some() {
-            bail!("enum attributes are not supported yet");
-        }
         Ok(Enum {
             name: self.identifier.0.to_string(),
             values: self
@@ -568,6 +616,7 @@ pub struct Constructor {
     name: String,
     arguments: Vec<Argument>,
     ffi_func: FFIFunction,
+    attributes: Attributes,
 }
 
 impl Constructor {
@@ -583,6 +632,10 @@ impl Constructor {
         &self.ffi_func
     }
 
+    pub fn throws(&self) -> Option<&str> {
+        self.attributes.get_throws_err()
+    }
+
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
         self.ffi_func.name.push_str(ci_prefix);
         self.ffi_func.name.push_str("_");
@@ -591,7 +644,30 @@ impl Constructor {
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.clone();
         self.ffi_func.return_type = Some(TypeReference::Object(obj_prefix.to_string()));
+        // Theoritically this should always be true
+        // but it's this way until we implement handling for panics
+        self.ffi_func.has_out_err = self.throws().is_some();
         Ok(())
+    }
+}
+
+/// An error marked in the WebIDL with an [Error]
+/// attribute. Used to define exceptions/errors in the bindings
+/// as well as defining the From<Error> for ExternError
+/// needed for the different errors to cross the FFI.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Error {
+    name: String,
+    values: Vec<String>,
+}
+
+impl Error {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn values(&self) -> Vec<&str> {
+        self.values.iter().map(|v| v.as_str()).collect()
     }
 }
 
@@ -605,6 +681,7 @@ pub struct Method {
     return_type: Option<TypeReference>,
     arguments: Vec<Argument>,
     ffi_func: FFIFunction,
+    attributes: Attributes,
 }
 
 impl Method {
@@ -634,6 +711,10 @@ impl Method {
         }
     }
 
+    pub fn throws(&self) -> Option<&str> {
+        self.attributes.get_throws_err()
+    }
+
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
         self.ffi_func.name.push_str(ci_prefix);
         self.ffi_func.name.push_str("_");
@@ -646,6 +727,9 @@ impl Method {
             .chain(self.arguments.iter().cloned())
             .collect();
         self.ffi_func.return_type = self.return_type.clone();
+        // Theoritically this should always be true
+        // but it's this way until we implement handling for panics
+        self.ffi_func.has_out_err = self.throws().is_some();
         Ok(())
     }
 }
@@ -687,15 +771,16 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             name: String::from("new"), // TODO: get the name from an attribute maybe?
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
+            attributes: match &self.attributes {
+                Some(attr) => Attributes::try_from(attr)?,
+                None => Attributes(Vec::new()),
+            },
         })
     }
 }
 
 impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
     fn convert(&self, ci: &ComponentInterface) -> Result<Method> {
-        if self.attributes.is_some() {
-            bail!("no interface member attributes supported yet");
-        }
         if self.special.is_some() {
             bail!("special operations not supported");
         }
@@ -713,6 +798,10 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
                 weedle::types::ReturnType::Type(t) => Some(t.resolve_type_definition(ci)?),
             },
             ffi_func: Default::default(),
+            attributes: match &self.attributes {
+                Some(attr) => Attributes::try_from(attr)?,
+                None => Attributes(Vec::new()),
+            },
         })
     }
 }
@@ -806,6 +895,18 @@ impl APIConverter<Literal> for weedle::literal::DefaultValue<'_> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Attribute {
     ByRef,
+    Throws(String),
+    Error,
+}
+
+impl Attribute {
+    fn is_error(&self) -> bool {
+        if let Attribute::Error = self {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
@@ -816,9 +917,27 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
         match weedle_attribute {
             weedle::attribute::ExtendedAttribute::NoArgs(attr) => match (attr.0).0 {
                 "ByRef" => Ok(Attribute::ByRef),
+                "Error" => Ok(Attribute::Error),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
-            _ => anyhow::bail!("ExtendedAttribute not supported: {:?}", weedle_attribute),
+            weedle::attribute::ExtendedAttribute::Ident(identity) => {
+                if identity.lhs_identifier.0 == "Throws" {
+                    Ok(Attribute::Throws(match identity.rhs {
+                        weedle::attribute::IdentifierOrString::Identifier(identifier) => {
+                            identifier.0.to_string()
+                        }
+                        weedle::attribute::IdentifierOrString::String(str_lit) => {
+                            str_lit.0.to_string()
+                        }
+                    }))
+                } else {
+                    anyhow::bail!(
+                        "Attribute identity Identifier not supported: {:?}",
+                        identity.lhs_identifier.0
+                    )
+                }
+            }
+            _ => anyhow::bail!("Attribute not supported: {:?}", weedle_attribute),
         }
     }
 }
@@ -827,6 +946,21 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
 /// weedle list of attributes and itself.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Attributes(Vec<Attribute>);
+
+impl Attributes {
+    pub fn contains_error_attr(&self) -> bool {
+        self.0.iter().find(|attr| attr.is_error()).is_some()
+    }
+
+    fn get_throws_err(&self) -> Option<&str> {
+        self.0.iter().find_map(|attr| match attr {
+            // This will hopefully return a helpful compilation error
+            // if the error is not defined.
+            Attribute::Throws(inner) => Some(inner.as_ref()),
+            _ => None,
+        })
+    }
+}
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
     type Error = anyhow::Error;

@@ -19,31 +19,22 @@ lazy_static::lazy_static! {
 {%- for cons in obj.constructors() %}
     #[no_mangle]
     pub extern "C" fn {{ cons.ffi_func().name() }}(
-        {%- call rs::arg_list_rs_decl(cons.ffi_func().arguments()) %}) -> u64 {
+        {%- call rs::arg_list_rs_decl(cons.ffi_func()) %}) -> u64 {
         log::debug!("{{ cons.ffi_func().name() }}");
-        let mut err: ffi_support::ExternError = Default::default(); // XXX TODO: error handling!
         // If the constructor does not have the same signature as declared in the IDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
-        let _handle = UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_output(&mut err, || {
-            let obj = {{ obj.name() }}::{% call rs::to_rs_call(cons) %};
-            obj
-        });
-        _handle
+        {% call rs::to_rs_constructor_call(obj, cons) %}
     }
 {% endfor %}
 
 {%- for meth in obj.methods() %}
-    #[no_mangle]
+#[no_mangle]
     pub extern "C" fn {{ meth.ffi_func().name() }}(
-        {%- call rs::arg_list_rs_decl(meth.ffi_func().arguments()) %}) -> {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|ret_type_c }}{% else %}(){% endmatch %} {
+        {%- call rs::arg_list_rs_decl(meth.ffi_func()) %}
+    ) -> {% call rs::return_type_func(meth) %} {
         log::debug!("{{ meth.ffi_func().name() }}");
-        let mut err: ffi_support::ExternError = Default::default(); // XXX TODO: error handling!
         // If the method does not have the same signature as declared in the IDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
-        UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_output_mut(&mut err, {{ meth.first_argument().name() }}, |obj| {
-            let _retval = {{ obj.name() }}::{%- call rs::to_rs_call_with_prefix("obj", meth) -%};
-            {% match meth.return_type() %}{% when Some with (return_type) %}{{ "_retval"|lower_rs(return_type) }}{% else %}{% endmatch %}
-        })
+        {% call rs::to_rs_method_call(obj, meth) %}
     }
 {% endfor %}
-
