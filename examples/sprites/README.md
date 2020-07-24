@@ -37,5 +37,5 @@ With that in place, try the following:
 * Run `cargo test`. This exercises the foreign language bindings via the scripts in `./tests/bindings/`.
 * Run `cargo run -- exec tests/bindings/test_sprites.kts`. This will directly execute the Kotlin
   test script. Try the same for the other languages.
-* Run `cargo. run -- exec -l python` to get a Python shell in which you can import the generated
+* Run `cargo run -- exec -l python` to get a Python shell in which you can import the generated
   module for yourself and play around with it. Try `import sprites` and go from there!
