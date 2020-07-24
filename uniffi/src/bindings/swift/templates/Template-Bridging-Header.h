@@ -13,9 +13,9 @@ typedef struct RustBuffer {
 
 {% for func in ci.iter_ffi_function_definitions() -%}
     {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ret_c }}{% when None %}void{% endmatch %} {{ func.name() }}(
-      {%- for arg in func.arguments() %}
-      {{ arg.type_()|decl_c }} {{ arg.name() }}{% if loop.last %}{% else %},{% endif %}
-      {%- endfor %}
+      {% call swift::arg_list_rs_decl(func.arguments()) %}
       // TODO: When we implement error handling, there will be a `*_Nonnull out_err` param here.
     );
 {% endfor -%}
+
+{% import "macros.swift" as swift %}

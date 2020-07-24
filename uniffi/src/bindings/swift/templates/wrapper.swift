@@ -24,3 +24,5 @@ import uniffi_{{ ci.namespace() }}
 {% for obj in ci.iter_object_definitions() %}
 {% include "ObjectTemplate.swift" %}
 {% endfor %}
+
+{% import "macros.swift" as swift %}
