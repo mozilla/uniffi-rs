@@ -57,3 +57,5 @@ __all__ = [
     "{{ obj.name()|class_name_py }}",
     {%- endfor %}
 ]
+
+{% import "macros.py" as py %}
