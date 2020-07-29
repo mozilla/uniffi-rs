@@ -1,4 +1,4 @@
-// Helper classes/extensions that don't change. 
+// Helper classes/extensions that don't change.
 // Someday, this will be in a libray of its own.
 
 // Serialization and deserialization errors.
@@ -270,10 +270,10 @@ extension Optional: Liftable where Wrapped: Liftable {
 extension Optional: Lowerable where Wrapped: Lowerable {
     func lower(into buf: Writer) {
         guard let value = self else {
-            buf.writeInt(0)
+            buf.writeInt(UInt8(0))
             return
         }
-        buf.writeInt(1)
+        buf.writeInt(UInt8(1))
         value.lower(into: buf)
     }
 }
