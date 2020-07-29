@@ -33,9 +33,9 @@ struct Sprite {
 }
 
 impl Sprite {
-    fn new(initial_position: Point) -> Sprite {
+    fn new(initial_position: Option<Point>) -> Sprite {
         Sprite {
-            current_position: initial_position,
+            current_position: initial_position.unwrap_or_else(|| Point { x: 0.0, y: 0.0 }),
         }
     }
 

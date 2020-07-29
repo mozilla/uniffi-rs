@@ -14,7 +14,8 @@ dictionary Vector {
 };
 
 interface Sprite {
-  constructor(Point initial_position);
+  // Should be an optional, but I had to test nullable args :)
+  constructor(Point? initial_position);
   Point get_position();
   void move_to(Point position);
   void move_by(Vector direction);

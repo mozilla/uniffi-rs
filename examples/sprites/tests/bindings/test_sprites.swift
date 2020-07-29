@@ -1,5 +1,8 @@
 import sprites
 
+let sempty = Sprite(initialPosition: nil)
+assert( sempty.getPosition() == Point(x: 0, y: 0))
+
 let s = Sprite(initialPosition: Point(x: 0, y: 1))
 assert( s.getPosition() == Point(x: 0, y: 1))
 

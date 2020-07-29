@@ -105,11 +105,11 @@ mod filters {
     pub fn lower_kt(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
-            TypeReference::Optional(_) => format!(
-                "(lowerOptional({}, {{ v -> {} }}, {{ (v, buf) -> {} }})",
+            TypeReference::Optional(t) => format!(
+                "lowerOptional({}, {{ v -> {} }}, {{ v, buf -> {} }})",
                 nm,
-                lowers_into_size_kt(&"v", type_)?,
-                lower_into_kt(&"v", &"buf", type_)?
+                lowers_into_size_kt(&"v", t)?,
+                lower_into_kt(&"v", &"buf", t)?
             ),
             _ => format!("{}.lower()", nm),
         })
@@ -122,11 +122,11 @@ mod filters {
     ) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            TypeReference::Optional(_) => format!(
-                "(lowerIntoOptional({}, {}, {{ (v, buf) -> {} }})",
+            TypeReference::Optional(t) => format!(
+                "lowerIntoOptional({}, {}, {{ v, buf -> {} }})",
                 nm,
                 target,
-                lower_into_kt(&"v", &"buf", type_)?
+                lower_into_kt(&"v", &"buf", t)?
             ),
             _ => format!("{}.lowerInto({})", nm, target),
         })
@@ -138,10 +138,10 @@ mod filters {
     ) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            TypeReference::Optional(_) => format!(
-                "(lowersIntoSizeOptional({}, {{ v -> {} }})",
+            TypeReference::Optional(t) => format!(
+                "lowersIntoSizeOptional({}, {{ v -> {} }})",
                 nm,
-                lowers_into_size_kt(&"v", type_)?
+                lowers_into_size_kt(&"v", t)?
             ),
             _ => format!("{}.lowersIntoSize()", nm),
         })
