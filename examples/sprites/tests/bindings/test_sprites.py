@@ -1,5 +1,8 @@
 from sprites import *
 
+sempty = Sprite(None)
+assert sempty.get_position() == Point(0, 0)
+
 s = Sprite(Point(0, 1))
 assert s.get_position() == Point(0, 1)
 

@@ -1,5 +1,8 @@
 import uniffi.sprites.*;
 
+val sempty = Sprite(null)
+assert( sempty.getPosition() == Point(0.0, 0.0) )
+
 val s = Sprite(Point(0.0, 1.0))
 assert( s.getPosition() == Point(0.0, 1.0) )
 
