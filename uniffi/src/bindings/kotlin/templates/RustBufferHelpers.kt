@@ -109,8 +109,8 @@ fun Long.lower(): Long {
     return this
 }
 
-fun Long.lowersIntoSize(): Long {
-    return 4
+fun Long.lowersIntoSize(): Int {
+    return 8
 }
 
 fun Long.lowerInto(buf: ByteBuffer) {
