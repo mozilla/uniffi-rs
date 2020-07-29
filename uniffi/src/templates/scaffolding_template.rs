@@ -54,3 +54,5 @@ ffi_support::define_string_destructor!({{ ci.ffi_string_free().name() }});
 #[cfg_attr(any(target_os="macos", target_os="ios"), link_section = "DATA,.uniffi_idl")]
 #[cfg_attr(not(any(target_os="macos", target_os="ios")), link_section = ".uniffi_idl")]
 pub static UNIFFI_INTERFACE_DEFINITION: [u8;{{ ci_data.len() }}] = [{% for c in ci_data.as_slice() %}{{ c }},{% endfor %}];
+
+{%- import "macros.rs" as rs -%}

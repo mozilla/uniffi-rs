@@ -70,6 +70,10 @@ mod filters {
         Ok(nm.to_string().to_snake_case())
     }
 
+    pub fn var_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_snake_case())
+    }
+
     pub fn enum_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_shouty_snake_case())
     }

@@ -94,12 +94,16 @@ mod filters {
         Ok(nm.to_string().to_mixed_case())
     }
 
-    pub fn enum_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn var_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_mixed_case())
+    }
+
+    pub fn enum_variant_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
     pub fn lower_kt(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
-        let nm = nm.to_string();
+        let nm = var_name_kt(nm)?;
         Ok(match type_ {
             TypeReference::Optional(_) => format!(
                 "(lowerOptional({}, {{ v -> {} }}, {{ (v, buf) -> {} }})",

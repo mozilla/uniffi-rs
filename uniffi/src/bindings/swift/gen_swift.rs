@@ -6,6 +6,7 @@ use std::path::Path;
 
 use anyhow::Result;
 use askama::Template;
+use heck::{CamelCase, MixedCase};
 
 use crate::interface::*;
 
@@ -131,10 +132,10 @@ mod filters {
             TypeReference::String => "String".into(),
             // TypeReference::Bytes => "Data".into(),
             TypeReference::Boolean => "Bool".into(),
-            TypeReference::Enum(name) => name.into(),
-            TypeReference::Record(name) => name.into(),
+            TypeReference::Enum(name) => class_name_swift(name)?,
+            TypeReference::Record(name) => class_name_swift(name)?,
             TypeReference::Optional(type_) => format!("{}?", decl_swift(type_)?),
-            TypeReference::Object(name) => name.into(),
+            TypeReference::Object(name) => class_name_swift(name)?,
             _ => panic!("[TODO: decl_swift({:?})", type_),
         })
     }
@@ -145,7 +146,7 @@ mod filters {
         name: &dyn fmt::Display,
         _type_: &TypeReference,
     ) -> Result<String, askama::Error> {
-        Ok(format!("{}.toFFIValue()", name))
+        Ok(format!("{}.toFFIValue()", var_name_swift(name)?))
     }
 
     /// ...
@@ -165,9 +166,20 @@ mod filters {
     }
 
     /// ...
-    pub fn decl_enum_variant_swift(name: &str) -> Result<String, askama::Error> {
-        use heck::MixedCase;
-        Ok(name.to_mixed_case())
+    pub fn enum_variant_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_mixed_case())
+    }
+
+    pub fn class_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_camel_case())
+    }
+
+    pub fn fn_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_mixed_case())
+    }
+
+    pub fn var_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_mixed_case())
     }
 
     /// ...

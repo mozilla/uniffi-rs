@@ -20,11 +20,10 @@ internal interface _UniFFILib : Library {
     }
 
     {% for func in ci.iter_ffi_function_definitions() -%}
-        fun {{ func.name() }}(
-        {%- for arg in func.arguments() %}
-            {{ arg.name() }}: {{ arg.type_()|type_c }}{% if loop.last %}{% else %},{% endif %}
-        {%- endfor %}
-        // TODO: When we implement error handling, there will be an out error param here.
-        ): {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ret_type_c }}{% when None %}Unit{% endmatch %}
-    {% endfor -%}
+    fun {{ func.name() }}(
+        {%- call kt::arg_list_rs_decl(func.arguments()) %}
+    {#-// TODO: When we implement error handling, there will be an out error param here.-#}
+    ){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|ret_type_c }}{% when None %}: Unit{% endmatch %}
+
+    {% endfor %}
 }

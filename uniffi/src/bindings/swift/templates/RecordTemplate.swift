@@ -1,4 +1,4 @@
-public struct {{ rec.name() }}: Lowerable, Liftable, Serializable, Equatable {
+public struct {{ rec.name()|class_name_swift }}: Lowerable, Liftable, Serializable, Equatable {
     {%- for field in rec.fields() %}
     let {{ field.name() }}: {{ field.type_()|decl_swift }}
     {%- endfor %}
