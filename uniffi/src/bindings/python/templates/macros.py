@@ -22,7 +22,7 @@ _UniFFILib.{{ func.ffi_func().name() }}(
 {%- endmacro -%}
 
 {#-
-// Arglist as used in kotlin declarations of methods, functions and constructors.
+// Arglist as used in Python declarations of methods, functions and constructors.
 // Note the var_name_py and type_py filters.
 -#}
 

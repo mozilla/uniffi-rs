@@ -1,7 +1,7 @@
 {# 
 // Template to call into rust. Used in several places.
 // Variable names in `arg_list_decl` should match up with arg lists
-// passed to rust via `_arg_list_rs_call` (we use  `var_name_kt` in `lower_kt`)
+// passed to rust via `_arg_list_rs_call` (we use  `var_name_swift` in `lower_swift`)
 #}
 
 {%- macro to_rs_call(func) -%}
@@ -22,8 +22,8 @@
 {%- endmacro -%}
 
 {#-
-// Arglist as used in kotlin declarations of methods, functions and constructors.
-// Note the var_name_swift and type_kt filters.
+// Arglist as used in Swift declarations of methods, functions and constructors.
+// Note the var_name_swift and decl_swift filters.
 -#}
 
 {% macro arg_list_decl(args) %}

@@ -1,7 +1,5 @@
 {# 
-// Template to call into rust. Used in several places.
-// Variable names in `arg_list_decl` should match up with arg lists
-// passed to rust via `_arg_list_rs_call` (we use  `var_name_kt` in `lower_kt`)
+// Template to receive calls into rust.
 #}
 
 {%- macro to_rs_call(func) -%}
