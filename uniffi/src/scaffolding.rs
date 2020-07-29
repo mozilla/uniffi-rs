@@ -24,14 +24,11 @@ mod filters {
 
     pub fn type_rs(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
-            // These can be passed directly over the FFI without conversion.
             TypeReference::U32 => "u32".to_string(),
             TypeReference::U64 => "u64".to_string(),
             TypeReference::Float => "f32".to_string(),
             TypeReference::Double => "f64".to_string(),
-            TypeReference::Boolean => "u8".to_string(),
-            // These types need conversion, and will require special handling below
-            // when lifting/lowering.
+            TypeReference::Boolean => "bool".to_string(),
             TypeReference::String => "&str".to_string(),
             TypeReference::Enum(name) => name.clone(),
             TypeReference::Record(name) => name.clone(),
@@ -42,41 +39,38 @@ mod filters {
 
     pub fn ret_type_rs(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
-            // These can be passed directly over the FFI without conversion.
             TypeReference::U32 => "u32".to_string(),
             TypeReference::U64 => "u64".to_string(),
             TypeReference::Float => "f32".to_string(),
             TypeReference::Double => "f64".to_string(),
-            TypeReference::Boolean => "u8".to_string(),
-            // These types need conversion, and will require special handling below
-            // when lifting/lowering.
+            TypeReference::Boolean => "bool".to_string(),
             TypeReference::String => "String".to_string(),
             TypeReference::Enum(name) => name.clone(),
             TypeReference::Record(name) => name.clone(),
             TypeReference::Optional(t) => format!("Option<{}>", type_rs(t)?),
-            _ => panic!("[TODO: type_rs({:?})]", type_),
+            _ => panic!("[TODO: ret_type_rs({:?})]", type_),
         })
     }
 
     pub fn type_c(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::String => "ffi_support::FfiStr<'_>".to_string(),
-            TypeReference::Enum(_) => "u32".to_string(),
-            TypeReference::Record(_) => "ffi_support::ByteBuffer".to_string(),
-            TypeReference::Optional(_) => "ffi_support::ByteBuffer".to_string(),
+            // Objects don't currently impl `ViaFfi`.
             TypeReference::Object(_) => "u64".to_string(),
-            _ => type_rs(type_)?,
+            _ => format!(
+              "<{} as uniffi::support::ViaFfi>::Value",
+              type_rs(type_)?,
+            ),
         })
     }
 
     pub fn ret_type_c(type_: &TypeReference) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::String => "*mut std::os::raw::c_char".to_string(),
-            TypeReference::Enum(_) => "u32".to_string(),
-            TypeReference::Record(_) => "ffi_support::ByteBuffer".to_string(),
-            TypeReference::Optional(_) => "ffi_support::ByteBuffer".to_string(),
+            // Objects don't currently impl `ViaFfi`.
             TypeReference::Object(_) => "u64".to_string(),
-            _ => type_rs(type_)?,
+            _ => format!(
+              "<{} as uniffi::support::ViaFfi>::Value",
+              ret_type_rs(type_)?,
+            ),
         })
     }
 

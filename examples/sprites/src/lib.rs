@@ -4,7 +4,7 @@
 
 // A point in two-dimensional space.
 #[derive(Debug, Clone)]
-struct Point {
+pub struct Point {
     x: f64,
     y: f64,
 }
@@ -12,13 +12,13 @@ struct Point {
 // A magnitude and direction in two-dimensional space.
 // For simplicity we represent this as a point relative to the origin.
 #[derive(Debug, Clone)]
-struct Vector {
+pub struct Vector {
     dx: f64,
     dy: f64,
 }
 
 // Move from the given Point, according to the given Vector.
-fn translate(p: Point, v: Vector) -> Point {
+pub fn translate(p: Point, v: Vector) -> Point {
     Point {
         x: p.x + v.dx,
         y: p.y + v.dy,
@@ -28,7 +28,7 @@ fn translate(p: Point, v: Vector) -> Point {
 // An entity in our imaginary world, which occupies a position in space
 // and which can move about over time.
 #[derive(Debug, Clone)]
-struct Sprite {
+pub struct Sprite {
     current_position: Point,
 }
 
