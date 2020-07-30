@@ -56,10 +56,7 @@ mod filters {
         Ok(match type_ {
             // Objects don't currently impl `ViaFfi`.
             TypeReference::Object(_) => "u64".to_string(),
-            _ => format!(
-              "<{} as uniffi::support::ViaFfi>::Value",
-              type_rs(type_)?,
-            ),
+            _ => format!("<{} as uniffi::support::ViaFfi>::Value", type_rs(type_)?,),
         })
     }
 
@@ -68,8 +65,8 @@ mod filters {
             // Objects don't currently impl `ViaFfi`.
             TypeReference::Object(_) => "u64".to_string(),
             _ => format!(
-              "<{} as uniffi::support::ViaFfi>::Value",
-              ret_type_rs(type_)?,
+                "<{} as uniffi::support::ViaFfi>::Value",
+                ret_type_rs(type_)?,
             ),
         })
     }

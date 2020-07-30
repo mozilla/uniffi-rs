@@ -24,7 +24,7 @@ pub fn sub(a: u64, b: u64, overflow: Overflow) -> u64 {
 }
 
 pub fn equal(a: u64, b: u64) -> bool {
-  a == b
+    a == b
 }
 
 include!(concat!(env!("OUT_DIR"), "/arithmetic.uniffi.rs"));

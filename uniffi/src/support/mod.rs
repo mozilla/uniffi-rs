@@ -218,17 +218,20 @@ impl Liftable for String {
     }
 }
 
-
 unsafe impl ViaFfi for bool {
     type Value = u8;
     fn into_ffi_value(self) -> Self::Value {
-        if self { 1 } else { 0 }
+        if self {
+            1
+        } else {
+            0
+        }
     }
     fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
         Ok(match v {
-          0 => false,
-          1 => true,
-          _ => bail!("unexpected byte for Boolean"),
+            0 => false,
+            1 => true,
+            _ => bail!("unexpected byte for Boolean"),
         })
     }
 }
