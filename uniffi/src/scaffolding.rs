@@ -77,7 +77,7 @@ mod filters {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         Ok(format!(
-            "<{} as uniffi::support::ViaFfi>::into_ffi_value({})",
+            "<{} as uniffi::support::ViaFfi>::into_ffi_value(&{})",
             ret_type_rs(type_)?,
             nm
         ))
