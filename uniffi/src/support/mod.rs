@@ -115,9 +115,8 @@ impl<T: Liftable> Liftable for Option<T> {
 
 impl<T: Liftable> Liftable for Vec<T> {
     fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
-        check_remaining(buf, 8)?;
+        check_remaining(buf, 4)?;
         let len = buf.get_u32();
-        check_remaining(buf, len as usize)?;
         let mut vec = Vec::with_capacity(len as usize);
         for _ in 0..len {
             vec.push(T::try_lift_from(buf)?)
