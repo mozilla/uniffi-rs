@@ -18,3 +18,9 @@ assert(todo.getLast() == "Test Ünicode hàndling without an entry can't believe
 let entry2 = TodoEntry(text: "Test Ünicode hàndling in an entry can't believe I didn't test this at first 🤣")
 todo.addEntry(entry: entry2)
 assert(todo.getLastEntry() == entry2)
+
+assert(todo.getEntries().count == 5)
+
+todo.addEntries(entries: [TodoEntry(text: "foo"), TodoEntry(text: "bar")])
+assert(todo.getEntries().count == 7)
+assert(todo.getLast() == "bar")

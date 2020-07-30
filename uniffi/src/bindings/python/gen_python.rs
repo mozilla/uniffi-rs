@@ -57,6 +57,7 @@ mod filters {
             TypeReference::Enum(_) => "ctypes.c_uint32".to_string(),
             TypeReference::Record(_) => "RustBuffer".to_string(),
             TypeReference::Optional(_) => "RustBuffer".to_string(),
+            TypeReference::Sequence(_) => "RustBuffer".to_string(),
             TypeReference::Object(_) => "ctypes.c_uint64".to_string(),
             _ => panic!("[TODO: type_c({:?})", type_),
         })
@@ -156,6 +157,11 @@ mod filters {
             TypeReference::Record(type_name) => format!("{}._lift({})", type_name, nm),
             TypeReference::Optional(type_) => format!(
                 "liftOptional({}, lambda buf: {})",
+                nm,
+                lift_from_py(&"buf", type_)?
+            ),
+            TypeReference::Sequence(type_) => format!(
+                "liftSequence({}, lambda buf: {})",
                 nm,
                 lift_from_py(&"buf", type_)?
             ),

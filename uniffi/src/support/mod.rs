@@ -53,6 +53,16 @@ impl<T: Lowerable> Lowerable for Option<T> {
     }
 }
 
+impl<T: Lowerable> Lowerable for Vec<T> {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        let len = u32::try_from(self.len()).unwrap();
+        buf.put_u32(len); // We limit arrays to u32::MAX bytes
+        for item in self.iter() {
+            item.lower_into(buf);
+        }
+    }
+}
+
 /// Any type that can be received over the FFI must implement the `Liftable` trait, to define how
 /// it gets lifted from bytes into a useable Rust value. We provide default implementtions for
 /// primitive types, and a typical implementation for composite types would lift each member in turn.
@@ -103,6 +113,19 @@ impl<T: Liftable> Liftable for Option<T> {
     }
 }
 
+impl<T: Liftable> Liftable for Vec<T> {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 8)?;
+        let len = buf.get_u32();
+        check_remaining(buf, len as usize)?;
+        let mut vec = Vec::with_capacity(len as usize);
+        for _ in 0..len {
+            vec.push(T::try_lift_from(buf)?)
+        }
+        Ok(vec)
+    }
+}
+
 // The `ViaFfi` trait defines how to receive a type as an argument over the FFI,
 // and how to return it from FFI functions. It allows us to implement a more efficient
 // calling strategy than always lifting/lowering all types to a byte buffer.
@@ -149,6 +172,18 @@ unsafe impl<T: ViaFfiUsingByteBuffer> ViaFfi for T {
 }
 
 unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
+    type Value = ffi_support::ByteBuffer;
+    #[inline]
+    fn into_ffi_value(self) -> Self::Value {
+        lower(&self)
+    }
+    #[inline]
+    fn try_from_ffi_value(v: Self::Value) -> anyhow::Result<Self> {
+        try_lift(v)
+    }
+}
+
+unsafe impl<T: Liftable + Lowerable> ViaFfi for Vec<T> {
     type Value = ffi_support::ByteBuffer;
     #[inline]
     fn into_ffi_value(self) -> Self::Value {

@@ -30,6 +30,17 @@ impl TodoList {
         self.items.push(entry.text)
     }
 
+    fn add_entries(&mut self, entries: Vec<TodoEntry>) {
+        self.items.extend(entries.into_iter().map(|e| e.text))
+    }
+
+    fn get_entries(&self) -> Vec<TodoEntry> {
+        self.items
+            .iter()
+            .map(|text| TodoEntry { text: text.clone() })
+            .collect()
+    }
+
     fn get_last_entry(&self) -> TodoEntry {
         TodoEntry {
             text: self.items.last().cloned().unwrap(),

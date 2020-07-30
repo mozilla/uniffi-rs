@@ -95,6 +95,7 @@ mod filters {
             TypeReference::Enum(_) => "uint32_t".into(),
             TypeReference::Record(_) => "RustBuffer".into(),
             TypeReference::Optional(_) => "RustBuffer".into(),
+            TypeReference::Sequence(_) => "RustBuffer".into(),
             TypeReference::Object(_) => "uint64_t".into(),
             _ => panic!("[TODO: decl_c({:?})", type_),
         })
@@ -117,6 +118,7 @@ mod filters {
             TypeReference::Enum(_) => "uint32_t".into(),
             TypeReference::Record(_) => "RustBuffer".into(),
             TypeReference::Optional(_) => "RustBuffer".into(),
+            TypeReference::Sequence(_) => "RustBuffer".into(),
             TypeReference::Object(_) => "uint64_t".into(),
             _ => panic!("[TODO: decl_c({:?})", type_),
         })
@@ -135,6 +137,7 @@ mod filters {
             TypeReference::Enum(name) => class_name_swift(name)?,
             TypeReference::Record(name) => class_name_swift(name)?,
             TypeReference::Optional(type_) => format!("{}?", decl_swift(type_)?),
+            TypeReference::Sequence(type_) => format!("[{}]", decl_swift(type_)?),
             TypeReference::Object(name) => class_name_swift(name)?,
             _ => panic!("[TODO: decl_swift({:?})", type_),
         })

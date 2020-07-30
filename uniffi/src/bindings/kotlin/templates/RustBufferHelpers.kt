@@ -78,6 +78,17 @@ fun<T> liftFromOptional(buf: ByteBuffer, liftFrom: (ByteBuffer) -> T): T? {
     return liftFrom(buf)
 }
 
+fun<T> liftSequence(rbuf: RustBuffer.ByValue, liftFrom: (ByteBuffer) -> T): List<T> {
+    return liftFromRustBuffer(rbuf) { buf -> liftFromSequence(buf, liftFrom) }
+}
+
+fun<T> liftFromSequence(buf: ByteBuffer, liftFrom: (ByteBuffer) -> T): List<T> {
+    val len = Int.liftFrom(buf)
+    return List<T>(len) {
+        liftFrom(buf)
+    }
+}
+
 // Helpers for lowering primitive data types into a bytebuffer.
 // Since we need to allocate buffers from rust, the lowering process needs to be
 // able to calculate ahead-of-time what the required size of the buffer will be.
@@ -170,13 +181,26 @@ fun String.Companion.lift(ptr: Pointer): String {
     }
 }
 
+fun<T> lowerSequence(v: List<T>, lowersIntoSize: (T) -> Int, lowerInto: (T, ByteBuffer) -> Unit): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(v, { v -> lowersIntoSizeSequence(v, lowersIntoSize) }, { v, buf -> lowerIntoSequence(v, buf, lowerInto) })
+}
 
+fun<T> lowersIntoSizeSequence(v: List<T>, lowersIntoSize: (T) -> Int): Int {
+    var len = v.size.lowersIntoSize()
+    v.forEach { len += lowersIntoSize(it) }
+    return len
+}
+
+fun<T> lowerIntoSequence(v: List<T>, buf: ByteBuffer, lowerInto: (T, ByteBuffer) -> Unit) {
+    v.size.lowerInto(buf)
+    v.forEach { lowerInto(it, buf) }
+}
 
 fun<T> lowerOptional(v: T?, lowersIntoSize: (T) -> Int, lowerInto: (T, ByteBuffer) -> Unit): RustBuffer.ByValue {
     return lowerIntoRustBuffer(v, { v -> lowersIntoSizeOptional(v, lowersIntoSize) }, { v, buf -> lowerIntoOptional(v, buf, lowerInto) })
 }
 
-fun <T> lowersIntoSizeOptional(v: T?, lowersIntoSize: (T) -> Int): Int {
+fun<T> lowersIntoSizeOptional(v: T?, lowersIntoSize: (T) -> Int): Int {
     if (v === null) return 1
     return 1 + lowersIntoSize(v)
 }
