@@ -4,23 +4,27 @@
 
 // Flag to let calling code specify a particular behaviour of integer overflow,
 // since rust has such nice support for these.
-enum Overflow {
+pub enum Overflow {
     WRAPPING,
     SATURATING,
 }
 
-fn add(a: u64, b: u64, overflow: Overflow) -> u64 {
+pub fn add(a: u64, b: u64, overflow: Overflow) -> u64 {
     match overflow {
         Overflow::WRAPPING => a.overflowing_add(b).0,
         Overflow::SATURATING => a.saturating_add(b),
     }
 }
 
-fn sub(a: u64, b: u64, overflow: Overflow) -> u64 {
+pub fn sub(a: u64, b: u64, overflow: Overflow) -> u64 {
     match overflow {
         Overflow::WRAPPING => a.overflowing_sub(b).0,
         Overflow::SATURATING => a.saturating_sub(b),
     }
+}
+
+pub fn equal(a: u64, b: u64) -> bool {
+    a == b
 }
 
 include!(concat!(env!("OUT_DIR"), "/arithmetic.uniffi.rs"));

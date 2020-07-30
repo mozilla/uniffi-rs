@@ -217,3 +217,34 @@ impl Liftable for String {
         Ok(res)
     }
 }
+
+unsafe impl ViaFfi for bool {
+    type Value = u8;
+    fn into_ffi_value(self) -> Self::Value {
+        if self {
+            1
+        } else {
+            0
+        }
+    }
+    fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
+        Ok(match v {
+            0 => false,
+            1 => true,
+            _ => bail!("unexpected byte for Boolean"),
+        })
+    }
+}
+
+impl Lowerable for bool {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        buf.put_u8(ViaFfi::into_ffi_value(*self));
+    }
+}
+
+impl Liftable for bool {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 1)?;
+        ViaFfi::try_from_ffi_value(buf.get_u8())
+    }
+}

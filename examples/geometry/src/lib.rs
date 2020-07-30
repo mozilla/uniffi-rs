@@ -7,24 +7,24 @@
 const EPSILON: f64 = 0.0001f64;
 
 #[derive(Debug, Clone)]
-struct Point {
+pub struct Point {
     x: f64,
     y: f64,
 }
 
 #[derive(Debug, Clone)]
-struct Line {
+pub struct Line {
     start: Point,
     end: Point,
 }
 
-fn gradient(ln: Line) -> f64 {
+pub fn gradient(ln: Line) -> f64 {
     let rise = ln.end.y - ln.start.y;
     let run = ln.end.x - ln.start.x;
     rise / run
 }
 
-fn intersection(ln1: Line, ln2: Line) -> Option<Point> {
+pub fn intersection(ln1: Line, ln2: Line) -> Option<Point> {
     // TODO: yuck, should be able to take &Line as argument here
     // and have rust figure it out with a bunch of annotations...
     let g1 = gradient(ln1.clone());

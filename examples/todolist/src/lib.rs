@@ -3,13 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #[derive(Debug, Clone)]
-struct TodoEntry {
+pub struct TodoEntry {
     text: String,
 }
 
 // I am a simple Todolist
 #[derive(Debug, Clone)]
-struct TodoList {
+pub struct TodoList {
     items: Vec<String>,
 }
 

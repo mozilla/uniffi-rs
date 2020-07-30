@@ -7,4 +7,5 @@ enum Overflow {
 namespace arithmetic {
   u64 add(u64 a, u64 b, optional Overflow overflow = "WRAPPING");
   u64 sub(u64 a, u64 b, optional Overflow overflow = "WRAPPING");
+  boolean equal(u64 a, u64 b);
 };
