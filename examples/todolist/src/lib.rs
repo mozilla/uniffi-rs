@@ -34,6 +34,14 @@ impl TodoList {
         self.items.extend(entries.into_iter().map(|e| e.text))
     }
 
+    fn add_items<S: Into<String>>(&mut self, items: Vec<S>) {
+        self.items.extend(items.into_iter().map(Into::into))
+    }
+
+    fn get_items(&self) -> Vec<String> {
+        self.items.clone()
+    }
+
     fn get_entries(&self) -> Vec<TodoEntry> {
         self.items
             .iter()
