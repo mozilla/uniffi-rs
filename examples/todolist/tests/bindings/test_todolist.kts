@@ -21,3 +21,9 @@ assert(todo.getLast() == "Test Ünicode hàndling without an entry can't believe
 val entry2 = TodoEntry("Test Ünicode hàndling in an entry can't believe I didn't test this at first 🤣")
 todo.addEntry(entry2)
 assert(todo.getLastEntry().text == "Test Ünicode hàndling in an entry can't believe I didn't test this at first 🤣")
+
+assert(todo.getEntries().size == 5)
+
+todo.addEntries(listOf(TodoEntry("foo"), TodoEntry("bar")))
+assert(todo.getEntries().size == 7)
+assert(todo.getLastEntry().text == "bar")

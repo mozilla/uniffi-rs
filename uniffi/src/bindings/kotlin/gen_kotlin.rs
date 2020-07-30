@@ -53,6 +53,7 @@ mod filters {
             TypeReference::Enum(name) => class_name_kt(name)?,
             TypeReference::Record(name) => class_name_kt(name)?,
             TypeReference::Optional(t) => format!("{}?", type_kt(t)?),
+            TypeReference::Sequence(t) => format!("List<{}>", type_kt(t)?),
             _ => panic!("[TODO: type_kt({:?})]", type_),
         })
     }
@@ -63,6 +64,7 @@ mod filters {
             TypeReference::Enum(_) => "Int".to_string(),
             TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
+            TypeReference::Sequence(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Object(_) => "Long".to_string(),
             TypeReference::String => "String".to_string(),
             // We use a Pointer here specifically for the `free` function
@@ -80,6 +82,7 @@ mod filters {
             TypeReference::Enum(_) => "Int".to_string(),
             TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
+            TypeReference::Sequence(_) => "RustBuffer.ByValue".to_string(),
             TypeReference::Object(_) => "Long".to_string(),
             TypeReference::String => "Pointer".to_string(),
             _ => type_kt(type_)?,
@@ -111,6 +114,12 @@ mod filters {
                 lowers_into_size_kt(&"v", t)?,
                 lower_into_kt(&"v", &"buf", t)?
             ),
+            TypeReference::Sequence(t) => format!(
+                "lowerSequence({}, {{ v -> {} }}, {{ v, buf -> {} }})",
+                nm,
+                lowers_into_size_kt(&"v", t)?,
+                lower_into_kt(&"v", &"buf", t)?
+            ),
             _ => format!("{}.lower()", nm),
         })
     }
@@ -124,6 +133,12 @@ mod filters {
         Ok(match type_ {
             TypeReference::Optional(t) => format!(
                 "lowerIntoOptional({}, {}, {{ v, buf -> {} }})",
+                nm,
+                target,
+                lower_into_kt(&"v", &"buf", t)?
+            ),
+            TypeReference::Sequence(t) => format!(
+                "lowerIntoSequence({}, {}, {{ v, buf -> {} }})",
                 nm,
                 target,
                 lower_into_kt(&"v", &"buf", t)?
@@ -143,6 +158,11 @@ mod filters {
                 nm,
                 lowers_into_size_kt(&"v", t)?
             ),
+            TypeReference::Sequence(t) => format!(
+                "lowersIntoSizeSequence({}, {{ v -> {} }})",
+                nm,
+                lowers_into_size_kt(&"v", t)?
+            ),
             _ => format!("{}.lowersIntoSize()", nm),
         })
     }
@@ -152,6 +172,11 @@ mod filters {
         Ok(match type_ {
             TypeReference::Optional(t) => format!(
                 "liftOptional({}, {{ buf -> {} }})",
+                nm,
+                lift_from_kt(&"buf", t)?
+            ),
+            TypeReference::Sequence(t) => format!(
+                "liftSequence({}, {{ buf -> {} }})",
                 nm,
                 lift_from_kt(&"buf", t)?
             ),
@@ -167,6 +192,11 @@ mod filters {
         Ok(match type_ {
             TypeReference::Optional(t) => format!(
                 "liftFromOptional({}, {{ buf -> {} }})",
+                nm,
+                lift_from_kt(&"buf", t)?
+            ),
+            TypeReference::Sequence(t) => format!(
+                "liftFromSequence({}, {{ buf -> {} }})",
                 nm,
                 lift_from_kt(&"buf", t)?
             ),

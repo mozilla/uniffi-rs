@@ -41,10 +41,16 @@ class RustBufferStream(object):
         self._pack_into(8, ">d", v)
 
     def getInt(self):
-        return self._unpack_from(4, ">i")
+        return self._unpack_from(4, ">I")
 
     def putInt(self, v):
-        self._pack_into(4, ">i", v)
+        self._pack_into(4, ">I", v)
+
+    def getLong(self):
+        return self._unpack_from(8, ">Q")
+
+    def putLong(self, v):
+        self._pack_into(8, ">Q", v)
 
     def getString(self):
         numBytes = self.getInt()
@@ -54,7 +60,17 @@ class RustBufferStream(object):
         numBytes = len(valueBytes)
         self.putInt(numBytes)
         self._pack_into(numBytes, ">{}s".format(numBytes), valueBytes)
-        
+
+def liftSequence(rbuf, liftFrom):
+    return liftFromSequence(RustBufferStream(rbuf), liftFrom)
+
+def liftFromSequence(buf, liftFrom):
+    seq_len = buf.getInt()
+    seq = []
+    for i in range(0, seq_len):
+        seq.append(listFrom(buf))
+    return seq
+
 def liftOptional(rbuf, liftFrom):
     return liftFromOptional(RustBufferStream(rbuf), liftFrom)
 

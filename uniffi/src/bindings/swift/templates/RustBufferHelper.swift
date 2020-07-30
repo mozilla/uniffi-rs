@@ -99,6 +99,9 @@ class Writer {
     }
 
     // Writes an integer in big-endian order.
+    //
+    // Warning: make sure what you are trying to write
+    // is in the correct type!
     func writeInt<T: FixedWidthInteger>(_ value: T) {
         var value = value.bigEndian
         let _ = withUnsafeBytes(of: &value, { bytes.append(contentsOf: $0) })
@@ -279,3 +282,27 @@ extension Optional: Lowerable where Wrapped: Lowerable {
 }
 
 extension Optional: Serializable where Wrapped: Liftable & Lowerable {}
+
+extension Array: Liftable where Element: Liftable {
+    static func lift(from buf: Reader) throws -> Self {
+        let len: UInt32 = try buf.readInt()
+        var seq = [Element]()
+        seq.reserveCapacity(Int(len))
+        for _ in 1...len {
+            seq.append(try Element.lift(from: buf))
+        }
+        return seq
+    }
+}
+
+extension Array: Lowerable where Element: Lowerable {
+    func lower(into buf: Writer) {
+        let len = UInt32(self.count)
+        buf.writeInt(len)
+        for item in self {
+            item.lower(into: buf)
+        }
+    }
+}
+
+extension Array: Serializable where Element: Liftable & Lowerable {}

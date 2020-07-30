@@ -33,6 +33,7 @@ mod filters {
             TypeReference::Enum(name) => name.clone(),
             TypeReference::Record(name) => name.clone(),
             TypeReference::Optional(t) => format!("Option<{}>", type_rs(t)?),
+            TypeReference::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
             _ => panic!("[TODO: type_rs({:?})]", type_),
         })
     }
@@ -48,6 +49,7 @@ mod filters {
             TypeReference::Enum(name) => name.clone(),
             TypeReference::Record(name) => name.clone(),
             TypeReference::Optional(t) => format!("Option<{}>", type_rs(t)?),
+            TypeReference::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
             _ => panic!("[TODO: ret_type_rs({:?})]", type_),
         })
     }

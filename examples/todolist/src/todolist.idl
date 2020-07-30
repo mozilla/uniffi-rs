@@ -9,6 +9,8 @@ interface TodoList {
     constructor();
     void add_item(string todo);
     void add_entry(TodoEntry entry);
+    void add_entries(sequence<TodoEntry> entries);
     TodoEntry get_last_entry();
+    sequence<TodoEntry> get_entries();
     string get_last();
 };
