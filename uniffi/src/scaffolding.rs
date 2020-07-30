@@ -32,8 +32,15 @@ mod filters {
             TypeReference::String => "&str".to_string(),
             TypeReference::Enum(name) => name.clone(),
             TypeReference::Record(name) => name.clone(),
-            TypeReference::Optional(t) => format!("Option<{}>", type_rs(t)?),
-            TypeReference::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
+
+            // TODO: Clean this up, the `ret_type_rs` is supposed to only be used on return types
+            // and solve the issue of asymmetry with strings.
+            // When a string is a record member or a part of a sequence, we use the `String` type even if the string is an argument
+            // However, when we use strings directly, we use an &str as an argument.
+            // This reeks of future issues, a possible solution is to abandon the asymmetry (and FfiStr) and just use
+            // `String` everywhere as a ByteBuffer and give up an extra memory allocation
+            TypeReference::Optional(t) => format!("Option<{}>", ret_type_rs(t)?),
+            TypeReference::Sequence(t) => format!("Vec<{}>", ret_type_rs(t)?),
             _ => panic!("[TODO: type_rs({:?})]", type_),
         })
     }
@@ -48,8 +55,8 @@ mod filters {
             TypeReference::String => "String".to_string(),
             TypeReference::Enum(name) => name.clone(),
             TypeReference::Record(name) => name.clone(),
-            TypeReference::Optional(t) => format!("Option<{}>", type_rs(t)?),
-            TypeReference::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
+            TypeReference::Optional(t) => format!("Option<{}>", ret_type_rs(t)?),
+            TypeReference::Sequence(t) => format!("Vec<{}>", ret_type_rs(t)?),
             _ => panic!("[TODO: ret_type_rs({:?})]", type_),
         })
     }

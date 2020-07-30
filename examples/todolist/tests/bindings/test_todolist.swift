@@ -23,4 +23,9 @@ assert(todo.getEntries().count == 5)
 
 todo.addEntries(entries: [TodoEntry(text: "foo"), TodoEntry(text: "bar")])
 assert(todo.getEntries().count == 7)
+assert(todo.getItems().count == 7)
 assert(todo.getLast() == "bar")
+
+todo.addItems(items: ["bobo", "fofo"])
+assert(todo.getItems().count == 9)
+assert(todo.getItems()[7] == "bobo")

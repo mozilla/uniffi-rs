@@ -27,3 +27,7 @@ assert(todo.getEntries().size == 5)
 todo.addEntries(listOf(TodoEntry("foo"), TodoEntry("bar")))
 assert(todo.getEntries().size == 7)
 assert(todo.getLastEntry().text == "bar")
+
+todo.addItems(listOf("bobo", "fofo"))
+assert(todo.getItems().size == 9)
+assert(todo.getItems()[7] == "bobo")
