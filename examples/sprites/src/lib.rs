@@ -18,7 +18,7 @@ pub struct Vector {
 }
 
 // Move from the given Point, according to the given Vector.
-pub fn translate(p: &Point, v: &Vector) -> Point {
+pub fn translate(p: &Point, v: Vector) -> Point {
     Point {
         x: p.x + v.dx,
         y: p.y + v.dy,
@@ -48,7 +48,7 @@ impl Sprite {
     }
 
     fn move_by(&mut self, direction: Vector) {
-        self.current_position = translate(&self.current_position, &direction)
+        self.current_position = translate(&self.current_position, direction)
     }
 }
 
