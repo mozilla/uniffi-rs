@@ -121,6 +121,7 @@ mod filters {
         nm: &dyn fmt::Display,
         type_: &TypeReference,
     ) -> Result<String, askama::Error> {
+        let nm = var_name_py(nm)?;
         Ok(match type_ {
             TypeReference::U32 => "4".to_string(),
             TypeReference::Double => "8".to_string(),
@@ -134,6 +135,7 @@ mod filters {
         target: &dyn fmt::Display,
         type_: &TypeReference,
     ) -> Result<String, askama::Error> {
+        let nm = var_name_py(nm)?;
         Ok(match type_ {
             TypeReference::Double => format!("{}.putDouble({})", target, nm),
             TypeReference::U32 => format!("{}.putInt({})", target, nm),
