@@ -4,6 +4,7 @@ members = [
   "uniffi_macros",
   "examples/arithmetic",
   "examples/geometry",
+  "examples/rondpoint",
   "examples/sprites",
   "examples/todolist"
 ]
