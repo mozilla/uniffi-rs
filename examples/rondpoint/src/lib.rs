@@ -5,6 +5,7 @@
 #[derive(Debug, Clone)]
 pub struct Dictionnaire {
     un: Enumeration,
+    deux: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -24,6 +25,10 @@ fn copie_enumerations(e: Vec<Enumeration>) -> Vec<Enumeration> {
 
 fn copie_dictionnaire(d: Dictionnaire) -> Dictionnaire {
     d
+}
+
+fn switcheroo(b: bool) -> bool {
+    !b
 }
 
 include!(concat!(env!("OUT_DIR"), "/rondpoint.uniffi.rs"));

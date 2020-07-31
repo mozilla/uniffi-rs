@@ -104,6 +104,18 @@ fun<T> lowerIntoRustBuffer(v: T, lowersIntoSize: (T) -> Int, lowerInto: (T, Byte
     }
 }
 
+fun Boolean.lower(): Byte {
+    return if (this) 1.toByte() else 0.toByte()
+}
+
+fun Boolean.lowersIntoSize(): Int {
+    return 1
+}
+
+fun Boolean.lowerInto(buf: ByteBuffer) {
+    buf.put(this.lower())
+}
+
 fun Int.lower(): Int {
     return this
 }
