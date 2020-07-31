@@ -1,6 +1,6 @@
 
 namespace sprites {
-  Point translate(Point position, Vector direction);
+  Point translate([ByRef] Point position, [ByRef] Vector direction);
 };
 
 dictionary Point {

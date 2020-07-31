@@ -142,6 +142,7 @@ impl<'ci> ComponentInterface {
             arguments: vec![Argument {
                 name: "size".to_string(),
                 type_: TypeReference::U32,
+                by_ref: false,
                 optional: false,
                 default: None,
             }],
@@ -155,6 +156,7 @@ impl<'ci> ComponentInterface {
             arguments: vec![Argument {
                 name: "buf".to_string(),
                 type_: TypeReference::Bytes,
+                by_ref: false,
                 optional: false,
                 default: None,
             }],
@@ -168,6 +170,7 @@ impl<'ci> ComponentInterface {
             arguments: vec![Argument {
                 name: "str".to_string(),
                 type_: TypeReference::RawStringPointer,
+                by_ref: false,
                 optional: false,
                 default: None,
             }],
@@ -377,6 +380,7 @@ impl Function {
 pub struct Argument {
     name: String,
     type_: TypeReference,
+    by_ref: bool,
     optional: bool,
     default: Option<Literal>,
 }
@@ -387,6 +391,9 @@ impl Argument {
     }
     pub fn type_(&self) -> TypeReference {
         self.type_.clone()
+    }
+    pub fn by_ref(&self) -> bool {
+        self.by_ref
     }
 }
 
@@ -451,12 +458,16 @@ impl APIConverter<Argument> for weedle::argument::Argument<'_> {
 
 impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
     fn convert(&self, ci: &ComponentInterface) -> Result<Argument> {
-        if self.attributes.is_some() {
-            bail!("argument attributes are not supported yet");
-        }
         Ok(Argument {
             name: self.identifier.0.to_string(),
             type_: (&self.type_).resolve_type_definition(ci)?,
+            by_ref: match &self.attributes {
+                None => false,
+                Some(def) => def.body.list.iter().find(| attr| match attr {
+                    weedle::attribute::ExtendedAttribute::NoArgs(attr) => (attr.0).0 == "ByRef",
+                    _ => false
+                }).is_some()
+            },
             optional: self.optional.is_some(),
             default: match self.default {
                 None => None,
@@ -615,6 +626,7 @@ impl Method {
         Argument {
             name: "handle".to_string(),
             type_: TypeReference::Object(self.name.clone()),
+            by_ref: false,
             optional: false,
             default: None,
         }
