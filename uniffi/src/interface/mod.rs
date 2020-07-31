@@ -49,7 +49,7 @@
 //!   * Error messages leave a lot to be desired (and we currently panc on errors parsing the WebIDL).
 //!     If this were to be a real thing we'd need to invest in more empathetic error messages.
 
-use std::{collections::hash_map::Entry, collections::HashMap, str::FromStr};
+use std::{collections::hash_map::Entry, collections::HashMap, convert::TryFrom, str::FromStr};
 
 use anyhow::bail;
 use anyhow::Result;
@@ -786,5 +786,43 @@ impl APIConverter<Literal> for weedle::literal::DefaultValue<'_> {
             weedle::literal::DefaultValue::String(s) => Literal::String(s.0.to_string()),
             _ => bail!("no support for {:?} literal yet", self),
         })
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Attribute {
+    // Add valid attributes here
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attribute: &weedle::attribute::ExtendedAttribute,
+    ) -> Result<Self, anyhow::Error> {
+        match weedle_attribute {
+            // Add attribute conversions here:
+            _ => anyhow::bail!("Attribute not supported: {:?}", weedle_attribute),
+        }
+    }
+}
+
+/// Abstraction around a Vec<Attribute>. Used to define conversions between a
+/// weedle list of attributes and itself.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Attributes(Vec<Attribute>);
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList,
+    ) -> Result<Self, Self::Error> {
+        // TODO: Error out on duplicate attributes
+        weedle_attributes
+            .body
+            .list
+            .iter()
+            .map(|attr| Attribute::try_from(attr))
+            .collect::<Result<Vec<_>, _>>()
+            .map(|attrs| Attributes(attrs))
     }
 }
