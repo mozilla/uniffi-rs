@@ -12,4 +12,5 @@ enum Enumeration {
 
 dictionary Dictionnaire {
     Enumeration un;
+    boolean deux;
 };

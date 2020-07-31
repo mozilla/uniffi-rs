@@ -1,6 +1,6 @@
 import rondpoint
 
-let dico = Dictionnaire(un: .deux)
+let dico = Dictionnaire(un: .deux, deux: false)
 let copyDico = copieDictionnaire(d: dico)
 assert(dico == copyDico)
 

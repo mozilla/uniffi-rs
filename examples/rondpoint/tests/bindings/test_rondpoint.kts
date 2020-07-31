@@ -1,6 +1,6 @@
 import uniffi.rondpoint.*
 
-val dico = Dictionnaire(Enumeration.DEUX)
+val dico = Dictionnaire(Enumeration.DEUX, true)
 val copyDico = copieDictionnaire(dico)
 assert(dico == copyDico)
 

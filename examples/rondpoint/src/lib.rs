@@ -5,6 +5,7 @@
 #[derive(Debug, Clone)]
 pub struct Dictionnaire {
     un: Enumeration,
+    deux: bool,
 }
 
 #[derive(Debug, Clone)]
