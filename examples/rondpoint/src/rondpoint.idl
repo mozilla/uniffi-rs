@@ -2,6 +2,7 @@ namespace rondpoint {
   Dictionnaire copie_dictionnaire(Dictionnaire d);
   Enumeration copie_enumeration(Enumeration e);
   sequence<Enumeration> copie_enumerations(sequence<Enumeration> e);
+  boolean switcheroo(boolean b);
 };
 
 enum Enumeration {
