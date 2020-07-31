@@ -129,7 +129,7 @@ mod filters {
         target: &dyn fmt::Display,
         type_: &TypeReference,
     ) -> Result<String, askama::Error> {
-        let nm = nm.to_string();
+        let nm = var_name_kt(nm)?;
         Ok(match type_ {
             TypeReference::Optional(t) => format!(
                 "lowerIntoOptional({}, {}, {{ v, buf -> {} }})",
@@ -151,7 +151,7 @@ mod filters {
         nm: &dyn fmt::Display,
         type_: &TypeReference,
     ) -> Result<String, askama::Error> {
-        let nm = nm.to_string();
+        let nm = var_name_kt(nm)?;
         Ok(match type_ {
             TypeReference::Optional(t) => format!(
                 "lowersIntoSizeOptional({}, {{ v -> {} }})",

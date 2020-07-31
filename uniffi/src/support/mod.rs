@@ -67,7 +67,7 @@ impl<T: Lowerable> Lowerable for Vec<T> {
 /// it gets lifted from bytes into a useable Rust value. We provide default implementtions for
 /// primitive types, and a typical implementation for composite types would lift each member in turn.
 
-fn check_remaining<B: Buf>(buf: &B, num_bytes: usize) -> Result<()> {
+pub fn check_remaining<B: Buf>(buf: &B, num_bytes: usize) -> Result<()> {
     if buf.remaining() < num_bytes {
         bail!("not enough bytes remaining in buffer");
     }
@@ -140,7 +140,7 @@ impl<T: Liftable> Liftable for Vec<T> {
 
 pub unsafe trait ViaFfi: Sized {
     type Value;
-    fn into_ffi_value(self) -> Self::Value;
+    fn into_ffi_value(&self) -> Self::Value;
     fn try_from_ffi_value(v: Self::Value) -> Result<Self>;
 }
 
@@ -148,7 +148,7 @@ macro_rules! impl_via_ffi_for_primitive {
   ($($T:ty),+) => {$(
     unsafe impl ViaFfi for $T {
       type Value = Self;
-      #[inline] fn into_ffi_value(self) -> Self::Value { self }
+      #[inline] fn into_ffi_value(&self) -> Self::Value { *self }
       #[inline] fn try_from_ffi_value(v: Self::Value) -> Result<Self> { Ok(v) }
     }
   )+}
@@ -161,7 +161,7 @@ pub trait ViaFfiUsingByteBuffer: Liftable + Lowerable {}
 unsafe impl<T: ViaFfiUsingByteBuffer> ViaFfi for T {
     type Value = ffi_support::ByteBuffer;
     #[inline]
-    fn into_ffi_value(self) -> Self::Value {
+    fn into_ffi_value(&self) -> Self::Value {
         lower(&self)
     }
     #[inline]
@@ -173,7 +173,7 @@ unsafe impl<T: ViaFfiUsingByteBuffer> ViaFfi for T {
 unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
     type Value = ffi_support::ByteBuffer;
     #[inline]
-    fn into_ffi_value(self) -> Self::Value {
+    fn into_ffi_value(&self) -> Self::Value {
         lower(&self)
     }
     #[inline]
@@ -185,7 +185,7 @@ unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
 unsafe impl<T: Liftable + Lowerable> ViaFfi for Vec<T> {
     type Value = ffi_support::ByteBuffer;
     #[inline]
-    fn into_ffi_value(self) -> Self::Value {
+    fn into_ffi_value(&self) -> Self::Value {
         lower(&self)
     }
     #[inline]
@@ -206,14 +206,14 @@ unsafe impl<'a> ViaFfi for &'a str {
     // We panic for now, the ViaFfi triat will be
     // broken down to IntoFfi and TryFromFfi to prevent us from having
     // to add this
-    fn into_ffi_value(self) -> Self::Value {
+    fn into_ffi_value(&self) -> Self::Value {
         panic!("Invalid conversion. into_ffi_value should not be called on a &str, a String -> *mut c_char conversion should be used instead.")
     }
 }
 
 unsafe impl ViaFfi for String {
     type Value = *mut std::os::raw::c_char;
-    fn into_ffi_value(self) -> Self::Value {
+    fn into_ffi_value(&self) -> Self::Value {
         ffi_support::rust_string_to_c(self)
     }
 
@@ -254,8 +254,8 @@ impl Liftable for String {
 
 unsafe impl ViaFfi for bool {
     type Value = u8;
-    fn into_ffi_value(self) -> Self::Value {
-        if self {
+    fn into_ffi_value(&self) -> Self::Value {
+        if *self {
             1
         } else {
             0
@@ -272,7 +272,7 @@ unsafe impl ViaFfi for bool {
 
 impl Lowerable for bool {
     fn lower_into<B: BufMut>(&self, buf: &mut B) {
-        buf.put_u8(ViaFfi::into_ffi_value(*self));
+        buf.put_u8(ViaFfi::into_ffi_value(self));
     }
 }
 

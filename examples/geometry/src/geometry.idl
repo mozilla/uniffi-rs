@@ -5,8 +5,8 @@ namespace geometry {
 };
 
 dictionary Point {
-  double x;
-  double y;
+  double coord_x;
+  double coord_y;
 };
 
 dictionary Line {

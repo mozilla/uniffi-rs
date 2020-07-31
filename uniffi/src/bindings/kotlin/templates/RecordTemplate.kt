@@ -1,6 +1,6 @@
 data class {{ rec.name()|class_name_kt }} (
     {%- for field in rec.fields() %}
-    val {{ field.name() }}: {{ field.type_()|type_kt }}{% if loop.last %}{% else %},{% endif %}
+    val {{ field.name()|var_name_kt }}: {{ field.type_()|type_kt }}{% if loop.last %}{% else %},{% endif %}
     {%- endfor %}
 ) {
     companion object {
@@ -25,13 +25,13 @@ data class {{ rec.name()|class_name_kt }} (
     internal fun lowersIntoSize(): Int {
         return 0 +
         {%- for field in rec.fields() %}
-        {{ "(this.{})"|format(field.name())|lowers_into_size_kt(field.type_()) }}{% if loop.last %}{% else %} +{% endif %}
+            {{ "(this.{})"|format(field.name())|lowers_into_size_kt(field.type_()) }}{% if loop.last %}{% else %} +{% endif %}
         {%- endfor %}
     }
 
     internal fun lowerInto(buf: ByteBuffer) {
         {%- for field in rec.fields() %}
-        {{ "(this.{})"|format(field.name())|lower_into_kt("buf", field.type_()) }}
+            {{ "(this.{})"|format(field.name())|lower_into_kt("buf", field.type_()) }}
         {%- endfor %}
     }
 }
