@@ -14,6 +14,7 @@
 
 {%- macro _arg_list_rs_call(args) %}
     {%- for arg in args %}
+        {%- if arg.by_ref() %}&{% endif %}
         {{- arg.name()|lift_rs(arg.type_()) }}
         {%- if !loop.last %}, {% endif %}
     {%- endfor %}
