@@ -458,11 +458,6 @@ impl APIConverter<Argument> for weedle::argument::Argument<'_> {
 
 impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
     fn convert(&self, ci: &ComponentInterface) -> Result<Argument> {
-        // by_ref: Attributes::try_from(&self.attributes)?.0.iter().iter().any(|attr| match attr {
-        //     Attribute::ByRef => true,
-        //     _ => false,
-        // })
-
         Ok(Argument {
             name: self.identifier.0.to_string(),
             type_: (&self.type_).resolve_type_definition(ci)?,
