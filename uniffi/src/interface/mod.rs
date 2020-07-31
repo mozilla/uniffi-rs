@@ -463,10 +463,15 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
             type_: (&self.type_).resolve_type_definition(ci)?,
             by_ref: match &self.attributes {
                 None => false,
-                Some(def) => def.body.list.iter().find(| attr| match attr {
-                    weedle::attribute::ExtendedAttribute::NoArgs(attr) => (attr.0).0 == "ByRef",
-                    _ => false
-                }).is_some()
+                Some(def) => def
+                    .body
+                    .list
+                    .iter()
+                    .find(|attr| match attr {
+                        weedle::attribute::ExtendedAttribute::NoArgs(attr) => (attr.0).0 == "ByRef",
+                        _ => false,
+                    })
+                    .is_some(),
             },
             optional: self.optional.is_some(),
             default: match self.default {
