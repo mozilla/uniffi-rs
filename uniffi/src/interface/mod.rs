@@ -458,20 +458,22 @@ impl APIConverter<Argument> for weedle::argument::Argument<'_> {
 
 impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
     fn convert(&self, ci: &ComponentInterface) -> Result<Argument> {
+        // by_ref: Attributes::try_from(&self.attributes)?.0.iter().iter().any(|attr| match attr {
+        //     Attribute::ByRef => true,
+        //     _ => false,
+        // })
+
         Ok(Argument {
             name: self.identifier.0.to_string(),
             type_: (&self.type_).resolve_type_definition(ci)?,
             by_ref: match &self.attributes {
                 None => false,
-                Some(def) => def
-                    .body
-                    .list
+                Some(attrs) => Attributes::try_from(attrs)?
+                    .0
                     .iter()
-                    .find(|attr| match attr {
-                        weedle::attribute::ExtendedAttribute::NoArgs(attr) => (attr.0).0 == "ByRef",
-                        _ => false,
-                    })
-                    .is_some(),
+                    .any(|attr| match attr {
+                        Attribute::ByRef => true,
+                    }),
             },
             optional: self.optional.is_some(),
             default: match self.default {
@@ -808,7 +810,7 @@ impl APIConverter<Literal> for weedle::literal::DefaultValue<'_> {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Attribute {
-    // Add valid attributes here
+    ByRef,
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
@@ -817,8 +819,11 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
         weedle_attribute: &weedle::attribute::ExtendedAttribute,
     ) -> Result<Self, anyhow::Error> {
         match weedle_attribute {
-            // Add attribute conversions here:
-            _ => anyhow::bail!("Attribute not supported: {:?}", weedle_attribute),
+            weedle::attribute::ExtendedAttribute::NoArgs(attr) => match (attr.0).0 {
+                "ByRef" => Ok(Attribute::ByRef),
+                _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
+            },
+            _ => anyhow::bail!("ExtendedAttribute not supported: {:?}", weedle_attribute),
         }
     }
 }
