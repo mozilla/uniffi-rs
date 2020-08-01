@@ -833,9 +833,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
     fn try_from(
         weedle_attributes: &weedle::attribute::ExtendedAttributeList,
     ) -> Result<Self, Self::Error> {
-        let attrs = &weedle_attributes
-            .body
-            .list;
+        let attrs = &weedle_attributes.body.list;
 
         let mut hash_set = std::collections::HashSet::new();
         for attr in attrs {
@@ -844,7 +842,8 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
             }
         }
 
-        attrs.iter()
+        attrs
+            .iter()
             .map(|attr| Attribute::try_from(attr))
             .collect::<Result<Vec<_>, _>>()
             .map(|attrs| Attributes(attrs))
