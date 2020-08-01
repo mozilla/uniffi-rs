@@ -1,35 +1,35 @@
 {# 
 // Template to call into rust. Used in several places.
 // Variable names in `arg_list_decl` should match up with arg lists
-// passed to rust via `_arg_list_rs_call` (we use  `var_name_kt` in `lower_kt`)
+// passed to rust via `_arg_list_ffi_call` (we use  `var_name_kt` in `lower_kt`)
 #}
 
-{%- macro to_rs_call(func) -%}
+{%- macro to_ffi_call(func) -%}
 {%- match func.throws() %}
 {%- when Some with (e) -%}
     rustCall({{e}}.ByReference()) { e -> 
-        _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}e)
+        _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}e)
     }
 {%- else -%}
-    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%})
+    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
 {%- endmatch %}
 {%- endmacro -%}
 
-{%- macro to_rs_call_with_prefix(prefix, func) %}
+{%- macro to_ffi_call_with_prefix(prefix, func) %}
 {%- match func.throws() %}
 {%- when Some with (e) -%}
     rustCall({{e}}.ByReference()) { e -> 
         _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
-            {{- prefix }}, {% call _arg_list_rs_call(func) %}{% if func.arguments().len() > 0 %}, {% endif %}e)
+            {{- prefix }}, {% call _arg_list_ffi_call(func) %}{% if func.arguments().len() > 0 %}, {% endif %}e)
     }
 {%- else -%}
     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
-        {{- prefix }}{% if func.arguments().len() > 0 %}, {% endif %}{% call _arg_list_rs_call(func) %})
+        {{- prefix }}{% if func.arguments().len() > 0 %}, {% endif %}{% call _arg_list_ffi_call(func) %})
 {%- endmatch %}
 {%- endmacro %}
 
 
-{%- macro _arg_list_rs_call(func) %}
+{%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
         {{- arg.name()|lower_kt(arg.type_()) }}
         {%- if !loop.last %}, {% endif %}
@@ -50,11 +50,11 @@
 
 {#-
 // Arglist as used in the _UniFFILib function declations.
-// Note unfiltered name but type_c filters.
+// Note unfiltered name but type_ffi filters.
 -#}
 {%- macro arg_list_rs_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name() }}: {{ arg.type_()|type_c -}}
+        {{- arg.name() }}: {{ arg.type_()|type_ffi -}}
         {%- if loop.last %}{% else %},{% endif %}
     {%- endfor %}
     {% if func.has_out_err() %}{% if func.arguments().len() > 0 %},{% endif %} e: Structure.ByReference{% endif %}

@@ -6,6 +6,7 @@ use anyhow::{bail, Result};
 use bytes::buf::{Buf, BufMut};
 use ffi_support::ByteBuffer;
 use std::convert::TryFrom;
+use std::ffi::CString;
 
 // It would be nice if this module was behind a cfg(test) guard, but it
 // doesn't work between crates so let's hope LLVM tree-shaking works well.
@@ -152,7 +153,7 @@ impl<T: Liftable> Liftable for Vec<T> {
 
 pub unsafe trait ViaFfi: Sized {
     type Value;
-    fn into_ffi_value(&self) -> Self::Value;
+    fn into_ffi_value(self) -> Self::Value;
     fn try_from_ffi_value(v: Self::Value) -> Result<Self>;
 }
 
@@ -160,7 +161,7 @@ macro_rules! impl_via_ffi_for_primitive {
   ($($T:ty),+) => {$(
     unsafe impl ViaFfi for $T {
       type Value = Self;
-      #[inline] fn into_ffi_value(&self) -> Self::Value { *self }
+      #[inline] fn into_ffi_value(self) -> Self::Value { self }
       #[inline] fn try_from_ffi_value(v: Self::Value) -> Result<Self> { Ok(v) }
     }
   )+}
@@ -173,7 +174,7 @@ pub trait ViaFfiUsingByteBuffer: Liftable + Lowerable {}
 unsafe impl<T: ViaFfiUsingByteBuffer> ViaFfi for T {
     type Value = ffi_support::ByteBuffer;
     #[inline]
-    fn into_ffi_value(&self) -> Self::Value {
+    fn into_ffi_value(self) -> Self::Value {
         lower(&self)
     }
     #[inline]
@@ -185,7 +186,7 @@ unsafe impl<T: ViaFfiUsingByteBuffer> ViaFfi for T {
 unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
     type Value = ffi_support::ByteBuffer;
     #[inline]
-    fn into_ffi_value(&self) -> Self::Value {
+    fn into_ffi_value(self) -> Self::Value {
         lower(&self)
     }
     #[inline]
@@ -197,7 +198,7 @@ unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
 unsafe impl<T: Liftable + Lowerable> ViaFfi for Vec<T> {
     type Value = ffi_support::ByteBuffer;
     #[inline]
-    fn into_ffi_value(&self) -> Self::Value {
+    fn into_ffi_value(self) -> Self::Value {
         lower(&self)
     }
     #[inline]
@@ -206,37 +207,38 @@ unsafe impl<T: Liftable + Lowerable> ViaFfi for Vec<T> {
     }
 }
 
-unsafe impl<'a> ViaFfi for &'a str {
-    type Value = ffi_support::FfiStr<'a>;
-    fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
-        Ok(v.as_str())
-    }
-
-    // This should never happen since there is asymmetry with strings
-    // We typically go FfiStr -> &str for argumetns and
-    // String -> *mut c_char for return values.
-    // We panic for now, the ViaFfi triat will be
-    // broken down to IntoFfi and TryFromFfi to prevent us from having
-    // to add this
-    fn into_ffi_value(&self) -> Self::Value {
-        panic!("Invalid conversion. into_ffi_value should not be called on a &str, a String -> *mut c_char conversion should be used instead.")
-    }
-}
-
+/// Support for passing Strings back and forth across the FFI.
+///
+/// Unlike many other implementations of `ViaFfi`, this passes a pointer rather
+/// than copying the data from one side to the other. This is a safety hazard,
+/// but turns out to be pretty nice for useability.
+///
+/// (In practice, we do end up copying the data, the copying just happens on
+/// the foreign language side rather than here in the rust code.)
 unsafe impl ViaFfi for String {
     type Value = *mut std::os::raw::c_char;
-    fn into_ffi_value(&self) -> Self::Value {
+
+    // This returns a raw pointer to the underlying bytes, so it's very important
+    // that it consume ownership of the String, which is relinquished to the foreign
+    // language code (and can be returned by it passing the pointer back).
+    fn into_ffi_value(self) -> Self::Value {
         ffi_support::rust_string_to_c(self)
     }
 
-    // This should never happen since there is asymmetry with strings
-    // We typically go FfiStr -> &str for argumetns and
-    // String -> *mut c_char for return values.
-    // We panic for now, the ViaFfi triat will be
-    // broken down to IntoFfi and TryFromFfi to prevent us from having
-    // to add this
-    fn try_from_ffi_value(_: Self::Value) -> Result<Self> {
-        panic!("Invalid conversion. try_from_ffi_value should not be called on a c_char, an FfiStr<'_> -> &str conversion should be used instead.")
+    // The argument here *must* be a uniquely-owned pointer previously obtained
+    // from `info_ffi_value` above. It will try to panic if you give it an invalid
+    // pointer, but there's no guarantee that it will.
+    fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
+        if v.is_null() {
+            bail!("null pointer passed as String")
+        }
+        let cstr = unsafe { CString::from_raw(v) };
+        // This turns the buffer back into a `String` without copying the data
+        // and without re-checking it for validity of the utf8. If the pointer
+        // came from a valid String then there's no point in re-checking the utf8,
+        // and if it didn't then bad things are going to happen regardless of
+        // whether we check for valid utf8 data or not.
+        Ok(unsafe { String::from_utf8_unchecked(cstr.into_bytes()) })
     }
 }
 
@@ -266,8 +268,8 @@ impl Liftable for String {
 
 unsafe impl ViaFfi for bool {
     type Value = u8;
-    fn into_ffi_value(&self) -> Self::Value {
-        if *self {
+    fn into_ffi_value(self) -> Self::Value {
+        if self {
             1
         } else {
             0
@@ -284,7 +286,7 @@ unsafe impl ViaFfi for bool {
 
 impl Lowerable for bool {
     fn lower_into<B: BufMut>(&self, buf: &mut B) {
-        buf.put_u8(ViaFfi::into_ffi_value(self));
+        buf.put_u8(ViaFfi::into_ffi_value(*self));
     }
 }
 

@@ -18,7 +18,7 @@ uniffi::deps::lazy_static::lazy_static! {
 
     #[no_mangle]
     pub extern "C" fn {{ cons.ffi_func().name() }}(
-        {%- call rs::arg_list_rs_decl(cons.ffi_func()) %}) -> u64 {
+        {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> u64 {
         uniffi::deps::log::debug!("{{ cons.ffi_func().name() }}");
         // If the constructor does not have the same signature as declared in the IDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
@@ -29,7 +29,7 @@ uniffi::deps::lazy_static::lazy_static! {
 {%- for meth in obj.methods() %}
     #[no_mangle]
     pub extern "C" fn {{ meth.ffi_func().name() }}(
-        {%- call rs::arg_list_rs_decl(meth.ffi_func()) %}
+        {%- call rs::arg_list_ffi_decl(meth.ffi_func()) %}
     ) -> {% call rs::return_type_func(meth) %} {
         uniffi::deps::log::debug!("{{ meth.ffi_func().name() }}");
         // If the method does not have the same signature as declared in the IDL, then

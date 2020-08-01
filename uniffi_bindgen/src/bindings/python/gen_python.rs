@@ -39,27 +39,26 @@ mod filters {
     use super::*;
     use std::fmt;
 
-    pub fn type_c(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::U32 => "ctypes.c_uint32".to_string(),
-            TypeReference::U64 => "ctypes.c_uint64".to_string(),
-            TypeReference::Float => "ctypes.c_float".to_string(),
-            TypeReference::Double => "ctypes.c_double".to_string(),
-            TypeReference::Boolean => "ctypes.c_byte".to_string(),
+            FFIType::Int8 => "ctypes.c_int8".to_string(),
+            FFIType::UInt8 => "ctypes.c_uint8".to_string(),
+            FFIType::Int16 => "ctypes.c_int16".to_string(),
+            FFIType::UInt16 => "ctypes.c_uint16".to_string(),
+            FFIType::Int32 => "ctypes.c_int32".to_string(),
+            FFIType::UInt32 => "ctypes.c_uint32".to_string(),
+            FFIType::Int64 => "ctypes.c_int64".to_string(),
+            FFIType::UInt64 => "ctypes.c_uint64".to_string(),
+            FFIType::Float32 => "ctypes.c_float".to_string(),
+            FFIType::Float64 => "ctypes.c_double".to_string(),
+            FFIType::RustBuffer => "RustBuffer".to_string(),
+            FFIType::RustError => "RustError".to_string(),
             // We use a c_void_p instead of a c_char_p since python seems to
             // create it's own string if we use c_char_p, and that prevents us
             // from freeing. I could be wrong, but that's what I got from this:
             // https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
-            TypeReference::String | TypeReference::RawStringPointer => {
-                "ctypes.c_void_p".to_string()
-            }
-            TypeReference::Bytes => "RustBuffer".to_string(),
-            TypeReference::Enum(_) => "ctypes.c_uint32".to_string(),
-            TypeReference::Record(_) => "RustBuffer".to_string(),
-            TypeReference::Optional(_) => "RustBuffer".to_string(),
-            TypeReference::Sequence(_) => "RustBuffer".to_string(),
-            TypeReference::Object(_) => "ctypes.c_uint64".to_string(),
-            _ => panic!("[TODO: type_c({:?})", type_),
+            FFIType::RustString => "ctypes.c_void_p".to_string(),
+            FFIType::ForeignStringRef => "ctypes.c_void_p".to_string(),
         })
     }
 
@@ -79,36 +78,38 @@ mod filters {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
-    pub fn coerce_py(
-        nm: &dyn fmt::Display,
-        type_: &TypeReference,
-    ) -> Result<String, askama::Error> {
+    pub fn coerce_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::U32
-            | TypeReference::U64
-            | TypeReference::Float
-            | TypeReference::Double
-            | TypeReference::String
-            | TypeReference::RawStringPointer
-            | TypeReference::Boolean => format!("{} = {}", nm, nm),
-            TypeReference::Enum(type_name) => format!("{} = {}({})", nm, type_name, nm),
-            TypeReference::Record(type_name) => format!("{} = {}._coerce({})", nm, type_name, nm),
-            //TypeReference::Optional(_) => "RustBuffer".to_string(),
-            _ => panic!("[TODO: coerce_py({:?})]", type_),
+            Type::Int8
+            | Type::UInt8
+            | Type::Int16
+            | Type::UInt16
+            | Type::Int32
+            | Type::UInt32
+            | Type::Int64
+            | Type::UInt64
+            | Type::Float32
+            | Type::Float64
+            | Type::String
+            | Type::Boolean
+            | Type::Object(_)
+            | Type::Error(_) => format!("{} = {}", nm, nm),
+            Type::Enum(type_name) => format!("{} = {}({})", nm, type_name, nm),
+            Type::Record(type_name) => format!("{} = {}._coerce({})", nm, type_name, nm),
+            Type::Optional(t) => format!("(None if {} is None else {})", nm, coerce_py(nm, t)?),
+            Type::Sequence(t) => format!("({} for x in {})", coerce_py(&"x", t)?, nm), // TODO: name hygiene
         })
     }
 
-    pub fn lower_py(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn lower_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::U32
-            | TypeReference::U64
-            | TypeReference::Float
-            | TypeReference::Double
-            | TypeReference::Boolean => nm.to_string(),
-            TypeReference::Enum(_) => format!("{}.value", nm),
-            TypeReference::String => format!("{}.encode('utf-8')", nm),
-            TypeReference::Record(type_name) => format!("{}._lower({})", type_name, nm),
-            TypeReference::Optional(_type) => format!(
+            Type::UInt32 | Type::UInt64 | Type::Float32 | Type::Float64 | Type::Boolean => {
+                nm.to_string()
+            }
+            Type::Enum(_) => format!("{}.value", nm),
+            Type::String => format!("{}.encode('utf-8')", nm),
+            Type::Record(type_name) => format!("{}._lower({})", type_name, nm),
+            Type::Optional(_type) => format!(
                 "lowerOptional({}, lambda buf, v: {})",
                 nm,
                 lower_into_py(&"buf", &"v", type_)?
@@ -119,50 +120,46 @@ mod filters {
 
     pub fn lowers_into_size_py(
         nm: &dyn fmt::Display,
-        type_: &TypeReference,
+        type_: &Type,
     ) -> Result<String, askama::Error> {
         let nm = var_name_py(nm)?;
         Ok(match type_ {
-            TypeReference::U32 => "4".to_string(),
-            TypeReference::Double => "8".to_string(),
-            TypeReference::String => format!("4 + len({}.encode('utf-8'))", nm),
-            TypeReference::Record(type_name) => format!("{}._lowersIntoSize({})", type_name, nm),
+            Type::UInt32 => "4".to_string(),
+            Type::Float64 => "8".to_string(),
+            Type::String => format!("4 + len({}.encode('utf-8'))", nm),
+            Type::Record(type_name) => format!("{}._lowersIntoSize({})", type_name, nm),
             _ => panic!("[TODO: lowers_into_size_py({:?})]", type_),
         })
     }
     pub fn lower_into_py(
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
-        type_: &TypeReference,
+        type_: &Type,
     ) -> Result<String, askama::Error> {
         let nm = var_name_py(nm)?;
         Ok(match type_ {
-            TypeReference::Double => format!("{}.putDouble({})", target, nm),
-            TypeReference::U32 => format!("{}.putInt({})", target, nm),
-            TypeReference::String => format!("{}.putString({})", target, nm),
-            TypeReference::Record(type_name) => {
-                format!("{}._lowerInto({}, {})", type_name, nm, target)
-            }
+            Type::Float64 => format!("{}.putDouble({})", target, nm),
+            Type::UInt32 => format!("{}.putInt({})", target, nm),
+            Type::String => format!("{}.putString({})", target, nm),
+            Type::Record(type_name) => format!("{}._lowerInto({}, {})", type_name, nm, target),
             _ => panic!("[TODO: lower_into_py({:?})]", type_),
         })
     }
 
-    pub fn lift_py(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn lift_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::U32
-            | TypeReference::U64
-            | TypeReference::Float
-            | TypeReference::Double
-            | TypeReference::Boolean => format!("{}", nm),
-            TypeReference::Enum(type_name) => format!("{}({})", type_name, nm),
-            TypeReference::String => format!("liftString({})", nm),
-            TypeReference::Record(type_name) => format!("{}._lift({})", type_name, nm),
-            TypeReference::Optional(type_) => format!(
+            Type::UInt32 | Type::UInt64 | Type::Float32 | Type::Float64 | Type::Boolean => {
+                format!("{}", nm)
+            }
+            Type::Enum(type_name) => format!("{}({})", type_name, nm),
+            Type::String => format!("liftString({})", nm),
+            Type::Record(type_name) => format!("{}._lift({})", type_name, nm),
+            Type::Optional(type_) => format!(
                 "liftOptional({}, lambda buf: {})",
                 nm,
                 lift_from_py(&"buf", type_)?
             ),
-            TypeReference::Sequence(type_) => format!(
+            Type::Sequence(type_) => format!(
                 "liftSequence({}, lambda buf: {})",
                 nm,
                 lift_from_py(&"buf", type_)?
@@ -171,15 +168,12 @@ mod filters {
         })
     }
 
-    pub fn lift_from_py(
-        nm: &dyn fmt::Display,
-        type_: &TypeReference,
-    ) -> Result<String, askama::Error> {
+    pub fn lift_from_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::U32 => format!("{}.getInt()", nm),
-            TypeReference::Double => format!("{}.getDouble()", nm),
-            TypeReference::Record(type_name) => format!("{}._liftFrom({})", type_name, nm),
-            TypeReference::String => format!("{}.getString()", nm),
+            Type::UInt32 => format!("{}.getInt()", nm),
+            Type::Float64 => format!("{}.getDouble()", nm),
+            Type::Record(type_name) => format!("{}._liftFrom({})", type_name, nm),
+            Type::String => format!("{}.getString()", nm),
             _ => panic!("[TODO: lift_from_py({:?})]", type_),
         })
     }

@@ -164,8 +164,13 @@ fun Double.lowerInto(buf: ByteBuffer) {
     buf.putDouble(this)
 }
 
-fun String.lower(): String {
-    return this
+fun String.lower(): Pointer {
+    val rustErr = RustError.ByReference()
+    val rustStr = _UniFFILib.INSTANCE.{{ ci.ffi_string_alloc_from().name() }}(this, rustErr)
+    if (rustErr.code != 0) {
+         throw RuntimeException("caught a panic while passing a string across the ffi")
+    }
+    return rustStr
 }
 
 fun String.lowerInto(buf: ByteBuffer) {

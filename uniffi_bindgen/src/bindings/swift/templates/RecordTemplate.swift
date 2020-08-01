@@ -1,13 +1,13 @@
 public struct {{ rec.name()|class_name_swift }}: Lowerable, Liftable, Serializable, Equatable {
     {%- for field in rec.fields() %}
-    let {{ field.name()|var_name_swift }}: {{ field.type_()|decl_swift }}
+    let {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
     {%- endfor %}
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(
         {%- for field in rec.fields() %}
-        {{ field.name()|var_name_swift }}: {{ field.type_()|decl_swift }}{% if loop.last %}{% else %},{% endif %}
+        {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}{% if loop.last %}{% else %},{% endif %}
         {%- endfor %}
     ) {
         {%- for field in rec.fields() %}

@@ -76,96 +76,64 @@ mod filters {
     use super::*;
     use std::fmt;
 
-    /// Declares a C type in the bridging header.
-    pub fn decl_c(type_: &TypeReference) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            // These native types map nicely to the FFI without conversion.
-            TypeReference::U32 => "uint32_t".into(),
-            TypeReference::U64 => "uint64_t".into(),
-            TypeReference::Float => "float".into(),
-            TypeReference::Double => "double".into(),
-            TypeReference::Bytes => "RustBuffer".into(),
-            TypeReference::String | TypeReference::RawStringPointer => {
-                "char const *_Nonnull".into()
-            }
-            // Our FFI lowers Booleans into bytes, to work around JNA bugs.
-            // We'll lift these up into Booleans on the Swift side.
-            TypeReference::Boolean => "uint8_t".into(),
-            // These types need conversion, and special handling for lifting/lowering.
-            TypeReference::Enum(_) => "uint32_t".into(),
-            TypeReference::Record(_) => "RustBuffer".into(),
-            TypeReference::Optional(_) => "RustBuffer".into(),
-            TypeReference::Sequence(_) => "RustBuffer".into(),
-            TypeReference::Object(_) => "uint64_t".into(),
-            _ => panic!("[TODO: decl_c({:?})", type_),
-        })
-    }
-
-    /// Declares a C type in the bridging header.
-    pub fn ret_c(type_: &TypeReference) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            // These native types map nicely to the FFI without conversion.
-            TypeReference::U32 => "uint32_t".into(),
-            TypeReference::U64 => "uint64_t".into(),
-            TypeReference::Float => "float".into(),
-            TypeReference::Double => "double".into(),
-            TypeReference::Bytes => "RustBuffer".into(),
-            TypeReference::String => "char *_Nonnull".into(),
-            // Our FFI lowers Booleans into bytes, to work around JNA bugs.
-            // We'll lift these up into Booleans on the Swift side.
-            TypeReference::Boolean => "uint8_t".into(),
-            // These types need conversion, and special handling for lifting/lowering.
-            TypeReference::Enum(_) => "uint32_t".into(),
-            TypeReference::Record(_) => "RustBuffer".into(),
-            TypeReference::Optional(_) => "RustBuffer".into(),
-            TypeReference::Sequence(_) => "RustBuffer".into(),
-            TypeReference::Object(_) => "uint64_t".into(),
-            _ => panic!("[TODO: decl_c({:?})", type_),
-        })
-    }
-
     /// Declares a Swift type in the public interface for the library.
-    pub fn decl_swift(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_swift(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::U32 => "UInt32".into(),
-            TypeReference::U64 => "UInt64".into(),
-            TypeReference::Float => "Float".into(),
-            TypeReference::Double => "Double".into(),
-            TypeReference::String => "String".into(),
-            // TypeReference::Bytes => "Data".into(),
-            TypeReference::Boolean => "Bool".into(),
-            TypeReference::Enum(name) => class_name_swift(name)?,
-            TypeReference::Record(name) => class_name_swift(name)?,
-            TypeReference::Optional(type_) => format!("{}?", decl_swift(type_)?),
-            TypeReference::Sequence(type_) => format!("[{}]", decl_swift(type_)?),
-            TypeReference::Object(name) => class_name_swift(name)?,
-            _ => panic!("[TODO: decl_swift({:?})", type_),
+            Type::Int8 => "Int8".into(),
+            Type::UInt8 => "UInt8".into(),
+            Type::Int16 => "Int16".into(),
+            Type::UInt16 => "UInt16".into(),
+            Type::Int32 => "Int32".into(),
+            Type::UInt32 => "UInt32".into(),
+            Type::Int64 => "Int64".into(),
+            Type::UInt64 => "UInt64".into(),
+            Type::Float32 => "Float".into(),
+            Type::Float64 => "Double".into(),
+            Type::Boolean => "Bool".into(),
+            Type::String => "String".into(),
+            Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
+                class_name_swift(name)?
+            }
+            Type::Optional(type_) => format!("{}?", type_swift(type_)?),
+            Type::Sequence(type_) => format!("[{}]", type_swift(type_)?),
+        })
+    }
+
+    /// Declares a C type in the bridging header.
+    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
+        Ok(match type_ {
+            // These native types map nicely to the FFI without conversion.
+            FFIType::Int8 => "int8_t".into(),
+            FFIType::UInt8 => "uint8_t".into(),
+            FFIType::Int16 => "int16_t".into(),
+            FFIType::UInt16 => "uint16_t".into(),
+            FFIType::Int32 => "int32_t".into(),
+            FFIType::UInt32 => "uint32_t".into(),
+            FFIType::Int64 => "int64_t".into(),
+            FFIType::UInt64 => "uint64_t".into(),
+            FFIType::Float32 => "float".into(),
+            FFIType::Float64 => "double".into(),
+            FFIType::RustBuffer => "RustBuffer".into(),
+            FFIType::RustString => "char*_Nonnull".into(),
+            FFIType::RustError => "NativeRustError".into(),
+            FFIType::ForeignStringRef => "const char*_Nonnull".into(),
         })
     }
 
     /// Lowers a Swift type into a C type. This is used to pass arguments over
     /// the FFI, from Swift to Rust.
-    pub fn lower_swift(
-        name: &dyn fmt::Display,
-        _type_: &TypeReference,
-    ) -> Result<String, askama::Error> {
+    pub fn lower_swift(name: &dyn fmt::Display, _type_: &Type) -> Result<String, askama::Error> {
         Ok(format!("{}.toFFIValue()", var_name_swift(name)?))
     }
 
     /// ...
-    pub fn lift_from_swift(
-        name: &dyn fmt::Display,
-        type_: &TypeReference,
-    ) -> Result<String, askama::Error> {
-        Ok(format!("{}.lift(from: {})", decl_swift(type_)?, name))
+    pub fn lift_from_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        Ok(format!("{}.lift(from: {})", type_swift(type_)?, name))
     }
 
     /// ...
-    pub fn lift_swift(
-        name: &dyn fmt::Display,
-        type_: &TypeReference,
-    ) -> Result<String, askama::Error> {
-        Ok(format!("{}.fromFFIValue({})", decl_swift(type_)?, name))
+    pub fn lift_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        Ok(format!("{}.fromFFIValue({})", type_swift(type_)?, name))
     }
 
     /// ...
