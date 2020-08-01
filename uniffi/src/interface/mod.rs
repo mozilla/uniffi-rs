@@ -833,10 +833,16 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
     fn try_from(
         weedle_attributes: &weedle::attribute::ExtendedAttributeList,
     ) -> Result<Self, Self::Error> {
-        // TODO: Error out on duplicate attributes
-        weedle_attributes
-            .body
-            .list
+        let attrs = &weedle_attributes.body.list;
+
+        let mut hash_set = std::collections::HashSet::new();
+        for attr in attrs {
+            if !hash_set.insert(attr) {
+                anyhow::bail!("Duplicated ExtendedAttribute: {:?}", attr);
+            }
+        }
+
+        attrs
             .iter()
             .map(|attr| Attribute::try_from(attr))
             .collect::<Result<Vec<_>, _>>()
