@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicLong
 
 {% include "NamespaceLibraryTemplate.kt" %}
 
+{% include "Helpers.kt" %}
+
 // Public interface members begin here.
 // Public facing enums
 {% for e in ci.iter_enum_definitions() %}

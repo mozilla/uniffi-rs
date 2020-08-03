@@ -7,8 +7,9 @@ public class {{ obj.name() }} {
     }
     {%- endfor %}
 
-    // XXX TODO: destructors or equivalent.
-
+    deinit {
+        {{ obj.ffi_object_free().name() }}(handle)
+    }
 
     // TODO: Maybe merge the two templates (i.e the one with a return type and the one without)
     {% for meth in obj.methods() -%}

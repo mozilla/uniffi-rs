@@ -143,7 +143,7 @@ impl<'ci> ComponentInterface {
 
     pub fn ffi_bytebuffer_alloc(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("{}_bytebuffer_alloc", self.namespace()),
+            name: format!("ffi_{}_bytebuffer_alloc", self.namespace()),
             arguments: vec![Argument {
                 name: "size".to_string(),
                 type_: TypeReference::U32,
@@ -158,7 +158,7 @@ impl<'ci> ComponentInterface {
 
     pub fn ffi_bytebuffer_free(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("{}_bytebuffer_free", self.namespace()),
+            name: format!("ffi_{}_bytebuffer_free", self.namespace()),
             arguments: vec![Argument {
                 name: "buf".to_string(),
                 type_: TypeReference::Bytes,
@@ -173,7 +173,7 @@ impl<'ci> ComponentInterface {
 
     pub fn ffi_string_free(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("{}_string_free", self.namespace()),
+            name: format!("ffi_{}_string_free", self.namespace()),
             arguments: vec![Argument {
                 name: "str".to_string(),
                 type_: TypeReference::RawStringPointer,
@@ -190,9 +190,9 @@ impl<'ci> ComponentInterface {
         self.objects
             .iter()
             .map(|obj| {
-                obj.constructors
-                    .iter()
-                    .map(|f| f.ffi_func.clone())
+                vec![obj.ffi_object_free()]
+                    .into_iter()
+                    .chain(obj.constructors.iter().map(|f| f.ffi_func.clone()))
                     .chain(obj.methods.iter().map(|f| f.ffi_func.clone()))
             })
             .flatten()
@@ -446,9 +446,11 @@ impl FFIFunction {
     pub fn return_type(&self) -> Option<&TypeReference> {
         self.return_type.as_ref()
     }
-
     pub fn has_out_err(&self) -> bool {
         self.has_out_err
+    }
+    pub fn method_arguments(&self) -> &[Argument] {
+        self.arguments.get(1..self.arguments.len()).unwrap_or_default()
     }
 }
 
@@ -579,11 +581,21 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Object {
     name: String,
+    namespace: String,
     constructors: Vec<Constructor>,
     methods: Vec<Method>,
 }
 
 impl Object {
+    fn new(name: String, namespace: String) -> Object {
+        Object {
+            name,
+            namespace,
+            constructors: Default::default(),
+            methods: Default::default(),
+        }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -594,6 +606,21 @@ impl Object {
 
     pub fn methods(&self) -> Vec<&Method> {
         self.methods.iter().collect()
+    }
+
+    pub fn ffi_object_free(&self) -> FFIFunction {
+        FFIFunction {
+            name: format!("ffi_{}_{}_object_free", self.namespace, self.name),
+            arguments: vec![Argument {
+                name: "handle".to_string(),
+                type_: TypeReference::Object(self.name.clone()),
+                by_ref: false,
+                optional: false,
+                default: None,
+            }],
+            return_type: None,
+            has_out_err: false,
+        }
     }
 
     fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
@@ -742,11 +769,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         if self.inheritance.is_some() {
             bail!("interface inheritence is not supported");
         }
-        let mut object = Object {
-            name: self.identifier.0.to_string(),
-            constructors: Default::default(),
-            methods: Default::default(),
-        };
+        let mut object = Object::new(self.identifier.0.to_string(), ci.namespace().to_string());
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Constructor(t) => {
