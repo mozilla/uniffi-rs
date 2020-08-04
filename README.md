@@ -9,9 +9,9 @@ It's at the "very hand-wavy prototype" stage, so don't get your hopes up just ye
 ## What?
 
 We're interested in building re-useable components for sync- and storage-related browser
-functionality - things like [storing and syncing passwords](https://github.com/mozilla/application-services/tree/master/components/logins),
-[working with bookmarks](https://github.com/mozilla/application-services/tree/master/components/places) and
-[signing in to your Firefox Account](https://github.com/mozilla/application-services/tree/master/components/fxa-client).
+functionality - things like [storing and syncing passwords](https://github.com/mozilla/application-services/tree/main/components/logins),
+[working with bookmarks](https://github.com/mozilla/application-services/tree/main/components/places) and
+[signing in to your Firefox Account](https://github.com/mozilla/application-services/tree/main/components/fxa-client).
 
 We want to write the code for these components once, in Rust. We want to easily re-use these components from
 all the different languages and on all the different platforms for which we build browsers, which currently
@@ -22,16 +22,16 @@ And of course, we want to do this in a way that's convenient, maintainable, and 
 ## How?
 
 Our current approach to building shared components in Rust involves writing a lot
-of boilerplate code by hand. Take the [fxa-client component](https://github.com/mozilla/application-services/tree/master/components/fxa-client)
+of boilerplate code by hand. Take the [fxa-client component](https://github.com/mozilla/application-services/tree/main/components/fxa-client)
 as an example, which contains:
 
-* The [core functionality](https://github.com/mozilla/application-services/tree/master/components/fxa-client/src) of the component, as a Rust crate.
-* A second Rust crate for [the FFI layer](https://github.com/mozilla/application-services/tree/master/components/fxa-client/ffi),
+* The [core functionality](https://github.com/mozilla/application-services/tree/main/components/fxa-client/src) of the component, as a Rust crate.
+* A second Rust crate for [the FFI layer](https://github.com/mozilla/application-services/tree/main/components/fxa-client/ffi),
   which flattens the Rust API into a set of functions and enums and opaque pointers that can be accessed from any language capable
   of binding to a C-style API.
-* A [Kotlin package](https://github.com/mozilla/application-services/tree/master/components/fxa-client/android/src/main/java/mozilla/appservices/fxaclient)
+* A [Kotlin package](https://github.com/mozilla/application-services/tree/main/components/fxa-client/android/src/main/java/mozilla/appservices/fxaclient)
   which wraps that C-style FFI layer back into rich classes and methods and so-on, for use in Android applications.
-* A [Swift package](https://github.com/mozilla/application-services/tree/master/components/fxa-client/ios/FxAClient)
+* A [Swift package](https://github.com/mozilla/application-services/tree/main/components/fxa-client/ios/FxAClient)
   which wraps that C-style FFI layer back into rich classes and methods and so-on,for use in iOS applications.
 * A third Rust crate for [exposing the core functionality to JavaScript via XPCOM](https://searchfox.org/mozilla-central/source/services/fxaccounts/rust-bridge/firefox-accounts-bridge) (which doesn't go via the C-style FFI).
 
@@ -201,8 +201,7 @@ of them. Since we're auto-generating things we'll instead use a more generic, re
 
 In the FFI layer, these operate similarly to records, passing back and forth via an opaque bytebuffer.
 
-When generating the component scaffolding, we'll try to use Rust's rich iterator support to accept
-any iterable as a sequence return value. Sequence arguments will arrive as Vecs.
+The generated scaffolding accepts and returns sequences as `Vec`s.
 
 When generating language-specific bindings, sequences will show up as the native list/array/whatever type.
 
@@ -231,11 +230,21 @@ enum to show up in that language.
 There is also more sophisticated stuff in there, like union types and nullable
 types. We haven't really thought about how to map those on to what we need.
 
-#### TODO: Nullable types
+#### Nullable types
 
-WebIDL has support for these, and they probably have an obvious representation via Rust's
-`Option` type and the equivalent in host languages. But we haven't investiated these in
-any detail.
+Nullable types are annotated in WebIDL using a `?`. For example:
+
+```
+namespace geometry {
+  Point? intersection(Line ln1, Line ln2);
+};
+```
+
+In Rust, there is no `null` and thus, those values are represented by an `Option`. So, for the above example, that would be `Option<Point>`. 
+
+In the FFI layer, nullable values will either be encoded into a single `0` byte, indicating a `null` value, or a single `1` byte followed by the non-null value.
+
+Each binding will interpret the value as its own nullable type.
 
 #### TODO: Union types
 
@@ -330,3 +339,6 @@ It targets C++ as the implementation language rather than rust, and it's been ex
 
 Please suggest it by filing an issue! If there's existing tooling to meet our needs then you might
 spoil a bit of fun, but save us a whole bunch of work!
+
+## Code of Conduct
+Please check the project's [code of conduct](./CODE_OF_CONDUCT.md)
