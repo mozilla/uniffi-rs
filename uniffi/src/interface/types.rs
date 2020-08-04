@@ -11,8 +11,9 @@
 use anyhow::bail;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
 
-use super::ComponentInterface;
+use super::{Attributes, ComponentInterface};
 
 /// Represents all the different types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
@@ -41,6 +42,7 @@ pub enum TypeReference {
     Object(String),
     Record(String),
     Enum(String),
+    Error(String),
     Optional(Box<TypeReference>),
     Sequence(Box<TypeReference>),
 }
@@ -107,6 +109,13 @@ impl TypeFinder for weedle::DictionaryDefinition<'_> {
 
 impl TypeFinder for weedle::EnumDefinition<'_> {
     fn find_type_definitions(&self, ci: &mut ComponentInterface) -> Result<()> {
+        if let Some(attrs) = &self.attributes {
+            let attrs = Attributes::try_from(attrs)?;
+            if attrs.contains_error_attr() {
+                let name = self.identifier.0.to_string();
+                return ci.add_type_definition(self.identifier.0, TypeReference::Error(name));
+            }
+        }
         let name = self.identifier.0.to_string();
         ci.add_type_definition(self.identifier.0, TypeReference::Enum(name))
     }

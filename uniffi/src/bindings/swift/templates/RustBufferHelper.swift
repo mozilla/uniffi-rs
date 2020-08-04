@@ -11,6 +11,8 @@ enum InternalError: Error {
     case unexpectedOptionalTag
     // Unexpected integer that doesn't correspond to an enum case.
     case unexpectedEnumCase
+    // Empty Result returned across the FFI
+    case emptyResult
 }
 
 extension Data {

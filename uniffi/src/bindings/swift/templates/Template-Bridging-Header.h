@@ -11,10 +11,17 @@ typedef struct RustBuffer {
     uint8_t *_Nullable data;
 } RustBuffer;
 
+// Error definitions
+// Each error has an error code enum, and a struct
+typedef struct NativeRustError {
+    int32_t code;
+    char *_Nullable message;
+} NativeRustError;
+
+  
 {% for func in ci.iter_ffi_function_definitions() -%}
     {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ret_c }}{% when None %}void{% endmatch %} {{ func.name() }}(
-      {% call swift::arg_list_rs_decl(func.arguments()) %}
-      // TODO: When we implement error handling, there will be a `*_Nonnull out_err` param here.
+      {% call swift::arg_list_rs_decl(func) %}
     );
 {% endfor -%}
 
