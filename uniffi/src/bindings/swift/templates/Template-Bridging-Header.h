@@ -13,10 +13,10 @@ typedef struct RustBuffer {
 
 // Error definitions
 // Each error has an error code enum, and a struct
-  typedef struct NativeRustError {
+typedef struct NativeRustError {
     int32_t code;
     char *_Nullable message;
-  } NativeRustError;
+} NativeRustError;
 
   
 {% for func in ci.iter_ffi_function_definitions() -%}

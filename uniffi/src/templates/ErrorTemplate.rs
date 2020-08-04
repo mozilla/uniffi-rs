@@ -1,5 +1,5 @@
 {#
-    // For each error declared in the IDL, using the [Error] attribute, we assume the caller as provided a corresponding
+    // For each error declared in the IDL, using the [Error] attribute, we assume the caller has provided a corresponding
     // rust Error enum with the same name. We provide the traits for sending it across the FFI, which will fail to
     // compile if the provided enum has a different shape to the one declared in the IDL. 
     // Here we define the neccessary converstion to allow the error to propegate through the FFI as an error.

@@ -392,7 +392,7 @@ impl Function {
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.clone();
         self.ffi_func.return_type = self.return_type.clone();
-        // Theoritically this should always be true
+        // Theoretically this should always be true
         // but it's this way until we implement handling for panics
         self.ffi_func.has_out_err = self.throws().is_some();
         Ok(())
@@ -644,7 +644,7 @@ impl Constructor {
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.clone();
         self.ffi_func.return_type = Some(TypeReference::Object(obj_prefix.to_string()));
-        // Theoritically this should always be true
+        // Theoretically this should always be true
         // but it's this way until we implement handling for panics
         self.ffi_func.has_out_err = self.throws().is_some();
         Ok(())
@@ -901,11 +901,7 @@ pub enum Attribute {
 
 impl Attribute {
     fn is_error(&self) -> bool {
-        if let Attribute::Error = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Attribute::Error)
     }
 }
 

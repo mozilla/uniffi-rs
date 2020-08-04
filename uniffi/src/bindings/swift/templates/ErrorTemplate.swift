@@ -60,7 +60,7 @@ func nullableRustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<Nat
     }
 }
 
-    @discardableResult
+@discardableResult
  func unwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T {
     guard let result = try tryUnwrap(err,callback) else {
         throw InternalError.emptyResult
@@ -68,7 +68,7 @@ func nullableRustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<Nat
     return result
 }
 
-    @discardableResult
+@discardableResult
 func tryUnwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T? {
     var native_err = NativeRustError(code: 0, message: nil)
     let returnedVal = try callback(&native_err)
@@ -77,4 +77,3 @@ func tryUnwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<Nati
     }
     return returnedVal
 }
-
