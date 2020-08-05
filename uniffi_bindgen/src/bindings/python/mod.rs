@@ -3,10 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use std::{
+    env,
     ffi::OsString,
     fs::File,
     io::Write,
     path::{Path, PathBuf},
+    process::Command,
 };
 
 use anyhow::{bail, Context, Result};
@@ -36,21 +38,16 @@ pub fn generate_python_bindings(ci: &ComponentInterface) -> Result<String> {
         .map_err(|_| anyhow::anyhow!("failed to render python bindings"))
 }
 
-// Execute the specifed python script, with environment based on the generated
-// artifacts in the given output directory.
-
-pub fn run_script(out_dir: Option<&Path>, script_file: Option<&Path>) -> Result<()> {
-    let mut pythonpath = std::env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
-    // This lets java find the compiled library for the rust component.
-    if let Some(out_dir) = out_dir {
-        pythonpath.push(":");
-        pythonpath.push(out_dir);
-    }
-    let mut cmd = std::process::Command::new("python3");
+/// Execute the specifed python script, with environment based on the generated
+/// artifacts in the given output directory.
+pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
+    let mut pythonpath = env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
+    // This lets python find the compiled library for the rust component.
+    pythonpath.push(":");
+    pythonpath.push(out_dir);
+    let mut cmd = Command::new("python3");
     cmd.env("PYTHONPATH", pythonpath);
-    if let Some(script) = script_file {
-        cmd.arg(script);
-    }
+    cmd.arg(script_file);
     let status = cmd
         .spawn()
         .context("Failed to spawn `python` when running script")?

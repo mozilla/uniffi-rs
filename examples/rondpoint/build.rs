@@ -3,5 +3,5 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 fn main() {
-    uniffi::generate_component_scaffolding("./src/rondpoint.idl").unwrap();
+    uniffi_build::generate_scaffolding("./src/rondpoint.idl").unwrap();
 }

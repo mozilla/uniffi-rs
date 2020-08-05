@@ -1,0 +1,19 @@
+[package]
+name = "uniffi_bindgen"
+version = "0.1.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+edition = "2018"
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/main.rs"
+
+[dependencies]
+cargo_metadata = "0.11"
+weedle = "0.11"
+anyhow = "1"
+askama = "0.10"
+heck = "0.3"
+clap = "2"
+serde = "1"

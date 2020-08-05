@@ -8,7 +8,6 @@
 //! along with some helpers for executing foreign language scripts or tests.
 
 use anyhow::{bail, Result};
-use object::read::{Object, ObjectSection};
 use std::convert::{TryFrom, TryInto};
 use std::path::Path;
 
@@ -97,42 +96,17 @@ where
 }
 
 /// Execute the given script via foreign language interpreter/shell.
-pub fn run_script<P1, P2>(
-    out_dir: Option<P1>,
-    script_file: Option<P2>,
-    language: TargetLanguage,
-) -> Result<()>
+pub fn run_script<P1, P2>(out_dir: P1, script_file: P2, language: TargetLanguage) -> Result<()>
 where
     P1: AsRef<Path>,
     P2: AsRef<Path>,
 {
-    let out_dir: Option<&Path> = out_dir.as_ref().map(|v| v.as_ref());
-    let script_file: Option<&Path> = script_file.as_ref().map(|v| v.as_ref());
+    let out_dir = out_dir.as_ref();
+    let script_file = script_file.as_ref();
     match language {
         TargetLanguage::Kotlin => kotlin::run_script(out_dir, script_file)?,
         TargetLanguage::Swift => swift::run_script(out_dir, script_file)?,
         TargetLanguage::Python => python::run_script(out_dir, script_file)?,
     }
     Ok(())
-}
-
-/// Extract the `ComponentInterface` definition from a compiled `uniffi` library.
-///
-/// Given the path of a compiled `uniffi` library, this function loads the serialized `ComponentInterface`
-/// that is stored in a special section of each such file. Extracting the interface definition from the
-/// file itself means that you can be totally confident the definition you're working with is the one
-/// intended for use with that library.
-pub fn get_component_interface_from_cdylib<P: AsRef<Path>>(
-    cdylib_file: P,
-) -> Result<ComponentInterface> {
-    let lib_bytes = std::fs::read(cdylib_file)?;
-    let lib = object::read::File::parse(lib_bytes.as_slice())?;
-    let idl_section = lib.section_by_name(".uniffi_idl");
-    Ok(match idl_section {
-        None => bail!("Not a uniffi library: no `.uniffi_idl` section found"),
-        Some(idl_section) => match idl_section.uncompressed_data() {
-            Err(_) => bail!("Not a uniffi library: missing or corrupt `.uniffi_idl` section"),
-            Ok(defn) => ComponentInterface::from_bincode(&defn)?,
-        },
-    })
 }

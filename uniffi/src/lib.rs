@@ -2,352 +2,295 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//! # Uniffi: easily build cross-platform software components in Rust
-//!
-//! This is a highly-experimental crate for building cross-language software components
-//! in Rust, based on things we've learned and patterns we've developed in the
-//! [mozilla/application-services](https://github.com/mozilla/application-services) project.
-//!
-//! The idea is to let you write your code once, in Rust, and then re-use it from many
-//! other programming languages via Rust's C-compatible FFI layer and some automagically
-//! generated binding code. If you think of it as a kind of [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)
-//! wannabe, with a clunkier developer experience but support for more target languages,
-//! you'll be pretty close to the mark.
-//!
-//! Currently supported target languages include Kotlin and Python.
-//!
-//! ## Usage
+use anyhow::{bail, Result};
+use bytes::buf::{Buf, BufMut};
+use ffi_support::ByteBuffer;
+use std::convert::TryFrom;
+
+// It would be nice if this module was behind a cfg(test) guard, but it
+// doesn't work between crates so let's hope LLVM tree-shaking works well.
+pub mod testing;
+
+// Re-export the libs that we use in the generated code,
+// so the consumer doesn't have to depend on them directly.
+pub mod deps {
+    pub use anyhow;
+    pub use bytes;
+    pub use ffi_support;
+    pub use lazy_static;
+    pub use log;
+}
+
+/// Any type that can be returned over the FFI must implement the `Lowerable` trait, to define how
+/// it gets lowered into bytes for transit. We provide default implementtions for primitive types,
+/// and a typical implementation for composite types would lower each member in turn.
+
+pub trait Lowerable: Sized {
+    fn lower_into<B: BufMut>(&self, buf: &mut B);
+}
+
+pub fn lower<T: Lowerable>(value: T) -> ByteBuffer {
+    let mut buf = Vec::new();
+    Lowerable::lower_into(&value, &mut buf);
+    ByteBuffer::from_vec(buf)
+}
+
+impl<T: Lowerable> Lowerable for &T {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        (*self).lower_into(buf);
+    }
+}
+
+impl Lowerable for u32 {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        buf.put_u32(*self);
+    }
+}
+
+impl Lowerable for f64 {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        buf.put_f64(*self);
+    }
+}
+
+impl<T: Lowerable> Lowerable for Option<T> {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        match self {
+            None => buf.put_u8(0),
+            Some(v) => {
+                buf.put_u8(1);
+                v.lower_into(buf);
+            }
+        }
+    }
+}
+
+impl<T: Lowerable> Lowerable for Vec<T> {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        let len = u32::try_from(self.len()).unwrap();
+        buf.put_u32(len); // We limit arrays to u32::MAX bytes
+        for item in self.iter() {
+            item.lower_into(buf);
+        }
+    }
+}
+
+/// Any type that can be received over the FFI must implement the `Liftable` trait, to define how
+/// it gets lifted from bytes into a useable Rust value. We provide default implementtions for
+/// primitive types, and a typical implementation for composite types would lift each member in turn.
+
+pub fn check_remaining<B: Buf>(buf: &B, num_bytes: usize) -> Result<()> {
+    if buf.remaining() < num_bytes {
+        bail!("not enough bytes remaining in buffer");
+    }
+    Ok(())
+}
+
+pub trait Liftable: Sized {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self>;
+}
+
+pub fn try_lift<T: Liftable>(buf: ByteBuffer) -> Result<T> {
+    let vec = buf.into_vec();
+    let mut buf = vec.as_slice();
+    let value = <T as Liftable>::try_lift_from(&mut buf)?;
+    if buf.remaining() != 0 {
+        bail!("junk data left in buffer after deserializing")
+    }
+    Ok(value)
+}
+
+impl Liftable for u32 {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 4)?;
+        Ok(buf.get_u32())
+    }
+}
+
+impl Liftable for f64 {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 8)?;
+        Ok(buf.get_f64())
+    }
+}
+
+impl<T: Liftable> Liftable for Option<T> {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 1)?;
+        Ok(match buf.get_u8() {
+            0 => None,
+            1 => Some(T::try_lift_from(buf)?),
+            _ => bail!("unexpected tag byte for Option"),
+        })
+    }
+}
+
+impl<T: Liftable> Liftable for Vec<T> {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 4)?;
+        let len = buf.get_u32();
+        let mut vec = Vec::with_capacity(len as usize);
+        for _ in 0..len {
+            vec.push(T::try_lift_from(buf)?)
+        }
+        Ok(vec)
+    }
+}
+
+// The `ViaFfi` trait defines how to receive a type as an argument over the FFI,
+// and how to return it from FFI functions. It allows us to implement a more efficient
+// calling strategy than always lifting/lowering all types to a byte buffer.
 //
-//! To build a cross-language component using `uniffi`, follow these steps.
-//!
-//! ### 1) Specify your Component Interface
-//!
-//! Start by thinking about the interface you want to expose for use
-//! from other languages. Use the Interface Definition Language to specify your interface
-//! in a `.idl` file, where it can be processed by the tools from this crate.
-//! For example you might define an interface like this:
-//!
-//! ```text
-//! namespace example {
-//!   u32 foo(u32 bar);
-//! }
-//!
-//! dictionary MyData {
-//!   u32 num_foos;
-//!   bool has_a_bar;
-//! }
-//! ```
-//!
-//! ### 2) Implement the Component Interface as a Rust crate
-//!
-//! With the interface, defined, provide a corresponding implementation of that interface
-//! as a standard-looking Rust crate, using functions and structs and so-on. For example
-//! an implementation of the above Component Interface might look like this:
-//!
-//! ```text
-//! fn foo(bar: u32): u32 {
-//!     // TODO: a better example!
-//!     bar + 42
-//! }
-//!
-//! struct MyData {
-//!   num_foos: u32,
-//!   has_a_bar: bool
-//! }
-//! ```
-//!
-//! ### 3) Generate and include component scaffolding from the IDL file
-//!
-//! With the implementation of your component in place, add a `build.rs` script to your crate
-//! and have it call [generate_component_scaffolding](crate::generate_component_scaffolding)
-//! to process your `.idl` file. This will generate some rust code to be included in the top-level source
-//! code of your crate. If your IDL file is named `example.idl`, then your build script would call:
-//!
-//! ```text
-//! uniffi::generate_component_scaffolding("./src/arithmetic.idl")
-//! ```
-//!
-//! This would output a rust file named `example.uniffi.rs`, ready to be
-//! included into the code of your rust crate like this:
-//!
-//! ```text
-//! include!(concat!(env!("OUT_DIR"), "/example.uniffi.rs"));
-//! ```
-//!
-//! ### 4) Build your crate as a `cdylib`
-//!
-//! The generated code automatically declares the necessary `pub extern "C"` functions and type
-//! conversions to expose your rust code over a C-compatible foreign function interface.
-//! Make it available for use by building it as a `cdylib` whose name is prefixed with the
-//! string "uniffi_". For this example component, the necessary config in `Cargo.toml` would
-//! be:
-//!
-//! ```text
-//! [lib]
-//! crate-type = ["cdylib"]
-//! name = "uniffi_example"
-//! ```
-//!
-//! Running `cargo build` on your crate should produce an appropriate shared library for your
-//! system, in this case something like `libuniffi_example.so` or `libuniff_example.dylib`.
-//! In addition to the compiled Rust code, this shared library will contain a copy of the abstract
-//! interface definitions from your IDL file, allowing it to be safely consumed from other
-//! languages.
-//!
-//! ### 5) Generate foreign language bindings for the library
-//!
-//! The `uniffi` crate provides a command-line tool that can take the dynamic library built
-//! from a rust component, extract the embedded IDL details, and produce produce code for
-//! consuming that library in any of several supported languages.
-//!
-//! To help ensure this is done with appropriate config for your component, add a `src/main.rs`
-//! script to call `uniffi::run_bindgen_for_component`, like this:
-//!
-//! ```text
-//! fn main() {
-//!    uniffi::run_bindgen_for_component("example").unwrap();
-//!}
-//! ```
-//!
-//! Then you can generate bindings using `cargo run generate` in your crate. For example, to
-//! generate python bindings for the example component, run:
-//!
-//! ```text
-//! cargo run generate -l python
-//! ```
-//!
-//! This will produce a file `example.py` in the cargo target directory, containing python bindings
-//! to load and use the compiled rust code via its C-compatible FFI.
-//!
+// Types that cannot be passed via any more clever mechanism can instead get choose to
+// `impl ViaFfiUsingByteBuffer`, which provides a default implementation that uses their
+// `Lowerable` and `Liftable` impls to pass data by serializing in a ByteBuffer.
+// Unlike the base `ViaFfi` trit, `ViaFfiUsingByteBuffer` is safe.
+//
+// (This trait is Like the `InfoFfi` trait from `ffi_support`, but local to this crate
+// so that we can add some alternative implementations for different builtin types,
+// and so that we can add support for receiving as well as returning).
 
-use std::convert::TryInto;
-use std::io::prelude::*;
-use std::{
-    env,
-    fs::File,
-    path::{Path, PathBuf},
-};
-
-use anyhow::anyhow;
-use anyhow::bail;
-use anyhow::Result;
-
-pub mod bindings;
-pub mod interface;
-pub mod scaffolding;
-pub mod support;
-
-use scaffolding::RustScaffolding;
-
-pub(crate) fn slurp_file(file_name: &str) -> Result<String> {
-    let mut contents = String::new();
-    let mut f = File::open(file_name)?;
-    f.read_to_string(&mut contents)?;
-    Ok(contents)
+pub unsafe trait ViaFfi: Sized {
+    type Value;
+    fn into_ffi_value(&self) -> Self::Value;
+    fn try_from_ffi_value(v: Self::Value) -> Result<Self>;
 }
 
-// Call this when building the rust crate that implements the specified interface.
-// It will generate a bunch of the infrastructural rust code for implementing
-// the interface, such as the `extern "C"` function definitions and record data types.
-
-pub fn generate_component_scaffolding(idl_file: &str) -> Result<()> {
-    println!("cargo:rerun-if-changed={}", idl_file);
-    let idl = slurp_file(idl_file)
-        .map_err(|_| anyhow::anyhow!("Failed to read IDL from {}", &idl_file))?;
-    let component = idl
-        .parse::<interface::ComponentInterface>()
-        .map_err(|e| anyhow::anyhow!("Failed to parse IDL: {}", e))?;
-    let mut filename = Path::new(idl_file)
-        .file_stem()
-        .ok_or_else(|| anyhow!("not a file"))?
-        .to_os_string();
-    filename.push(".uniffi.rs");
-    let mut out_file =
-        PathBuf::from(env::var("OUT_DIR").map_err(|_| anyhow::anyhow!("No $OUT_DIR specified"))?);
-    out_file.push(filename);
-    let mut f =
-        File::create(out_file).map_err(|e| anyhow!("Failed to create output file: {:?}", e))?;
-    write!(f, "{}", RustScaffolding::new(&component))
-        .map_err(|e| anyhow!("Failed to write output file: {:?}", e))
-}
-
-// Call this when generating forgein language bindings from the command-line.
-
-pub fn run_bindgen_for_component(component_name: &str) -> Result<()> {
-    run_bindgen_helper(Some(component_name))
-}
-
-pub fn run_bindgen_command() -> Result<()> {
-    run_bindgen_helper(None)
-}
-
-const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift"];
-
-pub fn run_bindgen_helper(component_name: Option<&str>) -> Result<()> {
-    let default_lib_file = match component_name {
-        None => None,
-        Some(component_name) => Some(resolve_default_library_file(component_name)?),
-    };
-    let app = clap::App::new("uniffi")
-        .about("Foreign language bindings generator for Rust")
-        .subcommand(
-            clap::SubCommand::with_name("generate")
-                .about("Generate foreign language bindings")
-                .arg(
-                    clap::Arg::with_name("language")
-                        .takes_value(true)
-                        .long("--language")
-                        .short("-l")
-                        .multiple(true)
-                        .number_of_values(1)
-                        .possible_values(&POSSIBLE_LANGUAGES)
-                        .help("Foreign language(s) for which to build bindings"),
-                )
-                .arg(
-                    clap::Arg::with_name("lib_file")
-                        .takes_value(true)
-                        .required(default_lib_file.is_none())
-                        .help("compiled uniffi library to generate bindings for"),
-                )
-                .arg(
-                    clap::Arg::with_name("out_dir")
-                        .takes_value(true)
-                        .help("directory in which to write generated files"),
-                ),
-        )
-        .subcommand(
-            clap::SubCommand::with_name("exec")
-                .about("Execute foreign language code with component bindings")
-                .arg(
-                    clap::Arg::with_name("language")
-                        .takes_value(true)
-                        .long("--language")
-                        .short("-l")
-                        .possible_values(&POSSIBLE_LANGUAGES)
-                        .help("Foreign language interpreter to invoke"),
-                )
-                .arg(
-                    clap::Arg::with_name("script")
-                        .takes_value(true)
-                        .help("files to execute"),
-                ),
-        );
-
-    let matches = app.get_matches();
-    match matches.subcommand() {
-        ("generate", Some(m)) => run_bindings_generate_subcommand(default_lib_file, m)?,
-        ("exec", Some(m)) => run_bindings_exec_subcommand(default_lib_file, m)?,
-        _ => println!("No command specified; try `--help` for some help."),
+macro_rules! impl_via_ffi_for_primitive {
+  ($($T:ty),+) => {$(
+    unsafe impl ViaFfi for $T {
+      type Value = Self;
+      #[inline] fn into_ffi_value(&self) -> Self::Value { *self }
+      #[inline] fn try_from_ffi_value(v: Self::Value) -> Result<Self> { Ok(v) }
     }
-    Ok(())
+  )+}
 }
 
-fn run_bindings_generate_subcommand(
-    default_lib_file: Option<std::ffi::OsString>,
-    command_args: &clap::ArgMatches,
-) -> Result<()> {
-    let lib_file = match command_args.value_of_os("lib_file") {
-        Some(lib_file) => lib_file.to_os_string(),
-        None => match default_lib_file {
-            None => bail!("No lib_file specified and no default provided; this should be impossible but here we are..."),
-            Some(lib_file) => lib_file,
-        }
-    };
-    let out_dir = match command_args.value_of_os("out_dir") {
-        Some(dir) => dir.to_os_string(),
-        None => PathBuf::from(&lib_file)
-            .parent()
-            .ok_or_else(|| anyhow!("Library file has no parent directory"))?
-            .as_os_str()
-            .to_os_string(),
-    };
-    println!("Extracting Interface Definition from {:?}", lib_file);
-    let ci = bindings::get_component_interface_from_cdylib(&lib_file)?;
-    let languages: Vec<&str> = match command_args.values_of("language") {
-        None => POSSIBLE_LANGUAGES.to_vec(),
-        Some(ls) => ls.collect(),
-    };
-    for lang in languages {
-        println!(
-            "Generating {} bindings into {}",
-            lang,
-            out_dir.to_str().unwrap_or("[UNPRINTABLE]")
-        );
-        bindings::write_bindings(&ci, &out_dir, lang.try_into()?)?;
+impl_via_ffi_for_primitive![(), i8, u8, i16, u16, i32, u32, i64, u64, f32, f64];
+
+pub trait ViaFfiUsingByteBuffer: Liftable + Lowerable {}
+
+unsafe impl<T: ViaFfiUsingByteBuffer> ViaFfi for T {
+    type Value = ffi_support::ByteBuffer;
+    #[inline]
+    fn into_ffi_value(&self) -> Self::Value {
+        lower(&self)
     }
-    println!("Done!");
-    Ok(())
+    #[inline]
+    fn try_from_ffi_value(v: Self::Value) -> anyhow::Result<Self> {
+        try_lift(v)
+    }
 }
 
-fn run_bindings_exec_subcommand(
-    default_lib_file: Option<std::ffi::OsString>,
-    command_args: &clap::ArgMatches,
-) -> Result<()> {
-    let script_file = command_args.value_of("script");
-    let lang: bindings::TargetLanguage = match command_args.value_of("language") {
-        Some(lang) => lang.try_into()?,
-        None => {
-            // Try to guess language based on script file extension.
-            if script_file.is_none() {
-                bail!("No script file and no language specified, so I don't know what language shell to start")
-            }
-            let script_file_buf = PathBuf::from(script_file.unwrap());
-            match script_file_buf.extension().unwrap_or_default().to_str() {
-                Some(ext) => ext.try_into()?,
-                _ => bail!("Cannot guess language of script file, please specify it explicitly"),
-            }
+unsafe impl<T: Liftable + Lowerable> ViaFfi for Option<T> {
+    type Value = ffi_support::ByteBuffer;
+    #[inline]
+    fn into_ffi_value(&self) -> Self::Value {
+        lower(&self)
+    }
+    #[inline]
+    fn try_from_ffi_value(v: Self::Value) -> anyhow::Result<Self> {
+        try_lift(v)
+    }
+}
+
+unsafe impl<T: Liftable + Lowerable> ViaFfi for Vec<T> {
+    type Value = ffi_support::ByteBuffer;
+    #[inline]
+    fn into_ffi_value(&self) -> Self::Value {
+        lower(&self)
+    }
+    #[inline]
+    fn try_from_ffi_value(v: Self::Value) -> anyhow::Result<Self> {
+        try_lift(v)
+    }
+}
+
+unsafe impl<'a> ViaFfi for &'a str {
+    type Value = ffi_support::FfiStr<'a>;
+    fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
+        Ok(v.as_str())
+    }
+
+    // This should never happen since there is asymmetry with strings
+    // We typically go FfiStr -> &str for argumetns and
+    // String -> *mut c_char for return values.
+    // We panic for now, the ViaFfi triat will be
+    // broken down to IntoFfi and TryFromFfi to prevent us from having
+    // to add this
+    fn into_ffi_value(&self) -> Self::Value {
+        panic!("Invalid conversion. into_ffi_value should not be called on a &str, a String -> *mut c_char conversion should be used instead.")
+    }
+}
+
+unsafe impl ViaFfi for String {
+    type Value = *mut std::os::raw::c_char;
+    fn into_ffi_value(&self) -> Self::Value {
+        ffi_support::rust_string_to_c(self)
+    }
+
+    // This should never happen since there is asymmetry with strings
+    // We typically go FfiStr -> &str for argumetns and
+    // String -> *mut c_char for return values.
+    // We panic for now, the ViaFfi triat will be
+    // broken down to IntoFfi and TryFromFfi to prevent us from having
+    // to add this
+    fn try_from_ffi_value(_: Self::Value) -> Result<Self> {
+        panic!("Invalid conversion. try_from_ffi_value should not be called on a c_char, an FfiStr<'_> -> &str conversion should be used instead.")
+    }
+}
+
+impl Lowerable for String {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        let len = u32::try_from(self.len()).unwrap();
+        buf.put_u32(len); // We limit strings to u32::MAX bytes
+        buf.put(self.as_bytes());
+    }
+}
+
+// Having this be for &str instead of String would have been nice for consistency but...
+// it seems very dangerous and only possible with some unsafe magic
+// and having a slice referencing the buffer seems like a recipie for
+// disaster... so we have a String here instead.
+impl Liftable for String {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 4)?;
+        let len = buf.get_u32();
+        check_remaining(buf, len as usize)?;
+        let bytes = &buf.bytes()[..len as usize];
+        let res = String::from_utf8(bytes.to_vec())?;
+        buf.advance(len as usize);
+        Ok(res)
+    }
+}
+
+unsafe impl ViaFfi for bool {
+    type Value = u8;
+    fn into_ffi_value(&self) -> Self::Value {
+        if *self {
+            1
+        } else {
+            0
         }
-    };
-    // If we have a default cdylib, make sure that it has the relevant bindings available
-    // and run from within its parent directory.
-    let target_dir = match default_lib_file {
-        None => None,
-        Some(lib_file) => {
-            let lib_file = PathBuf::from(lib_file);
-            match lib_file.parent() {
-                None => None,
-                Some(target_dir) => {
-                    let ci = bindings::get_component_interface_from_cdylib(&lib_file)?;
-                    bindings::write_bindings(&ci, target_dir, lang)?;
-                    bindings::compile_bindings(&ci, target_dir, lang)?;
-                    Some(target_dir.to_path_buf())
-                }
-            }
-        }
-    };
-    bindings::run_script(target_dir, script_file, lang)
+    }
+    fn try_from_ffi_value(v: Self::Value) -> Result<Self> {
+        Ok(match v {
+            0 => false,
+            1 => true,
+            _ => bail!("unexpected byte for Boolean"),
+        })
+    }
 }
 
-// Resolve the location of the default library file, relative to the running executable.
-// If invoked with a default library file, our command-line tool is running from within the build process
-// of a consuming crate. We should therefore look for the file in the build target directory that
-// contains the current executable, or failing that, in the current directory.
-fn resolve_default_library_file(component_name: &str) -> Result<std::ffi::OsString> {
-    let mut lib_path = current_target_dir()?;
-    lib_path.push(library_name(component_name));
-    Ok(lib_path.into_os_string())
+impl Lowerable for bool {
+    fn lower_into<B: BufMut>(&self, buf: &mut B) {
+        buf.put_u8(ViaFfi::into_ffi_value(self));
+    }
 }
 
-fn current_target_dir() -> Result<PathBuf> {
-    let curdir = std::env::current_dir()
-        .map_err(|_| anyhow!("program has no current directory for some reason"))?;
-    Ok(match std::env::current_exe() {
-        Err(_) => curdir,
-        Ok(exe) => match exe.parent() {
-            None => curdir,
-            Some(p) => p.to_path_buf(),
-        },
-    })
-}
-
-// XXX TODO: this hard-coding of library file extension probably won't work well
-// for cross-compiling (or for windows, sorry :markh...)
-#[cfg(any(target_os = "ios", target_os = "macos"))]
-fn library_name(component_name: &str) -> String {
-    format!("libuniffi_{}.dylib", component_name)
-}
-
-#[cfg(not(any(target_os = "ios", target_os = "macos")))]
-fn library_name(component_name: &str) -> String {
-    format!("libuniffi_{}.so", component_name)
+impl Liftable for bool {
+    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 1)?;
+        ViaFfi::try_from_ffi_value(buf.get_u8())
+    }
 }

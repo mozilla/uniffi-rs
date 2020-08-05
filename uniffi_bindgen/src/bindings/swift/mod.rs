@@ -2,14 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use anyhow::{anyhow, bail, Context, Result};
 use std::{
     ffi::OsString,
     fs::File,
     io::Write,
     path::{Path, PathBuf},
+    process::Command,
 };
-
-use anyhow::{anyhow, bail, Context, Result};
 
 pub mod gen_swift;
 pub use gen_swift::{BridgingHeader, Config, ModuleMap, SwiftWrapper};
@@ -95,7 +95,7 @@ pub fn compile_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
     // symbols" when we try to import the module.
     // See https://bugs.swift.org/browse/SR-1191.
 
-    let status = std::process::Command::new("swiftc")
+    let status = Command::new("swiftc")
         .arg("-module-name")
         .arg(ci.namespace())
         .arg("-emit-library")
@@ -121,35 +121,32 @@ pub fn compile_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
     Ok(())
 }
 
-pub fn run_script(out_dir: Option<&Path>, script_file: Option<&Path>) -> Result<()> {
-    let mut cmd = std::process::Command::new("swift");
+pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
+    let mut cmd = Command::new("swift");
 
     // Find any module maps and/or dylibs in the target directory, and tell swift to use them.
-    if let Some(out_dir) = out_dir {
-        cmd.arg("-I").arg(out_dir).arg("-L").arg(out_dir);
-        for entry in PathBuf::from(out_dir)
-            .read_dir()
-            .context("Failed to list target directory when running script")?
-        {
-            let entry = entry.context("Failed to list target directory when running script")?;
-            if let Some(ext) = entry.path().extension() {
-                if ext == "modulemap" {
-                    let mut option = OsString::from("-fmodule-map-file=");
-                    option.push(entry.path());
-                    cmd.arg("-Xcc");
-                    cmd.arg(option);
-                } else if ext == "dylib" || ext == "so" {
-                    let mut option = OsString::from("-l");
-                    option.push(entry.path());
-                    cmd.arg(option);
-                }
+
+    cmd.arg("-I").arg(out_dir).arg("-L").arg(out_dir);
+    for entry in PathBuf::from(out_dir)
+        .read_dir()
+        .context("Failed to list target directory when running script")?
+    {
+        let entry = entry.context("Failed to list target directory when running script")?;
+        if let Some(ext) = entry.path().extension() {
+            if ext == "modulemap" {
+                let mut option = OsString::from("-fmodule-map-file=");
+                option.push(entry.path());
+                cmd.arg("-Xcc");
+                cmd.arg(option);
+            } else if ext == "dylib" || ext == "so" {
+                let mut option = OsString::from("-l");
+                option.push(entry.path());
+                cmd.arg(option);
             }
         }
     }
+    cmd.arg(script_file);
 
-    if let Some(script) = script_file {
-        cmd.arg(script);
-    }
     let status = cmd
         .spawn()
         .context("Failed to spawn `swift` when running script")?
