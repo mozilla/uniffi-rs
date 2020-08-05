@@ -1,7 +1,7 @@
 import todolist
 
 
-let todo = try! TodoList()
+let todo = TodoList()
 do {
     let _ = try todo.getLast()
     fatalError("Should have thrown an EmptyTodoList error!")
@@ -32,13 +32,13 @@ let entry2 = TodoEntry(text: "Test Ünicode hàndling in an entry can't believe 
 try! todo.addEntry(entry: entry2)
 assert(try! todo.getLastEntry() == entry2)
 
-assert(try! todo.getEntries().count == 5)
+assert(todo.getEntries().count == 5)
 
-try! todo.addEntries(entries: [TodoEntry(text: "foo"), TodoEntry(text: "bar")])
-assert(try! todo.getEntries().count == 7)
-assert(try! todo.getItems().count == 7)
+todo.addEntries(entries: [TodoEntry(text: "foo"), TodoEntry(text: "bar")])
+assert(todo.getEntries().count == 7)
+assert(todo.getItems().count == 7)
 assert(try! todo.getLast() == "bar")
 
-try! todo.addItems(items: ["bobo", "fofo"])
-assert(try! todo.getItems().count == 9)
-assert(try! todo.getItems()[7] == "bobo")
+todo.addItems(items: ["bobo", "fofo"])
+assert(todo.getItems().count == 9)
+assert(todo.getItems()[7] == "bobo")

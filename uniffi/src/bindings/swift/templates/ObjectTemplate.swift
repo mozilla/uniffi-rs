@@ -2,7 +2,7 @@ public class {{ obj.name() }} {
     private let handle: UInt64
 
     {%- for cons in obj.constructors() %}
-    public init({% call swift::arg_list_decl(cons) -%}) throws {
+    public init({% call swift::arg_list_decl(cons) -%}) {% call swift::throws(cons) %} {
         self.handle = {% call swift::to_rs_call(cons) %}
     }
     {%- endfor %}
@@ -15,13 +15,13 @@ public class {{ obj.name() }} {
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
-    public func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_decl(meth) %}) throws -> {{ return_type|decl_swift }} {
+    public func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|decl_swift }} {
         let _retval = {% call swift::to_rs_call_with_prefix("self.handle", meth) %}
-        return try! {{ "_retval"|lift_swift(return_type) }}
+        return {%- call swift::try(meth) %} {{ "_retval"|lift_swift(return_type) }}
     }
 
     {%- when None -%}
-    public func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_decl(meth) %}) throws {
+    public func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
         {% call swift::to_rs_call_with_prefix("self.handle", meth) %}
     }
     {%- endmatch %}

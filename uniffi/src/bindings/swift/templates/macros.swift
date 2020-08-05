@@ -61,3 +61,11 @@ try rustCall({{e}}.NoError) { err  in
     {% if func.has_out_err() %}{% if func.arguments().len() > 0 %},{% endif %}NativeRustError *_Nonnull out_err{% endif %}
 
 {%- endmacro -%}
+
+{%- macro throws(func) %}
+{% match func.throws() %}{% when Some with (e) %}throws{% else %}{% endmatch %}
+{%- endmacro -%}
+
+{%- macro try(func) %}
+{% match func.throws() %}{% when Some with (e) %}try{% else %}try!{% endmatch %}
+{%- endmacro -%}
