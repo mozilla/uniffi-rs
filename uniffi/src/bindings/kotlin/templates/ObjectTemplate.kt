@@ -30,19 +30,17 @@ class {{ obj.name()|class_name_kt }}(
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
-    fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %}): {{ return_type|type_kt }} {
-        val _retval = callWithHandle {
-            {# // Use it here, kotlin's anonymous argument for lambas/closures.
-            -#}
+    fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %}): {{ return_type|type_kt }} =
+        callWithHandle {
             {% call kt::to_rs_call_with_prefix("it", meth) %} 
+        }.let {
+            {{ "it"|lift_kt(return_type) }}
         }
-        return {{ "_retval"|lift_kt(return_type) }}
-    }
     
     {%- when None -%}
     fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %}) =
         callWithHandle {
-            {% call kt::to_rs_call_with_prefix("it", meth.ffi_func()) %} 
+            {% call kt::to_rs_call_with_prefix("it", meth) %} 
         }
     {% endmatch %}
     {% endfor %}

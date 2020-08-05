@@ -39,7 +39,7 @@ internal open class RustError : Structure() {
     @Synchronized
     fun ensureConsumed() {
         if (this.message != null) {
-            _UniFFILib.INSTANCE.{{ci.namespace()}}_string_free(this.message!!)
+            _UniFFILib.INSTANCE.{{ ci.ffi_string_free().name() }}(this.message!!)
             this.message = null
         }
     }

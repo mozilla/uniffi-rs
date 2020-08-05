@@ -4,13 +4,13 @@
 // passed to rust via `_arg_list_rs_call` (we use  `var_name_py` in `lower_py`)
 #}
 
-{%- macro to_rs_call(ffi_func) -%}
-_UniFFILib.{{ ffi_func.name() }}({% call _arg_list_rs_call(ffi_func.arguments()) -%})
+{%- macro to_rs_call(func) -%}
+_UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func.ffi_func().arguments()) -%})
 {%- endmacro -%}
 
-{%- macro to_rs_call_with_prefix(prefix, ffi_func) -%}
-_UniFFILib.{{ ffi_func.name() }}(
-    {{- prefix }}{% if ffi_func.arguments().len() > 1 %}, {% call _arg_list_rs_call(ffi_func.method_arguments()) -%}{% endif -%}
+{%- macro to_rs_call_with_prefix(prefix, func) -%}
+_UniFFILib.{{ func.ffi_func().name() }}(
+    {{- prefix }}{% if func.arguments().len() > 0 %}, {% call _arg_list_rs_call(func.arguments()) -%}{% endif -%}
 )
 {%- endmacro -%}
 

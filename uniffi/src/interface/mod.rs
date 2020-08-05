@@ -449,9 +449,6 @@ impl FFIFunction {
     pub fn has_out_err(&self) -> bool {
         self.has_out_err
     }
-    pub fn method_arguments(&self) -> &[Argument] {
-        self.arguments.get(1..self.arguments.len()).unwrap_or_default()
-    }
 }
 
 impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {

@@ -12,13 +12,7 @@ lazy_static::lazy_static! {
 }
 
     {% let ffi_free = obj.ffi_object_free() -%}
-    // define_handle_map_deleter!({{ handle_map }}, {{ ffi_free.name() }});
-    #[no_mangle]
-    pub extern "C" fn {{ ffi_free.name() }}(
-        {%- call rs::arg_list_rs_decl(ffi_free.arguments()) %}) {
-        log::debug!("{{ ffi_free.name() }}");
-        let _ = {{ handle_map }}.delete_u64(handle);
-    }
+    ffi_support::define_handle_map_deleter!({{ handle_map }}, {{ ffi_free.name() }});
 
 {%- for cons in obj.constructors() %}
 
