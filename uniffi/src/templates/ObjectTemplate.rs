@@ -6,17 +6,16 @@
 // If the caller's implementation of the struct does not match with the methods or types specified
 // in the IDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)
 // error message when processing this generated code.
-
+{% let handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) %}
 lazy_static::lazy_static! {
-    static ref UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}: ffi_support::ConcurrentHandleMap<{{ obj.name() }}> = ffi_support::ConcurrentHandleMap::new();
+    static ref {{ handle_map }}: ffi_support::ConcurrentHandleMap<{{ obj.name() }}> = ffi_support::ConcurrentHandleMap::new();
 }
 
-// XXX TODO: destructors.
-// These will need to be defined as another FFI function on the Object struct, and included automatically
-// in the set of all FFI functions for use by the bindings.
-// define_handle_map_deleter!(UNIFFI_HANDLE_MAP_{{ obj.name() }}, {{ obj.name() }}_free);
+    {% let ffi_free = obj.ffi_object_free() -%}
+    ffi_support::define_handle_map_deleter!({{ handle_map }}, {{ ffi_free.name() }});
 
 {%- for cons in obj.constructors() %}
+
     #[no_mangle]
     pub extern "C" fn {{ cons.ffi_func().name() }}(
         {%- call rs::arg_list_rs_decl(cons.ffi_func()) %}) -> u64 {
@@ -25,10 +24,10 @@ lazy_static::lazy_static! {
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
         {% call rs::to_rs_constructor_call(obj, cons) %}
     }
-{% endfor %}
+{%- endfor %}
 
 {%- for meth in obj.methods() %}
-#[no_mangle]
+    #[no_mangle]
     pub extern "C" fn {{ meth.ffi_func().name() }}(
         {%- call rs::arg_list_rs_decl(meth.ffi_func()) %}
     ) -> {% call rs::return_type_func(meth) %} {

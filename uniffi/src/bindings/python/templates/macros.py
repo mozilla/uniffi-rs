@@ -5,7 +5,7 @@
 #}
 
 {%- macro to_rs_call(func) -%}
-_UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func.arguments()) -%})
+_UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func.ffi_func().arguments()) -%})
 {%- endmacro -%}
 
 {%- macro to_rs_call_with_prefix(prefix, func) -%}

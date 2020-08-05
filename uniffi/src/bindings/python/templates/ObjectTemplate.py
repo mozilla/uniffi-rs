@@ -6,7 +6,8 @@ class {{ obj.name()|class_name_py }}(object):
         self._handle = {% call py::to_rs_call(cons) %}
     {%- endfor %}
 
-    # XXX TODO: destructors or equivalent.
+    def __del__(self):
+        _UniFFILib.{{ obj.ffi_object_free().name() }}(self._handle)
 
     {% for meth in obj.methods() -%}
     {%- match meth.return_type() -%}

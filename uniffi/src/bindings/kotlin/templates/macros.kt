@@ -5,29 +5,28 @@
 #}
 
 {%- macro to_rs_call(func) -%}
-{% match func.throws() %}
-{% when Some with (e) %}
- rustCall({{e}}.ByReference()) { e -> 
-    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}e)
- }
-{% else %}
- _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%})
-
-{% endmatch %}
+{%- match func.throws() %}
+{%- when Some with (e) -%}
+    rustCall({{e}}.ByReference()) { e -> 
+        _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}e)
+    }
+{%- else -%}
+    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%})
+{%- endmatch %}
 {%- endmacro -%}
 
-{%- macro to_rs_call_with_prefix(prefix, func) -%}
-{% match func.throws() %}
-{% when Some with (e) %}
- rustCall({{e}}.ByReference()) { e -> 
+{%- macro to_rs_call_with_prefix(prefix, func) %}
+{%- match func.throws() %}
+{%- when Some with (e) -%}
+    rustCall({{e}}.ByReference()) { e -> 
+        _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
+            {{- prefix }}, {% call _arg_list_rs_call(func) %}{% if func.arguments().len() > 0 %}, {% endif %}e)
+    }
+{%- else -%}
     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
-        {{- prefix }}, {% call _arg_list_rs_call(func) %}{% if func.arguments().len() > 0 %},{% endif %}e)
- }
- {% else %}
-_UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
-    {{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_rs_call(func) %})
-{% endmatch %}
-{%- endmacro -%}
+        {{- prefix }}{% if func.arguments().len() > 0 %}, {% endif %}{% call _arg_list_rs_call(func) %})
+{%- endmatch %}
+{%- endmacro %}
 
 
 {%- macro _arg_list_rs_call(func) %}

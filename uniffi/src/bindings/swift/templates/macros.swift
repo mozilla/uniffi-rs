@@ -5,30 +5,30 @@
 #}
 
 {%- macro to_rs_call(func) -%}
-{% match func.throws() %}
-{% when Some with (e) %}
-try rustCall({{e}}.NoError) { err  in
-    {{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
-}
-{% else %}
-{{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%})
-{% endmatch %}
+{%- match func.throws() %}
+{%- when Some with (e) %}
+    try rustCall({{e}}.NoError) { err  in
+        {{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
+    }
+{%- else -%}
+    {{ func.ffi_func().name() }}({% call _arg_list_rs_call(func) -%})
+{%- endmatch %}
 {%- endmacro -%}
 
 {%- macro to_rs_call_with_prefix(prefix, func) -%}
-{% match func.throws() %}
-{% when Some with (e) %}
-try rustCall({{e}}.NoError) { err  in
+{%- match func.throws() %}
+{%- when Some with (e) %}
+    try rustCall({{e}}.NoError) { err  in
+        {{ func.ffi_func().name() }}(
+            {{- prefix }}, {% call _arg_list_rs_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err
+        )
+    }
+{%- else -%}
     {{ func.ffi_func().name() }}(
-        {{- prefix }}, {% call _arg_list_rs_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err
-    )
-}
-{% else %}
-{{ func.ffi_func().name() }}(
         {{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_rs_call(func) -%}
-)
-{% endmatch %}
-{%- endmacro -%}
+    )
+{%- endmatch %}
+{%- endmacro %}
 
 {%- macro _arg_list_rs_call(func) %}
     {%- for arg in func.arguments() %}
@@ -63,9 +63,9 @@ try rustCall({{e}}.NoError) { err  in
 {%- endmacro -%}
 
 {%- macro throws(func) %}
-{% match func.throws() %}{% when Some with (e) %}throws{% else %}{% endmatch %}
+{%- match func.throws() %}{% when Some with (e) %}throws{% else %}{% endmatch %}
 {%- endmacro -%}
 
 {%- macro try(func) %}
-{% match func.throws() %}{% when Some with (e) %}try{% else %}try!{% endmatch %}
+{%- match func.throws() %}{% when Some with (e) %}try{% else %}try!{% endmatch %}
 {%- endmacro -%}
