@@ -42,14 +42,8 @@ pub fn run_foreign_language_testcase(pkg_dir: &str, idl_file: &str, test_file: &
         .ok_or_else(|| anyhow::anyhow!("Generated cdylib has no parent directory"))?
         .to_str()
         .unwrap();
-
     let _lock = UNIFFI_BINDGEN.lock();
-    let status = Command::new("uniffi-bindgen")
-        .args(&["test", out_dir, idl_file, test_file])
-        .status()?;
-    if !status.success() {
-        bail!("Error while running tests: {}",);
-    }
+    run_uniffi_bindgen_test(out_dir, idl_file, test_file)?;
     Ok(())
 }
 
@@ -112,4 +106,28 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
     // Cache the result for subsequent tests.
     compiled_components.insert(pkg_dir.to_string(), cdylib_file.clone());
     Ok(cdylib_file)
+}
+
+/// Execute the `uniffi-bindgen test` command.
+///
+/// The default behaviour, suitable for most consumers, is to shell out to the `uniffi-bindgen`
+/// command found on the system.
+///
+/// If the "builtin-bindgen" feature is enabled then this will instead take a direct dependency
+/// on the `uniffi_bindgen` crate and execute its methods in-process. This is useful for folks
+/// who are working on uniffi itself and want to test out their changes to the bindings generator.
+#[cfg(not(feature = "builtin-bindgen"))]
+fn run_uniffi_bindgen_test(out_dir: &str, idl_file: &str, test_file: &str) -> Result<()> {
+    let status = Command::new("uniffi-bindgen")
+        .args(&["test", out_dir, idl_file, test_file])
+        .status()?;
+    if !status.success() {
+        bail!("Error while running tests: {}",);
+    }
+    Ok(())
+}
+
+#[cfg(feature = "builtin-bindgen")]
+fn run_uniffi_bindgen_test(out_dir: &str, idl_file: &str, test_file: &str) -> Result<()> {
+    uniffi_bindgen::run_tests(out_dir, idl_file, vec![test_file])
 }
