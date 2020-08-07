@@ -6,4 +6,10 @@ license = "MPL-2.0"
 edition = "2018"
 
 [dependencies]
+cargo_metadata = "0.11"
 anyhow = "1"
+uniffi_bindgen = { path = "../uniffi_bindgen", optional = true }
+
+[features]
+default = []
+builtin-bindgen = ["uniffi_bindgen"]

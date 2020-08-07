@@ -96,7 +96,6 @@ use std::convert::TryInto;
 use std::io::prelude::*;
 use std::{
     collections::HashMap,
-    ffi::OsStr,
     fs::File,
     path::{Path, PathBuf},
     process::Command,
@@ -112,13 +111,15 @@ use scaffolding::RustScaffolding;
 
 // Generate the infrastructural Rust code for implementing the IDL interface,
 // such as the `extern "C"` function definitions and record data types.
-pub fn generate_component_scaffolding(
-    idl_file: &OsStr,
-    out_dir_override: Option<&OsStr>,
-    manifest_path_override: Option<&OsStr>,
+pub fn generate_component_scaffolding<P: AsRef<Path>>(
+    idl_file: P,
+    out_dir_override: Option<P>,
+    manifest_path_override: Option<P>,
     format_code: bool,
 ) -> Result<()> {
-    let idl_file = PathBuf::from(idl_file)
+    let manifest_path_override = manifest_path_override.as_ref().map(|p| p.as_ref());
+    let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
+    let idl_file = PathBuf::from(idl_file.as_ref())
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
     let component = parse_idl(&idl_file)?;
@@ -145,7 +146,7 @@ pub fn generate_component_scaffolding(
 // the developer of that said crate will be in a world of pain.
 fn ensure_versions_compatibility(
     idl_file: &Path,
-    manifest_path_override: Option<&OsStr>,
+    manifest_path_override: Option<&Path>,
 ) -> Result<()> {
     let mut metadata_cmd = cargo_metadata::MetadataCommand::new();
     // If --manifest-path is not provided, we run cargo `metadata` in the .idl dir.
@@ -186,12 +187,13 @@ fn ensure_versions_compatibility(
 
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
-pub fn generate_bindings(
-    idl_file: &OsStr,
+pub fn generate_bindings<P: AsRef<Path>>(
+    idl_file: P,
     target_languages: Vec<&str>,
-    out_dir_override: Option<&OsStr>,
+    out_dir_override: Option<P>,
 ) -> Result<()> {
-    let idl_file = PathBuf::from(idl_file)
+    let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
+    let idl_file = PathBuf::from(idl_file.as_ref())
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
     let component = parse_idl(&idl_file)?;
@@ -204,7 +206,13 @@ pub fn generate_bindings(
 
 // Run tests against the foreign language bindings (generated and compiled at the same time).
 // Note that the cdylib we're testing against must be built already.
-pub fn run_tests(cdylib_dir: &OsStr, idl_file: &OsStr, test_scripts: Vec<&str>) -> Result<()> {
+pub fn run_tests<P: AsRef<Path>>(
+    cdylib_dir: P,
+    idl_file: P,
+    test_scripts: Vec<&str>,
+) -> Result<()> {
+    let cdylib_dir = cdylib_dir.as_ref();
+    let idl_file = idl_file.as_ref();
     let idl_file = PathBuf::from(idl_file)
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
@@ -233,7 +241,7 @@ pub fn run_tests(cdylib_dir: &OsStr, idl_file: &OsStr, test_scripts: Vec<&str>) 
     Ok(())
 }
 
-fn get_out_dir(idl_file: &Path, out_dir_override: Option<&OsStr>) -> Result<PathBuf> {
+fn get_out_dir(idl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
     Ok(match out_dir_override {
         Some(s) => PathBuf::from(s)
             .canonicalize()

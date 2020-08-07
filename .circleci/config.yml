@@ -2,12 +2,6 @@
 
 version: 2.1
 
-commands:
-  make_install_uniffi_bindgen:
-    steps:
-      - run:
-          name: Build and install uniffi-bindgen
-          command: cargo install --path uniffi_bindgen
 jobs:
   Check Rust formatting:
     docker:
@@ -25,7 +19,6 @@ jobs:
     steps:
       - checkout
       - run: rustup component add clippy
-      - make_install_uniffi_bindgen
       - run: cargo clippy --version
       - run: cargo clippy --all --all-targets
   Rust and Foreign Language tests:
@@ -35,7 +28,6 @@ jobs:
     steps:
       - run: cat ~/.profile >> $BASH_ENV
       - checkout
-      - make_install_uniffi_bindgen
       - run: cargo test
 
 workflows:
