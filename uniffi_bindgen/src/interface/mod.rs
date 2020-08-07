@@ -100,23 +100,6 @@ impl<'ci> ComponentInterface {
         Ok(ci)
     }
 
-    pub fn from_bincode(data: &[u8]) -> Result<Self> {
-        match bincode::deserialize::<ComponentInterface>(data) {
-            Err(_) => bail!("Unable to deserialize ComponentInterface; maybe this data is from a different version of uniffi?"),
-            Ok(ci) => {
-                if ci.uniffi_version !=env!("CARGO_PKG_VERSION") {
-                    bail!("It's not safe to use a ComponentInterface built with a different version of uniffi (this is v{}, interface is from v{})", env!("CARGO_PKG_VERSION"), ci.uniffi_version);
-                }
-                Ok(ci)
-            }
-        }
-    }
-
-    pub fn to_bincode(&self) -> Vec<u8> {
-        // Serialization of this struct is infallible.
-        bincode::serialize(self).unwrap()
-    }
-
     pub fn namespace(&self) -> &str {
         self.namespace.as_str()
     }

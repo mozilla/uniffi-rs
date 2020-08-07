@@ -10,7 +10,7 @@
 use quote::{format_ident, quote};
 use std::env;
 use std::path::PathBuf;
-use syn::{punctuated::Punctuated, LitStr, Token};
+use syn::{bracketed, punctuated::Punctuated, LitStr, Token};
 
 /// A macro to build testcases for a component's generated bindings.
 ///
@@ -22,17 +22,19 @@ use syn::{punctuated::Punctuated, LitStr, Token};
 /// environment to let it load the component bindings, and will pass iff the script
 /// exits successfully.
 ///
-/// To use it, invoke the macro with one or more file paths relative to the crate root
-/// directory. It will produce one `#[test]` function per file, in a manner designed to
+/// To use it, invoke the macro with the idl file as the first argument, then
+/// one or more file paths relative to the crate root directory.
+/// It will produce one `#[test]` function per file, in a manner designed to
 /// play nicely with `cargo test` and its test filtering options.
 #[proc_macro]
 pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let paths = syn::parse_macro_input!(paths as FilePaths).0;
+    let paths = syn::parse_macro_input!(paths as FilePaths);
     // We resolve each path relative to the crate root directory.
     let pkg_dir = env::var("CARGO_MANIFEST_DIR")
         .expect("Missing $CARGO_MANIFEST_DIR, cannot build tests for generated bindings");
     // For each file found, generate a matching testcase.
-    let test_functions = paths
+    let idl_file = &paths.idl_file;
+    let test_functions = paths.test_scripts
         .iter()
         .map(|file_path| {
             let test_file_pathbuf: PathBuf = [&pkg_dir, &file_path].iter().collect();
@@ -47,8 +49,8 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
             );
             quote! {
                 #[test]
-                fn #test_name () -> anyhow::Result<()> {
-                    uniffi::support::tests::run_foreign_language_testcase(#pkg_dir, #test_file_path)
+                fn #test_name () -> uniffi::deps::anyhow::Result<()> {
+                    uniffi::testing::run_foreign_language_testcase(#pkg_dir, #idl_file, #test_file_path)
                 }
             }
         })
@@ -61,15 +63,24 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
 
 /// Newtype to simplifying parsing a list of file paths from macro input.
 #[derive(Debug)]
-struct FilePaths(Vec<String>);
+struct FilePaths {
+    idl_file: String,
+    test_scripts: Vec<String>,
+}
 
 impl syn::parse::Parse for FilePaths {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        Ok(FilePaths(
-            Punctuated::<LitStr, Token![,]>::parse_terminated(input)?
-                .iter()
-                .map(|s| s.value())
-                .collect(),
-        ))
+        let idl_file: LitStr = input.parse()?;
+        let _comma: Token![,] = input.parse()?;
+        let array_contents;
+        bracketed!(array_contents in input);
+        let test_scripts = Punctuated::<LitStr, Token![,]>::parse_terminated(&array_contents)?
+            .iter()
+            .map(|s| s.value())
+            .collect();
+        Ok(FilePaths {
+            idl_file: idl_file.value(),
+            test_scripts,
+        })
     }
 }

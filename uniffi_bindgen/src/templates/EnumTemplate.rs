@@ -7,7 +7,7 @@
 // order of items *as declared in the IDL file*. This might be different to the order
 // of items as declared in the rust code, but no harm will come from it.
 #}
-unsafe impl uniffi::support::ViaFfi for {{ e.name() }} {
+unsafe impl uniffi::ViaFfi for {{ e.name() }} {
     type Value = u32;
     fn into_ffi_value(&self) -> Self::Value {
         match self {
@@ -18,26 +18,26 @@ unsafe impl uniffi::support::ViaFfi for {{ e.name() }} {
             {%- endfor %}
         }
     }
-    fn try_from_ffi_value(v: Self::Value) -> anyhow::Result<Self> {
+    fn try_from_ffi_value(v: Self::Value) -> uniffi::deps::anyhow::Result<Self> {
         Ok(match v {
             {%- for value in e.values() %}
             {{ loop.index }} => {{ e.name() }}::{{ value }},
             {%- endfor %}
-            _ => anyhow::bail!("Invalid {{ e.name() }} enum value: {}", v),
+            _ => uniffi::deps::anyhow::bail!("Invalid {{ e.name() }} enum value: {}", v),
         })
     }
 }
 
-impl uniffi::support::Lowerable for {{ e.name() }} {
-    fn lower_into<B: uniffi::support::BufMut>(&self, buf: &mut B) {
-        use uniffi::support::ViaFfi;
+impl uniffi::Lowerable for {{ e.name() }} {
+    fn lower_into<B: uniffi::deps::bytes::BufMut>(&self, buf: &mut B) {
+        use uniffi::ViaFfi;
         buf.put_u32(self.into_ffi_value());
     }
 }
 
-impl uniffi::support::Liftable for {{ e.name() }} {
-    fn try_lift_from<B: uniffi::support::Buf>(buf: &mut B) -> anyhow::Result<Self> {
-        uniffi::support::check_remaining(buf, 4)?;
-        <Self as uniffi::support::ViaFfi>::try_from_ffi_value(buf.get_u32())
+impl uniffi::Liftable for {{ e.name() }} {
+    fn try_lift_from<B: uniffi::deps::bytes::Buf>(buf: &mut B) -> uniffi::deps::anyhow::Result<Self> {
+        uniffi::check_remaining(buf, 4)?;
+        <Self as uniffi::ViaFfi>::try_from_ffi_value(buf.get_u32())
     }
 }

@@ -1,4 +1,4 @@
-{# 
+{#
 // Template to receive calls into rust.
 #}
 
@@ -29,7 +29,7 @@
         {{- arg.name() }}: {{ arg.type_()|type_c -}}{% if loop.last %}{% else %},{% endif %}
     {%- endfor %}
     {% if func.has_out_err() %}
-    {% if func.arguments().len() > 0 %},{% endif %} err: &mut ffi_support::ExternError,
+    {% if func.arguments().len() > 0 %},{% endif %} err: &mut uniffi::deps::ffi_support::ExternError,
     {% endif %}
 {%- endmacro -%}
 
@@ -72,13 +72,13 @@ UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_output_mut(err, {{ meth.first
 {% macro to_rs_function_call(func) %}
 {% match func.throws() %}
 {% when Some with (e) %}
-ffi_support::call_with_result(err, || -> Result<{% call return_type_func(func) %}, {{e}}> {
+uniffi::deps::ffi_support::call_with_result(err, || -> Result<{% call return_type_func(func) %}, {{e}}> {
     let _retval = {% call to_rs_call(func) %}?;
     Ok({% call ret(func) %})
 })
 {% else %}
 {% call default_err() %}
-ffi_support::call_with_output(err, || {
+uniffi::deps::ffi_support::call_with_output(err, || {
     let _retval = {% call to_rs_call(func) %};
     {% call ret(func) %}
 })
@@ -86,6 +86,6 @@ ffi_support::call_with_output(err, || {
 {% endmacro %}
 
 {% macro default_err() %}
-let mut err: ffi_support::ExternError = Default::default();
+let mut err: uniffi::deps::ffi_support::ExternError = Default::default();
 let err = &mut err;
 {% endmacro %}

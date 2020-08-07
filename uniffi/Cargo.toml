@@ -5,20 +5,12 @@ authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 edition = "2018"
 
-[[bin]]
-name = "uniffi-bindgen"
-path = "src/main.rs"
-
 [dependencies]
-weedle = "0.11"
+# Re-exported dependencies used in generated Rust scaffolding files.
+anyhow = "1"
 bytes = "0.5"
 ffi-support = "0.4"
-anyhow = "1.0"
-askama = "0.9"
-heck = "0.3"
-clap = "2.33"
-object = "0.20"
-serde = "1.0"
-bincode = "1.3"
-cargo_metadata = "0.10.0"
 lazy_static = "1.4"
+log = "0.4"
+# Regular dependencies
+cargo_metadata = "0.11"
