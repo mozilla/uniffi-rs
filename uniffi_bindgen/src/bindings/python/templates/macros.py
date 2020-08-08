@@ -5,15 +5,15 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-
 rust_call_with_error(
     {%- match func.throws() -%}
     {%- when Some with (e) -%}
-    {{ e|class_name_py }}
+    {{ e|class_name_py }},
     {%- else -%}
-    InternalError
-    {%- endmatch -%},
-    _UniFFILib.{{ func.ffi_func().name() }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) -%}
+    InternalError,
+    {%- endmatch -%}
+    _UniFFILib.{{ func.ffi_func().name() }},
+    {%- call _arg_list_ffi_call(func) -%}
 )
 {%- endmacro -%}
 
@@ -21,11 +21,13 @@ rust_call_with_error(
 rust_call_with_error(
     {%- match func.throws() -%}
     {%- when Some with (e) -%}
-    {{ e|class_name_py }}
+    {{ e|class_name_py }},
     {%- else -%}
-    InternalError
-    {%- endmatch -%},
-    _UniFFILib.{{ func.ffi_func().name() }},{{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %})
+    InternalError,
+    {%- endmatch -%}
+    _UniFFILib.{{ func.ffi_func().name() }},
+    {{- prefix }},
+    {%- call _arg_list_ffi_call(func) -%}
 )
 {%- endmacro -%}
 
@@ -53,20 +55,20 @@ rust_call_with_error(
 // Note unfiltered name but type_ffi filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}
-    {%- for arg in func.arguments() -%}
-        {{ arg.type_()|type_ffi }},{##}
+    {%- for arg in func.arguments() %}
+    {{ arg.type_()|type_ffi }},
     {%- endfor %}
-    ctypes.POINTER(RustError)
-{%- endmacro -%}
+    ctypes.POINTER(RustError),
+{% endmacro -%}
 
 {%- macro coerce_args(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.name()|coerce_py(arg.type_()) -}}
+    {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_()) -}}
     {% endfor -%}
 {%- endmacro -%}
 
 {%- macro coerce_args_extra_indent(func) %}
         {%- for arg in func.arguments() %}
-        {{ arg.name()|coerce_py(arg.type_()) }}
+        {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_()) }}
         {%- endfor %}
 {%- endmacro -%}

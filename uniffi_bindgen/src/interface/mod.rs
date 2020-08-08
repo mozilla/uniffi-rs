@@ -100,28 +100,67 @@ impl<'ci> ComponentInterface {
         Ok(ci)
     }
 
+    /// The string namespace within which this API should be presented to the caller.
+    ///
+    /// This string would typically be used to prefix function names in the FFI, to build
+    /// a package or module name for the foreign language, etc.
     pub fn namespace(&self) -> &str {
         self.namespace.as_str()
     }
 
+    /// List the definitions for every Enum type in the interface.
     pub fn iter_enum_definitions(&self) -> Vec<Enum> {
         self.enums.to_vec()
     }
 
+    /// Get an Enum definition by name, or None if no such Enum is defined.
+    pub fn get_enum_definition(&self, name: &str) -> Option<&Enum> {
+        // TODO: probably we could store these internally in a HashMap to make this easier?
+        self.enums.iter().find(|e| e.name == name)
+    }
+
+    /// List the definitions for every Record type in the interface.
     pub fn iter_record_definitions(&self) -> Vec<Record> {
         self.records.to_vec()
     }
 
+    /// Get a Record definition by name, or None if no such Record is defined.
+    pub fn get_record_definition(&self, name: &str) -> Option<&Record> {
+        // TODO: probably we could store these internally in a HashMap to make this easier?
+        self.records.iter().find(|r| r.name == name)
+    }
+
+    /// List the definitions for every Function in the interface.
     pub fn iter_function_definitions(&self) -> Vec<Function> {
         self.functions.to_vec()
     }
 
+    /// Get a Function definition by name, or None if no such Function is defined.
+    pub fn get_function_definition(&self, name: &str) -> Option<&Function> {
+        // TODO: probably we could store these internally in a HashMap to make this easier?
+        self.functions.iter().find(|f| f.name == name)
+    }
+
+    /// List the definitions for every Object type in the interface.
     pub fn iter_object_definitions(&self) -> Vec<Object> {
         self.objects.to_vec()
     }
 
+    /// Get an Object definition by name, or None if no such Object is defined.
+    pub fn get_object_definition(&self, name: &str) -> Option<&Object> {
+        // TODO: probably we could store these internally in a HashMap to make this easier?
+        self.objects.iter().find(|o| o.name == name)
+    }
+
+    /// List the definitions for every Error type in the interface.
     pub fn iter_error_definitions(&self) -> Vec<Error> {
         self.errors.to_vec()
+    }
+
+    /// Get an Error definition by name, or None if no such Error is defined.
+    pub fn get_error_definition(&self, name: &str) -> Option<&Error> {
+        // TODO: probably we could store these internally in a HashMap to make this easier?
+        self.errors.iter().find(|e| e.name == name)
     }
 
     pub fn iter_types(&self) -> Vec<Type> {
@@ -256,6 +295,9 @@ impl<'ci> ComponentInterface {
         }
     }
 
+    /// List the definitions of all FFI functions in the interface.
+    ///
+    /// The set of FFI functions is derived automatically from the set of higher-level types.
     pub fn iter_ffi_function_definitions(&self) -> Vec<FFIFunction> {
         self.objects
             .iter()
@@ -329,6 +371,10 @@ impl<'ci> ComponentInterface {
         Ok(())
     }
 
+    /// Automatically derive the low-level FFI functions from the high-level types in the interface.
+    ///
+    /// This should only be called after the high-level types have been completed defined, otherwise
+    /// the resulting set will be missing some entries.
     fn derive_ffi_funcs(&mut self) -> Result<()> {
         let ci_prefix = self.ffi_namespace().to_string();
         for func in self.functions.iter_mut() {
@@ -341,6 +387,7 @@ impl<'ci> ComponentInterface {
     }
 }
 
+/// Convenience implementation for parsing a `ComponentInterface` from a string.
 impl FromStr for ComponentInterface {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self> {

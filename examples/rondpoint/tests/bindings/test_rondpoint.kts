@@ -88,11 +88,6 @@ fun <T> List<T>.affirmEnchaine(
 val wellKnown = st.wellKnownString("kotlin")
 assert("uniffi 💚 kotlin!" == wellKnown) { "wellKnownString 'uniffi 💚 kotlin!' == '$wellKnown'" }
 
-// NB. Numbers are all signed in kotlin. This makes roundtripping of unsigned numbers tricky to show. 
-// Uniffi does not generate unsigned types for kotlin, but the work tracked is 
-// in https://github.com/mozilla/uniffi-rs/issues/249. Tests using unsigned types are 
-// commented out for now.
-
 // Booleans
 listOf(true, false).affirmEnchaine(st::toStringBoolean)
 
