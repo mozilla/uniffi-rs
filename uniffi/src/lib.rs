@@ -91,7 +91,7 @@ pub trait Liftable: Sized {
 }
 
 pub fn try_lift<T: Liftable>(buf: ByteBuffer) -> Result<T> {
-    let vec = buf.into_vec();
+    let vec = buf.destroy_into_vec();
     let mut buf = vec.as_slice();
     let value = <T as Liftable>::try_lift_from(&mut buf)?;
     if buf.remaining() != 0 {
