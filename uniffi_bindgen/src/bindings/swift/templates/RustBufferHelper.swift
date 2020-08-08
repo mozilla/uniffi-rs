@@ -60,7 +60,7 @@ class Reader {
             throw InternalError.bufferOverflow
         }
         var value = [UInt8](repeating: 0, count: count)
-        value.withUnsafeMutableBufferPointer({ buffer in 
+        value.withUnsafeMutableBufferPointer({ buffer in
             data.copyBytes(to: buffer, from: range)
         })
         offset = range.upperBound
@@ -140,8 +140,13 @@ extension String: Liftable, Lowerable {
         }
         return String(cString: v)
     }
-    func toFFIValue() -> Self {
-        self
+    func toFFIValue() -> UnsafeMutablePointer<CChar> {
+        var rustErr = NativeRustError(code: 0, message: nil)
+        let rustStr = {{ ci.ffi_string_alloc_from().name() }}(self, &rustErr)
+        if rustErr.code != 0 {
+            fatalError("caught a panic while passing a string across the ffi")
+        }
+        return rustStr
     }
 
     static func lift(from buf: Reader) throws -> Self {

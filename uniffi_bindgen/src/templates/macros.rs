@@ -22,18 +22,18 @@
 
 {#-
 // Arglist as used in the _UniFFILib function declations.
-// Note unfiltered name but type_c filters.
+// Note unfiltered name but type_ffi filters.
 -#}
-{%- macro arg_list_rs_decl(func) %}
+{%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name() }}: {{ arg.type_()|type_c -}}{% if loop.last %}{% else %},{% endif %}
+        {{- arg.name() }}: {{ arg.type_()|type_ffi -}}{% if loop.last %}{% else %},{% endif %}
     {%- endfor %}
     {% if func.has_out_err() %}
     {% if func.arguments().len() > 0 %},{% endif %} err: &mut uniffi::deps::ffi_support::ExternError,
     {% endif %}
 {%- endmacro -%}
 
-{% macro return_type_func(func) %}{% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|ret_type_c }}{%- else -%}(){%- endmatch -%}{%- endmacro -%}
+{% macro return_type_func(func) %}{% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi }}{%- else -%}(){%- endmatch -%}{%- endmacro -%}
 
 {% macro ret(func) %}{% match func.return_type() %}{% when Some with (return_type) %}{{ "_retval"|lower_rs(return_type) }}{% else %}_retval{% endmatch %}{% endmacro %}
 

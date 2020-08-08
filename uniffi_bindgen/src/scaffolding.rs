@@ -22,78 +22,65 @@ mod filters {
     use super::*;
     use std::fmt;
 
-    pub fn type_rs(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_rs(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::U32 => "u32".to_string(),
-            TypeReference::U64 => "u64".to_string(),
-            TypeReference::Float => "f32".to_string(),
-            TypeReference::Double => "f64".to_string(),
-            TypeReference::Boolean => "bool".to_string(),
-            TypeReference::String => "&str".to_string(),
-            TypeReference::Enum(name) => name.clone(),
-            TypeReference::Record(name) => name.clone(),
-
-            // TODO: Clean this up, the `ret_type_rs` is supposed to only be used on return types
-            // and solve the issue of asymmetry with strings.
-            // When a string is a record member or a part of a sequence, we use the `String` type even if the string is an argument
-            // However, when we use strings directly, we use an &str as an argument.
-            // This reeks of future issues, a possible solution is to abandon the asymmetry (and FfiStr) and just use
-            // `String` everywhere as a ByteBuffer and give up an extra memory allocation
-            TypeReference::Optional(t) => format!("Option<{}>", ret_type_rs(t)?),
-            TypeReference::Sequence(t) => format!("Vec<{}>", ret_type_rs(t)?),
-            _ => panic!("[TODO: type_rs({:?})]", type_),
+            Type::Int8 => "i8".into(),
+            Type::UInt8 => "u8".into(),
+            Type::Int16 => "i16".into(),
+            Type::UInt16 => "u16".into(),
+            Type::Int32 => "i32".into(),
+            Type::UInt32 => "u32".into(),
+            Type::Int64 => "i64".into(),
+            Type::UInt64 => "u64".into(),
+            Type::Float32 => "f32".into(),
+            Type::Float64 => "f64".into(),
+            Type::Boolean => "bool".into(),
+            Type::String => "String".into(),
+            Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
+                name.clone()
+            }
+            Type::Optional(t) => format!("Option<{}>", type_rs(t)?),
+            Type::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
         })
     }
 
-    pub fn ret_type_rs(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::U32 => "u32".to_string(),
-            TypeReference::U64 => "u64".to_string(),
-            TypeReference::Float => "f32".to_string(),
-            TypeReference::Double => "f64".to_string(),
-            TypeReference::Boolean => "bool".to_string(),
-            TypeReference::String => "String".to_string(),
-            TypeReference::Enum(name) => name.clone(),
-            TypeReference::Record(name) => name.clone(),
-            TypeReference::Optional(t) => format!("Option<{}>", ret_type_rs(t)?),
-            TypeReference::Sequence(t) => format!("Vec<{}>", ret_type_rs(t)?),
-            _ => panic!("[TODO: ret_type_rs({:?})]", type_),
+            FFIType::Int8 => "i8".into(),
+            FFIType::UInt8 => "u8".into(),
+            FFIType::Int16 => "i16".into(),
+            FFIType::UInt16 => "u16".into(),
+            FFIType::Int32 => "i32".into(),
+            FFIType::UInt32 => "u32".into(),
+            FFIType::Int64 => "i64".into(),
+            FFIType::UInt64 => "u64".into(),
+            FFIType::Float32 => "f32".into(),
+            FFIType::Float64 => "f64".into(),
+            FFIType::RustBuffer => "uniffi::deps::ffi_support::ByteBuffer".into(),
+            FFIType::RustString => "*mut std::os::raw::c_char".into(),
+            FFIType::RustError => "uniffi::deps::ffi_support::ExternError".into(),
+            FFIType::ForeignStringRef => "*const std::os::raw::c_char".into(),
         })
     }
 
-    pub fn type_c(type_: &TypeReference) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            // Objects don't currently impl `ViaFfi`.
-            TypeReference::Object(_) => "u64".to_string(),
-            _ => format!("<{} as uniffi::ViaFfi>::Value", type_rs(type_)?,),
-        })
-    }
-
-    pub fn ret_type_c(type_: &TypeReference) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            // Objects don't currently impl `ViaFfi`.
-            TypeReference::Object(_) => "u64".to_string(),
-            _ => format!("<{} as uniffi::ViaFfi>::Value", ret_type_rs(type_)?,),
-        })
-    }
-
-    pub fn lower_rs(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn lower_rs(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         Ok(format!(
-            "<{} as uniffi::ViaFfi>::into_ffi_value(&{})",
-            ret_type_rs(type_)?,
+            "<{} as uniffi::ViaFfi>::into_ffi_value({})",
+            type_rs(type_)?,
             nm
         ))
     }
 
-    pub fn lift_rs(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn lift_rs(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
+        // This will panic if the bindings provide an invalid value over the FFI.
         Ok(format!(
             "<{} as uniffi::ViaFfi>::try_from_ffi_value({}).unwrap()",
             type_rs(type_)?,
             nm
-        )) // Error handling later...
+        ))
     }
 }

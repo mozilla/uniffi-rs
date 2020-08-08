@@ -20,7 +20,7 @@ def loadIndirect(componentName):
 _UniFFILib = loadIndirect(componentName="{{ ci.namespace() }}")
 {%- for func in ci.iter_ffi_function_definitions() %}
 _UniFFILib.{{ func.name() }}.argtypes = (
-    {%- call py::arg_list_rs_decl(func.arguments()) -%}
+    {%- call py::arg_list_ffi_decl(func.arguments()) -%}
 )
-_UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|type_c }}{% when None %}None{% endmatch %}
+_UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|type_ffi }}{% when None %}None{% endmatch %}
 {%- endfor %}

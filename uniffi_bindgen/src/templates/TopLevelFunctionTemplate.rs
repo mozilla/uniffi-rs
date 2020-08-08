@@ -7,7 +7,7 @@
 
 #[no_mangle]
 pub extern "C" fn {{ func.ffi_func().name() }}(
-    {% call rs::arg_list_rs_decl(func.ffi_func()) %}
+    {% call rs::arg_list_ffi_decl(func.ffi_func()) %}
 ) -> {% call rs::return_type_func(func) %} {
     // If the provided function does not match the signature specified in the IDL
     // then this attempt to call it will not compile, and will give guidance as to why.

@@ -20,8 +20,8 @@ typedef struct NativeRustError {
 
   
 {% for func in ci.iter_ffi_function_definitions() -%}
-    {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ret_c }}{% when None %}void{% endmatch %} {{ func.name() }}(
-      {% call swift::arg_list_rs_decl(func) %}
+    {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|type_ffi }}{% when None %}void{% endmatch %} {{ func.name() }}(
+      {% call swift::arg_list_ffi_decl(func) %}
     );
 {% endfor -%}
 

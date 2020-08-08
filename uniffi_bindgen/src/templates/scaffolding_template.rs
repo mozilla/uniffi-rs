@@ -3,10 +3,7 @@
 {% import "macros.rs" as rs %}
 
 {% include "RustBuffer.rs" %}
-
-// We add support for freeing strings, some crates won't need this, but it seems safe
-// enough to include anyways since strings are such a common use case.
-uniffi::deps::ffi_support::define_string_destructor!({{ ci.ffi_string_free().name() }});
+{% include "RustString.rs" %}
 
 // We generate error mappings into ffi_support::ExternErrors
 // so that the errors can propagate through the FFI

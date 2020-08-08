@@ -1,4 +1,4 @@
 class {{ e.name() }}(enum.Enum):
-    {% for value in e.values() -%}
-    {{ value|enum_name_py }} = {{ loop.index }}
+    {% for variant in e.variants() -%}
+    {{ variant|enum_name_py }} = {{ loop.index }}
     {% endfor -%}

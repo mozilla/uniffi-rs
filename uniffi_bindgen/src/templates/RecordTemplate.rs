@@ -18,7 +18,7 @@ impl uniffi::Liftable for {{ rec.name() }} {
     fn try_lift_from<B: uniffi::deps::bytes::Buf>(buf: &mut B) -> uniffi::deps::anyhow::Result<Self> {
       Ok(Self {
         {%- for field in rec.fields() %}
-            {{ field.name() }}: <{{ field.type_()|ret_type_rs }} as uniffi::Liftable>::try_lift_from(buf)?,
+            {{ field.name() }}: <{{ field.type_()|type_rs }} as uniffi::Liftable>::try_lift_from(buf)?,
         {%- endfor %}
       })
     }

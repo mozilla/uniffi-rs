@@ -9,19 +9,19 @@
 #}
 unsafe impl uniffi::ViaFfi for {{ e.name() }} {
     type Value = u32;
-    fn into_ffi_value(&self) -> Self::Value {
+    fn into_ffi_value(self) -> Self::Value {
         match self {
             // If the provided enum doesn't match the options defined in the IDL then
             // this match will fail to compile, with a type error to guide the way.
-            {%- for value in e.values() %}
-            {{ e.name() }}::{{ value }} => {{ loop.index }},
+            {%- for variant in e.variants() %}
+            {{ e.name() }}::{{ variant }} => {{ loop.index }},
             {%- endfor %}
         }
     }
     fn try_from_ffi_value(v: Self::Value) -> uniffi::deps::anyhow::Result<Self> {
         Ok(match v {
-            {%- for value in e.values() %}
-            {{ loop.index }} => {{ e.name() }}::{{ value }},
+            {%- for variant in e.variants() %}
+            {{ loop.index }} => {{ e.name() }}::{{ variant }},
             {%- endfor %}
             _ => uniffi::deps::anyhow::bail!("Invalid {{ e.name() }} enum value: {}", v),
         })
@@ -30,8 +30,11 @@ unsafe impl uniffi::ViaFfi for {{ e.name() }} {
 
 impl uniffi::Lowerable for {{ e.name() }} {
     fn lower_into<B: uniffi::deps::bytes::BufMut>(&self, buf: &mut B) {
-        use uniffi::ViaFfi;
-        buf.put_u32(self.into_ffi_value());
+        buf.put_u32(match self {
+            {%- for variant in e.variants() %}
+            {{ e.name() }}::{{ variant }} => {{ loop.index }},
+            {%- endfor %}
+        });
     }
 }
 

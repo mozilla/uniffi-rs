@@ -1,6 +1,6 @@
 public enum {{ e.name()|class_name_swift }}: Lowerable, Liftable {
-    {% for value in e.values() %}
-    case {{ value|enum_variant_swift }}
+    {% for variant in e.variants() %}
+    case {{ variant|enum_variant_swift }}
     {% endfor %}
 
     static func lift(from buf: Reader) throws -> {{ e.name() }} {
@@ -9,8 +9,8 @@ public enum {{ e.name()|class_name_swift }}: Lowerable, Liftable {
 
     static func fromFFIValue(_ number: UInt32) throws -> {{ e.name() }} {
         switch number {
-        {% for value in e.values() %}
-        case {{ loop.index }}: return .{{ value|enum_variant_swift }}
+        {% for variant in e.variants() %}
+        case {{ loop.index }}: return .{{ variant|enum_variant_swift }}
         {% endfor %}
         default: throw InternalError.unexpectedEnumCase
         }
@@ -22,8 +22,8 @@ public enum {{ e.name()|class_name_swift }}: Lowerable, Liftable {
 
     func toFFIValue() -> UInt32 {
         switch self {
-        {% for value in e.values() %}
-        case .{{ value|enum_variant_swift }}: return {{ loop.index }}
+        {% for variant in e.variants() %}
+        case .{{ variant|enum_variant_swift }}: return {{ loop.index }}
         {% endfor %}
         }
     }

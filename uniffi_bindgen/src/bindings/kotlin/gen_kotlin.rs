@@ -39,53 +39,47 @@ mod filters {
     use super::*;
     use std::fmt;
 
-    pub fn type_kt(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             // These native Kotlin types map nicely to the FFI without conversion.
-            TypeReference::U32 => "Int".to_string(),
-            TypeReference::U64 => "Long".to_string(),
-            TypeReference::Float => "Float".to_string(),
-            TypeReference::Double => "Double".to_string(),
-            TypeReference::Bytes => "RustBuffer.ByValue".to_string(),
+            // Note that unsigned integers in Kotlin are currently experimental, and we use the signed
+            // variants to represent both signed and unsigned types from the component API.
+            // I *think* this means you get the two's-compliment signed equivalent of unsigned values?
+            // That's probably going to get messy, but not sure there's a better way...
+            Type::Int8 | Type::UInt8 => "Byte".to_string(),
+            Type::Int16 | Type::UInt16 => "Short".to_string(),
+            Type::Int32 | Type::UInt32 => "Int".to_string(),
+            Type::Int64 | Type::UInt64 => "Long".to_string(),
+            Type::Float32 => "Float".to_string(),
+            Type::Float64 => "Double".to_string(),
             // These types need conversion, and special handling for lifting/lowering.
-            TypeReference::Boolean => "Boolean".to_string(),
-            TypeReference::String => "String".to_string(),
-            TypeReference::Enum(name) => class_name_kt(name)?,
-            TypeReference::Record(name) => class_name_kt(name)?,
-            TypeReference::Optional(t) => format!("{}?", type_kt(t)?),
-            TypeReference::Sequence(t) => format!("List<{}>", type_kt(t)?),
-            _ => panic!("[TODO: type_kt({:?})]", type_),
+            Type::Boolean => "Boolean".to_string(),
+            Type::String => "String".to_string(),
+            Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
+                class_name_kt(name)?
+            }
+            Type::Optional(t) => format!("{}?", type_kt(t)?),
+            Type::Sequence(t) => format!("List<{}>", type_kt(t)?),
         })
     }
 
-    pub fn type_c(type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(match type_ {
-            TypeReference::Boolean => "Byte".to_string(),
-            TypeReference::Enum(_) => "Int".to_string(),
-            TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
-            TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
-            TypeReference::Sequence(_) => "RustBuffer.ByValue".to_string(),
-            TypeReference::Object(_) => "Long".to_string(),
-            TypeReference::String => "String".to_string(),
-            // We use a Pointer here specifically for the `free` function
-            // In a perfect world we wouldn't need an extra variant
-            // but our Rust bindings require `Pointer` for the free function
-            // and `String` for other string-accepting functions.
-            TypeReference::RawStringPointer => "Pointer".to_string(),
-            _ => type_kt(type_)?,
-        })
-    }
-
-    pub fn ret_type_c(type_: &TypeReference) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            TypeReference::Boolean => "Byte".to_string(),
-            TypeReference::Enum(_) => "Int".to_string(),
-            TypeReference::Record(_) => "RustBuffer.ByValue".to_string(),
-            TypeReference::Optional(_) => "RustBuffer.ByValue".to_string(),
-            TypeReference::Sequence(_) => "RustBuffer.ByValue".to_string(),
-            TypeReference::Object(_) => "Long".to_string(),
-            TypeReference::String => "Pointer".to_string(),
-            _ => type_kt(type_)?,
+            // Note that unsigned integers in Kotlin are currently experimental, and we use the signed
+            // variants to represent both signed and unsigned types from the component API.
+            // I *think* this means you get the two's-compliment signed equivalent of unsigned values?
+            // That's probably going to get messy, but not sure there's a better way...
+            FFIType::Int8 | FFIType::UInt8 => "Byte".to_string(),
+            FFIType::Int16 | FFIType::UInt16 => "Short".to_string(),
+            FFIType::Int32 | FFIType::UInt32 => "Int".to_string(),
+            FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
+            FFIType::Float32 => "Float".to_string(),
+            FFIType::Float64 => "Double".to_string(),
+            FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
+            FFIType::RustString => "Pointer".to_string(),
+            FFIType::RustError => "RustError".to_string(),
+            // Kotlin+JNA has some magic to pass its native string type as char* pointers.
+            FFIType::ForeignStringRef => "String".to_string(),
         })
     }
 
@@ -105,16 +99,16 @@ mod filters {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
-    pub fn lower_kt(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
-            TypeReference::Optional(t) => format!(
+            Type::Optional(t) => format!(
                 "lowerOptional({}, {{ v -> {} }}, {{ v, buf -> {} }})",
                 nm,
                 lowers_into_size_kt(&"v", t)?,
                 lower_into_kt(&"v", &"buf", t)?
             ),
-            TypeReference::Sequence(t) => format!(
+            Type::Sequence(t) => format!(
                 "lowerSequence({}, {{ v -> {} }}, {{ v, buf -> {} }})",
                 nm,
                 lowers_into_size_kt(&"v", t)?,
@@ -127,17 +121,17 @@ mod filters {
     pub fn lower_into_kt(
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
-        type_: &TypeReference,
+        type_: &Type,
     ) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
-            TypeReference::Optional(t) => format!(
+            Type::Optional(t) => format!(
                 "lowerIntoOptional({}, {}, {{ v, buf -> {} }})",
                 nm,
                 target,
                 lower_into_kt(&"v", &"buf", t)?
             ),
-            TypeReference::Sequence(t) => format!(
+            Type::Sequence(t) => format!(
                 "lowerIntoSequence({}, {}, {{ v, buf -> {} }})",
                 nm,
                 target,
@@ -149,16 +143,16 @@ mod filters {
 
     pub fn lowers_into_size_kt(
         nm: &dyn fmt::Display,
-        type_: &TypeReference,
+        type_: &Type,
     ) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
-            TypeReference::Optional(t) => format!(
+            Type::Optional(t) => format!(
                 "lowersIntoSizeOptional({}, {{ v -> {} }})",
                 nm,
                 lowers_into_size_kt(&"v", t)?
             ),
-            TypeReference::Sequence(t) => format!(
+            Type::Sequence(t) => format!(
                 "lowersIntoSizeSequence({}, {{ v -> {} }})",
                 nm,
                 lowers_into_size_kt(&"v", t)?
@@ -167,15 +161,15 @@ mod filters {
         })
     }
 
-    pub fn lift_kt(nm: &dyn fmt::Display, type_: &TypeReference) -> Result<String, askama::Error> {
+    pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            TypeReference::Optional(t) => format!(
+            Type::Optional(t) => format!(
                 "liftOptional({}, {{ buf -> {} }})",
                 nm,
                 lift_from_kt(&"buf", t)?
             ),
-            TypeReference::Sequence(t) => format!(
+            Type::Sequence(t) => format!(
                 "liftSequence({}, {{ buf -> {} }})",
                 nm,
                 lift_from_kt(&"buf", t)?
@@ -184,18 +178,15 @@ mod filters {
         })
     }
 
-    pub fn lift_from_kt(
-        nm: &dyn fmt::Display,
-        type_: &TypeReference,
-    ) -> Result<String, askama::Error> {
+    pub fn lift_from_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            TypeReference::Optional(t) => format!(
+            Type::Optional(t) => format!(
                 "liftFromOptional({}, {{ buf -> {} }})",
                 nm,
                 lift_from_kt(&"buf", t)?
             ),
-            TypeReference::Sequence(t) => format!(
+            Type::Sequence(t) => format!(
                 "liftFromSequence({}, {{ buf -> {} }})",
                 nm,
                 lift_from_kt(&"buf", t)?
