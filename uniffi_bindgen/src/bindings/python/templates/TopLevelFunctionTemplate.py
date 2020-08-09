@@ -3,7 +3,6 @@
 
 def {{ func.name()|fn_name_py }}({%- call py::arg_list_decl(func) -%}):
     {%- call py::coerce_args(func) %}
-    t = RustError() # REVIEW_BEFORE_PR
     _retval = {% call py::to_ffi_call(func) %}
     return {{ "_retval"|lift_py(return_type) }}
 

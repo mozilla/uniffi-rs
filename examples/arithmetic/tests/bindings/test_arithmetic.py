@@ -1,19 +1,21 @@
 from arithmetic import *
 
-# try:
-#     add(18446744073709551615, 1)
-#     assert(not("Should have thrown a IntegerOverflow exception!"))
-# except ArithmeticErrorException:
-#     # It's okay!
+try:
+    add(18446744073709551615, 1)
+    assert(not("Should have thrown a IntegerOverflow exception!"))
+except ArithmeticError.IntegerOverflow:
+    # It's okay!
+    pass
 
 assert add(2, 4) == 6
 assert add(4, 8) == 12
 
-# try:
-#     sub(0, 1)
-#     assert(not("Should have thrown a IntegerOverflow exception!"))
-# except ArithmeticErrorException:
-#     # It's okay!
+try:
+    sub(0, 1)
+    assert(not("Should have thrown a IntegerOverflow exception!"))
+except ArithmeticError.IntegerOverflow:
+    # It's okay!
+    pass
 
 assert sub(4, 2) == 2
 assert sub(8, 4) == 4

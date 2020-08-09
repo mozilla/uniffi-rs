@@ -7,10 +7,7 @@
 {%- macro to_ffi_call(func) -%}
 {%- match func.throws() -%}
 {%- when Some with (e) -%}
-_UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%},ctypes.pointer(t)) # REVIEW_BEFORE_PR
-    print("---")
-    print(t.__str__())
-    print("---")
+_RustErrorHelper.try_raise(_RustErrorHelperPartial(_UniFFILib.{{ func.ffi_func().name() }},{% call _arg_list_ffi_call(func) -%}))
 {%- else -%}
 _UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
 {%- endmatch -%}
@@ -19,9 +16,9 @@ _UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
 {%- match func.throws() -%}
 {%- when Some with (e) -%}
-_UniFFILib.{{ func.ffi_func().name() }}(
-    {{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %}) # REVIEW_BEFORE_PR
-)
+_RustErrorHelper.try_raise(_RustErrorHelperPartial(
+    _UniFFILib.{{ func.ffi_func().name() }},{{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %})
+))
 {%- else -%}
 _UniFFILib.{{ func.ffi_func().name() }}(
     {{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %})
@@ -56,7 +53,7 @@ _UniFFILib.{{ func.ffi_func().name() }}(
     {%- for arg in func.arguments() -%}
         {{ arg.type_()|type_ffi }},{##}
     {%- endfor %}
-    {%- if func.has_out_err() -%}RustErrorPointer,{%- endif -%}
+    {%- if func.has_out_err() -%}ctypes.POINTER(RustError),{%- endif -%}
 {%- endmacro -%}
 
 {%- macro coerce_args(func) %}

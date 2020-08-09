@@ -18,6 +18,7 @@ import ctypes
 import enum
 import struct
 import contextlib
+from functools import partial as _RustErrorHelperPartial
 
 {% include "RustBufferTemplate.py" %}
 
