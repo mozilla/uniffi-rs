@@ -9,17 +9,11 @@ enum ArithmeticError {
 }
 
 fn add(a: u64, b: u64) -> Result<u64> {
-    match a.checked_add(b) {
-        None => Err(ArithmeticError::IntegerOverflow),
-        Some(c) => Ok(c),
-    }
+    a.checked_add(b).ok_or(ArithmeticError::IntegerOverflow)
 }
 
 fn sub(a: u64, b: u64) -> Result<u64> {
-    match a.checked_sub(b) {
-        None => Err(ArithmeticError::IntegerOverflow),
-        Some(c) => Ok(c),
-    }
+    a.checked_sub(b).ok_or(ArithmeticError::IntegerOverflow)
 }
 
 fn equal(a: u64, b: u64) -> bool {

@@ -1,7 +1,7 @@
 import arithmetic
 
 do {
-    let _ = try add(18446744073709551615, 1)
+    let _ = try add(a: 18446744073709551615, b: 1)
     fatalError("Should have thrown a IntegerOverflow exception!")
 } catch ArithmeticError.IntegerOverflow {
     // It's okay!
@@ -11,7 +11,7 @@ assert(add(a: 2, b: 4) == 6, "add work")
 assert(add(a: 4, b: 8) == 12, "add work")
 
 do {
-    let _ = try sub(0, 1)
+    let _ = try sub(a: 0, b: 1)
     fatalError("Should have thrown a IntegerOverflow exception!")
 } catch ArithmeticError.IntegerOverflow {
     // It's okay!
