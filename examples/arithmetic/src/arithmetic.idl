@@ -1,11 +1,14 @@
-
-enum Overflow {
-  "WRAPPING",
-  "SATURATING",
+[Error]
+enum ArithmeticError {
+  "IntegerOverflow",
 };
 
 namespace arithmetic {
-  u64 add(u64 a, u64 b, optional Overflow overflow = "WRAPPING");
-  u64 sub(u64 a, u64 b, optional Overflow overflow = "WRAPPING");
+  [Throws=ArithmeticError]
+  u64 add(u64 a, u64 b);
+
+  [Throws=ArithmeticError]
+  u64 sub(u64 a, u64 b);
+
   boolean equal(u64 a, u64 b);
 };

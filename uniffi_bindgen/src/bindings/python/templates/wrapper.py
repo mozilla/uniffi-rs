@@ -23,6 +23,8 @@ import contextlib
 
 {% include "RustBufferHelper.py" %}
 
+{% include "RustErrorTemplate.py" %}
+
 {% include "NamespaceLibraryTemplate.py" %}
 
 # Public interface members begin here.
@@ -30,6 +32,9 @@ import contextlib
 {% for e in ci.iter_enum_definitions() %}
 {% include "EnumTemplate.py" %}
 {%- endfor -%}
+
+# Error definitions
+{% include "ErrorTemplate.py" %}
 
 {%- for rec in ci.iter_record_definitions() %}
 {% include "RecordTemplate.py" %}

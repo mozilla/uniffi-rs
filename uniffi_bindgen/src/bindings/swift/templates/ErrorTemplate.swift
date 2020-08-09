@@ -1,6 +1,6 @@
 {# 
 // In here we define conversions between a native reference to Swift errors
-// We use the RustError protocol to define the requirments. Any implementers of the protocol
+// We use the RustError protocol to define the requirements. Any implementers of the protocol
 // Can be generated from a NativeRustError. 
 
 #}

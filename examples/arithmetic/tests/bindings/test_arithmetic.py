@@ -1,6 +1,27 @@
 from arithmetic import *
 
-assert add(2, 3, Overflow.SATURATING) == 5
+add(18446744073709551615, 1)
 
-assert equal(4, 4)
-assert not equal(4,5)
+# try:
+#     add(18446744073709551615, 1)
+#     assert(not("Should have thrown a IntegerOverflow exception!"))
+# except ArithmeticErrorException:
+#     # It's okay!
+
+# assert add(2, 4) == 6
+# assert add(4, 8) == 12
+
+# try:
+#     sub(0, 1)
+#     assert(not("Should have thrown a IntegerOverflow exception!"))
+# except ArithmeticErrorException:
+#     # It's okay!
+
+# assert sub(4, 2) == 2
+# assert sub(8, 4) == 4
+
+# assert equal(2, 2)
+# assert equal(4, 4)
+
+# assert not equal(2, 4)
+# assert not equal(4, 8)

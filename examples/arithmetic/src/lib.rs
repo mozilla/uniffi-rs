@@ -2,29 +2,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Flag to let calling code specify a particular behaviour of integer overflow,
-// since rust has such nice support for these.
-pub enum Overflow {
-    WRAPPING,
-    SATURATING,
+#[derive(Debug, thiserror::Error)]
+enum ArithmeticError {
+    #[error("Integer overflow!")]
+    IntegerOverflow,
 }
 
-pub fn add(a: u64, b: u64, overflow: Overflow) -> u64 {
-    match overflow {
-        Overflow::WRAPPING => a.overflowing_add(b).0,
-        Overflow::SATURATING => a.saturating_add(b),
+fn add(a: u64, b: u64) -> Result<u64> {
+    match a.checked_add(b) {
+        None => Err(ArithmeticError::IntegerOverflow),
+        Some(c) => Ok(c),
     }
 }
 
-pub fn sub(a: u64, b: u64, overflow: Overflow) -> u64 {
-    match overflow {
-        Overflow::WRAPPING => a.overflowing_sub(b).0,
-        Overflow::SATURATING => a.saturating_sub(b),
+fn sub(a: u64, b: u64) -> Result<u64> {
+    match a.checked_sub(b) {
+        None => Err(ArithmeticError::IntegerOverflow),
+        Some(c) => Ok(c),
     }
 }
 
-pub fn equal(a: u64, b: u64) -> bool {
+fn equal(a: u64, b: u64) -> bool {
     a == b
 }
+
+type Result<T, E = ArithmeticError> = std::result::Result<T, E>;
 
 include!(concat!(env!("OUT_DIR"), "/arithmetic.uniffi.rs"));
