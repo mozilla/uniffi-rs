@@ -1,14 +1,11 @@
 class RustError(ctypes.Structure):
     _fields_ = [
         ("code", ctypes.c_int32),
-        ("message", ctypes.POINTER(ctypes.c_char)),
+        ("message", ctypes.c_char_p),
     ]
 
-    def free(self):
-        return _UniFFILib.{{ ci.ffi_string_free().name() }}(self.message)
-
     def __str__(self):
-        return "RustError(code={}, message={})".format(self.code, self.message) 
+        return "RustError(code={}, message={})".format(self.code, str(self.message, "utf-8")) 
 
 {% for e in ci.iter_error_definitions() %}
 class {{e.name()}}:
@@ -31,7 +28,7 @@ class RustErrorHelper:
         self.err = RustError()
 
     def __apply__(self, fn):
-        return fn(self.err)
+        return fn(ctypes.byref(self.err))
 
     def __raise__(self):
     {%- for e in ci.iter_error_definitions() %}
