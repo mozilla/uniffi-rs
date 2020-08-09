@@ -38,6 +38,7 @@ class RustErrorHelper:
         if self.err.code == {{loop.index}}:
             return {{e.name()}}.raise_err(self.err)
     {% endfor %}
+        return
 
     def __reset__(self):
         del self.err
