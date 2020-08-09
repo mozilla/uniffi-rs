@@ -7,7 +7,10 @@
 {%- macro to_ffi_call(func) -%}
 {%- match func.throws() -%}
 {%- when Some with (e) -%}
-_UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%},t) # REVIEW_BEFORE_PR
+_UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%},ctypes.pointer(t)) # REVIEW_BEFORE_PR
+    print("---")
+    print(t.__str__())
+    print("---")
 {%- else -%}
 _UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
 {%- endmatch -%}
@@ -17,7 +20,7 @@ _UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
 {%- match func.throws() -%}
 {%- when Some with (e) -%}
 _UniFFILib.{{ func.ffi_func().name() }}(
-    {{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %},t) # REVIEW_BEFORE_PR
+    {{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %}) # REVIEW_BEFORE_PR
 )
 {%- else -%}
 _UniFFILib.{{ func.ffi_func().name() }}(
