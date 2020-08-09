@@ -86,7 +86,7 @@ In the future, we may be able to generate the Interface Definition from annotati
 started using a separate file.
 
 The prototype implementation of parsing an IDL file into an in-memory representation of the component's
-APIs is in [./src/types.rs](./src/types.rs). See [`arithmetic.idl`](./examples/arithmetic/src/arithmetic.idl)
+APIs is in [./uniffi_bindgen/src/interface/types.rs](./uniffi_bindgen/src/interface/types.rs). See [`arithmetic.idl`](./examples/arithmetic/src/arithmetic.idl)
 for a simple example that actually works today, or see [`fxa-client.idl`](./examples/fxa-client/fxa-client.idl)
 for an aspirational example of an interface for a real-world component.
 
@@ -265,21 +265,46 @@ with the Rust type system.
 
 #### Scaffolding Generation
 
-Currently a very hacky attempt in [./src/scaffolding.rs](./src/scaffolding.rs),
-and a `generate_component_scaffolding(idl_file: &str)` function that's intended
+Currently a very hacky attempt is in [./uniffi_bindgen/src/scaffolding.rs](./uniffi_bindgen/src/scaffolding.rs).
+
+The access point for the scaffolding is the `generate_scaffolding(idl_file: &str)` function in [./uniffi_build/src/lib.rs](./uniffi_build/src/lib.rs) that's intended
 to be used from the component's build file.
+
+Alternatively, the scaffolding can be generated using the `uniffi_bindgen` CLI, using:
+```
+uniffi-bindgen scaffolding ./src/arithmetic.idl
+```
+Which allows consumers to manually generate scaffolding, in case having the generation as a part of a build script is not desired. For more information, run:
+
+```
+uniffi-bindgen scaffolding --help
+```
 
 #### Kotlin Bindings Generation
 
-Currently a very *very* hacky attempt in [./src/bindings/kotlin/](./src/bindings/kotlin),
-and it's not yet clear exactly how we should expose this for consumers. As
-something done from the component's build script? As a standlone executable
-that can translate an IDL file into the bindings?
+Currently a *very* hacky attempt in [./uniffi_bindgen/src/bindings/kotlin/](./uniffi_bindgen/src/bindings/kotlin/).
+
+You can generate the bindings from the IDL by using the `uniffi_bindgen` CLI:
+
+```
+uniffi-bindgen generate src/arithmetic.idl -l kotlin
+```
 
 #### Swift Bindings Generation
 
-Totally unimplemented. If you're interested in having a go at it, try copying
-the Kotlin bindings generator and adapting it to your needs!
+Currently a *very* hacky attempt in [./uniffi_bindgen/src/bindings/swift/](./uniffi_bindgen/src/bindings/swift/).
+
+You can generate the bindings from the IDL by using the `uniffi_bindgen` CLI:
+
+```
+uniffi-bindgen generate src/arithmetic.idl -l swift
+```
+
+#### Python Bindings Generation
+An *INCOMPLETE* implementation in [./uniffi_bindgen/src/bindings/python/](./uniffi_bindgen/src/bindings/python/).
+
+If you're interested in contributing to its completeness, please check out issues for Python related issues. (Or feel free to create some too!)
+
 
 #### JS+XPCOM Bindings Generation
 
