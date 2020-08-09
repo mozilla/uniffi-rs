@@ -1,17 +1,10 @@
 import uniffi.arithmetic.*;
 
-try {
-    add(18446744073709551615, 1)
-    throw RuntimeException("Should have thrown a IntegerOverflow exception!")
-} catch (e: ArithmeticErrorException) {
-    // It's okay!
-}
-
 assert(add(2, 4) == 6L)
 assert(add(4, 8) == 12L)
 
 try {
-    sub(0, 1)
+    sub(0, 2)
     throw RuntimeException("Should have thrown a IntegerOverflow exception!")
 } catch (e: ArithmeticErrorException) {
     // It's okay!
