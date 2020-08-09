@@ -1,4 +1,5 @@
 from arithmetic import *
+from arithmetic import ArithmeticError
 
 try:
     add(18446744073709551615, 1)
