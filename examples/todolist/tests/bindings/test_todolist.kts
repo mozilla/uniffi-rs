@@ -47,3 +47,6 @@ assert(todo.getLastEntry().text == "bar")
 todo.addItems(listOf("bobo", "fofo"))
 assert(todo.getItems().size == 9)
 assert(todo.getItems()[7] == "bobo")
+
+todo.destroy()
+todo.destroy()
