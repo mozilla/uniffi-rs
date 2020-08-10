@@ -5,6 +5,7 @@
 use anyhow::{bail, Result};
 use bytes::buf::{Buf, BufMut};
 use ffi_support::ByteBuffer;
+use paste::paste;
 use std::convert::TryFrom;
 use std::ffi::CString;
 
@@ -39,18 +40,6 @@ pub fn lower<T: Lowerable>(value: T) -> ByteBuffer {
 impl<T: Lowerable> Lowerable for &T {
     fn lower_into<B: BufMut>(&self, buf: &mut B) {
         (*self).lower_into(buf);
-    }
-}
-
-impl Lowerable for u32 {
-    fn lower_into<B: BufMut>(&self, buf: &mut B) {
-        buf.put_u32(*self);
-    }
-}
-
-impl Lowerable for f64 {
-    fn lower_into<B: BufMut>(&self, buf: &mut B) {
-        buf.put_f64(*self);
     }
 }
 
@@ -101,18 +90,29 @@ pub fn try_lift<T: Liftable>(buf: ByteBuffer) -> Result<T> {
     Ok(value)
 }
 
-impl Liftable for u32 {
-    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
-        check_remaining(buf, 4)?;
-        Ok(buf.get_u32())
-    }
+macro_rules! impl_lowerable_liftable_for_num_primitive {
+    ($($T:ty,)+) => { impl_lowerable_liftable_for_num_primitive!($($T),+); };
+    ($($T:ty),*) => {
+            $(
+                paste! {
+                    impl Liftable for $T {
+                        fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
+                            check_remaining(buf, std::mem::size_of::<$T>())?;
+                            Ok(buf.[<get_ $T>]())
+                        }
+                    }
+                    impl Lowerable for $T {
+                        fn lower_into<B: BufMut>(&self, buf: &mut B) {
+                            buf.[<put_ $T>](*self);
+                        }
+                    }
+                }
+            )*
+    };
 }
 
-impl Liftable for f64 {
-    fn try_lift_from<B: Buf>(buf: &mut B) -> Result<Self> {
-        check_remaining(buf, 8)?;
-        Ok(buf.get_f64())
-    }
+impl_lowerable_liftable_for_num_primitive! {
+    i8, u8, i16, u16, i32, u32, i64, u64, f32, f64
 }
 
 impl<T: Liftable> Liftable for Option<T> {
