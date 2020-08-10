@@ -45,7 +45,6 @@ UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_result(err, || -> Result<{{
     Ok(_retval)
 })
 {% else %}
-{% call default_err() %}
 UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_output(err, || {
     {{ obj.name() }}::{% call to_rs_call(cons) %}
 })
@@ -60,7 +59,6 @@ UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_result_mut(err, {{ meth.first
     Ok({% call ret(meth) %})
 })
 {% else %}
-{% call default_err() %}
 UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_output_mut(err, {{ meth.first_argument().name() }}, |obj| {
     let _retval = {{ obj.name() }}::{%- call to_rs_call_with_prefix("obj", meth) -%};
     {% call ret(meth) %}
@@ -76,15 +74,9 @@ uniffi::deps::ffi_support::call_with_result(err, || -> Result<{% call return_typ
     Ok({% call ret(func) %})
 })
 {% else %}
-{% call default_err() %}
 uniffi::deps::ffi_support::call_with_output(err, || {
     let _retval = {% call to_rs_call(func) %};
     {% call ret(func) %}
 })
 {% endmatch %}
-{% endmacro %}
-
-{% macro default_err() %}
-let mut err: uniffi::deps::ffi_support::ExternError = Default::default();
-let err = &mut err;
 {% endmacro %}

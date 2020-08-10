@@ -13,6 +13,11 @@ class RustError(ctypes.Structure):
             str(ctypes.cast(self.message, ctypes.c_char_p).value, "utf-8"),
         )
 
+class InternalError(Exception):
+    @staticmethod
+    def raise_err(code, message):
+        raise InternalError(message)
+
 {% for e in ci.iter_error_definitions() %}
 class {{ e.name()|class_name_py }}:
     {%- for value in e.values() %}

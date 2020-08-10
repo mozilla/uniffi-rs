@@ -47,6 +47,7 @@ import contextlib
 {% endfor %}
 
 __all__ = [
+    "InternalError",
     {%- for e in ci.iter_enum_definitions() %}
     "{{ e.name()|class_name_py }}",
     {%- endfor %}
