@@ -23,6 +23,9 @@ import contextlib
 
 {% include "RustBufferHelper.py" %}
 
+# Error definitions
+{% include "ErrorTemplate.py" %}
+
 {% include "NamespaceLibraryTemplate.py" %}
 
 # Public interface members begin here.
@@ -55,6 +58,9 @@ __all__ = [
     {%- endfor %}
     {%- for obj in ci.iter_object_definitions() %}
     "{{ obj.name()|class_name_py }}",
+    {%- endfor %}
+    {%- for e in ci.iter_error_definitions() %}
+    "{{ e.name()|class_name_py }}",
     {%- endfor %}
 ]
 

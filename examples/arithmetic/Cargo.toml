@@ -12,6 +12,7 @@ name = "uniffi_arithmetic"
 [dependencies]
 uniffi_macros = {path = "../../uniffi_macros"}
 uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
+thiserror = "1.0"
 
 [build-dependencies]
 uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}
