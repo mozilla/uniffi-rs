@@ -47,8 +47,7 @@ UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_result(err, || -> Result<{{
 {% else %}
 {% call default_err() %}
 UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_output(err, || {
-    let _retval = {{ obj.name() }}::{% call to_rs_call(cons) %};
-    _retval
+    {{ obj.name() }}::{% call to_rs_call(cons) %}
 })
 {% endmatch %}
 {% endmacro %}
