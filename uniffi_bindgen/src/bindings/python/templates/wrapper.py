@@ -60,6 +60,9 @@ __all__ = [
     {%- for obj in ci.iter_object_definitions() %}
     "{{ obj.name()|class_name_py }}",
     {%- endfor %}
+    {%- for e in ci.iter_error_definitions() %}
+    "{{ e.name()|class_name_py }}",
+    {%- endfor %}
 ]
 
 {% import "macros.py" as py %}

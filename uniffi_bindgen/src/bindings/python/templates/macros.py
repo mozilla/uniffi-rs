@@ -7,7 +7,7 @@
 {%- macro to_ffi_call(func) -%}
 {%- match func.throws() -%}
 {%- when Some with (e) -%}
-_RustErrorHelper.try_raise(_RustErrorHelperPartial(_UniFFILib.{{ func.ffi_func().name() }},{% call _arg_list_ffi_call(func) -%}))
+rust_call_with_error({{ e|class_name_py }},_UniFFILib.{{ func.ffi_func().name() }},{% call _arg_list_ffi_call(func) -%})
 {%- else -%}
 _UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
 {%- endmatch -%}
@@ -16,13 +16,9 @@ _UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
 {%- match func.throws() -%}
 {%- when Some with (e) -%}
-_RustErrorHelper.try_raise(_RustErrorHelperPartial(
-    _UniFFILib.{{ func.ffi_func().name() }},{{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %})
-))
+rust_call_with_error({{ e|class_name_py }},_UniFFILib.{{ func.ffi_func().name() }},{{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %}))
 {%- else -%}
-_UniFFILib.{{ func.ffi_func().name() }}(
-    {{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %})
-)
+_UniFFILib.{{ func.ffi_func().name() }}({{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %}))
 {%- endmatch -%}
 {%- endmacro -%}
 
