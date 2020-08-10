@@ -1,14 +1,16 @@
-// This is how we find and load the dynamic library provided by the component.
-// For now we just look it up by name.
-//
-// XXX TODO: This will probably grow some magic for resolving megazording in future.
-// E.g. we might start by looking for the named component in `libuniffi.so` and if
-// that fails, fall back to loading it separately from `lib${componentName}.so`.
+@Synchronized
+fun findLibraryName(componentName: String): String {
+    val libOverride = System.getProperty("uniffi.component.${componentName}.libraryOverride")
+    if (libOverride != null) {
+        return libOverride
+    }
+    return "uniffi_${componentName}"
+}
 
 inline fun <reified Lib : Library> loadIndirect(
     componentName: String
 ): Lib {
-    return Native.load<Lib>("uniffi_${componentName}", Lib::class.java)
+    return Native.load<Lib>(findLibraryName(componentName), Lib::class.java)
 }
 
 // A JNA Library to expose the extern-C FFI definitions.
