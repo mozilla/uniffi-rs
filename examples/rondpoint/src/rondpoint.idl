@@ -26,3 +26,39 @@ dictionary Dictionnaire {
     u8 petit_nombre;
     u64 gros_nombre;
 };
+
+interface Retourneur {
+  // A constructor is mandatory
+  // See https://github.com/mozilla/uniffi-rs/issues/246
+  constructor();
+
+  i8 identique_i8(i8 value);
+  u8 identique_u8(u8 value);
+  i16 identique_i16(i16 value);
+  u16 identique_u16(u16 value);
+  i32 identique_i32(i32 value);
+  u32 identique_u32(u32 value);
+  i64 identique_i64(i64 value);
+  u64 identique_u64(u64 value);
+  float identique_float(float value);
+  double identique_double(double value);
+  boolean identique_boolean(boolean value);
+  string identique_string(string value);
+};
+
+interface Stringifier {
+  constructor();
+  string well_known_string(string value);
+
+  string to_string_i8(i8 value);
+  string to_string_u8(u8 value);
+  string to_string_i16(i16 value);
+  string to_string_u16(u16 value);
+  string to_string_i32(i32 value);
+  string to_string_u32(u32 value);
+  string to_string_i64(i64 value);
+  string to_string_u64(u64 value);
+  string to_string_float(float value);
+  string to_string_double(double value);
+  string to_string_boolean(boolean value);
+};
