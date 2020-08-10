@@ -31,11 +31,12 @@ class {{ e.name()|class_name_py }}:
 
 def rust_call_with_error(error_class, fn, *args):
     error = RustError()
-    args_with_error = args + (ctypes.byref(error),)
+    error.code = 0
 
+    args_with_error = args + (ctypes.byref(error),)
     result = fn(*args_with_error)
     if error.code != 0:
-        message = error.__str__()
+        message = str(error)
         error.free()
 
         error_class.raise_err(error.code, message)
