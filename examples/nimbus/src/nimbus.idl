@@ -1,0 +1,45 @@
+namespace nimbus {};
+dictionary ApplicationContext {
+    string? app_id;
+    string? app_version;
+    string? locale;
+    string? device_manufacturer;
+    string? device_model;
+    string? region;
+    string? debug_tag;
+};
+
+dictionary Experiment {
+    string slug;
+    string user_facing_name;
+    string user_facing_description;
+};
+
+dictionary Config {
+    string? server_url;
+    string? uuid;
+    string? collection_name;
+    string? bucket_name;
+};
+
+[Error]
+enum ExperimentError {
+   "NetworkError", "DbError"
+};
+
+interface Experiments {
+    [Throws=ExperimentError]
+    constructor(ApplicationContext app_ctx, string dbpath, Config? config);
+
+
+    string? get_experiment_branch(string experiment_slug);
+
+    sequence<Experiment> get_active_experiments();
+
+    void opt_in_with_branch(string experiment_slug, string branch);
+    void opt_out(string experiment_slug);
+    void opt_out_all();
+
+    [Throws=ExperimentError]
+    void update_experiments();
+};
