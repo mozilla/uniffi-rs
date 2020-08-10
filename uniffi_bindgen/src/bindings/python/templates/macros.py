@@ -7,7 +7,7 @@
 {%- macro to_ffi_call(func) -%}
 {%- match func.throws() -%}
 {%- when Some with (e) -%}
-rust_call_with_error({{ e|class_name_py }},_UniFFILib.{{ func.ffi_func().name() }},{% call _arg_list_ffi_call(func) -%})
+rust_call_with_error({{ e|class_name_py }},_UniFFILib.{{ func.ffi_func().name() }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) -%})
 {%- else -%}
 _UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
 {%- endmatch -%}
