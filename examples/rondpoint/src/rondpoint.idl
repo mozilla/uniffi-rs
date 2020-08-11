@@ -14,4 +14,6 @@ enum Enumeration {
 dictionary Dictionnaire {
     Enumeration un;
     boolean deux;
+    u8 petit_nombre;
+    u64 gros_nombre;
 };

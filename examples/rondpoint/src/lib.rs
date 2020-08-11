@@ -6,6 +6,8 @@
 pub struct Dictionnaire {
     un: Enumeration,
     deux: bool,
+    petit_nombre: u8,
+    gros_nombre: u64,
 }
 
 #[derive(Debug, Clone)]

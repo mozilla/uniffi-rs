@@ -116,6 +116,18 @@ fun Boolean.lowerInto(buf: ByteBuffer) {
     buf.put(this.lower())
 }
 
+fun Byte.lower(): Byte {
+    return this
+}
+
+fun Byte.lowersIntoSize(): Byte {
+    return 1
+}
+
+fun Byte.lowerInto(buf: ByteBuffer) {
+    buf.put(this)
+}
+
 fun Int.lower(): Int {
     return this
 }
