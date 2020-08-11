@@ -6,7 +6,7 @@ val todo = TodoList()
 try {
     todo.getLast()
     throw RuntimeException("Should have thrown a TodoError!")
-} catch (e: TodoErrorException) {
+} catch (e: TodoErrorException.EmptyTodoList) {
     // It's okay, we don't have any items yet!
 }
 
@@ -15,6 +15,8 @@ try {
     throw RuntimeException("Should have thrown a TodoError!")
 } catch (e: TodoErrorException) {
     // It's okay, the string was empty!
+    assert(e is TodoErrorException.EmptyString)
+    assert(e !is TodoErrorException.EmptyTodoList)
 }
 
 todo.addItem("Write strings support")
