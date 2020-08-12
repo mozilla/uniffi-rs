@@ -15,7 +15,7 @@ public struct {{ rec.name()|class_name_swift }}: Lowerable, Liftable, Serializab
         {%- endfor %}
     }
 
-    public static func ==(lhs: {{ rec.name() }}, rhs: {{ rec.name() }}) -> Bool {
+    public static func ==(lhs: {{ rec.name()|class_name_swift }}, rhs: {{ rec.name()|class_name_swift }}) -> Bool {
         {%- for field in rec.fields() %}
         if lhs.{{ field.name()|var_name_swift }} != rhs.{{ field.name()|var_name_swift }} {
             return false
@@ -24,8 +24,8 @@ public struct {{ rec.name()|class_name_swift }}: Lowerable, Liftable, Serializab
         return true
     }
 
-    static func lift(from buf: Reader) throws -> {{ rec.name() }} {
-        return try {{ rec.name() }}(
+    static func lift(from buf: Reader) throws -> {{ rec.name()|class_name_swift }} {
+        return try {{ rec.name()|class_name_swift }}(
             {%- for field in rec.fields() %}
             {{ field.name()|var_name_swift }}: {{ "buf"|lift_from_swift(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}

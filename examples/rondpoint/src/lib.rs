@@ -17,6 +17,17 @@ pub enum Enumeration {
     Trois,
 }
 
+#[allow(non_camel_case_types)]
+#[allow(non_snake_case)]
+pub struct minusculeMAJUSCULEDict {
+    minusculeMAJUSCULEField: bool,
+}
+
+#[allow(non_camel_case_types)]
+enum minusculeMAJUSCULEEnum {
+    minusculeMAJUSCULEVariant,
+}
+
 fn copie_enumeration(e: Enumeration) -> Enumeration {
     e
 }
