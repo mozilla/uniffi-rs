@@ -43,6 +43,7 @@ todo.addItems(items: ["bobo", "fofo"])
 assert(todo.getItems().count == 9)
 assert(todo.getItems()[7] == "bobo")
 
+// Ensure deinit doesn't crash.
 for _ in 0..<10 {
     let list = TodoList()
     try! list.addItem(todo: "todo")

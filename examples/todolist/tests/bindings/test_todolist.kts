@@ -48,5 +48,6 @@ todo.addItems(listOf("bobo", "fofo"))
 assert(todo.getItems().size == 9)
 assert(todo.getItems()[7] == "bobo")
 
+// Ensure the kotlin version of deinit doesn't crash, and is idempotent.
 todo.destroy()
 todo.destroy()
