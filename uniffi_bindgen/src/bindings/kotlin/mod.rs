@@ -22,10 +22,12 @@ pub fn write_bindings(
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
-    let mut kt_file = PathBuf::from(out_dir);
+    let config = Config::from(&ci);
+    let mut kt_file = full_bindings_path(&config, out_dir)?;
+    std::fs::create_dir_all(&kt_file)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
     let mut f = File::create(&kt_file).context("Failed to create .kt file for bindings")?;
-    write!(f, "{}", generate_bindings(&ci)?)?;
+    write!(f, "{}", generate_bindings(config, &ci)?)?;
     if try_format_code {
         if let Err(e) = Command::new("ktlint")
             .arg("-F")
@@ -42,9 +44,13 @@ pub fn write_bindings(
     Ok(())
 }
 
+fn full_bindings_path(config: &Config, out_dir: &Path) -> Result<PathBuf> {
+    let package_path = config.package_name.replace(".", "/");
+    Ok(PathBuf::from(out_dir).join(package_path))
+}
+
 // Generate kotlin bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(ci: &ComponentInterface) -> Result<String> {
-    let config = Config::from(&ci);
+pub fn generate_bindings(config: Config, ci: &ComponentInterface) -> Result<String> {
     use askama::Template;
     KotlinWrapper::new(config, &ci)
         .render()
@@ -54,7 +60,8 @@ pub fn generate_bindings(ci: &ComponentInterface) -> Result<String> {
 /// Generate kotlin bindings for the given namespace, then use the kotlin
 /// command-line tools to compile them into a .jar file.
 pub fn compile_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
-    let mut kt_file = PathBuf::from(out_dir);
+    let config = Config::from(&ci);
+    let mut kt_file = full_bindings_path(&config, out_dir)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
     let mut jar_file = PathBuf::from(out_dir);
     jar_file.push(format!("{}.jar", ci.namespace()));

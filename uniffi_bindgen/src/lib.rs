@@ -244,9 +244,12 @@ pub fn run_tests<P: AsRef<Path>>(
 
 fn get_out_dir(idl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
     Ok(match out_dir_override {
-        Some(s) => PathBuf::from(s)
-            .canonicalize()
-            .map_err(|e| anyhow!("Unable to find out-dir: {:?}", e))?,
+        Some(s) => {
+            // Create the directory if it doesn't exist yet.
+            std::fs::create_dir_all(&s)?;
+            s.canonicalize()
+                .map_err(|e| anyhow!("Unable to find out-dir: {:?}", e))?
+        }
         None => idl_file
             .parent()
             .ok_or_else(|| anyhow!("File has no parent directory"))?
