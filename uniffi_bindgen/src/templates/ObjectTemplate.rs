@@ -12,7 +12,10 @@ uniffi::deps::lazy_static::lazy_static! {
 }
 
     {% let ffi_free = obj.ffi_object_free() -%}
-    uniffi::deps::ffi_support::define_handle_map_deleter!({{ handle_map }}, {{ ffi_free.name() }});
+    #[no_mangle]
+    pub extern "C" fn {{ ffi_free.name() }}(handle: u64) {
+        let _ = {{ handle_map }}.delete_u64(handle);
+    }
 
 {%- for cons in obj.constructors() %}
 
