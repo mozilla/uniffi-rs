@@ -17,11 +17,28 @@ pub use gen_kotlin::{Config, KotlinWrapper};
 
 use super::super::interface::ComponentInterface;
 
-pub fn write_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
+pub fn write_bindings(
+    ci: &ComponentInterface,
+    out_dir: &Path,
+    try_format_code: bool,
+) -> Result<()> {
     let mut kt_file = PathBuf::from(out_dir);
     kt_file.push(format!("{}.kt", ci.namespace()));
     let mut f = File::create(&kt_file).context("Failed to create .kt file for bindings")?;
     write!(f, "{}", generate_bindings(&ci)?)?;
+    if try_format_code {
+        if let Err(e) = Command::new("ktlint")
+            .arg("-F")
+            .arg(kt_file.to_str().unwrap())
+            .output()
+        {
+            println!(
+                "Warning: Unable to auto-format {} using ktlint: {:?}",
+                kt_file.file_name().unwrap().to_str().unwrap(),
+                e
+            )
+        }
+    }
     Ok(())
 }
 
