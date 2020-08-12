@@ -5,6 +5,14 @@ namespace rondpoint {
   boolean switcheroo(boolean b);
 };
 
+dictionary minusculeMAJUSCULEDict {
+  boolean minusculeMAJUSCULEField;
+};
+
+enum minusculeMAJUSCULEEnum {
+  "minusculeMAJUSCULEVariant",
+};
+
 enum Enumeration {
     "Un",
     "Deux",

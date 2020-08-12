@@ -3,11 +3,11 @@ public enum {{ e.name()|class_name_swift }}: Lowerable, Liftable {
     case {{ variant|enum_variant_swift }}
     {% endfor %}
 
-    static func lift(from buf: Reader) throws -> {{ e.name() }} {
-        return try {{ e.name() }}.fromFFIValue(UInt32.lift(from: buf))
+    static func lift(from buf: Reader) throws -> {{ e.name()|class_name_swift }} {
+        return try {{ e.name()|class_name_swift }}.fromFFIValue(UInt32.lift(from: buf))
     }
 
-    static func fromFFIValue(_ number: UInt32) throws -> {{ e.name() }} {
+    static func fromFFIValue(_ number: UInt32) throws -> {{ e.name()|class_name_swift }} {
         switch number {
         {% for variant in e.variants() %}
         case {{ loop.index }}: return .{{ variant|enum_variant_swift }}
