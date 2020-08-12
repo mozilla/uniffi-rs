@@ -64,15 +64,16 @@ pub fn write_bindings<P>(
     ci: &ComponentInterface,
     out_dir: P,
     language: TargetLanguage,
+    try_format_code: bool,
 ) -> Result<()>
 where
     P: AsRef<Path>,
 {
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Kotlin => kotlin::write_bindings(&ci, out_dir)?,
-        TargetLanguage::Swift => swift::write_bindings(&ci, out_dir)?,
-        TargetLanguage::Python => python::write_bindings(&ci, out_dir)?,
+        TargetLanguage::Kotlin => kotlin::write_bindings(&ci, out_dir, try_format_code)?,
+        TargetLanguage::Swift => swift::write_bindings(&ci, out_dir, try_format_code)?,
+        TargetLanguage::Python => python::write_bindings(&ci, out_dir, try_format_code)?,
     }
     Ok(())
 }

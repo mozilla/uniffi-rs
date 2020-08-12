@@ -20,11 +20,26 @@ use super::super::interface::ComponentInterface;
 
 // Generate python bindings for the given ComponentInterface, in the given output directory.
 
-pub fn write_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
+pub fn write_bindings(
+    ci: &ComponentInterface,
+    out_dir: &Path,
+    try_format_code: bool,
+) -> Result<()> {
     let mut py_file = PathBuf::from(out_dir);
     py_file.push(format!("{}.py", ci.namespace()));
     let mut f = File::create(&py_file).context("Failed to create .py file for bindings")?;
     write!(f, "{}", generate_python_bindings(&ci)?)?;
+
+    if try_format_code {
+        if let Err(e) = Command::new("yapf").arg(py_file.to_str().unwrap()).output() {
+            println!(
+                "Warning: Unable to auto-format {} using yapf: {:?}",
+                py_file.file_name().unwrap().to_str().unwrap(),
+                e
+            )
+        }
+    }
+
     Ok(())
 }
 

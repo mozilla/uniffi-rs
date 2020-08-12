@@ -26,7 +26,11 @@ pub struct Bindings {
 /// Unlike other target languages, binding to rust code from swift involves more than just
 /// generating a `.swift` file. We also need to produce a `.h` file with the C-level API
 /// declarations, and a `.modulemap` file to tell swift how to use it.
-pub fn write_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
+pub fn write_bindings(
+    ci: &ComponentInterface,
+    out_dir: &Path,
+    try_format_code: bool,
+) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
     let mut module_map_file = out_path.clone();
@@ -49,6 +53,19 @@ pub fn write_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
 
     let mut l = File::create(&source_file).context("Failed to create .swift file for bindings")?;
     write!(l, "{}", library)?;
+
+    if try_format_code {
+        if let Err(e) = Command::new("swiftformat")
+            .arg(source_file.to_str().unwrap())
+            .output()
+        {
+            println!(
+                "Warning: Unable to auto-format {} using swiftformat: {:?}",
+                source_file.file_name().unwrap().to_str().unwrap(),
+                e
+            )
+        }
+    }
 
     Ok(())
 }

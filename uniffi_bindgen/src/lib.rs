@@ -191,6 +191,7 @@ pub fn generate_bindings<P: AsRef<Path>>(
     idl_file: P,
     target_languages: Vec<&str>,
     out_dir_override: Option<P>,
+    try_format_code: bool,
 ) -> Result<()> {
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let idl_file = PathBuf::from(idl_file.as_ref())
@@ -199,7 +200,7 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let component = parse_idl(&idl_file)?;
     let out_dir = get_out_dir(&idl_file, out_dir_override)?;
     for language in target_languages {
-        bindings::write_bindings(&component, &out_dir, language.try_into()?)?;
+        bindings::write_bindings(&component, &out_dir, language.try_into()?, try_format_code)?;
     }
     Ok(())
 }
@@ -232,7 +233,7 @@ pub fn run_tests<P: AsRef<Path>>(
     }
 
     for (lang, test_scripts) in language_tests {
-        bindings::write_bindings(&component, &cdylib_dir, lang)?;
+        bindings::write_bindings(&component, &cdylib_dir, lang, true)?;
         bindings::compile_bindings(&component, &cdylib_dir, lang)?;
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;

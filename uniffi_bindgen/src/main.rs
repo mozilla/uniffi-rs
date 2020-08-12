@@ -30,6 +30,11 @@ fn main() -> Result<()> {
                         .takes_value(true)
                         .help("Directory in which to write generated files. Default is same folder as .idl file."),
                 )
+                .arg(
+                    clap::Arg::with_name("no_format")
+                        .long("--no-format")
+                        .help("Do not try to format the generated bindings"),
+                )
                 .arg(clap::Arg::with_name("idl_file").required(true)),
         )
         .subcommand(
@@ -68,6 +73,7 @@ fn main() -> Result<()> {
             m.value_of_os("idl_file").unwrap(),         // Required
             m.values_of("language").unwrap().collect(), // Required
             m.value_of_os("out_dir"),
+            !m.is_present("no_format"),
         )?,
         ("scaffolding", Some(m)) => uniffi_bindgen::generate_component_scaffolding(
             m.value_of_os("idl_file").unwrap(), // Required
