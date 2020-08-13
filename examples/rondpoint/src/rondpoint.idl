@@ -2,6 +2,7 @@ namespace rondpoint {
   Dictionnaire copie_dictionnaire(Dictionnaire d);
   Enumeration copie_enumeration(Enumeration e);
   sequence<Enumeration> copie_enumerations(sequence<Enumeration> e);
+  record<DOMString, Enumeration> copie_carte(record<DOMString, Enumeration> c);
   boolean switcheroo(boolean b);
 };
 

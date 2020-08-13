@@ -6,5 +6,6 @@ assert(dico == copyDico)
 
 assert(copieEnumeration(e: .deux) == .deux)
 assert(copieEnumerations(e: [.un, .deux]) == [.un, .deux])
+assert(copieCarte(c: ["1": .un, "2": .deux]) == ["1": .un, "2": .deux])
 
 assert(switcheroo(b: false))
