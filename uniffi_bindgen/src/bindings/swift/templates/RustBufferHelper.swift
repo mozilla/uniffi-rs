@@ -217,8 +217,38 @@ extension Bool: Liftable, Lowerable {
     }
 }
 
+extension Int8: Liftable, Lowerable, Primitive {
+    static func lift(from buf: Reader) throws -> Int8 {
+        return try self.fromFFIValue(buf.readInt())
+    }
+
+    func lower(into buf: Writer) {
+        buf.writeInt(self.toFFIValue())
+    }
+}
+
 extension UInt8: Liftable, Lowerable, Primitive {
     static func lift(from buf: Reader) throws -> UInt8 {
+        return try self.fromFFIValue(buf.readInt())
+    }
+
+    func lower(into buf: Writer) {
+        buf.writeInt(self.toFFIValue())
+    }
+}
+
+extension UInt16: Liftable, Lowerable, Primitive {
+    static func lift(from buf: Reader) throws -> UInt16 {
+        return try self.fromFFIValue(buf.readInt())
+    }
+
+    func lower(into buf: Writer) {
+        buf.writeInt(self.toFFIValue())
+    }
+}
+
+extension Int16: Liftable, Lowerable, Primitive {
+    static func lift(from buf: Reader) throws -> Int16 {
         return try self.fromFFIValue(buf.readInt())
     }
 
@@ -237,8 +267,28 @@ extension UInt32: Liftable, Lowerable, Primitive {
     }
 }
 
+extension Int32: Liftable, Lowerable, Primitive {
+    static func lift(from buf: Reader) throws -> Int32 {
+        return try self.fromFFIValue(buf.readInt())
+    }
+
+    func lower(into buf: Writer) {
+        buf.writeInt(self.toFFIValue())
+    }
+}
+
 extension UInt64: Liftable, Lowerable, Primitive {
     static func lift(from buf: Reader) throws -> UInt64 {
+        return try self.fromFFIValue(buf.readInt())
+    }
+
+    func lower(into buf: Writer) {
+        buf.writeInt(self.toFFIValue())
+    }
+}
+
+extension Int64: Liftable, Lowerable, Primitive {
+    static func lift(from buf: Reader) throws -> Int64 {
         return try self.fromFFIValue(buf.readInt())
     }
 
