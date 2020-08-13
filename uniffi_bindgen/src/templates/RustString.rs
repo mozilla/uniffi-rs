@@ -24,7 +24,7 @@ pub unsafe extern "C" fn {{ ci.ffi_string_alloc_from().name() }}(cstr: *const st
         let cstr = std::ffi::CStr::from_ptr(cstr);
         let s = cstr.to_str().expect("Invalid utf8 in foreign string buffer");
         // And this lowers it back into a rust-owned pointer to return over the FFI.
-        <String as uniffi::ViaFfi>::into_ffi_value(s.to_string())
+        <String as uniffi::ViaFfi>::lower(s.to_string())
     })
 }
 
@@ -36,6 +36,6 @@ pub unsafe extern "C" fn {{ ci.ffi_string_alloc_from().name() }}(cstr: *const st
 pub unsafe extern "C" fn {{ ci.ffi_string_free().name() }}(cstr: *mut std::os::raw::c_char) {
     // We deliberately don't check the `Result` here, so that callers don't need to pass an out `err`.
     // There was nothing for us to free in the failure case anyway, so no point in propagating the error.
-    let s = <String as uniffi::ViaFfi>::try_from_ffi_value(cstr);
+    let s = <String as uniffi::ViaFfi>::try_lift(cstr);
     drop(s)
 }

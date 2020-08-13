@@ -1,4 +1,4 @@
-public struct {{ rec.name()|class_name_swift }}: Lowerable, Liftable, Serializable, Equatable {
+public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi, Equatable {
     {%- for field in rec.fields() %}
     let {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
     {%- endfor %}
@@ -24,17 +24,17 @@ public struct {{ rec.name()|class_name_swift }}: Lowerable, Liftable, Serializab
         return true
     }
 
-    static func lift(from buf: Reader) throws -> {{ rec.name()|class_name_swift }} {
+    static func read(from buf: Reader) throws -> {{ rec.name()|class_name_swift }} {
         return try {{ rec.name()|class_name_swift }}(
             {%- for field in rec.fields() %}
-            {{ field.name()|var_name_swift }}: {{ "buf"|lift_from_swift(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {{ field.name()|var_name_swift }}: {{ "buf"|read_swift(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
     }
 
-    func lower(into buf: Writer) {
+    func write(into buf: Writer) {
         {%- for field in rec.fields() %}
-        {{ field.name()|var_name_swift }}.lower(into: buf)
+        {{ field.name()|var_name_swift }}.write(into: buf)
         {%- endfor %}
     }
 }

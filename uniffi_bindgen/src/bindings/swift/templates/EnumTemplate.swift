@@ -1,13 +1,13 @@
-public enum {{ e.name()|class_name_swift }}: Lowerable, Liftable {
+public enum {{ e.name()|class_name_swift }}: ViaFfi {
     {% for variant in e.variants() %}
     case {{ variant|enum_variant_swift }}
     {% endfor %}
 
-    static func lift(from buf: Reader) throws -> {{ e.name()|class_name_swift }} {
-        return try {{ e.name()|class_name_swift }}.fromFFIValue(UInt32.lift(from: buf))
+    static func read(from buf: Reader) throws -> {{ e.name()|class_name_swift }} {
+        return try {{ e.name()|class_name_swift }}.lift(UInt32.read(from: buf))
     }
 
-    static func fromFFIValue(_ number: UInt32) throws -> {{ e.name()|class_name_swift }} {
+    static func lift(_ number: UInt32) throws -> {{ e.name()|class_name_swift }} {
         switch number {
         {% for variant in e.variants() %}
         case {{ loop.index }}: return .{{ variant|enum_variant_swift }}
@@ -16,11 +16,11 @@ public enum {{ e.name()|class_name_swift }}: Lowerable, Liftable {
         }
     }
 
-    func lower(into buf: Writer) {
-        self.toFFIValue().lower(into: buf)
+    func write(into buf: Writer) {
+        self.lower().write(into: buf)
     }
 
-    func toFFIValue() -> UInt32 {
+    func lower() -> UInt32 {
         switch self {
         {% for variant in e.variants() %}
         case .{{ variant|enum_variant_swift }}: return {{ loop.index }}

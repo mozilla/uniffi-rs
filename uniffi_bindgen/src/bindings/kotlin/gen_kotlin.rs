@@ -39,6 +39,7 @@ mod filters {
     use super::*;
     use std::fmt;
 
+    /// Get the Kotlin syntax for representing a given api-level `Type`.
     pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             // These native Kotlin types map nicely to the FFI without conversion.
@@ -63,6 +64,7 @@ mod filters {
         })
     }
 
+    /// Get the Kotlin syntax for representing a given low-level `FFIType`.
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(match type_ {
             // Note that unsigned integers in Kotlin are currently experimental, and we use the signed
@@ -83,42 +85,54 @@ mod filters {
         })
     }
 
+    /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
     pub fn class_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 
+    /// Get the idiomatic Kotlin rendering of a function name.
     pub fn fn_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 
+    /// Get the idiomatic Kotlin rendering of a variable name.
     pub fn var_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 
+    /// Get the idiomatic Kotlin rendering of an individual enum variant.
     pub fn enum_variant_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
+    /// Get a Kotlin expression for lowering a value into something we can pass over the FFI.
+    ///
+    /// Where possible, this delegates to a `lower()` method on the type itself, but special
+    /// handling is required for some compound data types.
     pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
             Type::Optional(t) => format!(
                 "lowerOptional({}, {{ v -> {} }}, {{ v, buf -> {} }})",
                 nm,
-                lowers_into_size_kt(&"v", t)?,
-                lower_into_kt(&"v", &"buf", t)?
+                calculate_write_size(&"v", t)?,
+                write_kt(&"v", &"buf", t)?
             ),
             Type::Sequence(t) => format!(
                 "lowerSequence({}, {{ v -> {} }}, {{ v, buf -> {} }})",
                 nm,
-                lowers_into_size_kt(&"v", t)?,
-                lower_into_kt(&"v", &"buf", t)?
+                calculate_write_size(&"v", t)?,
+                write_kt(&"v", &"buf", t)?
             ),
             _ => format!("{}.lower()", nm),
         })
     }
 
-    pub fn lower_into_kt(
+    /// Get a Kotlin expression for writing a value into a byte buffer.
+    ///
+    /// Where possible, this delegates to a `write()` method on the type itself, but special
+    /// handling is required for some compound data types.
+    pub fn write_kt(
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
         type_: &Type,
@@ -126,72 +140,76 @@ mod filters {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
             Type::Optional(t) => format!(
-                "lowerIntoOptional({}, {}, {{ v, buf -> {} }})",
+                "writeOptional({}, {}, {{ v, buf -> {} }})",
                 nm,
                 target,
-                lower_into_kt(&"v", &"buf", t)?
+                write_kt(&"v", &"buf", t)?
             ),
             Type::Sequence(t) => format!(
-                "lowerIntoSequence({}, {}, {{ v, buf -> {} }})",
+                "writeSequence({}, {}, {{ v, buf -> {} }})",
                 nm,
                 target,
-                lower_into_kt(&"v", &"buf", t)?
+                write_kt(&"v", &"buf", t)?
             ),
-            _ => format!("{}.lowerInto({})", nm, target),
+            _ => format!("{}.write({})", nm, target),
         })
     }
 
-    pub fn lowers_into_size_kt(
+    /// Get a Kotlin expression for calculating the size of the serialization of a value.
+    ///
+    /// Where possible, this delegates to a `calculateWriteSize()` method on the type itself,
+    /// but special handling is required for some compound data types.
+    pub fn calculate_write_size(
         nm: &dyn fmt::Display,
         type_: &Type,
     ) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
             Type::Optional(t) => format!(
-                "lowersIntoSizeOptional({}, {{ v -> {} }})",
+                "calculateWriteSizeOptional({}, {{ v -> {} }})",
                 nm,
-                lowers_into_size_kt(&"v", t)?
+                calculate_write_size(&"v", t)?
             ),
             Type::Sequence(t) => format!(
-                "lowersIntoSizeSequence({}, {{ v -> {} }})",
+                "calculateWriteSizeSequence({}, {{ v -> {} }})",
                 nm,
-                lowers_into_size_kt(&"v", t)?
+                calculate_write_size(&"v", t)?
             ),
-            _ => format!("{}.lowersIntoSize()", nm),
+            _ => format!("{}.calculateWriteSize()", nm),
         })
     }
 
+    /// Get a Kotlin expression for lifting a value from something we received over the FFI.
+    ///
+    /// Where possible, this delegates to a `lift()` method on the type itself, but special
+    /// handling is required for some compound data types.
     pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            Type::Optional(t) => format!(
-                "liftOptional({}, {{ buf -> {} }})",
-                nm,
-                lift_from_kt(&"buf", t)?
-            ),
-            Type::Sequence(t) => format!(
-                "liftSequence({}, {{ buf -> {} }})",
-                nm,
-                lift_from_kt(&"buf", t)?
-            ),
+            Type::Optional(t) => {
+                format!("liftOptional({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
+            }
+            Type::Sequence(t) => {
+                format!("liftSequence({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
+            }
             _ => format!("{}.lift({})", type_kt(type_)?, nm),
         })
     }
 
-    pub fn lift_from_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    /// Get a Kotlin expression for reading a value from a byte buffer.
+    ///
+    /// Where possible, this delegates to a `read()` method on the type itself, but special
+    /// handling is required for some compound data types.
+    pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            Type::Optional(t) => format!(
-                "liftFromOptional({}, {{ buf -> {} }})",
-                nm,
-                lift_from_kt(&"buf", t)?
-            ),
-            Type::Sequence(t) => format!(
-                "liftFromSequence({}, {{ buf -> {} }})",
-                nm,
-                lift_from_kt(&"buf", t)?
-            ),
-            _ => format!("{}.liftFrom({})", type_kt(type_)?, nm),
+            Type::Optional(t) => {
+                format!("readOptional({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
+            }
+            Type::Sequence(t) => {
+                format!("readSequence({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
+            }
+            _ => format!("{}.read({})", type_kt(type_)?, nm),
         })
     }
 }
