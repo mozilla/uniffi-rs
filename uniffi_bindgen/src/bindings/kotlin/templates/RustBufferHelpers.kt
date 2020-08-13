@@ -29,6 +29,14 @@ fun Byte.Companion.liftFrom(buf: ByteBuffer): Byte {
     return buf.get()
 }
 
+fun Short.Companion.lift(v: Short): Short {
+    return v
+}
+
+fun Short.Companion.liftFrom(buf: ByteBuffer): Short {
+    return buf.getShort()
+}
+
 fun Int.Companion.lift(v: Int): Int {
     return v
 }
@@ -36,7 +44,6 @@ fun Int.Companion.lift(v: Int): Int {
 fun Int.Companion.liftFrom(buf: ByteBuffer): Int {
     return buf.getInt()
 }
-
 
 fun Long.Companion.lift(v: Long): Long {
     return v
@@ -126,6 +133,18 @@ fun Byte.lowersIntoSize(): Byte {
 
 fun Byte.lowerInto(buf: ByteBuffer) {
     buf.put(this)
+}
+
+fun Short.lower(): Short {
+    return this
+}
+
+fun Short.lowersIntoSize(): Int {
+    return 2
+}
+
+fun Short.lowerInto(buf: ByteBuffer) {
+    buf.putShort(this)
 }
 
 fun Int.lower(): Int {
