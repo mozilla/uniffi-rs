@@ -10,12 +10,12 @@ enum class {{ e.name()|class_name_kt }} {
                 throw RuntimeException("invalid enum value, something is very wrong!!", e)
             }
 
-        internal fun liftFrom(buf: ByteBuffer) = lift(Int.liftFrom(buf))
+        internal fun read(buf: ByteBuffer) = lift(Int.read(buf))
     }
 
     internal fun lower() = this.ordinal + 1
 
-    internal fun lowersIntoSize() = 4
+    internal fun calculateWriteSize() = 4
 
-    internal fun lowerInto(buf: ByteBuffer) = this.lower().lowerInto(buf)
+    internal fun write(buf: ByteBuffer) = this.lower().write(buf)
 }

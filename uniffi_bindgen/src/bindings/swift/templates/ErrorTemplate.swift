@@ -1,4 +1,4 @@
-{# 
+{#
 // In here we define conversions between a native reference to Swift errors
 // We use the RustError protocol to define the requirements. Any implementers of the protocol
 // Can be generated from a NativeRustError. 
@@ -39,7 +39,7 @@ public enum {{e.name()}}: RustError {
                 return nil
             {% for value in e.values() %}
             case {{loop.index}}:
-                return .{{value}}(message: try String.fromFFIValue(message!))
+                return .{{value}}(message: try String.lift(message!))
             {% endfor %}
             default:
                 return nil

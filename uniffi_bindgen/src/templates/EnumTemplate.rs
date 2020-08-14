@@ -9,7 +9,8 @@
 #}
 unsafe impl uniffi::ViaFfi for {{ e.name() }} {
     type Value = u32;
-    fn into_ffi_value(self) -> Self::Value {
+
+    fn lower(self) -> Self::Value {
         match self {
             // If the provided enum doesn't match the options defined in the IDL then
             // this match will fail to compile, with a type error to guide the way.
@@ -18,7 +19,8 @@ unsafe impl uniffi::ViaFfi for {{ e.name() }} {
             {%- endfor %}
         }
     }
-    fn try_from_ffi_value(v: Self::Value) -> uniffi::deps::anyhow::Result<Self> {
+
+    fn try_lift(v: Self::Value) -> uniffi::deps::anyhow::Result<Self> {
         Ok(match v {
             {%- for variant in e.variants() %}
             {{ loop.index }} => {{ e.name() }}::{{ variant }},
@@ -26,21 +28,17 @@ unsafe impl uniffi::ViaFfi for {{ e.name() }} {
             _ => uniffi::deps::anyhow::bail!("Invalid {{ e.name() }} enum value: {}", v),
         })
     }
-}
 
-impl uniffi::Lowerable for {{ e.name() }} {
-    fn lower_into<B: uniffi::deps::bytes::BufMut>(&self, buf: &mut B) {
+    fn write<B: uniffi::deps::bytes::BufMut>(&self, buf: &mut B) {
         buf.put_u32(match self {
             {%- for variant in e.variants() %}
             {{ e.name() }}::{{ variant }} => {{ loop.index }},
             {%- endfor %}
         });
     }
-}
 
-impl uniffi::Liftable for {{ e.name() }} {
-    fn try_lift_from<B: uniffi::deps::bytes::Buf>(buf: &mut B) -> uniffi::deps::anyhow::Result<Self> {
+    fn try_read<B: uniffi::deps::bytes::Buf>(buf: &mut B) -> uniffi::deps::anyhow::Result<Self> {
         uniffi::check_remaining(buf, 4)?;
-        <Self as uniffi::ViaFfi>::try_from_ffi_value(buf.get_u32())
+        <Self as uniffi::ViaFfi>::try_lift(buf.get_u32())
     }
 }

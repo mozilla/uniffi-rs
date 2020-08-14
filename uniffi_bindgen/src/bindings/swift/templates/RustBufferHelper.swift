@@ -120,27 +120,73 @@ class Writer {
     }
 }
 
-// Types conforming to `Liftable` know how to deserialize ("lift") themselves
-// from a byte buffer. This is equivalent to the `Liftable` trait on the Rust
-// side.
-protocol Liftable {
-    static func lift(from: Reader) throws -> Self
+
+// Types conforming to `Serializable` can be read and written in a bytebuffer.
+protocol Serializable {
+    func write(into: Writer)
+    static func read(from: Reader) throws -> Self
 }
 
-// Types conforming to `Lowerable` know how to serialize ("lower") themselves
-// into a byte buffer. Equivalent to the `Lowerable` trait on the Rust side.
-protocol Lowerable {
-    func lower(into: Writer)
+// Types confirming to `ViaFfi` can be transferred back-and-for over the FFI.
+// This is analogous to the Rust trait of the same name.
+protocol ViaFfi: Serializable {
+    associatedtype Value
+    static func lift(_ v: Value) throws -> Self
+    func lower() -> Value
 }
 
-extension String: Liftable, Lowerable {
-    static func fromFFIValue(_ v: UnsafeMutablePointer<CChar>) throws -> Self {
+// Types conforming to `Primitive` pass themselves directly over the FFI.
+protocol Primitive {}
+
+extension Primitive {
+    typealias Value = Self
+
+    static func lift(_ v: Self) throws -> Self {
+        return v
+    }
+
+    func lower() -> Self {
+        return self
+    }
+}
+
+// Types conforming to `ViaFfiUsingByteBuffer` lift and lower into a bytebuffer.
+// Use this for complex types where it's hard to write a custom lift/lower.
+protocol ViaFfiUsingByteBuffer: Serializable {}
+
+extension ViaFfiUsingByteBuffer {
+    typealias Value = RustBuffer
+
+    static func lift(_ buf: RustBuffer) throws -> Self {
+      let reader = Reader(data: Data(rustBuffer: buf))
+      let value = try Self.read(from: reader)
+      if reader.hasRemaining() {
+          throw InternalError.incompleteData
+      }
+      buf.deallocate()
+      return value
+    }
+
+    func lower() -> RustBuffer {
+      let writer = Writer()
+      self.write(into: writer)
+      return RustBuffer(bytes: writer.bytes)
+    }
+}
+
+// Implement our protocols for the built-in types that we use.
+
+extension String: ViaFfi {
+    typealias Value = UnsafeMutablePointer<CChar>
+
+    static func lift(_ v: Value) throws -> Self {
         defer {
             {{ ci.ffi_string_free().name() }}(v)
         }
         return String(cString: v)
     }
-    func toFFIValue() -> UnsafeMutablePointer<CChar> {
+
+    func lower() -> Value {
         var rustErr = NativeRustError(code: 0, message: nil)
         let rustStr = {{ ci.ffi_string_alloc_from().name() }}(self, &rustErr)
         if rustErr.code != 0 {
@@ -149,217 +195,174 @@ extension String: Liftable, Lowerable {
         return rustStr
     }
 
-    static func lift(from buf: Reader) throws -> Self {
+    static func read(from buf: Reader) throws -> Self {
         let len: UInt32 = try buf.readInt()
         return String(bytes: try buf.readBytes(count: Int(len)), encoding: String.Encoding.utf8)!
     }
 
-    func lower(into buf: Writer) {
+    func write(into buf: Writer) {
         let len = UInt32(self.utf8.count)
         buf.writeInt(len)
         buf.writeBytes(self.utf8)
     }
 }
 
-// Types conforming to `Primitive` pass themselves directly over the FFI.
-// Roughly equivalent to the `ViaFfi` implementations for primitives in Rust.
-protocol Primitive {}
 
-extension Primitive {
-    static func fromFFIValue(_ v: Self) throws -> Self {
-        return v
+extension Bool: ViaFfi {
+    typealias Value = UInt8
+
+    static func read(from buf: Reader) throws -> Bool {
+        return try self.lift(buf.readInt())
     }
 
-    func toFFIValue() -> Self {
-        return self
-    }
-}
-
-// Types conforming to `Serializable` pass themselves over the FFI using byte
-// buffers. Roughly equivalent to the `ViaFfiUsingByteBuffer` trait in Rust.
-protocol Serializable: Liftable & Lowerable {}
-
-extension Serializable {
-    static func fromFFIValue(_ buf: RustBuffer) throws -> Self {
-      let reader = Reader(data: Data(rustBuffer: buf))
-      let value = try Self.lift(from: reader)
-      if reader.hasRemaining() {
-          throw InternalError.incompleteData
-      }
-      buf.deallocate()
-      return value
+    func write(into buf: Writer) {
+        buf.writeInt(self.lower())
     }
 
-    func toFFIValue() -> RustBuffer {
-      let writer = Writer()
-      self.lower(into: writer)
-      return RustBuffer(bytes: writer.bytes)
-    }
-}
-
-// Implement our protocols for the built-in types that we use.
-
-extension Bool: Liftable, Lowerable {
-    static func lift(from buf: Reader) throws -> Bool {
-        return try self.fromFFIValue(buf.readInt())
-    }
-
-    func lower(into buf: Writer) {
-        buf.writeInt(self.toFFIValue())
-    }
-
-    static func fromFFIValue(_ v: UInt8) throws -> Bool {
+    static func lift(_ v: UInt8) throws -> Bool {
         return v != 0
     }
 
-    func toFFIValue() -> UInt8 {
+    func lower() -> UInt8 {
         return self ? 1 : 0
     }
 }
 
-extension Int8: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> Int8 {
-        return try self.fromFFIValue(buf.readInt())
+extension UInt8: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> UInt8 {
+        return try self.lift(buf.readInt())
     }
 
-    func lower(into buf: Writer) {
-        buf.writeInt(self.toFFIValue())
-    }
-}
-
-extension UInt8: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> UInt8 {
-        return try self.fromFFIValue(buf.readInt())
-    }
-
-    func lower(into buf: Writer) {
-        buf.writeInt(self.toFFIValue())
+    func write(into buf: Writer) {
+        buf.writeInt(self.lower())
     }
 }
 
-extension UInt16: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> UInt16 {
-        return try self.fromFFIValue(buf.readInt())
+extension Int8: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> Int8 {
+        return try self.lift(buf.readInt())
     }
 
-    func lower(into buf: Writer) {
-        buf.writeInt(self.toFFIValue())
-    }
-}
-
-extension Int16: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> Int16 {
-        return try self.fromFFIValue(buf.readInt())
-    }
-
-    func lower(into buf: Writer) {
-        buf.writeInt(self.toFFIValue())
+    func write(into buf: Writer) {
+        buf.writeInt(self.lower())
     }
 }
 
-extension UInt32: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> UInt32 {
-        return try self.fromFFIValue(buf.readInt())
+extension UInt16: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> UInt16 {
+        return try self.lift(buf.readInt())
     }
 
-    func lower(into buf: Writer) {
-        buf.writeInt(self.toFFIValue())
-    }
-}
-
-extension Int32: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> Int32 {
-        return try self.fromFFIValue(buf.readInt())
-    }
-
-    func lower(into buf: Writer) {
-        buf.writeInt(self.toFFIValue())
+    func write(into buf: Writer) {
+        buf.writeInt(self.lower())
     }
 }
 
-extension UInt64: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> UInt64 {
-        return try self.fromFFIValue(buf.readInt())
+extension Int16: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> Int16 {
+        return try self.lift(buf.readInt())
     }
 
-    func lower(into buf: Writer) {
-        buf.writeInt(self.toFFIValue())
-    }
-}
-
-extension Int64: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> Int64 {
-        return try self.fromFFIValue(buf.readInt())
-    }
-
-    func lower(into buf: Writer) {
-        buf.writeInt(self.toFFIValue())
+    func write(into buf: Writer) {
+        buf.writeInt(self.lower())
     }
 }
 
-extension Float: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> Float {
-        return try self.fromFFIValue(buf.readFloat())
+extension UInt32: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> UInt32 {
+        return try self.lift(buf.readInt())
     }
 
-    func lower(into buf: Writer) {
-        buf.writeFloat(self.toFFIValue())
-    }
-}
-
-extension Double: Liftable, Lowerable, Primitive {
-    static func lift(from buf: Reader) throws -> Double {
-        return try self.fromFFIValue(buf.readDouble())
-    }
-
-    func lower(into buf: Writer) {
-        buf.writeDouble(self.toFFIValue())
+    func write(into buf: Writer) {
+        buf.writeInt(self.lower())
     }
 }
 
-extension Optional: Liftable where Wrapped: Liftable {
-    static func lift(from buf: Reader) throws -> Self {
+extension Int32: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> Int32 {
+        return try self.lift(buf.readInt())
+    }
+
+    func write(into buf: Writer) {
+        buf.writeInt(self.lower())
+    }
+}
+
+extension UInt64: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> UInt64 {
+        return try self.lift(buf.readInt())
+    }
+
+    func write(into buf: Writer) {
+        buf.writeInt(self.lower())
+    }
+}
+
+extension Int64: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> Int64 {
+        return try self.lift(buf.readInt())
+    }
+
+    func write(into buf: Writer) {
+        buf.writeInt(self.lower())
+    }
+}
+
+extension Float: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> Float {
+        return try self.lift(buf.readFloat())
+    }
+
+    func write(into buf: Writer) {
+        buf.writeFloat(self.lower())
+    }
+}
+
+extension Double: Primitive, ViaFfi {
+    static func read(from buf: Reader) throws -> Double {
+        return try self.lift(buf.readDouble())
+    }
+
+    func write(into buf: Writer) {
+        buf.writeDouble(self.lower())
+    }
+}
+
+extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: Serializable {
+    static func read(from buf: Reader) throws -> Self {
         switch try buf.readInt() as UInt8 {
         case 0: return nil
-        case 1: return try Wrapped.lift(from: buf)
+        case 1: return try Wrapped.read(from: buf)
         default: throw InternalError.unexpectedOptionalTag
         }
     }
-}
 
-extension Optional: Lowerable where Wrapped: Lowerable {
-    func lower(into buf: Writer) {
+    func write(into buf: Writer) {
         guard let value = self else {
             buf.writeInt(UInt8(0))
             return
         }
         buf.writeInt(UInt8(1))
-        value.lower(into: buf)
+        value.write(into: buf)
     }
 }
 
-extension Optional: Serializable where Wrapped: Liftable & Lowerable {}
-
-extension Array: Liftable where Element: Liftable {
-    static func lift(from buf: Reader) throws -> Self {
+extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Serializable {
+    static func read(from buf: Reader) throws -> Self {
         let len: UInt32 = try buf.readInt()
         var seq = [Element]()
         seq.reserveCapacity(Int(len))
         for _ in 1...len {
-            seq.append(try Element.lift(from: buf))
+            seq.append(try Element.read(from: buf))
         }
         return seq
     }
-}
 
-extension Array: Lowerable where Element: Lowerable {
-    func lower(into buf: Writer) {
+    func write(into buf: Writer) {
         let len = UInt32(self.count)
         buf.writeInt(len)
         for item in self {
-            item.lower(into: buf)
+            item.write(into: buf)
         }
     }
 }
-
-extension Array: Serializable where Element: Liftable & Lowerable {}

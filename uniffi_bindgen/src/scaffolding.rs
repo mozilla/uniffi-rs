@@ -67,7 +67,7 @@ mod filters {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         Ok(format!(
-            "<{} as uniffi::ViaFfi>::into_ffi_value({})",
+            "<{} as uniffi::ViaFfi>::lower({})",
             type_rs(type_)?,
             nm
         ))
@@ -78,7 +78,7 @@ mod filters {
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         // This will panic if the bindings provide an invalid value over the FFI.
         Ok(format!(
-            "<{} as uniffi::ViaFfi>::try_from_ffi_value({}).unwrap()",
+            "<{} as uniffi::ViaFfi>::try_lift({}).unwrap()",
             type_rs(type_)?,
             nm
         ))
