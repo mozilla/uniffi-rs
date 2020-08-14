@@ -9,7 +9,7 @@ dictionary TodoEntry {
 
 [Error]
 enum TodoError {
-    "TodoDoesNotExist", "EmptyTodoList", "DuplicateTodo", "EmptyString"
+    "TodoDoesNotExist", "EmptyTodoList", "DuplicateTodo", "EmptyString", "DeligatedError"
 };
 
 interface TodoList {

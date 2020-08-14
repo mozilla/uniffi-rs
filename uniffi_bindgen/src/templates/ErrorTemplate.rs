@@ -12,7 +12,7 @@ impl From<{{e.name()}}> for uniffi::deps::ffi_support::ExternError {
         // we might find that we need to reserve some codes.
         match err {
             {%- for value in e.values() %}
-            {{ e.name()}}::{{value}} => uniffi::deps::ffi_support::ExternError::new_error(uniffi::deps::ffi_support::ErrorCode::new({{ loop.index }}), err.to_string()),
+            {{ e.name()}}::{{value}}{..} => uniffi::deps::ffi_support::ExternError::new_error(uniffi::deps::ffi_support::ErrorCode::new({{ loop.index }}), err.to_string()),
             {%- endfor %}
         }
     }
