@@ -28,8 +28,7 @@ use anyhow::{bail, Result};
 use bytes::buf::{Buf, BufMut};
 use ffi_support::ByteBuffer;
 use paste::paste;
-use std::convert::TryFrom;
-use std::ffi::CString;
+use std::{collections::HashMap, convert::TryFrom, ffi::CString};
 
 // It would be nice if this module was behind a cfg(test) guard, but it
 // doesn't work between crates so let's hope LLVM tree-shaking works well.
@@ -75,9 +74,9 @@ pub unsafe trait ViaFfi: Sized {
     /// serializing the data for transfer. In theory it could be possible to build a matching
     /// `#[repr(C)]` struct for a complex data type and pass that instead, but explicit
     /// serialization is simpler and safer as a starting point.
-    type Value;
+    type FfiType;
 
-    /// Lower a rust value of the target type, into an FFI value of type Self::Value.
+    /// Lower a rust value of the target type, into an FFI value of type Self::FfiType.
     ///
     /// This trait method is used for sending data from rust to the foreign language code,
     /// by (hopefully cheaply!) converting it into someting that can be passed over the FFI
@@ -85,17 +84,17 @@ pub unsafe trait ViaFfi: Sized {
     ///
     /// Note that this method takes an owned `self`; this allows it to transfer ownership
     /// in turn to the foreign language code, e.g. by boxing the value and passing a pointer.
-    fn lower(self) -> Self::Value;
+    fn lower(self) -> Self::FfiType;
 
-    /// Lift a rust value of the target type, from an FFI value of type Self::Value.
+    /// Lift a rust value of the target type, from an FFI value of type Self::FfiType.
     ///
     /// This trait method is used for receiving data from the foreign language code in rust,
-    /// by (hopefully cheaply!) converting it from a low-level FFI value of type Self::Value
+    /// by (hopefully cheaply!) converting it from a low-level FFI value of type Self::FfiType
     /// into a high-level rust value of the target type.
     ///
     /// Since we cannot statically guarantee that the foreign-language code will send valid
-    /// values of type Self::Value, this method is fallible.
-    fn try_lift(v: Self::Value) -> Result<Self>;
+    /// values of type Self::FfiType, this method is fallible.
+    fn try_lift(v: Self::FfiType) -> Result<Self>;
 
     /// Write a rust value into a bytebuffer, to send over the FFI in serialized form.
     ///
@@ -163,13 +162,13 @@ macro_rules! impl_via_ffi_for_num_primitive {
             $(
                 paste! {
                     unsafe impl ViaFfi for $T {
-                        type Value = Self;
+                        type FfiType = Self;
 
-                        fn lower(self) -> Self::Value {
+                        fn lower(self) -> Self::FfiType {
                             self
                         }
 
-                        fn try_lift(v: Self::Value) -> Result<Self> {
+                        fn try_lift(v: Self::FfiType) -> Result<Self> {
                             Ok(v)
                         }
 
@@ -196,9 +195,9 @@ impl_via_ffi_for_num_primitive! {
 /// Booleans are passed as a `u8` in order to avoid problems with handling
 /// C-compatible boolean values on JVM-based languages.
 unsafe impl ViaFfi for bool {
-    type Value = u8;
+    type FfiType = u8;
 
-    fn lower(self) -> Self::Value {
+    fn lower(self) -> Self::FfiType {
         if self {
             1
         } else {
@@ -206,7 +205,7 @@ unsafe impl ViaFfi for bool {
         }
     }
 
-    fn try_lift(v: Self::Value) -> Result<Self> {
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
         Ok(match v {
             0 => false,
             1 => true,
@@ -234,13 +233,13 @@ unsafe impl ViaFfi for bool {
 /// `None` option is represented as a null pointer and the `Some` as a valid pointer,
 /// but that seems more fiddly and less safe in the short term, so it can wait.
 unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
-    type Value = ffi_support::ByteBuffer;
+    type FfiType = ffi_support::ByteBuffer;
 
-    fn lower(self) -> Self::Value {
+    fn lower(self) -> Self::FfiType {
         lower_into_bytebuffer(self)
     }
 
-    fn try_lift(v: Self::Value) -> Result<Self> {
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
         try_lift_from_bytebuffer(v)
     }
 
@@ -273,20 +272,20 @@ unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
 /// pair but that seems tremendously fiddly and unsafe in the short term.
 /// Maybe one day...
 unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
-    type Value = ffi_support::ByteBuffer;
+    type FfiType = ffi_support::ByteBuffer;
 
-    fn lower(self) -> Self::Value {
+    fn lower(self) -> Self::FfiType {
         lower_into_bytebuffer(self)
     }
 
-    fn try_lift(v: Self::Value) -> Result<Self> {
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
         try_lift_from_bytebuffer(v)
     }
 
     fn write<B: BufMut>(&self, buf: &mut B) {
         // TODO: would be nice not to panic here :-/
         let len = u32::try_from(self.len()).unwrap();
-        buf.put_u32(len); // We limit arrays to u32::MAX bytes
+        buf.put_u32(len); // We limit arrays to u32::MAX items
         for item in self.iter() {
             ViaFfi::write(item, buf);
         }
@@ -300,6 +299,47 @@ unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
             vec.push(<T as ViaFfi>::try_read(buf)?)
         }
         Ok(vec)
+    }
+}
+
+/// Support for associative arrays via the FFI.
+/// Note that because of webidl limitations,
+/// the key must always be of the String type.
+///
+/// HashMaps are currently always passed by serializing to a bytebuffer.
+/// We write a `u32` entries count
+/// followed by each entry (string key followed by the value) in turn.
+unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
+    type FfiType = ffi_support::ByteBuffer;
+
+    fn lower(self) -> Self::FfiType {
+        lower_into_bytebuffer(self)
+    }
+
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
+        try_lift_from_bytebuffer(v)
+    }
+
+    fn write<B: BufMut>(&self, buf: &mut B) {
+        // TODO: would be nice not to panic here :-/
+        let len = u32::try_from(self.len()).unwrap();
+        buf.put_u32(len); // We limit HashMaps to u32::MAX entries
+        for (key, value) in self.iter() {
+            ViaFfi::write(key, buf);
+            ViaFfi::write(value, buf);
+        }
+    }
+
+    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 4)?;
+        let len = buf.get_u32();
+        let mut map = HashMap::with_capacity(len as usize);
+        for _ in 0..len {
+            let key = String::try_read(buf)?;
+            let value = <V as ViaFfi>::try_read(buf)?;
+            map.insert(key, value);
+        }
+        Ok(map)
     }
 }
 
@@ -317,19 +357,19 @@ unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
 /// (In practice, we currently do end up copying the data, the copying just happens
 /// on the foreign language side rather than here in the rust code.)
 unsafe impl ViaFfi for String {
-    type Value = *mut std::os::raw::c_char;
+    type FfiType = *mut std::os::raw::c_char;
 
     // This returns a raw pointer to the underlying bytes, so it's very important
     // that it consume ownership of the String, which is relinquished to the foreign
     // language code (and can be restored by it passing the pointer back).
-    fn lower(self) -> Self::Value {
+    fn lower(self) -> Self::FfiType {
         ffi_support::rust_string_to_c(self)
     }
 
     // The argument here *must* be a uniquely-owned pointer previously obtained
     // from `info_ffi_value` above. It will try to panic if you give it an invalid
     // pointer, but there's no guarantee that it will.
-    fn try_lift(v: Self::Value) -> Result<Self> {
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
         if v.is_null() {
             bail!("null pointer passed as String")
         }

@@ -41,6 +41,7 @@ mod filters {
             }
             Type::Optional(t) => format!("Option<{}>", type_rs(t)?),
             Type::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
+            Type::Map(t) => format!("std::collections::HashMap<String, {}>", type_rs(t)?),
         })
     }
 

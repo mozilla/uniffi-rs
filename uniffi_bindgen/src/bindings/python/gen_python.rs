@@ -97,7 +97,13 @@ mod filters {
             Type::Enum(type_name) => format!("{} = {}({})", nm, type_name, nm),
             Type::Record(type_name) => format!("{} = {}._coerce({})", nm, type_name, nm),
             Type::Optional(t) => format!("(None if {} is None else {})", nm, coerce_py(nm, t)?),
-            Type::Sequence(t) => format!("({} for x in {})", coerce_py(&"x", t)?, nm), // TODO: name hygiene
+            Type::Sequence(t) => format!("({} for x in {})", coerce_py(&"x", t)?, nm), // TODO: name hygiene,
+            Type::Map(t) => format!(
+                "({}:{} for (k, v) in {}.items())",
+                coerce_py(&"k", t)?,
+                coerce_py(&"v", t)?,
+                nm
+            ),
         })
     }
 

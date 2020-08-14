@@ -130,16 +130,16 @@ protocol Serializable {
 // Types confirming to `ViaFfi` can be transferred back-and-for over the FFI.
 // This is analogous to the Rust trait of the same name.
 protocol ViaFfi: Serializable {
-    associatedtype Value
-    static func lift(_ v: Value) throws -> Self
-    func lower() -> Value
+    associatedtype FfiType
+    static func lift(_ v: FfiType) throws -> Self
+    func lower() -> FfiType
 }
 
 // Types conforming to `Primitive` pass themselves directly over the FFI.
 protocol Primitive {}
 
 extension Primitive {
-    typealias Value = Self
+    typealias FfiType = Self
 
     static func lift(_ v: Self) throws -> Self {
         return v
@@ -155,7 +155,7 @@ extension Primitive {
 protocol ViaFfiUsingByteBuffer: Serializable {}
 
 extension ViaFfiUsingByteBuffer {
-    typealias Value = RustBuffer
+    typealias FfiType = RustBuffer
 
     static func lift(_ buf: RustBuffer) throws -> Self {
       let reader = Reader(data: Data(rustBuffer: buf))
@@ -177,16 +177,16 @@ extension ViaFfiUsingByteBuffer {
 // Implement our protocols for the built-in types that we use.
 
 extension String: ViaFfi {
-    typealias Value = UnsafeMutablePointer<CChar>
+    typealias FfiType = UnsafeMutablePointer<CChar>
 
-    static func lift(_ v: Value) throws -> Self {
+    static func lift(_ v: FfiType) throws -> Self {
         defer {
             {{ ci.ffi_string_free().name() }}(v)
         }
         return String(cString: v)
     }
 
-    func lower() -> Value {
+    func lower() -> FfiType {
         var rustErr = NativeRustError(code: 0, message: nil)
         let rustStr = {{ ci.ffi_string_alloc_from().name() }}(self, &rustErr)
         if rustErr.code != 0 {
@@ -209,7 +209,7 @@ extension String: ViaFfi {
 
 
 extension Bool: ViaFfi {
-    typealias Value = UInt8
+    typealias FfiType = UInt8
 
     static func read(from buf: Reader) throws -> Bool {
         return try self.lift(buf.readInt())
@@ -363,6 +363,27 @@ extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Seri
         buf.writeInt(len)
         for item in self {
             item.write(into: buf)
+        }
+    }
+}
+
+extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == String, Value: Serializable {
+    static func read(from buf: Reader) throws -> Self {
+        let len: UInt32 = try buf.readInt()
+        var dict = [String: Value]()
+        dict.reserveCapacity(Int(len))
+        for _ in 1...len {
+            dict[try String.read(from: buf)] = try Value.read(from: buf)
+        }
+        return dict
+    }
+
+    func write(into buf: Writer) {
+        let len = UInt32(self.count)
+        buf.writeInt(len)
+        for (key, value) in self {
+            key.write(into: buf)
+            value.write(into: buf)
         }
     }
 }

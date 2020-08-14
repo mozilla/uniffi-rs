@@ -96,6 +96,21 @@ fun<T> readSequence(buf: ByteBuffer, readItem: (ByteBuffer) -> T): List<T> {
     }
 }
 
+fun<V> liftMap(rbuf: RustBuffer.ByValue, readItem: (ByteBuffer) -> Pair<String, V>): Map<String, V> {
+    return liftFromRustBuffer(rbuf) { buf -> readMap(buf, readItem) }
+}
+
+fun<V> readMap(buf: ByteBuffer, readItem: (ByteBuffer) -> Pair<String, V>): Map<String, V> {
+    val len = Int.read(buf)
+    @OptIn(ExperimentalStdlibApi::class)
+    return buildMap<String, V>(len) {
+        repeat(len) {
+            val (k, v) = readItem(buf)
+            put(k, v)
+        }
+    }
+}
+
 // Helpers for lowering primitive data types into a bytebuffer.
 // Since we need to allocate buffers from rust, the lowering process needs to be
 // able to calculate ahead-of-time what the required size of the buffer will be.
@@ -242,6 +257,21 @@ fun<T> calculateWriteSizeSequence(v: List<T>, calculateWriteSize: (T) -> Int): I
 fun<T> writeSequence(v: List<T>, buf: ByteBuffer, writeItem: (T, ByteBuffer) -> Unit) {
     v.size.write(buf)
     v.forEach { writeItem(it, buf) }
+}
+
+fun<V> lowerMap(m: Map<String, V>, calculateWriteSize: (String, V) -> Int, writeEntry: (String, V, ByteBuffer) -> Unit): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(m, { m -> calculateWriteSizeMap(m, calculateWriteSize) }, { m, buf -> writeMap(m, buf, writeEntry) })
+}
+
+fun<V> calculateWriteSizeMap(v: Map<String, V>, calculateWriteSize: (String, V) -> Int): Int {
+    var len = v.size.calculateWriteSize()
+    v.forEach { k, v -> len += calculateWriteSize(k, v) }
+    return len
+}
+
+fun<V> writeMap(v: Map<String, V>, buf: ByteBuffer, writeEntry: (String, V, ByteBuffer) -> Unit) {
+    v.size.write(buf)
+    v.forEach { k, v -> writeEntry(k, v, buf) }
 }
 
 fun<T> lowerOptional(v: T?, calculateWriteSize: (T) -> Int, writeItem: (T, ByteBuffer) -> Unit): RustBuffer.ByValue {

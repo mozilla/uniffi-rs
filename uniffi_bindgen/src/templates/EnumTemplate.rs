@@ -8,9 +8,9 @@
 // of items as declared in the rust code, but no harm will come from it.
 #}
 unsafe impl uniffi::ViaFfi for {{ e.name() }} {
-    type Value = u32;
+    type FfiType = u32;
 
-    fn lower(self) -> Self::Value {
+    fn lower(self) -> Self::FfiType {
         match self {
             // If the provided enum doesn't match the options defined in the IDL then
             // this match will fail to compile, with a type error to guide the way.
@@ -20,7 +20,7 @@ unsafe impl uniffi::ViaFfi for {{ e.name() }} {
         }
     }
 
-    fn try_lift(v: Self::Value) -> uniffi::deps::anyhow::Result<Self> {
+    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self> {
         Ok(match v {
             {%- for variant in e.variants() %}
             {{ loop.index }} => {{ e.name() }}::{{ variant }},

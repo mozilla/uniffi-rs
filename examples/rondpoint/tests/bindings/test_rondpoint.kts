@@ -6,5 +6,6 @@ assert(dico == copyDico)
 
 assert(copieEnumeration(Enumeration.DEUX) == Enumeration.DEUX)
 assert(copieEnumerations(listOf(Enumeration.UN, Enumeration.DEUX)) == listOf(Enumeration.UN, Enumeration.DEUX))
+assert(copieCarte(mapOf("1" to Enumeration.UN, "2" to Enumeration.DEUX)) == mapOf("1" to Enumeration.UN, "2" to Enumeration.DEUX))
 
 assert(switcheroo(false))

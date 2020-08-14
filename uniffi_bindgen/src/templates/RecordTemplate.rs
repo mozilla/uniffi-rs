@@ -6,13 +6,13 @@
 #}
 
 unsafe impl uniffi::ViaFfi for {{ rec.name() }} {
-    type Value = uniffi::deps::ffi_support::ByteBuffer;
+    type FfiType = uniffi::deps::ffi_support::ByteBuffer;
 
-    fn lower(self) -> Self::Value {
+    fn lower(self) -> Self::FfiType {
         uniffi::lower_into_bytebuffer(self)
     }
 
-    fn try_lift(v: Self::Value) -> uniffi::deps::anyhow::Result<Self> {
+    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self> {
         uniffi::try_lift_from_bytebuffer(v)
     }
 

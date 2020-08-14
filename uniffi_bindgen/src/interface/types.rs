@@ -94,6 +94,7 @@ pub enum Type {
     // Structurally recursive types.
     Optional(Box<Type>),
     Sequence(Box<Type>),
+    Map(/* String, */ Box<Type>),
 }
 
 /// When passing data across the FFI, each `Type` value will be lowered into a corresponding
@@ -124,7 +125,9 @@ impl From<&Type> for FFIType {
             // Errors have their own special type.
             Type::Error(_) => FFIType::RustError,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
-            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) => FFIType::RustBuffer,
+            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+                FFIType::RustBuffer
+            }
         }
     }
 }
@@ -257,6 +260,7 @@ impl TypeResolver for weedle::types::NonAnyType<'_> {
             weedle::types::NonAnyType::Integer(t) => t.resolve_type_definition(ci),
             weedle::types::NonAnyType::FloatingPoint(t) => t.resolve_type_definition(ci),
             weedle::types::NonAnyType::Sequence(t) => t.resolve_type_definition(ci),
+            weedle::types::NonAnyType::RecordType(t) => t.resolve_type_definition(ci),
             _ => bail!("no support for type {:?}", self),
         }
     }
@@ -312,6 +316,14 @@ impl TypeResolver for weedle::types::SequenceType<'_> {
     fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<Type> {
         Ok(Type::Sequence(Box::new(
             self.generics.body.as_ref().resolve_type_definition(ci)?,
+        )))
+    }
+}
+
+impl TypeResolver for weedle::types::RecordType<'_> {
+    fn resolve_type_definition(&self, ci: &ComponentInterface) -> Result<Type> {
+        Ok(Type::Map(Box::new(
+            (&self.generics.body.2).resolve_type_definition(ci)?,
         )))
     }
 }

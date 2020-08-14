@@ -61,6 +61,7 @@ mod filters {
             }
             Type::Optional(t) => format!("{}?", type_kt(t)?),
             Type::Sequence(t) => format!("List<{}>", type_kt(t)?),
+            Type::Map(t) => format!("Map<String, {}>", type_kt(t)?),
         })
     }
 
@@ -124,6 +125,14 @@ mod filters {
                 calculate_write_size(&"v", t)?,
                 write_kt(&"v", &"buf", t)?
             ),
+            Type::Map(t) => format!(
+                "lowerMap({}, {{ k, v -> {} + {} }}, {{ k, v, buf -> {}; {} }})",
+                nm,
+                calculate_write_size(&"k", &Type::String)?,
+                calculate_write_size(&"v", t)?,
+                write_kt(&"k", &"buf", &Type::String)?,
+                write_kt(&"v", &"buf", t)?
+            ),
             _ => format!("{}.lower()", nm),
         })
     }
@@ -151,6 +160,13 @@ mod filters {
                 target,
                 write_kt(&"v", &"buf", t)?
             ),
+            Type::Map(t) => format!(
+                "writeMap({}, {}, {{ k, v, buf -> {}; {} }})",
+                nm,
+                target,
+                write_kt(&"k", &"buf", &Type::String)?,
+                write_kt(&"v", &"buf", t)?
+            ),
             _ => format!("{}.write({})", nm, target),
         })
     }
@@ -175,6 +191,12 @@ mod filters {
                 nm,
                 calculate_write_size(&"v", t)?
             ),
+            Type::Map(t) => format!(
+                "calculateWriteSizeMap({}, {{ k, v -> {} + {} }})",
+                nm,
+                calculate_write_size(&"k", &Type::String)?,
+                calculate_write_size(&"v", t)?
+            ),
             _ => format!("{}.calculateWriteSize()", nm),
         })
     }
@@ -192,6 +214,12 @@ mod filters {
             Type::Sequence(t) => {
                 format!("liftSequence({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
             }
+            Type::Map(t) => format!(
+                "liftMap({}, {{ buf -> Pair({}, {}) }})",
+                nm,
+                read_kt(&"buf", &Type::String)?,
+                read_kt(&"buf", t)?
+            ),
             _ => format!("{}.lift({})", type_kt(type_)?, nm),
         })
     }
@@ -209,6 +237,12 @@ mod filters {
             Type::Sequence(t) => {
                 format!("readSequence({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
             }
+            Type::Map(t) => format!(
+                "readMap({}, {{ buf -> Pair({}, {}) }})",
+                nm,
+                read_kt(&"buf", &Type::String)?,
+                read_kt(&"buf", t)?
+            ),
             _ => format!("{}.read({})", type_kt(type_)?, nm),
         })
     }
