@@ -15,14 +15,18 @@ enum TodoError {
     EmptyTodoList,
     #[error("That todo already exists!")]
     DuplicateTodo,
-    #[error("Empty String error!")]
-    EmptyString,
+    #[error("Empty String error!: {0}")]
+    EmptyString(String),
+    #[error("I am a delegated Error: {0}")]
+    DeligatedError(#[from] std::io::Error),
 }
 
 fn create_entry_with<S: Into<String>>(item: S) -> Result<TodoEntry> {
     let text = item.into();
     if text == "" {
-        return Err(TodoError::EmptyString);
+        return Err(TodoError::EmptyString(
+            "Cannot add empty string as entry".to_string(),
+        ));
     }
     Ok(TodoEntry { text })
 }
@@ -43,7 +47,9 @@ impl TodoList {
     fn add_item<S: Into<String>>(&mut self, item: S) -> Result<()> {
         let item = item.into();
         if item == "" {
-            return Err(TodoError::EmptyString);
+            return Err(TodoError::EmptyString(
+                "Cannot add empty string as item".to_string(),
+            ));
         }
         if self.items.contains(&item) {
             return Err(TodoError::DuplicateTodo);
@@ -53,17 +59,11 @@ impl TodoList {
     }
 
     fn get_last(&self) -> Result<String> {
-        self.items
-            .last()
-            .cloned()
-            .ok_or_else(|| TodoError::EmptyTodoList)
+        self.items.last().cloned().ok_or(TodoError::EmptyTodoList)
     }
 
     fn get_first(&self) -> Result<String> {
-        self.items
-            .first()
-            .cloned()
-            .ok_or_else(|| TodoError::EmptyTodoList)
+        self.items.first().cloned().ok_or(TodoError::EmptyTodoList)
     }
 
     fn add_entries(&mut self, entries: Vec<TodoEntry>) {
@@ -100,7 +100,7 @@ impl TodoList {
             .items
             .iter()
             .position(|s| s == &item)
-            .ok_or_else(|| TodoError::TodoDoesNotExist)?;
+            .ok_or(TodoError::TodoDoesNotExist)?;
         self.items.remove(idx);
         Ok(())
     }

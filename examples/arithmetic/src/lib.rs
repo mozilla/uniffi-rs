@@ -4,16 +4,18 @@
 
 #[derive(Debug, thiserror::Error)]
 enum ArithmeticError {
-    #[error("Integer overflow!")]
-    IntegerOverflow,
+    #[error("Integer overflow on an operation with {a} and {b}")]
+    IntegerOverflow { a: u64, b: u64 },
 }
 
 fn add(a: u64, b: u64) -> Result<u64> {
-    a.checked_add(b).ok_or(ArithmeticError::IntegerOverflow)
+    a.checked_add(b)
+        .ok_or(ArithmeticError::IntegerOverflow { a, b })
 }
 
 fn sub(a: u64, b: u64) -> Result<u64> {
-    a.checked_sub(b).ok_or(ArithmeticError::IntegerOverflow)
+    a.checked_sub(b)
+        .ok_or(ArithmeticError::IntegerOverflow { a, b })
 }
 
 fn equal(a: u64, b: u64) -> bool {
