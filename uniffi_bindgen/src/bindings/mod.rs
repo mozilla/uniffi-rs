@@ -13,6 +13,7 @@ use std::path::Path;
 
 use crate::interface::ComponentInterface;
 
+pub mod gecko;
 pub mod kotlin;
 pub mod python;
 pub mod swift;
@@ -28,6 +29,7 @@ pub enum TargetLanguage {
     Kotlin,
     Swift,
     Python,
+    Gecko,
 }
 
 impl TryFrom<&str> for TargetLanguage {
@@ -37,6 +39,7 @@ impl TryFrom<&str> for TargetLanguage {
             "kotlin" | "kt" | "kts" => TargetLanguage::Kotlin,
             "swift" => TargetLanguage::Swift,
             "python" | "py" => TargetLanguage::Python,
+            "gecko" => TargetLanguage::Gecko,
             _ => bail!("Unknown or unsupported target language: \"{}\"", value),
         })
     }
@@ -74,6 +77,7 @@ where
         TargetLanguage::Kotlin => kotlin::write_bindings(&ci, out_dir, try_format_code)?,
         TargetLanguage::Swift => swift::write_bindings(&ci, out_dir, try_format_code)?,
         TargetLanguage::Python => python::write_bindings(&ci, out_dir, try_format_code)?,
+        TargetLanguage::Gecko => gecko::write_bindings(&ci, out_dir, try_format_code)?,
     }
     Ok(())
 }
@@ -92,6 +96,7 @@ where
         TargetLanguage::Kotlin => kotlin::compile_bindings(&ci, out_dir)?,
         TargetLanguage::Swift => swift::compile_bindings(&ci, out_dir)?,
         TargetLanguage::Python => (),
+        TargetLanguage::Gecko => (),
     }
     Ok(())
 }
@@ -108,6 +113,7 @@ where
         TargetLanguage::Kotlin => kotlin::run_script(out_dir, script_file)?,
         TargetLanguage::Swift => swift::run_script(out_dir, script_file)?,
         TargetLanguage::Python => python::run_script(out_dir, script_file)?,
+        TargetLanguage::Gecko => bail!("Can't run Gecko code standalone"),
     }
     Ok(())
 }

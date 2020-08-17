@@ -10,9 +10,9 @@ use heck::{CamelCase, MixedCase};
 
 use crate::interface::*;
 
-// Some config options for it the caller wants to customize the generated python.
-// Note that this can only be used to control details of the python *that do not affect the underlying component*,
-// sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+// Some config options for the caller to customize the generated Swift.
+// Note that this can only be used to control details of the Swift *that do not affect the underlying component*,
+// since the details of the underlying component are entirely determined by the `ComponentInterface`.
 pub struct Config {
     // No config options yet.
 }
