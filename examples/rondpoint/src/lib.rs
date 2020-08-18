@@ -50,4 +50,97 @@ fn switcheroo(b: bool) -> bool {
     !b
 }
 
+// Test that values can traverse both ways across the FFI.
+// Even if roundtripping works, it's possible we have
+// symmetrical errors that cancel each other out.
+#[derive(Debug, Clone)]
+struct Retourneur;
+impl Retourneur {
+    fn new() -> Self {
+        Retourneur
+    }
+    fn identique_i8(&self, value: i8) -> i8 {
+        value
+    }
+    fn identique_u8(&self, value: u8) -> u8 {
+        value
+    }
+    fn identique_i16(&self, value: i16) -> i16 {
+        value
+    }
+    fn identique_u16(&self, value: u16) -> u16 {
+        value
+    }
+    fn identique_i32(&self, value: i32) -> i32 {
+        value
+    }
+    fn identique_u32(&self, value: u32) -> u32 {
+        value
+    }
+    fn identique_i64(&self, value: i64) -> i64 {
+        value
+    }
+    fn identique_u64(&self, value: u64) -> u64 {
+        value
+    }
+    fn identique_float(&self, value: f32) -> f32 {
+        value
+    }
+    fn identique_double(&self, value: f64) -> f64 {
+        value
+    }
+    fn identique_boolean(&self, value: bool) -> bool {
+        value
+    }
+    fn identique_string(&self, value: String) -> String {
+        value
+    }
+}
+
+#[derive(Debug, Clone)]
+struct Stringifier;
+
+#[allow(dead_code)]
+impl Stringifier {
+    fn new() -> Self {
+        Stringifier
+    }
+    fn to_string_i8(&self, value: i8) -> String {
+        value.to_string()
+    }
+    fn to_string_u8(&self, value: u8) -> String {
+        value.to_string()
+    }
+    fn to_string_i16(&self, value: i16) -> String {
+        value.to_string()
+    }
+    fn to_string_u16(&self, value: u16) -> String {
+        value.to_string()
+    }
+    fn to_string_i32(&self, value: i32) -> String {
+        value.to_string()
+    }
+    fn to_string_u32(&self, value: u32) -> String {
+        value.to_string()
+    }
+    fn to_string_i64(&self, value: i64) -> String {
+        value.to_string()
+    }
+    fn to_string_u64(&self, value: u64) -> String {
+        value.to_string()
+    }
+    fn to_string_float(&self, value: f32) -> String {
+        value.to_string()
+    }
+    fn to_string_double(&self, value: f64) -> String {
+        value.to_string()
+    }
+    fn to_string_boolean(&self, value: bool) -> String {
+        value.to_string()
+    }
+    fn well_known_string(&self, value: String) -> String {
+        format!("uniffi 💚 {}!", value)
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/rondpoint.uniffi.rs"));
