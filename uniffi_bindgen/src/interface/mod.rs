@@ -651,6 +651,9 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                 _ => bail!("no support for interface member type {:?} yet", member),
             }
         }
+        if object.constructors.is_empty() {
+            object.constructors.push(Default::default());
+        }
         Ok(object)
     }
 }
@@ -696,6 +699,17 @@ impl Constructor {
         // but it's this way until we implement handling for panics
         self.ffi_func.has_out_err = self.throws().is_some();
         Ok(())
+    }
+}
+
+impl Default for Constructor {
+    fn default() -> Self {
+        Constructor {
+            name: String::from("new"),
+            arguments: Vec::new(),
+            ffi_func: Default::default(),
+            attributes: Attributes(Vec::new()),
+        }
     }
 }
 
