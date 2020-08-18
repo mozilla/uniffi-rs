@@ -28,10 +28,6 @@ dictionary Dictionnaire {
 };
 
 interface Retourneur {
-  // A constructor is mandatory
-  // See https://github.com/mozilla/uniffi-rs/issues/246
-  constructor();
-
   i8 identique_i8(i8 value);
   u8 identique_u8(u8 value);
   i16 identique_i16(i16 value);
@@ -47,7 +43,6 @@ interface Retourneur {
 };
 
 interface Stringifier {
-  constructor();
   string well_known_string(string value);
 
   string to_string_i8(i8 value);
