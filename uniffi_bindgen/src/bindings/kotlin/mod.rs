@@ -67,6 +67,7 @@ pub fn compile_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
     jar_file.push(format!("{}.jar", ci.namespace()));
     let status = Command::new("kotlinc")
         .arg("-Xopt-in=kotlin.RequiresOptIn")
+        .arg("-Xopt-in=kotlin.ExperimentalUnsignedTypes")
         .arg("-classpath")
         .arg(env::var("CLASSPATH").unwrap_or_else(|_| "".to_string()))
         .arg(&kt_file)
@@ -105,6 +106,7 @@ pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
     let mut cmd = Command::new("kotlinc");
     // Make sure it can load the .jar and its dependencies.
     cmd.arg("-classpath").arg(classpath);
+    cmd.arg("-Xopt-in=kotlin.ExperimentalUnsignedTypes");
     // Enable runtime assertions, for easy testing etc.
     cmd.arg("-J-ea");
     cmd.arg("-script").arg(script_file);

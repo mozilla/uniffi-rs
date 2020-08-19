@@ -43,14 +43,14 @@ mod filters {
     pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             // These native Kotlin types map nicely to the FFI without conversion.
-            // Note that unsigned integers in Kotlin are currently experimental, and we use the signed
-            // variants to represent both signed and unsigned types from the component API.
-            // I *think* this means you get the two's-compliment signed equivalent of unsigned values?
-            // That's probably going to get messy, but not sure there's a better way...
-            Type::Int8 | Type::UInt8 => "Byte".to_string(),
-            Type::Int16 | Type::UInt16 => "Short".to_string(),
-            Type::Int32 | Type::UInt32 => "Int".to_string(),
-            Type::Int64 | Type::UInt64 => "Long".to_string(),
+            Type::UInt8 => "UByte".to_string(),
+            Type::UInt16 => "UShort".to_string(),
+            Type::UInt32 => "UInt".to_string(),
+            Type::UInt64 => "ULong".to_string(),
+            Type::Int8 => "Byte".to_string(),
+            Type::Int16 => "Short".to_string(),
+            Type::Int32 => "Int".to_string(),
+            Type::Int64 => "Long".to_string(),
             Type::Float32 => "Float".to_string(),
             Type::Float64 => "Double".to_string(),
             // These types need conversion, and special handling for lifting/lowering.
@@ -68,10 +68,9 @@ mod filters {
     /// Get the Kotlin syntax for representing a given low-level `FFIType`.
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(match type_ {
-            // Note that unsigned integers in Kotlin are currently experimental, and we use the signed
-            // variants to represent both signed and unsigned types from the component API.
-            // I *think* this means you get the two's-compliment signed equivalent of unsigned values?
-            // That's probably going to get messy, but not sure there's a better way...
+            // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
+            // support them yet. Thus, we use the signed variants to represent both signed and unsigned 
+            // types from the component API.
             FFIType::Int8 | FFIType::UInt8 => "Byte".to_string(),
             FFIType::Int16 | FFIType::UInt16 => "Short".to_string(),
             FFIType::Int32 | FFIType::UInt32 => "Int".to_string(),
