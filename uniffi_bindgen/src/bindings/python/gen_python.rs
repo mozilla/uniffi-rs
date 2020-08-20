@@ -109,7 +109,9 @@ mod filters {
 
     pub fn lower_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::UInt32 | Type::UInt64 | Type::Float32 | Type::Float64 | Type::Boolean => {
+            Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 |
+            Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 |
+            Type::Float32 | Type::Float64 | Type::Boolean => {
                 nm.to_string()
             }
             Type::Enum(_) => format!("{}.value", nm),
@@ -154,7 +156,9 @@ mod filters {
 
     pub fn lift_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::UInt32 | Type::UInt64 | Type::Float32 | Type::Float64 | Type::Boolean => {
+            Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 |
+            Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 |
+            Type::Float32 | Type::Float64 | Type::Boolean => {
                 format!("{}", nm)
             }
             Type::Enum(type_name) => format!("{}({})", type_name, nm),
