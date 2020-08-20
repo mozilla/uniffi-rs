@@ -6,7 +6,22 @@
 
 #include "{{ ci.namespace()|interface_name_xpidl }}.h"
 
+#include <functional>
+
+#include "nsCOMPtr.h"
+#include "nsIVariant.h"
+#include "nsTArray.h"
+#include "prnetdb.h"
+
 #include "mozilla/Atomics.h"
+#include "mozilla/Casting.h"
+#include "mozilla/CheckedInt.h"
+#include "mozilla/Result.h"
+#include "mozilla/ResultExtensions.h"
+#include "mozilla/Utf8.h"
+
+#include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/Record.h"
 
 extern "C" {
 
