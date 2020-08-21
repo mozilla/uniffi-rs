@@ -27,6 +27,20 @@ dictionary Dictionnaire {
     u64 gros_nombre;
 };
 
+dictionary DictionnaireNombres {
+    u8 petit_nombre;
+    u16 court_nombre;
+    u32 nombre_simple;
+    u64 gros_nombre;
+};
+
+dictionary DictionnaireNombresSignes {
+    i8 petit_nombre;
+    i16 court_nombre;
+    i32 nombre_simple;
+    i64 gros_nombre;
+};
+
 interface Retourneur {
   i8 identique_i8(i8 value);
   u8 identique_u8(u8 value);
@@ -40,6 +54,9 @@ interface Retourneur {
   double identique_double(double value);
   boolean identique_boolean(boolean value);
   string identique_string(string value);
+
+  DictionnaireNombresSignes identique_nombres_signes(DictionnaireNombresSignes value);
+  DictionnaireNombres       identique_nombres(DictionnaireNombres value);
 };
 
 interface Stringifier {

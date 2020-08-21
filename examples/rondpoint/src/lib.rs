@@ -13,6 +13,22 @@ pub struct Dictionnaire {
 }
 
 #[derive(Debug, Clone)]
+pub struct DictionnaireNombres {
+    petit_nombre: u8,
+    court_nombre: u16,
+    nombre_simple: u32,
+    gros_nombre: u64,
+}
+
+#[derive(Debug, Clone)]
+pub struct DictionnaireNombresSignes {
+    petit_nombre: i8,
+    court_nombre: i16,
+    nombre_simple: i32,
+    gros_nombre: i64,
+}
+
+#[derive(Debug, Clone)]
 pub enum Enumeration {
     Un,
     Deux,
@@ -93,6 +109,15 @@ impl Retourneur {
         value
     }
     fn identique_string(&self, value: String) -> String {
+        value
+    }
+    fn identique_nombres_signes(
+        &self,
+        value: DictionnaireNombresSignes,
+    ) -> DictionnaireNombresSignes {
+        value
+    }
+    fn identique_nombres(&self, value: DictionnaireNombres) -> DictionnaireNombres {
         value
     }
 }

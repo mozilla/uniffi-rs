@@ -33,7 +33,7 @@ fun Short.Companion.lift(v: Short): Short {
     return v
 }
 
-fun Short.Companion.liftFrom(buf: ByteBuffer): Short {
+fun Short.Companion.read(buf: ByteBuffer): Short {
     return buf.getShort()
 }
 
@@ -51,6 +51,39 @@ fun Long.Companion.lift(v: Long): Long {
 
 fun Long.Companion.read(buf: ByteBuffer): Long {
     return buf.getLong()
+}
+
+// Unsigned types
+fun UByte.Companion.lift(v: Byte): UByte {
+    return v.toUByte()
+}
+
+fun UByte.Companion.read(buf: ByteBuffer): UByte {
+    return UByte.lift(buf.get())
+}
+
+fun UShort.Companion.lift(v: Short): UShort {
+    return v.toUShort()
+}
+
+fun UShort.Companion.read(buf: ByteBuffer): UShort {
+    return UShort.lift(buf.getShort())
+}
+
+fun UInt.Companion.lift(v: Int): UInt {
+    return v.toUInt()
+}
+
+fun UInt.Companion.read(buf: ByteBuffer): UInt {
+    return UInt.lift(buf.getInt())
+}
+
+fun ULong.Companion.lift(v: Long): ULong {
+    return v.toULong()
+}
+
+fun ULong.Companion.read(buf: ByteBuffer): ULong {
+    return ULong.lift(buf.getLong())
 }
 
 fun Float.Companion.lift(v: Float): Float {
@@ -142,7 +175,7 @@ fun Byte.lower(): Byte {
     return this
 }
 
-fun Byte.calculateWriteSize(): Byte {
+fun Byte.calculateWriteSize(): Int {
     return 1
 }
 
@@ -154,11 +187,11 @@ fun Short.lower(): Short {
     return this
 }
 
-fun Short.lowersIntoSize(): Int {
+fun Short.calculateWriteSize(): Int {
     return 2
 }
 
-fun Short.lowerInto(buf: ByteBuffer) {
+fun Short.write(buf: ByteBuffer) {
     buf.putShort(this)
 }
 
@@ -184,6 +217,55 @@ fun Long.calculateWriteSize(): Int {
 
 fun Long.write(buf: ByteBuffer) {
     buf.putLong(this)
+}
+
+// Experimental unsigned types
+fun UByte.lower(): Byte {
+    return this.toByte()
+}
+
+fun UByte.calculateWriteSize(): Int {
+    return 1
+}
+
+fun UByte.write(buf: ByteBuffer) {
+    buf.put(this.toByte())
+}
+
+fun UShort.lower(): Short {
+    return this.toShort()
+}
+
+fun UShort.calculateWriteSize(): Int {
+    return 2
+}
+
+fun UShort.write(buf: ByteBuffer) {
+    buf.putShort(this.toShort())
+}
+
+fun UInt.lower(): Int {
+    return this.toInt()
+}
+
+fun UInt.calculateWriteSize(): Int {
+    return 4
+}
+
+fun UInt.write(buf: ByteBuffer) {
+    buf.putInt(this.toInt())
+}
+
+fun ULong.lower(): Long {
+    return this.toLong()
+}
+
+fun ULong.calculateWriteSize(): Int {
+    return 8
+}
+
+fun ULong.write(buf: ByteBuffer) {
+    buf.putLong(this.toLong())
 }
 
 fun Float.lower(): Float {

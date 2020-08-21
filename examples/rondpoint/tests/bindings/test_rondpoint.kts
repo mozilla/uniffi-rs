@@ -1,6 +1,6 @@
 import uniffi.rondpoint.*
 
-val dico = Dictionnaire(Enumeration.DEUX, true, 0, 123456789)
+val dico = Dictionnaire(Enumeration.DEUX, true, 0u, 123456789u)
 val copyDico = copieDictionnaire(dico)
 assert(dico == copyDico)
 
@@ -27,19 +27,19 @@ listOf(true, false).affirmAllerRetour(rt::identiqueBoolean)
 
 // Bytes.
 listOf(Byte.MIN_VALUE, Byte.MAX_VALUE).affirmAllerRetour(rt::identiqueI8)
-listOf(0x00, 0xFF).map { it.toByte() }.affirmAllerRetour(rt::identiqueU8)
+listOf(0x00, 0xFF).map { it.toUByte() }.affirmAllerRetour(rt::identiqueU8)
 
 // Shorts
 listOf(Short.MIN_VALUE, Short.MAX_VALUE).affirmAllerRetour(rt::identiqueI16)
-listOf(0x0000, 0xFFFF).map { it.toShort() }.affirmAllerRetour(rt::identiqueU16)
+listOf(0x0000, 0xFFFF).map { it.toUShort() }.affirmAllerRetour(rt::identiqueU16)
 
 // Ints
 listOf(0, 1, -1, Int.MIN_VALUE, Int.MAX_VALUE).affirmAllerRetour(rt::identiqueI32)
-listOf(0x00000000, 0xFFFFFFFF).map { it.toInt() }.affirmAllerRetour(rt::identiqueU32)
+listOf(0x00000000, 0xFFFFFFFF).map { it.toUInt() }.affirmAllerRetour(rt::identiqueU32)
 
 // Longs
 listOf(0L, 1L, -1L, Long.MIN_VALUE, Long.MAX_VALUE).affirmAllerRetour(rt::identiqueI64)
-listOf(0L, 1L, -1L, Long.MIN_VALUE, Long.MAX_VALUE).affirmAllerRetour(rt::identiqueU64)
+listOf(0u, 1u, ULong.MIN_VALUE, ULong.MAX_VALUE).affirmAllerRetour(rt::identiqueU64)
 
 // Floats
 listOf(0.0F, 0.5F, 0.25F, Float.MIN_VALUE, Float.MAX_VALUE).affirmAllerRetour(rt::identiqueFloat)
@@ -50,6 +50,12 @@ listOf(0.0, 1.0, Double.MIN_VALUE, Double.MAX_VALUE).affirmAllerRetour(rt::ident
 // Strings
 listOf("", "abc", "été", "ښي لاس ته لوستلو لوستل", "😻emoji 👨‍👧‍👦multi-emoji, 🇨🇭a flag, a canal, panama")
     .affirmAllerRetour(rt::identiqueString)
+
+listOf(-1, 0, 1).map { DictionnaireNombresSignes(it.toByte(), it.toShort(), it.toInt(), it.toLong()) }
+    .affirmAllerRetour(rt::identiqueNombresSignes)
+
+listOf(0, 1).map { DictionnaireNombres(it.toUByte(), it.toUShort(), it.toUInt(), it.toULong()) }
+    .affirmAllerRetour(rt::identiqueNombres)
 
 // Test one way across the FFI.
 //
@@ -92,19 +98,19 @@ listOf(true, false).affirmEnchaine(st::toStringBoolean)
 
 // Bytes.
 listOf(Byte.MIN_VALUE, Byte.MAX_VALUE).affirmEnchaine(st::toStringI8)
-// listOf(0x00, 0xFF).map { it.toByte() }.affirmEnchaine(st::toStringU8)
+listOf(UByte.MIN_VALUE, UByte.MAX_VALUE).affirmEnchaine(st::toStringU8)
 
 // Shorts
 listOf(Short.MIN_VALUE, Short.MAX_VALUE).affirmEnchaine(st::toStringI16)
-// listOf(0x0000, 0xFFFF).map { it.toShort() }.affirmEnchaine(st::toStringU16)
+listOf(UShort.MIN_VALUE, UShort.MAX_VALUE).affirmEnchaine(st::toStringU16)
 
 // Ints
 listOf(0, 1, -1, Int.MIN_VALUE, Int.MAX_VALUE).affirmEnchaine(st::toStringI32)
-// listOf(0x00000000, 0xFFFFFFFF).map { it.toInt() }.affirmEnchaine(st::toStringU32)
+listOf(0u, 1u, UInt.MIN_VALUE, UInt.MAX_VALUE).affirmEnchaine(st::toStringU32)
 
 // Longs
 listOf(0L, 1L, -1L, Long.MIN_VALUE, Long.MAX_VALUE).affirmEnchaine(st::toStringI64)
-// listOf(0L, 1L, -1L, Long.MIN_VALUE, Long.MAX_VALUE).affirmEnchaine(st::toStringU64)
+listOf(0u, 1u, ULong.MIN_VALUE, ULong.MAX_VALUE).affirmEnchaine(st::toStringU64)
 
 // Floats
 // MIN_VAUE is 1.4E-45. Accuracy and formatting get weird at small sizes.
