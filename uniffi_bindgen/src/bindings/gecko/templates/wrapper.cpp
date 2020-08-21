@@ -3,58 +3,141 @@
 
 #include "{{ ci.namespace() }}.h"
 
-#include "jsapi.h"
-
-#include "mozilla/CheckedInt.h"
-#include "mozilla/Result.h"
-#include "mozilla/ResultExtensions.h"
-
 namespace mozilla {
 namespace {{ ci.namespace() }} {
+
+// TODO: Move these into the header.
+
+{% for rec in ci.iter_record_definitions() -%}
+template <>
+struct detail::Serializable<{{ rec.name()|class_name_cpp }}> {
+  static size_t Size(const {{ rec.name()|class_name_cpp }}& aValue) {
+    CheckedInt<size_t> size;
+    {%- for field in rec.fields() %}
+    // TODO: Make this a runtime error, not a fatal crash.
+    MOZ_RELEASE_ASSERT(aValue.{{ field.name()|field_name_cpp }}.WasPassed());
+    size += detail::Serializable<{{ field.type_()|type_cpp }}>::Size(aValue.{{ field.name()|field_name_cpp }}.Value());
+    {%- endfor %}
+    MOZ_RELEASE_ASSERT(size.isValid());
+    return size.value();
+  }
+
+  static {{ rec.name()|class_name_cpp }} ReadFrom(detail::Reader& aReader) {
+    {{ rec.name()|class_name_cpp }} result;
+    {%- for field in rec.fields() %}
+    value.{{ field.name()|field_name_cpp }}.Construct() = detail::Serializable<{{ field.type_()|type_cpp }}>::ReadFrom(aReader);
+    {%- endfor %}
+    return std::move(result);
+  }
+
+  static void WriteInto(const {{ rec.name()|class_name_cpp }}& aValue, detail::Writer& aWriter) {
+    {%- for field in rec.fields() %}
+    // TODO: Make this a runtime error, not a fatal crash.
+    MOZ_RELEASE_ASSERT(aValue.{{ field.name()|field_name_cpp }}.WasPassed());
+    detail::Serializable<{{ field.type_()|type_cpp }}>::WriteInto(aValue.{{ field.name()|field_name_cpp }}.Value(), aWriter);
+    {%- endfor %}
+  }
+};
+{% endfor %}
+
+{%- for e in ci.iter_enum_definitions() %}
+template <>
+struct detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
+  static {{ e.name()|class_name_cpp }} Lift(const uint32_t& aValue) {
+    switch (aValue) {
+      {% for variant in e.variants() -%}
+      case {{ loop.index }}: return {{ e.name()|class_name_cpp }}::{{ variant|enum_variant_cpp }};
+      {% endfor -%}
+      default:
+        MOZ_ASSERT_UNREACHABLE("Unexpected enum case");
+    }
+  }
+
+  static uint32_t Lower(const {{ e.name()|class_name_cpp }}& aValue) {
+    switch (aValue) {
+      {% for variant in e.variants() -%}
+      case {{ e.name()|class_name_cpp }}::{{ variant|enum_variant_cpp }}: return {{ loop.index }};
+      {% endfor %}
+    }
+  }
+};
+
+template <>
+struct detail::Serializable<{{ e.name()|class_name_cpp }}> {
+  static size_t Size(const {{ e.name()|class_name_cpp }}& aValue) {
+    return sizeof(uint32_t);
+  }
+
+  static {{ e.name()|class_name_cpp }} ReadFrom(detail::Reader& aReader) {
+    auto rawValue = aReader.ReadUInt32();
+    return detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t>::Lift(rawValue);
+  }
+
+  static void WriteInto(const {{ e.name()|class_name_cpp }}& aValue, detail::Writer& aWriter) {
+    aWriter.WriteUInt32(detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t>::Lower(aValue));
+  }
+};
+{% endfor %}
 
 {%- let functions = ci.iter_function_definitions() %}
 {%- if !functions.is_empty() %}
 
-NS_IMPL_ISUPPORTS({{ ci.namespace()|class_name_cpp }}, {{ ci.namespace()|interface_name_xpidl }})
-
 {% for func in functions %}
-{%- let args = func.arguments() %}
-NS_IMETHODIMP
+{#- /* Return type. `void` for methods that return nothing, or return their
+       value via an out param. */ #}
+{%- match self.ret_position_cpp(func) -%}
+{%- when WebIdlReturnPosition::OutParam with (_) -%}
+void
+{%- when WebIdlReturnPosition::Void %}
+void
+{%- when WebIdlReturnPosition::Return with (type_) %}
+{{ type_|ret_type_cpp }}
+{%- endmatch %}
 {{ ci.namespace()|class_name_cpp }}::{{ func.name()|fn_name_cpp }}(
-    {%- if func.throws().is_some() %}
-    JSContext* aCx{%- if !args.is_empty() || func.return_type().is_some() %}, {% endif %}
-    {% endif %}
+    {%- let args = func.arguments() %}
     {%- for arg in args %}
     {{ arg.type_()|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
-    {%- endfor %}
-    {%- match func.return_type() -%}
-    {%- when Some with (type_) %}
-    {%- if func.throws().is_some() || !args.is_empty() %}, {% endif %}{{ type_|ret_type_cpp }} aRetVal
+    {%- endfor -%}
+    {#- /* Out param returns. */ #}
+    {%- match self.ret_position_cpp(func) -%}
+    {%- when WebIdlReturnPosition::OutParam with (type_) -%}
+    {%- if !args.is_empty() %}, {% endif %}
+    {{ type_|ret_type_cpp }} aRetVal
     {% else %}{% endmatch %}
+    {#- /* Errors. */ #}
+    {%- if func.throws().is_some() %}
+    {%- if self.ret_position_cpp(func).is_out_param() || !args.is_empty() %}, {% endif %}
+    ErrorResult& aRv
+    {%- endif %}
 ) {
   {%- if func.throws().is_some() %}
   RustError err{0, nullptr};
   {% endif %}
-  {%- if func.return_type().is_some() %}auto result = {% endif %}{{ func.ffi_func().name() }}(
+  {%- if func.return_type().is_some() %}auto retVal = {% endif %}{{ func.ffi_func().name() }}(
     {%- for arg in func.arguments() %}
       {{- arg.name()|lower_cpp(arg.type_()) }}
       {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
     {%- if func.throws().is_some() %}
       {%- if !args.is_empty() %},{% endif %}&err
-    {%- endif %}
+    {% endif %}
   );
   {%- if func.throws().is_some() %}
   if (err.mCode) {
-    JS_ReportErrorUTF8(aCx, "%s", err.mMessage);
-    return NS_ERROR_FAILURE;
+    aRv.ThrowOperationError(err.mMessage);
+    {% match self.ret_default_value_cpp(func) -%}
+    {%- when Some with (val) -%}
+    return {{ val }};
+    {% else %}
+    return;{%- endmatch %}
   }
   {%- endif %}
-  {%- match func.return_type() -%}
-  {%- when Some with (type_) %}
-  *aRetVal = {{ "_retval"|lift_cpp(type_) }};
-  {% else %}{% endmatch %}
-  return NS_OK;
+  {% match self.ret_position_cpp(func) -%}
+  {%- when WebIdlReturnPosition::OutParam with (type_) -%}
+  aRetVal = {{ "retVal"|lift_cpp(type_) }};
+  {%- when WebIdlReturnPosition::Return with (type_) %}
+  return {{ "retVal"|lift_cpp(type_) }}
+  {%- when WebIdlReturnPosition::Void %}{%- endmatch %}
 }
 {% endfor %}
 

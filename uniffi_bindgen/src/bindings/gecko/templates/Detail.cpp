@@ -1,3 +1,8 @@
+// TODO: Add back errors. We may need runtime errors so that we can throw
+// type errors if, say, we omit a dictionary field. (In Gecko WebIDL,
+// all dictionary fields are optional unless required; in UniFFI IDL,
+// they're required by default).
+
 /// A helper class to read values out of a Rust byte buffer.
 class MOZ_STACK_CLASS Reader final {
  public:
@@ -392,15 +397,12 @@ struct Serializable<nsString> {
   }
 
   /// Estimates the UTF-8 encoded length of a UTF-16 string. This is a
-  /// worst-case estimate if the string contains non-ASCII characters.
+  /// worst-case estimate.
   static CheckedInt<size_t> EstimateUTF8Length(const nsAString& aUTF16) {
     CheckedInt<size_t> length(aUTF16.Length());
-    if (MOZ_UNLIKELY(!IsAscii(aUTF16))) {
-      // We assume most strings are small and only contain ASCII. If it's not,
-      // just overallocate for now. We can get fancy later if this turns out to
-      // be wrong.
-      length *= 3;
-    }
+    // `ConvertUtf16toUtf8` expects the destination to have at least three times
+    // as much space as the source string.
+    length *= 3;
     return length;
   }
 };

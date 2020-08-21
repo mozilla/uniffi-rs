@@ -4,7 +4,7 @@
 #ifndef mozilla_{{ ci.namespace() }}
 #define mozilla_{{ ci.namespace() }}
 
-#include "{{ ci.namespace()|interface_name_xpidl }}.h"
+#include "{{ ci.namespace()|class_name_webidl }}.h"
 
 #include <functional>
 
@@ -22,6 +22,7 @@
 
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/Record.h"
+#include "mozilla/dom/{{ ci.namespace()|class_name_webidl }}Binding.h"
 
 extern "C" {
 
@@ -67,13 +68,9 @@ namespace detail {
 {%- let functions = ci.iter_function_definitions() %}
 {%- if !functions.is_empty() %}
 
-class {{ ci.namespace()|class_name_cpp }} final : public {{ ci.namespace()|interface_name_xpidl }} {
-  NS_DECL_THREADSAFE_ISUPPORTS
-  NS_DECL_{{ ci.namespace()|interface_name_xpidl|upper }}
-
+class {{ ci.namespace()|class_name_cpp }} final {
  public:
   {{ ci.namespace()|class_name_cpp }}() = default;
-  static already_AddRefed<{{ ci.namespace()|class_name_cpp }}> GetSingleton();
 
  private:
   ~{{ ci.namespace()|class_name_cpp }}() = default;
@@ -83,12 +80,17 @@ class {{ ci.namespace()|class_name_cpp }} final : public {{ ci.namespace()|inter
 
 {%- for obj in ci.iter_object_definitions() %}
 
-class {{ obj.name()|class_name_cpp }} final : public {{ obj.name()|interface_name_xpidl }} {
-  NS_DECL_THREADSAFE_ISUPPORTS
-  NS_DECL_{{ obj.name()|interface_name_xpidl|upper }}
-
+class {{ obj.name()|class_name_cpp }} final {
  public:
+  // TODO: We may not need the cycle collecting machinery if all calls create
+  // a new object. See the note about `[NewObject]` in
+  // https://developer.mozilla.org/en-US/docs/Mozilla/WebIDL_bindings.
+  // NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  // NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS({{ obj.name()|class_name_cpp }})
+
   {{ ci.namespace()|class_name_cpp }}() = default;
+
+  // TODO: More WebIDL machinery (`WrapJSObject`, `GetParentObject`, etc.)
 
  private:
   ~{{ ci.namespace()|class_name_cpp }}();

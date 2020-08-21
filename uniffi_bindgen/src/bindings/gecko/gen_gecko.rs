@@ -24,13 +24,6 @@ impl Config {
             // ...
         }
     }
-
-    // Generates a random UUID in the lowercase hyphenated form that Gecko uses
-    // for interface and component IDs (IIDs and CIDs).
-    pub fn uuid(&self) -> String {
-        // XXX
-        "1234567".into()
-    }
 }
 
 #[derive(Template)]
@@ -59,16 +52,15 @@ impl<'config, 'ci> WebIdl<'config, 'ci> {
     }
 }
 
-#[derive(Template)]
-#[template(syntax = "xpidl", escape = "none", path = "XPIDLTemplate.idl")]
-pub struct XpIdl<'config, 'ci> {
-    config: &'config Config,
-    ci: &'ci ComponentInterface,
+pub enum WebIdlReturnPosition<'a> {
+    OutParam(&'a Type),
+    Return(&'a Type),
+    Void,
 }
 
-impl<'config, 'ci> XpIdl<'config, 'ci> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        Self { config: config, ci }
+impl<'a> WebIdlReturnPosition<'a> {
+    pub fn is_out_param(&self) -> bool {
+        matches!(self, WebIdlReturnPosition::OutParam(_))
     }
 }
 
@@ -83,6 +75,48 @@ impl<'config, 'ci> GeckoWrapper<'config, 'ci> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
         Self { config: config, ci }
     }
+
+    /// Indicates how a WebIDL return value is reflected in C++. Some are passed
+    /// as out parameters, others are returned directly. This helps the template
+    /// generate the correct declaration.
+    pub fn ret_position_cpp(&self, func: &'ci Function) -> WebIdlReturnPosition<'ci> {
+        func.return_type()
+            .map(|type_| match type_ {
+                Type::String => WebIdlReturnPosition::OutParam(type_),
+                Type::Optional(_) => WebIdlReturnPosition::OutParam(type_),
+                Type::Record(_) => WebIdlReturnPosition::OutParam(type_),
+                Type::Sequence(_) => WebIdlReturnPosition::OutParam(type_),
+                _ => WebIdlReturnPosition::Return(type_),
+            })
+            .unwrap_or(WebIdlReturnPosition::Void)
+    }
+
+    /// Returns a suitable default value from the WebIDL function, based on its
+    /// return type. This default value is what's returned if the function
+    /// throws an exception.
+    pub fn ret_default_value_cpp(&self, func: &Function) -> Option<String> {
+        func.return_type().and_then(|type_| {
+            Some(match type_ {
+                Type::Int8
+                | Type::UInt8
+                | Type::Int16
+                | Type::UInt16
+                | Type::Int32
+                | Type::UInt32
+                | Type::Int64
+                | Type::UInt64 => "0".into(),
+                Type::Float32 => "0.0f".into(),
+                Type::Float64 => "0.0".into(),
+                Type::Boolean => "false".into(),
+                Type::Enum(_) => panic!("[TODO: ret_default_cpp({:?})]", type_),
+                Type::Object(_) => "nullptr".into(),
+                Type::String | Type::Record(_) | Type::Optional(_) | Type::Sequence(_) => {
+                    return None
+                }
+                Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
+            })
+        })
+    }
 }
 
 /// Filters for our Askama templates above. These output C++, XPIDL, and
@@ -91,47 +125,9 @@ mod filters {
     use super::*;
     use std::fmt;
 
-    /// Declares an XPIDL type in the interface for this library.
-    pub fn type_xpidl(type_: &Type) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            // XPIDL doesn't have a signed 8-bit integer type, so we use a
-            // 16-bit integer, and rely on the reading and writing code to
-            // check the range.
-            Type::Int8 => "short".into(),
-            Type::UInt8 => "octet".into(),
-            Type::Int16 => "short".into(),
-            Type::UInt16 => "unsigned short".into(),
-            Type::Int32 => "long".into(),
-            Type::UInt32 => "unsigned long".into(),
-            Type::Int64 => "long long".into(),
-            Type::UInt64 => "unsigned long long".into(),
-            Type::Float32 => "float".into(),
-            Type::Float64 => "double".into(),
-            Type::Boolean => "boolean".into(),
-            Type::String => "ACString".into(),
-            Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
-                panic!("uhh")
-            }
-            // TODO: XPIDL non-primitive arguments are all nullable by default.
-            // For enums, records, objects, and errors, we'll need to add a
-            // runtime "not null" check. For optionals...I guess we could use
-            // a `jsval`? The problem with `jsval` is, it could be anything,
-            // and we want to throw a type error if it's anything except
-            // `null`. We can do that at runtime, since we know the FFI
-            // signature, but it's gross.
-            //
-            // Another option is to scrap XPIDL generation and just make a
-            // `[ChromeOnly]` WebIDL binding. Shoehorning arguments through
-            // XPIDL complicates so many things.
-            Type::Optional(type_) => type_xpidl(type_)?,
-            Type::Sequence(type_) => format!("Array<{}>", type_xpidl(type_)?),
-        })
-    }
-
     /// Declares a WebIDL type in the interface for this library.
     pub fn type_webidl(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            // ...But WebIDL does have a signed 8-bit integer type!
             Type::Int8 => "byte".into(),
             Type::UInt8 => "octet".into(),
             Type::Int16 => "short".into(),
@@ -146,9 +142,8 @@ mod filters {
             Type::Float64 => "double".into(),
             Type::Boolean => "boolean".into(),
             Type::String => "DOMString".into(),
-            Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
-                panic!("uhh")
-            }
+            Type::Enum(name) | Type::Record(name) | Type::Object(name) => class_name_webidl(name)?,
+            Type::Error(name) => panic!("[TODO: type_webidl({:?})]", type_),
             Type::Optional(type_) => format!("{}?", type_webidl(type_)?),
             Type::Sequence(type_) => format!("sequence<{}>", type_webidl(type_)?),
         })
@@ -177,8 +172,8 @@ mod filters {
     /// Declares the type of an argument for the C++ binding.
     pub fn arg_type_cpp(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::Int8 => "int16_t".into(),
-            Type::UInt8
+            Type::Int8
+            | Type::UInt8
             | Type::Int16
             | Type::UInt16
             | Type::Int32
@@ -188,16 +183,17 @@ mod filters {
             | Type::Float32
             | Type::Float64
             | Type::Boolean => type_cpp(type_)?,
-            Type::String => "const nsACString&".into(),
-            Type::Enum(name) | Type::Record(name) => format!("{}*", name),
-            Type::Object(name) => format!("{}*", interface_name_xpidl(name)?),
+            Type::String => "const nsAString&".into(),
+            Type::Enum(name) => name.into(),
+            Type::Record(name) | Type::Object(name) => format!("const {}&", class_name_cpp(name)?),
             Type::Error(name) => panic!("[TODO: type_cpp({:?})]", type_),
-            Type::Optional(_) => panic!("[TODO: type_cpp({:?})]", type_),
-            Type::Sequence(type_) => format!("const {}&", type_cpp(type_)?),
+            // Nullable objects might be passed as pointers, not sure?
+            Type::Optional(type_) => format!("const Nullable<{}>&", type_cpp(type_)?),
+            Type::Sequence(type_) => format!("const Sequence<{}>&", type_cpp(type_)?),
         })
     }
 
-    fn type_cpp(type_: &Type) -> Result<String, askama::Error> {
+    pub fn type_cpp(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8 => "int8_t".into(),
             Type::UInt8 => "uint8_t".into(),
@@ -210,11 +206,11 @@ mod filters {
             Type::Float32 => "float".into(),
             Type::Float64 => "double".into(),
             Type::Boolean => "bool".into(),
-            Type::String => "nsCString".into(),
-            Type::Object(name) => format!("nsCOMPtr<{}>", interface_name_xpidl(name)?),
-            Type::Enum(name) | Type::Record(name) => format!("RefPtr<{}>", name),
+            Type::String => "nsString".into(),
+            Type::Enum(name) | Type::Record(name) => class_name_cpp(name)?,
+            Type::Object(name) => format!("RefPtr<{}>", class_name_cpp(name)?),
             Type::Error(name) => panic!("[TODO: type_cpp({:?})]", type_),
-            Type::Optional(_) => panic!("[TODO: type_cpp({:?})]", type_),
+            Type::Optional(type_) => format!("Nullable<{}>", type_cpp(type_)?),
             Type::Sequence(type_) => format!("nsTArray<{}>", type_cpp(type_)?),
         })
     }
@@ -222,8 +218,8 @@ mod filters {
     /// Declares the type of a return value from C++.
     pub fn ret_type_cpp(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::Int8 => "int16_t*".into(),
-            Type::UInt8
+            Type::Int8
+            | Type::UInt8
             | Type::Int16
             | Type::UInt16
             | Type::Int32
@@ -232,19 +228,15 @@ mod filters {
             | Type::UInt64
             | Type::Float32
             | Type::Float64
-            | Type::Boolean => format!("{}*", type_cpp(type_)?),
-            Type::String => "nsACString&".into(),
-            Type::Object(name) => format!("getter_AddRefs<{}>", interface_name_xpidl(name)?),
-            Type::Enum(name) | Type::Record(name) | Type::Error(name) => {
-                panic!("[TODO: ret_type_cpp({:?})]", type_)
+            | Type::Boolean
+            | Type::Enum(_) => type_cpp(type_)?,
+            Type::String => "nsAString&".into(),
+            Type::Object(name) => format!("already_AddRefed<{}>", class_name_cpp(name)?),
+            Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
+            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) => {
+                format!("{}&", type_cpp(type_)?)
             }
-            Type::Optional(_) => panic!("[TODO: ret_type_cpp({:?})]", type_),
-            Type::Sequence(type_) => format!("{}&", type_cpp(type_)?),
         })
-    }
-
-    pub fn interface_name_xpidl(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(format!("mozI{}", nm.to_string().to_camel_case()))
     }
 
     pub fn var_name_webidl(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
@@ -259,17 +251,25 @@ mod filters {
         Ok(nm.to_string().to_camel_case())
     }
 
-    pub fn fn_name_xpidl(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
-    }
-
     pub fn class_name_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 
+    pub fn fn_name_webidl(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_mixed_case())
+    }
+
     /// For interface implementations, function and methods names are
-    // UpperCamelCase, even though they're mixedCamelCase in XPIDL.
+    // UpperCamelCase, even though they're mixedCamelCase in WebIDL.
     pub fn fn_name_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_camel_case())
+    }
+
+    pub fn field_name_cpp(nm: &str) -> Result<String, askama::Error> {
+        Ok(format!("m{}", nm.to_camel_case()))
+    }
+
+    pub fn enum_variant_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 

@@ -12,14 +12,13 @@ use std::{
 };
 
 pub mod gen_gecko;
-pub use gen_gecko::{Config, GeckoWrapper, Header, WebIdl, XpIdl};
+pub use gen_gecko::{Config, GeckoWrapper, Header, WebIdl};
 
 use super::super::interface::ComponentInterface;
 
 pub struct Bindings {
     header: String,
     webidl: String,
-    xpidl: String,
     library: String,
 }
 
@@ -27,8 +26,7 @@ pub struct Bindings {
 ///
 /// Bindings to a Rust interface for Gecko involves more than just generating a
 /// `.cpp` file. We also need to produce a `.h` file with the C-level API
-/// declarations, a `.idl` file with the XPIDL interface declarations, and a
-/// `.webidl` file with the dictionary and enum declarations.
+/// declarations and a `.webidl` file with the interface declaration.
 pub fn write_bindings(
     ci: &ComponentInterface,
     out_dir: &Path,
@@ -42,16 +40,12 @@ pub fn write_bindings(
     let mut webidl_file = out_path.clone();
     webidl_file.push(format!("{}.webidl", ci.namespace()));
 
-    let mut xpidl_file = out_path.clone();
-    xpidl_file.push(format!("{}.idl", ci.namespace()));
-
     let mut source_file = out_path;
     source_file.push(format!("{}.cpp", ci.namespace()));
 
     let Bindings {
         header,
         webidl,
-        xpidl,
         library,
     } = generate_bindings(&ci)?;
 
@@ -60,9 +54,6 @@ pub fn write_bindings(
 
     let mut w = File::create(&webidl_file).context("Failed to create .webidl file for bindings")?;
     write!(w, "{}", webidl)?;
-
-    let mut x = File::create(&xpidl_file).context("Failed to create .idl file for bindings")?;
-    write!(x, "{}", xpidl)?;
 
     let mut l = File::create(&source_file).context("Failed to create .cpp file for bindings")?;
     write!(l, "{}", library)?;
@@ -80,16 +71,12 @@ pub fn generate_bindings(ci: &ComponentInterface) -> Result<Bindings> {
     let webidl = WebIdl::new(&config, &ci)
         .render()
         .context("Failed to render WebIDL bindings")?;
-    let xpidl = XpIdl::new(&config, &ci)
-        .render()
-        .context("Failed to render XPIDL bindings")?;
     let library = GeckoWrapper::new(&config, &ci)
         .render()
         .context("Failed to render Gecko library")?;
     Ok(Bindings {
         header,
         webidl,
-        xpidl,
         library,
     })
 }
