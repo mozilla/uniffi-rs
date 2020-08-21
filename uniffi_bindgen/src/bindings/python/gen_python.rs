@@ -109,11 +109,17 @@ mod filters {
 
     pub fn lower_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 |
-            Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 |
-            Type::Float32 | Type::Float64 | Type::Boolean => {
-                nm.to_string()
-            }
+            Type::Int8
+            | Type::Int16
+            | Type::Int32
+            | Type::Int64
+            | Type::UInt8
+            | Type::UInt16
+            | Type::UInt32
+            | Type::UInt64
+            | Type::Float32
+            | Type::Float64
+            | Type::Boolean => nm.to_string(),
             Type::Enum(_) => format!("{}.value", nm),
             Type::String => format!("{}.encode('utf-8')", nm),
             Type::Record(type_name) => format!("{}._lower({})", type_name, nm),
@@ -156,11 +162,17 @@ mod filters {
 
     pub fn lift_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 |
-            Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 |
-            Type::Float32 | Type::Float64 | Type::Boolean => {
-                format!("{}", nm)
-            }
+            Type::Int8
+            | Type::Int16
+            | Type::Int32
+            | Type::Int64
+            | Type::UInt8
+            | Type::UInt16
+            | Type::UInt32
+            | Type::UInt64
+            | Type::Float32
+            | Type::Float64
+            | Type::Boolean => format!("{}", nm),
             Type::Enum(type_name) => format!("{}({})", type_name, nm),
             Type::String => format!("liftString({})", nm),
             Type::Record(type_name) => format!("{}._lift({})", type_name, nm),

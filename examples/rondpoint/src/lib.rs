@@ -111,7 +111,10 @@ impl Retourneur {
     fn identique_string(&self, value: String) -> String {
         value
     }
-    fn identique_nombres_signes(&self, value: DictionnaireNombresSignes) -> DictionnaireNombresSignes {
+    fn identique_nombres_signes(
+        &self,
+        value: DictionnaireNombresSignes,
+    ) -> DictionnaireNombresSignes {
         value
     }
     fn identique_nombres(&self, value: DictionnaireNombres) -> DictionnaireNombres {

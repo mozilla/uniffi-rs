@@ -69,7 +69,7 @@ mod filters {
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(match type_ {
             // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
-            // support them yet. Thus, we use the signed variants to represent both signed and unsigned 
+            // support them yet. Thus, we use the signed variants to represent both signed and unsigned
             // types from the component API.
             FFIType::Int8 | FFIType::UInt8 => "Byte".to_string(),
             FFIType::Int16 | FFIType::UInt16 => "Short".to_string(),
