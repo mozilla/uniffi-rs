@@ -110,9 +110,11 @@ impl<'config, 'ci> GeckoWrapper<'config, 'ci> {
                 Type::Boolean => "false".into(),
                 Type::Enum(_) => panic!("[TODO: ret_default_cpp({:?})]", type_),
                 Type::Object(_) => "nullptr".into(),
-                Type::String | Type::Record(_) | Type::Optional(_) | Type::Sequence(_) => {
-                    return None
-                }
+                Type::String
+                | Type::Record(_)
+                | Type::Optional(_)
+                | Type::Sequence(_)
+                | Type::Map(_) => return None,
                 Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
             })
         })
@@ -146,6 +148,7 @@ mod filters {
             Type::Error(name) => panic!("[TODO: type_webidl({:?})]", type_),
             Type::Optional(type_) => format!("{}?", type_webidl(type_)?),
             Type::Sequence(type_) => format!("sequence<{}>", type_webidl(type_)?),
+            Type::Map(type_) => format!("record<DOMString, {}>", type_webidl(type_)?),
         })
     }
 
@@ -190,6 +193,7 @@ mod filters {
             // Nullable objects might be passed as pointers, not sure?
             Type::Optional(type_) => format!("const Nullable<{}>&", type_cpp(type_)?),
             Type::Sequence(type_) => format!("const Sequence<{}>&", type_cpp(type_)?),
+            Type::Map(type_) => format!("const Record<nsString, {}>&", type_cpp(type_)?),
         })
     }
 
@@ -212,6 +216,7 @@ mod filters {
             Type::Error(name) => panic!("[TODO: type_cpp({:?})]", type_),
             Type::Optional(type_) => format!("Nullable<{}>", type_cpp(type_)?),
             Type::Sequence(type_) => format!("nsTArray<{}>", type_cpp(type_)?),
+            Type::Map(type_) => format!("Record<nsString, {}>", type_cpp(type_)?),
         })
     }
 
@@ -233,7 +238,7 @@ mod filters {
             Type::String => "nsAString&".into(),
             Type::Object(name) => format!("already_AddRefed<{}>", class_name_cpp(name)?),
             Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
-            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) => {
+            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
                 format!("{}&", type_cpp(type_)?)
             }
         })
@@ -260,7 +265,7 @@ mod filters {
     }
 
     /// For interface implementations, function and methods names are
-    // UpperCamelCase, even though they're mixedCamelCase in WebIDL.
+    /// UpperCamelCase, even though they're mixedCamelCase in WebIDL.
     pub fn fn_name_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
@@ -270,6 +275,8 @@ mod filters {
     }
 
     pub fn enum_variant_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        // TODO: Make sure this does the right thing for hyphenated variants.
+        // Example: "bookmark-added" becomes `Bookmark_added`.
         Ok(nm.to_string().to_camel_case())
     }
 

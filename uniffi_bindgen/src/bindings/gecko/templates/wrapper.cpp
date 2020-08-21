@@ -6,7 +6,7 @@
 namespace mozilla {
 namespace {{ ci.namespace() }} {
 
-// TODO: Move these into the header.
+{#- /* TODO: Move these declarations into the header. */ -#}
 
 {% for rec in ci.iter_record_definitions() -%}
 template <>

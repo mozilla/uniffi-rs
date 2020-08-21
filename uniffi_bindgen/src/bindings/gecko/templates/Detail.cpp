@@ -1,7 +1,9 @@
 // TODO: Add back errors. We may need runtime errors so that we can throw
 // type errors if, say, we omit a dictionary field. (In Gecko WebIDL,
 // all dictionary fields are optional unless required; in UniFFI IDL,
-// they're required by default).
+// they're required by default). Maybe this can be `Result<T, ErrorResult>`,
+// so we can propagate these with more details (like allocation failures,
+// type errors, serialization errors, etc.)
 
 /// A helper class to read values out of a Rust byte buffer.
 class MOZ_STACK_CLASS Reader final {
@@ -551,7 +553,7 @@ struct ViaFfi<T, RustBuffer> {
     T value = Serializable<T>::ReadFrom(reader);
     MOZ_RELEASE_ASSERT(!reader.HasRemaining(), "Junk left in incoming buffer");
     {{ ci.ffi_bytebuffer_free().name() }}(aBuffer);
-    return std::move(value);
+    return value;
   }
 
   static RustBuffer Lower(const T& aValue) {
