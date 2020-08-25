@@ -10,11 +10,11 @@
 //! the `uniffi_macros` crate.
 
 use anyhow::{bail, Result};
-use cargo_metadata::Message;
+// use cargo_metadata::Message;
 use lazy_static::lazy_static;
 use std::{
     collections::HashMap,
-    path::Path,
+    path::{Path, PathBuf},
     process::{Command, Stdio},
     sync::Mutex,
 };
@@ -56,56 +56,7 @@ pub fn run_foreign_language_testcase(pkg_dir: &str, idl_file: &str, test_file: &
 /// Internally, this function does a bit of caching and concurrency management to avoid rebuilding
 /// the component for multiple testcases.
 pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
-    // Have we already compiled this component?
-    let mut compiled_components = COMPILED_COMPONENTS.lock().unwrap();
-    if let Some(cdylib_file) = compiled_components.get(pkg_dir) {
-        return Ok(cdylib_file.to_string());
-    }
-    // Nope, looks like we'll have to compile it afresh.
-    let mut cmd = Command::new("cargo");
-    cmd.arg("build").arg("--message-format=json").arg("--lib");
-    cmd.current_dir(pkg_dir);
-    cmd.stdout(Stdio::piped());
-    let mut child = cmd.spawn()?;
-    let output = std::io::BufReader::new(child.stdout.take().unwrap());
-    // Build the crate, looking for any cdylibs that it might produce.
-    let cdylibs = Message::parse_stream(output)
-        .filter_map(|message| match message {
-            Err(e) => Some(Err(e.into())),
-            Ok(Message::CompilerArtifact(artifact)) => {
-                if artifact.target.kind.iter().any(|item| item == "cdylib") {
-                    Some(Ok(artifact))
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        })
-        .collect::<Result<Vec<_>>>()?;
-    if !child.wait()?.success() {
-        bail!("Failed to execute `cargo build`");
-    }
-    // If we didn't just build exactly one cdylib, we're going to have a bad time.
-    match cdylibs.len() {
-        0 => bail!("Crate did not produce any cdylibs, it must not be a uniffi component"),
-        1 => (),
-        _ => bail!("Crate produced multiple cdylibs, it must not be a uniffi component"),
-    }
-    let cdylib_files: Vec<_> = cdylibs[0]
-        .filenames
-        .iter()
-        .filter(|nm| match nm.extension().unwrap_or_default().to_str() {
-            Some("dylib") | Some("so") => true,
-            _ => false,
-        })
-        .collect();
-    if cdylib_files.len() != 1 {
-        bail!("Failed to build exactly one cdylib file, it must not be a uniffi component");
-    }
-    let cdylib_file = cdylib_files[0].to_string_lossy().into_owned();
-    // Cache the result for subsequent tests.
-    compiled_components.insert(pkg_dir.to_string(), cdylib_file.clone());
-    Ok(cdylib_file)
+    unimplemented!()
 }
 
 /// Execute the `uniffi-bindgen test` command.

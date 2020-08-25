@@ -123,7 +123,7 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
     let component = parse_idl(&idl_file)?;
-    ensure_versions_compatibility(&idl_file, manifest_path_override)?;
+    // ensure_versions_compatibility(&idl_file, manifest_path_override)?;
     let mut filename = Path::new(&idl_file)
         .file_stem()
         .ok_or_else(|| anyhow!("not a file"))?
@@ -141,6 +141,7 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     Ok(())
 }
 
+/*
 // If the crate for which we are generating bindings for depends on
 // a `uniffi` runtime version that doesn't agree with our own version,
 // the developer of that said crate will be in a world of pain.
@@ -184,6 +185,7 @@ fn ensure_versions_compatibility(
     }
     Ok(())
 }
+*/
 
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.

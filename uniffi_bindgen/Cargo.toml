@@ -10,7 +10,7 @@ name = "uniffi-bindgen"
 path = "src/main.rs"
 
 [dependencies]
-cargo_metadata = "0.11"
+# cargo_metadata = { git = "https://github.com/oli-obk/cargo_metadata", rev = "64ee6d1d169103ed60ae4de5ddf84da751e7d841" }
 weedle = "0.11"
 anyhow = "1"
 askama = "0.10"

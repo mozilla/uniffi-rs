@@ -27,7 +27,7 @@
 use anyhow::{bail, Result};
 use bytes::buf::{Buf, BufMut};
 use ffi_support::ByteBuffer;
-use paste::paste;
+use paste::*;
 use std::{collections::HashMap, convert::TryFrom, ffi::CString};
 
 // It would be nice if this module was behind a cfg(test) guard, but it
@@ -160,7 +160,7 @@ macro_rules! impl_via_ffi_for_num_primitive {
     ($($T:ty,)+) => { impl_via_ffi_for_num_primitive!($($T),+); };
     ($($T:ty),*) => {
             $(
-                paste! {
+                paste::item! {
                     unsafe impl ViaFfi for $T {
                         type FfiType = Self;
 
