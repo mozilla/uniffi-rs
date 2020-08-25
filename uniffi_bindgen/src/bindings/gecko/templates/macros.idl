@@ -1,5 +1,0 @@
-{% macro arg_list_decl(func) %}
-    {%- for arg in func.arguments() %}
-    in {{ arg.type_()|type_xpidl }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
-    {%- endfor %}
-{%- endmacro %}

@@ -26,19 +26,69 @@ impl Config {
     }
 }
 
-#[derive(Template)]
-#[template(syntax = "c", escape = "none", path = "HeaderTemplate.h")]
-pub struct Header<'config, 'ci> {
-    config: &'config Config,
-    ci: &'ci ComponentInterface,
+/// Indicates whether a WebIDL type is reflected as an out parameter or return
+/// value in C++. This is used by the namespace and interface templates to
+/// generate the correct argument lists for the binding.
+pub enum ReturnPosition<'a> {
+    OutParam(&'a Type),
+    Return(&'a Type),
+    Void,
 }
 
-impl<'config, 'ci> Header<'config, 'ci> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        Self { config: config, ci }
+impl<'a> ReturnPosition<'a> {
+    /// Indicates how a WebIDL return value is reflected in C++. Some are passed
+    /// as out parameters, others are returned directly. This helps the template
+    /// generate the correct declaration.
+    pub fn for_function(func: &'a Function) -> ReturnPosition<'a> {
+        func.return_type()
+            .map(|type_| match type_ {
+                Type::String => ReturnPosition::OutParam(type_),
+                Type::Optional(_) => ReturnPosition::OutParam(type_),
+                Type::Record(_) => ReturnPosition::OutParam(type_),
+                Type::Sequence(_) => ReturnPosition::OutParam(type_),
+                _ => ReturnPosition::Return(type_),
+            })
+            .unwrap_or(ReturnPosition::Void)
+    }
+
+    /// `true` if the containing type is returned via an out parameter, `false`
+    /// otherwise.
+    pub fn is_out_param(&self) -> bool {
+        matches!(self, ReturnPosition::OutParam(_))
     }
 }
 
+/// Returns a suitable default value from the WebIDL function, based on its
+/// return type. This default value is what's returned if the function
+/// throws an exception.
+pub fn ret_default_value_cpp(func: &Function) -> Option<String> {
+    func.return_type().and_then(|type_| {
+        Some(match type_ {
+            Type::Int8
+            | Type::UInt8
+            | Type::Int16
+            | Type::UInt16
+            | Type::Int32
+            | Type::UInt32
+            | Type::Int64
+            | Type::UInt64 => "0".into(),
+            Type::Float32 => "0.0f".into(),
+            Type::Float64 => "0.0".into(),
+            Type::Boolean => "false".into(),
+            Type::Enum(_) => panic!("[TODO: ret_default_cpp({:?})]", type_),
+            Type::Object(_) => "nullptr".into(),
+            Type::String
+            | Type::Record(_)
+            | Type::Optional(_)
+            | Type::Sequence(_)
+            | Type::Map(_) => return None,
+            Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
+        })
+    })
+}
+
+/// A template for a Firefox WebIDL file. We only generate one of these per
+/// component.
 #[derive(Template)]
 #[template(syntax = "webidl", escape = "none", path = "WebIDLTemplate.webidl")]
 pub struct WebIdl<'config, 'ci> {
@@ -52,72 +102,79 @@ impl<'config, 'ci> WebIdl<'config, 'ci> {
     }
 }
 
-pub enum WebIdlReturnPosition<'a> {
-    OutParam(&'a Type),
-    Return(&'a Type),
-    Void,
-}
-
-impl<'a> WebIdlReturnPosition<'a> {
-    pub fn is_out_param(&self) -> bool {
-        matches!(self, WebIdlReturnPosition::OutParam(_))
-    }
-}
-
+/// A shared header file that's included by all our bindings. This defines
+/// common serialization logic and `extern` declarations for the FFI. Note that
+/// the bindings always include this header file, never the other way around.
 #[derive(Template)]
-#[template(syntax = "cpp", escape = "none", path = "wrapper.cpp")]
-pub struct GeckoWrapper<'config, 'ci> {
+#[template(syntax = "c", escape = "none", path = "SharedHeaderTemplate.h")]
+pub struct SharedHeader<'config, 'ci> {
     config: &'config Config,
     ci: &'ci ComponentInterface,
 }
 
-impl<'config, 'ci> GeckoWrapper<'config, 'ci> {
+impl<'config, 'ci> SharedHeader<'config, 'ci> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
         Self { config: config, ci }
     }
+}
 
-    /// Indicates how a WebIDL return value is reflected in C++. Some are passed
-    /// as out parameters, others are returned directly. This helps the template
-    /// generate the correct declaration.
-    pub fn ret_position_cpp(&self, func: &'ci Function) -> WebIdlReturnPosition<'ci> {
-        func.return_type()
-            .map(|type_| match type_ {
-                Type::String => WebIdlReturnPosition::OutParam(type_),
-                Type::Optional(_) => WebIdlReturnPosition::OutParam(type_),
-                Type::Record(_) => WebIdlReturnPosition::OutParam(type_),
-                Type::Sequence(_) => WebIdlReturnPosition::OutParam(type_),
-                _ => WebIdlReturnPosition::Return(type_),
-            })
-            .unwrap_or(WebIdlReturnPosition::Void)
+/// A header file generated for a namespace with top-level functions.
+#[derive(Template)]
+#[template(syntax = "c", escape = "none", path = "NamespaceHeaderTemplate.h")]
+pub struct NamespaceHeader<'config, 'ci, 'functions> {
+    config: &'config Config,
+    ci: &'ci ComponentInterface,
+    functions: &'functions [Function],
+}
+
+impl<'config, 'ci, 'functions> NamespaceHeader<'config, 'ci, 'functions> {
+    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, functions: &'functions [Function]) -> Self {
+        Self { config, ci, functions }
     }
+}
 
-    /// Returns a suitable default value from the WebIDL function, based on its
-    /// return type. This default value is what's returned if the function
-    /// throws an exception.
-    pub fn ret_default_value_cpp(&self, func: &Function) -> Option<String> {
-        func.return_type().and_then(|type_| {
-            Some(match type_ {
-                Type::Int8
-                | Type::UInt8
-                | Type::Int16
-                | Type::UInt16
-                | Type::Int32
-                | Type::UInt32
-                | Type::Int64
-                | Type::UInt64 => "0".into(),
-                Type::Float32 => "0.0f".into(),
-                Type::Float64 => "0.0".into(),
-                Type::Boolean => "false".into(),
-                Type::Enum(_) => panic!("[TODO: ret_default_cpp({:?})]", type_),
-                Type::Object(_) => "nullptr".into(),
-                Type::String
-                | Type::Record(_)
-                | Type::Optional(_)
-                | Type::Sequence(_)
-                | Type::Map(_) => return None,
-                Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
-            })
-        })
+/// An implementation file generated for a namespace with top-level functions.
+#[derive(Template)]
+#[template(syntax = "cpp", escape = "none", path = "NamespaceTemplate.cpp")]
+pub struct Namespace<'config, 'ci, 'functions> {
+    config: &'config Config,
+    ci: &'ci ComponentInterface,
+    functions: &'functions [Function],
+}
+
+impl<'config, 'ci, 'functions> Namespace<'config, 'ci, 'functions> {
+    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, functions: &'functions [Function]) -> Self {
+        Self { config: config, ci, functions }
+    }
+}
+
+/// A header file generated for an interface.
+#[derive(Template)]
+#[template(syntax = "c", escape = "none", path = "InterfaceHeaderTemplate.h")]
+pub struct InterfaceHeader<'config, 'ci, 'obj> {
+    config: &'config Config,
+    ci: &'ci ComponentInterface,
+    obj: &'obj Object,
+}
+
+impl<'config, 'ci, 'obj> InterfaceHeader<'config, 'ci, 'obj> {
+    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, obj: &'obj Object) -> Self {
+        Self { config: config, ci, obj }
+    }
+}
+
+/// An implementation file generated for a namespace with top-level functions.
+#[derive(Template)]
+#[template(syntax = "cpp", escape = "none", path = "InterfaceTemplate.cpp")]
+pub struct Interface<'config, 'ci, 'obj> {
+    config: &'config Config,
+    ci: &'ci ComponentInterface,
+    obj: &'obj Object,
+}
+
+impl<'config, 'ci, 'obj> Interface<'config, 'ci, 'obj> {
+    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, obj: &'obj Object) -> Self {
+        Self { config: config, ci, obj }
     }
 }
 

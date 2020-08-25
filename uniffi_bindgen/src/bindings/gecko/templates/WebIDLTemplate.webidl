@@ -52,9 +52,9 @@ interface {{ obj.name()|class_name_webidl }} {
     {%- if cons.throws().is_some() %}
     [Throws]
     {% endif %}
-    void constructor(
+    constructor(
         {%- for arg in cons.arguments() %}
-        in {{ arg.type_()|type_webidl }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
+        {{ arg.type_()|type_webidl }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
         {%- endfor %}
     );
     {%- endfor %}
@@ -64,7 +64,7 @@ interface {{ obj.name()|class_name_webidl }} {
     {% endif %}
     {%- match meth.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl }}{% when None %}void{% endmatch %} {{ meth.name()|fn_name_webidl }}(
         {%- for arg in meth.arguments() %}
-        in {{ arg.type_()|type_webidl }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
+        {{ arg.type_()|type_webidl }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
         {%- endfor %}
     );
     {% endfor %}
