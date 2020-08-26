@@ -4,7 +4,51 @@
 #include "mozilla/dom/{{ obj.name()|class_name_webidl }}.h"
 
 namespace mozilla {
-namespace {{ ci.namespace() }} {
+namespace dom {
 
-}  // namespace {{ ci.namespace() }}
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE({{ obj.name()|class_name_webidl }})
+NS_IMPL_CYCLE_COLLECTING_ADDREF({{ obj.name()|class_name_webidl }})
+NS_IMPL_CYCLE_COLLECTING_RELEASE({{ obj.name()|class_name_webidl }})
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION({{ obj.name()|class_name_webidl }})
+  NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
+  NS_INTERFACE_MAP_ENTRY(nsISupports)
+NS_INTERFACE_MAP_END
+
+{% for meth in obj.methods() %}
+{#- /* Return type. `void` for methods that return nothing, or return their
+       value via an out param. */ #}
+{%- match ReturnPosition::for_method(meth) -%}
+{%- when ReturnPosition::OutParam with (_) -%}
+void
+{%- when ReturnPosition::Void %}
+void
+{%- when ReturnPosition::Return with (type_) %}
+{{ type_|ret_type_cpp }}
+{%- endmatch %}
+{{ obj.name()|class_name_cpp }}::{{ meth.name()|fn_name_cpp }}(
+    {%- let args = meth.arguments() %}
+    {%- for arg in args %}
+    {{ arg.type_()|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
+    {%- endfor -%}
+    {#- /* Out param returns. */ #}
+    {%- match ReturnPosition::for_method(meth) -%}
+    {%- when ReturnPosition::OutParam with (type_) -%}
+    {%- if !args.is_empty() %}, {% endif %}
+    {{ type_|ret_type_cpp }} aRetVal
+    {% else %}{% endmatch %}
+    {#- /* Errors. */ #}
+    {%- if meth.throws().is_some() %}
+    {%- if ReturnPosition::for_method(meth).is_out_param() || !args.is_empty() %}, {% endif %}
+    ErrorResult& aRv
+    {%- endif %}
+) {
+  {% match self::ret_default_value_method_cpp(meth) -%}
+  {%- when Some with (val) -%}
+  return {{ val }};
+  {% else %}
+  return;{%- endmatch %}
+}
+{% endfor %}
+
+}  // namespace dom
 }  // namespace mozilla

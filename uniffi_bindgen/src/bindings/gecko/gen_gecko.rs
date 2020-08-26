@@ -41,14 +41,26 @@ impl<'a> ReturnPosition<'a> {
     /// generate the correct declaration.
     pub fn for_function(func: &'a Function) -> ReturnPosition<'a> {
         func.return_type()
-            .map(|type_| match type_ {
-                Type::String => ReturnPosition::OutParam(type_),
-                Type::Optional(_) => ReturnPosition::OutParam(type_),
-                Type::Record(_) => ReturnPosition::OutParam(type_),
-                Type::Sequence(_) => ReturnPosition::OutParam(type_),
-                _ => ReturnPosition::Return(type_),
-            })
+            .map(Self::for_type)
             .unwrap_or(ReturnPosition::Void)
+    }
+
+    /// ...
+    pub fn for_method(meth: &'a Method) -> ReturnPosition<'a> {
+        meth.return_type()
+            .map(Self::for_type)
+            .unwrap_or(ReturnPosition::Void)
+    }
+
+    fn for_type(type_: &'a Type) -> ReturnPosition<'a> {
+        match type_ {
+            Type::String => ReturnPosition::OutParam(type_),
+            Type::Optional(_) => ReturnPosition::OutParam(type_),
+            Type::Record(_) => ReturnPosition::OutParam(type_),
+            Type::Map(_) => ReturnPosition::OutParam(type_),
+            Type::Sequence(_) => ReturnPosition::OutParam(type_),
+            _ => ReturnPosition::Return(type_),
+        }
     }
 
     /// `true` if the containing type is returned via an out parameter, `false`
@@ -62,28 +74,35 @@ impl<'a> ReturnPosition<'a> {
 /// return type. This default value is what's returned if the function
 /// throws an exception.
 pub fn ret_default_value_cpp(func: &Function) -> Option<String> {
-    func.return_type().and_then(|type_| {
-        Some(match type_ {
-            Type::Int8
-            | Type::UInt8
-            | Type::Int16
-            | Type::UInt16
-            | Type::Int32
-            | Type::UInt32
-            | Type::Int64
-            | Type::UInt64 => "0".into(),
-            Type::Float32 => "0.0f".into(),
-            Type::Float64 => "0.0".into(),
-            Type::Boolean => "false".into(),
-            Type::Enum(_) => panic!("[TODO: ret_default_cpp({:?})]", type_),
-            Type::Object(_) => "nullptr".into(),
-            Type::String
-            | Type::Record(_)
-            | Type::Optional(_)
-            | Type::Sequence(_)
-            | Type::Map(_) => return None,
-            Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
-        })
+    func.return_type().and_then(ret_default_value_impl)
+}
+
+/// ...
+pub fn ret_default_value_method_cpp(meth: &Method) -> Option<String> {
+    meth.return_type().and_then(ret_default_value_impl)
+}
+
+fn ret_default_value_impl(type_: &Type) -> Option<String> {
+    Some(match type_ {
+        Type::Int8
+        | Type::UInt8
+        | Type::Int16
+        | Type::UInt16
+        | Type::Int32
+        | Type::UInt32
+        | Type::Int64
+        | Type::UInt64 => "0".into(),
+        Type::Float32 => "0.0f".into(),
+        Type::Float64 => "0.0".into(),
+        Type::Boolean => "false".into(),
+        Type::Enum(_) => panic!("[TODO: ret_default_cpp({:?})]", type_),
+        Type::Object(_) => "nullptr".into(),
+        Type::String
+        | Type::Record(_)
+        | Type::Optional(_)
+        | Type::Sequence(_)
+        | Type::Map(_) => return None,
+        Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
     })
 }
 
@@ -337,13 +356,14 @@ mod filters {
         Ok(nm.to_string().to_camel_case())
     }
 
-    pub fn lift_cpp(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_cpp(lowered: &dyn fmt::Display, lifted: &str, type_: &Type) -> Result<String, askama::Error> {
         let ffi_type = FFIType::from(type_);
         Ok(format!(
-            "detail::ViaFfi<{}, {}>::Lift({})",
+            "detail::ViaFfi<{}, {}>::Lift({}, {})",
             type_cpp(type_)?,
             type_ffi(&ffi_type)?,
-            name
+            lowered,
+            lifted
         ))
     }
 

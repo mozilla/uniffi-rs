@@ -2,7 +2,6 @@
 
 namespace mozilla {
 namespace dom {
-namespace {{ ci.namespace() }} {
 
 {% for func in functions %}
 {#- /* Return type. `void` for methods that return nothing, or return their
@@ -16,15 +15,16 @@ void
 {{ type_|ret_type_cpp }}
 {%- endmatch %}
 {{ ci.namespace()|class_name_cpp }}::{{ func.name()|fn_name_cpp }}(
+    GlobalObject& aGlobal
     {%- let args = func.arguments() %}
+    {%- if !args.is_empty() %}, {% endif %}
     {%- for arg in args %}
     {{ arg.type_()|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
     {%- endfor -%}
     {#- /* Out param returns. */ #}
     {%- match ReturnPosition::for_function(func) -%}
     {%- when ReturnPosition::OutParam with (type_) -%}
-    {%- if !args.is_empty() %}, {% endif %}
-    {{ type_|ret_type_cpp }} aRetVal
+    , {{ type_|ret_type_cpp }} aLiftedRetVal
     {% else %}{% endmatch %}
     {#- /* Errors. */ #}
     {%- if func.throws().is_some() %}
@@ -35,7 +35,7 @@ void
   {%- if func.throws().is_some() %}
   RustError err{0, nullptr};
   {% endif %}
-  {%- if func.return_type().is_some() %}auto retVal = {% endif %}{{ func.ffi_func().name() }}(
+  {%- if func.return_type().is_some() %}auto loweredRetVal = {% endif %}{{ func.ffi_func().name() }}(
     {%- for arg in func.arguments() %}
       {{- arg.name()|lower_cpp(arg.type_()) }}
       {%- if !loop.last %}, {% endif -%}
@@ -56,13 +56,14 @@ void
   {%- endif %}
   {% match ReturnPosition::for_function(func) -%}
   {%- when ReturnPosition::OutParam with (type_) -%}
-  aRetVal = {{ "retVal"|lift_cpp(type_) }};
+  {{ "loweredRetVal"|lift_cpp("aLiftedRetVal", type_) }};
   {%- when ReturnPosition::Return with (type_) %}
-  return {{ "retVal"|lift_cpp(type_) }}
+  {{ type_|type_cpp }} result;
+  {{ "loweredRetVal"|lift_cpp("result", type_) }};
+  return result;
   {%- when ReturnPosition::Void %}{%- endmatch %}
 }
 {% endfor %}
 
-}
-}
-}
+}  // namespace dom
+}  // namespace mozilla

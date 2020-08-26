@@ -4,34 +4,84 @@
 #ifndef mozilla_dom_{{ obj.name()|class_name_webidl }}
 #define mozilla_dom_{{ obj.name()|class_name_webidl }}
 
+#include "jsapi.h"
+#include "nsCOMPtr.h"
+#include "nsWrapperCache.h"
+
 #include "mozilla/Atomics.h"
 
 #include "mozilla/dom/{{ ci.namespace()|class_name_webidl }}Shared.h"
-#include "mozilla/dom/{{ obj.name()|class_name_webidl }}Binding.h"
 
 namespace mozilla {
 namespace dom {
-namespace {{ ci.namespace() }} {
 
-class {{ obj.name()|class_name_cpp }} final {
+class {{ obj.name()|class_name_cpp }} final : public nsISupports, public nsWrapperCache {
  public:
-  // TODO: We may not need the cycle collecting machinery if all calls create
-  // a new object. See the note about `[NewObject]` in
-  // https://developer.mozilla.org/en-US/docs/Mozilla/WebIDL_bindings.
-  // NS_DECL_CYCLE_COLLECTING_ISUPPORTS
-  // NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS({{ obj.name()|class_name_cpp }})
+  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS({{ obj.name()|class_name_cpp }})
 
-  {{ obj.name()|class_name_cpp }}() = default;
+  {{ obj.name()|class_name_cpp }}() {
+    // ...
+  }
 
-  // TODO: More WebIDL machinery (`WrapJSObject`, `GetParentObject`, etc.)
+  JSObject* WrapObject(JSContext* aCx,
+                       JS::Handle<JSObject*> aGivenProto) override {
+    return dom::{{ obj.name()|class_name_cpp }}_Binding::Wrap(aCx, this, aGivenProto);
+  }
+
+  nsISupports* GetParentObject() const { return nullptr; }
+
+  {% for cons in obj.constructors() %}
+  static already_AddRefed<{{ obj.name()|class_name_cpp }}> Constructor(
+    GlobalObject& aGlobal
+    {%- let args = cons.arguments() %}
+    {%- if !args.is_empty() %}, {% endif %}
+    {%- for arg in args %}
+    {{ arg.type_()|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
+    {%- endfor -%}
+  ) {
+    return nullptr;
+  }
+  {%- endfor %}
+
+  {% for meth in obj.methods() %}
+  {#- /* Return type. `void` for methods that return nothing, or return their
+         value via an out param. */ #}
+  {%- match ReturnPosition::for_method(meth) -%}
+  {%- when ReturnPosition::OutParam with (_) -%}
+  void
+  {%- when ReturnPosition::Void %}
+  void
+  {%- when ReturnPosition::Return with (type_) %}
+  {{ type_|ret_type_cpp }}
+  {%- endmatch %}
+  {{ meth.name()|fn_name_cpp }}(
+      {%- let args = meth.arguments() %}
+      {%- for arg in args %}
+      {{ arg.type_()|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
+      {%- endfor -%}
+      {#- /* Out param returns. */ #}
+      {%- match ReturnPosition::for_method(meth) -%}
+      {%- when ReturnPosition::OutParam with (type_) -%}
+      {%- if !args.is_empty() %}, {% endif %}
+      {{ type_|ret_type_cpp }} aRetVal
+      {% else %}{% endmatch %}
+      {#- /* Errors. */ #}
+      {%- if meth.throws().is_some() %}
+      {%- if ReturnPosition::for_method(meth).is_out_param() || !args.is_empty() %}, {% endif %}
+      ErrorResult& aRv
+      {%- endif %}
+  );
+  {% endfor %}
 
  private:
-  ~{{ obj.name()|class_name_cpp }}();
+  ~{{ obj.name()|class_name_cpp }}() {
+    // ...
+  }
 
   mozilla::Atomic<int64_t> mHandle;
 };
 
-}  // namespace {{ ci.namespace() }}
 }  // namespace dom
 }  // namespace mozilla
 

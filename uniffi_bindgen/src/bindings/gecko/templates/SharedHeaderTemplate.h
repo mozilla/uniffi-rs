@@ -53,8 +53,10 @@ void
 
 namespace mozilla {
 namespace dom {
-namespace {{ ci.namespace() }} {
+// namespace {{ ci.namespace() }} {
 
+// TODO: Rename this to something less conflict-y, and
+// make sure `lift_cpp` and `lower_cpp` know about it.
 namespace detail {
 
 // TODO: Add back errors. We may need runtime errors so that we can throw
@@ -318,7 +320,7 @@ struct Serializable {
   static size_t Size(const T& aValue) = delete;
 
   /// Reads a value of type `T` from a byte buffer.
-  static T ReadFrom(Reader& aReader) = delete;
+  static void ReadFrom(Reader& aReader, T& aValue) = delete;
 
   /// Writes a value of type `T` into a byte buffer.
   static void WriteInto(const T& aValue, Writer& aWriter) = delete;
@@ -331,8 +333,8 @@ struct Serializable {
 // FFI can be lifted into a value of type `T`.
 template <typename T, typename FfiType>
 struct ViaFfi {
-  static T Lift(const FfiType& aValue) = delete;
-  static FfiType Lower(const T& aValue) = delete;
+  static void Lift(const FfiType& aLowered, T& aLifted) = delete;
+  static FfiType Lower(const T& aLifted) = delete;
 };
 
 // This macro generates boilerplate specializations for primitive numeric types
@@ -341,15 +343,15 @@ struct ViaFfi {
   template <>                                                               \
   struct Serializable<Type> {                                               \
     static size_t Size(const Type& aValue) { return sizeof(Type); }         \
-    static Type ReadFrom(Reader& aReader) { return aReader.readFunc(); }    \
+    static void ReadFrom(Reader& aReader, Type& aValue) { aValue = aReader.readFunc(); }    \
     static void WriteInto(const Type& aValue, Writer& aWriter) {            \
       aWriter.writeFunc(aValue);                                            \
     }                                                                       \
   };                                                                        \
   template <>                                                               \
   struct ViaFfi<Type, Type> {                                               \
-    static Type Lift(const Type& aValue) { return aValue; }                 \
-    static Type Lower(const Type& aValue) { return aValue; }                \
+    static void Lift(const Type& aLowered, Type& aLifted) { aLifted = aLowered; }                 \
+    static Type Lower(const Type& aLifted) { return aLifted; }                \
   }
 
 UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(uint8_t, ReadUInt8, WriteUInt8);
@@ -369,7 +371,7 @@ UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(double, ReadDouble, WriteDouble);
 template <>
 struct Serializable<bool> {
   static size_t Size(const bool& aValue) { return 1; }
-  static bool ReadFrom(Reader& aReader) { return aReader.ReadUInt8() != 0; }
+  static void ReadFrom(Reader& aReader, bool& aValue) { aValue = aReader.ReadUInt8() != 0; }
   static void WriteInto(const bool& aValue, Writer& aWriter) {
     aWriter.WriteUInt8(aValue ? 1 : 0);
   }
@@ -377,8 +379,8 @@ struct Serializable<bool> {
 
 template <>
 struct ViaFfi<bool, uint8_t> {
-  static bool Lift(const uint8_t& aValue) { return aValue != 0; }
-  static uint8_t Lower(const bool& aValue) { return aValue ? 1 : 0; }
+  static void Lift(const uint8_t& aLowered, bool& aLifted) { aLifted = aLowered != 0; }
+  static uint8_t Lower(const bool& aLifted) { return aLifted ? 1 : 0; }
 };
 
 /// Strings are length-prefixed and UTF-8 encoded when serialized
@@ -404,8 +406,8 @@ struct Serializable<nsCString> {
     return size.value();
   }
 
-  static nsCString ReadFrom(Reader& aReader) {
-    return aReader.ReadRawString<nsCString>(
+  static void ReadFrom(Reader& aReader, nsCString& aValue) {
+    aValue = aReader.ReadRawString<nsCString>(
         [](Span<const char> aRawString) { return nsCString(aRawString); });
   }
 
@@ -419,13 +421,13 @@ struct Serializable<nsCString> {
 
 template <>
 struct ViaFfi<nsCString, char*> {
-  static nsCString Lift(const char*& aValue) {
-    return nsCString(MakeStringSpan(aValue));
+  static void Lift(const char*& aLowered, nsCString& aLifted) {
+    aLifted = nsCString(MakeStringSpan(aLowered));
   }
 
-  static char* Lower(const nsCString& aValue) {
+  static char* Lower(const nsCString& aLifted) {
     RustError error{0, nullptr};
-    char* result = {{ ci.ffi_string_alloc_from().name() }}(aValue.BeginReading(), &error);
+    char* result = {{ ci.ffi_string_alloc_from().name() }}(aLifted.BeginReading(), &error);
     MOZ_RELEASE_ASSERT(!error.mCode,
                        "Failed to copy narrow string to Rust string");
     return result;
@@ -441,8 +443,8 @@ struct Serializable<nsString> {
     return size.value();
   }
 
-  static nsString ReadFrom(Reader& aReader) {
-    return aReader.ReadRawString<nsString>([](Span<const char> aRawString) {
+  static void ReadFrom(Reader& aReader, nsString& aValue) {
+    aValue = aReader.ReadRawString<nsString>([](Span<const char> aRawString) {
       nsAutoString result;
       AppendUTF8toUTF16(aRawString, result);
       return result;
@@ -470,17 +472,17 @@ struct Serializable<nsString> {
 
 template <>
 struct ViaFfi<nsString, char*> {
-  static nsString Lift(const char*& aValue) {
+  static nsString Lift(const char*& aLowered, nsString& aLifted) {
     nsAutoString utf16;
-    CopyUTF8toUTF16(MakeStringSpan(aValue), utf16);
-    return std::move(utf16);
+    CopyUTF8toUTF16(MakeStringSpan(aLowered), utf16);
+    aLifted = utf16;
   }
 
-  static char* Lower(const nsString& aValue) {
+  static char* Lower(const nsString& aLifted) {
     // Encode the string to UTF-8, then make a Rust string from the contents.
     // This copies the string twice, but is safe.
     nsAutoCString utf8;
-    CopyUTF16toUTF8(aValue, utf8);
+    CopyUTF16toUTF8(aLifted, utf8);
     RustError error{0, nullptr};
     char* result = {{ ci.ffi_string_alloc_from().name() }}(utf8.BeginReading(), &error);
     MOZ_RELEASE_ASSERT(!error.mCode,
@@ -512,14 +514,17 @@ struct Serializable<dom::Nullable<T>> {
     return size.value();
   }
 
-  static dom::Nullable<T> ReadFrom(Reader& aReader) {
+  static void ReadFrom(Reader& aReader, dom::Nullable<T>& aValue) {
     uint8_t hasValue = aReader.ReadUInt8();
     MOZ_RELEASE_ASSERT(hasValue == 0 || hasValue == 1,
                        "Unexpected nullable type tag");
     if (!hasValue) {
-      return dom::Nullable<T>();
+      aValue = dom::Nullable<T>();
+    } else {
+      T value;
+      Serializable<T>::ReadFrom(aReader, value);
+      aValue = dom::Nullable<T>(std::move(value));
     }
-    return dom::Nullable<T>(std::move(Serializable<T>::ReadFrom(aReader)));
   };
 
   static void WriteInto(const dom::Nullable<T>& aValue, Writer& aWriter) {
@@ -575,7 +580,7 @@ struct Serializable<dom::Sequence<T>> {
   // lowered from the C++ WebIDL binding to the FFI. If the FFI function
   // returns a sequence, it'll be lifted into an `nsTArray<T>`, not a
   // `dom::Sequence<T>`. See the note about sequences above.
-  static dom::Sequence<T> ReadFrom(Reader& aReader) = delete;
+  static void ReadFrom(Reader& aReader, dom::Sequence<T>& aValue) = delete;
 
   static void WriteInto(const dom::Sequence<T>& aValue, Writer& aWriter) {
     SequenceTraits<dom::Sequence<T>>::WriteInto(aValue, aWriter);
@@ -588,17 +593,32 @@ struct Serializable<nsTArray<T>> {
     return SequenceTraits<nsTArray<T>>::Size(aValue);
   }
 
-  static nsTArray<T> ReadFrom(Reader& aReader) {
+  static void ReadFrom(Reader& aReader, nsTArray<T>& aValue) {
     uint32_t length = aReader.ReadUInt32();
-    auto result = nsTArray<T>(length);
+    aValue.SetCapacity(length);
+    aValue.TruncateLength(0);
     for (uint32_t i = 0; i < length; ++i) {
-      result.AppendElement(std::move(Serializable<T>::ReadFrom(aReader)));
+      Serializable<T>::ReadFrom(aReader, *aValue.AppendElement());
     }
-    return std::move(result);
   };
 
   static void WriteInto(const nsTArray<T>& aValue, Writer& aWriter) {
     SequenceTraits<nsTArray<T>>::WriteInto(aValue, aWriter);
+  }
+};
+
+template <typename K, typename V>
+struct Serializable<Record<K, V>> {
+  static size_t Size(const Record<K, V>& aValue) {
+    MOZ_RELEASE_ASSERT(false, "Not implemented yet");
+  }
+
+  static void ReadFrom(Reader& aReader, Record<K, V>& aValue) {
+    MOZ_RELEASE_ASSERT(false, "Not implemented yet");
+  };
+
+  static void WriteInto(const Record<K, V>& aValue, Writer& aWriter) {
+    MOZ_RELEASE_ASSERT(false, "Not implemented yet");
   }
 };
 
@@ -607,71 +627,40 @@ struct Serializable<nsTArray<T>> {
 
 template <typename T>
 struct ViaFfi<T, RustBuffer> {
-  static T Lift(const RustBuffer& aBuffer) {
-    auto reader = Reader(aBuffer);
-    T value = Serializable<T>::ReadFrom(reader);
+  static void Lift(const RustBuffer& aLowered, T& aLifted) {
+    auto reader = Reader(aLowered);
+    Serializable<T>::ReadFrom(reader, aLifted);
     MOZ_RELEASE_ASSERT(!reader.HasRemaining(), "Junk left in incoming buffer");
-    {{ ci.ffi_bytebuffer_free().name() }}(aBuffer);
-    return value;
+    {{ ci.ffi_bytebuffer_free().name() }}(aLowered);
   }
 
-  static RustBuffer Lower(const T& aValue) {
-    size_t size = Serializable<T>::Size(aValue);
+  static RustBuffer Lower(const T& aLifted) {
+    size_t size = Serializable<T>::Size(aLifted);
     auto writer = Writer(size);
-    Serializable<T>::WriteInto(aValue, writer);
+    Serializable<T>::WriteInto(aLifted, writer);
     return writer.ToRustBuffer();
   }
 };
 
 }  // namespace detail
 
-{% for rec in ci.iter_record_definitions() -%}
-template <>
-struct detail::Serializable<{{ rec.name()|class_name_cpp }}> {
-  static size_t Size(const {{ rec.name()|class_name_cpp }}& aValue) {
-    CheckedInt<size_t> size;
-    {%- for field in rec.fields() %}
-    // TODO: Make this a runtime error, not a fatal crash.
-    MOZ_RELEASE_ASSERT(aValue.{{ field.name()|field_name_cpp }}.WasPassed());
-    size += detail::Serializable<{{ field.type_()|type_cpp }}>::Size(aValue.{{ field.name()|field_name_cpp }}.Value());
-    {%- endfor %}
-    MOZ_RELEASE_ASSERT(size.isValid());
-    return size.value();
-  }
-
-  static {{ rec.name()|class_name_cpp }} ReadFrom(detail::Reader& aReader) {
-    {{ rec.name()|class_name_cpp }} result;
-    {%- for field in rec.fields() %}
-    value.{{ field.name()|field_name_cpp }}.Construct() = detail::Serializable<{{ field.type_()|type_cpp }}>::ReadFrom(aReader);
-    {%- endfor %}
-    return std::move(result);
-  }
-
-  static void WriteInto(const {{ rec.name()|class_name_cpp }}& aValue, detail::Writer& aWriter) {
-    {%- for field in rec.fields() %}
-    // TODO: Make this a runtime error, not a fatal crash.
-    MOZ_RELEASE_ASSERT(aValue.{{ field.name()|field_name_cpp }}.WasPassed());
-    detail::Serializable<{{ field.type_()|type_cpp }}>::WriteInto(aValue.{{ field.name()|field_name_cpp }}.Value(), aWriter);
-    {%- endfor %}
-  }
-};
-{% endfor %}
-
 {%- for e in ci.iter_enum_definitions() %}
 template <>
 struct detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
-  static {{ e.name()|class_name_cpp }} Lift(const uint32_t& aValue) {
-    switch (aValue) {
+  static void Lift(const uint32_t& aLowered, {{ e.name()|class_name_cpp }}& aLifted) {
+    switch (aLowered) {
       {% for variant in e.variants() -%}
-      case {{ loop.index }}: return {{ e.name()|class_name_cpp }}::{{ variant|enum_variant_cpp }};
+      case {{ loop.index }}:
+        aLifted = {{ e.name()|class_name_cpp }}::{{ variant|enum_variant_cpp }};
+        break;
       {% endfor -%}
       default:
         MOZ_ASSERT_UNREACHABLE("Unexpected enum case");
     }
   }
 
-  static uint32_t Lower(const {{ e.name()|class_name_cpp }}& aValue) {
-    switch (aValue) {
+  static uint32_t Lower(const {{ e.name()|class_name_cpp }}& aLifted) {
+    switch (aLifted) {
       {% for variant in e.variants() -%}
       case {{ e.name()|class_name_cpp }}::{{ variant|enum_variant_cpp }}: return {{ loop.index }};
       {% endfor %}
@@ -685,9 +674,9 @@ struct detail::Serializable<{{ e.name()|class_name_cpp }}> {
     return sizeof(uint32_t);
   }
 
-  static {{ e.name()|class_name_cpp }} ReadFrom(detail::Reader& aReader) {
+  static void ReadFrom(detail::Reader& aReader, {{ e.name()|class_name_cpp }}& aValue) {
     auto rawValue = aReader.ReadUInt32();
-    return detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t>::Lift(rawValue);
+    detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t>::Lift(rawValue, aValue);
   }
 
   static void WriteInto(const {{ e.name()|class_name_cpp }}& aValue, detail::Writer& aWriter) {
@@ -696,7 +685,33 @@ struct detail::Serializable<{{ e.name()|class_name_cpp }}> {
 };
 {% endfor %}
 
-}  // namespace {{ ci.namespace() }}
+{% for rec in ci.iter_record_definitions() -%}
+template <>
+struct detail::Serializable<{{ rec.name()|class_name_cpp }}> {
+  static size_t Size(const {{ rec.name()|class_name_cpp }}& aValue) {
+    CheckedInt<size_t> size;
+    {%- for field in rec.fields() %}
+    size += detail::Serializable<{{ field.type_()|type_cpp }}>::Size(aValue.{{ field.name()|field_name_cpp }});
+    {%- endfor %}
+    MOZ_RELEASE_ASSERT(size.isValid());
+    return size.value();
+  }
+
+  static void ReadFrom(detail::Reader& aReader, {{ rec.name()|class_name_cpp }}& aValue) {
+    {%- for field in rec.fields() %}
+    detail::Serializable<{{ field.type_()|type_cpp }}>::ReadFrom(aReader, aValue.{{ field.name()|field_name_cpp }});
+    {%- endfor %}
+  }
+
+  static void WriteInto(const {{ rec.name()|class_name_cpp }}& aValue, detail::Writer& aWriter) {
+    {%- for field in rec.fields() %}
+    detail::Serializable<{{ field.type_()|type_cpp }}>::WriteInto(aValue.{{ field.name()|field_name_cpp }}, aWriter);
+    {%- endfor %}
+  }
+};
+{% endfor %}
+
+// }  // namespace {{ ci.namespace() }}
 }  // namespace dom
 }  // namespace mozilla
 

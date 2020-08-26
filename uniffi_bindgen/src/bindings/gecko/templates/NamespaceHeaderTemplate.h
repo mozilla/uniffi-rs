@@ -4,20 +4,19 @@
 #ifndef mozilla_dom_{{ ci.namespace()|class_name_webidl }}
 #define mozilla_dom_{{ ci.namespace()|class_name_webidl }}
 
-#include "mozilla/dom/ErrorResult.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/dom/{{ ci.namespace()|class_name_webidl }}Shared.h"
-#include "mozilla/dom/{{ ci.namespace()|class_name_webidl }}Binding.h"
 
 namespace mozilla {
 namespace dom {
-namespace {{ ci.namespace() }} {
 
 class {{ ci.namespace()|class_name_cpp }} final {
  public:
   {{ ci.namespace()|class_name_cpp }}() = default;
 
   {% for func in functions %}
-  {#- /* Return type. `void` for methods that return nothing, or return their
+  static
+  {# /* Return type. `void` for methods that return nothing, or return their
          value via an out param. */ #}
   {%- match ReturnPosition::for_function(func) -%}
   {%- when ReturnPosition::OutParam with (_) -%}
@@ -28,15 +27,16 @@ class {{ ci.namespace()|class_name_cpp }} final {
   {{ type_|ret_type_cpp }}
   {%- endmatch %}
   {{ func.name()|fn_name_cpp }}(
+      GlobalObject& aGlobal
       {%- let args = func.arguments() %}
+      {%- if !args.is_empty() %}, {% endif %}
       {%- for arg in args %}
       {{ arg.type_()|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
       {%- endfor -%}
       {#- /* Out param returns. */ #}
       {%- match ReturnPosition::for_function(func) -%}
       {%- when ReturnPosition::OutParam with (type_) -%}
-      {%- if !args.is_empty() %}, {% endif %}
-      {{ type_|ret_type_cpp }} aRetVal
+      , {{ type_|ret_type_cpp }} aRetVal
       {% else %}{% endmatch %}
       {#- /* Errors. */ #}
       {%- if func.throws().is_some() %}
@@ -50,7 +50,6 @@ class {{ ci.namespace()|class_name_cpp }} final {
   ~{{ ci.namespace()|class_name_cpp }}() = default;
 };
 
-}  // namespace {{ ci.namespace() }}
 }  // namespace dom
 }  // namespace mozilla
 
