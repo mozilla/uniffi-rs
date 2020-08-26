@@ -550,14 +550,11 @@ struct Serializable<dom::Nullable<T>> {
 template <typename T>
 struct SequenceTraits {
   static size_t Size(const T& aValue) {
-    if (aValue.IsEmpty()) {
-      return sizeof(uint32_t);
+    CheckedInt<size_t> size;
+    size += sizeof(uint32_t); // For the length prefix.
+    for (const typename T::elem_type& element : aValue) {
+      size += Serializable<typename T::elem_type>::Size(element);
     }
-    // Arrays are limited to `uint32_t` bytes.
-    CheckedInt<uint32_t> size(
-        Serializable<typename T::elem_type>::Size(aValue.ElementAt(0)));
-    size *= aValue.Length();
-    size += sizeof(uint32_t);  // For the length prefix.
     MOZ_RELEASE_ASSERT(size.isValid());
     return size.value();
   }
@@ -610,15 +607,33 @@ struct Serializable<nsTArray<T>> {
 template <typename K, typename V>
 struct Serializable<Record<K, V>> {
   static size_t Size(const Record<K, V>& aValue) {
-    MOZ_RELEASE_ASSERT(false, "Not implemented yet");
+    CheckedInt<size_t> size;
+    size += sizeof(uint32_t); // For the length prefix.
+    for (const typename Record<K, V>::EntryType& entry : aValue.Entries()) {
+      size += Serializable<K>::Size(entry.mKey);
+      size += Serializable<V>::Size(entry.mValue);
+    }
+    MOZ_RELEASE_ASSERT(size.isValid());
+    return size.value();
   }
 
   static void ReadFrom(Reader& aReader, Record<K, V>& aValue) {
-    MOZ_RELEASE_ASSERT(false, "Not implemented yet");
+    uint32_t length = aReader.ReadUInt32();
+    aValue.Entries().SetCapacity(length);
+    aValue.Entries().TruncateLength(0);
+    for (uint32_t i = 0; i < length; ++i) {
+      typename Record<K, V>::EntryType* entry = aValue.Entries().AppendElement();
+      Serializable<K>::ReadFrom(aReader, entry->mKey);
+      Serializable<V>::ReadFrom(aReader, entry->mValue);
+    }
   };
 
   static void WriteInto(const Record<K, V>& aValue, Writer& aWriter) {
-    MOZ_RELEASE_ASSERT(false, "Not implemented yet");
+    aWriter.WriteUInt32(aValue.Entries().Length());
+    for (const typename Record<K, V>::EntryType& entry : aValue.Entries()) {
+      Serializable<K>::WriteInto(entry.mKey, aWriter);
+      Serializable<V>::WriteInto(entry.mValue, aWriter);
+    }
   }
 };
 
