@@ -32,27 +32,12 @@ impl Config {
 pub enum ReturnPosition<'a> {
     OutParam(&'a Type),
     Return(&'a Type),
-    Void,
 }
 
 impl<'a> ReturnPosition<'a> {
-    /// Indicates how a WebIDL return value is reflected in C++. Some are passed
-    /// as out parameters, others are returned directly. This helps the template
-    /// generate the correct declaration.
-    pub fn for_function(func: &'a Function) -> ReturnPosition<'a> {
-        func.return_type()
-            .map(Self::for_type)
-            .unwrap_or(ReturnPosition::Void)
-    }
-
-    /// ...
-    pub fn for_method(meth: &'a Method) -> ReturnPosition<'a> {
-        meth.return_type()
-            .map(Self::for_type)
-            .unwrap_or(ReturnPosition::Void)
-    }
-
-    fn for_type(type_: &'a Type) -> ReturnPosition<'a> {
+    /// Given a type, returns a tag indicating whether it's returned by value or
+    /// via an out parameter.
+    pub fn for_type(type_: &'a Type) -> ReturnPosition<'a> {
         match type_ {
             Type::String => ReturnPosition::OutParam(type_),
             Type::Optional(_) => ReturnPosition::OutParam(type_),
@@ -62,27 +47,12 @@ impl<'a> ReturnPosition<'a> {
             _ => ReturnPosition::Return(type_),
         }
     }
-
-    /// `true` if the containing type is returned via an out parameter, `false`
-    /// otherwise.
-    pub fn is_out_param(&self) -> bool {
-        matches!(self, ReturnPosition::OutParam(_))
-    }
 }
 
-/// Returns a suitable default value from the WebIDL function, based on its
-/// return type. This default value is what's returned if the function
-/// throws an exception.
-pub fn ret_default_value_cpp(func: &Function) -> Option<String> {
-    func.return_type().and_then(ret_default_value_impl)
-}
-
-/// ...
-pub fn ret_default_value_method_cpp(meth: &Method) -> Option<String> {
-    meth.return_type().and_then(ret_default_value_impl)
-}
-
-fn ret_default_value_impl(type_: &Type) -> Option<String> {
+/// Returns a dummy empty value for the given type. This is used to
+/// implement the `cpp::bail` macro to return early if a WebIDL function or
+/// method throws an exception.
+pub fn default_return_value_cpp(type_: &Type) -> Option<String> {
     Some(match type_ {
         Type::Int8
         | Type::UInt8
@@ -95,13 +65,11 @@ fn ret_default_value_impl(type_: &Type) -> Option<String> {
         Type::Float32 => "0.0f".into(),
         Type::Float64 => "0.0".into(),
         Type::Boolean => "false".into(),
-        Type::Enum(_) => panic!("[TODO: ret_default_cpp({:?})]", type_),
+        Type::Enum(name) => format!("{}::EndGuard_", name),
         Type::Object(_) => "nullptr".into(),
-        Type::String
-        | Type::Record(_)
-        | Type::Optional(_)
-        | Type::Sequence(_)
-        | Type::Map(_) => return None,
+        Type::String | Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+            return None
+        }
         Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
     })
 }
@@ -147,8 +115,16 @@ pub struct NamespaceHeader<'config, 'ci, 'functions> {
 }
 
 impl<'config, 'ci, 'functions> NamespaceHeader<'config, 'ci, 'functions> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, functions: &'functions [Function]) -> Self {
-        Self { config, ci, functions }
+    pub fn new(
+        config: &'config Config,
+        ci: &'ci ComponentInterface,
+        functions: &'functions [Function],
+    ) -> Self {
+        Self {
+            config,
+            ci,
+            functions,
+        }
     }
 }
 
@@ -162,8 +138,16 @@ pub struct Namespace<'config, 'ci, 'functions> {
 }
 
 impl<'config, 'ci, 'functions> Namespace<'config, 'ci, 'functions> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, functions: &'functions [Function]) -> Self {
-        Self { config: config, ci, functions }
+    pub fn new(
+        config: &'config Config,
+        ci: &'ci ComponentInterface,
+        functions: &'functions [Function],
+    ) -> Self {
+        Self {
+            config: config,
+            ci,
+            functions,
+        }
     }
 }
 
@@ -178,7 +162,11 @@ pub struct InterfaceHeader<'config, 'ci, 'obj> {
 
 impl<'config, 'ci, 'obj> InterfaceHeader<'config, 'ci, 'obj> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface, obj: &'obj Object) -> Self {
-        Self { config: config, ci, obj }
+        Self {
+            config: config,
+            ci,
+            obj,
+        }
     }
 }
 
@@ -193,7 +181,11 @@ pub struct Interface<'config, 'ci, 'obj> {
 
 impl<'config, 'ci, 'obj> Interface<'config, 'ci, 'obj> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface, obj: &'obj Object) -> Self {
-        Self { config: config, ci, obj }
+        Self {
+            config: config,
+            ci,
+            obj,
+        }
     }
 }
 
@@ -248,6 +240,11 @@ mod filters {
         })
     }
 
+    pub fn ret_type_ffi(type_: &Type) -> Result<String, askama::Error> {
+        let ffi_type = FFIType::from(type_);
+        Ok(type_ffi(&ffi_type)?)
+    }
+
     /// Declares the type of an argument for the C++ binding.
     pub fn arg_type_cpp(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -286,7 +283,7 @@ mod filters {
             Type::Float32 => "float".into(),
             Type::Float64 => "double".into(),
             Type::Boolean => "bool".into(),
-            Type::String => "nsString".into(),
+            Type::String => "nsAString".into(),
             Type::Enum(name) | Type::Record(name) => class_name_cpp(name)?,
             Type::Object(name) => format!("RefPtr<{}>", class_name_cpp(name)?),
             Type::Error(name) => panic!("[TODO: type_cpp({:?})]", type_),
@@ -356,7 +353,11 @@ mod filters {
         Ok(nm.to_string().to_camel_case())
     }
 
-    pub fn lift_cpp(lowered: &dyn fmt::Display, lifted: &str, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_cpp(
+        lowered: &dyn fmt::Display,
+        lifted: &str,
+        type_: &Type,
+    ) -> Result<String, askama::Error> {
         let ffi_type = FFIType::from(type_);
         Ok(format!(
             "detail::ViaFfi<{}, {}>::Lift({}, {})",

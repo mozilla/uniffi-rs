@@ -12,7 +12,9 @@ use std::{
 };
 
 pub mod gen_gecko;
-pub use gen_gecko::{Config, WebIdl, SharedHeader, NamespaceHeader, Namespace, InterfaceHeader, Interface};
+pub use gen_gecko::{
+    Config, Interface, InterfaceHeader, Namespace, NamespaceHeader, SharedHeader, WebIdl,
+};
 
 use super::super::interface::ComponentInterface;
 
@@ -37,7 +39,7 @@ pub fn write_bindings(
     out_dir: &Path,
     _try_format_code: bool,
 ) -> Result<()> {
-    use heck::{CamelCase};
+    use heck::CamelCase;
 
     let out_path = PathBuf::from(out_dir);
 
@@ -54,18 +56,30 @@ pub fn write_bindings(
 
     let mut shared_header_file = out_path.clone();
     shared_header_file.push(format!("{}Shared.h", ci.namespace().to_camel_case()));
-    let mut h = File::create(&shared_header_file).context("Failed to create shared header file for bindings")?;
+    let mut h = File::create(&shared_header_file)
+        .context("Failed to create shared header file for bindings")?;
     write!(h, "{}", shared_header)?;
 
-    for Source { name, header, source } in sources {
+    for Source {
+        name,
+        header,
+        source,
+    } in sources
+    {
         let mut header_file = out_path.clone();
         header_file.push(format!("{}.h", name));
-        let mut h = File::create(&header_file).context(format!("Failed to create header file for `{}` bindings", name))?;
+        let mut h = File::create(&header_file).context(format!(
+            "Failed to create header file for `{}` bindings",
+            name
+        ))?;
         write!(h, "{}", header)?;
 
         let mut source_file = out_path.clone();
         source_file.push(format!("{}.cpp", name));
-        let mut w = File::create(&source_file).context(format!("Failed to create header file for `{}` bindings", name))?;
+        let mut w = File::create(&source_file).context(format!(
+            "Failed to create header file for `{}` bindings",
+            name
+        ))?;
         write!(w, "{}", source)?;
     }
 
@@ -76,7 +90,7 @@ pub fn write_bindings(
 pub fn generate_bindings(ci: &ComponentInterface) -> Result<Bindings> {
     let config = Config::from(&ci);
     use askama::Template;
-    use heck::{CamelCase};
+    use heck::CamelCase;
 
     let webidl = WebIdl::new(&config, &ci)
         .render()

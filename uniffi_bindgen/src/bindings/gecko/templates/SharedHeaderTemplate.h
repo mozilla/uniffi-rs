@@ -129,16 +129,15 @@ class MOZ_STACK_CLASS Reader final {
   /// the backing Rust byte buffer is freed. It must not call any other methods
   /// on the reader.
   template <typename T>
-  T ReadRawString(const std::function<T(Span<const char>)>& aClosure) {
+  void ReadRawString(const std::function<void(Span<const char>, T& aString)>& aClosure, T& aString) {
     uint32_t length = ReadInt32();
     CheckedInt<size_t> newOffset = mOffset;
     newOffset += length;
     AssertInBounds(newOffset);
     const char* begin =
         reinterpret_cast<const char*>(&mBuffer.mData[mOffset.value()]);
-    T result = aClosure(Span(begin, length));
+    aClosure(Span(begin, length), aString);
     mOffset = newOffset;
-    return result;
   }
 
  private:
@@ -398,21 +397,23 @@ struct ViaFfi<bool, uint8_t> {
 /// `nsString`s must be converted to UTF-8 first.
 
 template <>
-struct Serializable<nsCString> {
-  static size_t Size(const nsString& aValue) {
+struct Serializable<nsACString> {
+  static size_t Size(const nsACString& aValue) {
     CheckedInt<size_t> size(aValue.Length());
     size += sizeof(uint32_t);  // For the length prefix.
     MOZ_RELEASE_ASSERT(size.isValid());
     return size.value();
   }
 
-  static void ReadFrom(Reader& aReader, nsCString& aValue) {
-    aValue = aReader.ReadRawString<nsCString>(
-        [](Span<const char> aRawString) { return nsCString(aRawString); });
+  static void ReadFrom(Reader& aReader, nsACString& aValue) {
+    aReader.ReadRawString<nsACString>(
+      [](Span<const char> aRawString, nsACString& aValue) { aValue.Append(aRawString); },
+      aValue
+    );
   }
 
-  static void WriteInto(const nsCString& aValue, Writer& aWriter) {
-    aWriter.WriteRawString(aValue.Length(), [aValue](Span<char> aRawString) {
+  static void WriteInto(const nsACString& aValue, Writer& aWriter) {
+    aWriter.WriteRawString(aValue.Length(), [&](Span<char> aRawString) {
       memcpy(aRawString.Elements(), aValue.BeginReading(), aRawString.Length());
       return aRawString.Length();
     });
@@ -420,48 +421,47 @@ struct Serializable<nsCString> {
 };
 
 template <>
-struct ViaFfi<nsCString, char*> {
-  static void Lift(const char*& aLowered, nsCString& aLifted) {
-    aLifted = nsCString(MakeStringSpan(aLowered));
+struct ViaFfi<nsACString, char*> {
+  static void Lift(const char*& aLowered, nsACString& aLifted) {
+    aLifted.Append(MakeStringSpan(aLowered));
   }
 
-  static char* Lower(const nsCString& aLifted) {
-    RustError error{0, nullptr};
-    char* result = {{ ci.ffi_string_alloc_from().name() }}(aLifted.BeginReading(), &error);
-    MOZ_RELEASE_ASSERT(!error.mCode,
+  static char* Lower(const nsACString& aLifted) {
+    RustError err = {0, nullptr};
+    char* result = {{ ci.ffi_string_alloc_from().name() }}(aLifted.BeginReading(), &err);
+    MOZ_RELEASE_ASSERT(!err.mCode,
                        "Failed to copy narrow string to Rust string");
     return result;
   }
 };
 
-template <>
-struct Serializable<nsString> {
-  static size_t Size(const nsString& aValue) {
+template <typename T>
+struct StringTraits {
+  static size_t Size(const T& aValue) {
     auto size = EstimateUTF8Length(aValue);
     size += sizeof(uint32_t);  // For the length prefix.
     MOZ_RELEASE_ASSERT(size.isValid());
     return size.value();
   }
 
-  static void ReadFrom(Reader& aReader, nsString& aValue) {
-    aValue = aReader.ReadRawString<nsString>([](Span<const char> aRawString) {
-      nsAutoString result;
-      AppendUTF8toUTF16(aRawString, result);
-      return result;
-    });
+  static void ReadFrom(Reader& aReader, T& aValue) {
+    aReader.ReadRawString<T>(
+      [](Span<const char> aRawString, T& aValue) { AppendUTF8toUTF16(aRawString, aValue); },
+      aValue
+    );
   }
 
-  static void WriteInto(const nsString& aValue, Writer& aWriter) {
+  static void WriteInto(const T& aValue, Writer& aWriter) {
     auto length = EstimateUTF8Length(aValue);
     MOZ_RELEASE_ASSERT(length.isValid());
-    aWriter.WriteRawString(length.value(), [aValue](Span<char> aRawString) {
+    aWriter.WriteRawString(length.value(), [&](Span<char> aRawString) {
       return ConvertUtf16toUtf8(aValue, aRawString);
     });
   }
 
   /// Estimates the UTF-8 encoded length of a UTF-16 string. This is a
   /// worst-case estimate.
-  static CheckedInt<size_t> EstimateUTF8Length(const nsAString& aUTF16) {
+  static CheckedInt<size_t> EstimateUTF8Length(const T& aUTF16) {
     CheckedInt<size_t> length(aUTF16.Length());
     // `ConvertUtf16toUtf8` expects the destination to have at least three times
     // as much space as the source string.
@@ -471,23 +471,51 @@ struct Serializable<nsString> {
 };
 
 template <>
-struct ViaFfi<nsString, char*> {
-  static nsString Lift(const char*& aLowered, nsString& aLifted) {
-    nsAutoString utf16;
-    CopyUTF8toUTF16(MakeStringSpan(aLowered), utf16);
-    aLifted = utf16;
+struct Serializable<nsAString> {
+  static size_t Size(const nsAString& aValue) {
+    return StringTraits<nsAString>::Size(aValue);
   }
 
-  static char* Lower(const nsString& aLifted) {
+  static void ReadFrom(Reader& aReader, nsAString& aValue) {
+    return StringTraits<nsAString>::ReadFrom(aReader, aValue);
+  }
+
+  static void WriteInto(const nsAString& aValue, Writer& aWriter) {
+    return StringTraits<nsAString>::WriteInto(aValue, aWriter);
+  }
+};
+
+template <>
+struct ViaFfi<nsAString, char*> {
+  static void Lift(const char*& aLowered, nsAString& aLifted) {
+    CopyUTF8toUTF16(MakeStringSpan(aLowered), aLifted);
+  }
+
+  static char* Lower(const nsAString& aLifted) {
     // Encode the string to UTF-8, then make a Rust string from the contents.
     // This copies the string twice, but is safe.
     nsAutoCString utf8;
     CopyUTF16toUTF8(aLifted, utf8);
-    RustError error{0, nullptr};
-    char* result = {{ ci.ffi_string_alloc_from().name() }}(utf8.BeginReading(), &error);
-    MOZ_RELEASE_ASSERT(!error.mCode,
+    RustError err = {0, nullptr};
+    char* result = {{ ci.ffi_string_alloc_from().name() }}(utf8.BeginReading(), &err);
+    MOZ_RELEASE_ASSERT(!err.mCode,
                        "Failed to copy wide string to Rust string");
     return result;
+  }
+};
+
+template <>
+struct Serializable<nsString> {
+  static size_t Size(const nsString& aValue) {
+    return StringTraits<nsString>::Size(aValue);
+  }
+
+  static void ReadFrom(Reader& aReader, nsString& aValue) {
+    return StringTraits<nsString>::ReadFrom(aReader, aValue);
+  }
+
+  static void WriteInto(const nsString& aValue, Writer& aWriter) {
+    return StringTraits<nsString>::WriteInto(aValue, aWriter);
   }
 };
 
@@ -678,7 +706,9 @@ struct detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
     switch (aLifted) {
       {% for variant in e.variants() -%}
       case {{ e.name()|class_name_cpp }}::{{ variant|enum_variant_cpp }}: return {{ loop.index }};
-      {% endfor %}
+      {% endfor -%}
+      default:
+        MOZ_ASSERT_UNREACHABLE("Unknown raw enum value");
     }
   }
 };
