@@ -131,7 +131,7 @@ pub fn lower_into_bytebuffer<T: ViaFfi>(value: T) -> ByteBuffer {
 /// C-compatible value, you can use this helper function to implement `lift()` in terms of `read()`
 /// and receive the value as a serialzied byte buffer.
 pub fn try_lift_from_bytebuffer<T: ViaFfi>(buf: ByteBuffer) -> Result<T> {
-    let vec = buf.destroy_into_vec();
+    let vec = buf.into_vec();
     let mut buf = vec.as_slice();
     let value = <T as ViaFfi>::try_read(&mut buf)?;
     if buf.remaining() != 0 {

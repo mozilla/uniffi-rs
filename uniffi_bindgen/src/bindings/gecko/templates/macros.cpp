@@ -85,10 +85,12 @@ return;
 {%- when Some with (type_) -%}
   {% match ReturnPosition::for_type(type_) -%}
   {%- when ReturnPosition::OutParam with (type_) -%}
-  {{ var|lift_cpp("aRetVal_", type_) }};
+  DebugOnly<bool> ok_ = detail::ViaFfi<{{ type_|type_cpp }}, {{ type_|ret_type_ffi }}>::Lift({{ var }}, aRetVal_);
+  MOZ_ASSERT(ok_);
   {%- when ReturnPosition::Return with (type_) %}
   {{ type_|type_cpp }} retVal_;
-  {{ var|lift_cpp("retVal_", type_) }};
+  DebugOnly<bool> ok_ = detail::ViaFfi<{{ type_|type_cpp }}, {{ type_|ret_type_ffi }}>::Lift({{ var }}, retVal_);
+  MOZ_ASSERT(ok_);
   return retVal_;
   {%- endmatch %}
 {% else -%}
@@ -99,8 +101,7 @@ return;
 {# /* Lowers a list of function arguments for an FFI call. */ #}
 {%- macro to_ffi_args(args) %}
   {%- for arg in args %}
-    {{- arg.name()|lower_cpp(arg.type_()) }}
-    {%- if !loop.last %}, {% endif -%}
+    detail::ViaFfi<{{ arg.type_()|type_cpp }}, {{ arg.type_()|ret_type_ffi }}>::Lower({{ arg.name() }}){%- if !loop.last %}, {% endif -%}
   {%- endfor %}
 {%- endmacro -%}
 

@@ -6,7 +6,6 @@
 #ifndef mozilla_dom_{{ ci.namespace()|class_name_webidl }}
 #define mozilla_dom_{{ ci.namespace()|class_name_webidl }}
 
-#include "mozilla/ErrorResult.h"
 #include "mozilla/dom/{{ ci.namespace()|class_name_webidl }}Shared.h"
 
 namespace mozilla {

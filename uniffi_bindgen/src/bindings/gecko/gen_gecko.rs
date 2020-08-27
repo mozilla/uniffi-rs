@@ -352,29 +352,4 @@ mod filters {
         // Example: "bookmark-added" becomes `Bookmark_added`.
         Ok(nm.to_string().to_camel_case())
     }
-
-    pub fn lift_cpp(
-        lowered: &dyn fmt::Display,
-        lifted: &str,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
-        let ffi_type = FFIType::from(type_);
-        Ok(format!(
-            "detail::ViaFfi<{}, {}>::Lift({}, {})",
-            type_cpp(type_)?,
-            type_ffi(&ffi_type)?,
-            lowered,
-            lifted
-        ))
-    }
-
-    pub fn lower_cpp(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let ffi_type = FFIType::from(type_);
-        Ok(format!(
-            "detail::ViaFfi<{}, {}>::Lower({})",
-            type_cpp(type_)?,
-            type_ffi(&ffi_type)?,
-            name
-        ))
-    }
 }
