@@ -54,7 +54,7 @@ impl TodoList {
         if self.items.contains(&item) {
             return Err(TodoError::DuplicateTodo);
         }
-        self.items.push(item.into());
+        self.items.push(item);
         Ok(())
     }
 

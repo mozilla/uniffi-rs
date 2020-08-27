@@ -89,6 +89,9 @@
 //! to load and use the compiled rust code via its C-compatible FFI.
 //!
 
+#![warn(rust_2018_idioms)]
+#![allow(unknown_lints)]
+
 const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 use anyhow::{anyhow, bail, Result};

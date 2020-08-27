@@ -1,5 +1,6 @@
 // Everybody gets basic string support, since they're such a common data type.
 
+/// # Safety
 /// This helper receives a borrowed foreign language string and
 /// copies it into an owned rust string. It is naturally tremendously unsafe,
 /// because pointers. The main things to remember as a consumer are:
@@ -29,9 +30,12 @@ pub unsafe extern "C" fn {{ ci.ffi_string_alloc_from().name() }}(cstr: *const st
 }
 
 /// Free a String that had previously been passed to the foreign language code.
+///
+/// # Safety
+/// In order to free the string, Rust takes ownership of a raw pointer
+/// which is an unsafe operation.
 /// The argument *must* be a uniquely-owned pointer previously obtained from a call
 /// into the rust code that returned a string.
-///
 #[no_mangle]
 pub unsafe extern "C" fn {{ ci.ffi_string_free().name() }}(cstr: *mut std::os::raw::c_char) {
     // We deliberately don't check the `Result` here, so that callers don't need to pass an out `err`.
