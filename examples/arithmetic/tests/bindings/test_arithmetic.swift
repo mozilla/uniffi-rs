@@ -20,6 +20,11 @@ do {
 assert(try! sub(a: 4, b: 2) == 2, "sub work")
 assert(try! sub(a: 8, b: 4) == 4, "sub work")
 
+assert(div(dividend: 8, divisor: 4) == 2, "div works")
+
+// We can't test panicking in Swift because we force unwrap the error in
+// `div`, which we can't catch.
+
 assert(equal(a: 2, b: 2), "equal works")
 assert(equal(a: 4, b: 4), "equal works")
 

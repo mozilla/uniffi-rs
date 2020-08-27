@@ -427,9 +427,7 @@ impl Function {
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(FFIArgument::from).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(FFIType::from);
-        // Theoretically this should always be true
-        // but it's this way until we implement handling for panics
-        self.ffi_func.has_out_err = self.throws().is_some();
+        self.ffi_func.has_out_err = true;
         Ok(())
     }
 }
@@ -695,9 +693,7 @@ impl Constructor {
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(FFIArgument::from).collect();
         self.ffi_func.return_type = Some(FFIType::UInt64);
-        // Theoretically this should always be true
-        // but it's this way until we implement handling for panics
-        self.ffi_func.has_out_err = self.throws().is_some();
+        self.ffi_func.has_out_err = true;
         Ok(())
     }
 }
@@ -784,9 +780,7 @@ impl Method {
             .map(FFIArgument::from)
             .collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(FFIType::from);
-        // Theoritically this should always be true
-        // but it's this way until we implement handling for panics
-        self.ffi_func.has_out_err = self.throws().is_some();
+        self.ffi_func.has_out_err = true;
         Ok(())
     }
 }

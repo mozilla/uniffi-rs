@@ -1,20 +1,6 @@
 // Helper classes/extensions that don't change.
 // Someday, this will be in a libray of its own.
 
-// Serialization and deserialization errors.
-enum InternalError: Error {
-    // Reading the requested value would read past the end of the buffer.
-    case bufferOverflow
-    // The buffer still has data after lifting its containing value.
-    case incompleteData
-    // Unexpected tag byte for `Optional`; should be 0 or 1.
-    case unexpectedOptionalTag
-    // Unexpected integer that doesn't correspond to an enum case.
-    case unexpectedEnumCase
-    // Empty Result returned across the FFI
-    case emptyResult
-}
-
 extension Data {
     init(rustBuffer: RustBuffer) {
         // TODO: This copies the buffer. Can we read directly from a
@@ -51,7 +37,7 @@ class Reader {
         offset = range.upperBound
         return value.bigEndian
     }
-    
+
     // Reads an arbitrary number of bytes, to be used to read
     // raw bytes, this is useful when lifting strings
     func readBytes(count: Int) throws -> Array<UInt8> {

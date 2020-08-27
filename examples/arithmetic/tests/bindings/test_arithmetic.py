@@ -20,6 +20,16 @@ except ArithmeticError.IntegerOverflow:
 assert sub(4, 2) == 2
 assert sub(8, 4) == 4
 
+assert div(8, 4) == 2
+
+try:
+    div(8, 0)
+except InternalError:
+    # It's okay!
+    pass
+else:
+    assert(not("Should have panicked when dividing by zero"))
+
 assert equal(2, 2)
 assert equal(4, 4)
 

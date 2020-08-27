@@ -5,29 +5,31 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-{%- match func.throws() %}
-{%- when Some with (e) %}
-    try rustCall({{e}}.NoError) { err  in
-        {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
-    }
-{%- else -%}
-    {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
-{%- endmatch %}
+{% call try(func) %} rustCall(
+    {% match func.throws() %}
+    {% when Some with (e) %}
+    {{e}}.NoError
+    {% else %}
+    InternalError.unknown()
+    {% endmatch %}
+) { err in
+    {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
+}
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
-{%- match func.throws() %}
-{%- when Some with (e) %}
-    try rustCall({{e}}.NoError) { err  in
-        {{ func.ffi_func().name() }}(
-            {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err
-        )
-    }
-{%- else -%}
+{% call try(func) %} rustCall(
+    {% match func.throws() %}
+    {% when Some with (e) %}
+    {{e}}.NoError
+    {% else %}
+    InternalError.unknown()
+    {% endmatch %}
+) { err in
     {{ func.ffi_func().name() }}(
-        {{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) -%}
+        {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err
     )
-{%- endmatch %}
+}
 {%- endmacro %}
 
 {%- macro _arg_list_ffi_call(func) %}

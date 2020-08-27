@@ -13,6 +13,15 @@ try {
 assert(sub(4u, 2u) == 2uL)
 assert(sub(8u, 4u) == 4uL)
 
+assert(div(8u, 4u) == 2uL)
+
+try {
+    div(8u, 0u)
+    throw RuntimeException("Should have panicked when dividing by zero")
+} catch (e: InternalException) {
+    // It's okay!
+}
+
 assert(equal(2u, 2uL))
 assert(equal(4u, 4uL))
 

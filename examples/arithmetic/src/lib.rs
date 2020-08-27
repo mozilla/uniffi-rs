@@ -18,6 +18,13 @@ fn sub(a: u64, b: u64) -> Result<u64> {
         .ok_or(ArithmeticError::IntegerOverflow { a, b })
 }
 
+fn div(dividend: u64, divisor: u64) -> u64 {
+    if divisor == 0 {
+        panic!("Can't divide by zero");
+    }
+    dividend / divisor
+}
+
 fn equal(a: u64, b: u64) -> bool {
     a == b
 }

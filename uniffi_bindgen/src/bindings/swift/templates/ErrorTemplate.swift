@@ -9,6 +9,36 @@ protocol RustError: LocalizedError {
     static func fromConsuming(_ rustError: NativeRustError) throws -> Self?
 }
 
+// An error type for FFI errors. These errors occur at the UniFFI level, not
+// the library level.
+enum InternalError: RustError {
+    case bufferOverflow
+    case incompleteData
+    case unexpectedOptionalTag
+    case unexpectedEnumCase
+    case emptyResult
+    case unknown(message: String = "")
+
+    public var errorDescription: String? {
+        switch self {
+        case .bufferOverflow: return "Reading the requested value would read past the end of the buffer"
+        case .incompleteData: return "The buffer still has data after lifting its containing value"
+        case .unexpectedOptionalTag: return "Unexpected optional tag; should be 0 or 1"
+        case .unexpectedEnumCase: return "Raw enum value doesn't match any cases"
+        case .emptyResult: return "Unexpected nil returned from FFI function"
+        case let .unknown(message): return "FFI function returned unknown error: \(message)"
+        }
+    }
+
+    static func fromConsuming(_ rustError: NativeRustError) throws -> Self? {
+        let message = rustError.message
+        switch rustError.code {
+        case 0: return nil
+        default: return .unknown(message: try String.lift(message!))
+        }
+    }
+}
+
 {% for e in ci.iter_error_definitions() %}
 public enum {{e.name()}}: RustError {
     case NoError
@@ -62,7 +92,7 @@ func nullableRustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<Nat
 
 @discardableResult
  func unwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T {
-    guard let result = try tryUnwrap(err,callback) else {
+    guard let result = try tryUnwrap(err, callback) else {
         throw InternalError.emptyResult
     }
     return result
@@ -72,7 +102,7 @@ func nullableRustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<Nat
 func tryUnwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T? {
     var native_err = NativeRustError(code: 0, message: nil)
     let returnedVal = try callback(&native_err)
-    if let retErr = try type(of: err).fromConsuming(native_err) {
+    if let retErr = try E.fromConsuming(native_err) {
         throw retErr
     }
     return returnedVal

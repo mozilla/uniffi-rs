@@ -78,6 +78,23 @@ internal open class RustError : Structure() {
     }
 }
 
+internal open class InternalError : RustError() {
+    class ByReference: InternalError(), RustErrorReference
+
+    @Suppress("ReturnCount", "TooGenericExceptionThrown", "UNCHECKED_CAST")
+    override fun<E: Exception> intoException(): E {
+        if (!isFailure()) {
+            // It's probably a bad idea to throw here! We're probably leaking something if this is
+            // ever hit! (But we shouldn't ever hit it?)
+            throw RuntimeException("[Bug] intoException called on non-failure!")
+        }
+        val message = this.consumeErrorMessage()
+        return InternalException(message) as E
+    }
+}
+
+class InternalException(message: String) : Exception(message)
+
 {%- for e in ci.iter_error_definitions() %}
 internal open class {{e.name()}} : RustError() {
     class ByReference: {{e.name()}}(), RustErrorReference

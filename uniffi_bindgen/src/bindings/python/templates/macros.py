@@ -5,21 +5,28 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-{%- match func.throws() -%}
-{%- when Some with (e) -%}
-rust_call_with_error({{ e|class_name_py }},_UniFFILib.{{ func.ffi_func().name() }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) -%})
-{%- else -%}
-_UniFFILib.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%})
-{%- endmatch -%}
+
+rust_call_with_error(
+    {%- match func.throws() -%}
+    {%- when Some with (e) -%}
+    {{ e|class_name_py }}
+    {%- else -%}
+    InternalError
+    {%- endmatch -%},
+    _UniFFILib.{{ func.ffi_func().name() }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) -%}
+)
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
-{%- match func.throws() -%}
-{%- when Some with (e) -%}
-rust_call_with_error({{ e|class_name_py }},_UniFFILib.{{ func.ffi_func().name() }},{{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %}))
-{%- else -%}
-_UniFFILib.{{ func.ffi_func().name() }}({{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %}))
-{%- endmatch -%}
+rust_call_with_error(
+    {%- match func.throws() -%}
+    {%- when Some with (e) -%}
+    {{ e|class_name_py }}
+    {%- else -%}
+    InternalError
+    {%- endmatch -%},
+    _UniFFILib.{{ func.ffi_func().name() }},{{- prefix }}{% if func.arguments().len() > 0 %},{% endif %}{% call _arg_list_ffi_call(func) %})
+)
 {%- endmacro -%}
 
 {%- macro _arg_list_ffi_call(func) %}
