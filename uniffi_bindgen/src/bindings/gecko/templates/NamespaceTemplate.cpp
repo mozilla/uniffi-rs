@@ -3,33 +3,28 @@
 
 {% import "macros.cpp" as cpp %}
 
-#include "mozilla/dom/{{ ci.namespace()|class_name_webidl }}.h"
+#include "mozilla/dom/{{ namespace|class_name_webidl }}.h"
+#include "mozilla/dom/{{ namespace|class_name_webidl }}Shared.h"
 
 namespace mozilla {
 namespace dom {
 
 {% for func in functions %}
 /* static */
-{% call cpp::decl_return_type(func) %} {{ ci.namespace()|class_name_cpp }}::{{ func.name()|fn_name_cpp }}(
+{% call cpp::decl_return_type(func) %} {{ namespace|class_name_cpp }}::{{ func.name()|fn_name_cpp }}(
   {% call cpp::decl_static_method_args(func) %}
 ) {
-  {%- if func.throws().is_some() %}
   RustError err = {0, nullptr};
-  {% endif %}
-  {% match func.return_type() -%}{%- when Some with (type_) -%}const {{ type_|ret_type_ffi }} loweredRetVal_ = {%- else -%}{% endmatch %}{{ func.ffi_func().name() }}(
-    {%- let args = func.arguments() %}
-    {% call cpp::to_ffi_args(args) -%}
-    {%- if func.throws().is_some() %}
-    {% if !args.is_empty() %},{% endif %}&err
-    {% endif %}
-  );
-  {%- if func.throws().is_some() %}
+  {% call cpp::to_ffi_call(func) %}
   if (err.mCode) {
+    {%- if func.throws().is_some() %}
     aRv.ThrowOperationError(err.mMessage);
+    {% else -%}
+    MOZ_ASSERT(false);
+    {%- endif %}
     {% call cpp::bail(func) %}
   }
-  {%- endif %}
-  {% call cpp::return(func, "loweredRetVal_") %}
+  {% call cpp::return(func) %}
 }
 {% endfor %}
 

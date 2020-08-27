@@ -85,7 +85,7 @@ pub struct WebIdl<'config, 'ci> {
 
 impl<'config, 'ci> WebIdl<'config, 'ci> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        Self { config: config, ci }
+        Self { config, ci }
     }
 }
 
@@ -101,28 +101,24 @@ pub struct SharedHeader<'config, 'ci> {
 
 impl<'config, 'ci> SharedHeader<'config, 'ci> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        Self { config: config, ci }
+        Self { config, ci }
     }
 }
 
 /// A header file generated for a namespace with top-level functions.
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "NamespaceHeaderTemplate.h")]
-pub struct NamespaceHeader<'config, 'ci, 'functions> {
+pub struct NamespaceHeader<'config, 'ci> {
     config: &'config Config,
-    ci: &'ci ComponentInterface,
-    functions: &'functions [Function],
+    namespace: &'ci str,
+    functions: &'ci [Function],
 }
 
-impl<'config, 'ci, 'functions> NamespaceHeader<'config, 'ci, 'functions> {
-    pub fn new(
-        config: &'config Config,
-        ci: &'ci ComponentInterface,
-        functions: &'functions [Function],
-    ) -> Self {
+impl<'config, 'ci> NamespaceHeader<'config, 'ci> {
+    pub fn new(config: &'config Config, namespace: &'ci str, functions: &'ci [Function]) -> Self {
         Self {
             config,
-            ci,
+            namespace,
             functions,
         }
     }
@@ -131,21 +127,17 @@ impl<'config, 'ci, 'functions> NamespaceHeader<'config, 'ci, 'functions> {
 /// An implementation file generated for a namespace with top-level functions.
 #[derive(Template)]
 #[template(syntax = "cpp", escape = "none", path = "NamespaceTemplate.cpp")]
-pub struct Namespace<'config, 'ci, 'functions> {
+pub struct Namespace<'config, 'ci> {
     config: &'config Config,
-    ci: &'ci ComponentInterface,
-    functions: &'functions [Function],
+    namespace: &'ci str,
+    functions: &'ci [Function],
 }
 
-impl<'config, 'ci, 'functions> Namespace<'config, 'ci, 'functions> {
-    pub fn new(
-        config: &'config Config,
-        ci: &'ci ComponentInterface,
-        functions: &'functions [Function],
-    ) -> Self {
+impl<'config, 'ci> Namespace<'config, 'ci> {
+    pub fn new(config: &'config Config, namespace: &'ci str, functions: &'ci [Function]) -> Self {
         Self {
-            config: config,
-            ci,
+            config,
+            namespace,
             functions,
         }
     }
@@ -154,17 +146,17 @@ impl<'config, 'ci, 'functions> Namespace<'config, 'ci, 'functions> {
 /// A header file generated for an interface.
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "InterfaceHeaderTemplate.h")]
-pub struct InterfaceHeader<'config, 'ci, 'obj> {
+pub struct InterfaceHeader<'config, 'ci> {
     config: &'config Config,
-    ci: &'ci ComponentInterface,
-    obj: &'obj Object,
+    namespace: &'ci str,
+    obj: &'ci Object,
 }
 
-impl<'config, 'ci, 'obj> InterfaceHeader<'config, 'ci, 'obj> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, obj: &'obj Object) -> Self {
+impl<'config, 'ci> InterfaceHeader<'config, 'ci> {
+    pub fn new(config: &'config Config, namespace: &'ci str, obj: &'ci Object) -> Self {
         Self {
-            config: config,
-            ci,
+            config,
+            namespace,
             obj,
         }
     }
@@ -173,17 +165,17 @@ impl<'config, 'ci, 'obj> InterfaceHeader<'config, 'ci, 'obj> {
 /// An implementation file generated for a namespace with top-level functions.
 #[derive(Template)]
 #[template(syntax = "cpp", escape = "none", path = "InterfaceTemplate.cpp")]
-pub struct Interface<'config, 'ci, 'obj> {
+pub struct Interface<'config, 'ci> {
     config: &'config Config,
-    ci: &'ci ComponentInterface,
-    obj: &'obj Object,
+    namespace: &'ci str,
+    obj: &'ci Object,
 }
 
-impl<'config, 'ci, 'obj> Interface<'config, 'ci, 'obj> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, obj: &'obj Object) -> Self {
+impl<'config, 'ci> Interface<'config, 'ci> {
+    pub fn new(config: &'config Config, namespace: &'ci str, obj: &'ci Object) -> Self {
         Self {
-            config: config,
-            ci,
+            config,
+            namespace,
             obj,
         }
     }
@@ -235,14 +227,9 @@ mod filters {
             FFIType::Float64 => "double".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::RustString => "char*".into(),
-            FFIType::RustError => "NativeRustError".into(),
+            FFIType::RustError => "RustError".into(),
             FFIType::ForeignStringRef => "const char*".into(),
         })
-    }
-
-    pub fn ret_type_ffi(type_: &Type) -> Result<String, askama::Error> {
-        let ffi_type = FFIType::from(type_);
-        Ok(type_ffi(&ffi_type)?)
     }
 
     /// Declares the type of an argument for the C++ binding.

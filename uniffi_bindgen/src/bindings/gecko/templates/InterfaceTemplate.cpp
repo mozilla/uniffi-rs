@@ -4,6 +4,7 @@
 {% import "macros.cpp" as cpp %}
 
 #include "mozilla/dom/{{ obj.name()|class_name_webidl }}.h"
+#include "mozilla/dom/{{ namespace|class_name_webidl }}Shared.h"
 
 namespace mozilla {
 namespace dom {
@@ -26,10 +27,7 @@ NS_INTERFACE_MAP_END
 ) : mGlobal(aGlobal), mHandle(aHandle) {}
 
 {{ obj.name()|class_name_cpp }}::~{{ obj.name()|class_name_cpp }}() {
-  if (mHandle != -1) {
-    {{ obj.ffi_object_free().name() }}(mHandle);
-    mHandle = -1;
-  }
+  {{ obj.ffi_object_free().name() }}(mHandle);
 }
 
 JSObject* {{ obj.name()|class_name_cpp }}::WrapObject(
@@ -44,24 +42,18 @@ JSObject* {{ obj.name()|class_name_cpp }}::WrapObject(
 already_AddRefed<{{ obj.name()|class_name_cpp }}> {{ obj.name()|class_name_cpp }}::Constructor(
   {% call cpp::decl_constructor_args(cons) %}
 ) {
-  {%- if cons.throws().is_some() %}
   RustError err = {0, nullptr};
-  {% endif %}
-  auto handle = {{ cons.ffi_func().name() }}(
-    {%- let args = cons.arguments() %}
-    {% call cpp::to_ffi_args(args) -%}
-    {%- if cons.throws().is_some() %}
-    {% if !args.is_empty() %},{% endif %}&err
-    {% endif %}
-  );
-  {%- if cons.throws().is_some() %}
+  {% call cpp::to_ffi_call(cons) %}
   if (err.mCode) {
+    {%- if cons.throws().is_some() %}
     aRv.ThrowOperationError(err.mMessage);
+    {% else -%}
+    MOZ_ASSERT(false);
+    {%- endif %}
     return nullptr;
   }
-  {%- endif %}
   nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(aGlobal.GetAsSupports());
-  auto result = MakeRefPtr<{{ obj.name()|class_name_cpp }}>(global, handle);
+  auto result = MakeRefPtr<{{ obj.name()|class_name_cpp }}>(global, loweredRetVal_);
   return result.forget();
 }
 {%- endfor %}
@@ -70,26 +62,17 @@ already_AddRefed<{{ obj.name()|class_name_cpp }}> {{ obj.name()|class_name_cpp }
 {% call cpp::decl_return_type(meth) %} {{ obj.name()|class_name_cpp }}::{{ meth.name()|fn_name_cpp }}(
   {% call cpp::decl_method_args(meth) %}
 ) {
-  if (mHandle == -1) {
-    aRv.ThrowOperationError("Can't use destroyed handle");
-    {% call cpp::bail(meth) %}
-  }
-  {% match meth.return_type() -%}{%- when Some with (type_) -%}const {{ type_|ret_type_ffi }} loweredRetVal_ = {%- else -%}{% endmatch %}{{ meth.ffi_func().name() }}(
-    mHandle
-    {%- let args = meth.arguments() -%}
-    {%- if !args.is_empty() %},{% endif %}
-    {% call cpp::to_ffi_args(args) -%}
-    {%- if meth.throws().is_some() %}
-    {% if !args.is_empty() %},{% endif %}&err
-    {% endif %}
-  );
-  {%- if meth.throws().is_some() %}
+  RustError err = {0, nullptr};
+  {% call cpp::to_ffi_call_with_prefix("mHandle", meth) %}
   if (err.mCode) {
+    {%- if meth.throws().is_some() %}
     aRv.ThrowOperationError(err.mMessage);
+    {% else -%}
+    MOZ_ASSERT(false);
+    {%- endif %}
     {% call cpp::bail(meth) %}
   }
-  {%- endif %}
-  {% call cpp::return(meth, "loweredRetVal_") %}
+  {% call cpp::return(meth) %}
 }
 {% endfor %}
 

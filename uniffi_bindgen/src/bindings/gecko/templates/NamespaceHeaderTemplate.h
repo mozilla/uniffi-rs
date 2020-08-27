@@ -3,18 +3,18 @@
 
 {% import "macros.cpp" as cpp %}
 
-#ifndef mozilla_dom_{{ ci.namespace()|class_name_webidl }}
-#define mozilla_dom_{{ ci.namespace()|class_name_webidl }}
+#ifndef mozilla_dom_{{ namespace|class_name_webidl }}
+#define mozilla_dom_{{ namespace|class_name_webidl }}
 
-#include "mozilla/dom/{{ ci.namespace()|class_name_webidl }}Shared.h"
+#include "mozilla/dom/{{ namespace|class_name_webidl }}Binding.h"
 
 namespace mozilla {
 namespace dom {
 
-class {{ ci.namespace()|class_name_cpp }} final {
+class {{ namespace|class_name_cpp }} final {
  public:
-  {{ ci.namespace()|class_name_cpp }}() = default;
-  ~{{ ci.namespace()|class_name_cpp }}() = default;
+  {{ namespace|class_name_cpp }}() = default;
+  ~{{ namespace|class_name_cpp }}() = default;
 
   {% for func in functions %}
   static {% call cpp::decl_return_type(func) %} {{ func.name()|fn_name_cpp }}(
@@ -26,4 +26,4 @@ class {{ ci.namespace()|class_name_cpp }} final {
 }  // namespace dom
 }  // namespace mozilla
 
-#endif  // mozilla_dom_{{ ci.namespace()|class_name_webidl }}
+#endif  // mozilla_dom_{{ namespace|class_name_webidl }}

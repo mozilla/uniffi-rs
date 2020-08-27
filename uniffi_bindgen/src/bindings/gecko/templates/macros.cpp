@@ -64,32 +64,33 @@ return;
   {{ arg.type_()|arg_type_cpp }} {{ arg.name() -}}{%- if !loop.last -%},{%- endif -%}
   {%- endfor -%}
   {%- call _decl_out_param(func) -%}
-  {%- match func.return_type() -%}
-    {%- when Some with (type_) -%}
-      {%- match ReturnPosition::for_type(type_) -%}
-        {%- when ReturnPosition::OutParam with (type_) -%},
-        {%- else -%}
-          {%- if !args.is_empty() %}, {% endif -%}
-      {%- endmatch -%}
-    {%- else -%}
-      {%- if !args.is_empty() %}, {% endif -%}
-  {%- endmatch -%}
-  ErrorResult& aRv
+  {%- if func.throws().is_some() %}
+    {%- match func.return_type() -%}
+      {%- when Some with (type_) -%}
+        {%- match ReturnPosition::for_type(type_) -%}
+          {%- when ReturnPosition::OutParam with (type_) -%},
+          {%- else -%}
+            {%- if !args.is_empty() %}, {% endif -%}
+        {%- endmatch -%}
+      {%- else -%}
+        {%- if !args.is_empty() %}, {% endif -%}
+    {%- endmatch -%}
+    ErrorResult& aRv
+  {%- endif %}
 {%- endmacro -%}
 
-{# /* Returns a result from a function or method. This lifts the result from the
-      given `var`, and returns it by value or via an "out param" depending on
-      the function's return type. */ #}
-{%- macro return(func, var) -%}
+{# /* Returns a result from a function or method, by value or via an "out param"
+      depending on the function's return type. */ #}
+{%- macro return(func) -%}
 {% match func.return_type() -%}
 {%- when Some with (type_) -%}
   {% match ReturnPosition::for_type(type_) -%}
   {%- when ReturnPosition::OutParam with (type_) -%}
-  DebugOnly<bool> ok_ = detail::ViaFfi<{{ type_|type_cpp }}, {{ type_|ret_type_ffi }}>::Lift({{ var }}, aRetVal_);
+  DebugOnly<bool> ok_ = detail::ViaFfi<{{ type_|type_cpp }}, {{ type_.to_ffi()|type_ffi }}>::Lift(loweredRetVal_, aRetVal_);
   MOZ_ASSERT(ok_);
   {%- when ReturnPosition::Return with (type_) %}
   {{ type_|type_cpp }} retVal_;
-  DebugOnly<bool> ok_ = detail::ViaFfi<{{ type_|type_cpp }}, {{ type_|ret_type_ffi }}>::Lift({{ var }}, retVal_);
+  DebugOnly<bool> ok_ = detail::ViaFfi<{{ type_|type_cpp }}, {{ type_.to_ffi()|type_ffi }}>::Lift(loweredRetVal_, retVal_);
   MOZ_ASSERT(ok_);
   return retVal_;
   {%- endmatch %}
@@ -98,11 +99,32 @@ return;
 {%- endmatch %}
 {%- endmacro -%}
 
-{# /* Lowers a list of function arguments for an FFI call. */ #}
-{%- macro to_ffi_args(args) %}
-  {%- for arg in args %}
-    detail::ViaFfi<{{ arg.type_()|type_cpp }}, {{ arg.type_()|ret_type_ffi }}>::Lower({{ arg.name() }}){%- if !loop.last %}, {% endif -%}
-  {%- endfor %}
+{# /* Calls an FFI function. */ #}
+{%- macro to_ffi_call(func) %}
+  {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi }} loweredRetVal_ ={% else %}{% endmatch %}{{ func.ffi_func().name() }}(
+    {%- let args = func.arguments() -%}
+    {%- for arg in args %}
+    detail::ViaFfi<{{ arg.type_()|type_cpp }}, {{ arg.type_().to_ffi()|type_ffi }}>::Lower({{ arg.name() }}){%- if !loop.last %}, {% endif -%}
+    {%- endfor %}
+    {%- if func.ffi_func().has_out_err() %}
+    {% if !args.is_empty() %},{% endif %}&err
+    {% endif %}
+  );
+{%- endmacro -%}
+
+{# /* Calls an FFI function with an initial argument. */ #}
+{%- macro to_ffi_call_with_prefix(prefix, func) %}
+  {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi }} loweredRetVal_ = {% else %}{% endmatch %}{{ func.ffi_func().name() }}(
+    {{- prefix }}
+    {%- let args = func.arguments() -%}
+    {%- if !args.is_empty() %},{% endif %}
+    {%- for arg in args %}
+    detail::ViaFfi<{{ arg.type_()|type_cpp }}, {{ arg.type_().to_ffi()|type_ffi }}>::Lower({{ arg.name() }}){%- if !loop.last %}, {% endif -%}
+    {%- endfor %}
+    {%- if func.ffi_func().has_out_err() %}
+    {% if !args.is_empty() %},{% endif %}&err
+    {% endif %}
+  );
 {%- endmacro -%}
 
 {# /* Declares an "out param" in the argument list. */ #}

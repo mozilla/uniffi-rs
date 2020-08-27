@@ -2,14 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::{anyhow, bail, Context, Result};
-use std::{
-    ffi::OsString,
-    fs::File,
-    io::Write,
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::{fs::File, io::Write, path::PathBuf};
+
+use anyhow::{Context, Result};
 
 pub mod gen_gecko;
 pub use gen_gecko::{
@@ -114,10 +109,10 @@ pub fn generate_bindings(ci: &ComponentInterface) -> Result<Bindings> {
     // source file.
     let functions = ci.iter_function_definitions();
     if !functions.is_empty() {
-        let header = NamespaceHeader::new(&config, &ci, functions.as_slice())
+        let header = NamespaceHeader::new(&config, ci.namespace(), functions.as_slice())
             .render()
             .context("Failed to render top-level namespace header")?;
-        let source = Namespace::new(&config, &ci, functions.as_slice())
+        let source = Namespace::new(&config, ci.namespace(), functions.as_slice())
             .render()
             .context("Failed to render top-level namespace binding")?;
         sources.push(Source {
@@ -130,10 +125,10 @@ pub fn generate_bindings(ci: &ComponentInterface) -> Result<Bindings> {
     // Now generate one header/source pair for each interface.
     let objects = ci.iter_object_definitions();
     for obj in objects {
-        let header = InterfaceHeader::new(&config, &ci, &obj)
+        let header = InterfaceHeader::new(&config, ci.namespace(), &obj)
             .render()
             .context(format!("Failed to render {} header", obj.name()))?;
-        let source = Interface::new(&config, &ci, &obj)
+        let source = Interface::new(&config, ci.namespace(), &obj)
             .render()
             .context(format!("Failed to render {} binding", obj.name()))?;
         sources.push(Source {

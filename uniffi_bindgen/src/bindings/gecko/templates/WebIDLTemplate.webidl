@@ -56,7 +56,9 @@ interface {{ obj.name()|class_name_webidl }} {
   {%- endfor %}
 
   {% for meth in obj.methods() -%}
+  {%- if meth.throws().is_some() %}
   [Throws]
+  {% endif %}
   {%- match meth.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl }}{% when None %}void{% endmatch %} {{ meth.name()|fn_name_webidl }}(
       {%- for arg in meth.arguments() %}
       {{ arg.type_()|type_webidl }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
