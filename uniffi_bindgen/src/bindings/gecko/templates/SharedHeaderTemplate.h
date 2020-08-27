@@ -52,7 +52,6 @@ void
 
 namespace mozilla {
 namespace dom {
-// namespace {{ ci.namespace() }} {
 
 // TODO: Rename this to something less conflict-y, and
 // make sure `lift_cpp` and `lower_cpp` know about it.
@@ -297,7 +296,7 @@ template <typename T>
 struct Serializable {
   /// Returns the size of the serialized value, in bytes. This is used to
   /// calculate the allocation size for the Rust byte buffer.
-  static size_t Size(const T& aValue) = delete;
+  static CheckedInt<size_t> Size(const T& aValue) = delete;
 
   /// Reads a value of type `T` from a byte buffer.
   static bool ReadFrom(Reader& aReader, T& aValue) = delete;
@@ -322,8 +321,10 @@ struct ViaFfi {
 #define UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(Type, readFunc, writeFunc) \
   template <>                                                               \
   struct Serializable<Type> {                                               \
-    static size_t Size(const Type& aValue) { return sizeof(Type); }         \
-    static bool ReadFrom(Reader& aReader, Type& aValue) {                   \
+    static CheckedInt<size_t> Size(const Type& aValue) {                    \
+      return sizeof(Type);                                                  \
+    }                                                                       \
+    static MOZ_MUST_USE bool ReadFrom(Reader& aReader, Type& aValue) {      \
       aValue = aReader.readFunc();                                          \
       return true;                                                          \
     }                                                                       \
@@ -333,11 +334,11 @@ struct ViaFfi {
   };                                                                        \
   template <>                                                               \
   struct ViaFfi<Type, Type> {                                               \
-    static bool Lift(const Type& aLowered, Type& aLifted) {                 \
+    static MOZ_MUST_USE bool Lift(const Type& aLowered, Type& aLifted) {    \
       aLifted = aLowered;                                                   \
       return true;                                                          \
     }                                                                       \
-    static Type Lower(const Type& aLifted) { return aLifted; }              \
+    static MOZ_MUST_USE Type Lower(const Type& aLifted) { return aLifted; } \
   }
 
 UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(uint8_t, ReadUInt8, WriteUInt8);
@@ -356,8 +357,8 @@ UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(double, ReadDouble, WriteDouble);
 
 template <>
 struct Serializable<bool> {
-  static size_t Size(const bool& aValue) { return 1; }
-  static bool ReadFrom(Reader& aReader, bool& aValue) {
+  static CheckedInt<size_t> Size(const bool& aValue) { return 1; }
+  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, bool& aValue) {
     aValue = aReader.ReadUInt8() != 0;
     return true;
   }
@@ -368,11 +369,13 @@ struct Serializable<bool> {
 
 template <>
 struct ViaFfi<bool, uint8_t> {
-  static bool Lift(const uint8_t& aLowered, bool& aLifted) {
+  static MOZ_MUST_USE bool Lift(const uint8_t& aLowered, bool& aLifted) {
     aLifted = aLowered != 0;
     return true;
   }
-  static uint8_t Lower(const bool& aLifted) { return aLifted ? 1 : 0; }
+  static MOZ_MUST_USE uint8_t Lower(const bool& aLifted) {
+    return aLifted ? 1 : 0;
+  }
 };
 
 /// Strings are length-prefixed and UTF-8 encoded when serialized
@@ -391,14 +394,13 @@ struct ViaFfi<bool, uint8_t> {
 
 template <>
 struct Serializable<nsACString> {
-  static size_t Size(const nsACString& aValue) {
+  static CheckedInt<size_t> Size(const nsACString& aValue) {
     CheckedInt<size_t> size(aValue.Length());
     size += sizeof(uint32_t);  // For the length prefix.
-    MOZ_RELEASE_ASSERT(size.isValid());
-    return size.value();
+    return size;
   }
 
-  static bool ReadFrom(Reader& aReader, nsACString& aValue) {
+  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, nsACString& aValue) {
     aValue.Truncate();
     aReader.ReadRawString<nsACString>(
         aValue, [](Span<const char> aRawString, nsACString& aValue) {
@@ -417,15 +419,16 @@ struct Serializable<nsACString> {
 
 template <>
 struct ViaFfi<nsACString, char*> {
-  static bool Lift(const char*& aLowered, nsACString& aLifted) {
+  static MOZ_MUST_USE bool Lift(const char*& aLowered, nsACString& aLifted) {
     aLifted.Truncate();
     aLifted.Append(MakeStringSpan(aLowered));
     return true;
   }
 
-  static char* Lower(const nsACString& aLifted) {
+  static MOZ_MUST_USE char* Lower(const nsACString& aLifted) {
     RustError err = {0, nullptr};
-    char* lowered = {{ ci.ffi_string_alloc_from().name() }}(aLifted.BeginReading(), &err);
+    char* lowered =
+        {{ ci.ffi_string_alloc_from().name() }}(aLifted.BeginReading(), &err);
     if (err.mCode) {
       MOZ_ASSERT(false, "Failed to copy narrow string to Rust string");
       return nullptr;
@@ -437,14 +440,13 @@ struct ViaFfi<nsACString, char*> {
 /// Shared traits for serializing `nsString`s and `nsAString`s.
 template <typename T>
 struct StringTraits {
-  static size_t Size(const T& aValue) {
+  static CheckedInt<size_t> Size(const T& aValue) {
     auto size = EstimateUTF8Length(aValue);
     size += sizeof(uint32_t);  // For the length prefix.
-    MOZ_RELEASE_ASSERT(size.isValid());
-    return size.value();
+    return size;
   }
 
-  static bool ReadFrom(Reader& aReader, T& aValue) {
+  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, T& aValue) {
     aValue.Truncate();
     aReader.ReadRawString<T>(aValue,
                              [](Span<const char> aRawString, T& aValue) {
@@ -474,11 +476,11 @@ struct StringTraits {
 
 template <>
 struct Serializable<nsAString> {
-  static size_t Size(const nsAString& aValue) {
+  static CheckedInt<size_t> Size(const nsAString& aValue) {
     return StringTraits<nsAString>::Size(aValue);
   }
 
-  static bool ReadFrom(Reader& aReader, nsAString& aValue) {
+  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, nsAString& aValue) {
     return StringTraits<nsAString>::ReadFrom(aReader, aValue);
   }
 
@@ -489,13 +491,13 @@ struct Serializable<nsAString> {
 
 template <>
 struct ViaFfi<nsAString, char*> {
-  static bool Lift(const char*& aLowered, nsAString& aLifted) {
+  static MOZ_MUST_USE bool Lift(const char*& aLowered, nsAString& aLifted) {
     aLifted.Truncate();
     CopyUTF8toUTF16(MakeStringSpan(aLowered), aLifted);
     return true;
   }
 
-  static char* Lower(const nsAString& aLifted) {
+  static MOZ_MUST_USE char* Lower(const nsAString& aLifted) {
     // Encode the string to UTF-8, then make a Rust string from the contents.
     // This copies the string twice, but is safe.
     nsAutoCString utf8;
@@ -512,11 +514,11 @@ struct ViaFfi<nsAString, char*> {
 
 template <>
 struct Serializable<nsString> {
-  static size_t Size(const nsString& aValue) {
+  static CheckedInt<size_t> Size(const nsString& aValue) {
     return StringTraits<nsString>::Size(aValue);
   }
 
-  static bool ReadFrom(Reader& aReader, nsString& aValue) {
+  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, nsString& aValue) {
     return StringTraits<nsString>::ReadFrom(aReader, aValue);
   }
 
@@ -538,17 +540,16 @@ struct Serializable<nsString> {
 
 template <typename T>
 struct Serializable<dom::Nullable<T>> {
-  static size_t Size(const dom::Nullable<T>& aValue) {
+  static CheckedInt<size_t> Size(const dom::Nullable<T>& aValue) {
     if (!aValue.WasPassed()) {
       return 1;
     }
     CheckedInt<size_t> size(1);
     size += Serializable<T>::Size(aValue.Value());
-    MOZ_RELEASE_ASSERT(size.isValid());
-    return size.value();
+    return size;
   }
 
-  static bool ReadFrom(Reader& aReader, dom::Nullable<T>& aValue) {
+  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, dom::Nullable<T>& aValue) {
     uint8_t hasValue = aReader.ReadUInt8();
     if (hasValue != 0 && hasValue != 1) {
       return false;
@@ -587,14 +588,13 @@ struct Serializable<dom::Nullable<T>> {
 /// Shared traits for serializing sequences.
 template <typename T>
 struct SequenceTraits {
-  static size_t Size(const T& aValue) {
+  static CheckedInt<size_t> Size(const T& aValue) {
     CheckedInt<size_t> size;
     size += sizeof(uint32_t);  // For the length prefix.
     for (const typename T::elem_type& element : aValue) {
       size += Serializable<typename T::elem_type>::Size(element);
     }
-    MOZ_RELEASE_ASSERT(size.isValid());
-    return size.value();
+    return size;
   }
 
   static void WriteInto(Writer& aWriter, const T& aValue) {
@@ -607,7 +607,7 @@ struct SequenceTraits {
 
 template <typename T>
 struct Serializable<dom::Sequence<T>> {
-  static size_t Size(const dom::Sequence<T>& aValue) {
+  static CheckedInt<size_t> Size(const dom::Sequence<T>& aValue) {
     return SequenceTraits<dom::Sequence<T>>::Size(aValue);
   }
 
@@ -615,7 +615,8 @@ struct Serializable<dom::Sequence<T>> {
   // lowered from the C++ WebIDL binding to the FFI. If the FFI function
   // returns a sequence, it'll be lifted into an `nsTArray<T>`, not a
   // `dom::Sequence<T>`. See the note about sequences above.
-  static bool ReadFrom(Reader& aReader, dom::Sequence<T>& aValue) = delete;
+  static MOZ_MUST_USE bool ReadFrom(Reader& aReader,
+                                    dom::Sequence<T>& aValue) = delete;
 
   static void WriteInto(Writer& aWriter, const dom::Sequence<T>& aValue) {
     SequenceTraits<dom::Sequence<T>>::WriteInto(aWriter, aValue);
@@ -624,11 +625,11 @@ struct Serializable<dom::Sequence<T>> {
 
 template <typename T>
 struct Serializable<nsTArray<T>> {
-  static size_t Size(const nsTArray<T>& aValue) {
+  static CheckedInt<size_t> Size(const nsTArray<T>& aValue) {
     return SequenceTraits<nsTArray<T>>::Size(aValue);
   }
 
-  static bool ReadFrom(Reader& aReader, nsTArray<T>& aValue) {
+  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, nsTArray<T>& aValue) {
     uint32_t length = aReader.ReadUInt32();
     aValue.SetCapacity(length);
     aValue.TruncateLength(0);
@@ -647,18 +648,17 @@ struct Serializable<nsTArray<T>> {
 
 template <typename K, typename V>
 struct Serializable<Record<K, V>> {
-  static size_t Size(const Record<K, V>& aValue) {
+  static CheckedInt<size_t> Size(const Record<K, V>& aValue) {
     CheckedInt<size_t> size;
     size += sizeof(uint32_t);  // For the length prefix.
     for (const typename Record<K, V>::EntryType& entry : aValue.Entries()) {
       size += Serializable<K>::Size(entry.mKey);
       size += Serializable<V>::Size(entry.mValue);
     }
-    MOZ_RELEASE_ASSERT(size.isValid());
-    return size.value();
+    return size;
   }
 
-  static bool ReadFrom(Reader& aReader, Record<K, V>& aValue) {
+  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, Record<K, V>& aValue) {
     uint32_t length = aReader.ReadUInt32();
     aValue.Entries().SetCapacity(length);
     aValue.Entries().TruncateLength(0);
@@ -689,7 +689,7 @@ struct Serializable<Record<K, V>> {
 
 template <typename T>
 struct ViaFfi<T, RustBuffer> {
-  static bool Lift(const RustBuffer& aLowered, T& aLifted) {
+  static MOZ_MUST_USE bool Lift(const RustBuffer& aLowered, T& aLifted) {
     auto reader = Reader(aLowered);
     if (!Serializable<T>::ReadFrom(reader, aLifted)) {
       return false;
@@ -702,9 +702,10 @@ struct ViaFfi<T, RustBuffer> {
     return true;
   }
 
-  static RustBuffer Lower(const T& aLifted) {
-    size_t size = Serializable<T>::Size(aLifted);
-    auto writer = Writer(size);
+  static MOZ_MUST_USE RustBuffer Lower(const T& aLifted) {
+    CheckedInt<size_t> size = Serializable<T>::Size(aLifted);
+    MOZ_RELEASE_ASSERT(size.isValid());
+    auto writer = Writer(size.value());
     Serializable<T>::WriteInto(writer, aLifted);
     return writer.ToRustBuffer();
   }
@@ -715,7 +716,7 @@ struct ViaFfi<T, RustBuffer> {
 {%- for e in ci.iter_enum_definitions() %}
 template <>
 struct detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
-  static bool Lift(const uint32_t& aLowered, {{ e.name()|class_name_cpp }}& aLifted) {
+  static MOZ_MUST_USE bool Lift(const uint32_t& aLowered, {{ e.name()|class_name_cpp }}& aLifted) {
     switch (aLowered) {
       {% for variant in e.variants() -%}
       case {{ loop.index }}:
@@ -729,7 +730,7 @@ struct detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
     return true;
   }
 
-  static uint32_t Lower(const {{ e.name()|class_name_cpp }}& aLifted) {
+  static MOZ_MUST_USE uint32_t Lower(const {{ e.name()|class_name_cpp }}& aLifted) {
     switch (aLifted) {
       {% for variant in e.variants() -%}
       case {{ e.name()|class_name_cpp }}::{{ variant|enum_variant_cpp }}:
@@ -744,11 +745,11 @@ struct detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
 
 template <>
 struct detail::Serializable<{{ e.name()|class_name_cpp }}> {
-  static size_t Size(const {{ e.name()|class_name_cpp }}& aValue) {
+  static CheckedInt<size_t> Size(const {{ e.name()|class_name_cpp }}& aValue) {
     return sizeof(uint32_t);
   }
 
-  static bool ReadFrom(detail::Reader& aReader, {{ e.name()|class_name_cpp }}& aValue) {
+  static MOZ_MUST_USE bool ReadFrom(detail::Reader& aReader, {{ e.name()|class_name_cpp }}& aValue) {
     auto rawValue = aReader.ReadUInt32();
     return detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t>::Lift(rawValue, aValue);
   }
@@ -762,16 +763,15 @@ struct detail::Serializable<{{ e.name()|class_name_cpp }}> {
 {% for rec in ci.iter_record_definitions() -%}
 template <>
 struct detail::Serializable<{{ rec.name()|class_name_cpp }}> {
-  static size_t Size(const {{ rec.name()|class_name_cpp }}& aValue) {
+  static CheckedInt<size_t> Size(const {{ rec.name()|class_name_cpp }}& aValue) {
     CheckedInt<size_t> size;
     {%- for field in rec.fields() %}
     size += detail::Serializable<{{ field.type_()|type_cpp }}>::Size(aValue.{{ field.name()|field_name_cpp }});
     {%- endfor %}
-    MOZ_RELEASE_ASSERT(size.isValid());
-    return size.value();
+    return size;
   }
 
-  static bool ReadFrom(detail::Reader& aReader, {{ rec.name()|class_name_cpp }}& aValue) {
+  static MOZ_MUST_USE bool ReadFrom(detail::Reader& aReader, {{ rec.name()|class_name_cpp }}& aValue) {
     {%- for field in rec.fields() %}
     if (!detail::Serializable<{{ field.type_()|type_cpp }}>::ReadFrom(aReader, aValue.{{ field.name()|field_name_cpp }})) {
       return false;
@@ -788,7 +788,6 @@ struct detail::Serializable<{{ rec.name()|class_name_cpp }}> {
 };
 {% endfor %}
 
-// }  // namespace {{ ci.namespace() }}
 }  // namespace dom
 }  // namespace mozilla
 
