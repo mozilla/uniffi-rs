@@ -2,10 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//#![deny(missing_docs)]
-#![allow(unknown_lints)]
-#![warn(rust_2018_idioms)]
-
 //! # Component Interface Definition and Types
 //!
 //! This crate provides an abstract representation of the interface provided by a uniffi rust component,
@@ -967,7 +963,7 @@ impl Attribute {
 impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
     type Error = anyhow::Error;
     fn try_from(
-        weedle_attribute: &weedle::attribute::ExtendedAttribute,
+        weedle_attribute: &weedle::attribute::ExtendedAttribute<'_>,
     ) -> Result<Self, anyhow::Error> {
         match weedle_attribute {
             weedle::attribute::ExtendedAttribute::NoArgs(attr) => match (attr.0).0 {
@@ -1005,7 +1001,7 @@ pub struct Attributes(Vec<Attribute>);
 
 impl Attributes {
     pub fn contains_error_attr(&self) -> bool {
-        self.0.iter().find(|attr| attr.is_error()).is_some()
+        self.0.iter().any(|attr| attr.is_error())
     }
 
     fn get_throws_err(&self) -> Option<&str> {
@@ -1021,7 +1017,7 @@ impl Attributes {
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
     type Error = anyhow::Error;
     fn try_from(
-        weedle_attributes: &weedle::attribute::ExtendedAttributeList,
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = &weedle_attributes.body.list;
 
@@ -1034,9 +1030,9 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
 
         attrs
             .iter()
-            .map(|attr| Attribute::try_from(attr))
+            .map(Attribute::try_from)
             .collect::<Result<Vec<_>, _>>()
-            .map(|attrs| Attributes(attrs))
+            .map(Attributes)
     }
 }
 
