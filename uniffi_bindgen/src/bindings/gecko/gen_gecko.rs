@@ -10,6 +10,8 @@ use heck::{CamelCase, MixedCase};
 
 use crate::interface::*;
 
+use super::webidl::{BindingArgument, FunctionExt, ReturnBy, ReturnFunctionExt, ThrowBy};
+
 // Some config options for the caller to customize the generated Gecko bindings.
 // Note that this can only be used to control details *that do not affect the
 // underlying component*, since the details of the underlying component are
@@ -24,54 +26,6 @@ impl Config {
             // ...
         }
     }
-}
-
-/// Indicates whether a WebIDL type is reflected as an out parameter or return
-/// value in C++. This is used by the namespace and interface templates to
-/// generate the correct argument lists for the binding.
-pub enum ReturnPosition<'a> {
-    OutParam(&'a Type),
-    Return(&'a Type),
-}
-
-impl<'a> ReturnPosition<'a> {
-    /// Given a type, returns a tag indicating whether it's returned by value or
-    /// via an out parameter.
-    pub fn for_type(type_: &'a Type) -> ReturnPosition<'a> {
-        match type_ {
-            Type::String => ReturnPosition::OutParam(type_),
-            Type::Optional(_) => ReturnPosition::OutParam(type_),
-            Type::Record(_) => ReturnPosition::OutParam(type_),
-            Type::Map(_) => ReturnPosition::OutParam(type_),
-            Type::Sequence(_) => ReturnPosition::OutParam(type_),
-            _ => ReturnPosition::Return(type_),
-        }
-    }
-}
-
-/// Returns a dummy empty value for the given type. This is used to
-/// implement the `cpp::bail` macro to return early if a WebIDL function or
-/// method throws an exception.
-pub fn default_return_value_cpp(type_: &Type) -> Option<String> {
-    Some(match type_ {
-        Type::Int8
-        | Type::UInt8
-        | Type::Int16
-        | Type::UInt16
-        | Type::Int32
-        | Type::UInt32
-        | Type::Int64
-        | Type::UInt64 => "0".into(),
-        Type::Float32 => "0.0f".into(),
-        Type::Float64 => "0.0".into(),
-        Type::Boolean => "false".into(),
-        Type::Enum(name) => format!("{}::EndGuard_", name),
-        Type::Object(_) => "nullptr".into(),
-        Type::String | Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
-            return None
-        }
-        Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
-    })
 }
 
 /// A template for a Firefox WebIDL file. We only generate one of these per
@@ -206,9 +160,9 @@ mod filters {
             Type::String => "DOMString".into(),
             Type::Enum(name) | Type::Record(name) | Type::Object(name) => class_name_webidl(name)?,
             Type::Error(name) => panic!("[TODO: type_webidl({:?})]", type_),
-            Type::Optional(type_) => format!("{}?", type_webidl(type_)?),
-            Type::Sequence(type_) => format!("sequence<{}>", type_webidl(type_)?),
-            Type::Map(type_) => format!("record<DOMString, {}>", type_webidl(type_)?),
+            Type::Optional(inner) => format!("{}?", type_webidl(inner)?),
+            Type::Sequence(inner) => format!("sequence<{}>", type_webidl(inner)?),
+            Type::Map(inner) => format!("record<DOMString, {}>", type_webidl(inner)?),
         })
     }
 
@@ -232,31 +186,7 @@ mod filters {
         })
     }
 
-    /// Declares the type of an argument for the C++ binding.
-    pub fn arg_type_cpp(type_: &Type) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            Type::Int8
-            | Type::UInt8
-            | Type::Int16
-            | Type::UInt16
-            | Type::Int32
-            | Type::UInt32
-            | Type::Int64
-            | Type::UInt64
-            | Type::Float32
-            | Type::Float64
-            | Type::Boolean => type_cpp(type_)?,
-            Type::String => "const nsAString&".into(),
-            Type::Enum(name) => name.into(),
-            Type::Record(name) | Type::Object(name) => format!("const {}&", class_name_cpp(name)?),
-            Type::Error(name) => panic!("[TODO: type_cpp({:?})]", type_),
-            // Nullable objects might be passed as pointers, not sure?
-            Type::Optional(type_) => format!("const Nullable<{}>&", type_cpp(type_)?),
-            Type::Sequence(type_) => format!("const Sequence<{}>&", type_cpp(type_)?),
-            Type::Map(type_) => format!("const Record<nsString, {}>&", type_cpp(type_)?),
-        })
-    }
-
+    /// Declares a C++ type.
     pub fn type_cpp(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8 => "int8_t".into(),
@@ -270,19 +200,74 @@ mod filters {
             Type::Float32 => "float".into(),
             Type::Float64 => "double".into(),
             Type::Boolean => "bool".into(),
-            Type::String => "nsAString".into(),
+            Type::String => "nsString".into(),
             Type::Enum(name) | Type::Record(name) => class_name_cpp(name)?,
-            Type::Object(name) => format!("RefPtr<{}>", class_name_cpp(name)?),
+            Type::Object(name) => format!("OwningNotNull<{}>", class_name_cpp(name)?),
+            Type::Optional(inner) => {
+                // Nullable objects become `RefPtr<T>` (instead of
+                // `OwningNotNull<T>`); all others become `Nullable<T>`.
+                match inner.as_ref() {
+                    Type::Object(name) => format!("RefPtr<{}>", class_name_cpp(name)?),
+                    _ => format!("Nullable<{}>", type_cpp(inner)?),
+                }
+            }
+            Type::Sequence(inner) => format!("nsTArray<{}>", type_cpp(inner)?),
+            Type::Map(inner) => format!("Record<nsString, {}>", type_cpp(inner)?),
             Type::Error(name) => panic!("[TODO: type_cpp({:?})]", type_),
-            Type::Optional(type_) => format!("Nullable<{}>", type_cpp(type_)?),
-            Type::Sequence(type_) => format!("nsTArray<{}>", type_cpp(type_)?),
-            Type::Map(type_) => format!("Record<nsString, {}>", type_cpp(type_)?),
         })
     }
 
-    /// Declares the type of a return value from C++.
+    /// Declares a C++ in or out argument type.
+    pub fn arg_type_cpp(arg: &BindingArgument<'_>) -> Result<String, askama::Error> {
+        Ok(match arg {
+            BindingArgument::GlobalObject => "GlobalObject&".into(),
+            BindingArgument::ErrorResult => "ErrorResult&".into(),
+            BindingArgument::In(arg) => {
+                // In arguments are usually passed by `const` reference for
+                // object types, and by value for primitives. As an exception,
+                // `nsString` becomes `nsAString` when passed as an argument,
+                // and nullable objects are passed as pointers. Sequences map
+                // to the `Sequence` type, not `nsTArray`.
+                match arg.type_() {
+                    Type::String => "const nsAString&".into(),
+                    Type::Object(name) => format!("{}&", class_name_cpp(&name)?),
+                    Type::Optional(inner) => match inner.as_ref() {
+                        Type::Object(name) => format!("{}*", class_name_cpp(&name)?),
+                        _ => format!("const {}&", type_cpp(&arg.type_())?),
+                    },
+                    Type::Record(_) | Type::Map(_) => format!("const {}&", type_cpp(&arg.type_())?),
+                    Type::Sequence(inner) => format!("const Sequence<{}>&", type_cpp(&inner)?),
+                    _ => type_cpp(&arg.type_())?,
+                }
+            }
+            BindingArgument::Out(type_) => {
+                // Out arguments are usually passed by reference. `nsString`
+                // becomes `nsAString`.
+                match type_ {
+                    Type::String => "nsAString&".into(),
+                    _ => format!("{}&", type_cpp(type_)?),
+                }
+            }
+        })
+    }
+
+    /// Declares a C++ return type.
     pub fn ret_type_cpp(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
+            Type::Object(name) => format!("already_AddRefed<{}>", class_name_cpp(name)?),
+            Type::Optional(inner) => match inner.as_ref() {
+                Type::Object(name) => format!("already_AddRefed<{}>", class_name_cpp(name)?),
+                _ => type_cpp(type_)?,
+            },
+            _ => type_cpp(type_)?,
+        })
+    }
+
+    /// Generates a dummy value for a given return type. A C++ function that
+    /// declares a return type must return some value of that type, even if it
+    /// throws a DOM exception via the `ErrorResult`.
+    pub fn dummy_ret_value_cpp(return_type: &Type) -> Result<String, askama::Error> {
+        Ok(match return_type {
             Type::Int8
             | Type::UInt8
             | Type::Int16
@@ -290,18 +275,59 @@ mod filters {
             | Type::Int32
             | Type::UInt32
             | Type::Int64
-            | Type::UInt64
-            | Type::Float32
-            | Type::Float64
-            | Type::Boolean
-            | Type::Enum(_) => type_cpp(type_)?,
-            Type::String => "nsAString&".into(),
-            Type::Object(name) => format!("already_AddRefed<{}>", class_name_cpp(name)?),
-            Type::Error(name) => panic!("[TODO: ret_type_cpp({:?})]", type_),
-            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
-                format!("{}&", type_cpp(type_)?)
+            | Type::UInt64 => "0".into(),
+            Type::Float32 => "0.0f".into(),
+            Type::Float64 => "0.0".into(),
+            Type::Boolean => "false".into(),
+            Type::Enum(name) => format!("{}::EndGuard_", name),
+            Type::Object(_) => "nullptr".into(),
+            Type::String
+            | Type::Optional(_)
+            | Type::Record(_)
+            | Type::Map(_)
+            | Type::Sequence(_) => {
+                // These types are passed via out parameters, so we don't need
+                // to return a value.
+                String::new()
             }
+            Type::Error(_) => panic!("[TODO: dummy_ret_value_cpp({:?})]", return_type),
         })
+    }
+
+    /// Generates an expression for lowering a C++ type into a C type when
+    /// calling an FFI function.
+    pub fn lower_cpp(type_: &Type, from: &str) -> Result<String, askama::Error> {
+        let lifted = match type_ {
+            // Since our in argument type is `nsAString`, we need to use that
+            // to instantiate `ViaFfi`, not `nsString`.
+            Type::String => "nsAString".into(),
+            Type::Sequence(inner) => format!("Sequence<{}>", type_cpp(inner)?),
+            _ => type_cpp(type_)?,
+        };
+        Ok(format!(
+            "detail::ViaFfi<{}, {}>::Lower({})",
+            lifted,
+            type_ffi(&type_.to_ffi())?,
+            from
+        ))
+    }
+
+    /// Generates an expression for lifting a C return type from the FFI into a
+    /// C++ out parameter.
+    pub fn lift_cpp(type_: &Type, from: &str, into: &str) -> Result<String, askama::Error> {
+        let lifted = match type_ {
+            // Out arguments are also `nsAString`, so we need to use it for the
+            // instantiation.
+            Type::String => "nsAString".into(),
+            _ => type_cpp(type_)?,
+        };
+        Ok(format!(
+            "detail::ViaFfi<{}, {}>::Lift({}, {})",
+            lifted,
+            type_ffi(&type_.to_ffi())?,
+            from,
+            into,
+        ))
     }
 
     pub fn var_name_webidl(nm: &dyn fmt::Display) -> Result<String, askama::Error> {

@@ -9,24 +9,17 @@
 namespace mozilla {
 namespace dom {
 
-{% for func in functions %}
+{%- for func in functions %}
+
 /* static */
-{% call cpp::decl_return_type(func) %} {{ namespace|class_name_cpp }}::{{ func.name()|fn_name_cpp }}(
-  {% call cpp::decl_static_method_args(func) %}
+{% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp }}{% else %}void{% endmatch %} {{ namespace|class_name_cpp }}::{{ func.name()|fn_name_cpp }}(
+  {%- for arg in func.binding_arguments() %}
+  {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+  {%- endfor %}
 ) {
-  RustError err = {0, nullptr};
-  {% call cpp::to_ffi_call(func) %}
-  if (err.mCode) {
-    {%- if func.throws().is_some() %}
-    aRv.ThrowOperationError(err.mMessage);
-    {% else -%}
-    MOZ_ASSERT(false);
-    {%- endif %}
-    {% call cpp::bail(func) %}
-  }
-  {% call cpp::return(func) %}
+  {%- call cpp::to_ffi_call(func) %}
 }
-{% endfor %}
+{%- endfor %}
 
 }  // namespace dom
 }  // namespace mozilla

@@ -16,11 +16,15 @@ class {{ namespace|class_name_cpp }} final {
   {{ namespace|class_name_cpp }}() = default;
   ~{{ namespace|class_name_cpp }}() = default;
 
-  {% for func in functions %}
-  static {% call cpp::decl_return_type(func) %} {{ func.name()|fn_name_cpp }}(
-      {% call cpp::decl_static_method_args(func) %}
+  {%- for func in functions %}
+
+  static {% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp }}{% else %}void{% endmatch %} {{ func.name()|fn_name_cpp }}(
+    {%- for arg in func.binding_arguments() %}
+    {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+    {%- endfor %}
   );
-  {% endfor %}
+
+  {%- endfor %}
 };
 
 }  // namespace dom

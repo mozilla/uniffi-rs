@@ -2,11 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{fs::File, io::Write, path::PathBuf};
+use std::{
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 use anyhow::{Context, Result};
 
 pub mod gen_gecko;
+mod webidl;
 pub use gen_gecko::{
     Config, Interface, InterfaceHeader, Namespace, NamespaceHeader, SharedHeader, WebIdl,
 };

@@ -37,44 +37,40 @@ JSObject* {{ obj.name()|class_name_cpp }}::WrapObject(
   return dom::{{ obj.name()|class_name_cpp }}_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-{% for cons in obj.constructors() %}
+{%- for cons in obj.constructors() %}
+
 /* static */
 already_AddRefed<{{ obj.name()|class_name_cpp }}> {{ obj.name()|class_name_cpp }}::Constructor(
-  {% call cpp::decl_constructor_args(cons) %}
+  {%- for arg in cons.binding_arguments() %}
+  {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+  {%- endfor %}
 ) {
-  RustError err = {0, nullptr};
-  {% call cpp::to_ffi_call(cons) %}
+  {%- call cpp::to_ffi_call_head(cons, "err", "handle") %}
   if (err.mCode) {
-    {%- if cons.throws().is_some() %}
-    aRv.ThrowOperationError(err.mMessage);
-    {% else -%}
+    {%- match cons.binding_throw_by() %}
+    {%- when ThrowBy::ErrorResult with (rv) %}
+    {{ rv }}.ThrowOperationError(err.mMessage);
+    {%- when ThrowBy::Assert %}
     MOZ_ASSERT(false);
-    {%- endif %}
+    {%- endmatch %}
     return nullptr;
   }
   nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(aGlobal.GetAsSupports());
-  auto result = MakeRefPtr<{{ obj.name()|class_name_cpp }}>(global, loweredRetVal_);
+  auto result = MakeRefPtr<{{ obj.name()|class_name_cpp }}>(global, handle);
   return result.forget();
 }
 {%- endfor %}
 
-{% for meth in obj.methods() %}
-{% call cpp::decl_return_type(meth) %} {{ obj.name()|class_name_cpp }}::{{ meth.name()|fn_name_cpp }}(
-  {% call cpp::decl_method_args(meth) %}
+{%- for meth in obj.methods() %}
+
+{% match meth.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp }}{% else %}void{% endmatch %} {{ obj.name()|class_name_cpp }}::{{ meth.name()|fn_name_cpp }}(
+  {%- for arg in meth.binding_arguments() %}
+  {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+  {%- endfor %}
 ) {
-  RustError err = {0, nullptr};
-  {% call cpp::to_ffi_call_with_prefix("mHandle", meth) %}
-  if (err.mCode) {
-    {%- if meth.throws().is_some() %}
-    aRv.ThrowOperationError(err.mMessage);
-    {% else -%}
-    MOZ_ASSERT(false);
-    {%- endif %}
-    {% call cpp::bail(meth) %}
-  }
-  {% call cpp::return(meth) %}
+  {%- call cpp::to_ffi_call_with_prefix("mHandle", meth) %}
 }
-{% endfor %}
+{%- endfor %}
 
 }  // namespace dom
 }  // namespace mozilla

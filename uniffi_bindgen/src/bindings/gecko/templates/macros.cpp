@@ -1,142 +1,61 @@
-{# /* Functions that throw an error via `aRv` and return results by value still
-      need to return dummy values, even though they're discarded by the caller.
-      This macro returns a suitable "empty value". */ #}
-{%- macro bail(func) -%}
-{%- match func.return_type().and_then(self::default_return_value_cpp) -%}
-{%- when Some with (value) -%}
-return {{ value }};
-{%- else -%}
-return;
-{%- endmatch -%}
-{%- endmacro -%}
-
-{# /* Declares a return type for a function or method. Functions can return
-      values directly or via "out params"; this macro handles both cases. */ #}
-{%- macro decl_return_type(func) -%}
-  {%- match func.return_type() -%}
-    {%- when Some with (type_) -%}
-      {%- match ReturnPosition::for_type(type_) -%}
-        {%- when ReturnPosition::Return with (type_) -%} {{ type_|ret_type_cpp }}
-        {%- when ReturnPosition::OutParam with (_) -%} void
-      {%- endmatch -%}
-    {%- else -%} void
-  {%- endmatch -%}
-{%- endmacro -%}
-
-{# /* Declares a list of arguments for a WebIDL constructor. A constructor takes
-      a `GlobalObject&` as its first argument, followed by its declared
-      arguments, and then an optional `ErrorResult` if it throws. */ #}
-{%- macro decl_constructor_args(cons) -%}
-  GlobalObject& aGlobal
-  {%- let args = cons.arguments() -%}
-  {%- if !args.is_empty() -%}, {%- endif -%}
-  {%- for arg in args -%}
-  {{ arg.type_()|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %}, {%- endif -%}
-  {%- endfor -%}
-  {%- if cons.throws().is_some() -%}
-  , ErrorResult& aRv
-  {%- endif -%}
-{%- endmacro -%}
-
-{# /* Declares a list of arguments for a WebIDL static method. A static or
-      namespace method takes a `GlobalObject&` as its first argument, followed
-      by its declared arguments, an optional "out param" for the return value,
-      and an optional `ErrorResult` if it throws. */ #}
-{%- macro decl_static_method_args(cons) -%}
-  GlobalObject& aGlobal
-  {%- let args = func.arguments() %}
-  {%- if !args.is_empty() -%},{%- endif %}
-  {%- for arg in args %}
-  {{ arg.type_()|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
-  {%- endfor -%}
-  {%- call _decl_out_param(func) -%}
-  {%- if cons.throws().is_some() %}
-  , ErrorResult& aRv
-  {%- endif %}
-{%- endmacro -%}
-
-{# /* Declares a list of arguments for a WebIDL interface method. An interface
-      method takes its declared arguments, an optional "out param" for the
-      return value, and an `ErrorResult&`. */ #}
-{%- macro decl_method_args(func) -%}
-  {%- let args = func.arguments() -%}
-  {%- for arg in args -%}
-  {{ arg.type_()|arg_type_cpp }} {{ arg.name() -}}{%- if !loop.last -%},{%- endif -%}
-  {%- endfor -%}
-  {%- call _decl_out_param(func) -%}
-  {%- if func.throws().is_some() %}
-    {%- match func.return_type() -%}
-      {%- when Some with (type_) -%}
-        {%- match ReturnPosition::for_type(type_) -%}
-          {%- when ReturnPosition::OutParam with (type_) -%},
-          {%- else -%}
-            {%- if !args.is_empty() %}, {% endif -%}
-        {%- endmatch -%}
-      {%- else -%}
-        {%- if !args.is_empty() %}, {% endif -%}
-    {%- endmatch -%}
-    ErrorResult& aRv
-  {%- endif %}
-{%- endmacro -%}
-
-{# /* Returns a result from a function or method, by value or via an "out param"
-      depending on the function's return type. */ #}
-{%- macro return(func) -%}
-{% match func.return_type() -%}
-{%- when Some with (type_) -%}
-  {% match ReturnPosition::for_type(type_) -%}
-  {%- when ReturnPosition::OutParam with (type_) -%}
-  DebugOnly<bool> ok_ = detail::ViaFfi<{{ type_|type_cpp }}, {{ type_.to_ffi()|type_ffi }}>::Lift(loweredRetVal_, aRetVal_);
-  MOZ_ASSERT(ok_);
-  {%- when ReturnPosition::Return with (type_) %}
-  {{ type_|type_cpp }} retVal_;
-  DebugOnly<bool> ok_ = detail::ViaFfi<{{ type_|type_cpp }}, {{ type_.to_ffi()|type_ffi }}>::Lift(loweredRetVal_, retVal_);
-  MOZ_ASSERT(ok_);
-  return retVal_;
-  {%- endmatch %}
-{% else -%}
-  return;
-{%- endmatch %}
-{%- endmacro -%}
-
 {# /* Calls an FFI function. */ #}
-{%- macro to_ffi_call(func) %}
-  {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi }} loweredRetVal_ ={% else %}{% endmatch %}{{ func.ffi_func().name() }}(
-    {%- let args = func.arguments() -%}
-    {%- for arg in args %}
-    detail::ViaFfi<{{ arg.type_()|type_cpp }}, {{ arg.type_().to_ffi()|type_ffi }}>::Lower({{ arg.name() }}){%- if !loop.last %}, {% endif -%}
-    {%- endfor %}
-    {%- if func.ffi_func().has_out_err() %}
-    {% if !args.is_empty() %},{% endif %}&err
-    {% endif %}
-  );
+{%- macro to_ffi_call(func) -%}
+  {%- call to_ffi_call_head(func, "err", "loweredRetVal_") -%}
+  {%- call _to_ffi_call_tail(func, "err", "loweredRetVal_") -%}
 {%- endmacro -%}
 
 {# /* Calls an FFI function with an initial argument. */ #}
 {%- macro to_ffi_call_with_prefix(prefix, func) %}
-  {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi }} loweredRetVal_ = {% else %}{% endmatch %}{{ func.ffi_func().name() }}(
-    {{- prefix }}
+  RustError err = {0, nullptr};
+  {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi }} loweredRetVal_ ={% else %}{% endmatch %}{{ func.ffi_func().name() }}(
+    {{ prefix }}
     {%- let args = func.arguments() -%}
-    {%- if !args.is_empty() %},{% endif %}
+    {%- if !args.is_empty() %},{% endif -%}
     {%- for arg in args %}
-    detail::ViaFfi<{{ arg.type_()|type_cpp }}, {{ arg.type_().to_ffi()|type_ffi }}>::Lower({{ arg.name() }}){%- if !loop.last %}, {% endif -%}
+    {{ arg.type_()|lower_cpp(arg.name()) }}{%- if !loop.last %},{% endif -%}
     {%- endfor %}
-    {%- if func.ffi_func().has_out_err() %}
-    {% if !args.is_empty() %},{% endif %}&err
-    {% endif %}
+    {%- if func.ffi_func().has_out_err() -%}
+    , &err
+    {%- endif %}
+  );
+  {%- call _to_ffi_call_tail(func, "err", "loweredRetVal_") -%}
+{%- endmacro -%}
+
+{# /* Calls an FFI function without handling errors or lifting the return
+      value. Used in the implementation of `to_ffi_call`, and for
+      constructors. */ #}
+{%- macro to_ffi_call_head(func, error, result) %}
+  RustError {{ error }} = {0, nullptr};
+  {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi }} {{ result }} ={% else %}{% endmatch %}{{ func.ffi_func().name() }}(
+    {%- let args = func.arguments() -%}
+    {%- for arg in args %}
+    {{ arg.type_()|lower_cpp(arg.name()) }}{%- if !loop.last %},{% endif -%}
+    {%- endfor %}
+    {%- if func.ffi_func().has_out_err() -%}
+    {% if !args.is_empty() %}, {% endif %}&{{ error }}
+    {%- endif %}
   );
 {%- endmacro -%}
 
-{# /* Declares an "out param" in the argument list. */ #}
-{%- macro _decl_out_param(func) -%}
-{%- match func.return_type() -%}
-  {%- when Some with (type_) -%}
-    {%- match ReturnPosition::for_type(type_) -%}
-      {%- when ReturnPosition::OutParam with (type_) -%}
-        {%- if !func.arguments().is_empty() -%},{%- endif -%}
-        {{ type_|ret_type_cpp }} aRetVal_
-      {%- else -%}
-    {%- endmatch -%}
-  {%- else -%}
-{%- endmatch -%}
+{# /* Handles errors and lifts the return value from an FFI function. */ #}
+{%- macro _to_ffi_call_tail(func, err, result) %}
+  if ({{ err }}.mCode) {
+    {%- match func.binding_throw_by() %}
+    {%- when ThrowBy::ErrorResult with (rv) %}
+    {{ rv }}.ThrowOperationError({{ err }}.mMessage);
+    {%- when ThrowBy::Assert %}
+    MOZ_ASSERT(false);
+    {%- endmatch %}
+    return {% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|dummy_ret_value_cpp }}{% else %}{% endmatch %};
+  }
+  {%- match func.binding_return_by() %}
+  {%- when ReturnBy::OutParam with (name, type_) %}
+  DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, name) }};
+  MOZ_ASSERT(ok_);
+  {%- when ReturnBy::Value with (type_) %}
+  {{ type_|type_cpp }} retVal_;
+  DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, "retVal_") }};
+  MOZ_ASSERT(ok_);
+  return retVal_;
+  {%- when ReturnBy::Void %}{%- endmatch %}
 {%- endmacro -%}

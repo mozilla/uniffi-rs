@@ -713,7 +713,7 @@ struct ViaFfi<T, RustBuffer> {
 
 }  // namespace detail
 
-{%- for e in ci.iter_enum_definitions() %}
+{% for e in ci.iter_enum_definitions() %}
 template <>
 struct detail::ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
   static MOZ_MUST_USE bool Lift(const uint32_t& aLowered, {{ e.name()|class_name_cpp }}& aLifted) {

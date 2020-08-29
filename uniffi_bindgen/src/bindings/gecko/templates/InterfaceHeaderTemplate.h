@@ -30,17 +30,23 @@ class {{ obj.name()|class_name_cpp }} final : public nsISupports, public nsWrapp
 
   nsIGlobalObject* GetParentObject() const { return mGlobal; }
 
-  {% for cons in obj.constructors() %}
+  {%- for cons in obj.constructors() %}
+
   static already_AddRefed<{{ obj.name()|class_name_cpp }}> Constructor(
-    {% call cpp::decl_constructor_args(cons) %}
+    {%- for arg in cons.binding_arguments() %}
+    {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+    {%- endfor %}
   );
   {%- endfor %}
 
-  {% for meth in obj.methods() %}
-  {% call cpp::decl_return_type(meth) %} {{ meth.name()|fn_name_cpp }}(
-    {% call cpp::decl_method_args(meth) %}
+  {%- for meth in obj.methods() %}
+
+  {% match meth.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp }}{% else %}void{% endmatch %} {{ meth.name()|fn_name_cpp }}(
+    {%- for arg in meth.binding_arguments() %}
+    {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+    {%- endfor %}
   );
-  {% endfor %}
+  {%- endfor %}
 
  private:
   ~{{ obj.name()|class_name_cpp }}();
