@@ -2,15 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::path::Path;
-
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase};
 
 use crate::interface::*;
 
-use super::webidl::{BindingArgument, FunctionExt, ReturnBy, ReturnFunctionExt, ThrowBy};
+use super::webidl::{
+    BindingArgument, BindingFunction, ReturnBy, ReturningBindingFunction, ThrowBy,
+};
 
 // Some config options for the caller to customize the generated Gecko bindings.
 // Note that this can only be used to control details *that do not affect the

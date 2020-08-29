@@ -17,35 +17,33 @@
 //! handle them in extension traits on the UniFFI types, and keep our templates
 //! clean.
 
-use std::ops::Deref;
-
 use crate::interface::{Argument, Constructor, Function, Method, Type};
 
 /// Extension methods for all functions: top-level functions, constructors, and
 /// methods.
-pub trait FunctionExt {
+pub trait BindingFunction {
     /// Returns a list of arguments to declare for this function, including any
     /// extras and out parameters.
     fn binding_arguments(&self) -> Vec<BindingArgument<'_>>;
 
     /// Indicates how errors should be thrown from this function, either by an
     /// `ErrorResult` parameter, or by a fatal assertion.
-    fn binding_throw_by(&self) -> ThrowBy;
+    fn throw_by(&self) -> ThrowBy;
 }
 
 /// Extension methods for functions that return a value of any type. Excludes
 /// constructors, which must return an instance of their type.
-pub trait ReturnFunctionExt: FunctionExt {
+pub trait ReturningBindingFunction: BindingFunction {
     /// Returns the return type for this function, or `None` if the function
     /// doesn't return a value, or returns it via an out parameter.
     fn binding_return_type(&self) -> Option<&Type>;
 
     /// Indicates how results should be returned, either by value or via an out
     /// parameter.
-    fn binding_return_by(&self) -> ReturnBy<'_>;
+    fn return_by(&self) -> ReturnBy<'_>;
 }
 
-impl FunctionExt for Function {
+impl BindingFunction for Function {
     fn binding_arguments(&self) -> Vec<BindingArgument<'_>> {
         let args = self.arguments();
         let mut result = Vec::with_capacity(args.len() + 3);
@@ -60,7 +58,7 @@ impl FunctionExt for Function {
         result
     }
 
-    fn binding_throw_by(&self) -> ThrowBy {
+    fn throw_by(&self) -> ThrowBy {
         if self.throws().is_some() {
             ThrowBy::ErrorResult("aRv")
         } else {
@@ -69,19 +67,19 @@ impl FunctionExt for Function {
     }
 }
 
-impl ReturnFunctionExt for Function {
+impl ReturningBindingFunction for Function {
     fn binding_return_type(&self) -> Option<&Type> {
         self.return_type().filter(|type_| !is_out_param_type(type_))
     }
 
-    fn binding_return_by(&self) -> ReturnBy<'_> {
+    fn return_by(&self) -> ReturnBy<'_> {
         self.return_type()
             .map(ReturnBy::from_return_type)
             .unwrap_or(ReturnBy::Void)
     }
 }
 
-impl FunctionExt for Constructor {
+impl BindingFunction for Constructor {
     fn binding_arguments(&self) -> Vec<BindingArgument<'_>> {
         let args = self.arguments();
         let mut result = Vec::with_capacity(args.len() + 2);
@@ -95,7 +93,7 @@ impl FunctionExt for Constructor {
         result
     }
 
-    fn binding_throw_by(&self) -> ThrowBy {
+    fn throw_by(&self) -> ThrowBy {
         if self.throws().is_some() {
             ThrowBy::ErrorResult("aRv")
         } else {
@@ -104,7 +102,7 @@ impl FunctionExt for Constructor {
     }
 }
 
-impl FunctionExt for Method {
+impl BindingFunction for Method {
     fn binding_arguments(&self) -> Vec<BindingArgument<'_>> {
         let args = self.arguments();
         let mut result = Vec::with_capacity(args.len() + 2);
@@ -119,7 +117,7 @@ impl FunctionExt for Method {
         result
     }
 
-    fn binding_throw_by(&self) -> ThrowBy {
+    fn throw_by(&self) -> ThrowBy {
         if self.throws().is_some() {
             ThrowBy::ErrorResult("aRv")
         } else {
@@ -128,12 +126,12 @@ impl FunctionExt for Method {
     }
 }
 
-impl ReturnFunctionExt for Method {
+impl ReturningBindingFunction for Method {
     fn binding_return_type(&self) -> Option<&Type> {
         self.return_type().filter(|type_| !is_out_param_type(type_))
     }
 
-    fn binding_return_by(&self) -> ReturnBy<'_> {
+    fn return_by(&self) -> ReturnBy<'_> {
         self.return_type()
             .map(ReturnBy::from_return_type)
             .unwrap_or(ReturnBy::Void)
@@ -146,9 +144,16 @@ fn is_out_param_type(type_: &Type) -> bool {
     matches!(type_, Type::String | Type::Optional(_) | Type::Record(_) | Type::Map(_) | Type::Sequence(_))
 }
 
+/// Describes how a function returns its result.
 pub enum ReturnBy<'a> {
+    /// The function returns its result in an out parameter with the given
+    /// name and type.
     OutParam(&'static str, &'a Type),
+
+    /// The function returns its result by value.
     Value(&'a Type),
+
+    /// The function doesn't declare a return type.
     Void,
 }
 
@@ -162,19 +167,34 @@ impl<'a> ReturnBy<'a> {
     }
 }
 
+/// Describes how a function throws errors.
 pub enum ThrowBy {
+    /// Errors should be set on the `ErrorResult` parameter with the given
+    /// name.
     ErrorResult(&'static str),
+
+    /// Errors should fatally assert.
     Assert,
 }
 
+/// Describes a function argument.
 pub enum BindingArgument<'a> {
+    /// The argument is a `GlobalObject`, passed to constructors, static, and
+    /// namespace methods.
     GlobalObject,
+
+    /// The argument is an `ErrorResult`, passed to throwing functions.
     ErrorResult,
+
+    /// The argument is a normal input parameter.
     In(&'a Argument),
+
+    /// The argument is an out parameter used to return results by reference.
     Out(&'a Type),
 }
 
 impl<'a> BindingArgument<'a> {
+    /// Returns the argument name.
     pub fn name(&self) -> &'a str {
         match self {
             BindingArgument::GlobalObject => "aGlobal",

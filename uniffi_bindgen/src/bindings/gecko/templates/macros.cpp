@@ -40,7 +40,7 @@
 {# /* Handles errors and lifts the return value from an FFI function. */ #}
 {%- macro _to_ffi_call_tail(func, err, result) %}
   if ({{ err }}.mCode) {
-    {%- match func.binding_throw_by() %}
+    {%- match func.throw_by() %}
     {%- when ThrowBy::ErrorResult with (rv) %}
     {{ rv }}.ThrowOperationError({{ err }}.mMessage);
     {%- when ThrowBy::Assert %}
@@ -48,7 +48,7 @@
     {%- endmatch %}
     return {% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|dummy_ret_value_cpp }}{% else %}{% endmatch %};
   }
-  {%- match func.binding_return_by() %}
+  {%- match func.return_by() %}
   {%- when ReturnBy::OutParam with (name, type_) %}
   DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, name) }};
   MOZ_ASSERT(ok_);

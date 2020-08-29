@@ -47,7 +47,7 @@ already_AddRefed<{{ obj.name()|class_name_cpp }}> {{ obj.name()|class_name_cpp }
 ) {
   {%- call cpp::to_ffi_call_head(cons, "err", "handle") %}
   if (err.mCode) {
-    {%- match cons.binding_throw_by() %}
+    {%- match cons.throw_by() %}
     {%- when ThrowBy::ErrorResult with (rv) %}
     {{ rv }}.ThrowOperationError(err.mMessage);
     {%- when ThrowBy::Assert %}
