@@ -1,0 +1,511 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>The uniffi user guide</title>
+        
+        <meta name="robots" content="noindex" />
+        
+        
+
+
+        <!-- Custom HTML head -->
+        
+
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
+        <link rel="shortcut icon" href="favicon.png">
+        
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="tutorial/idl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="idl_file_spec.html"><strong aria-hidden="true">2.</strong> The IDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="idl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="idl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="idl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="idl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="idl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="idl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="idl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">The uniffi user guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#uniffi" id="uniffi">uniffi</a></h1>
+<p>Uniffi is a tool that automatically generates foreign-language bindings targeting Rust libraries.<br />
+It fits in the practice of consolidating business logic in a single Rust library while targeting multiple platforms, making it simpler to develop and maintain a cross-platform codebase.<br />
+Note that this tool will not help you ship a Rust library to these platforms, but simply not have to write bindings code by hand <a href="https://i.kym-cdn.com/photos/images/newsfeed/000/572/078/d6d.jpg">[0]</a>.</p>
+<h2><a class="header" href="#design" id="design">Design</a></h2>
+<p>uniffi requires to write an Interface Definition Language (<a href="https://heycam.github.io/webidl/">IDL</a>) file describing the methods and data structures available to the targeted languages.<br />
+This .idl file, whose definitions must match with the exposed Rust code, is then used to generate Rust <em>scaffolding</em> code and foreign-languages <em>bindings</em>. This process can take place either during the build process or be manually initiated by the developer.</p>
+<h2><a class="header" href="#supported-languages" id="supported-languages">Supported languages</a></h2>
+<ul>
+<li>Kotlin</li>
+<li>Swift</li>
+<li>Python</li>
+<li><a href="https://en.wikipedia.org/wiki/Gecko_(software)">Gecko</a> C++</li>
+</ul>
+<h1><a class="header" href="#getting-started" id="getting-started">Getting started</a></h1>
+<p>Say your company has a simple <code>math</code> crate with the following <code>lib.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn add(a: u32, b: u32) -&gt; u32 {
+    a + b
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>And top brass would like you to expose this <em>business-critical</em> operation to Kotlin and Swift.<br />
+<strong>Don't panic!</strong> We will show you how do that using uniffi.</p>
+<h1><a class="header" href="#prerequisites" id="prerequisites">Prerequisites</a></h1>
+<h2><a class="header" href="#the-uniffi-bindgen-cli-tool" id="the-uniffi-bindgen-cli-tool">The uniffi-bindgen cli tool</a></h2>
+<p>Install the <code>uniffi-bindgen</code> binary on your system using:</p>
+<!-- TODO: Use a published version -->
+<p><code>cargo install --git https://github.com/mozilla/uniffi-rs --branch main uniffi_bindgen</code></p>
+<p>You can see what it can do with <code>uniffi-bindgen --help</code>, but let's leave it aside for now.</p>
+<h2><a class="header" href="#build-your-crate-as-a-cdylib" id="build-your-crate-as-a-cdylib">Build your crate as a cdylib</a></h2>
+<p>Ensure your crate builds as a <code>cdylib</code> by adding</p>
+<pre><code class="language-toml">crate-type = [&quot;cdylib&quot;]
+</code></pre>
+<p>to your crate's <code>Cargo.toml</code>.</p>
+<h1><a class="header" href="#the-idl-file" id="the-idl-file">The IDL file</a></h1>
+<p>We describe in a IDL (Interface Definition Language) file <em>what</em> is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (<code>u32</code>) and not custom data structures but we still want to expose the <code>add</code> method.<br />
+Let's create a <code>math.idl</code> file in the <code>math</code> crate's <code>src/</code> folder:</p>
+<pre><code class="language-idl">namespace math {
+  u32 add(u32 a, u32 b);
+};
+</code></pre>
+<p>Here you can note multiple things:</p>
+<ul>
+<li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any idl file, even if there ain't any exposed function (e.g. <code>namespace foo {}</code>).</li>
+<li>The <code>add</code> function is in the <code>namespace</code> block. That's because on the Rust side it is a top-level <em>function</em>, we will see later how to to handle <em>methods</em>.</li>
+<li>Rust's <code>u32</code> is also IDL's <code>u32</code>, but it is not always true! (TODO table correspondance)</li>
+</ul>
+<p><strong>Note:</strong> If any of the things you expose in the <code>idl</code> file do not have an equivalent in your Rust crate, you will get a hard error. Try changing the <code>u32</code> result type to <code>u64</code> and see what happens!</p>
+<h1><a class="header" href="#rust-scaffolding" id="rust-scaffolding">Rust scaffolding</a></h1>
+<h2><a class="header" href="#rust-scaffolding-code" id="rust-scaffolding-code">Rust scaffolding code</a></h2>
+<p>Now we generate some Rust helper code to make the <code>add</code> method available to foreign-language bindings.</p>
+<p>First, add <code>uniffi</code> to your crate dependencies: it is the runtime support code that powers uniffi's serialization of data types across languages:</p>
+<!-- TODO: Use a published version -->
+<pre><code class="language-toml">[dependencies]
+uniffi = { git = &quot;https://github.com/mozilla/uniffi-rs&quot;, branch = &quot;main&quot; }
+</code></pre>
+<p>Then let's add <code>uniffi_build</code> to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C abi.</p>
+<!-- TODO: Use a published version -->
+<pre><code class="language-toml">[build-dependencies]
+uniffi_build = { git = &quot;https://github.com/mozilla/uniffi-rs&quot;, branch = &quot;main&quot; }
+</code></pre>
+<p>Then create a <code>build.rs</code> file next to <code>Cargo.toml</code> that will use <code>uniffi_build</code>:</p>
+<pre><pre class="playground"><code class="language-rust">fn main() {
+    uniffi_build::generate_scaffolding(&quot;./src/math.idl&quot;).unwrap();
+}
+</code></pre></pre>
+<p><strong>Note:</strong> This is the equivalent of calling (and does it under the hood) <code>uniffi-bindgen scaffolding src/math.idl --out-dir &lt;OUT_DIR&gt;</code>.</p>
+<p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>include!(concat!(env!(&quot;OUT_DIR&quot;), &quot;/math.uniffi.rs&quot;));
+<span class="boring">}
+</span></code></pre></pre>
+<p><strong>Note:</strong> The file name is always <code>&lt;namespace&gt;.uniffi.rs</code>.</p>
+<p>Great! <code>add</code> is ready to see the outside world!</p>
+<h1><a class="header" href="#foreign-language-bindings" id="foreign-language-bindings">Foreign-language bindings</a></h1>
+<p>As stated in the <a href="tutorial/../Overview.html">Overview</a>, this library and tutorial does not cover <em>how</em> to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.</p>
+<h2><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h2>
+<p>Run</p>
+<pre><code>uniffi-bindgen generate src/math.idl --language kotlin
+</code></pre>
+<p>then have a look at <code>src/uniffi/math/math.kt</code></p>
+<h2><a class="header" href="#swift" id="swift">Swift</a></h2>
+<p>Run</p>
+<pre><code>uniffi-bindgen generate src/math.idl --language swift
+</code></pre>
+<p>then check out <code>src/math.swift</code></p>
+<p>Note that these commands could be integrated as part of your gradle/XCode build process.</p>
+<p>This is it, you have an MVP integration of uniffi in your project.</p>
+<h1><a class="header" href="#the-idl-file-1" id="the-idl-file-1">The IDL file</a></h1>
+<p>This file defines which functions, methods and types are exposed to the foreign-language bindings.</p>
+<pre><code class="language-idl">namespace sprites {
+  Point translate([ByRef] Point position, Vector direction);
+};
+
+dictionary Point {
+  double x;
+  double y;
+};
+
+dictionary Vector {
+  double dx;
+  double dy;
+};
+
+interface Sprite {
+  constructor(Point? initial_position);
+  Point get_position();
+  void move_to(Point position);
+  void move_by(Vector direction);
+};
+</code></pre>
+<h1><a class="header" href="#namespace" id="namespace">Namespace</a></h1>
+<p>Every IDL file <em>must</em> have a <code>namespace</code> block:</p>
+<pre><code class="language-idl">namespace math {
+  double exp(double a);
+};
+</code></pre>
+<p>It serves multiple purposes:</p>
+<ul>
+<li>It identifies the name of the generated Rust scaffolding file <code>&lt;namespace&gt;.uniffi.rs</code>.</li>
+<li>It identifies the package name of the generated foreign-language bindings (e.g. <code>uniffi.&lt;namespace&gt;</code> in Kotlin)</li>
+<li>It also contains all <a href="idl/./functions.html">top-level <em>functions</em></a> that get exposed to foreign-language bindings.</li>
+</ul>
+<h1><a class="header" href="#built-in-types" id="built-in-types">Built-in types</a></h1>
+<p>The following built-in types can be passed as arguments/returned by Rust methods:</p>
+<table><thead><tr><th>Rust type</th><th>IDL type</th><th>Notes</th></tr></thead><tbody>
+<tr><td><code>bool</code></td><td><code>boolean</code></td><td></td></tr>
+<tr><td><code>u8/i8..u64/i64</code></td><td><code>u8/i8..u64/i64</code></td><td></td></tr>
+<tr><td><code>f32</code></td><td><code>float</code></td><td></td></tr>
+<tr><td><code>f64</code></td><td><code>double</code></td><td></td></tr>
+<tr><td><code>String</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>&amp;T</code></td><td><code>[ByRef] T</code></td><td>This works for <code>&amp;str</code> and <code>&amp;[T]</code></td></tr>
+<tr><td><code>Option&lt;T&gt;</code></td><td><code>T?</code></td><td></td></tr>
+<tr><td><code>Vec&lt;T&gt;</code></td><td><code>sequence&lt;T&gt;</code></td><td></td></tr>
+<tr><td><code>HashMap&lt;String, T&gt;</code></td><td><code>record&lt;DOMString, T&gt;</code></td><td>Only string keys are supported</td></tr>
+<tr><td><code>()</code></td><td><code>void</code></td><td>Empty return</td></tr>
+<tr><td><code>Result&lt;T, E&gt;</code></td><td>N/A</td><td>See <a href="idl/./errors.html">Errors</a> section</td></tr>
+</tbody></table>
+<p>And of course you can use your own types, which is covered in the following sections.</p>
+<h1><a class="header" href="#enumerations" id="enumerations">Enumerations</a></h1>
+<p>An enumeration defined in Rust code as</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>enum Animal {
+    Dog,
+    Cat,
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Can be exposed in the IDL file with:</p>
+<pre><code class="language-idl">enum Animal {
+  &quot;Dog&quot;,
+  &quot;Cat&quot;,
+};
+</code></pre>
+<p>Note that enumerations with associated data are not yet supported.</p>
+<h1><a class="header" href="#structsdictionaries" id="structsdictionaries">Structs/Dictionaries</a></h1>
+<p>Dictionaries can be compared to POJOs in the Java world: just a data structure holding some data.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct TodoEntry {
+    done: bool,
+    due_date: u64,
+    text: String,
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>can be converted in IDL to:</p>
+<pre><code class="language-idl">dictionary TodoEntry {
+    boolean done;
+    u64 due_date;
+    string text;
+};
+
+</code></pre>
+<p>Dictionaries can contain each other and every other data type available, except objects.</p>
+<h1><a class="header" href="#functions" id="functions">Functions</a></h1>
+<p>All top-level <em>functions</em> get exposed through the IDL's <code>namespace</code> block.
+For example, if the crate's <code>lib.rs</code> file contains:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn hello_world() -&gt; String {
+    &quot;Hello World!&quot;.to_owned()
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The IDL file will look like:</p>
+<pre><code class="language-idl">namespace Example {
+    string hello_world();
+}
+</code></pre>
+<h1><a class="header" href="#throwing-errors" id="throwing-errors">Throwing errors</a></h1>
+<p>It is often the case that a function does not return <code>T</code> in Rust but <code>Result&lt;T, E&gt;</code> to reflect that it is fallible.<br />
+For uniffi to expose this error, your error type (<code>E</code>) must be an <code>enum</code> and implement <code>std::error::Error</code> (<a href="https://crates.io/crates/thiserror">thiserror</a> works!).</p>
+<p>Here's how you would write a Rust failible function and how you'd expose it in IDL:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, thiserror::Error)]
+enum ArithmeticError {
+    #[error(&quot;Integer overflow on an operation with {a} and {b}&quot;)]
+    IntegerOverflow { a: u64, b: u64 },
+}
+
+fn add(a: u64, b: u64) -&gt; Result&lt;u64, ArithmeticError&gt; {
+    a.checked_add(b).ok_or(ArithmeticError::IntegerOverflow { a, b })
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>And in IDL:</p>
+<pre><code>[Error]
+enum ArithmeticError {
+  &quot;IntegerOverflow&quot;,
+};
+
+
+namespace arithmetic {
+  [Throws=ArithmeticError]
+  u64 add(u64 a, u64 b);
+}
+</code></pre>
+<p>On the other side (Kotlin, Swift etc.), a proper exception will be thrown if <code>Result::is_err()</code> is <code>true</code>.</p>
+<h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
+<p>Interfaces refer to the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.<br />
+Because of Reasons, in the uniffi world it is impossible to be both an Object and a <a href="idl/./structs.html">Dictionary</a>.</p>
+<p>The following Rust code:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct TodoList {
+    items: Vec&lt;String&gt;
+}
+
+impl TodoList {
+    fn new() -&gt; Self {
+        TodoList {
+            items: Vec::new()
+        }
+    }
+
+    fn add_item(&amp;mut self, todo: String) {
+        self.items.push(todo);
+    }
+
+    fn get_items(&amp;self) -&gt; Vec&lt;String&gt; {
+        self.items.clone()
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>would be exposed using:</p>
+<pre><code class="language-idl">interface TodoList {
+    constructor();
+    void add_item(string todo);
+    sequence&lt;string&gt; get_items();
+};
+</code></pre>
+<p>By convention, the <code>constructor()</code> calls the Rust's <code>new()</code> method.</p>
+<h1><a class="header" href="#integrating-with-gradle" id="integrating-with-gradle">Integrating with Gradle</a></h1>
+<p>It is possible to generate Kotlin bindings at compile time for Kotlin Android projects. We'd like to make a gradle plugin for that, but until then you can add to your <code>build.gradle</code> the following:</p>
+<pre><code class="language-groovy">android.libraryVariants.all { variant -&gt;
+    def t = tasks.register(&quot;generate${variant.name.capitalize()}UniffiBindings&quot;, Exec) {
+        workingDir &quot;${project.projectDir}&quot;
+        // Runs the bindings generation, note that you must have uniffi-bindgen installed and in your PATH environment variable
+        commandLine 'uniffi-bindgen', 'generate', '&lt;PATH TO .idl FILE&gt;', '--language', 'kotlin', '--out-dir', &quot;${buildDir}/generated/source/uniffi/${variant.name}/java&quot;
+    }
+    variant.javaCompileProvider.get().dependsOn(t)
+    def sourceSet = variant.sourceSets.find { it.name == variant.name }
+    sourceSet.java.srcDir new File(buildDir, &quot;generated/source/uniffi/${variant.name}/java&quot;)
+    // XXX: I've been trying to make this work but I can't, so the compiled bindings will show as &quot;regular sources&quot; in Android Studio.
+    idea.module.generatedSourceDirs += file(&quot;${buildDir}/generated/source/uniffi/${variant.name}/java/uniffi&quot;)
+}
+</code></pre>
+<p>The generated bindings should appear in the project sources in Android Studio.</p>
+<h1><a class="header" href="#integrating-with-xcode" id="integrating-with-xcode">Integrating with XCode</a></h1>
+<p>It is possible to generate Swift bindings at compile time for XCode projects.
+In your project configuration, add a &quot;Run Script Phase&quot; that applies to <code>*.idl</code> files:</p>
+<pre><code class="language-bash">$HOME/.cargo/bin/uniffi-bindgen generate $INPUT_FILE_PATH --language swift --out-dir $DERIVED_FILE_DIR\n
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+        
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        
+        
+
+    </body>
+</html>
