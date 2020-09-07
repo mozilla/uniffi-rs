@@ -168,4 +168,24 @@ impl Stringifier {
     }
 }
 
+#[derive(Debug, Clone)]
+struct Optionneur;
+impl Optionneur {
+    fn new() -> Self {
+        Optionneur
+    }
+    fn sinon_string(&self, value: String) -> String {
+        value
+    }
+    fn sinon_null(&self, value: Option<String>) -> Option<String> {
+        value
+    }
+    fn sinon_boolean(&self, value: bool) -> bool {
+        value
+    }
+    fn sinon_sequence(&self, value: Vec<String>) -> Vec<String> {
+        value
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/rondpoint.uniffi.rs"));

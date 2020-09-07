@@ -581,6 +581,9 @@ impl Argument {
     pub fn by_ref(&self) -> bool {
         self.by_ref
     }
+    pub fn default_value(&self) -> Option<Literal> {
+        self.default.clone()
+    }
 }
 
 impl APIConverter<Argument> for weedle::argument::Argument<'_> {
@@ -1068,6 +1071,8 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
 pub enum Literal {
     Boolean(bool),
     String(String),
+    EmptySequence,
+    Null,
     // TODO: more types of literal
 }
 
@@ -1076,6 +1081,8 @@ impl APIConverter<Literal> for weedle::literal::DefaultValue<'_> {
         Ok(match self {
             weedle::literal::DefaultValue::Boolean(b) => Literal::Boolean(b.0),
             weedle::literal::DefaultValue::String(s) => Literal::String(s.0.to_string()),
+            weedle::literal::DefaultValue::EmptyArray(_) => Literal::EmptySequence,
+            weedle::literal::DefaultValue::Null(_) => Literal::Null,
             _ => bail!("no support for {:?} literal yet", self),
         })
     }

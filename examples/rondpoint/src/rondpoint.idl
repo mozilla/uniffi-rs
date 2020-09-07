@@ -74,3 +74,10 @@ interface Stringifier {
   string to_string_double(double value);
   string to_string_boolean(boolean value);
 };
+
+interface Optionneur {
+  boolean sinon_boolean(optional boolean value = false);
+  string sinon_string(optional string value = "default");
+  string? sinon_null(optional string? value = null);
+  sequence<string> sinon_sequence(optional sequence<string> value = []);
+};

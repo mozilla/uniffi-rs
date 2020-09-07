@@ -109,6 +109,15 @@ mod filters {
         })
     }
 
+    pub fn literal_kt(literal: &Literal) -> Result<String, askama::Error> {
+        Ok(match literal {
+            Literal::Boolean(v) => format!("{}", v),
+            Literal::String(s) => format!("\"{}\"", s),
+            Literal::Null => "null".into(),
+            Literal::EmptySequence => "listOf()".into(),
+        })
+    }
+
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
     pub fn class_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())

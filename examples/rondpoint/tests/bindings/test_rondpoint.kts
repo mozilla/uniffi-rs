@@ -57,6 +57,8 @@ listOf(-1, 0, 1).map { DictionnaireNombresSignes(it.toByte(), it.toShort(), it.t
 listOf(0, 1).map { DictionnaireNombres(it.toUByte(), it.toUShort(), it.toUInt(), it.toULong()) }
     .affirmAllerRetour(rt::identiqueNombres)
 
+rt.destroy()
+
 // Test one way across the FFI.
 //
 // We send one representation of a value to lib.rs, and it transforms it into another, a string.
@@ -83,15 +85,10 @@ fun <T> List<T>.affirmEnchaine(
     }
 }
 
-// Test the effigacy of the string transport from rust. If this fails, but everything else 
+// Test the efficacy of the string transport from rust. If this fails, but everything else 
 // works, then things are very weird.
 val wellKnown = st.wellKnownString("kotlin")
 assert("uniffi 💚 kotlin!" == wellKnown) { "wellKnownString 'uniffi 💚 kotlin!' == '$wellKnown'" }
-
-// NB. Numbers are all signed in kotlin. This makes roundtripping of unsigned numbers tricky to show. 
-// Uniffi does not generate unsigned types for kotlin, but the work tracked is 
-// in https://github.com/mozilla/uniffi-rs/issues/249. Tests using unsigned types are 
-// commented out for now.
 
 // Booleans
 listOf(true, false).affirmEnchaine(st::toStringBoolean)
@@ -119,3 +116,20 @@ listOf(0.0F, 1.0F, -1.0F, Float.MIN_VALUE, Float.MAX_VALUE).affirmEnchaine(st::t
 // Doubles
 // MIN_VALUE is 4.9E-324. Accuracy and formatting get weird at small sizes.
 listOf(0.0, 1.0, -1.0, Double.MIN_VALUE, Double.MAX_VALUE).affirmEnchaine(st::toStringDouble)  { s, n -> s.toDouble() == n }
+
+st.destroy()
+
+val op = Optionneur()
+
+assert(op.sinonString() == "default")
+listOf("foo", "bar").affirmAllerRetour(op::sinonString)
+
+assert(op.sinonBoolean() == false)
+listOf(true, false).affirmAllerRetour(op::sinonBoolean)
+
+assert(op.sinonNull() == null)
+listOf("foo", "bar").affirmAllerRetour(op::sinonNull)
+
+assert(op.sinonSequence() == listOf<String>())
+listOf(listOf("a", "b")).affirmAllerRetour(op::sinonSequence)
+op.destroy()
