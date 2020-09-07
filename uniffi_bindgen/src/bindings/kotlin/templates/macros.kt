@@ -6,12 +6,12 @@
 
 {%- macro to_ffi_call(func) -%}
 rustCall(
-    {% match func.throws() %}
-    {% when Some with (e) %}
-    {{e}}.ByReference()
-    {% else %}
+    {%- match func.throws() %}
+    {%- when Some with (e) %}
+    {{-e}}.ByReference()
+    {%- else %}
     InternalError.ByReference()
-    {% endmatch %}
+    {%- endmatch %}
 ) { err ->
     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
 }
@@ -19,12 +19,12 @@ rustCall(
 
 {%- macro to_ffi_call_with_prefix(prefix, func) %}
 rustCall(
-    {% match func.throws() %}
-    {% when Some with (e) %}
+    {%- match func.throws() %}
+    {%- when Some with (e) %}
     {{e}}.ByReference()
-    {% else %}
+    {%- else %}
     InternalError.ByReference()
-    {% endmatch %}
+    {%- endmatch %}
 ) { err ->
     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
         {{- prefix }}, {% call _arg_list_ffi_call(func) %}{% if func.arguments().len() > 0 %}, {% endif %}err)
