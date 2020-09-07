@@ -103,6 +103,24 @@ fun Double.Companion.read(buf: ByteBuffer): Double {
     return v
 }
 
+fun String.Companion.lift(rbuf: RustBuffer.ByValue): String {
+    try {
+        val byteArr = ByteArray(rbuf.len)
+        rbuf.asByteBuffer()!!.get(byteArr)
+        return byteArr.toString(Charsets.UTF_8)
+    } finally {
+        RustBuffer.free(rbuf)
+    }
+}
+
+fun String.Companion.read(buf: ByteBuffer): String {
+    val len = Int.read(buf)
+    val byteArr = ByteArray(len)
+    buf.get(byteArr)
+    return byteArr.toString(Charsets.UTF_8)
+}
+
+
 // I can't figure out how to make a generic implementation of (Any?).read, and IIUC there are some
 // restrictions on generics in Kotlin (inherited from the JVM) that make it impossible to write in the
 // style I want here. So, we use a standalone helper.
@@ -247,36 +265,19 @@ fun Double.write(buf: RustBufferBuilder) {
     buf.putDouble(this)
 }
 
-fun String.lower(): Pointer {
-    val rustErr = RustError.ByReference()
-    val rustStr = _UniFFILib.INSTANCE.{{ ci.ffi_string_alloc_from().name() }}(this, rustErr)
-    if (rustErr.code != 0) {
-         throw RuntimeException("caught a panic while passing a string across the ffi")
-    }
-    return rustStr
+fun String.lower(): RustBuffer.ByValue {
+    val byteArr = this.toByteArray(Charsets.UTF_8)
+    // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
+    // to copy them into a JNA `Memory`. So we might as well directly copy then into a `RustBuffer`.
+    val rbuf = RustBuffer.alloc(byteArr.size)
+    rbuf.asByteBuffer()!!.put(byteArr)
+    return rbuf
 }
 
 fun String.write(buf: RustBufferBuilder) {
     val byteArr = this.toByteArray(Charsets.UTF_8)
     buf.putInt(byteArr.size)
     buf.put(byteArr)
-}
-
-fun String.Companion.read(buf: ByteBuffer): String {
-    val len = Int.read(buf)
-    val byteArr = ByteArray(len)
-    buf.get(byteArr)
-    return byteArr.toString(Charsets.UTF_8)
-}
-
-fun String.Companion.lift(ptr: Pointer): String {
-    try {
-        return ptr.getString(0, "utf8")
-    } finally {
-        rustCall(InternalError.ByReference()) { err ->
-            _UniFFILib.INSTANCE.{{ ci.ffi_string_free().name() }}(ptr, err)
-        }
-    }
 }
 
 fun<T> lowerSequence(v: List<T>, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {

@@ -42,7 +42,7 @@ let rt = Retourneur()
 [0.0, 1.0, .leastNonzeroMagnitude, .greatestFiniteMagnitude].affirmAllerRetour(rt.identiqueDouble)
 
 // Strings
-["", "abc", "été", "ښي لاس ته لوستلو لوستل", "😻emoji 👨‍👧‍👦multi-emoji, 🇨🇭a flag, a canal, panama"]
+["", "abc", "null\0byte", "été", "ښي لاس ته لوستلو لوستل", "😻emoji 👨‍👧‍👦multi-emoji, 🇨🇭a flag, a canal, panama"]
     .affirmAllerRetour(rt.identiqueString)
 
 // Test one way across the FFI.

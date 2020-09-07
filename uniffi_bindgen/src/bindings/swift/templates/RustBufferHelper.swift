@@ -163,24 +163,33 @@ extension ViaFfiUsingByteBuffer {
 // Implement our protocols for the built-in types that we use.
 
 extension String: ViaFfi {
-    typealias FfiType = UnsafeMutablePointer<CChar>
+    typealias FfiType = RustBuffer
 
     static func lift(_ v: FfiType) throws -> Self {
         defer {
             try! rustCall(InternalError.unknown()) { err in
-                {{ ci.ffi_string_free().name() }}(v, err)
+                {{ ci.ffi_rustbuffer_free().name() }}(v, err)
             }
         }
-        return String(cString: v)
+        if v.data == nil {
+            return String()
+        }
+        let bytes = UnsafeBufferPointer<UInt8>(start: v.data!, count: Int(v.len))
+        return String(bytes: bytes, encoding: String.Encoding.utf8)!
     }
 
     func lower() -> FfiType {
-        var rustErr = NativeRustError(code: 0, message: nil)
-        let rustStr = {{ ci.ffi_string_alloc_from().name() }}(self, &rustErr)
-        if rustErr.code != 0 {
-            fatalError("caught a panic while passing a string across the ffi")
+        return self.utf8CString.withUnsafeBufferPointer { ptr in
+            // The swift string gives us int8_t, we want uint8_t.
+            ptr.withMemoryRebound(to: UInt8.self) { ptr in
+                // The swift string gives us a trailing null byte, we don't want it.
+                let buf = UnsafeBufferPointer(rebasing: ptr.prefix(upTo: ptr.count - 1))
+                let bytes = ForeignBytes(bufferPointer: buf)
+                return try! rustCall(InternalError.unknown()) { err in
+                    {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, err)
+                }
+            }
         }
-        return rustStr
     }
 
     static func read(from buf: Reader) throws -> Self {

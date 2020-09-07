@@ -65,3 +65,19 @@ pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_reserve().name() }}(buf: uniffi::R
         uniffi::RustBuffer::from_vec(v)
     })
 }
+
+/// Free a String that had previously been passed to the foreign language code.
+///
+/// # Safety
+///
+/// In order to free the string, Rust takes ownership of a raw pointer which is an
+/// unsafe operation. The argument *must* be a uniquely-owned pointer previously
+/// obtained from a call into the rust code that returned a string.
+/// (In practice that means you got it from the `message` field of an `ExternError`,
+/// because that's currently the only place we use `char*` types in our API).
+#[no_mangle]
+pub unsafe extern "C" fn {{ ci.ffi_string_free().name() }}(cstr: *mut std::os::raw::c_char, err: &mut uniffi::deps::ffi_support::ExternError) {
+    uniffi::deps::ffi_support::call_with_output(err, || {
+        uniffi::deps::ffi_support::destroy_c_string(cstr)
+    })
+}

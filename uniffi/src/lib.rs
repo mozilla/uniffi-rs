@@ -30,11 +30,7 @@
 use anyhow::{bail, Result};
 use bytes::buf::{Buf, BufMut};
 use paste::paste;
-use std::{
-    collections::HashMap,
-    convert::{TryFrom, TryInto},
-    ffi::CString,
-};
+use std::{collections::HashMap, convert::TryFrom};
 
 pub mod ffi;
 pub use ffi::*;
@@ -232,6 +228,57 @@ unsafe impl ViaFfi for bool {
     }
 }
 
+/// Support for passing Strings via the FFI.
+///
+/// Unlike many other implementations of `ViaFfi`, this passes a struct containing
+/// a raw pointer rather than copying the data from one side to the other. This is a
+/// safety hazard, but turns out to be pretty nice for useability. This struct
+/// *must* be a valid `RustBuffer` and it *must* contain valid utf-8 data (in other
+/// words, it *must* be a `Vec<u8>` suitable for use as an actual rust `String`).
+///
+/// When serialized in a buffer, strings are represented as a u32 byte length
+/// followed by utf8-encoded bytes.
+unsafe impl ViaFfi for String {
+    type FfiType = RustBuffer;
+
+    // This returns a struct with a raw pointer to the underlying bytes, so it's very
+    // important that it consume ownership of the String, which is relinquished to the
+    // foreign language code (and can be restored by it passing the pointer back).
+    fn lower(self) -> Self::FfiType {
+        RustBuffer::from_vec(self.into_bytes())
+    }
+
+    // The argument here *must* be a uniquely-owned `RustBuffer` previously obtained
+    // from `lower` above, and hence must be the bytes of a valid rust string.
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
+        let v = v.destroy_into_vec();
+        // This turns the buffer back into a `String` without copying the data
+        // and without re-checking it for validity of the utf8. If the `RustBuffer`
+        // came from a valid String then there's no point in re-checking the utf8,
+        // and if it didn't then bad things are probably going to happen regardless
+        // of whether we check for valid utf8 data or not.
+        Ok(unsafe { String::from_utf8_unchecked(v) })
+    }
+
+    fn write<B: BufMut>(&self, buf: &mut B) {
+        // N.B. `len()` gives us the length in bytes, not in chars or graphemes.
+        // TODO: it would be nice not to panic here.
+        let len = u32::try_from(self.len()).unwrap();
+        buf.put_u32(len); // We limit strings to u32::MAX bytes
+        buf.put(self.as_bytes());
+    }
+
+    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 4)?;
+        let len = buf.get_u32() as usize;
+        check_remaining(buf, len)?;
+        let bytes = &buf.bytes()[..len];
+        let res = String::from_utf8(bytes.to_vec())?;
+        buf.advance(len);
+        Ok(res)
+    }
+}
+
 /// Support for passing optional values via the FFI.
 ///
 /// Optional values are currently always passed by serializing to a buffer.
@@ -349,63 +396,5 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
             map.insert(key, value);
         }
         Ok(map)
-    }
-}
-
-/// Support for passing Strings via the FFI.
-///
-/// Unlike many other implementations of `ViaFfi`, this passes a pointer rather
-/// than copying the data from one side to the other. This is a safety hazard,
-/// but turns out to be pretty nice for useability. This pointer *must be one owned
-/// by the rust allocator and it *must* point to valid utf-8 data (in other words,
-/// it *must* be an actual rust `String`).
-///
-/// When serialized in a bytebuffer, strings are represented as a u32 byte length
-/// followed by utf8-encoded bytes.
-///
-/// (In practice, we currently do end up copying the data, the copying just happens
-/// on the foreign language side rather than here in the rust code.)
-unsafe impl ViaFfi for String {
-    type FfiType = *mut std::os::raw::c_char;
-
-    // This returns a raw pointer to the underlying bytes, so it's very important
-    // that it consume ownership of the String, which is relinquished to the foreign
-    // language code (and can be restored by it passing the pointer back).
-    fn lower(self) -> Self::FfiType {
-        ffi_support::rust_string_to_c(self)
-    }
-
-    // The argument here *must* be a uniquely-owned pointer previously obtained
-    // from `info_ffi_value` above. It will try to panic if you give it an invalid
-    // pointer, but there's no guarantee that it will.
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
-        if v.is_null() {
-            bail!("null pointer passed as String")
-        }
-        let cstr = unsafe { CString::from_raw(v) };
-        // This turns the buffer back into a `String` without copying the data
-        // and without re-checking it for validity of the utf8. If the pointer
-        // came from a valid String then there's no point in re-checking the utf8,
-        // and if it didn't then bad things are going to happen regardless of
-        // whether we check for valid utf8 data or not.
-        Ok(unsafe { String::from_utf8_unchecked(cstr.into_bytes()) })
-    }
-
-    fn write<B: BufMut>(&self, buf: &mut B) {
-        // N.B. `len()` gives us the length in bytes, not in chars or graphemes.
-        // TODO: it would be nice not to panic here.
-        let len = u32::try_from(self.len()).unwrap();
-        buf.put_u32(len); // We limit strings to u32::MAX bytes
-        buf.put(self.as_bytes());
-    }
-
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
-        check_remaining(buf, 4)?;
-        let len = buf.get_u32() as usize;
-        check_remaining(buf, len)?;
-        let bytes = &buf.bytes()[..len];
-        let res = String::from_utf8(bytes.to_vec())?;
-        buf.advance(len);
-        Ok(res)
     }
 }
