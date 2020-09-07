@@ -54,8 +54,10 @@ pub enum FFIType {
     /// or pass it to someone that will.
     RustString,
     /// A borrowed reference to a UTF-8 string buffer owned by foreign language code.
+    /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignStringRef,
+    ForeignBytes,
     /// An error struct, containing a numberic error code and char* pointer to error string.
     /// The string is owned by rust and allocated on the rust heap, and must be freed by
     /// passing it to the appropriate `string_free` FFI function.

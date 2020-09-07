@@ -37,9 +37,9 @@ pub unsafe extern "C" fn {{ ci.ffi_string_alloc_from().name() }}(cstr: *const st
 /// The argument *must* be a uniquely-owned pointer previously obtained from a call
 /// into the rust code that returned a string.
 #[no_mangle]
-pub unsafe extern "C" fn {{ ci.ffi_string_free().name() }}(cstr: *mut std::os::raw::c_char) {
-    // We deliberately don't check the `Result` here, so that callers don't need to pass an out `err`.
-    // There was nothing for us to free in the failure case anyway, so no point in propagating the error.
-    let s = <String as uniffi::ViaFfi>::try_lift(cstr);
-    drop(s)
+pub unsafe extern "C" fn {{ ci.ffi_string_free().name() }}(cstr: *mut std::os::raw::c_char,  err: &mut uniffi::deps::ffi_support::ExternError) {
+    uniffi::deps::ffi_support::call_with_output(err, || {
+        let s = <String as uniffi::ViaFfi>::try_lift(cstr).unwrap();
+        drop(s)
+    })
 }

@@ -23,7 +23,7 @@ internal interface _UniFFILib : Library {
 
     {% for func in ci.iter_ffi_function_definitions() -%}
     fun {{ func.name() }}(
-        {%- call kt::arg_list_rs_decl(func) %}
+        {%- call kt::arg_list_ffi_decl(func) %}
     ){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|type_ffi }}{% when None %}: Unit{% endmatch %}
 
     {% endfor %}

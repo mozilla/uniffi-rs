@@ -118,6 +118,7 @@ mod filters {
             FFIType::RustString => "char*_Nonnull".into(),
             FFIType::RustError => "NativeRustError".into(),
             FFIType::ForeignStringRef => "const char*_Nonnull".into(),
+            FFIType::ForeignBytes => "ForeignBytes".into(),
         })
     }
 

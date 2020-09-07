@@ -5,7 +5,7 @@ class RustError(ctypes.Structure):
     ]
 
     def free(self):
-        return _UniFFILib.{{ ci.ffi_string_free().name() }}(self.message)
+        rust_call_with_error(InternalError, _UniFFILib.{{ ci.ffi_string_free().name() }}, self.message)
 
     def __str__(self):
         return "RustError(code={}, message={})".format(

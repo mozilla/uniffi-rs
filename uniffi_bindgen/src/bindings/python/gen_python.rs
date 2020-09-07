@@ -59,6 +59,7 @@ mod filters {
             // https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
             FFIType::RustString => "ctypes.c_void_p".to_string(),
             FFIType::ForeignStringRef => "ctypes.c_void_p".to_string(),
+            FFIType::ForeignBytes => "ForeignBytes".to_string(),
         })
     }
 
@@ -132,19 +133,6 @@ mod filters {
         })
     }
 
-    pub fn lowers_into_size_py(
-        nm: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
-        let nm = var_name_py(nm)?;
-        Ok(match type_ {
-            Type::UInt32 => "4".to_string(),
-            Type::Float64 => "8".to_string(),
-            Type::String => format!("4 + len({}.encode('utf-8'))", nm),
-            Type::Record(type_name) => format!("{}._lowersIntoSize({})", type_name, nm),
-            _ => panic!("[TODO: lowers_into_size_py({:?})]", type_),
-        })
-    }
     pub fn lower_into_py(
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,

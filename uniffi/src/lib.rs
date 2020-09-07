@@ -16,19 +16,28 @@
 //!  * How to ["lower"](ViaFfi::lower) rust values of that type into an appropriate low-level
 //!    FFI value.
 //!  * How to ["lift"](ViaFfi::lift) low-level FFI values back into rust values of that type.
-//!  * How to [write](ViaFfi::write) rust values of that type into a bytebuffer, for cases
+//!  * How to [write](ViaFfi::write) rust values of that type into a buffer, for cases
 //!    where they are part of a compount data structure that is serialized for transfer.
-//!  * How to [read](ViaFfi::read) rust values of that type from bytebuffer, for cases
+//!  * How to [read](ViaFfi::read) rust values of that type from buffer, for cases
 //!    where they are received as part of a compound data structure that was serialized for transfer.
 //!
 //! This logic encapsulates the rust-side handling of data transfer. Each foreign-language binding
 //! must also implement a matching set of data-handling rules for each data type.
+//!
+//! In addition to the core` ViaFfi` trait, we provide a handful of struct definitions useful
+//! for passing core rust types over the FFI, such as [`RustBuffer`].
 
 use anyhow::{bail, Result};
 use bytes::buf::{Buf, BufMut};
-use ffi_support::ByteBuffer;
 use paste::paste;
-use std::{collections::HashMap, convert::TryFrom, ffi::CString};
+use std::{
+    collections::HashMap,
+    convert::{TryFrom, TryInto},
+    ffi::CString,
+};
+
+pub mod ffi;
+pub use ffi::*;
 
 // It would be nice if this module was behind a cfg(test) guard, but it
 // doesn't work between crates so let's hope LLVM tree-shaking works well.
@@ -70,8 +79,8 @@ pub unsafe trait ViaFfi: Sized {
     /// This must be a C-compatible type (e.g. a numeric primitive, a `#[repr(C)]` struct) into
     /// which values of the target rust type can be converted.
     ///
-    /// For complex data types, we currently recommend using `ffi_support::ByteBuffer` and
-    /// serializing the data for transfer. In theory it could be possible to build a matching
+    /// For complex data types, we currently recommend using `RustBuffer` and serializing
+    /// the data for transfer. In theory it could be possible to build a matching
     /// `#[repr(C)]` struct for a complex data type and pass that instead, but explicit
     /// serialization is simpler and safer as a starting point.
     type FfiType;
@@ -96,14 +105,14 @@ pub unsafe trait ViaFfi: Sized {
     /// values of type Self::FfiType, this method is fallible.
     fn try_lift(v: Self::FfiType) -> Result<Self>;
 
-    /// Write a rust value into a bytebuffer, to send over the FFI in serialized form.
+    /// Write a rust value into a buffer, to send over the FFI in serialized form.
     ///
     /// This trait method can be used for sending data from rust to the foreign language code,
     /// in cases where we're not able to use a special-purpose FFI type and must fall back to
     /// sending serialized bytes.
     fn write<B: BufMut>(&self, buf: &mut B);
 
-    /// Read a rust value from a bytebuffer, received over the FFI in serialized form.
+    /// Read a rust value from a buffer, received over the FFI in serialized form.
     ///
     /// This trait method can be used for receiving data from the foreign language code in rust,
     /// in cases where we're not able to use a special-purpose FFI type and must fall back to
@@ -114,23 +123,23 @@ pub unsafe trait ViaFfi: Sized {
     fn try_read<B: Buf>(buf: &mut B) -> Result<Self>;
 }
 
-/// A helper function to lower a type by serializing it into a bytebuffer.
+/// A helper function to lower a type by serializing it into a buffer.
 ///
 /// For complex types were it's too fiddly or too unsafe to convert them into a special-purpose
 /// C-compatible value, you can use this helper function to implement `lower()` in terms of `write()`
-/// and pass the value as a serialzied byte buffer.
-pub fn lower_into_bytebuffer<T: ViaFfi>(value: T) -> ByteBuffer {
+/// and pass the value as a serialized buffer of bytes.
+pub fn lower_into_buffer<T: ViaFfi>(value: T) -> RustBuffer {
     let mut buf = Vec::new();
     ViaFfi::write(&value, &mut buf);
-    ByteBuffer::from_vec(buf)
+    RustBuffer::from_vec(buf)
 }
 
-/// A helper function to lift a type by deserializing it from a bytebuffer.
+/// A helper function to lift a type by deserializing it from a buffer.
 ///
 /// For complex types were it's too fiddly or too unsafe to convert them into a special-purpose
 /// C-compatible value, you can use this helper function to implement `lift()` in terms of `read()`
 /// and receive the value as a serialzied byte buffer.
-pub fn try_lift_from_bytebuffer<T: ViaFfi>(buf: ByteBuffer) -> Result<T> {
+pub fn try_lift_from_buffer<T: ViaFfi>(buf: RustBuffer) -> Result<T> {
     let vec = buf.destroy_into_vec();
     let mut buf = vec.as_slice();
     let value = <T as ViaFfi>::try_read(&mut buf)?;
@@ -225,7 +234,7 @@ unsafe impl ViaFfi for bool {
 
 /// Support for passing optional values via the FFI.
 ///
-/// Optional values are currently always passed by serializing to a bytebuffer.
+/// Optional values are currently always passed by serializing to a buffer.
 /// We write either a zero byte for `None`, or a one byte followed by the containing
 /// item for `Some`.
 ///
@@ -233,14 +242,14 @@ unsafe impl ViaFfi for bool {
 /// `None` option is represented as a null pointer and the `Some` as a valid pointer,
 /// but that seems more fiddly and less safe in the short term, so it can wait.
 unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
-    type FfiType = ffi_support::ByteBuffer;
+    type FfiType = RustBuffer;
 
     fn lower(self) -> Self::FfiType {
-        lower_into_bytebuffer(self)
+        lower_into_buffer(self)
     }
 
     fn try_lift(v: Self::FfiType) -> Result<Self> {
-        try_lift_from_bytebuffer(v)
+        try_lift_from_buffer(v)
     }
 
     fn write<B: BufMut>(&self, buf: &mut B) {
@@ -265,21 +274,21 @@ unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
 
 /// Support for passing vectors of values via the FFI.
 ///
-/// Vectors are currently always passed by serializing to a bytebuffer.
+/// Vectors are currently always passed by serializing to a buffer.
 /// We write a `u32` item count followed by each item in turn.
 ///
-/// You can imagine a world where we pass some sort of (pointer, count)
-/// pair but that seems tremendously fiddly and unsafe in the short term.
-/// Maybe one day...
+/// Ideally we would pass `Vec<u8>` directly as a `RustBuffer` rather
+/// than serializing, and perhaps even pass other vector types using a
+/// similar struct. But that's for future work.
 unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
-    type FfiType = ffi_support::ByteBuffer;
+    type FfiType = RustBuffer;
 
     fn lower(self) -> Self::FfiType {
-        lower_into_bytebuffer(self)
+        lower_into_buffer(self)
     }
 
     fn try_lift(v: Self::FfiType) -> Result<Self> {
-        try_lift_from_bytebuffer(v)
+        try_lift_from_buffer(v)
     }
 
     fn write<B: BufMut>(&self, buf: &mut B) {
@@ -306,18 +315,18 @@ unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
 /// Note that because of webidl limitations,
 /// the key must always be of the String type.
 ///
-/// HashMaps are currently always passed by serializing to a bytebuffer.
-/// We write a `u32` entries count
-/// followed by each entry (string key followed by the value) in turn.
+/// HashMaps are currently always passed by serializing to a buffer.
+/// We write a `u32` entries count followed by each entry (string
+/// key followed by the value) in turn.
 unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
-    type FfiType = ffi_support::ByteBuffer;
+    type FfiType = RustBuffer;
 
     fn lower(self) -> Self::FfiType {
-        lower_into_bytebuffer(self)
+        lower_into_buffer(self)
     }
 
     fn try_lift(v: Self::FfiType) -> Result<Self> {
-        try_lift_from_bytebuffer(v)
+        try_lift_from_buffer(v)
     }
 
     fn write<B: BufMut>(&self, buf: &mut B) {

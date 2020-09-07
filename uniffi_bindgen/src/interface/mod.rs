@@ -122,30 +122,62 @@ impl<'ci> ComponentInterface {
     /// Builtin FFI function for allocating a new `RustBuffer`.
     /// This is needed so that the foreign language bindings can create buffers in which to pass
     /// complex data types across the FFI.
-    pub fn ffi_bytebuffer_alloc(&self) -> FFIFunction {
+    pub fn ffi_rustbuffer_alloc(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("ffi_{}_bytebuffer_alloc", self.namespace()),
+            name: format!("ffi_{}_rustbuffer_alloc", self.namespace()),
             arguments: vec![FFIArgument {
                 name: "size".to_string(),
-                type_: FFIType::UInt32,
+                type_: FFIType::Int32,
             }],
             return_type: Some(FFIType::RustBuffer),
-            has_out_err: false,
+        }
+    }
+
+    /// Builtin FFI function for copying foreign-owned bytes
+    /// This is needed so that the foreign language bindings can create buffers in which to pass
+    /// complex data types across the FFI.
+    pub fn ffi_rustbuffer_from_bytes(&self) -> FFIFunction {
+        FFIFunction {
+            name: format!("ffi_{}_rustbuffer_from_bytes", self.namespace()),
+            arguments: vec![FFIArgument {
+                name: "bytes".to_string(),
+                type_: FFIType::ForeignBytes,
+            }],
+            return_type: Some(FFIType::RustBuffer),
         }
     }
 
     /// Builtin FFI function for freeing a `RustBuffer`.
     /// This is needed so that the foreign language bindings can free buffers in which they received
     /// complex data types returned across the FFI.
-    pub fn ffi_bytebuffer_free(&self) -> FFIFunction {
+    pub fn ffi_rustbuffer_free(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("ffi_{}_bytebuffer_free", self.namespace()),
+            name: format!("ffi_{}_rustbuffer_free", self.namespace()),
             arguments: vec![FFIArgument {
                 name: "buf".to_string(),
                 type_: FFIType::RustBuffer,
             }],
             return_type: None,
-            has_out_err: false,
+        }
+    }
+
+    /// Builtin FFI function for reserving extra space in a `RustBuffer`.
+    /// This is needed so that the foreign language bindings can grow buffers used for passing
+    /// complex data types across the FFI.
+    pub fn ffi_rustbuffer_reserve(&self) -> FFIFunction {
+        FFIFunction {
+            name: format!("ffi_{}_rustbuffer_reserve", self.namespace()),
+            arguments: vec![
+                FFIArgument {
+                    name: "buf".to_string(),
+                    type_: FFIType::RustBuffer,
+                },
+                FFIArgument {
+                    name: "additional".to_string(),
+                    type_: FFIType::Int32,
+                },
+            ],
+            return_type: Some(FFIType::RustBuffer),
         }
     }
 
@@ -160,8 +192,6 @@ impl<'ci> ComponentInterface {
                 type_: FFIType::ForeignStringRef,
             }],
             return_type: Some(FFIType::RustString),
-            // Unlike other builtin helpers, this one can panic, so takes an out err.
-            has_out_err: true,
         }
     }
 
@@ -176,7 +206,6 @@ impl<'ci> ComponentInterface {
                 type_: FFIType::RustString,
             }],
             return_type: None,
-            has_out_err: false,
         }
     }
 
@@ -193,8 +222,10 @@ impl<'ci> ComponentInterface {
             .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
             .chain(
                 vec![
-                    self.ffi_bytebuffer_alloc(),
-                    self.ffi_bytebuffer_free(),
+                    self.ffi_rustbuffer_alloc(),
+                    self.ffi_rustbuffer_from_bytes(),
+                    self.ffi_rustbuffer_free(),
+                    self.ffi_rustbuffer_reserve(),
                     self.ffi_string_alloc_from(),
                     self.ffi_string_free(),
                 ]
@@ -423,7 +454,6 @@ impl Function {
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(FFIArgument::from).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(FFIType::from);
-        self.ffi_func.has_out_err = true;
         Ok(())
     }
 }
@@ -608,7 +638,6 @@ impl Object {
                 type_: FFIType::UInt64,
             }],
             return_type: None,
-            has_out_err: false,
         }
     }
 
@@ -689,7 +718,6 @@ impl Constructor {
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(FFIArgument::from).collect();
         self.ffi_func.return_type = Some(FFIType::UInt64);
-        self.ffi_func.has_out_err = true;
         Ok(())
     }
 }
@@ -776,7 +804,6 @@ impl Method {
             .map(FFIArgument::from)
             .collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(FFIType::from);
-        self.ffi_func.has_out_err = true;
         Ok(())
     }
 }
@@ -851,7 +878,7 @@ impl APIConverter<Error> for weedle::EnumDefinition<'_> {
 
 /// Represents a "data class" style object, for passing around complex values.
 ///
-/// In the FFI these are represented as a ByteBuffer, which one side explicitly
+/// In the FFI these are represented as a byte buffer, which one side explicitly
 /// serializes the data into and the other serializes it out of. So I guess they're
 /// kind of like "pass by clone" values.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1047,10 +1074,6 @@ pub struct FFIFunction {
     name: String,
     arguments: Vec<FFIArgument>,
     return_type: Option<FFIType>,
-    // We use this to determine if the C binding will require
-    // an `out error` parameter. All functions should require it,
-    // However, the buffer/string management helpers do not.
-    has_out_err: bool,
 }
 
 impl FFIFunction {
@@ -1062,9 +1085,6 @@ impl FFIFunction {
     }
     pub fn return_type(&self) -> Option<&FFIType> {
         self.return_type.as_ref()
-    }
-    pub fn has_out_err(&self) -> bool {
-        self.has_out_err
     }
 }
 
