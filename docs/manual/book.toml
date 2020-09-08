@@ -1,0 +1,6 @@
+[book]
+authors = ["Edouard Oger"]
+language = "en"
+multilingual = false
+src = "src"
+title = "The uniffi user guide"
