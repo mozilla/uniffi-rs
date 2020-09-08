@@ -160,8 +160,8 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
-<p>Interfaces refer to the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.<br />
-Because of Reasons, in the uniffi world it is impossible to be both an Object and a <a href="./structs.html">Dictionary</a>.</p>
+<p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.<br />
+Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="./structs.html">Dictionary</a>.</p>
 <p>The following Rust code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]

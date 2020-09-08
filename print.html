@@ -168,6 +168,7 @@ Note that this tool will not help you ship a Rust library to these platforms, bu
 <h2><a class="header" href="#design" id="design">Design</a></h2>
 <p>uniffi requires to write an Interface Definition Language (<a href="https://heycam.github.io/webidl/">IDL</a>) file describing the methods and data structures available to the targeted languages.<br />
 This .idl file, whose definitions must match with the exposed Rust code, is then used to generate Rust <em>scaffolding</em> code and foreign-languages <em>bindings</em>. This process can take place either during the build process or be manually initiated by the developer.</p>
+<p><img src="./uniffi_diagram.png" alt="uniffi diagram" /></p>
 <h2><a class="header" href="#supported-languages" id="supported-languages">Supported languages</a></h2>
 <ul>
 <li>Kotlin</li>
@@ -196,6 +197,7 @@ This .idl file, whose definitions must match with the exposed Rust code, is then
 <h2><a class="header" href="#build-your-crate-as-a-cdylib" id="build-your-crate-as-a-cdylib">Build your crate as a cdylib</a></h2>
 <p>Ensure your crate builds as a <code>cdylib</code> by adding</p>
 <pre><code class="language-toml">crate-type = [&quot;cdylib&quot;]
+name = &quot;&lt;library name&gt;&quot;
 </code></pre>
 <p>to your crate's <code>Cargo.toml</code>.</p>
 <h1><a class="header" href="#the-idl-file" id="the-idl-file">The IDL file</a></h1>
@@ -220,7 +222,7 @@ Let's create a <code>math.idl</code> file in the <code>math</code> crate's <code
 <pre><code class="language-toml">[dependencies]
 uniffi = { git = &quot;https://github.com/mozilla/uniffi-rs&quot;, branch = &quot;main&quot; }
 </code></pre>
-<p>Then let's add <code>uniffi_build</code> to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C abi.</p>
+<p>Then let's add <code>uniffi_build</code> to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C-compatible FFI layer.</p>
 <!-- TODO: Use a published version -->
 <pre><code class="language-toml">[build-dependencies]
 uniffi_build = { git = &quot;https://github.com/mozilla/uniffi-rs&quot;, branch = &quot;main&quot; }
@@ -392,8 +394,8 @@ namespace arithmetic {
 </code></pre>
 <p>On the other side (Kotlin, Swift etc.), a proper exception will be thrown if <code>Result::is_err()</code> is <code>true</code>.</p>
 <h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
-<p>Interfaces refer to the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.<br />
-Because of Reasons, in the uniffi world it is impossible to be both an Object and a <a href="idl/./structs.html">Dictionary</a>.</p>
+<p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.<br />
+Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="idl/./structs.html">Dictionary</a>.</p>
 <p>The following Rust code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]

@@ -167,7 +167,7 @@
 <pre><code class="language-toml">[dependencies]
 uniffi = { git = &quot;https://github.com/mozilla/uniffi-rs&quot;, branch = &quot;main&quot; }
 </code></pre>
-<p>Then let's add <code>uniffi_build</code> to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C abi.</p>
+<p>Then let's add <code>uniffi_build</code> to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C-compatible FFI layer.</p>
 <!-- TODO: Use a published version -->
 <pre><code class="language-toml">[build-dependencies]
 uniffi_build = { git = &quot;https://github.com/mozilla/uniffi-rs&quot;, branch = &quot;main&quot; }
