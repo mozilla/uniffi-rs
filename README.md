@@ -1,5 +1,7 @@
 # uniffi - a multi-language bindings generator for rust
 
+- [User manual](https://mozilla.github.io/uniffi-rs/)
+
 This is a little experiment in building cross-platform components in Rust, based on things
 we've learned in the [mozilla/application-services](https://github.com/mozilla/application-services)
 project.
