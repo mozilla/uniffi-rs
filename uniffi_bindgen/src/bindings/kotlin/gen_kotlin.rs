@@ -5,6 +5,7 @@
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
+use toml::Value;
 
 use crate::interface::*;
 
@@ -16,10 +17,14 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            package_name: format!("uniffi.{}", ci.namespace()),
-        }
+    pub fn from(ci: &ComponentInterface, toml: Option<&Value>) -> Self {
+        let package_name = toml
+            .and_then(|m| m.get("package_name"))
+            .and_then(|m| m.as_str())
+            .map(|s| s.to_string())
+            .unwrap_or(format!("uniffi.{}", ci.namespace()));
+
+        Config { package_name }
     }
 }
 

@@ -11,6 +11,7 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+use toml::Value;
 
 pub mod gen_kotlin;
 pub use gen_kotlin::{Config, KotlinWrapper};
@@ -19,10 +20,11 @@ use super::super::interface::ComponentInterface;
 
 pub fn write_bindings(
     ci: &ComponentInterface,
+    toml: Option<&Value>,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
-    let config = Config::from(&ci);
+    let config = Config::from(&ci, toml);
     let mut kt_file = full_bindings_path(&config, out_dir)?;
     std::fs::create_dir_all(&kt_file)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
@@ -59,8 +61,12 @@ pub fn generate_bindings(config: Config, ci: &ComponentInterface) -> Result<Stri
 
 /// Generate kotlin bindings for the given namespace, then use the kotlin
 /// command-line tools to compile them into a .jar file.
-pub fn compile_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
-    let config = Config::from(&ci);
+pub fn compile_bindings(
+    ci: &ComponentInterface,
+    toml: Option<&Value>,
+    out_dir: &Path,
+) -> Result<()> {
+    let config = Config::from(&ci, toml);
     let mut kt_file = full_bindings_path(&config, out_dir)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
     let mut jar_file = PathBuf::from(out_dir);

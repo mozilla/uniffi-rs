@@ -12,6 +12,7 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
+use toml::Value;
 
 pub mod gen_python;
 pub use gen_python::{Config, PythonWrapper};
@@ -22,6 +23,7 @@ use super::super::interface::ComponentInterface;
 
 pub fn write_bindings(
     ci: &ComponentInterface,
+    _toml: Option<&Value>,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {

@@ -10,6 +10,7 @@
 use anyhow::{bail, Result};
 use std::convert::{TryFrom, TryInto};
 use std::path::Path;
+use toml::Value;
 
 use crate::interface::ComponentInterface;
 
@@ -62,6 +63,7 @@ impl TryFrom<String> for TargetLanguage {
 /// Generate foreign language bindings from a compiled `uniffi` library.
 pub fn write_bindings<P>(
     ci: &ComponentInterface,
+    config_file: Option<&Value>,
     out_dir: P,
     language: TargetLanguage,
     try_format_code: bool,
@@ -69,11 +71,27 @@ pub fn write_bindings<P>(
 where
     P: AsRef<Path>,
 {
+    let bindings = config_file.and_then(|m| m.get("bindings"));
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Kotlin => kotlin::write_bindings(&ci, out_dir, try_format_code)?,
-        TargetLanguage::Swift => swift::write_bindings(&ci, out_dir, try_format_code)?,
-        TargetLanguage::Python => python::write_bindings(&ci, out_dir, try_format_code)?,
+        TargetLanguage::Kotlin => kotlin::write_bindings(
+            &ci,
+            bindings.and_then(|m| m.get("kotlin")),
+            out_dir,
+            try_format_code,
+        )?,
+        TargetLanguage::Swift => swift::write_bindings(
+            &ci,
+            bindings.and_then(|m| m.get("swift")),
+            out_dir,
+            try_format_code,
+        )?,
+        TargetLanguage::Python => python::write_bindings(
+            &ci,
+            bindings.and_then(|m| m.get("python")),
+            out_dir,
+            try_format_code,
+        )?,
     }
     Ok(())
 }
@@ -81,6 +99,7 @@ where
 /// Compile generated foreign language bindings so they're ready for use.
 pub fn compile_bindings<P>(
     ci: &ComponentInterface,
+    config_file: Option<&Value>,
     out_dir: P,
     language: TargetLanguage,
 ) -> Result<()>
@@ -88,9 +107,14 @@ where
     P: AsRef<Path>,
 {
     let out_dir = out_dir.as_ref();
+    let bindings = config_file.and_then(|m| m.get("bindings"));
     match language {
-        TargetLanguage::Kotlin => kotlin::compile_bindings(&ci, out_dir)?,
-        TargetLanguage::Swift => swift::compile_bindings(&ci, out_dir)?,
+        TargetLanguage::Kotlin => {
+            kotlin::compile_bindings(&ci, bindings.and_then(|m| m.get("kotlin")), out_dir)?
+        }
+        TargetLanguage::Swift => {
+            swift::compile_bindings(&ci, bindings.and_then(|m| m.get("swift")), out_dir)?
+        }
         TargetLanguage::Python => (),
     }
     Ok(())

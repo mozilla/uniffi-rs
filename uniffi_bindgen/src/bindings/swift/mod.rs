@@ -13,6 +13,7 @@ use std::{
 
 pub mod gen_swift;
 pub use gen_swift::{BridgingHeader, Config, ModuleMap, SwiftWrapper};
+use toml::Value;
 
 use super::super::interface::ComponentInterface;
 
@@ -28,6 +29,7 @@ pub struct Bindings {
 /// declarations, and a `.modulemap` file to tell swift how to use it.
 pub fn write_bindings(
     ci: &ComponentInterface,
+    _toml: Option<&Value>,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
@@ -92,7 +94,11 @@ fn generate_module_map(ci: &ComponentInterface, header_path: &Path) -> Result<St
 }
 
 /// ...
-pub fn compile_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
+pub fn compile_bindings(
+    ci: &ComponentInterface,
+    _toml: Option<&Value>,
+    out_dir: &Path,
+) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
     let mut module_map_file = out_path.clone();

@@ -103,6 +103,7 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+use toml::Value;
 
 pub mod bindings;
 pub mod interface;
@@ -123,6 +124,7 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     let manifest_path_override = manifest_path_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let idl_file = idl_file.as_ref();
+    let _config = load_config(idl_file);
     let component = parse_idl(&idl_file)?;
     ensure_versions_compatibility(&idl_file, manifest_path_override)?;
     let mut filename = Path::new(&idl_file)
@@ -194,10 +196,17 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file.as_ref())
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
+    let config = load_config(&idl_file)?;
     let component = parse_idl(&idl_file)?;
     let out_dir = get_out_dir(&idl_file, out_dir_override)?;
     for language in target_languages {
-        bindings::write_bindings(&component, &out_dir, language.try_into()?, try_format_code)?;
+        bindings::write_bindings(
+            &component,
+            config.as_ref(),
+            &out_dir,
+            language.try_into()?,
+            try_format_code,
+        )?;
     }
     Ok(())
 }
@@ -214,6 +223,7 @@ pub fn run_tests<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file)
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
+    let config_file = load_config(&idl_file)?;
     let component = parse_idl(&idl_file)?;
 
     // Group the test scripts by language first.
@@ -230,13 +240,33 @@ pub fn run_tests<P: AsRef<Path>>(
     }
 
     for (lang, test_scripts) in language_tests {
-        bindings::write_bindings(&component, &cdylib_dir, lang, true)?;
-        bindings::compile_bindings(&component, &cdylib_dir, lang)?;
+        bindings::write_bindings(&component, config_file.as_ref(), &cdylib_dir, lang, true)?;
+        bindings::compile_bindings(&component, config_file.as_ref(), &cdylib_dir, lang)?;
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;
         }
     }
     Ok(())
+}
+
+pub fn load_config(idl_file: &Path) -> Result<Option<Value>> {
+    let config_file = idl_file
+        .parent()
+        .ok_or_else(|| anyhow!("File has no parent directory"))?
+        .join("uniffi.toml")
+        .canonicalize();
+
+    if config_file.is_err() {
+        return Ok(None);
+    }
+
+    let config_file = config_file.unwrap();
+    let contents = slurp_file(&config_file)
+        .map_err(|_| anyhow!("Failed to read config file from {:?}", &config_file))?;
+    let toml = contents
+        .parse::<toml::Value>()
+        .map_err(|_| anyhow!("Failed to parse config file from {:?}", &config_file))?;
+    Ok(Some(toml))
 }
 
 fn get_out_dir(idl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
