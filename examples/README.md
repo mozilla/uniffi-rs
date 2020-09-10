@@ -12,7 +12,8 @@ Newcomers are recommended to explore them in the following order:
   data.
 * [`./sprites/`](./sprites/) shows how to work with stateful objects that have methods, in classical
   object-oriented style.
-* [`./todolist`](./todolist/) Simple todolist that only adds items and shows the last item, meant to show how interacting with strings works.
+* [`./todolist`](./todolist/) is a simple todolist that only adds items and shows the last item, meant to show how interacting with strings works.
+* [`.rondpoint`](./rondpoint/) exercises complex data types through roundtripping.
 * [`./fxa-client`](./fxa-client/) doesn't work yet, but it contains aspirational example of what the IDL
   might look like for an actual real-world component.
 
@@ -50,5 +51,5 @@ With that in place, try the following:
 * Run `cargo test`. This exercises the foreign language bindings via the scripts in `tests/bindings/`.
 * Run `cargo run -- exec tests/bindings/test_<namespace>.kts`. This will directly execute the Kotlin
   test script. Try the same for the other languages.
-* Run `cargo. run -- exec -l python` to get a Python shell in which you can import the generated
+* Run `cargo run -- exec -l python` to get a Python shell in which you can import the generated
   module for yourself and play around with it. Try `import <namespace>` and go from there!
