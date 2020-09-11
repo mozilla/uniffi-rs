@@ -6,18 +6,18 @@ Now we generate some Rust helper code to make the `add` method available to fore
 
 First, add `uniffi` to your crate dependencies: it is the runtime support code that powers uniffi's serialization of data types across languages:
 
-<!-- TODO: Use a published version -->
 ```toml
 [dependencies]
-uniffi = { git = "https://github.com/mozilla/uniffi-rs", branch = "main" }
+uniffi = "0.1"
 ```
+
+Important note: the `uniffi` version must be the same as the `uniffi-bindgen` command-line tool installed on your system.
 
 Then let's add `uniffi_build` to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C-compatible FFI layer.
 
-<!-- TODO: Use a published version -->
 ```toml
 [build-dependencies]
-uniffi_build = { git = "https://github.com/mozilla/uniffi-rs", branch = "main" }
+uniffi_build = "0.1"
 ```
 
 Then create a `build.rs` file next to `Cargo.toml` that will use `uniffi_build`:
