@@ -58,7 +58,7 @@
 //!
 //! ### 3) Generate and include component scaffolding from the IDL file
 //!
-//! First you will need to install `uniffi-bindgen` on your system using `cargo install uniffi-bindgen`.
+//! First you will need to install `uniffi-bindgen` on your system using `cargo install uniffi_bindgen`.
 //! Then add to your crate `uniffi_build` under `[build-dependencies]`.
 //! Finally, add a `build.rs` script to your crate and have it call [uniffi_build::generate_scaffolding](uniffi_build::generate_scaffolding)
 //! to process your `.idl` file. This will generate some Rust code to be included in the top-level source
