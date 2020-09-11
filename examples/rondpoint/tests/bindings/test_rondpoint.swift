@@ -110,3 +110,17 @@ extension Array where Element: Equatable {
         }
     }
 }
+
+let op = Optionneur()
+
+assert(op.sinonString() == "default")
+["foo", "bar"].affirmAllerRetour(op.sinonString)
+
+assert(op.sinonBoolean() == false)
+[true, false].affirmAllerRetour(op.sinonBoolean)
+
+assert(op.sinonNull() == nil)
+["foo", "bar"].affirmAllerRetour(op.sinonNull)
+
+assert(op.sinonSequence() == [])
+[["a", "b"], []].affirmAllerRetour(op.sinonSequence)

@@ -129,6 +129,15 @@ mod filters {
         })
     }
 
+    pub fn literal_swift(literal: &Literal) -> Result<String, askama::Error> {
+        Ok(match literal {
+            Literal::Boolean(v) => format!("{}", v),
+            Literal::String(s) => format!("\"{}\"", s),
+            Literal::Null => "nil".into(),
+            Literal::EmptySequence => "[]".into(),
+        })
+    }
+
     /// Lower a Swift type into an FFI type.
     ///
     /// This is used to pass arguments over the FFI, from Swift to Rust.

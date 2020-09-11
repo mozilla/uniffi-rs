@@ -65,6 +65,15 @@ mod filters {
         })
     }
 
+    pub fn literal_py(literal: &Literal) -> Result<String, askama::Error> {
+        Ok(match literal {
+            Literal::Boolean(v) => format!("{}", v),
+            Literal::String(s) => format!("'{}'", s),
+            Literal::Null => "None".into(),
+            Literal::EmptySequence => "[]".into(),
+        })
+    }
+
     pub fn class_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
