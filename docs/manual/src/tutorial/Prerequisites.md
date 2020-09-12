@@ -4,8 +4,7 @@
 
 Install the `uniffi-bindgen` binary on your system using:
 
-<!-- TODO: Use a published version -->
-`cargo install --git https://github.com/mozilla/uniffi-rs --branch main uniffi_bindgen`
+`cargo install uniffi_bindgen`
 
 You can see what it can do with `uniffi-bindgen --help`, but let's leave it aside for now.
 
