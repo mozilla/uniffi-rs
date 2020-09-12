@@ -111,22 +111,9 @@ mod filters {
     pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
-            Type::Optional(t) => format!(
-                "lowerOptional({}, {{ v, buf -> {} }})",
-                nm,
-                write_kt(&"v", &"buf", t)?
-            ),
-            Type::Sequence(t) => format!(
-                "lowerSequence({}, {{ v, buf -> {} }})",
-                nm,
-                write_kt(&"v", &"buf", t)?
-            ),
-            Type::Map(t) => format!(
-                "lowerMap({}, {{ k, v, buf -> {}; {} }})",
-                nm,
-                write_kt(&"k", &"buf", &Type::String)?,
-                write_kt(&"v", &"buf", t)?
-            ),
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+                format!("lower{}({})", class_name_kt(&type_.canonical_name())?, nm,)
+            }
             _ => format!("{}.lower()", nm),
         })
     }
@@ -142,24 +129,11 @@ mod filters {
     ) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
-            Type::Optional(t) => format!(
-                "writeOptional({}, {}, {{ v, buf -> {} }})",
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
+                "write{}({}, {})",
+                class_name_kt(&type_.canonical_name())?,
                 nm,
                 target,
-                write_kt(&"v", &"buf", t)?
-            ),
-            Type::Sequence(t) => format!(
-                "writeSequence({}, {}, {{ v, buf -> {} }})",
-                nm,
-                target,
-                write_kt(&"v", &"buf", t)?
-            ),
-            Type::Map(t) => format!(
-                "writeMap({}, {}, {{ k, v, buf -> {}; {} }})",
-                nm,
-                target,
-                write_kt(&"k", &"buf", &Type::String)?,
-                write_kt(&"v", &"buf", t)?
             ),
             _ => format!("{}.write({})", nm, target),
         })
@@ -172,18 +146,9 @@ mod filters {
     pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            Type::Optional(t) => {
-                format!("liftOptional({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+                format!("lift{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }
-            Type::Sequence(t) => {
-                format!("liftSequence({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
-            }
-            Type::Map(t) => format!(
-                "liftMap({}, {{ buf -> Pair({}, {}) }})",
-                nm,
-                read_kt(&"buf", &Type::String)?,
-                read_kt(&"buf", t)?
-            ),
             _ => format!("{}.lift({})", type_kt(type_)?, nm),
         })
     }
@@ -195,18 +160,9 @@ mod filters {
     pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            Type::Optional(t) => {
-                format!("readOptional({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+                format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }
-            Type::Sequence(t) => {
-                format!("readSequence({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
-            }
-            Type::Map(t) => format!(
-                "readMap({}, {{ buf -> Pair({}, {}) }})",
-                nm,
-                read_kt(&"buf", &Type::String)?,
-                read_kt(&"buf", t)?
-            ),
             _ => format!("{}.read({})", type_kt(type_)?, nm),
         })
     }

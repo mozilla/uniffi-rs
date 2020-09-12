@@ -66,7 +66,6 @@ pub fn compile_bindings(ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
     let mut jar_file = PathBuf::from(out_dir);
     jar_file.push(format!("{}.jar", ci.namespace()));
     let status = Command::new("kotlinc")
-        .arg("-Xopt-in=kotlin.RequiresOptIn")
         .arg("-Xopt-in=kotlin.ExperimentalUnsignedTypes")
         .arg("-classpath")
         .arg(env::var("CLASSPATH").unwrap_or_else(|_| "".to_string()))

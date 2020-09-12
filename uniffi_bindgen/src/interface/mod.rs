@@ -45,8 +45,7 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::hash_map::{DefaultHasher, Entry},
-    collections::HashMap,
+    collections::hash_map::DefaultHasher,
     convert::TryFrom,
     hash::{Hash, Hasher},
     str::FromStr,
@@ -54,23 +53,23 @@ use std::{
 
 use anyhow::bail;
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
 
 pub mod types;
-use types::TypeResolver;
+use types::TypeUniverse;
 pub use types::{FFIType, Type};
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
 ///
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default)]
 pub struct ComponentInterface {
     /// Every ComponentInterface gets tagged with the version of uniffi used to create it.
     /// This helps us avoid using a lib compiled with one version together with bindings created
     /// using a different version, which might introduce unsafety.
     uniffi_version: String,
-    /// A map of all the nameable types used in the interface (including type aliases)
-    types: HashMap<String, Type>,
+    /// All of the types used in the interface.
+    types: TypeUniverse,
+    /// The unique prefix that we'll use for namespacing when exposing this component's API.
     namespace: String,
     /// The high-level API provided by the component.
     enums: Vec<Enum>,
@@ -90,7 +89,7 @@ impl<'ci> ComponentInterface {
         let defns = weedle::parse(idl.trim()).unwrap();
         // We process the WebIDL definitions in two passes.
         // First, go through and look for all the named types.
-        types::TypeFinder::find_type_definitions(&defns, &mut ci)?;
+        ci.types.add_type_definitions_from(defns.as_slice())?;
         // With those names resolved, we can build a complete representation of the API.
         APIBuilder::process(&defns, &mut ci)?;
         if ci.namespace.is_empty() {
@@ -123,6 +122,10 @@ impl<'ci> ComponentInterface {
 
     pub fn iter_error_definitions(&self) -> Vec<Error> {
         self.errors.to_vec()
+    }
+
+    pub fn iter_types(&self) -> Vec<Type> {
+        self.types.iter_known_types().collect()
     }
 
     /// Calculate a numeric checksum for this ComponentInterface.
@@ -282,27 +285,8 @@ impl<'ci> ComponentInterface {
     // Private methods for building a ComponentInterface.
     //
 
-    /// Get the high-level type corresponding to a given name, if any.
-    fn get_type_definition(&self, name: &str) -> Option<Type> {
-        self.types.get(name).cloned()
-    }
-
-    /// Get the high-level type corresponding to a given WebIDL type node.
-    fn resolve_type_definition<T: TypeResolver>(&self, type_: T) -> Result<Type> {
-        TypeResolver::resolve_type_definition(&type_, self)
-    }
-
-    /// Add the definition of a named high-level type.
-    ///
-    /// This will fail if you try to add a name for which an existing type definition exists.
-    fn add_type_definition(&mut self, name: &str, type_: Type) -> Result<()> {
-        match self.types.entry(name.to_string()) {
-            Entry::Occupied(_) => bail!("Conflicting type definition for {}", name),
-            Entry::Vacant(e) => {
-                e.insert(type_);
-                Ok(())
-            }
-        }
+    fn resolve_type_expression<T: types::TypeResolver>(&mut self, expr: T) -> Result<Type> {
+        self.types.resolve_type_expression(expr)
     }
 
     fn add_namespace_definition(&mut self, defn: Namespace) -> Result<()> {
@@ -326,7 +310,9 @@ impl<'ci> ComponentInterface {
     }
 
     fn add_function_definition(&mut self, defn: Function) -> Result<()> {
-        // XXX TODO: reject duplicates; the type-finding pass won't help us here.
+        if self.functions.iter().any(|f| f.name == defn.name) {
+            bail!("duplicate function definition: {}", defn.name);
+        }
         self.functions.push(defn);
         Ok(())
     }
@@ -338,6 +324,7 @@ impl<'ci> ComponentInterface {
     }
 
     fn add_error_definition(&mut self, defn: Error) -> Result<()> {
+        // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.errors.push(defn);
         Ok(())
     }
@@ -406,13 +393,21 @@ impl APIBuilder for weedle::Definition<'_> {
                     false
                 };
                 if is_error {
-                    ci.add_error_definition(d.convert(ci)?)
+                    let err = d.convert(ci)?;
+                    ci.add_error_definition(err)
                 } else {
-                    ci.add_enum_definition(d.convert(ci)?)
+                    let e = d.convert(ci)?;
+                    ci.add_enum_definition(e)
                 }
             }
-            weedle::Definition::Dictionary(d) => ci.add_record_definition(d.convert(ci)?),
-            weedle::Definition::Interface(d) => ci.add_object_definition(d.convert(ci)?),
+            weedle::Definition::Dictionary(d) => {
+                let rec = d.convert(ci)?;
+                ci.add_record_definition(rec)
+            }
+            weedle::Definition::Interface(d) => {
+                let obj = d.convert(ci)?;
+                ci.add_object_definition(obj)
+            }
             _ => bail!("don't know how to deal with {:?}", self),
         }
     }
@@ -431,7 +426,7 @@ impl APIBuilder for weedle::Definition<'_> {
 /// Yeah, this is a bit of mis-match between WebIDL and our notion of a component,
 /// but it's close enough to get us up and running for now.
 ///
-#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub struct Namespace {
     name: String,
 }
@@ -463,11 +458,11 @@ impl APIBuilder for weedle::NamespaceDefinition<'_> {
 /// `ComponentInterface` as a read-only data source for resolving types, while `APIBuilder`
 /// actually mutates the `ComponentInterface` to add new definitions.
 trait APIConverter<T> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<T>;
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<T>;
 }
 
 impl<U, T: APIConverter<U>> APIConverter<Vec<U>> for Vec<T> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Vec<U>> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Vec<U>> {
         self.iter().map(|v| v.convert(ci)).collect::<Result<_>>()
     }
 }
@@ -478,7 +473,7 @@ impl<U, T: APIConverter<U>> APIConverter<Vec<U>> for Vec<T> {
 /// and has a corresponding standalone function in the foreign language bindings.
 ///
 /// In the FFI, this will be a standalone function with appropriately lowered types.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Function {
     name: String,
     arguments: Vec<Argument>,
@@ -531,7 +526,7 @@ impl Hash for Function {
 }
 
 impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Function> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
         match self {
             weedle::namespace::NamespaceMember::Operation(f) => f.convert(ci),
             _ => bail!("no support for namespace member type {:?} yet", self),
@@ -540,10 +535,10 @@ impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {
 }
 
 impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Function> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
         let return_type = match &self.return_type {
             weedle::types::ReturnType::Void(_) => None,
-            weedle::types::ReturnType::Type(t) => Some(ci.resolve_type_definition(t)?),
+            weedle::types::ReturnType::Type(t) => Some(ci.resolve_type_expression(t)?),
         };
         if let Some(Type::Object(_)) = return_type {
             bail!("Objects cannot currently be returned from functions");
@@ -567,7 +562,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
 /// Represents an argument to a function/constructor/method call.
 ///
 /// Each argument has a name and a type, along with some optional metadata.
-#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub struct Argument {
     name: String,
     type_: Type,
@@ -589,7 +584,7 @@ impl Argument {
 }
 
 impl APIConverter<Argument> for weedle::argument::Argument<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Argument> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Argument> {
         match self {
             weedle::argument::Argument::Single(t) => t.convert(ci),
             weedle::argument::Argument::Variadic(_) => bail!("variadic arguments not supported"),
@@ -598,8 +593,8 @@ impl APIConverter<Argument> for weedle::argument::Argument<'_> {
 }
 
 impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Argument> {
-        let type_ = (&self.type_).resolve_type_definition(ci)?;
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Argument> {
+        let type_ = ci.resolve_type_expression(&self.type_)?;
         if let Type::Object(_) = type_ {
             bail!("Objects cannot currently be passed as arguments");
         }
@@ -628,7 +623,7 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
 /// Represents a simple C-style enum, with named variants.
 ///
 /// In the FFI these are turned into a simple u32.
-#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub struct Enum {
     name: String,
     variants: Vec<String>,
@@ -644,7 +639,7 @@ impl Enum {
 }
 
 impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
-    fn convert(&self, _ci: &ComponentInterface) -> Result<Enum> {
+    fn convert(&self, _ci: &mut ComponentInterface) -> Result<Enum> {
         Ok(Enum {
             name: self.identifier.0.to_string(),
             variants: self
@@ -672,7 +667,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
 ///
 /// TODO:
 ///  - maybe "Class" would be a better name than "Object" here?
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Object {
     name: String,
     constructors: Vec<Constructor>,
@@ -738,7 +733,7 @@ impl Hash for Object {
 }
 
 impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Object> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Object> {
         if self.attributes.is_some() {
             bail!("interface attributes are not supported yet");
         }
@@ -770,7 +765,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 //
 // In the FFI, this will be a function that returns a handle for an instance
 // of the corresponding object type.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Constructor {
     name: String,
     arguments: Vec<Argument>,
@@ -833,7 +828,7 @@ impl Default for Constructor {
 }
 
 impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Constructor> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Constructor> {
         Ok(Constructor {
             name: String::from("new"), // TODO: get the name from an attribute maybe?
             arguments: self.args.body.list.convert(ci)?,
@@ -850,7 +845,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 //
 // The in FFI, this will be a function whose first argument is a handle for an
 // instance of the corresponding object type.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Method {
     name: String,
     object_name: String,
@@ -880,6 +875,8 @@ impl Method {
     pub fn first_argument(&self) -> Argument {
         Argument {
             name: "handle".to_string(),
+            // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
+            // is contained in the proper `TypeUniverse`, but this works for now.
             type_: Type::Object(self.object_name.clone()),
             by_ref: false,
             optional: false,
@@ -924,7 +921,7 @@ impl Hash for Method {
 }
 
 impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Method> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Method> {
         if self.special.is_some() {
             bail!("special operations not supported");
         }
@@ -933,7 +930,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
         }
         let return_type = match &self.return_type {
             weedle::types::ReturnType::Void(_) => None,
-            weedle::types::ReturnType::Type(t) => Some(ci.resolve_type_definition(t)?),
+            weedle::types::ReturnType::Type(t) => Some(ci.resolve_type_expression(t)?),
         };
         if let Some(Type::Object(_)) = return_type {
             bail!("Objects cannot currently be returned from functions");
@@ -960,7 +957,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
 /// attribute. Used to define exceptions/errors in the bindings
 /// as well as defining the From<Error> for ExternError
 /// needed for the different errors to cross the FFI.
-#[derive(Debug, Clone, Serialize, Deserialize, Default, Hash)]
+#[derive(Debug, Clone, Default, Hash)]
 pub struct Error {
     name: String,
     values: Vec<String>,
@@ -977,7 +974,7 @@ impl Error {
 }
 
 impl APIConverter<Error> for weedle::EnumDefinition<'_> {
-    fn convert(&self, _ci: &ComponentInterface) -> Result<Error> {
+    fn convert(&self, _ci: &mut ComponentInterface) -> Result<Error> {
         Ok(Error {
             name: self.identifier.0.to_string(),
             values: self
@@ -996,7 +993,7 @@ impl APIConverter<Error> for weedle::EnumDefinition<'_> {
 /// In the FFI these are represented as a byte buffer, which one side explicitly
 /// serializes the data into and the other serializes it out of. So I guess they're
 /// kind of like "pass by clone" values.
-#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub struct Record {
     name: String,
     fields: Vec<Field>,
@@ -1012,7 +1009,7 @@ impl Record {
 }
 
 impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Record> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Record> {
         if self.attributes.is_some() {
             bail!("dictionary attributes are not supported yet");
         }
@@ -1027,7 +1024,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
 }
 
 // Represents an individual field on a Record.
-#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub struct Field {
     name: String,
     type_: Type,
@@ -1045,11 +1042,11 @@ impl Field {
 }
 
 impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
-    fn convert(&self, ci: &ComponentInterface) -> Result<Field> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
         if self.attributes.is_some() {
             bail!("dictionary member attributes are not supported yet");
         }
-        let type_ = ci.resolve_type_definition(&self.type_)?;
+        let type_ = ci.resolve_type_expression(&self.type_)?;
         if let Type::Object(_) = type_ {
             bail!("Objects cannot currently appear in record fields");
         }
@@ -1067,7 +1064,7 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
 
 // Represents a literal value.
 // Used for e.g. default argument values.
-#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub enum Literal {
     Boolean(bool),
     String(String),
@@ -1075,7 +1072,7 @@ pub enum Literal {
 }
 
 impl APIConverter<Literal> for weedle::literal::DefaultValue<'_> {
-    fn convert(&self, _ci: &ComponentInterface) -> Result<Literal> {
+    fn convert(&self, _ci: &mut ComponentInterface) -> Result<Literal> {
         Ok(match self {
             weedle::literal::DefaultValue::Boolean(b) => Literal::Boolean(b.0),
             weedle::literal::DefaultValue::String(s) => Literal::String(s.0.to_string()),
@@ -1089,7 +1086,7 @@ impl APIConverter<Literal> for weedle::literal::DefaultValue<'_> {
 /// This is a convenience enum for parsing WebIDL attributes and erroring out if we encounter
 /// any unsupported ones. These don't convert directly into parts of a `ComponentInterface`, but
 /// may influence the properties of things like functions and arguments.
-#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub enum Attribute {
     ByRef,
     Throws(String),
@@ -1138,7 +1135,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
 /// Abstraction around a Vec<Attribute>.
 ///
 /// This is a convenience for parsing a weedle list of attributes.
-#[derive(Debug, Clone, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub struct Attributes(Vec<Attribute>);
 
 impl Attributes {
@@ -1184,7 +1181,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
 /// from the high-level interface. Each callable thing in the component API will have a
 /// corresponding `FFIFunction` through which it can be invoked, and uniffi also provides
 /// some built-in `FFIFunction` helpers for use in the foreign language bindings.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone)]
 pub struct FFIFunction {
     name: String,
     arguments: Vec<FFIArgument>,
@@ -1206,7 +1203,7 @@ impl FFIFunction {
 /// Represents an argument to an FFI function.
 ///
 /// Each argument has a name and a type.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct FFIArgument {
     name: String,
     type_: FFIType,

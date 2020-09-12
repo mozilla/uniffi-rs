@@ -1,6 +1,6 @@
 // Helpers for reading primitive data types from a bytebuffer.
 
-fun<T> liftFromRustBuffer(rbuf: RustBuffer.ByValue, readItem: (ByteBuffer) -> T): T {
+internal fun<T> liftFromRustBuffer(rbuf: RustBuffer.ByValue, readItem: (ByteBuffer) -> T): T {
     val buf = rbuf.asByteBuffer()!!
     try {
        val item = readItem(buf)
@@ -13,158 +13,7 @@ fun<T> liftFromRustBuffer(rbuf: RustBuffer.ByValue, readItem: (ByteBuffer) -> T)
     }
 }
 
-fun Boolean.Companion.lift(v: Byte): Boolean {
-    return v.toInt() != 0
-}
-
-fun Boolean.Companion.read(buf: ByteBuffer): Boolean {
-    return Boolean.lift(buf.get())
-}
-
-fun Byte.Companion.lift(v: Byte): Byte {
-    return v
-}
-
-fun Byte.Companion.read(buf: ByteBuffer): Byte {
-    return buf.get()
-}
-
-fun Short.Companion.lift(v: Short): Short {
-    return v
-}
-
-fun Short.Companion.read(buf: ByteBuffer): Short {
-    return buf.getShort()
-}
-
-fun Int.Companion.lift(v: Int): Int {
-    return v
-}
-
-fun Int.Companion.read(buf: ByteBuffer): Int {
-    return buf.getInt()
-}
-
-fun Long.Companion.lift(v: Long): Long {
-    return v
-}
-
-fun Long.Companion.read(buf: ByteBuffer): Long {
-    return buf.getLong()
-}
-
-// Unsigned types
-fun UByte.Companion.lift(v: Byte): UByte {
-    return v.toUByte()
-}
-
-fun UByte.Companion.read(buf: ByteBuffer): UByte {
-    return UByte.lift(buf.get())
-}
-
-fun UShort.Companion.lift(v: Short): UShort {
-    return v.toUShort()
-}
-
-fun UShort.Companion.read(buf: ByteBuffer): UShort {
-    return UShort.lift(buf.getShort())
-}
-
-fun UInt.Companion.lift(v: Int): UInt {
-    return v.toUInt()
-}
-
-fun UInt.Companion.read(buf: ByteBuffer): UInt {
-    return UInt.lift(buf.getInt())
-}
-
-fun ULong.Companion.lift(v: Long): ULong {
-    return v.toULong()
-}
-
-fun ULong.Companion.read(buf: ByteBuffer): ULong {
-    return ULong.lift(buf.getLong())
-}
-
-fun Float.Companion.lift(v: Float): Float {
-    return v
-}
-
-fun Float.Companion.read(buf: ByteBuffer): Float {
-    return buf.getFloat()
-}
-
-fun Double.Companion.lift(v: Double): Double {
-    return v
-}
-
-fun Double.Companion.read(buf: ByteBuffer): Double {
-    val v = buf.getDouble()
-    return v
-}
-
-fun String.Companion.lift(rbuf: RustBuffer.ByValue): String {
-    try {
-        val byteArr = ByteArray(rbuf.len)
-        rbuf.asByteBuffer()!!.get(byteArr)
-        return byteArr.toString(Charsets.UTF_8)
-    } finally {
-        RustBuffer.free(rbuf)
-    }
-}
-
-fun String.Companion.read(buf: ByteBuffer): String {
-    val len = Int.read(buf)
-    val byteArr = ByteArray(len)
-    buf.get(byteArr)
-    return byteArr.toString(Charsets.UTF_8)
-}
-
-
-// I can't figure out how to make a generic implementation of (Any?).read, and IIUC there are some
-// restrictions on generics in Kotlin (inherited from the JVM) that make it impossible to write in the
-// style I want here. So, we use a standalone helper.
-
-fun<T> liftOptional(rbuf: RustBuffer.ByValue, readItem: (ByteBuffer) -> T): T? {
-    return liftFromRustBuffer(rbuf) { buf -> readOptional(buf, readItem) }
-}
-
-fun<T> readOptional(buf: ByteBuffer, readItem: (ByteBuffer) -> T): T? {
-    if (! Boolean.read(buf)) {
-        return null
-    }
-    return readItem(buf)
-}
-
-fun<T> liftSequence(rbuf: RustBuffer.ByValue, readItem: (ByteBuffer) -> T): List<T> {
-    return liftFromRustBuffer(rbuf) { buf -> readSequence(buf, readItem) }
-}
-
-fun<T> readSequence(buf: ByteBuffer, readItem: (ByteBuffer) -> T): List<T> {
-    val len = Int.read(buf)
-    return List<T>(len) {
-        readItem(buf)
-    }
-}
-
-fun<V> liftMap(rbuf: RustBuffer.ByValue, readItem: (ByteBuffer) -> Pair<String, V>): Map<String, V> {
-    return liftFromRustBuffer(rbuf) { buf -> readMap(buf, readItem) }
-}
-
-fun<V> readMap(buf: ByteBuffer, readItem: (ByteBuffer) -> Pair<String, V>): Map<String, V> {
-    val len = Int.read(buf)
-    @OptIn(ExperimentalStdlibApi::class)
-    return buildMap<String, V>(len) {
-        repeat(len) {
-            val (k, v) = readItem(buf)
-            put(k, v)
-        }
-    }
-}
-
-// Helpers for lowering primitive data types into a RustBuffer.
-
-fun<T> lowerIntoRustBuffer(v: T, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
+internal fun<T> lowerIntoRustBuffer(v: T, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
     // TODO: maybe we can calculate some sort of initial size hint?
     val buf = RustBufferBuilder()
     try {
@@ -176,137 +25,375 @@ fun<T> lowerIntoRustBuffer(v: T, writeItem: (T, RustBufferBuilder) -> Unit): Rus
     }
 }
 
-fun Boolean.lower(): Byte {
+// For every type used in the interface, we provide helper methods for conveniently
+// lifting and lowering that type from C-compatible data, and for reading and writing
+// values of that type in a buffer.
+
+{% for typ in ci.iter_types() %}
+{% let canonical_type_name = typ.canonical_name()|class_name_kt %}
+{%- match typ -%}
+
+{% when Type::Boolean -%}
+
+internal fun Boolean.Companion.lift(v: Byte): Boolean {
+    return v.toInt() != 0
+}
+
+internal fun Boolean.Companion.read(buf: ByteBuffer): Boolean {
+    return Boolean.lift(buf.get())
+}
+
+internal fun Boolean.lower(): Byte {
     return if (this) 1.toByte() else 0.toByte()
 }
 
-fun Boolean.write(buf: RustBufferBuilder) {
+internal fun Boolean.write(buf: RustBufferBuilder) {
     buf.putByte(this.lower())
 }
 
-fun Byte.lower(): Byte {
+{% when Type::Int8 -%}
+
+internal fun Byte.Companion.lift(v: Byte): Byte {
+    return v
+}
+
+internal fun Byte.Companion.read(buf: ByteBuffer): Byte {
+    return buf.get()
+}
+
+internal fun Byte.lower(): Byte {
     return this
 }
 
-fun Byte.write(buf: RustBufferBuilder) {
+internal fun Byte.write(buf: RustBufferBuilder) {
     buf.putByte(this)
 }
 
-fun Short.lower(): Short {
+{% when Type::Int16 -%}
+
+internal fun Short.Companion.lift(v: Short): Short {
+    return v
+}
+
+internal fun Short.Companion.read(buf: ByteBuffer): Short {
+    return buf.getShort()
+}
+
+internal fun Short.lower(): Short {
     return this
 }
 
-fun Short.write(buf: RustBufferBuilder) {
+internal fun Short.write(buf: RustBufferBuilder) {
     buf.putShort(this)
 }
 
-fun Int.lower(): Int {
+{% when Type::Int32 -%}
+
+internal fun Int.Companion.lift(v: Int): Int {
+    return v
+}
+
+internal fun Int.Companion.read(buf: ByteBuffer): Int {
+    return buf.getInt()
+}
+
+internal fun Int.lower(): Int {
     return this
 }
 
-fun Int.write(buf: RustBufferBuilder) {
+internal fun Int.write(buf: RustBufferBuilder) {
     buf.putInt(this)
 }
 
-fun Long.lower(): Long {
+{% when Type::Int64 -%}
+
+internal fun Long.Companion.lift(v: Long): Long {
+    return v
+}
+
+internal fun Long.Companion.read(buf: ByteBuffer): Long {
+    return buf.getLong()
+}
+
+internal fun Long.lower(): Long {
     return this
 }
 
-fun Long.write(buf: RustBufferBuilder) {
+internal fun Long.write(buf: RustBufferBuilder) {
     buf.putLong(this)
 }
 
-// Experimental unsigned types
-fun UByte.lower(): Byte {
+{% when Type::UInt8 -%}
+
+@ExperimentalUnsignedTypes
+internal fun UByte.Companion.lift(v: Byte): UByte {
+    return v.toUByte()
+}
+
+@ExperimentalUnsignedTypes
+internal fun UByte.Companion.read(buf: ByteBuffer): UByte {
+    return UByte.lift(buf.get())
+}
+
+@ExperimentalUnsignedTypes
+internal fun UByte.lower(): Byte {
     return this.toByte()
 }
 
-fun UByte.write(buf: RustBufferBuilder) {
+@ExperimentalUnsignedTypes
+internal fun UByte.write(buf: RustBufferBuilder) {
     buf.putByte(this.toByte())
 }
 
-fun UShort.lower(): Short {
+{% when Type::UInt16 -%}
+
+@ExperimentalUnsignedTypes
+internal fun UShort.Companion.lift(v: Short): UShort {
+    return v.toUShort()
+}
+
+@ExperimentalUnsignedTypes
+internal fun UShort.Companion.read(buf: ByteBuffer): UShort {
+    return UShort.lift(buf.getShort())
+}
+
+@ExperimentalUnsignedTypes
+internal fun UShort.lower(): Short {
     return this.toShort()
 }
 
-fun UShort.write(buf: RustBufferBuilder) {
+@ExperimentalUnsignedTypes
+internal fun UShort.write(buf: RustBufferBuilder) {
     buf.putShort(this.toShort())
 }
 
-fun UInt.lower(): Int {
+{% when Type::UInt32 -%}
+
+@ExperimentalUnsignedTypes
+internal fun UInt.Companion.lift(v: Int): UInt {
+    return v.toUInt()
+}
+
+@ExperimentalUnsignedTypes
+internal fun UInt.Companion.read(buf: ByteBuffer): UInt {
+    return UInt.lift(buf.getInt())
+}
+
+@ExperimentalUnsignedTypes
+internal fun UInt.lower(): Int {
     return this.toInt()
 }
 
-fun UInt.write(buf: RustBufferBuilder) {
+@ExperimentalUnsignedTypes
+internal fun UInt.write(buf: RustBufferBuilder) {
     buf.putInt(this.toInt())
 }
 
-fun ULong.lower(): Long {
+{% when Type::UInt64 -%}
+
+@ExperimentalUnsignedTypes
+internal fun ULong.Companion.lift(v: Long): ULong {
+    return v.toULong()
+}
+
+@ExperimentalUnsignedTypes
+internal fun ULong.Companion.read(buf: ByteBuffer): ULong {
+    return ULong.lift(buf.getLong())
+}
+
+@ExperimentalUnsignedTypes
+internal fun ULong.lower(): Long {
     return this.toLong()
 }
 
-fun ULong.write(buf: RustBufferBuilder) {
+@ExperimentalUnsignedTypes
+internal fun ULong.write(buf: RustBufferBuilder) {
     buf.putLong(this.toLong())
 }
 
-fun Float.lower(): Float {
+{% when Type::Float32 -%}
+
+internal fun Float.Companion.lift(v: Float): Float {
+    return v
+}
+
+internal fun Float.Companion.read(buf: ByteBuffer): Float {
+    return buf.getFloat()
+}
+
+internal fun Float.lower(): Float {
     return this
 }
 
-fun Float.write(buf: RustBufferBuilder) {
+internal fun Float.write(buf: RustBufferBuilder) {
     buf.putFloat(this)
 }
 
-fun Double.lower(): Double {
+{% when Type::Float64 -%}
+
+internal fun Double.Companion.lift(v: Double): Double {
+    return v
+}
+
+internal fun Double.Companion.read(buf: ByteBuffer): Double {
+    val v = buf.getDouble()
+    return v
+}
+
+internal fun Double.lower(): Double {
     return this
 }
 
-fun Double.write(buf: RustBufferBuilder) {
+internal fun Double.write(buf: RustBufferBuilder) {
     buf.putDouble(this)
 }
 
-fun String.lower(): RustBuffer.ByValue {
+{% when Type::String -%}
+
+internal fun String.Companion.lift(rbuf: RustBuffer.ByValue): String {
+    try {
+        val byteArr = ByteArray(rbuf.len)
+        rbuf.asByteBuffer()!!.get(byteArr)
+        return byteArr.toString(Charsets.UTF_8)
+    } finally {
+        RustBuffer.free(rbuf)
+    }
+}
+
+internal fun String.Companion.read(buf: ByteBuffer): String {
+    val len = buf.getInt()
+    val byteArr = ByteArray(len)
+    buf.get(byteArr)
+    return byteArr.toString(Charsets.UTF_8)
+}
+
+internal fun String.lower(): RustBuffer.ByValue {
     val byteArr = this.toByteArray(Charsets.UTF_8)
     // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
-    // to copy them into a JNA `Memory`. So we might as well directly copy then into a `RustBuffer`.
+    // to copy them into a JNA `Memory`. So we might as well directly copy them into a `RustBuffer`.
     val rbuf = RustBuffer.alloc(byteArr.size)
     rbuf.asByteBuffer()!!.put(byteArr)
     return rbuf
 }
 
-fun String.write(buf: RustBufferBuilder) {
+internal fun String.write(buf: RustBufferBuilder) {
     val byteArr = this.toByteArray(Charsets.UTF_8)
     buf.putInt(byteArr.size)
     buf.put(byteArr)
 }
 
-fun<T> lowerSequence(v: List<T>, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
-    return lowerIntoRustBuffer(v, { v, buf -> writeSequence(v, buf, writeItem) })
+{% when Type::Optional with (inner_type) -%}
+{% let inner_type_name = inner_type|type_kt %}
+
+// Helper functions for pasing values of type {{ typ|type_kt }}
+
+internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ inner_type_name }}? {
+    return liftFromRustBuffer(rbuf) { buf ->
+        read{{ canonical_type_name }}(buf)
+    }
 }
 
-fun<T> writeSequence(v: List<T>, buf: RustBufferBuilder, writeItem: (T, RustBufferBuilder) -> Unit) {
-    v.size.write(buf)
-    v.forEach { writeItem(it, buf) }
+internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ inner_type_name }}? {
+    if (buf.get().toInt() == 0) {
+        return null
+    }
+    return {{ "buf"|read_kt(inner_type) }}
 }
 
-fun<V> lowerMap(m: Map<String, V>, writeEntry: (String, V, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
-    return lowerIntoRustBuffer(m, { m, buf -> writeMap(m, buf, writeEntry) })
+internal fun lower{{ canonical_type_name }}(v: {{ inner_type_name }}?): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(v) { v, buf ->
+        write{{ canonical_type_name }}(v, buf)
+    }
 }
 
-fun<V> writeMap(v: Map<String, V>, buf: RustBufferBuilder, writeEntry: (String, V, RustBufferBuilder) -> Unit) {
-    v.size.write(buf)
-    v.forEach { k, v -> writeEntry(k, v, buf) }
-}
-
-fun<T> lowerOptional(v: T?, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
-    return lowerIntoRustBuffer(v, { v, buf -> writeOptional(v, buf, writeItem) })
-}
-
-fun<T> writeOptional(v: T?, buf: RustBufferBuilder, writeItem: (T, RustBufferBuilder) -> Unit) {
+internal fun write{{ canonical_type_name }}(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
     if (v === null) {
         buf.putByte(0)
     } else {
         buf.putByte(1)
-        writeItem(v, buf)
+        {{ "v"|write_kt("buf", inner_type) }}
     }
 }
+
+{% when Type::Sequence with (inner_type) -%}
+{% let inner_type_name = inner_type|type_kt %}
+
+// Helper functions for pasing values of type {{ typ|type_kt }}
+
+internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): List<{{ inner_type_name }}> {
+    return liftFromRustBuffer(rbuf) { buf ->
+        read{{ canonical_type_name }}(buf)
+    }
+}
+
+internal fun read{{ canonical_type_name }}(buf: ByteBuffer): List<{{ inner_type_name }}> {
+    val len = buf.getInt()
+    return List<{{ inner_type|type_kt }}>(len) {
+        {{ "buf"|read_kt(inner_type) }}
+    }
+}
+
+internal fun lower{{ canonical_type_name }}(v: List<{{ inner_type_name }}>): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(v) { v, buf ->
+        write{{ canonical_type_name }}(v, buf)
+    }
+}
+
+internal fun write{{ canonical_type_name }}(v: List<{{ inner_type_name }}>, buf: RustBufferBuilder) {
+    buf.putInt(v.size)
+    v.forEach {
+        {{ "it"|write_kt("buf", inner_type) }}
+    }
+}
+
+{% when Type::Map with (inner_type) -%}
+{% let inner_type_name = inner_type|type_kt %}
+
+// Helper functions for pasing values of type {{ typ|type_kt }}
+
+internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): Map<String, {{ inner_type_name }}> {
+    return liftFromRustBuffer(rbuf) { buf ->
+        read{{ canonical_type_name }}(buf)
+    }
+}
+
+internal fun read{{ canonical_type_name }}(buf: ByteBuffer): Map<String, {{ inner_type_name }}> {
+    // TODO: Once Kotlin's `buildMap` API is stabilized we should use it here.
+    val items : MutableMap<String, {{ inner_type_name }}> = mutableMapOf()
+    val len = buf.getInt()
+    repeat(len) {
+        val k = String.read(buf)
+        val v = {{ "buf"|read_kt(inner_type) }}
+        items[k] = v
+    }
+    return items
+}
+
+internal fun lower{{ canonical_type_name }}(m: Map<String, {{ inner_type_name }}>): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(m) { m, buf ->
+        write{{ canonical_type_name }}(m, buf)
+    }
+}
+
+internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}>, buf: RustBufferBuilder) {
+    buf.putInt(v.size)
+    v.forEach { k, v ->
+        k.write(buf)
+        {{ "v"|write_kt("buf", inner_type) }}
+    }
+}
+
+{% when Type::Enum with (enum_name) -%}
+{# Helpers for Enum types are defined inline with the Enum class #}
+
+{% when Type::Record with (record_name) -%}
+{# Helpers for Record types are defined inline with the Record class #}
+
+{% when Type::Object with (object_name) -%}
+{# Object types cannot be lifted, lowered or serialized (yet) #}
+
+{% when Type::Error with (error_name) -%}
+{# Error types cannot be lifted, lowered or serialized (yet) #}
+
+{% endmatch %}
+{% endfor %}
