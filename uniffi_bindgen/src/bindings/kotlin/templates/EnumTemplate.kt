@@ -15,7 +15,5 @@ enum class {{ e.name()|class_name_kt }} {
 
     internal fun lower() = this.ordinal + 1
 
-    internal fun calculateWriteSize() = 4
-
-    internal fun write(buf: ByteBuffer) = this.lower().write(buf)
+    internal fun write(buf: RustBufferBuilder) = this.lower().write(buf)
 }

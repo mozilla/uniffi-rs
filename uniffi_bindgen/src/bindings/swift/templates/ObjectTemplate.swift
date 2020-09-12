@@ -8,7 +8,9 @@ public class {{ obj.name() }} {
     {%- endfor %}
 
     deinit {
-        {{ obj.ffi_object_free().name() }}(handle)
+        try! rustCall(InternalError.unknown()) { err in
+            {{ obj.ffi_object_free().name() }}(handle, err)
+        }
     }
 
     // TODO: Maybe merge the two templates (i.e the one with a return type and the one without)

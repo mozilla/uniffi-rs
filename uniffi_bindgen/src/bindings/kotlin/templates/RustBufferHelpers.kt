@@ -144,17 +144,16 @@ fun<V> readMap(buf: ByteBuffer, readItem: (ByteBuffer) -> Pair<String, V>): Map<
     }
 }
 
-// Helpers for lowering primitive data types into a bytebuffer.
-// Since we need to allocate buffers from rust, the lowering process needs to be
-// able to calculate ahead-of-time what the required size of the buffer will be.
+// Helpers for lowering primitive data types into a RustBuffer.
 
-fun<T> lowerIntoRustBuffer(v: T, calculateWriteSize: (T) -> Int, writeItem: (T, ByteBuffer) -> Unit): RustBuffer.ByValue {
-    val buf = RustBuffer.alloc(calculateWriteSize(v))
+fun<T> lowerIntoRustBuffer(v: T, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
+    // TODO: maybe we can calculate some sort of initial size hint?
+    val buf = RustBufferBuilder()
     try {
-        writeItem(v, buf.asByteBuffer()!!)
-        return buf
+        writeItem(v, buf)
+        return buf.finalize()
     } catch (e: Throwable) {
-        RustBuffer.free(buf)
+        buf.discard()
         throw e
     }
 }
@@ -163,35 +162,23 @@ fun Boolean.lower(): Byte {
     return if (this) 1.toByte() else 0.toByte()
 }
 
-fun Boolean.calculateWriteSize(): Int {
-    return 1
-}
-
-fun Boolean.write(buf: ByteBuffer) {
-    buf.put(this.lower())
+fun Boolean.write(buf: RustBufferBuilder) {
+    buf.putByte(this.lower())
 }
 
 fun Byte.lower(): Byte {
     return this
 }
 
-fun Byte.calculateWriteSize(): Int {
-    return 1
-}
-
-fun Byte.write(buf: ByteBuffer) {
-    buf.put(this)
+fun Byte.write(buf: RustBufferBuilder) {
+    buf.putByte(this)
 }
 
 fun Short.lower(): Short {
     return this
 }
 
-fun Short.calculateWriteSize(): Int {
-    return 2
-}
-
-fun Short.write(buf: ByteBuffer) {
+fun Short.write(buf: RustBufferBuilder) {
     buf.putShort(this)
 }
 
@@ -199,11 +186,7 @@ fun Int.lower(): Int {
     return this
 }
 
-fun Int.calculateWriteSize(): Int {
-    return 4
-}
-
-fun Int.write(buf: ByteBuffer) {
+fun Int.write(buf: RustBufferBuilder) {
     buf.putInt(this)
 }
 
@@ -211,11 +194,7 @@ fun Long.lower(): Long {
     return this
 }
 
-fun Long.calculateWriteSize(): Int {
-    return 8
-}
-
-fun Long.write(buf: ByteBuffer) {
+fun Long.write(buf: RustBufferBuilder) {
     buf.putLong(this)
 }
 
@@ -224,23 +203,15 @@ fun UByte.lower(): Byte {
     return this.toByte()
 }
 
-fun UByte.calculateWriteSize(): Int {
-    return 1
-}
-
-fun UByte.write(buf: ByteBuffer) {
-    buf.put(this.toByte())
+fun UByte.write(buf: RustBufferBuilder) {
+    buf.putByte(this.toByte())
 }
 
 fun UShort.lower(): Short {
     return this.toShort()
 }
 
-fun UShort.calculateWriteSize(): Int {
-    return 2
-}
-
-fun UShort.write(buf: ByteBuffer) {
+fun UShort.write(buf: RustBufferBuilder) {
     buf.putShort(this.toShort())
 }
 
@@ -248,11 +219,7 @@ fun UInt.lower(): Int {
     return this.toInt()
 }
 
-fun UInt.calculateWriteSize(): Int {
-    return 4
-}
-
-fun UInt.write(buf: ByteBuffer) {
+fun UInt.write(buf: RustBufferBuilder) {
     buf.putInt(this.toInt())
 }
 
@@ -260,11 +227,7 @@ fun ULong.lower(): Long {
     return this.toLong()
 }
 
-fun ULong.calculateWriteSize(): Int {
-    return 8
-}
-
-fun ULong.write(buf: ByteBuffer) {
+fun ULong.write(buf: RustBufferBuilder) {
     buf.putLong(this.toLong())
 }
 
@@ -272,11 +235,7 @@ fun Float.lower(): Float {
     return this
 }
 
-fun Float.calculateWriteSize(): Int {
-    return 4
-}
-
-fun Float.write(buf: ByteBuffer) {
+fun Float.write(buf: RustBufferBuilder) {
     buf.putFloat(this)
 }
 
@@ -284,11 +243,7 @@ fun Double.lower(): Double {
     return this
 }
 
-fun Double.calculateWriteSize(): Int {
-    return 8
-}
-
-fun Double.write(buf: ByteBuffer) {
+fun Double.write(buf: RustBufferBuilder) {
     buf.putDouble(this)
 }
 
@@ -301,8 +256,8 @@ fun String.lower(): Pointer {
     return rustStr
 }
 
-fun String.write(buf: ByteBuffer) {
-    val byteArr = this.toByteArray()
+fun String.write(buf: RustBufferBuilder) {
+    val byteArr = this.toByteArray(Charsets.UTF_8)
     buf.putInt(byteArr.size)
     buf.put(byteArr)
 }
@@ -314,62 +269,43 @@ fun String.Companion.read(buf: ByteBuffer): String {
     return byteArr.toString(Charsets.UTF_8)
 }
 
-fun String.calculateWriteSize(): Int {
-    return 4 + this.toByteArray().size
-}
-
 fun String.Companion.lift(ptr: Pointer): String {
     try {
         return ptr.getString(0, "utf8")
     } finally {
-        _UniFFILib.INSTANCE.{{ ci.ffi_string_free().name() }}(ptr)
+        rustCall(InternalError.ByReference()) { err ->
+            _UniFFILib.INSTANCE.{{ ci.ffi_string_free().name() }}(ptr, err)
+        }
     }
 }
 
-fun<T> lowerSequence(v: List<T>, calculateWriteSize: (T) -> Int, writeItem: (T, ByteBuffer) -> Unit): RustBuffer.ByValue {
-    return lowerIntoRustBuffer(v, { v -> calculateWriteSizeSequence(v, calculateWriteSize) }, { v, buf -> writeSequence(v, buf, writeItem) })
+fun<T> lowerSequence(v: List<T>, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(v, { v, buf -> writeSequence(v, buf, writeItem) })
 }
 
-fun<T> calculateWriteSizeSequence(v: List<T>, calculateWriteSize: (T) -> Int): Int {
-    var len = v.size.calculateWriteSize()
-    v.forEach { len += calculateWriteSize(it) }
-    return len
-}
-
-fun<T> writeSequence(v: List<T>, buf: ByteBuffer, writeItem: (T, ByteBuffer) -> Unit) {
+fun<T> writeSequence(v: List<T>, buf: RustBufferBuilder, writeItem: (T, RustBufferBuilder) -> Unit) {
     v.size.write(buf)
     v.forEach { writeItem(it, buf) }
 }
 
-fun<V> lowerMap(m: Map<String, V>, calculateWriteSize: (String, V) -> Int, writeEntry: (String, V, ByteBuffer) -> Unit): RustBuffer.ByValue {
-    return lowerIntoRustBuffer(m, { m -> calculateWriteSizeMap(m, calculateWriteSize) }, { m, buf -> writeMap(m, buf, writeEntry) })
+fun<V> lowerMap(m: Map<String, V>, writeEntry: (String, V, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(m, { m, buf -> writeMap(m, buf, writeEntry) })
 }
 
-fun<V> calculateWriteSizeMap(v: Map<String, V>, calculateWriteSize: (String, V) -> Int): Int {
-    var len = v.size.calculateWriteSize()
-    v.forEach { k, v -> len += calculateWriteSize(k, v) }
-    return len
-}
-
-fun<V> writeMap(v: Map<String, V>, buf: ByteBuffer, writeEntry: (String, V, ByteBuffer) -> Unit) {
+fun<V> writeMap(v: Map<String, V>, buf: RustBufferBuilder, writeEntry: (String, V, RustBufferBuilder) -> Unit) {
     v.size.write(buf)
     v.forEach { k, v -> writeEntry(k, v, buf) }
 }
 
-fun<T> lowerOptional(v: T?, calculateWriteSize: (T) -> Int, writeItem: (T, ByteBuffer) -> Unit): RustBuffer.ByValue {
-    return lowerIntoRustBuffer(v, { v -> calculateWriteSizeOptional(v, calculateWriteSize) }, { v, buf -> writeOptional(v, buf, writeItem) })
+fun<T> lowerOptional(v: T?, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(v, { v, buf -> writeOptional(v, buf, writeItem) })
 }
 
-fun<T> calculateWriteSizeOptional(v: T?, calculateWriteSize: (T) -> Int): Int {
-    if (v === null) return 1
-    return 1 + calculateWriteSize(v)
-}
-
-fun<T> writeOptional(v: T?, buf: ByteBuffer, writeItem: (T, ByteBuffer) -> Unit) {
+fun<T> writeOptional(v: T?, buf: RustBufferBuilder, writeItem: (T, RustBufferBuilder) -> Unit) {
     if (v === null) {
-        buf.put(0)
+        buf.putByte(0)
     } else {
-        buf.put(1)
+        buf.putByte(1)
         writeItem(v, buf)
     }
 }

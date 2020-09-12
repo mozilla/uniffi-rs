@@ -1,4 +1,4 @@
-{# 
+{#
 // Template to call into rust. Used in several places.
 // Variable names in `arg_list_decl` should match up with arg lists
 // passed to rust via `_arg_list_ffi_call` (we use  `var_name_kt` in `lower_kt`)
@@ -55,10 +55,10 @@ rustCall(
 // Arglist as used in the _UniFFILib function declations.
 // Note unfiltered name but type_ffi filters.
 -#}
-{%- macro arg_list_rs_decl(func) %}
+{%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
         {{- arg.name() }}: {{ arg.type_()|type_ffi -}}
         {%- if loop.last %}{% else %},{% endif %}
     {%- endfor %}
-    {% if func.has_out_err() %}{% if func.arguments().len() > 0 %},{% endif %} err: Structure.ByReference{% endif %}
+    {% if func.arguments().len() > 0 %},{% endif %} uniffi_out_err: Structure.ByReference
 {%- endmacro -%}

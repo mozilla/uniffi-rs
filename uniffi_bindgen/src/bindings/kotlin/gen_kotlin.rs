@@ -82,6 +82,7 @@ mod filters {
             FFIType::RustError => "RustError".to_string(),
             // Kotlin+JNA has some magic to pass its native string type as char* pointers.
             FFIType::ForeignStringRef => "String".to_string(),
+            FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
         })
     }
 
@@ -113,22 +114,18 @@ mod filters {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
             Type::Optional(t) => format!(
-                "lowerOptional({}, {{ v -> {} }}, {{ v, buf -> {} }})",
+                "lowerOptional({}, {{ v, buf -> {} }})",
                 nm,
-                calculate_write_size(&"v", t)?,
                 write_kt(&"v", &"buf", t)?
             ),
             Type::Sequence(t) => format!(
-                "lowerSequence({}, {{ v -> {} }}, {{ v, buf -> {} }})",
+                "lowerSequence({}, {{ v, buf -> {} }})",
                 nm,
-                calculate_write_size(&"v", t)?,
                 write_kt(&"v", &"buf", t)?
             ),
             Type::Map(t) => format!(
-                "lowerMap({}, {{ k, v -> {} + {} }}, {{ k, v, buf -> {}; {} }})",
+                "lowerMap({}, {{ k, v, buf -> {}; {} }})",
                 nm,
-                calculate_write_size(&"k", &Type::String)?,
-                calculate_write_size(&"v", t)?,
                 write_kt(&"k", &"buf", &Type::String)?,
                 write_kt(&"v", &"buf", t)?
             ),
@@ -167,36 +164,6 @@ mod filters {
                 write_kt(&"v", &"buf", t)?
             ),
             _ => format!("{}.write({})", nm, target),
-        })
-    }
-
-    /// Get a Kotlin expression for calculating the size of the serialization of a value.
-    ///
-    /// Where possible, this delegates to a `calculateWriteSize()` method on the type itself,
-    /// but special handling is required for some compound data types.
-    pub fn calculate_write_size(
-        nm: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
-        let nm = var_name_kt(nm)?;
-        Ok(match type_ {
-            Type::Optional(t) => format!(
-                "calculateWriteSizeOptional({}, {{ v -> {} }})",
-                nm,
-                calculate_write_size(&"v", t)?
-            ),
-            Type::Sequence(t) => format!(
-                "calculateWriteSizeSequence({}, {{ v -> {} }})",
-                nm,
-                calculate_write_size(&"v", t)?
-            ),
-            Type::Map(t) => format!(
-                "calculateWriteSizeMap({}, {{ k, v -> {} + {} }})",
-                nm,
-                calculate_write_size(&"k", &Type::String)?,
-                calculate_write_size(&"v", t)?
-            ),
-            _ => format!("{}.calculateWriteSize()", nm),
         })
     }
 

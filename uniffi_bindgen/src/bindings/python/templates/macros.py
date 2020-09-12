@@ -56,7 +56,7 @@ rust_call_with_error(
     {%- for arg in func.arguments() -%}
         {{ arg.type_()|type_ffi }},{##}
     {%- endfor %}
-    {%- if func.has_out_err() -%}ctypes.POINTER(RustError),{%- endif -%}
+    ctypes.POINTER(RustError)
 {%- endmacro -%}
 
 {%- macro coerce_args(func) %}

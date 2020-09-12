@@ -19,7 +19,9 @@ class {{ obj.name()|class_name_kt }}(
         try {
             callWithHandle {
                 super.destroy() // poison the handle so no-one else can use it before we tell rust.
-                _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(it)
+                rustCall(InternalError.ByReference()) { err ->
+                    _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(it, err)
+                }
             }
         } catch (e: IllegalStateException) {
             // The user called this more than once. Better than less than once.

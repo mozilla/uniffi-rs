@@ -60,7 +60,7 @@
         {{- arg.type_()|type_ffi }} {{ arg.name() -}}
         {% if loop.last %}{% else %},{% endif %}
     {%- endfor %}
-    {% if func.has_out_err() %}{% if func.arguments().len() > 0 %},{% endif %}NativeRustError *_Nonnull out_err{% endif %}
+    {% if func.arguments().len() > 0 %},{% endif %}NativeRustError *_Nonnull out_err
 
 {%- endmacro -%}
 

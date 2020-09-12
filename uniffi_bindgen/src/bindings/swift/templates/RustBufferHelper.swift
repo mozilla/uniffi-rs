@@ -167,7 +167,9 @@ extension String: ViaFfi {
 
     static func lift(_ v: FfiType) throws -> Self {
         defer {
-            {{ ci.ffi_string_free().name() }}(v)
+            try! rustCall(InternalError.unknown()) { err in
+                {{ ci.ffi_string_free().name() }}(v, err)
+            }
         }
         return String(cString: v)
     }
