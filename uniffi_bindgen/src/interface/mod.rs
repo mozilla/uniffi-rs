@@ -181,29 +181,17 @@ impl<'ci> ComponentInterface {
         }
     }
 
-    /// Builtin FFI function for creating a `RustString`.
-    /// This is needed so that the foreign language bindings can create strings to pass as arguments
-    /// across the FFI.
-    pub fn ffi_string_alloc_from(&self) -> FFIFunction {
-        FFIFunction {
-            name: format!("ffi_{}_string_alloc_from", self.namespace()),
-            arguments: vec![FFIArgument {
-                name: "str".to_string(),
-                type_: FFIType::ForeignStringRef,
-            }],
-            return_type: Some(FFIType::RustString),
-        }
-    }
-
-    /// Builtin FFI function for freeing a `RustString`.
-    /// This is needed so that the foreign language bindings can free strings that were returned
-    /// from rust code across the FFI.
+    /// Builtin FFI function for freeing a string.
+    /// This is needed for foreign-language code when dealing with errors, so that it can free
+    /// the error message string.
+    /// TODO: make our error class return the message in a `RustBuffer` so we can free it using
+    /// the exisiting bytebuffer-freeing function rather than a special one.
     pub fn ffi_string_free(&self) -> FFIFunction {
         FFIFunction {
             name: format!("ffi_{}_string_free", self.namespace()),
             arguments: vec![FFIArgument {
-                name: "str".to_string(),
-                type_: FFIType::RustString,
+                name: "cstr".to_string(),
+                type_: FFIType::RustCString,
             }],
             return_type: None,
         }
@@ -226,7 +214,6 @@ impl<'ci> ComponentInterface {
                     self.ffi_rustbuffer_from_bytes(),
                     self.ffi_rustbuffer_free(),
                     self.ffi_rustbuffer_reserve(),
-                    self.ffi_string_alloc_from(),
                     self.ffi_string_free(),
                 ]
                 .iter()

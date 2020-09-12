@@ -48,7 +48,7 @@ listOf(0.0F, 0.5F, 0.25F, Float.MIN_VALUE, Float.MAX_VALUE).affirmAllerRetour(rt
 listOf(0.0, 1.0, Double.MIN_VALUE, Double.MAX_VALUE).affirmAllerRetour(rt::identiqueDouble)
 
 // Strings
-listOf("", "abc", "été", "ښي لاس ته لوستلو لوستل", "😻emoji 👨‍👧‍👦multi-emoji, 🇨🇭a flag, a canal, panama")
+listOf("", "abc", "null\u0000byte", "été", "ښي لاس ته لوستلو لوستل", "😻emoji 👨‍👧‍👦multi-emoji, 🇨🇭a flag, a canal, panama")
     .affirmAllerRetour(rt::identiqueString)
 
 listOf(-1, 0, 1).map { DictionnaireNombresSignes(it.toByte(), it.toShort(), it.toInt(), it.toLong()) }

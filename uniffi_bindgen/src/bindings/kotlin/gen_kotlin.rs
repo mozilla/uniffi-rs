@@ -77,11 +77,9 @@ mod filters {
             FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
             FFIType::Float32 => "Float".to_string(),
             FFIType::Float64 => "Double".to_string(),
+            FFIType::RustCString => "Pointer".to_string(),
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
-            FFIType::RustString => "Pointer".to_string(),
             FFIType::RustError => "RustError".to_string(),
-            // Kotlin+JNA has some magic to pass its native string type as char* pointers.
-            FFIType::ForeignStringRef => "String".to_string(),
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
         })
     }

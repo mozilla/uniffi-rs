@@ -51,14 +51,9 @@ mod filters {
             FFIType::UInt64 => "ctypes.c_uint64".to_string(),
             FFIType::Float32 => "ctypes.c_float".to_string(),
             FFIType::Float64 => "ctypes.c_double".to_string(),
+            FFIType::RustCString => "ctypes.c_voidp".to_string(),
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::RustError => "RustError".to_string(),
-            // We use a c_void_p instead of a c_char_p since python seems to
-            // create it's own string if we use c_char_p, and that prevents us
-            // from freeing. I could be wrong, but that's what I got from this:
-            // https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
-            FFIType::RustString => "ctypes.c_void_p".to_string(),
-            FFIType::ForeignStringRef => "ctypes.c_void_p".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
         })
     }

@@ -57,10 +57,9 @@ mod filters {
             FFIType::UInt64 => "u64".into(),
             FFIType::Float32 => "f32".into(),
             FFIType::Float64 => "f64".into(),
-            FFIType::RustString => "*mut std::os::raw::c_char".into(),
+            FFIType::RustCString => "*mut std::os::raw::c_char".into(),
             FFIType::RustBuffer => "uniffi::RustBuffer".into(),
             FFIType::RustError => "uniffi::deps::ffi_support::ExternError".into(),
-            FFIType::ForeignStringRef => "*const std::os::raw::c_char".into(),
             FFIType::ForeignBytes => "uniffi::ForeignBytes".into(),
         })
     }

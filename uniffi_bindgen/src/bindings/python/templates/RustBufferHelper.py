@@ -105,7 +105,7 @@ def liftFromOptional(buf, liftFrom):
     return liftFrom(buf)
 
 def liftString(cPtr):
-    try:
-        return ctypes.cast(cPtr, ctypes.c_char_p).value.decode('utf-8')
-    finally:
-        rust_call_with_error(InternalError, _UniFFILib.{{ ci.ffi_string_free().name() }}, cPtr)
+    # TODO: update strings to lift from a `RustBuffer`.
+    # There's currently no test coverage for this, so it can come in a separate PR
+    # that cleans up a bunch of python lifting/lowering stuff.
+    raise NotImplementedError

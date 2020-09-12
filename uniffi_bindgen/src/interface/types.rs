@@ -45,18 +45,16 @@ pub enum FFIType {
     Int64,
     Float32,
     Float64,
+    /// A `char*` pointer belonging to a rust-owned CString.
+    /// If you've got one of these, you must call the appropriate rust function to free it.
+    /// This is currently only used for error messages, and may go away in future.
+    RustCString,
     /// A byte buffer allocated by rust, and owned by whoever currently holds it.
     /// If you've got one of these, you must either call the appropriate rust function to free it
     /// or pass it to someone that will.
     RustBuffer,
-    /// A UTF-8 string buffer allocated by rust, and owned by whoever currently holds it.
-    /// If you've got one of these, you must either call the appropriate rust function to free it
-    /// or pass it to someone that will.
-    RustString,
-    /// A borrowed reference to a UTF-8 string buffer owned by foreign language code.
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
-    ForeignStringRef,
     ForeignBytes,
     /// An error struct, containing a numberic error code and char* pointer to error string.
     /// The string is owned by rust and allocated on the rust heap, and must be freed by
@@ -115,7 +113,7 @@ impl From<&Type> for FFIType {
             Type::Boolean => FFIType::UInt8,
             // Strings are always owned rust values.
             // We might add a separate type for borrowed strings in future.
-            Type::String => FFIType::RustString,
+            Type::String => FFIType::RustBuffer,
             // Objects are passed as opaque integer handles.
             Type::Object(_) => FFIType::UInt64,
             // Enums are passed as integers.
