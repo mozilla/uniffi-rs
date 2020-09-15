@@ -80,4 +80,21 @@ interface Optionneur {
   string sinon_string(optional string value = "default");
   string? sinon_null(optional string? value = null);
   sequence<string> sinon_sequence(optional sequence<string> value = []);
+
+  u8 sinon_u8_hex(optional u8 value = 0xff);
+  u8 sinon_u8_dec(optional u8 value = 42);
+  i8 sinon_i8_hex(optional i8 value = 0x7f);
+  i8 sinon_i8_dec(optional i8 value = -42);
+  u16 sinon_u16_hex(optional u16 value = 0xff);
+  u16 sinon_u16_dec(optional u16 value = 42);
+  i16 sinon_i16_hex(optional i16 value = 0xff);
+  i16 sinon_i16_dec(optional i16 value = 42);
+  u32 sinon_u32_hex(optional u32 value = 0xff);
+  u32 sinon_u32_dec(optional u32 value = 42);
+  i32 sinon_i32_hex(optional i32 value = 0xff);
+  i32 sinon_i32_dec(optional i32 value = 42);
+  u64 sinon_u64_hex(optional u64 value = 0xff);
+  u64 sinon_u64_dec(optional u64 value = 42);
+  i64 sinon_i64_hex(optional i64 value = 0xff);
+  i64 sinon_i64_dec(optional i64 value = 42);
 };

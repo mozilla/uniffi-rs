@@ -130,12 +130,41 @@ mod filters {
     }
 
     pub fn literal_swift(literal: &Literal) -> Result<String, askama::Error> {
-        Ok(match literal {
+        fn typed_number(type_: &Type, num_str: String) -> Result<String, askama::Error> {
+            Ok(match type_ {
+                Type::Int8 => format!("Int8({})", num_str),
+                Type::UInt8 => format!("UInt8({})", num_str),
+                Type::Int16 => format!("Int16({})", num_str),
+                Type::UInt16 => format!("UInt16({})", num_str),
+                Type::Int32 => num_str,
+                Type::UInt32 => format!("UInt32({})", num_str),
+                Type::Int64 => format!("Int64({})", num_str),
+                Type::UInt64 => format!("UInt64({})", num_str),
+                _ => panic!("Unexpected literal: {} is not a number", num_str),
+            })
+        }
+
+        let output = match literal {
             Literal::Boolean(v) => format!("{}", v),
             Literal::String(s) => format!("\"{}\"", s),
             Literal::Null => "nil".into(),
             Literal::EmptySequence => "[]".into(),
-        })
+
+            Literal::Int(i, radix, type_) => 
+                typed_number(type_, match radix {
+                    Radix::Octal => format!("{:#x}", i),
+                    Radix::Decimal => format!("{}", i),
+                    Radix::Hexadecimal => format!("{:#x}", i), 
+                })?,
+            Literal::UInt(i, radix, type_) => 
+                typed_number(type_, match radix {
+                    Radix::Octal => format!("{:#x}", i),
+                    Radix::Decimal => format!("{}", i),
+                    Radix::Hexadecimal => format!("{:#x}", i), 
+                })?,
+        };
+
+        Ok(output)
     }
 
     /// Lower a Swift type into an FFI type.

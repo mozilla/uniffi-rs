@@ -461,6 +461,12 @@ trait APIConverter<T> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<T>;
 }
 
+/// Similar to `APIConverter`, but used where the AST node do not have enough type context
+/// to convert to the correct struct. e.g. literals for defaulting values in dictionaries and arguments.
+trait TypedAPIConverter<T> {
+    fn convert(&self, ci: &ComponentInterface, type_: &Type) -> Result<T>;
+}
+
 impl<U, T: APIConverter<U>> APIConverter<Vec<U>> for Vec<T> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Vec<U>> {
         self.iter().map(|v| v.convert(ci)).collect::<Result<_>>()
@@ -601,6 +607,10 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
         if let Type::Object(_) = type_ {
             bail!("Objects cannot currently be passed as arguments");
         }
+        let default = match self.default {
+            None => None,
+            Some(v) => Some(v.value.convert(ci, &type_)?),
+        };
         Ok(Argument {
             name: self.identifier.0.to_string(),
             type_,
@@ -615,10 +625,7 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
                     }),
             },
             optional: self.optional.is_some(),
-            default: match self.default {
-                None => None,
-                Some(v) => Some(v.value.convert(ci)?),
-            },
+            default,
         })
     }
 }
@@ -1053,16 +1060,24 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
         if let Type::Object(_) = type_ {
             bail!("Objects cannot currently appear in record fields");
         }
+        let default = match self.default {
+            None => None,
+            Some(v) => Some(v.value.convert(ci, &type_)?),
+        };
         Ok(Field {
             name: self.identifier.0.to_string(),
             type_,
             required: self.required.is_some(),
-            default: match self.default {
-                None => None,
-                Some(v) => Some(v.value.convert(ci)?),
-            },
+            default,
         })
     }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum Radix {
+    Decimal = 10,
+    Octal = 8,
+    Hexadecimal = 16,
 }
 
 // Represents a literal value.
@@ -1071,18 +1086,60 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
 pub enum Literal {
     Boolean(bool),
     String(String),
+    UInt(u64, Radix, Type),
+    Int(i64, Radix, Type),
+    Float(f64, Type),
+    // Since the weedle parser can't parse things like Enums here, we buy ourselves some flexibility
+    // at the expense of error checking.
+    Passthrough(String, Type), 
     EmptySequence,
+    EmptyMap,
     Null,
-    // TODO: more types of literal
 }
 
-impl APIConverter<Literal> for weedle::literal::DefaultValue<'_> {
-    fn convert(&self, _ci: &mut ComponentInterface) -> Result<Literal> {
-        Ok(match self {
-            weedle::literal::DefaultValue::Boolean(b) => Literal::Boolean(b.0),
-            weedle::literal::DefaultValue::String(s) => Literal::String(s.0.to_string()),
-            weedle::literal::DefaultValue::EmptyArray(_) => Literal::EmptySequence,
-            weedle::literal::DefaultValue::Null(_) => Literal::Null,
+impl TypedAPIConverter<Literal> for weedle::literal::DefaultValue<'_> {
+    fn convert(&self, _ci: &ComponentInterface, type_: &Type) -> Result<Literal> {
+        fn convert_integer(
+            literal: &weedle::literal::IntegerLit<'_>,
+            type_: &Type,
+        ) -> Result<Literal> {
+            use regex::Regex;
+
+            let (string, radix) = match literal {
+                weedle::literal::IntegerLit::Dec(v) => (v.0, Radix::Decimal),
+                weedle::literal::IntegerLit::Hex(v) => (v.0, Radix::Hexadecimal),
+                weedle::literal::IntegerLit::Oct(v) => (v.0, Radix::Octal),
+            };
+            let base = radix as u32;
+
+            let trimmer = Regex::new("^(-?)(0x|0+)?").unwrap();
+            let string = trimmer.replace_all(string, "$1").to_lowercase();
+            
+            Ok(match type_ {
+                Type::Int8 |
+                Type::Int16 |
+                Type::Int32 |
+                Type::Int64 => Literal::Int(i64::from_str_radix(&string, base)?, radix, type_.clone()),
+                Type::UInt8 |
+                Type::UInt16 |
+                Type::UInt32 |
+                Type::UInt64 => Literal::UInt(u64::from_str_radix(&string, base)?, radix, type_.clone()),
+
+                _ => panic!("Cannot coerce literal {} into the correct integer type", string),
+                _ => bail!("Cannot coerce literal {} into a non-integer type", string),
+            })
+        }
+
+        Ok(match (self, type_) {
+            (weedle::literal::DefaultValue::Boolean(b), Type::Boolean) => Literal::Boolean(b.0),
+            (weedle::literal::DefaultValue::String(s), Type::String) => {
+                Literal::String(s.0.to_string())
+            }
+            (weedle::literal::DefaultValue::EmptyArray(_), Type::Sequence(_)) => {
+                Literal::EmptySequence
+            }
+            (weedle::literal::DefaultValue::Null(_), Type::Optional(_)) => Literal::Null,
+            (weedle::literal::DefaultValue::Integer(i), _) => convert_integer(i, type_)?,
             _ => bail!("no support for {:?} literal yet", self),
         })
     }

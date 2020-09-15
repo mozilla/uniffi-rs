@@ -115,6 +115,8 @@ mod filters {
             Literal::String(s) => format!("\"{}\"", s),
             Literal::Null => "null".into(),
             Literal::EmptySequence => "listOf()".into(),
+
+            _ => panic!("Literal unsupported by python"),
         })
     }
 

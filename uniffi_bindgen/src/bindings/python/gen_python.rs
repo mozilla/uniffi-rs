@@ -71,6 +71,8 @@ mod filters {
             Literal::String(s) => format!("'{}'", s),
             Literal::Null => "None".into(),
             Literal::EmptySequence => "[]".into(),
+            
+            _ => panic!("Literal unsupported by python"),
         })
     }
 
