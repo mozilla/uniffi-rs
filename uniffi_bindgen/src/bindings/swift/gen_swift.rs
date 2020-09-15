@@ -151,7 +151,7 @@ mod filters {
             Literal::String(s) => format!("\"{}\"", s),
             Literal::Null => "nil".into(),
             Literal::EmptySequence => "[]".into(),
-
+            Literal::EmptyMap => "[:]".into(),
             Literal::Int(i, radix, type_) => 
                 typed_number(type_, match radix {
                     Radix::Octal => format!("{:#x}", i),
