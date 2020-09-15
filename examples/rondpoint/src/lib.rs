@@ -205,6 +205,8 @@ impl Optionneur {
 
     fn sinon_f32(&self, value: f32) -> f32 { value }
     fn sinon_f64(&self, value: f64) -> f64 { value }
+
+    fn sinon_enum(&self, value: Enumeration) -> Enumeration { value }
 }
 
 include!(concat!(env!("OUT_DIR"), "/rondpoint.uniffi.rs"));

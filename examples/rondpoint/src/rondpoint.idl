@@ -100,4 +100,6 @@ interface Optionneur {
 
   f32 sinon_f32(optional f32 value = 42.0);
   f64 sinon_f64(optional f64 value = 42.0);
+
+  Enumeration sinon_enum(optional Enumeration value = "Trois");
 };

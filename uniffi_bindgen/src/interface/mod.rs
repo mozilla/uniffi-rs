@@ -1089,9 +1089,7 @@ pub enum Literal {
     UInt(u64, Radix, Type),
     Int(i64, Radix, Type),
     Float(f64, Type),
-    // Since the weedle parser can't parse things like Enums here, we buy ourselves some flexibility
-    // at the expense of error checking.
-    Passthrough(String, Type), 
+    Enum(String, Type),
     EmptySequence,
     EmptyMap,
     Null,
@@ -1157,6 +1155,7 @@ impl TypedAPIConverter<Literal> for weedle::literal::DefaultValue<'_> {
             (weedle::literal::DefaultValue::Null(_), Type::Optional(_)) => Literal::Null,
             (weedle::literal::DefaultValue::Integer(i), _) => convert_integer(i, type_)?,
             (weedle::literal::DefaultValue::Float(i), _) => convert_float(i, type_)?,
+            (weedle::literal::DefaultValue::String(s), Type::Enum(_)) => Literal::Enum(s.0.to_string(), type_.clone()),
             _ => bail!("No support for {:?} literal yet", self),
         })
     }

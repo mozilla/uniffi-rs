@@ -166,6 +166,7 @@ mod filters {
                 })?,
             Literal::Float(n, type_) =>
                 typed_number(type_, format!("{}", n))?,
+            Literal::Enum(v, _) => format!(".{}", enum_variant_swift(v)?), 
         };
 
         Ok(output)
