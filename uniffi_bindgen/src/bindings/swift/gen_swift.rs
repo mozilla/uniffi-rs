@@ -140,6 +140,8 @@ mod filters {
                 Type::UInt32 => format!("UInt32({})", num_str),
                 Type::Int64 => format!("Int64({})", num_str),
                 Type::UInt64 => format!("UInt64({})", num_str),
+                Type::Float32 => format!("Float({})", num_str),
+                Type::Float64 => format!("Double({})", num_str),
                 _ => panic!("Unexpected literal: {} is not a number", num_str),
             })
         }
@@ -162,6 +164,8 @@ mod filters {
                     Radix::Decimal => format!("{}", i),
                     Radix::Hexadecimal => format!("{:#x}", i), 
                 })?,
+            Literal::Float(n, type_) =>
+                typed_number(type_, format!("{}", n))?,
         };
 
         Ok(output)

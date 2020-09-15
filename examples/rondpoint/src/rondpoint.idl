@@ -97,4 +97,7 @@ interface Optionneur {
   u64 sinon_u64_dec(optional u64 value = 42);
   i64 sinon_i64_hex(optional i64 value = 0xff);
   i64 sinon_i64_dec(optional i64 value = 42);
+
+  f32 sinon_f32(optional f32 value = 42.0);
+  f64 sinon_f64(optional f64 value = 42.0);
 };

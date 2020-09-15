@@ -202,6 +202,9 @@ impl Optionneur {
     fn sinon_u64_dec(&self, value: u64) -> u64 { value }
     fn sinon_i64_hex(&self, value: i64) -> i64 { value }
     fn sinon_i64_dec(&self, value: i64) -> i64 { value }
+
+    fn sinon_f32(&self, value: f32) -> f32 { value }
+    fn sinon_f64(&self, value: f64) -> f64 { value }
 }
 
 include!(concat!(env!("OUT_DIR"), "/rondpoint.uniffi.rs"));
