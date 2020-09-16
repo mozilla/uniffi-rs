@@ -135,12 +135,15 @@ mod filters {
                 // special case Int32.
                 Type::Int32 => num_str,
                 // otherwise use constructor e.g. UInt8(x)
-                Type::Int8 | Type::UInt8 |
-                Type::Int16 | Type::UInt16 |
-                Type::UInt32 |
-                Type::Int64 | Type::UInt64 |
-                Type::Float32 | Type::Float64
-                    => format!("{}({})", type_swift(type_)?, num_str),
+                Type::Int8
+                | Type::UInt8
+                | Type::Int16
+                | Type::UInt16
+                | Type::UInt32
+                | Type::Int64
+                | Type::UInt64
+                | Type::Float32
+                | Type::Float64 => format!("{}({})", type_swift(type_)?, num_str),
                 _ => panic!("Unexpected literal: {} is not a number", num_str),
             })
         }
@@ -151,21 +154,24 @@ mod filters {
             Literal::Null => "nil".into(),
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "[:]".into(),
-            Literal::Enum(v, _) => format!(".{}", enum_variant_swift(v)?), 
-            Literal::Int(i, radix, type_) => 
-                typed_number(type_, match radix {
+            Literal::Enum(v, _) => format!(".{}", enum_variant_swift(v)?),
+            Literal::Int(i, radix, type_) => typed_number(
+                type_,
+                match radix {
                     Radix::Octal => format!("0o{:o}", i),
                     Radix::Decimal => format!("{}", i),
-                    Radix::Hexadecimal => format!("{:#x}", i), 
-                })?,
-            Literal::UInt(i, radix, type_) => 
-                typed_number(type_, match radix {
+                    Radix::Hexadecimal => format!("{:#x}", i),
+                },
+            )?,
+            Literal::UInt(i, radix, type_) => typed_number(
+                type_,
+                match radix {
                     Radix::Octal => format!("0o{:o}", i),
                     Radix::Decimal => format!("{}", i),
-                    Radix::Hexadecimal => format!("{:#x}", i), 
-                })?,
-            Literal::Float(i, type_) =>
-                typed_number(type_, format!("{}", i))?,
+                    Radix::Hexadecimal => format!("{:#x}", i),
+                },
+            )?,
+            Literal::Float(i, type_) => typed_number(type_, format!("{}", i))?,
         })
     }
 

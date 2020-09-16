@@ -1119,37 +1119,37 @@ impl TypedAPIConverter<Literal> for weedle::literal::DefaultValue<'_> {
             } else {
                 radix
             };
-            
+
             let trimmer = Regex::new("^(-?)(0x)?").unwrap();
             let string = trimmer.replace_all(string, "$1").to_lowercase();
-            
+
             Ok(match type_ {
-                Type::Int8 |
-                Type::Int16 |
-                Type::Int32 |
-                Type::Int64 => Literal::Int(i64::from_str_radix(&string, src_radix)?, dest_radix, type_.clone()),
-                Type::UInt8 |
-                Type::UInt16 |
-                Type::UInt32 |
-                Type::UInt64 => Literal::UInt(u64::from_str_radix(&string, src_radix)?, dest_radix, type_.clone()),
+                Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Literal::Int(
+                    i64::from_str_radix(&string, src_radix)?,
+                    dest_radix,
+                    type_.clone(),
+                ),
+                Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => Literal::UInt(
+                    u64::from_str_radix(&string, src_radix)?,
+                    dest_radix,
+                    type_.clone(),
+                ),
 
                 _ => bail!("Cannot coerce literal {} into a non-integer type", string),
             })
         }
 
-        fn convert_float(
-            literal: &weedle::literal::FloatLit<'_>,
-            type_: &Type,
-        ) -> Result<Literal> {
+        fn convert_float(literal: &weedle::literal::FloatLit<'_>, type_: &Type) -> Result<Literal> {
             let string = match literal {
                 weedle::literal::FloatLit::Value(v) => v.0,
 
-                _  => bail!("Infinity and NaN is not currently supported"),
+                _ => bail!("Infinity and NaN is not currently supported"),
             };
 
             Ok(match type_ {
-                Type::Float32 |
-                Type::Float64 => Literal::Float(f64::from_str(&string)?, type_.clone()),
+                Type::Float32 | Type::Float64 => {
+                    Literal::Float(f64::from_str(&string)?, type_.clone())
+                }
                 _ => bail!("Cannot coerce literal {} into a non-float type", string),
             })
         }
@@ -1162,14 +1162,16 @@ impl TypedAPIConverter<Literal> for weedle::literal::DefaultValue<'_> {
             (weedle::literal::DefaultValue::EmptyArray(_), Type::Sequence(_)) => {
                 Literal::EmptySequence
             }
-            (weedle::literal::DefaultValue::String(s), Type::Enum(_)) => Literal::Enum(s.0.to_string(), type_.clone()),
+            (weedle::literal::DefaultValue::String(s), Type::Enum(_)) => {
+                Literal::Enum(s.0.to_string(), type_.clone())
+            }
             (weedle::literal::DefaultValue::Null(_), Type::Optional(_)) => Literal::Null,
             (_, Type::Optional(inner)) => self.convert(ci, inner)?,
 
             // We'll ensure the type safety in the convert_* number methods.
             (weedle::literal::DefaultValue::Integer(i), _) => convert_integer(i, type_)?,
             (weedle::literal::DefaultValue::Float(i), _) => convert_float(i, type_)?,
-            
+
             _ => bail!("No support for {:?} literal yet", self),
         })
     }
