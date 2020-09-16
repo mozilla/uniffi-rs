@@ -132,21 +132,20 @@ mod filters {
     pub fn literal_swift(literal: &Literal) -> Result<String, askama::Error> {
         fn typed_number(type_: &Type, num_str: String) -> Result<String, askama::Error> {
             Ok(match type_ {
-                Type::Int8 => format!("Int8({})", num_str),
-                Type::UInt8 => format!("UInt8({})", num_str),
-                Type::Int16 => format!("Int16({})", num_str),
-                Type::UInt16 => format!("UInt16({})", num_str),
+                // special case Int32.
                 Type::Int32 => num_str,
-                Type::UInt32 => format!("UInt32({})", num_str),
-                Type::Int64 => format!("Int64({})", num_str),
-                Type::UInt64 => format!("UInt64({})", num_str),
-                Type::Float32 => format!("Float({})", num_str),
-                Type::Float64 => format!("Double({})", num_str),
+                // otherwise use constructor e.g. UInt8(x)
+                Type::Int8 | Type::UInt8 |
+                Type::Int16 | Type::UInt16 |
+                Type::UInt32 |
+                Type::Int64 | Type::UInt64 |
+                Type::Float32 | Type::Float64
+                    => format!("{}({})", type_swift(type_)?, num_str),
                 _ => panic!("Unexpected literal: {} is not a number", num_str),
             })
         }
 
-        let output = match literal {
+        Ok(match literal {
             Literal::Boolean(v) => format!("{}", v),
             Literal::String(s) => format!("\"{}\"", s),
             Literal::Null => "nil".into(),
@@ -167,9 +166,7 @@ mod filters {
                 })?,
             Literal::Float(i, type_) =>
                 typed_number(type_, format!("{}", i))?,
-        };
-
-        Ok(output)
+        })
     }
 
     /// Lower a Swift type into an FFI type.

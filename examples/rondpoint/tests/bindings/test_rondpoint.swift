@@ -111,16 +111,89 @@ extension Array where Element: Equatable {
     }
 }
 
+// Prove to ourselves that default arguments are being used.
+// Step 1: call the methods without arguments, and check against the IDL.
 let op = Optionneur()
 
 assert(op.sinonString() == "default")
-["foo", "bar"].affirmAllerRetour(op.sinonString)
 
 assert(op.sinonBoolean() == false)
-[true, false].affirmAllerRetour(op.sinonBoolean)
-
-assert(op.sinonNull() == nil)
-["foo", "bar"].affirmAllerRetour(op.sinonNull)
 
 assert(op.sinonSequence() == [])
+<<<<<<< HEAD
 [["a", "b"], []].affirmAllerRetour(op.sinonSequence)
+=======
+
+// optionals
+assert(op.sinonNull() == nil)
+assert(op.sinonZero() == 0)
+
+// decimal integers
+assert(op.sinonU8Dec() == UInt8(42))
+assert(op.sinonI8Dec() == Int8(-42))
+assert(op.sinonU16Dec() == UInt16(42))
+assert(op.sinonI16Dec() == Int16(42))
+assert(op.sinonU32Dec() == UInt32(42))
+assert(op.sinonI32Dec() == Int32(42))
+assert(op.sinonU64Dec() == UInt64(42))
+assert(op.sinonI64Dec() == Int64(42))
+
+// hexadecimal integers
+assert(op.sinonU8Hex() == UInt8(0xff))
+assert(op.sinonI8Hex() == Int8(-0x7f))
+assert(op.sinonU16Hex() == UInt16(0xffff))
+assert(op.sinonI16Hex() == Int16(0x7f))
+assert(op.sinonU32Hex() == UInt32(0xffffffff))
+assert(op.sinonI32Hex() == Int32(0x7fffffff))
+assert(op.sinonU64Hex() == UInt64(0xffffffffffffffff))
+assert(op.sinonI64Hex() == Int64(0x7fffffffffffffff))
+
+// octal integers
+assert(op.sinonU32Oct() == UInt32(0o755))
+
+// floats
+assert(op.sinonF32() == 42.0)
+assert(op.sinonF64() == Double(42.1))
+
+// enums
+assert(op.sinonEnum() == .trois)
+
+// Step 2. Convince ourselves that if we pass something else, then that changes the output.
+//         We have shown something coming out of the sinon methods, but without eyeballing the Rust
+//         we can't be sure that the arguments will change the return value.
+["foo", "bar"].affirmAllerRetour(op.sinonString)
+[true, false].affirmAllerRetour(op.sinonBoolean)
+[["a", "b"], []].affirmAllerRetour(op.sinonSequence)
+
+// optionals
+["0", "1"].affirmAllerRetour(op.sinonNull)
+[0, 1].affirmAllerRetour(op.sinonZero)
+
+// integers
+[0, 1].affirmAllerRetour(op.sinonU8Dec)
+[0, 1].affirmAllerRetour(op.sinonI8Dec)
+[0, 1].affirmAllerRetour(op.sinonU16Dec)
+[0, 1].affirmAllerRetour(op.sinonI16Dec)
+[0, 1].affirmAllerRetour(op.sinonU32Dec)
+[0, 1].affirmAllerRetour(op.sinonI32Dec)
+[0, 1].affirmAllerRetour(op.sinonU64Dec)
+[0, 1].affirmAllerRetour(op.sinonI64Dec)
+
+[0, 1].affirmAllerRetour(op.sinonU8Hex)
+[0, 1].affirmAllerRetour(op.sinonI8Hex)
+[0, 1].affirmAllerRetour(op.sinonU16Hex)
+[0, 1].affirmAllerRetour(op.sinonI16Hex)
+[0, 1].affirmAllerRetour(op.sinonU32Hex)
+[0, 1].affirmAllerRetour(op.sinonI32Hex)
+[0, 1].affirmAllerRetour(op.sinonU64Hex)
+[0, 1].affirmAllerRetour(op.sinonI64Hex)
+
+[0, 1].affirmAllerRetour(op.sinonU32Oct)
+
+// floats
+[0.0, 1.0].affirmAllerRetour(op.sinonF32)
+[0.0, 1.0].affirmAllerRetour(op.sinonF64)
+
+// enums
+[.un, .deux, .trois].affirmAllerRetour(op.sinonEnum)
+>>>>>>> Swift bindings tests
