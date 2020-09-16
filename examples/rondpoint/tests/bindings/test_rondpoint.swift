@@ -120,9 +120,6 @@ assert(op.sinonString() == "default")
 assert(op.sinonBoolean() == false)
 
 assert(op.sinonSequence() == [])
-<<<<<<< HEAD
-[["a", "b"], []].affirmAllerRetour(op.sinonSequence)
-=======
 
 // optionals
 assert(op.sinonNull() == nil)
@@ -196,4 +193,3 @@ assert(op.sinonEnum() == .trois)
 
 // enums
 [.un, .deux, .trois].affirmAllerRetour(op.sinonEnum)
->>>>>>> Swift bindings tests

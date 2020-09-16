@@ -171,7 +171,7 @@ mod filters {
                     Radix::Hexadecimal => format!("{:#x}", i),
                 },
             )?,
-            Literal::Float(i, type_) => typed_number(type_, format!("{}", i))?,
+            Literal::Float(string, type_) => typed_number(type_, string.clone())?,
         })
     }
 

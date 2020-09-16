@@ -1073,7 +1073,7 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Hash)]
 pub enum Radix {
     Decimal = 10,
     Octal = 8,
@@ -1088,7 +1088,7 @@ pub enum Literal {
     String(String),
     UInt(u64, Radix, Type),
     Int(i64, Radix, Type),
-    Float(f64, Type),
+    Float(String, Type),
     Enum(String, Type),
     EmptySequence,
     EmptyMap,
@@ -1148,7 +1148,7 @@ impl TypedAPIConverter<Literal> for weedle::literal::DefaultValue<'_> {
 
             Ok(match type_ {
                 Type::Float32 | Type::Float64 => {
-                    Literal::Float(f64::from_str(&string)?, type_.clone())
+                    Literal::Float(string.to_string(), type_.clone())
                 }
                 _ => bail!("Cannot coerce literal {} into a non-float type", string),
             })

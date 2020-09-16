@@ -120,7 +120,7 @@ mod filters {
                 Type::UInt64 => format!("{}uL", num_str),
 
                 Type::Float32 => format!("{}f", num_str),
-                Type::Float64 => format!("{}.toDouble()", num_str),
+                Type::Float64 => num_str,
                 _ => panic!("Unexpected literal: {} is not a number", num_str),
             })
         }
@@ -148,7 +148,7 @@ mod filters {
                     Radix::Hexadecimal => format!("{:#x}", i),
                 },
             )?,
-            Literal::Float(i, type_) => typed_number(type_, format!("{}", i))?,
+            Literal::Float(string, type_) => typed_number(type_, string.clone())?,
         })
     }
 
