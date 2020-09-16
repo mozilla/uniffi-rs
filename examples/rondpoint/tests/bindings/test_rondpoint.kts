@@ -119,17 +119,87 @@ listOf(0.0, 1.0, -1.0, Double.MIN_VALUE, Double.MAX_VALUE).affirmEnchaine(st::to
 
 st.destroy()
 
+// Prove to ourselves that default arguments are being used.
+// Step 1: call the methods without arguments, and check against the IDL.
 val op = Optionneur()
 
 assert(op.sinonString() == "default")
-listOf("foo", "bar").affirmAllerRetour(op::sinonString)
 
 assert(op.sinonBoolean() == false)
-listOf(true, false).affirmAllerRetour(op::sinonBoolean)
-
-assert(op.sinonNull() == null)
-listOf("foo", "bar").affirmAllerRetour(op::sinonNull)
 
 assert(op.sinonSequence() == listOf<String>())
-listOf(listOf("a", "b")).affirmAllerRetour(op::sinonSequence)
+
+// optionals
+assert(op.sinonNull() == null)
+assert(op.sinonZero() == 0)
+
+// decimal integers
+assert(op.sinonI8Dec() == (-42).toByte())
+assert(op.sinonU8Dec() == 42.toUByte())
+assert(op.sinonI16Dec() == 42.toShort())
+assert(op.sinonU16Dec() == 42.toUShort())
+assert(op.sinonI32Dec() == 42)
+assert(op.sinonU32Dec() == 42.toUInt())
+assert(op.sinonI64Dec() == 42L)
+assert(op.sinonU64Dec() == 42uL)
+
+// hexadecimal integers
+assert(op.sinonI8Hex() == (-0x7f).toByte())
+assert(op.sinonU8Hex() == 0xff.toUByte())
+assert(op.sinonI16Hex() == 0x7f.toShort())
+assert(op.sinonU16Hex() == 0xffff.toUShort())
+assert(op.sinonI32Hex() == 0x7fffffff)
+assert(op.sinonU32Hex() == 0xffffffff.toUInt())
+assert(op.sinonI64Hex() == 0x7fffffffffffffffL)
+assert(op.sinonU64Hex() == 0xffffffffffffffffuL)
+
+// octal integers
+assert(op.sinonU32Oct() == 493u) // 0o755
+
+// floats
+assert(op.sinonF32() == 42.0f)
+assert(op.sinonF64() == 42.1)
+
+// enums
+assert(op.sinonEnum() == Enumeration.TROIS)
+
+// Step 2. Convince ourselves that if we pass something else, then that changes the output.
+//         We have shown something coming out of the sinon methods, but without eyeballing the Rust
+//         we can't be sure that the arguments will change the return value.
+listOf("foo", "bar").affirmAllerRetour(op::sinonString)
+listOf(true, false).affirmAllerRetour(op::sinonBoolean)
+listOf(listOf("a", "b"), listOf()).affirmAllerRetour(op::sinonSequence)
+
+// optionals
+listOf("0", "1").affirmAllerRetour(op::sinonNull)
+listOf(0, 1).affirmAllerRetour(op::sinonZero)
+
+// integers
+listOf(0, 1).map { it.toUByte() }.affirmAllerRetour(op::sinonU8Dec)
+listOf(0, 1).map { it.toByte() }.affirmAllerRetour(op::sinonI8Dec)
+listOf(0, 1).map { it.toUShort() }.affirmAllerRetour(op::sinonU16Dec)
+listOf(0, 1).map { it.toShort() }.affirmAllerRetour(op::sinonI16Dec)
+listOf(0, 1).map { it.toUInt() }.affirmAllerRetour(op::sinonU32Dec)
+listOf(0, 1).map { it.toInt() }.affirmAllerRetour(op::sinonI32Dec)
+listOf(0, 1).map { it.toULong() }.affirmAllerRetour(op::sinonU64Dec)
+listOf(0, 1).map { it.toLong() }.affirmAllerRetour(op::sinonI64Dec)
+
+listOf(0, 1).map { it.toUByte() }.affirmAllerRetour(op::sinonU8Hex)
+listOf(0, 1).map { it.toByte() }.affirmAllerRetour(op::sinonI8Hex)
+listOf(0, 1).map { it.toUShort() }.affirmAllerRetour(op::sinonU16Hex)
+listOf(0, 1).map { it.toShort() }.affirmAllerRetour(op::sinonI16Hex)
+listOf(0, 1).map { it.toUInt() }.affirmAllerRetour(op::sinonU32Hex)
+listOf(0, 1).map { it.toInt() }.affirmAllerRetour(op::sinonI32Hex)
+listOf(0, 1).map { it.toULong() }.affirmAllerRetour(op::sinonU64Hex)
+listOf(0, 1).map { it.toLong() }.affirmAllerRetour(op::sinonI64Hex)
+
+listOf(0, 1).map { it.toUInt() }.affirmAllerRetour(op::sinonU32Oct)
+
+// floats
+listOf(0.0f, 1.0f).affirmAllerRetour(op::sinonF32)
+listOf(0.0, 1.0).affirmAllerRetour(op::sinonF64)
+
+// enums
+Enumeration.values().toList().affirmAllerRetour(op::sinonEnum)
+
 op.destroy()
