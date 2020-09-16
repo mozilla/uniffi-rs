@@ -122,9 +122,7 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
 ) -> Result<()> {
     let manifest_path_override = manifest_path_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let idl_file = PathBuf::from(idl_file.as_ref())
-        .canonicalize()
-        .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
+    let idl_file = idl_file.as_ref();
     let component = parse_idl(&idl_file)?;
     ensure_versions_compatibility(&idl_file, manifest_path_override)?;
     let mut filename = Path::new(&idl_file)
@@ -155,11 +153,7 @@ fn ensure_versions_compatibility(
     // If --manifest-path is not provided, we run cargo `metadata` in the .idl dir.
     match manifest_path_override {
         Some(p) => {
-            metadata_cmd.manifest_path(
-                PathBuf::from(p)
-                    .canonicalize()
-                    .map_err(|e| anyhow!("Failed to find Cargo.toml file: {:?}", e))?,
-            );
+            metadata_cmd.manifest_path(p);
         }
         None => {
             metadata_cmd.current_dir(idl_file.parent().ok_or_else(|| anyhow!("no parent!"))?);
