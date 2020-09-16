@@ -152,21 +152,21 @@ mod filters {
             Literal::Null => "nil".into(),
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "[:]".into(),
+            Literal::Enum(v, _) => format!(".{}", enum_variant_swift(v)?), 
             Literal::Int(i, radix, type_) => 
                 typed_number(type_, match radix {
-                    Radix::Octal => format!("{:#x}", i),
+                    Radix::Octal => format!("0o{:o}", i),
                     Radix::Decimal => format!("{}", i),
                     Radix::Hexadecimal => format!("{:#x}", i), 
                 })?,
             Literal::UInt(i, radix, type_) => 
                 typed_number(type_, match radix {
-                    Radix::Octal => format!("{:#x}", i),
+                    Radix::Octal => format!("0o{:o}", i),
                     Radix::Decimal => format!("{}", i),
                     Radix::Hexadecimal => format!("{:#x}", i), 
                 })?,
-            Literal::Float(n, type_) =>
-                typed_number(type_, format!("{}", n))?,
-            Literal::Enum(v, _) => format!(".{}", enum_variant_swift(v)?), 
+            Literal::Float(i, type_) =>
+                typed_number(type_, format!("{}", i))?,
         };
 
         Ok(output)

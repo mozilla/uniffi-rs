@@ -1096,7 +1096,7 @@ pub enum Literal {
 }
 
 impl TypedAPIConverter<Literal> for weedle::literal::DefaultValue<'_> {
-    fn convert(&self, _ci: &ComponentInterface, type_: &Type) -> Result<Literal> {
+    fn convert(&self, ci: &ComponentInterface, type_: &Type) -> Result<Literal> {
         fn convert_integer(
             literal: &weedle::literal::IntegerLit<'_>,
             type_: &Type,
@@ -1108,20 +1108,30 @@ impl TypedAPIConverter<Literal> for weedle::literal::DefaultValue<'_> {
                 weedle::literal::IntegerLit::Hex(v) => (v.0, Radix::Hexadecimal),
                 weedle::literal::IntegerLit::Oct(v) => (v.0, Radix::Octal),
             };
-            let base = radix as u32;
-
-            let trimmer = Regex::new("^(-?)(0x|0+)?").unwrap();
+            // This is the radix of the parsed number, passed to `from_str_radix`.
+            let src_radix = radix as u32;
+            // This radix tells the backends how to represent the number in the output languages.
+            let dest_radix = if string == "0" || string.starts_with('-') {
+                // 1. weedle parses "0" as an octal literal, but we most likely want to treat this as a decimal.
+                // 2. Explicitly negatively signed hex numbers won't convert via i64 very well if they're not 64 bit.
+                //    For ease of implementation, output will use decimal.
+                Radix::Decimal
+            } else {
+                radix
+            };
+            
+            let trimmer = Regex::new("^(-?)(0x)?").unwrap();
             let string = trimmer.replace_all(string, "$1").to_lowercase();
             
             Ok(match type_ {
                 Type::Int8 |
                 Type::Int16 |
                 Type::Int32 |
-                Type::Int64 => Literal::Int(i64::from_str_radix(&string, base)?, radix, type_.clone()),
+                Type::Int64 => Literal::Int(i64::from_str_radix(&string, src_radix)?, dest_radix, type_.clone()),
                 Type::UInt8 |
                 Type::UInt16 |
                 Type::UInt32 |
-                Type::UInt64 => Literal::UInt(u64::from_str_radix(&string, base)?, radix, type_.clone()),
+                Type::UInt64 => Literal::UInt(u64::from_str_radix(&string, src_radix)?, dest_radix, type_.clone()),
 
                 _ => bail!("Cannot coerce literal {} into a non-integer type", string),
             })
@@ -1152,10 +1162,14 @@ impl TypedAPIConverter<Literal> for weedle::literal::DefaultValue<'_> {
             (weedle::literal::DefaultValue::EmptyArray(_), Type::Sequence(_)) => {
                 Literal::EmptySequence
             }
+            (weedle::literal::DefaultValue::String(s), Type::Enum(_)) => Literal::Enum(s.0.to_string(), type_.clone()),
             (weedle::literal::DefaultValue::Null(_), Type::Optional(_)) => Literal::Null,
+            (_, Type::Optional(inner)) => self.convert(ci, inner)?,
+
+            // We'll ensure the type safety in the convert_* number methods.
             (weedle::literal::DefaultValue::Integer(i), _) => convert_integer(i, type_)?,
             (weedle::literal::DefaultValue::Float(i), _) => convert_float(i, type_)?,
-            (weedle::literal::DefaultValue::String(s), Type::Enum(_)) => Literal::Enum(s.0.to_string(), type_.clone()),
+            
             _ => bail!("No support for {:?} literal yet", self),
         })
     }
