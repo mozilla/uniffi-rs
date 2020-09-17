@@ -99,6 +99,7 @@ use std::convert::TryInto;
 use std::io::prelude::*;
 use std::{
     collections::HashMap,
+    env,
     fs::File,
     path::{Path, PathBuf},
     process::Command,
@@ -124,7 +125,7 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     let manifest_path_override = manifest_path_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let idl_file = idl_file.as_ref();
-    let _config = load_config(idl_file);
+    let _config = load_config();
     let component = parse_idl(&idl_file)?;
     ensure_versions_compatibility(&idl_file, manifest_path_override)?;
     let mut filename = Path::new(&idl_file)
@@ -196,7 +197,7 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file.as_ref())
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
-    let config = load_config(&idl_file)?;
+    let config = load_config()?;
     let component = parse_idl(&idl_file)?;
     let out_dir = get_out_dir(&idl_file, out_dir_override)?;
     for language in target_languages {
@@ -223,7 +224,7 @@ pub fn run_tests<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file)
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
-    let config_file = load_config(&idl_file)?;
+    let config_file = load_config()?;
     let component = parse_idl(&idl_file)?;
 
     // Group the test scripts by language first.
@@ -249,10 +250,12 @@ pub fn run_tests<P: AsRef<Path>>(
     Ok(())
 }
 
-pub fn load_config(idl_file: &Path) -> Result<Option<Value>> {
-    let config_file = idl_file
-        .parent()
-        .ok_or_else(|| anyhow!("File has no parent directory"))?
+pub fn load_config() -> Result<Option<Value>> {
+    let pkg_path: PathBuf = env::var("CARGO_MANIFEST_DIR")
+        .expect("Missing $CARGO_MANIFEST_DIR, cannot build tests for generated bindings")
+        .into();
+
+    let config_file = pkg_path
         .join("uniffi.toml")
         .canonicalize();
 
