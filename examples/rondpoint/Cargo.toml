@@ -7,7 +7,7 @@ license = "MPL-2.0"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "lib"]
 name = "uniffi_rondpoint"
 
 [dependencies]
