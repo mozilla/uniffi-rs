@@ -193,12 +193,12 @@ extension String: ViaFfi {
     }
 
     static func read(from buf: Reader) throws -> Self {
-        let len: UInt32 = try buf.readInt()
+        let len: Int32 = try buf.readInt()
         return String(bytes: try buf.readBytes(count: Int(len)), encoding: String.Encoding.utf8)!
     }
 
     func write(into buf: Writer) {
-        let len = UInt32(self.utf8.count)
+        let len = Int32(self.utf8.count)
         buf.writeInt(len)
         buf.writeBytes(self.utf8)
     }
@@ -206,7 +206,7 @@ extension String: ViaFfi {
 
 
 extension Bool: ViaFfi {
-    typealias FfiType = UInt8
+    typealias FfiType = Int8
 
     static func read(from buf: Reader) throws -> Bool {
         return try self.lift(buf.readInt())
@@ -216,11 +216,11 @@ extension Bool: ViaFfi {
         buf.writeInt(self.lower())
     }
 
-    static func lift(_ v: UInt8) throws -> Bool {
+    static func lift(_ v: Int8) throws -> Bool {
         return v != 0
     }
 
-    func lower() -> UInt8 {
+    func lower() -> Int8 {
         return self ? 1 : 0
     }
 }
@@ -327,7 +327,7 @@ extension Double: Primitive, ViaFfi {
 
 extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: Serializable {
     static func read(from buf: Reader) throws -> Self {
-        switch try buf.readInt() as UInt8 {
+        switch try buf.readInt() as Int8 {
         case 0: return nil
         case 1: return try Wrapped.read(from: buf)
         default: throw InternalError.unexpectedOptionalTag
@@ -336,17 +336,17 @@ extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: S
 
     func write(into buf: Writer) {
         guard let value = self else {
-            buf.writeInt(UInt8(0))
+            buf.writeInt(Int8(0))
             return
         }
-        buf.writeInt(UInt8(1))
+        buf.writeInt(Int8(1))
         value.write(into: buf)
     }
 }
 
 extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Serializable {
     static func read(from buf: Reader) throws -> Self {
-        let len: UInt32 = try buf.readInt()
+        let len: Int32 = try buf.readInt()
         var seq = [Element]()
         seq.reserveCapacity(Int(len))
         for _ in 1...len {
@@ -356,7 +356,7 @@ extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Seri
     }
 
     func write(into buf: Writer) {
-        let len = UInt32(self.count)
+        let len = Int32(self.count)
         buf.writeInt(len)
         for item in self {
             item.write(into: buf)
@@ -366,7 +366,7 @@ extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Seri
 
 extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == String, Value: Serializable {
     static func read(from buf: Reader) throws -> Self {
-        let len: UInt32 = try buf.readInt()
+        let len: Int32 = try buf.readInt()
         var dict = [String: Value]()
         dict.reserveCapacity(Int(len))
         for _ in 1...len {
@@ -376,7 +376,7 @@ extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == S
     }
 
     func write(into buf: Writer) {
-        let len = UInt32(self.count)
+        let len = Int32(self.count)
         buf.writeInt(len)
         for (key, value) in self {
             key.write(into: buf)

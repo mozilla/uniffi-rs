@@ -197,10 +197,10 @@ impl_via_ffi_for_num_primitive! {
 
 /// Support for passing boolean values via the FFI.
 ///
-/// Booleans are passed as a `u8` in order to avoid problems with handling
+/// Booleans are passed as an `i8` in order to avoid problems with handling
 /// C-compatible boolean values on JVM-based languages.
 unsafe impl ViaFfi for bool {
-    type FfiType = u8;
+    type FfiType = i8;
 
     fn lower(self) -> Self::FfiType {
         if self {
@@ -219,12 +219,12 @@ unsafe impl ViaFfi for bool {
     }
 
     fn write<B: BufMut>(&self, buf: &mut B) {
-        buf.put_u8(ViaFfi::lower(*self));
+        buf.put_i8(ViaFfi::lower(*self));
     }
 
     fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
         check_remaining(buf, 1)?;
-        ViaFfi::try_lift(buf.get_u8())
+        ViaFfi::try_lift(buf.get_i8())
     }
 }
 
@@ -236,8 +236,9 @@ unsafe impl ViaFfi for bool {
 /// *must* be a valid `RustBuffer` and it *must* contain valid utf-8 data (in other
 /// words, it *must* be a `Vec<u8>` suitable for use as an actual rust `String`).
 ///
-/// When serialized in a buffer, strings are represented as a u32 byte length
-/// followed by utf8-encoded bytes.
+/// When serialized in a buffer, strings are represented as a i32 byte length
+/// followed by utf8-encoded bytes. (It's a signed integer because unsigned types are
+/// currently experimental in Kotlin).
 unsafe impl ViaFfi for String {
     type FfiType = RustBuffer;
 
@@ -263,14 +264,14 @@ unsafe impl ViaFfi for String {
     fn write<B: BufMut>(&self, buf: &mut B) {
         // N.B. `len()` gives us the length in bytes, not in chars or graphemes.
         // TODO: it would be nice not to panic here.
-        let len = u32::try_from(self.len()).unwrap();
-        buf.put_u32(len); // We limit strings to u32::MAX bytes
+        let len = i32::try_from(self.len()).unwrap();
+        buf.put_i32(len); // We limit strings to u32::MAX bytes
         buf.put(self.as_bytes());
     }
 
     fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
         check_remaining(buf, 4)?;
-        let len = buf.get_u32() as usize;
+        let len = usize::try_from(buf.get_i32())?;
         check_remaining(buf, len)?;
         let bytes = &buf.bytes()[..len];
         let res = String::from_utf8(bytes.to_vec())?;
@@ -301,9 +302,9 @@ unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
 
     fn write<B: BufMut>(&self, buf: &mut B) {
         match self {
-            None => buf.put_u8(0),
+            None => buf.put_i8(0),
             Some(v) => {
-                buf.put_u8(1);
+                buf.put_i8(1);
                 ViaFfi::write(v, buf);
             }
         }
@@ -311,7 +312,7 @@ unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
 
     fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
         check_remaining(buf, 1)?;
-        Ok(match buf.get_u8() {
+        Ok(match buf.get_i8() {
             0 => None,
             1 => Some(<T as ViaFfi>::try_read(buf)?),
             _ => bail!("unexpected tag byte for Option"),
@@ -322,7 +323,8 @@ unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
 /// Support for passing vectors of values via the FFI.
 ///
 /// Vectors are currently always passed by serializing to a buffer.
-/// We write a `u32` item count followed by each item in turn.
+/// We write a `i32` item count followed by each item in turn.
+/// (It's a signed type due to limits of the JVM).
 ///
 /// Ideally we would pass `Vec<u8>` directly as a `RustBuffer` rather
 /// than serializing, and perhaps even pass other vector types using a
@@ -340,8 +342,8 @@ unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
 
     fn write<B: BufMut>(&self, buf: &mut B) {
         // TODO: would be nice not to panic here :-/
-        let len = u32::try_from(self.len()).unwrap();
-        buf.put_u32(len); // We limit arrays to u32::MAX items
+        let len = i32::try_from(self.len()).unwrap();
+        buf.put_i32(len); // We limit arrays to i32::MAX items
         for item in self.iter() {
             ViaFfi::write(item, buf);
         }
@@ -349,8 +351,8 @@ unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
 
     fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
         check_remaining(buf, 4)?;
-        let len = buf.get_u32();
-        let mut vec = Vec::with_capacity(len as usize);
+        let len = usize::try_from(buf.get_i32())?;
+        let mut vec = Vec::with_capacity(len);
         for _ in 0..len {
             vec.push(<T as ViaFfi>::try_read(buf)?)
         }
@@ -363,8 +365,9 @@ unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
 /// the key must always be of the String type.
 ///
 /// HashMaps are currently always passed by serializing to a buffer.
-/// We write a `u32` entries count followed by each entry (string
+/// We write a `i32` entries count followed by each entry (string
 /// key followed by the value) in turn.
+/// (It's a signed type due to limits of the JVM).
 unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
     type FfiType = RustBuffer;
 
@@ -378,8 +381,8 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
 
     fn write<B: BufMut>(&self, buf: &mut B) {
         // TODO: would be nice not to panic here :-/
-        let len = u32::try_from(self.len()).unwrap();
-        buf.put_u32(len); // We limit HashMaps to u32::MAX entries
+        let len = i32::try_from(self.len()).unwrap();
+        buf.put_i32(len); // We limit HashMaps to i32::MAX entries
         for (key, value) in self.iter() {
             ViaFfi::write(key, buf);
             ViaFfi::write(value, buf);
@@ -388,8 +391,8 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
 
     fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
         check_remaining(buf, 4)?;
-        let len = buf.get_u32();
-        let mut map = HashMap::with_capacity(len as usize);
+        let len = usize::try_from(buf.get_i32())?;
+        let mut map = HashMap::with_capacity(len);
         for _ in 0..len {
             let key = String::try_read(buf)?;
             let value = <V as ViaFfi>::try_read(buf)?;
