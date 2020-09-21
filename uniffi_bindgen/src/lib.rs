@@ -94,7 +94,7 @@
 
 const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::io::prelude::*;
@@ -261,16 +261,16 @@ fn get_config(component: &ComponentInterface) -> Result<Config> {
 
     let config_file = pkg_path.join("uniffi.toml").canonicalize();
 
-    if config_file.is_err() {
-        return Ok(default_config);
-    }
+    let config_file = match config_file {
+        Ok(f) => f,
+        Err(_) => return Ok(default_config),
+    };
 
-    let config_file = config_file.unwrap();
     let contents = slurp_file(&config_file)
-        .map_err(|_| anyhow!("Failed to read config file from {:?}", &config_file))?;
+        .with_context(|| format!("Failed to read config file from {:?}", &config_file))?;
 
     let loaded_config: Config = toml::de::from_str(&contents)
-        .map_err(|_| anyhow!("Failed to generate config from file {:?}", &config_file))?;
+        .with_context(|| format!("Failed to generate config from file {:?}", &config_file))?;
 
     Ok(loaded_config.merge_with(&default_config))
 }
