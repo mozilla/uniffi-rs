@@ -27,8 +27,8 @@ pub struct Bindings {
 /// generating a `.swift` file. We also need to produce a `.h` file with the C-level API
 /// declarations, and a `.modulemap` file to tell swift how to use it.
 pub fn write_bindings(
-    ci: &ComponentInterface,
     config: &Config,
+    ci: &ComponentInterface,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
@@ -93,8 +93,8 @@ fn generate_module_map(ci: &ComponentInterface, header_path: &Path) -> Result<St
 
 /// ...
 pub fn compile_bindings(
-    ci: &ComponentInterface,
     _config: &Config,
+    ci: &ComponentInterface,
     out_dir: &Path,
 ) -> Result<()> {
     let out_path = PathBuf::from(out_dir);

@@ -18,8 +18,8 @@ pub use gen_kotlin::{Config, KotlinWrapper};
 use super::super::interface::ComponentInterface;
 
 pub fn write_bindings(
-    ci: &ComponentInterface,
     config: &Config,
+    ci: &ComponentInterface,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
@@ -60,8 +60,8 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Str
 /// Generate kotlin bindings for the given namespace, then use the kotlin
 /// command-line tools to compile them into a .jar file.
 pub fn compile_bindings(
-    ci: &ComponentInterface,
     config: &Config,
+    ci: &ComponentInterface,
     out_dir: &Path,
 ) -> Result<()> {
     let mut kt_file = full_bindings_path(config, out_dir)?;

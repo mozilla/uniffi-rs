@@ -93,8 +93,8 @@ impl MergeWith for Config {
 
 /// Generate foreign language bindings from a compiled `uniffi` library.
 pub fn write_bindings<P>(
-    ci: &ComponentInterface,
     config: &Config,
+    ci: &ComponentInterface,
     out_dir: P,
     language: TargetLanguage,
     try_format_code: bool,
@@ -105,20 +105,20 @@ where
     let out_dir = out_dir.as_ref();
     match language {
         TargetLanguage::Kotlin => kotlin::write_bindings(
-            &ci,
             &config.kotlin,
+            &ci,
             out_dir,
             try_format_code,
         )?,
         TargetLanguage::Swift => swift::write_bindings(
-            &ci,
             &config.swift,
+            &ci,
             out_dir,
             try_format_code,
         )?,
         TargetLanguage::Python => python::write_bindings(
-            &ci,
             &config.python,
+            &ci,
             out_dir,
             try_format_code,
         )?,
@@ -128,8 +128,8 @@ where
 
 /// Compile generated foreign language bindings so they're ready for use.
 pub fn compile_bindings<P>(
-    ci: &ComponentInterface,
     config: &Config,
+    ci: &ComponentInterface,
     out_dir: P,
     language: TargetLanguage,
 ) -> Result<()>
@@ -139,10 +139,10 @@ where
     let out_dir = out_dir.as_ref();
     match language {
         TargetLanguage::Kotlin => {
-            kotlin::compile_bindings(&ci, &config.kotlin, out_dir)?
+            kotlin::compile_bindings(&config.kotlin, &ci, out_dir)?
         }
         TargetLanguage::Swift => {
-            swift::compile_bindings(&ci, &config.swift, out_dir)?
+            swift::compile_bindings(&config.swift, &ci, out_dir)?
         }
         TargetLanguage::Python => (),
     }

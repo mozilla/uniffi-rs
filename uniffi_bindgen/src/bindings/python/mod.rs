@@ -21,8 +21,8 @@ use super::super::interface::ComponentInterface;
 // Generate python bindings for the given ComponentInterface, in the given output directory.
 
 pub fn write_bindings(
-    ci: &ComponentInterface,
     config: &Config,
+    ci: &ComponentInterface,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
