@@ -461,12 +461,6 @@ trait APIConverter<T> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<T>;
 }
 
-/// Similar to `APIConverter`, but used where the AST node do not have enough type context
-/// to convert to the correct struct. e.g. literals for defaulting values in dictionaries and arguments.
-trait TypedAPIConverter<T> {
-    fn convert(&self, ci: &ComponentInterface, type_: &Type) -> Result<T>;
-}
-
 impl<U, T: APIConverter<U>> APIConverter<Vec<U>> for Vec<T> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Vec<U>> {
         self.iter().map(|v| v.convert(ci)).collect::<Result<_>>()
@@ -1109,8 +1103,6 @@ fn convert_default_value(
     type_: &Type,
 ) -> Result<Literal> {
     fn convert_integer(literal: &weedle::literal::IntegerLit<'_>, type_: &Type) -> Result<Literal> {
-        use regex::Regex;
-
         let (string, radix) = match literal {
             weedle::literal::IntegerLit::Dec(v) => (v.0, Radix::Decimal),
             weedle::literal::IntegerLit::Hex(v) => (v.0, Radix::Hexadecimal),
@@ -1128,8 +1120,12 @@ fn convert_default_value(
             radix
         };
 
-        let trimmer = Regex::new("^(-?)(0x)?").unwrap();
-        let string = trimmer.replace_all(string, "$1").to_lowercase();
+        let string = if string.starts_with('-') {
+            ("-".to_string() + string[1..].strip_prefix("0x").unwrap_or(&string[1..]))
+                .to_lowercase()
+        } else {
+            string.strip_prefix("0x").unwrap_or(&string).to_lowercase()
+        };
 
         Ok(match type_ {
             Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Literal::Int(
@@ -1163,6 +1159,10 @@ fn convert_default_value(
     Ok(match (default_value, type_) {
         (weedle::literal::DefaultValue::Boolean(b), Type::Boolean) => Literal::Boolean(b.0),
         (weedle::literal::DefaultValue::String(s), Type::String) => {
+            // Note that weedle doesn't parse escaped double quotes.
+            // Keeping backends using double quotes (possible for all to date)
+            // means we don't need to escape single quotes. But we haven't spent a lot of time
+            // trying to break default values with weird escapes and quotes.
             Literal::String(s.0.to_string())
         }
         (weedle::literal::DefaultValue::EmptyArray(_), Type::Sequence(_)) => Literal::EmptySequence,

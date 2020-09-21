@@ -68,7 +68,8 @@ mod filters {
     pub fn literal_py(literal: &Literal) -> Result<String, askama::Error> {
         Ok(match literal {
             Literal::Boolean(v) => format!("{}", v),
-            Literal::String(s) => format!("'{}'", s),
+            // use the double-quote form to match with the other languages, and quote escapes.
+            Literal::String(s) => format!("\"{}\"", s),
             Literal::Null => "None".into(),
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "{}".into(),

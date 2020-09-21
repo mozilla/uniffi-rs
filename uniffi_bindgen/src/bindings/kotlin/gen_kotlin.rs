@@ -112,7 +112,7 @@ mod filters {
     pub fn literal_kt(literal: &Literal) -> Result<String, askama::Error> {
         fn typed_number(type_: &Type, num_str: String) -> Result<String, askama::Error> {
             Ok(match type_ {
-                // special case Int32.
+                // Bytes, Shorts and Ints can all be inferred from the type.
                 Type::Int8 | Type::Int16 | Type::Int32 => num_str,
                 Type::Int64 => format!("{}L", num_str),
 
