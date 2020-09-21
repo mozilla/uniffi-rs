@@ -5,20 +5,45 @@
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
+use serde::{Deserialize, Serialize};
 
 use crate::interface::*;
+use crate::MergeWith;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
 // sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
-    pub package_name: String,
+    package_name: Option<String>,
 }
 
 impl Config {
-    pub fn from(ci: &ComponentInterface) -> Self {
+    fn default_package_name() -> String {
+        "uniffi".into()
+    }
+
+    pub fn package_name(&self) -> String {
+        if let Some(package_name) = &self.package_name {
+            package_name.clone()
+        } else {
+            Config::default_package_name()
+        }
+    }
+}
+
+impl From<&ComponentInterface> for Config {
+    fn from(ci: &ComponentInterface) -> Self {
         Config {
-            package_name: format!("uniffi.{}", ci.namespace()),
+            package_name: Some(format!("uniffi.{}", ci.namespace())),
+        }
+    }
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            package_name: self.package_name.merge_with(&other.package_name),
         }
     }
 }

@@ -1,4 +1,4 @@
-import uniffi.arithmetic.*;
+import org.mozilla.uniffi.example.arithmetic.*;
 
 assert(add(2u, 4u) == 6uL)
 assert(add(4u, 8u) == 12uL)
