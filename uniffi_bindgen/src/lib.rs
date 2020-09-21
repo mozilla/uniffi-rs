@@ -197,7 +197,7 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file.as_ref())
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
-    
+
     let component = parse_idl(&idl_file)?;
     let config = get_config(&component)?;
     let out_dir = get_out_dir(&idl_file, out_dir_override)?;
@@ -225,7 +225,7 @@ pub fn run_tests<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file)
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
-    
+
     let component = parse_idl(&idl_file)?;
     let config = get_config(&component)?;
 
@@ -259,9 +259,7 @@ fn get_config(component: &ComponentInterface) -> Result<Config> {
         .expect("Missing $CARGO_MANIFEST_DIR, cannot load config file")
         .into();
 
-    let config_file = pkg_path
-        .join("uniffi.toml")
-        .canonicalize();
+    let config_file = pkg_path.join("uniffi.toml").canonicalize();
 
     if config_file.is_err() {
         return Ok(default_config);
@@ -327,7 +325,7 @@ pub trait MergeWith {
 impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
-            bindings: self.bindings.merge_with(&other.bindings)
+            bindings: self.bindings.merge_with(&other.bindings),
         }
     }
 }

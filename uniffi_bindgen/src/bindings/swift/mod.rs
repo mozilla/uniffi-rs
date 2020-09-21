@@ -92,11 +92,7 @@ fn generate_module_map(ci: &ComponentInterface, header_path: &Path) -> Result<St
 }
 
 /// ...
-pub fn compile_bindings(
-    _config: &Config,
-    ci: &ComponentInterface,
-    out_dir: &Path,
-) -> Result<()> {
+pub fn compile_bindings(_config: &Config, ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
     let mut module_map_file = out_path.clone();

@@ -104,24 +104,15 @@ where
 {
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Kotlin => kotlin::write_bindings(
-            &config.kotlin,
-            &ci,
-            out_dir,
-            try_format_code,
-        )?,
-        TargetLanguage::Swift => swift::write_bindings(
-            &config.swift,
-            &ci,
-            out_dir,
-            try_format_code,
-        )?,
-        TargetLanguage::Python => python::write_bindings(
-            &config.python,
-            &ci,
-            out_dir,
-            try_format_code,
-        )?,
+        TargetLanguage::Kotlin => {
+            kotlin::write_bindings(&config.kotlin, &ci, out_dir, try_format_code)?
+        }
+        TargetLanguage::Swift => {
+            swift::write_bindings(&config.swift, &ci, out_dir, try_format_code)?
+        }
+        TargetLanguage::Python => {
+            python::write_bindings(&config.python, &ci, out_dir, try_format_code)?
+        }
     }
     Ok(())
 }
@@ -138,12 +129,8 @@ where
 {
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Kotlin => {
-            kotlin::compile_bindings(&config.kotlin, &ci, out_dir)?
-        }
-        TargetLanguage::Swift => {
-            swift::compile_bindings(&config.swift, &ci, out_dir)?
-        }
+        TargetLanguage::Kotlin => kotlin::compile_bindings(&config.kotlin, &ci, out_dir)?,
+        TargetLanguage::Swift => swift::compile_bindings(&config.swift, &ci, out_dir)?,
         TargetLanguage::Python => (),
     }
     Ok(())

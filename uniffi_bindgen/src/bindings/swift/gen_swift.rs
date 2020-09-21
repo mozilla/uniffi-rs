@@ -9,8 +9,8 @@ use askama::Template;
 use heck::{CamelCase, MixedCase};
 use serde::{Deserialize, Serialize};
 
-use crate::MergeWith;
 use crate::interface::*;
+use crate::MergeWith;
 
 // Some config options for it the caller wants to customize the generated python.
 // Note that this can only be used to control details of the python *that do not affect the underlying component*,

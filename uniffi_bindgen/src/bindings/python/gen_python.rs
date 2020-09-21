@@ -4,8 +4,8 @@
 
 use anyhow::Result;
 use askama::Template;
-use serde::{Deserialize, Serialize};
 use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
+use serde::{Deserialize, Serialize};
 
 use crate::interface::*;
 use crate::MergeWith;
