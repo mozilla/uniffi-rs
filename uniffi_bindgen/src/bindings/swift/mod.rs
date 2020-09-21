@@ -13,7 +13,6 @@ use std::{
 
 pub mod gen_swift;
 pub use gen_swift::{BridgingHeader, Config, ModuleMap, SwiftWrapper};
-use toml::Value;
 
 use super::super::interface::ComponentInterface;
 
@@ -29,7 +28,7 @@ pub struct Bindings {
 /// declarations, and a `.modulemap` file to tell swift how to use it.
 pub fn write_bindings(
     ci: &ComponentInterface,
-    _toml: Option<&Value>,
+    config: &Config,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
@@ -44,7 +43,7 @@ pub fn write_bindings(
     let mut source_file = out_path;
     source_file.push(format!("{}.swift", ci.namespace()));
 
-    let Bindings { header, library } = generate_bindings(&ci)?;
+    let Bindings { header, library } = generate_bindings(config, &ci)?;
 
     let mut h = File::create(&header_file).context("Failed to create .h file for bindings")?;
     write!(h, "{}", header)?;
@@ -73,10 +72,9 @@ pub fn write_bindings(
 }
 
 /// Generate Swift bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(ci: &ComponentInterface) -> Result<Bindings> {
-    let config = Config::from(&ci);
+pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
     use askama::Template;
-    let header = BridgingHeader::new(&config, &ci)
+    let header = BridgingHeader::new(config, &ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
     let library = SwiftWrapper::new(&config, &ci)
@@ -96,7 +94,7 @@ fn generate_module_map(ci: &ComponentInterface, header_path: &Path) -> Result<St
 /// ...
 pub fn compile_bindings(
     ci: &ComponentInterface,
-    _toml: Option<&Value>,
+    _config: &Config,
     out_dir: &Path,
 ) -> Result<()> {
     let out_path = PathBuf::from(out_dir);

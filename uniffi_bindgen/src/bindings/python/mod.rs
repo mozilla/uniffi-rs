@@ -12,7 +12,6 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
-use toml::Value;
 
 pub mod gen_python;
 pub use gen_python::{Config, PythonWrapper};
@@ -23,14 +22,14 @@ use super::super::interface::ComponentInterface;
 
 pub fn write_bindings(
     ci: &ComponentInterface,
-    _toml: Option<&Value>,
+    config: &Config,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
     let mut py_file = PathBuf::from(out_dir);
     py_file.push(format!("{}.py", ci.namespace()));
     let mut f = File::create(&py_file).context("Failed to create .py file for bindings")?;
-    write!(f, "{}", generate_python_bindings(&ci)?)?;
+    write!(f, "{}", generate_python_bindings(config, &ci)?)?;
 
     if try_format_code {
         if let Err(e) = Command::new("yapf").arg(py_file.to_str().unwrap()).output() {
@@ -47,10 +46,9 @@ pub fn write_bindings(
 
 // Generate python bindings for the given ComponentInterface, as a string.
 
-pub fn generate_python_bindings(ci: &ComponentInterface) -> Result<String> {
-    let config = Config::from(&ci);
+pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
     use askama::Template;
-    PythonWrapper::new(config, &ci)
+    PythonWrapper::new(config.clone(), &ci)
         .render()
         .map_err(|_| anyhow::anyhow!("failed to render python bindings"))
 }

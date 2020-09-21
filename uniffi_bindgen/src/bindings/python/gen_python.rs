@@ -4,22 +4,29 @@
 
 use anyhow::Result;
 use askama::Template;
+use serde::{Deserialize, Serialize};
 use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
 
 use crate::interface::*;
+use crate::MergeWith;
 
 // Some config options for it the caller wants to customize the generated python.
 // Note that this can only be used to control details of the python *that do not affect the underlying component*,
 // sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     // No config options yet.
 }
 
-impl Config {
-    pub fn from(_ci: &ComponentInterface) -> Self {
-        Config {
-            // No config options yet
-        }
+impl From<&ComponentInterface> for Config {
+    fn from(_ci: &ComponentInterface) -> Self {
+        Config {}
+    }
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, _other: &Self) -> Self {
+        self.clone()
     }
 }
 

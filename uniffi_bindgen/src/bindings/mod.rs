@@ -65,12 +65,18 @@ impl TryFrom<String> for TargetLanguage {
 pub struct Config {
     #[serde(default)]
     kotlin: kotlin::Config,
+    #[serde(default)]
+    swift: swift::Config,
+    #[serde(default)]
+    python: python::Config,
 }
 
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
             kotlin: ci.into(),
+            swift: ci.into(),
+            python: ci.into(),
         }
     }
 }
@@ -79,6 +85,8 @@ impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
             kotlin: self.kotlin.merge_with(&other.kotlin),
+            swift: self.swift.merge_with(&other.swift),
+            python: self.python.merge_with(&other.python),
         }
     }
 }
@@ -104,13 +112,13 @@ where
         )?,
         TargetLanguage::Swift => swift::write_bindings(
             &ci,
-            None, // make this compile
+            &config.swift,
             out_dir,
             try_format_code,
         )?,
         TargetLanguage::Python => python::write_bindings(
             &ci,
-            None, // make this compile
+            &config.python,
             out_dir,
             try_format_code,
         )?,
@@ -129,13 +137,12 @@ where
     P: AsRef<Path>,
 {
     let out_dir = out_dir.as_ref();
-    let bindings = config_file.and_then(|m| m.get("bindings"));
     match language {
         TargetLanguage::Kotlin => {
-            kotlin::compile_bindings(&ci, bindings.and_then(|m| m.get("kotlin")), out_dir)?
+            kotlin::compile_bindings(&ci, &config.kotlin, out_dir)?
         }
         TargetLanguage::Swift => {
-            swift::compile_bindings(&ci, bindings.and_then(|m| m.get("swift")), out_dir)?
+            swift::compile_bindings(&ci, &config.swift, out_dir)?
         }
         TargetLanguage::Python => (),
     }
