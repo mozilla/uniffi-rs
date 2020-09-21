@@ -349,7 +349,7 @@ extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Seri
         let len: Int32 = try buf.readInt()
         var seq = [Element]()
         seq.reserveCapacity(Int(len))
-        for _ in 1...len {
+        for _ in 0..<len {
             seq.append(try Element.read(from: buf))
         }
         return seq
@@ -369,7 +369,7 @@ extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == S
         let len: Int32 = try buf.readInt()
         var dict = [String: Value]()
         dict.reserveCapacity(Int(len))
-        for _ in 1...len {
+        for _ in 0..<len {
             dict[try String.read(from: buf)] = try Value.read(from: buf)
         }
         return dict

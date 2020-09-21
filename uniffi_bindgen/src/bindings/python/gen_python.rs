@@ -65,6 +65,19 @@ mod filters {
         })
     }
 
+    pub fn literal_py(literal: &Literal) -> Result<String, askama::Error> {
+        Ok(match literal {
+            Literal::Boolean(v) => format!("{}", v),
+            // use the double-quote form to match with the other languages, and quote escapes.
+            Literal::String(s) => format!("\"{}\"", s),
+            Literal::Null => "None".into(),
+            Literal::EmptySequence => "[]".into(),
+            Literal::EmptyMap => "{}".into(),
+
+            _ => panic!("Literal unsupported by python"),
+        })
+    }
+
     pub fn class_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }

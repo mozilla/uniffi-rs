@@ -34,7 +34,7 @@ class {{ obj.name()|class_name_kt }}(
     {%- when Some with (return_type) -%}
     fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %}): {{ return_type|type_kt }} =
         callWithHandle {
-            {% call kt::to_ffi_call_with_prefix("it", meth) %}
+            {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
             {{ "it"|lift_kt(return_type) }}
         }
@@ -42,7 +42,7 @@ class {{ obj.name()|class_name_kt }}(
     {%- when None -%}
     fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %}) =
         callWithHandle {
-            {% call kt::to_ffi_call_with_prefix("it", meth) %} 
+            {%- call kt::to_ffi_call_with_prefix("it", meth) %} 
         }
     {% endmatch %}
     {% endfor %}

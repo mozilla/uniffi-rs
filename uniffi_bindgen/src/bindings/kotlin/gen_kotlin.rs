@@ -109,6 +109,49 @@ mod filters {
         })
     }
 
+    pub fn literal_kt(literal: &Literal) -> Result<String, askama::Error> {
+        fn typed_number(type_: &Type, num_str: String) -> Result<String, askama::Error> {
+            Ok(match type_ {
+                // Bytes, Shorts and Ints can all be inferred from the type.
+                Type::Int8 | Type::Int16 | Type::Int32 => num_str,
+                Type::Int64 => format!("{}L", num_str),
+
+                Type::UInt8 | Type::UInt16 | Type::UInt32 => format!("{}u", num_str),
+                Type::UInt64 => format!("{}uL", num_str),
+
+                Type::Float32 => format!("{}f", num_str),
+                Type::Float64 => num_str,
+                _ => panic!("Unexpected literal: {} is not a number", num_str),
+            })
+        }
+
+        Ok(match literal {
+            Literal::Boolean(v) => format!("{}", v),
+            Literal::String(s) => format!("\"{}\"", s),
+            Literal::Null => "null".into(),
+            Literal::EmptySequence => "listOf()".into(),
+            Literal::EmptyMap => "mapOf".into(),
+            Literal::Enum(v, type_) => format!("{}.{}", type_kt(type_)?, enum_variant_kt(v)?),
+            Literal::Int(i, radix, type_) => typed_number(
+                type_,
+                match radix {
+                    Radix::Octal => format!("{:#x}", i),
+                    Radix::Decimal => format!("{}", i),
+                    Radix::Hexadecimal => format!("{:#x}", i),
+                },
+            )?,
+            Literal::UInt(i, radix, type_) => typed_number(
+                type_,
+                match radix {
+                    Radix::Octal => format!("{:#x}", i),
+                    Radix::Decimal => format!("{}", i),
+                    Radix::Hexadecimal => format!("{:#x}", i),
+                },
+            )?,
+            Literal::Float(string, type_) => typed_number(type_, string.clone())?,
+        })
+    }
+
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
     pub fn class_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
