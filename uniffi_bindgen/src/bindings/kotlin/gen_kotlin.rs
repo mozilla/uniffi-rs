@@ -5,26 +5,46 @@
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
-use toml::Value;
+use serde::{Deserialize, Serialize};
 
 use crate::interface::*;
+use crate::MergeWith;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
 // sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
-    pub package_name: String,
+    package_name: Option<String>,
 }
 
 impl Config {
-    pub fn from(ci: &ComponentInterface, toml: Option<&Value>) -> Self {
-        let package_name = toml
-            .and_then(|m| m.get("package_name"))
-            .and_then(|m| m.as_str())
-            .map(|s| s.to_string())
-            .unwrap_or(format!("uniffi.{}", ci.namespace()));
+    fn default_package_name() -> String {
+        "uniffi".into()
+    }
 
-        Config { package_name }
+    pub fn package_name(&self) -> String {
+        if let Some(package_name) = &self.package_name {
+            package_name.clone()
+        } else {
+            Config::default_package_name()
+        }
+    }
+}
+
+impl From<&ComponentInterface> for Config {
+    fn from(ci: &ComponentInterface) -> Self {
+        Config {
+            package_name: Some(format!("uniffi.{}", ci.namespace())),
+        }
+    }
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            package_name: self.package_name.merge_with(&other.package_name),
+        }
     }
 }
 

@@ -11,7 +11,6 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
-use toml::Value;
 
 pub mod gen_kotlin;
 pub use gen_kotlin::{Config, KotlinWrapper};
@@ -20,11 +19,10 @@ use super::super::interface::ComponentInterface;
 
 pub fn write_bindings(
     ci: &ComponentInterface,
-    toml: Option<&Value>,
+    config: &Config,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
-    let config = Config::from(&ci, toml);
     let mut kt_file = full_bindings_path(&config, out_dir)?;
     std::fs::create_dir_all(&kt_file)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
@@ -47,14 +45,14 @@ pub fn write_bindings(
 }
 
 fn full_bindings_path(config: &Config, out_dir: &Path) -> Result<PathBuf> {
-    let package_path = config.package_name.replace(".", "/");
+    let package_path = config.package_name().replace(".", "/");
     Ok(PathBuf::from(out_dir).join(package_path))
 }
 
 // Generate kotlin bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(config: Config, ci: &ComponentInterface) -> Result<String> {
+pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
     use askama::Template;
-    KotlinWrapper::new(config, &ci)
+    KotlinWrapper::new(config.clone(), &ci)
         .render()
         .map_err(|_| anyhow::anyhow!("failed to render kotlin bindings"))
 }
@@ -63,11 +61,10 @@ pub fn generate_bindings(config: Config, ci: &ComponentInterface) -> Result<Stri
 /// command-line tools to compile them into a .jar file.
 pub fn compile_bindings(
     ci: &ComponentInterface,
-    toml: Option<&Value>,
+    config: &Config,
     out_dir: &Path,
 ) -> Result<()> {
-    let config = Config::from(&ci, toml);
-    let mut kt_file = full_bindings_path(&config, out_dir)?;
+    let mut kt_file = full_bindings_path(config, out_dir)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
     let mut jar_file = PathBuf::from(out_dir);
     jar_file.push(format!("{}.jar", ci.namespace()));

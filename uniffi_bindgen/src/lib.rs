@@ -95,6 +95,7 @@
 const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 use anyhow::{anyhow, bail, Result};
+use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::io::prelude::*;
 use std::{
@@ -104,7 +105,6 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
-use toml::Value;
 
 pub mod bindings;
 pub mod interface;
@@ -125,8 +125,8 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     let manifest_path_override = manifest_path_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let idl_file = idl_file.as_ref();
-    let _config = load_config();
     let component = parse_idl(&idl_file)?;
+    let _config = get_config(&component);
     ensure_versions_compatibility(&idl_file, manifest_path_override)?;
     let mut filename = Path::new(&idl_file)
         .file_stem()
@@ -197,13 +197,14 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file.as_ref())
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
-    let config = load_config()?;
+    
     let component = parse_idl(&idl_file)?;
+    let config = get_config(&component)?;
     let out_dir = get_out_dir(&idl_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
             &component,
-            config.as_ref(),
+            &config.bindings,
             &out_dir,
             language.try_into()?,
             try_format_code,
@@ -224,8 +225,9 @@ pub fn run_tests<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file)
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
-    let config_file = load_config()?;
+    
     let component = parse_idl(&idl_file)?;
+    let config = get_config(&component)?;
 
     // Group the test scripts by language first.
     let mut language_tests: HashMap<TargetLanguage, Vec<String>> = HashMap::new();
@@ -241,8 +243,8 @@ pub fn run_tests<P: AsRef<Path>>(
     }
 
     for (lang, test_scripts) in language_tests {
-        bindings::write_bindings(&component, config_file.as_ref(), &cdylib_dir, lang, true)?;
-        bindings::compile_bindings(&component, config_file.as_ref(), &cdylib_dir, lang)?;
+        bindings::write_bindings(&component, &config.bindings, &cdylib_dir, lang, true)?;
+        bindings::compile_bindings(&component, &config.bindings, &cdylib_dir, lang)?;
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;
         }
@@ -250,9 +252,11 @@ pub fn run_tests<P: AsRef<Path>>(
     Ok(())
 }
 
-pub fn load_config() -> Result<Option<Value>> {
+fn get_config(component: &ComponentInterface) -> Result<Config> {
+    let default_config: Config = component.into();
+
     let pkg_path: PathBuf = env::var("CARGO_MANIFEST_DIR")
-        .expect("Missing $CARGO_MANIFEST_DIR, cannot build tests for generated bindings")
+        .expect("Missing $CARGO_MANIFEST_DIR, cannot load config file")
         .into();
 
     let config_file = pkg_path
@@ -260,16 +264,17 @@ pub fn load_config() -> Result<Option<Value>> {
         .canonicalize();
 
     if config_file.is_err() {
-        return Ok(None);
+        return Ok(default_config);
     }
 
     let config_file = config_file.unwrap();
     let contents = slurp_file(&config_file)
         .map_err(|_| anyhow!("Failed to read config file from {:?}", &config_file))?;
-    let toml = contents
-        .parse::<toml::Value>()
-        .map_err(|_| anyhow!("Failed to parse config file from {:?}", &config_file))?;
-    Ok(Some(toml))
+
+    let loaded_config: Config = toml::de::from_str(&contents)
+        .map_err(|_| anyhow!("Failed to generate config from file {:?}", &config_file))?;
+
+    Ok(loaded_config.merge_with(&default_config))
 }
 
 fn get_out_dir(idl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
@@ -299,4 +304,40 @@ fn slurp_file(file_name: &Path) -> Result<String> {
     let mut f = File::open(file_name)?;
     f.read_to_string(&mut contents)?;
     Ok(contents)
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+struct Config {
+    #[serde(default)]
+    bindings: bindings::Config,
+}
+
+impl From<&ComponentInterface> for Config {
+    fn from(ci: &ComponentInterface) -> Self {
+        Config {
+            bindings: ci.into(),
+        }
+    }
+}
+
+pub trait MergeWith {
+    fn merge_with(&self, other: &Self) -> Self;
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            bindings: self.bindings.merge_with(&other.bindings)
+        }
+    }
+}
+
+impl<T: Clone> MergeWith for Option<T> {
+    fn merge_with(&self, other: &Self) -> Self {
+        match (self, other) {
+            (Some(_), _) => self.clone(),
+            (None, Some(_)) => other.clone(),
+            (None, None) => None,
+        }
+    }
 }

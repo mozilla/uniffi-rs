@@ -8,11 +8,12 @@
 //! along with some helpers for executing foreign language scripts or tests.
 
 use anyhow::{bail, Result};
+use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 use std::path::Path;
-use toml::Value;
 
 use crate::interface::ComponentInterface;
+use crate::MergeWith;
 
 pub mod kotlin;
 pub mod python;
@@ -60,10 +61,32 @@ impl TryFrom<String> for TargetLanguage {
     }
 }
 
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Config {
+    #[serde(default)]
+    kotlin: kotlin::Config,
+}
+
+impl From<&ComponentInterface> for Config {
+    fn from(ci: &ComponentInterface) -> Self {
+        Config {
+            kotlin: ci.into(),
+        }
+    }
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            kotlin: self.kotlin.merge_with(&other.kotlin),
+        }
+    }
+}
+
 /// Generate foreign language bindings from a compiled `uniffi` library.
 pub fn write_bindings<P>(
     ci: &ComponentInterface,
-    config_file: Option<&Value>,
+    config: &Config,
     out_dir: P,
     language: TargetLanguage,
     try_format_code: bool,
@@ -71,24 +94,23 @@ pub fn write_bindings<P>(
 where
     P: AsRef<Path>,
 {
-    let bindings = config_file.and_then(|m| m.get("bindings"));
     let out_dir = out_dir.as_ref();
     match language {
         TargetLanguage::Kotlin => kotlin::write_bindings(
             &ci,
-            bindings.and_then(|m| m.get("kotlin")),
+            &config.kotlin,
             out_dir,
             try_format_code,
         )?,
         TargetLanguage::Swift => swift::write_bindings(
             &ci,
-            bindings.and_then(|m| m.get("swift")),
+            None, // make this compile
             out_dir,
             try_format_code,
         )?,
         TargetLanguage::Python => python::write_bindings(
             &ci,
-            bindings.and_then(|m| m.get("python")),
+            None, // make this compile
             out_dir,
             try_format_code,
         )?,
@@ -99,7 +121,7 @@ where
 /// Compile generated foreign language bindings so they're ready for use.
 pub fn compile_bindings<P>(
     ci: &ComponentInterface,
-    config_file: Option<&Value>,
+    config: &Config,
     out_dir: P,
     language: TargetLanguage,
 ) -> Result<()>
