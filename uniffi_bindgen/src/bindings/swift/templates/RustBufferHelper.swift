@@ -92,7 +92,7 @@ class Writer {
     // is in the correct type!
     func writeInt<T: FixedWidthInteger>(_ value: T) {
         var value = value.bigEndian
-        let _ = withUnsafeBytes(of: &value, { bytes.append(contentsOf: $0) })
+        withUnsafeBytes(of: &value) { bytes.append(contentsOf: $0) }
     }
 
     @inlinable
