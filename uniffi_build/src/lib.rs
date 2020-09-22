@@ -39,7 +39,7 @@ fn run_uniffi_bindgen_scaffolding(out_dir: &str, idl_file: &str) -> Result<()> {
     let status = Command::new("uniffi-bindgen")
         .args(&["scaffolding", "--out-dir", out_dir, idl_file])
         .status()
-        .context("failed to run `uniffi-bindgen`")?;
+        .context("failed to run `uniffi-bindgen` - have you installed it via `cargo install uniffi_bindgen`?")?;
     if !status.success() {
         bail!("Error while generating scaffolding code");
     }

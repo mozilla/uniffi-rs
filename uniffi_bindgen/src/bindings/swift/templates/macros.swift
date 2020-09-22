@@ -19,12 +19,12 @@
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
 {% call try(func) %} rustCall(
-    {% match func.throws() %}
-    {% when Some with (e) %}
+    {%- match func.throws() %}
+    {%- when Some with (e) %}
     {{e}}.NoError
-    {% else %}
+    {%- else %}
     InternalError.unknown()
-    {% endmatch %}
+    {%- endmatch %}
 ) { err in
     {{ func.ffi_func().name() }}(
         {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err
@@ -47,6 +47,10 @@
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name_swift }}: {{ arg.type_()|type_swift -}}
+        {%- match arg.default_value() %}
+        {%- when Some with(literal) %} = {{ literal|literal_swift }}
+        {%- else %}
+        {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro %}
@@ -60,7 +64,7 @@
         {{- arg.type_()|type_ffi }} {{ arg.name() -}}
         {% if loop.last %}{% else %},{% endif %}
     {%- endfor %}
-    {% if func.has_out_err() %}{% if func.arguments().len() > 0 %},{% endif %}NativeRustError *_Nonnull out_err{% endif %}
+    {% if func.arguments().len() > 0 %},{% endif %}NativeRustError *_Nonnull out_err
 
 {%- endmacro -%}
 

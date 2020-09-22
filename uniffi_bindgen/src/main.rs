@@ -4,7 +4,7 @@
 
 use anyhow::{bail, Result};
 
-const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift", "gecko"];
+const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift", "gecko_js"];
 
 fn main() -> Result<()> {
     let matches = clap::App::new("uniffi-bindgen")

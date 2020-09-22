@@ -2,8 +2,14 @@
 name = "uniffi_macros"
 version = "0.1.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+description = "a multi-language bindings generator for rust (convenience macros)"
+documentation = "https://mozilla.github.io/uniffi-rs"
+homepage = "https://mozilla.github.io/uniffi-rs"
+repository = "https://github.com/mozilla/uniffi-rs"
 license = "MPL-2.0"
+license-file = "../LICENSE"
 edition = "2018"
+keywords = ["ffi", "bindgen"]
 
 [lib]
 proc-macro = true

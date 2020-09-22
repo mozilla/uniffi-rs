@@ -10,9 +10,9 @@ use std::{
 
 use anyhow::{Context, Result};
 
-pub mod gen_gecko;
+pub mod gen_gecko_js;
 mod webidl;
-pub use gen_gecko::{
+pub use gen_gecko_js::{
     Config, Interface, InterfaceHeader, Namespace, NamespaceHeader, SharedHeader, WebIdl,
 };
 
@@ -57,6 +57,7 @@ pub struct Bindings {
 /// `toolkit/library/rust/shared`), so that the FFI symbols are linked into
 /// libxul.
 pub fn write_bindings(
+    config: &Config,
     ci: &ComponentInterface,
     out_dir: &Path,
     _try_format_code: bool,
@@ -69,15 +70,18 @@ pub fn write_bindings(
         webidl,
         shared_header,
         sources,
-    } = generate_bindings(&ci)?;
+    } = generate_bindings(config, ci)?;
 
     let mut webidl_file = out_path.clone();
-    webidl_file.push(format!("{}.webidl", ci.namespace().to_camel_case()));
+    webidl_file.push(format!("{}.webidl", namespace_to_file_name(ci.namespace())));
     let mut w = File::create(&webidl_file).context("Failed to create WebIDL file for bindings")?;
     write!(w, "{}", webidl)?;
 
     let mut shared_header_file = out_path.clone();
-    shared_header_file.push(format!("{}Shared.h", ci.namespace().to_camel_case()));
+    shared_header_file.push(format!(
+        "{}Shared.h",
+        namespace_to_file_name(ci.namespace())
+    ));
     let mut h = File::create(&shared_header_file)
         .context("Failed to create shared header file for bindings")?;
     write!(h, "{}", shared_header)?;
@@ -89,36 +93,36 @@ pub fn write_bindings(
     } in sources
     {
         let mut header_file = out_path.clone();
-        header_file.push(format!("{}.h", name));
-        let mut h = File::create(&header_file).context(format!(
-            "Failed to create header file for `{}` bindings",
-            name
-        ))?;
+        header_file.push(format!("{}.h", namespace_to_file_name(&name)));
+        let mut h = File::create(&header_file)
+            .with_context(|| format!("Failed to create header file for `{}` bindings", name))?;
         write!(h, "{}", header)?;
 
         let mut source_file = out_path.clone();
-        source_file.push(format!("{}.cpp", name));
-        let mut w = File::create(&source_file).context(format!(
-            "Failed to create header file for `{}` bindings",
-            name
-        ))?;
+        source_file.push(format!("{}.cpp", namespace_to_file_name(&name)));
+        let mut w = File::create(&source_file)
+            .with_context(|| format!("Failed to create header file for `{}` bindings", name))?;
         write!(w, "{}", source)?;
     }
 
     Ok(())
 }
 
+pub fn namespace_to_file_name(namespace: &str) -> String {
+    use heck::CamelCase;
+    namespace.to_camel_case()
+}
+
 /// Generate Gecko bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(ci: &ComponentInterface) -> Result<Bindings> {
-    let config = Config::from(&ci);
+pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
     use askama::Template;
     use heck::CamelCase;
 
-    let webidl = WebIdl::new(&config, &ci)
+    let webidl = WebIdl::new(config, ci)
         .render()
         .context("Failed to render WebIDL bindings")?;
 
-    let shared_header = SharedHeader::new(&config, &ci)
+    let shared_header = SharedHeader::new(config, ci)
         .render()
         .context("Failed to render shared header")?;
 
@@ -128,14 +132,14 @@ pub fn generate_bindings(ci: &ComponentInterface) -> Result<Bindings> {
     // source file.
     let functions = ci.iter_function_definitions();
     if !functions.is_empty() {
-        let header = NamespaceHeader::new(&config, ci.namespace(), functions.as_slice())
+        let header = NamespaceHeader::new(config, ci.namespace(), functions.as_slice())
             .render()
             .context("Failed to render top-level namespace header")?;
-        let source = Namespace::new(&config, ci.namespace(), functions.as_slice())
+        let source = Namespace::new(config, ci.namespace(), functions.as_slice())
             .render()
             .context("Failed to render top-level namespace binding")?;
         sources.push(Source {
-            name: ci.namespace().to_camel_case(),
+            name: ci.namespace().into(),
             header,
             source,
         });
@@ -144,14 +148,14 @@ pub fn generate_bindings(ci: &ComponentInterface) -> Result<Bindings> {
     // Now generate one header/source pair for each interface.
     let objects = ci.iter_object_definitions();
     for obj in objects {
-        let header = InterfaceHeader::new(&config, ci.namespace(), &obj)
+        let header = InterfaceHeader::new(config, ci.namespace(), &obj)
             .render()
-            .context(format!("Failed to render {} header", obj.name()))?;
-        let source = Interface::new(&config, ci.namespace(), &obj)
+            .with_context(|| format!("Failed to render {} header", obj.name()))?;
+        let source = Interface::new(config, ci.namespace(), &obj)
             .render()
-            .context(format!("Failed to render {} binding", obj.name()))?;
+            .with_context(|| format!("Failed to render {} binding", obj.name()))?;
         sources.push(Source {
-            name: obj.name().to_camel_case(),
+            name: obj.name().into(),
             header,
             source,
         });

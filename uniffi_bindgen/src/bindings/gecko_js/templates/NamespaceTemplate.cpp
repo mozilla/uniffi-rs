@@ -3,8 +3,8 @@
 
 {% import "macros.cpp" as cpp %}
 
-#include "mozilla/dom/{{ namespace|class_name_webidl }}.h"
-#include "mozilla/dom/{{ namespace|class_name_webidl }}Shared.h"
+#include "mozilla/dom/{{ namespace|header_name_cpp }}.h"
+#include "mozilla/dom/{{ namespace|header_name_cpp }}Shared.h"
 
 namespace mozilla {
 namespace dom {
@@ -17,7 +17,7 @@ namespace dom {
   {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
 ) {
-  {%- call cpp::to_ffi_call(func) %}
+  {%- call cpp::to_ffi_call(namespace, func) %}
 }
 {%- endfor %}
 

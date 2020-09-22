@@ -3,8 +3,8 @@
 
 {% import "macros.cpp" as cpp %}
 
-#ifndef mozilla_dom_{{ obj.name()|class_name_webidl }}
-#define mozilla_dom_{{ obj.name()|class_name_webidl }}
+#ifndef mozilla_dom_{{ obj.name()|header_name_cpp }}
+#define mozilla_dom_{{ obj.name()|header_name_cpp }}
 
 #include "jsapi.h"
 #include "nsCOMPtr.h"
@@ -58,4 +58,4 @@ class {{ obj.name()|class_name_cpp }} final : public nsISupports, public nsWrapp
 }  // namespace dom
 }  // namespace mozilla
 
-#endif  // mozilla_dom_{{ obj.name()|class_name_webidl }}
+#endif  // mozilla_dom_{{ obj.name()|header_name_cpp }}

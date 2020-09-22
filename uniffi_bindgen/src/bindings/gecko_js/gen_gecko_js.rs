@@ -5,9 +5,12 @@
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase};
+use serde::{Deserialize, Serialize};
 
 use crate::interface::*;
+use crate::MergeWith;
 
+use super::namespace_to_file_name;
 use super::webidl::{
     BindingArgument, BindingFunction, ReturnBy, ReturningBindingFunction, ThrowBy,
 };
@@ -16,15 +19,21 @@ use super::webidl::{
 // Note that this can only be used to control details *that do not affect the
 // underlying component*, since the details of the underlying component are
 // entirely determined by the `ComponentInterface`.
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     // ...
 }
 
-impl Config {
-    pub fn from(_ci: &ComponentInterface) -> Self {
-        Config {
-            // ...
-        }
+impl From<&ComponentInterface> for Config {
+    fn from(_ci: &ComponentInterface) -> Self {
+        Config {}
+    }
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, _other: &Self) -> Self {
+        self.clone()
     }
 }
 
@@ -166,6 +175,29 @@ mod filters {
         })
     }
 
+    /// ...
+    pub fn literal_webidl(literal: &Literal) -> Result<String, askama::Error> {
+        Ok(match literal {
+            Literal::Boolean(v) => format!("{}", v),
+            Literal::String(s) => format!("\"{}\"", s),
+            Literal::Null => "null".into(),
+            Literal::EmptySequence => "[]".into(),
+            Literal::EmptyMap => "{}".into(),
+            Literal::Enum(v, _) => format!("\"{}\"", enum_variant_webidl(v)?),
+            Literal::Int(i, radix, _) => match radix {
+                Radix::Octal => format!("0{:o}", i),
+                Radix::Decimal => format!("{}", i),
+                Radix::Hexadecimal => format!("{:#x}", i),
+            },
+            Literal::UInt(i, radix, _) => match radix {
+                Radix::Octal => format!("0{:o}", i),
+                Radix::Decimal => format!("{}", i),
+                Radix::Hexadecimal => format!("{:#x}", i),
+            },
+            Literal::Float(string, _) => string.into(),
+        })
+    }
+
     /// Declares a C type in the `extern` declarations.
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -179,10 +211,10 @@ mod filters {
             FFIType::UInt64 => "uint64_t".into(),
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
+            FFIType::RustCString => "const char*".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
-            FFIType::RustString => "char*".into(),
             FFIType::RustError => "RustError".into(),
-            FFIType::ForeignStringRef => "const char*".into(),
+            FFIType::ForeignBytes => "ForeignBytes".into(),
         })
     }
 
@@ -202,18 +234,30 @@ mod filters {
             Type::Boolean => "bool".into(),
             Type::String => "nsString".into(),
             Type::Enum(name) | Type::Record(name) => class_name_cpp(name)?,
-            Type::Object(name) => format!("OwningNotNull<{}>", class_name_cpp(name)?),
+            Type::Object(name) => format!("OwningNonNull<{}>", class_name_cpp(name)?),
             Type::Optional(inner) => {
                 // Nullable objects become `RefPtr<T>` (instead of
-                // `OwningNotNull<T>`); all others become `Nullable<T>`.
+                // `OwningNonNull<T>`); all others become `Nullable<T>`.
                 match inner.as_ref() {
                     Type::Object(name) => format!("RefPtr<{}>", class_name_cpp(name)?),
+                    Type::String => "nsString".into(),
                     _ => format!("Nullable<{}>", type_cpp(inner)?),
                 }
             }
             Type::Sequence(inner) => format!("nsTArray<{}>", type_cpp(inner)?),
             Type::Map(inner) => format!("Record<nsString, {}>", type_cpp(inner)?),
             Type::Error(name) => panic!("[TODO: type_cpp({:?})]", type_),
+        })
+    }
+
+    fn in_arg_type_cpp(type_: &Type) -> Result<String, askama::Error> {
+        Ok(match type_ {
+            Type::Optional(inner) => match inner.as_ref() {
+                Type::Object(_) | Type::String => type_cpp(type_)?,
+                _ => format!("Nullable<{}>", in_arg_type_cpp(inner)?),
+            },
+            Type::Sequence(inner) => format!("Sequence<{}>", in_arg_type_cpp(&inner)?),
+            _ => type_cpp(type_)?,
         })
     }
 
@@ -232,12 +276,14 @@ mod filters {
                     Type::String => "const nsAString&".into(),
                     Type::Object(name) => format!("{}&", class_name_cpp(&name)?),
                     Type::Optional(inner) => match inner.as_ref() {
+                        Type::String => "const nsAString&".into(),
                         Type::Object(name) => format!("{}*", class_name_cpp(&name)?),
-                        _ => format!("const {}&", type_cpp(&arg.type_())?),
+                        _ => format!("const {}&", in_arg_type_cpp(&arg.type_())?),
                     },
-                    Type::Record(_) | Type::Map(_) => format!("const {}&", type_cpp(&arg.type_())?),
-                    Type::Sequence(inner) => format!("const Sequence<{}>&", type_cpp(&inner)?),
-                    _ => type_cpp(&arg.type_())?,
+                    Type::Record(_) | Type::Map(_) | Type::Sequence(_) => {
+                        format!("const {}&", in_arg_type_cpp(&arg.type_())?)
+                    }
+                    _ => in_arg_type_cpp(&arg.type_())?,
                 }
             }
             BindingArgument::Out(type_) => {
@@ -245,6 +291,10 @@ mod filters {
                 // becomes `nsAString`.
                 match type_ {
                     Type::String => "nsAString&".into(),
+                    Type::Optional(inner) => match inner.as_ref() {
+                        Type::String => "nsAString&".into(),
+                        _ => format!("{}&", type_cpp(type_)?),
+                    },
                     _ => format!("{}&", type_cpp(type_)?),
                 }
             }
@@ -281,50 +331,65 @@ mod filters {
             Type::Boolean => "false".into(),
             Type::Enum(name) => format!("{}::EndGuard_", name),
             Type::Object(_) => "nullptr".into(),
-            Type::String
-            | Type::Optional(_)
-            | Type::Record(_)
-            | Type::Map(_)
-            | Type::Sequence(_) => {
-                // These types are passed via out parameters, so we don't need
-                // to return a value.
-                String::new()
+            Type::String => "EmptyString()".into(),
+            Type::Optional(_) | Type::Record(_) | Type::Map(_) | Type::Sequence(_) => {
+                format!("{}()", type_cpp(return_type)?)
             }
             Type::Error(_) => panic!("[TODO: dummy_ret_value_cpp({:?})]", return_type),
         })
     }
 
+    pub fn detail_cpp(namespace: &str) -> Result<String, askama::Error> {
+        Ok(format!("{}_detail", namespace))
+    }
+
     /// Generates an expression for lowering a C++ type into a C type when
     /// calling an FFI function.
-    pub fn lower_cpp(type_: &Type, from: &str) -> Result<String, askama::Error> {
+    pub fn lower_cpp(namespace: &str, type_: &Type, from: &str) -> Result<String, askama::Error> {
         let lifted = match type_ {
             // Since our in argument type is `nsAString`, we need to use that
             // to instantiate `ViaFfi`, not `nsString`.
             Type::String => "nsAString".into(),
-            Type::Sequence(inner) => format!("Sequence<{}>", type_cpp(inner)?),
-            _ => type_cpp(type_)?,
+            Type::Optional(inner) => match inner.as_ref() {
+                Type::String => "nsAString".into(),
+                _ => in_arg_type_cpp(type_)?,
+            },
+            _ => in_arg_type_cpp(type_)?,
         };
+        let detail = detail_cpp(namespace)?;
         Ok(format!(
-            "detail::ViaFfi<{}, {}>::Lower({})",
+            "{}::ViaFfi<{}, {}>::Lower({})",
+            detail,
             lifted,
-            type_ffi(&type_.to_ffi())?,
+            type_ffi(&FFIType::from(type_))?,
             from
         ))
     }
 
     /// Generates an expression for lifting a C return type from the FFI into a
     /// C++ out parameter.
-    pub fn lift_cpp(type_: &Type, from: &str, into: &str) -> Result<String, askama::Error> {
+    pub fn lift_cpp(
+        namespace: &str,
+        type_: &Type,
+        from: &str,
+        into: &str,
+    ) -> Result<String, askama::Error> {
         let lifted = match type_ {
             // Out arguments are also `nsAString`, so we need to use it for the
             // instantiation.
             Type::String => "nsAString".into(),
+            Type::Optional(inner) => match inner.as_ref() {
+                Type::String => "nsAString".into(),
+                _ => type_cpp(type_)?,
+            },
             _ => type_cpp(type_)?,
         };
+        let detail = detail_cpp(namespace)?;
         Ok(format!(
-            "detail::ViaFfi<{}, {}>::Lift({}, {})",
+            "{}::ViaFfi<{}, {}>::Lift({}, {})",
+            detail,
             lifted,
-            type_ffi(&type_.to_ffi())?,
+            type_ffi(&FFIType::from(type_))?,
             from,
             into,
         ))
@@ -364,5 +429,9 @@ mod filters {
         // TODO: Make sure this does the right thing for hyphenated variants.
         // Example: "bookmark-added" becomes `Bookmark_added`.
         Ok(nm.to_string().to_camel_case())
+    }
+
+    pub fn header_name_cpp(nm: &str) -> Result<String, askama::Error> {
+        Ok(namespace_to_file_name(nm))
     }
 }

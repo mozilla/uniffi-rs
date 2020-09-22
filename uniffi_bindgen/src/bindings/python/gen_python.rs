@@ -5,21 +5,28 @@
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
+use serde::{Deserialize, Serialize};
 
 use crate::interface::*;
+use crate::MergeWith;
 
 // Some config options for it the caller wants to customize the generated python.
 // Note that this can only be used to control details of the python *that do not affect the underlying component*,
 // sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     // No config options yet.
 }
 
-impl Config {
-    pub fn from(_ci: &ComponentInterface) -> Self {
-        Config {
-            // No config options yet
-        }
+impl From<&ComponentInterface> for Config {
+    fn from(_ci: &ComponentInterface) -> Self {
+        Config {}
+    }
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, _other: &Self) -> Self {
+        self.clone()
     }
 }
 
@@ -51,14 +58,23 @@ mod filters {
             FFIType::UInt64 => "ctypes.c_uint64".to_string(),
             FFIType::Float32 => "ctypes.c_float".to_string(),
             FFIType::Float64 => "ctypes.c_double".to_string(),
+            FFIType::RustCString => "ctypes.c_voidp".to_string(),
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::RustError => "RustError".to_string(),
-            // We use a c_void_p instead of a c_char_p since python seems to
-            // create it's own string if we use c_char_p, and that prevents us
-            // from freeing. I could be wrong, but that's what I got from this:
-            // https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
-            FFIType::RustString => "ctypes.c_void_p".to_string(),
-            FFIType::ForeignStringRef => "ctypes.c_void_p".to_string(),
+            FFIType::ForeignBytes => "ForeignBytes".to_string(),
+        })
+    }
+
+    pub fn literal_py(literal: &Literal) -> Result<String, askama::Error> {
+        Ok(match literal {
+            Literal::Boolean(v) => format!("{}", v),
+            // use the double-quote form to match with the other languages, and quote escapes.
+            Literal::String(s) => format!("\"{}\"", s),
+            Literal::Null => "None".into(),
+            Literal::EmptySequence => "[]".into(),
+            Literal::EmptyMap => "{}".into(),
+
+            _ => panic!("Literal unsupported by python"),
         })
     }
 
@@ -132,19 +148,6 @@ mod filters {
         })
     }
 
-    pub fn lowers_into_size_py(
-        nm: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
-        let nm = var_name_py(nm)?;
-        Ok(match type_ {
-            Type::UInt32 => "4".to_string(),
-            Type::Float64 => "8".to_string(),
-            Type::String => format!("4 + len({}.encode('utf-8'))", nm),
-            Type::Record(type_name) => format!("{}._lowersIntoSize({})", type_name, nm),
-            _ => panic!("[TODO: lowers_into_size_py({:?})]", type_),
-        })
-    }
     pub fn lower_into_py(
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,

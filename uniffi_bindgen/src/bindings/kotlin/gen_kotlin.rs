@@ -5,20 +5,45 @@
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
+use serde::{Deserialize, Serialize};
 
 use crate::interface::*;
+use crate::MergeWith;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
 // sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
-    pub package_name: String,
+    package_name: Option<String>,
 }
 
 impl Config {
-    pub fn from(ci: &ComponentInterface) -> Self {
+    fn default_package_name() -> String {
+        "uniffi".into()
+    }
+
+    pub fn package_name(&self) -> String {
+        if let Some(package_name) = &self.package_name {
+            package_name.clone()
+        } else {
+            Config::default_package_name()
+        }
+    }
+}
+
+impl From<&ComponentInterface> for Config {
+    fn from(ci: &ComponentInterface) -> Self {
         Config {
-            package_name: format!("uniffi.{}", ci.namespace()),
+            package_name: Some(format!("uniffi.{}", ci.namespace())),
+        }
+    }
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            package_name: self.package_name.merge_with(&other.package_name),
         }
     }
 }
@@ -77,11 +102,53 @@ mod filters {
             FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
             FFIType::Float32 => "Float".to_string(),
             FFIType::Float64 => "Double".to_string(),
+            FFIType::RustCString => "Pointer".to_string(),
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
-            FFIType::RustString => "Pointer".to_string(),
             FFIType::RustError => "RustError".to_string(),
-            // Kotlin+JNA has some magic to pass its native string type as char* pointers.
-            FFIType::ForeignStringRef => "String".to_string(),
+            FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+        })
+    }
+
+    pub fn literal_kt(literal: &Literal) -> Result<String, askama::Error> {
+        fn typed_number(type_: &Type, num_str: String) -> Result<String, askama::Error> {
+            Ok(match type_ {
+                // Bytes, Shorts and Ints can all be inferred from the type.
+                Type::Int8 | Type::Int16 | Type::Int32 => num_str,
+                Type::Int64 => format!("{}L", num_str),
+
+                Type::UInt8 | Type::UInt16 | Type::UInt32 => format!("{}u", num_str),
+                Type::UInt64 => format!("{}uL", num_str),
+
+                Type::Float32 => format!("{}f", num_str),
+                Type::Float64 => num_str,
+                _ => panic!("Unexpected literal: {} is not a number", num_str),
+            })
+        }
+
+        Ok(match literal {
+            Literal::Boolean(v) => format!("{}", v),
+            Literal::String(s) => format!("\"{}\"", s),
+            Literal::Null => "null".into(),
+            Literal::EmptySequence => "listOf()".into(),
+            Literal::EmptyMap => "mapOf".into(),
+            Literal::Enum(v, type_) => format!("{}.{}", type_kt(type_)?, enum_variant_kt(v)?),
+            Literal::Int(i, radix, type_) => typed_number(
+                type_,
+                match radix {
+                    Radix::Octal => format!("{:#x}", i),
+                    Radix::Decimal => format!("{}", i),
+                    Radix::Hexadecimal => format!("{:#x}", i),
+                },
+            )?,
+            Literal::UInt(i, radix, type_) => typed_number(
+                type_,
+                match radix {
+                    Radix::Octal => format!("{:#x}", i),
+                    Radix::Decimal => format!("{}", i),
+                    Radix::Hexadecimal => format!("{:#x}", i),
+                },
+            )?,
+            Literal::Float(string, type_) => typed_number(type_, string.clone())?,
         })
     }
 
@@ -112,26 +179,9 @@ mod filters {
     pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
-            Type::Optional(t) => format!(
-                "lowerOptional({}, {{ v -> {} }}, {{ v, buf -> {} }})",
-                nm,
-                calculate_write_size(&"v", t)?,
-                write_kt(&"v", &"buf", t)?
-            ),
-            Type::Sequence(t) => format!(
-                "lowerSequence({}, {{ v -> {} }}, {{ v, buf -> {} }})",
-                nm,
-                calculate_write_size(&"v", t)?,
-                write_kt(&"v", &"buf", t)?
-            ),
-            Type::Map(t) => format!(
-                "lowerMap({}, {{ k, v -> {} + {} }}, {{ k, v, buf -> {}; {} }})",
-                nm,
-                calculate_write_size(&"k", &Type::String)?,
-                calculate_write_size(&"v", t)?,
-                write_kt(&"k", &"buf", &Type::String)?,
-                write_kt(&"v", &"buf", t)?
-            ),
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+                format!("lower{}({})", class_name_kt(&type_.canonical_name())?, nm,)
+            }
             _ => format!("{}.lower()", nm),
         })
     }
@@ -147,56 +197,13 @@ mod filters {
     ) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
-            Type::Optional(t) => format!(
-                "writeOptional({}, {}, {{ v, buf -> {} }})",
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
+                "write{}({}, {})",
+                class_name_kt(&type_.canonical_name())?,
                 nm,
                 target,
-                write_kt(&"v", &"buf", t)?
-            ),
-            Type::Sequence(t) => format!(
-                "writeSequence({}, {}, {{ v, buf -> {} }})",
-                nm,
-                target,
-                write_kt(&"v", &"buf", t)?
-            ),
-            Type::Map(t) => format!(
-                "writeMap({}, {}, {{ k, v, buf -> {}; {} }})",
-                nm,
-                target,
-                write_kt(&"k", &"buf", &Type::String)?,
-                write_kt(&"v", &"buf", t)?
             ),
             _ => format!("{}.write({})", nm, target),
-        })
-    }
-
-    /// Get a Kotlin expression for calculating the size of the serialization of a value.
-    ///
-    /// Where possible, this delegates to a `calculateWriteSize()` method on the type itself,
-    /// but special handling is required for some compound data types.
-    pub fn calculate_write_size(
-        nm: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
-        let nm = var_name_kt(nm)?;
-        Ok(match type_ {
-            Type::Optional(t) => format!(
-                "calculateWriteSizeOptional({}, {{ v -> {} }})",
-                nm,
-                calculate_write_size(&"v", t)?
-            ),
-            Type::Sequence(t) => format!(
-                "calculateWriteSizeSequence({}, {{ v -> {} }})",
-                nm,
-                calculate_write_size(&"v", t)?
-            ),
-            Type::Map(t) => format!(
-                "calculateWriteSizeMap({}, {{ k, v -> {} + {} }})",
-                nm,
-                calculate_write_size(&"k", &Type::String)?,
-                calculate_write_size(&"v", t)?
-            ),
-            _ => format!("{}.calculateWriteSize()", nm),
         })
     }
 
@@ -207,18 +214,9 @@ mod filters {
     pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            Type::Optional(t) => {
-                format!("liftOptional({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+                format!("lift{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }
-            Type::Sequence(t) => {
-                format!("liftSequence({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
-            }
-            Type::Map(t) => format!(
-                "liftMap({}, {{ buf -> Pair({}, {}) }})",
-                nm,
-                read_kt(&"buf", &Type::String)?,
-                read_kt(&"buf", t)?
-            ),
             _ => format!("{}.lift({})", type_kt(type_)?, nm),
         })
     }
@@ -230,18 +228,9 @@ mod filters {
     pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
-            Type::Optional(t) => {
-                format!("readOptional({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+                format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }
-            Type::Sequence(t) => {
-                format!("readSequence({}, {{ buf -> {} }})", nm, read_kt(&"buf", t)?)
-            }
-            Type::Map(t) => format!(
-                "readMap({}, {{ buf -> Pair({}, {}) }})",
-                nm,
-                read_kt(&"buf", &Type::String)?,
-                read_kt(&"buf", t)?
-            ),
             _ => format!("{}.read({})", type_kt(type_)?, nm),
         })
     }

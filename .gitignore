@@ -3,3 +3,4 @@ target
 .cargo
 .*.swp
 *.jar
+.vscode

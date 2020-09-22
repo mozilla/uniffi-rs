@@ -163,31 +163,42 @@ extension ViaFfiUsingByteBuffer {
 // Implement our protocols for the built-in types that we use.
 
 extension String: ViaFfi {
-    typealias FfiType = UnsafeMutablePointer<CChar>
+    typealias FfiType = RustBuffer
 
     static func lift(_ v: FfiType) throws -> Self {
         defer {
-            {{ ci.ffi_string_free().name() }}(v)
+            try! rustCall(InternalError.unknown()) { err in
+                {{ ci.ffi_rustbuffer_free().name() }}(v, err)
+            }
         }
-        return String(cString: v)
+        if v.data == nil {
+            return String()
+        }
+        let bytes = UnsafeBufferPointer<UInt8>(start: v.data!, count: Int(v.len))
+        return String(bytes: bytes, encoding: String.Encoding.utf8)!
     }
 
     func lower() -> FfiType {
-        var rustErr = NativeRustError(code: 0, message: nil)
-        let rustStr = {{ ci.ffi_string_alloc_from().name() }}(self, &rustErr)
-        if rustErr.code != 0 {
-            fatalError("caught a panic while passing a string across the ffi")
+        return self.utf8CString.withUnsafeBufferPointer { ptr in
+            // The swift string gives us int8_t, we want uint8_t.
+            ptr.withMemoryRebound(to: UInt8.self) { ptr in
+                // The swift string gives us a trailing null byte, we don't want it.
+                let buf = UnsafeBufferPointer(rebasing: ptr.prefix(upTo: ptr.count - 1))
+                let bytes = ForeignBytes(bufferPointer: buf)
+                return try! rustCall(InternalError.unknown()) { err in
+                    {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, err)
+                }
+            }
         }
-        return rustStr
     }
 
     static func read(from buf: Reader) throws -> Self {
-        let len: UInt32 = try buf.readInt()
+        let len: Int32 = try buf.readInt()
         return String(bytes: try buf.readBytes(count: Int(len)), encoding: String.Encoding.utf8)!
     }
 
     func write(into buf: Writer) {
-        let len = UInt32(self.utf8.count)
+        let len = Int32(self.utf8.count)
         buf.writeInt(len)
         buf.writeBytes(self.utf8)
     }
@@ -195,7 +206,7 @@ extension String: ViaFfi {
 
 
 extension Bool: ViaFfi {
-    typealias FfiType = UInt8
+    typealias FfiType = Int8
 
     static func read(from buf: Reader) throws -> Bool {
         return try self.lift(buf.readInt())
@@ -205,11 +216,11 @@ extension Bool: ViaFfi {
         buf.writeInt(self.lower())
     }
 
-    static func lift(_ v: UInt8) throws -> Bool {
+    static func lift(_ v: Int8) throws -> Bool {
         return v != 0
     }
 
-    func lower() -> UInt8 {
+    func lower() -> Int8 {
         return self ? 1 : 0
     }
 }
@@ -316,7 +327,7 @@ extension Double: Primitive, ViaFfi {
 
 extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: Serializable {
     static func read(from buf: Reader) throws -> Self {
-        switch try buf.readInt() as UInt8 {
+        switch try buf.readInt() as Int8 {
         case 0: return nil
         case 1: return try Wrapped.read(from: buf)
         default: throw InternalError.unexpectedOptionalTag
@@ -325,27 +336,27 @@ extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: S
 
     func write(into buf: Writer) {
         guard let value = self else {
-            buf.writeInt(UInt8(0))
+            buf.writeInt(Int8(0))
             return
         }
-        buf.writeInt(UInt8(1))
+        buf.writeInt(Int8(1))
         value.write(into: buf)
     }
 }
 
 extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Serializable {
     static func read(from buf: Reader) throws -> Self {
-        let len: UInt32 = try buf.readInt()
+        let len: Int32 = try buf.readInt()
         var seq = [Element]()
         seq.reserveCapacity(Int(len))
-        for _ in 1...len {
+        for _ in 0..<len {
             seq.append(try Element.read(from: buf))
         }
         return seq
     }
 
     func write(into buf: Writer) {
-        let len = UInt32(self.count)
+        let len = Int32(self.count)
         buf.writeInt(len)
         for item in self {
             item.write(into: buf)
@@ -355,17 +366,17 @@ extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Seri
 
 extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == String, Value: Serializable {
     static func read(from buf: Reader) throws -> Self {
-        let len: UInt32 = try buf.readInt()
+        let len: Int32 = try buf.readInt()
         var dict = [String: Value]()
         dict.reserveCapacity(Int(len))
-        for _ in 1...len {
+        for _ in 0..<len {
             dict[try String.read(from: buf)] = try Value.read(from: buf)
         }
         return dict
     }
 
     func write(into buf: Writer) {
-        let len = UInt32(self.count)
+        let len = Int32(self.count)
         buf.writeInt(len)
         for (key, value) in self {
             key.write(into: buf)

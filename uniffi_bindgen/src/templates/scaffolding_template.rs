@@ -3,7 +3,6 @@
 {% import "macros.rs" as rs %}
 
 {% include "RustBuffer.rs" %}
-{% include "RustString.rs" %}
 
 // We generate error mappings into ffi_support::ExternErrors
 // so that the errors can propagate through the FFI

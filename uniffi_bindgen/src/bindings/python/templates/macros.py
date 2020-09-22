@@ -44,6 +44,10 @@ rust_call_with_error(
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name_py }}
+        {%- match arg.default_value() %}
+        {%- when Some with(literal) %} = {{ literal|literal_py }}
+        {%- else %}
+        {%- endmatch %}
         {%- if !loop.last %},{% endif -%}
     {%- endfor %}
 {%- endmacro %}
@@ -56,7 +60,7 @@ rust_call_with_error(
     {%- for arg in func.arguments() -%}
         {{ arg.type_()|type_ffi }},{##}
     {%- endfor %}
-    {%- if func.has_out_err() -%}ctypes.POINTER(RustError),{%- endif -%}
+    ctypes.POINTER(RustError)
 {%- endmacro -%}
 
 {%- macro coerce_args(func) %}

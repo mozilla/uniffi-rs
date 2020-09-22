@@ -34,7 +34,12 @@ namespace {{ ci.namespace()|class_name_webidl }} {
   {% endif %}
   {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl }}{% when None %}void{% endmatch %} {{ func.name()|fn_name_webidl }}(
     {%- for arg in func.arguments() %}
-    {{ arg.type_()|type_webidl }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
+    {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl }} {{ arg.name() }}
+    {%- match arg.default_value() %}
+    {%- when Some with (literal) %} = {{ literal|literal_webidl }}
+    {%- else %}
+    {%- endmatch %}
+    {%- if !loop.last %}, {% endif %}
     {%- endfor %}
   );
   {% endfor %}
@@ -50,7 +55,12 @@ interface {{ obj.name()|class_name_webidl }} {
   {% endif %}
   constructor(
       {%- for arg in cons.arguments() %}
-      {{ arg.type_()|type_webidl }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
+      {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl }} {{ arg.name() }}
+      {%- match arg.default_value() %}
+      {%- when Some with (literal) %} = {{ literal|literal_webidl }}
+      {%- else %}
+      {%- endmatch %}
+      {%- if !loop.last %}, {% endif %}
       {%- endfor %}
   );
   {%- endfor %}
@@ -61,7 +71,12 @@ interface {{ obj.name()|class_name_webidl }} {
   {% endif %}
   {%- match meth.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl }}{% when None %}void{% endmatch %} {{ meth.name()|fn_name_webidl }}(
       {%- for arg in meth.arguments() %}
-      {{ arg.type_()|type_webidl }} {{ arg.name() }}{%- if !loop.last %}, {% endif %}
+      {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl }} {{ arg.name() }}
+      {%- match arg.default_value() %}
+      {%- when Some with (literal) %} = {{ literal|literal_webidl }}
+      {%- else %}
+      {%- endmatch %}
+      {%- if !loop.last %}, {% endif %}
       {%- endfor %}
   );
   {% endfor %}

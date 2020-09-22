@@ -3,10 +3,10 @@
 
 {% import "macros.cpp" as cpp %}
 
-#ifndef mozilla_dom_{{ namespace|class_name_webidl }}
-#define mozilla_dom_{{ namespace|class_name_webidl }}
+#ifndef mozilla_dom_{{ namespace|header_name_cpp }}
+#define mozilla_dom_{{ namespace|header_name_cpp }}
 
-#include "mozilla/dom/{{ namespace|class_name_webidl }}Binding.h"
+#include "mozilla/dom/{{ namespace|header_name_cpp }}Binding.h"
 
 namespace mozilla {
 namespace dom {
@@ -30,4 +30,4 @@ class {{ namespace|class_name_cpp }} final {
 }  // namespace dom
 }  // namespace mozilla
 
-#endif  // mozilla_dom_{{ namespace|class_name_webidl }}
+#endif  // mozilla_dom_{{ namespace|header_name_cpp }}

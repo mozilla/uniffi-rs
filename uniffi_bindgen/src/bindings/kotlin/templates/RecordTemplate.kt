@@ -19,17 +19,10 @@ data class {{ rec.name()|class_name_kt }} (
     }
 
     internal fun lower(): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(this, {v -> v.calculateWriteSize()}, {v, buf -> v.write(buf)})
+        return lowerIntoRustBuffer(this, {v, buf -> v.write(buf)})
     }
 
-    internal fun calculateWriteSize(): Int {
-        return 0 +
-        {%- for field in rec.fields() %}
-            {{ "(this.{})"|format(field.name())|calculate_write_size(field.type_()) }}{% if loop.last %}{% else %} +{% endif %}
-        {%- endfor %}
-    }
-
-    internal fun write(buf: ByteBuffer) {
+    internal fun write(buf: RustBufferBuilder) {
         {%- for field in rec.fields() %}
             {{ "(this.{})"|format(field.name())|write_kt("buf", field.type_()) }}
         {%- endfor %}

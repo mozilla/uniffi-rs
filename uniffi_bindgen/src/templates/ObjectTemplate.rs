@@ -18,7 +18,7 @@ uniffi::deps::lazy_static::lazy_static! {
     }
 
 {%- for cons in obj.constructors() %}
-
+    #[allow(clippy::all)]
     #[no_mangle]
     pub extern "C" fn {{ cons.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> u64 {
@@ -30,6 +30,7 @@ uniffi::deps::lazy_static::lazy_static! {
 {%- endfor %}
 
 {%- for meth in obj.methods() %}
+    #[allow(clippy::all)]
     #[no_mangle]
     pub extern "C" fn {{ meth.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(meth.ffi_func()) %}

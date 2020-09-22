@@ -3,8 +3,8 @@
 
 {% import "macros.cpp" as cpp %}
 
-#include "mozilla/dom/{{ obj.name()|class_name_webidl }}.h"
-#include "mozilla/dom/{{ namespace|class_name_webidl }}Shared.h"
+#include "mozilla/dom/{{ obj.name()|header_name_cpp }}.h"
+#include "mozilla/dom/{{ namespace|header_name_cpp }}Shared.h"
 
 namespace mozilla {
 namespace dom {
@@ -27,7 +27,9 @@ NS_INTERFACE_MAP_END
 ) : mGlobal(aGlobal), mHandle(aHandle) {}
 
 {{ obj.name()|class_name_cpp }}::~{{ obj.name()|class_name_cpp }}() {
-  {{ obj.ffi_object_free().name() }}(mHandle);
+  RustError err = {0, nullptr};
+  {{ obj.ffi_object_free().name() }}(mHandle, &err);
+  MOZ_ASSERT(!err.mCode);
 }
 
 JSObject* {{ obj.name()|class_name_cpp }}::WrapObject(
@@ -45,7 +47,7 @@ already_AddRefed<{{ obj.name()|class_name_cpp }}> {{ obj.name()|class_name_cpp }
   {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
 ) {
-  {%- call cpp::to_ffi_call_head(cons, "err", "handle") %}
+  {%- call cpp::to_ffi_call_head(namespace, cons, "err", "handle") %}
   if (err.mCode) {
     {%- match cons.throw_by() %}
     {%- when ThrowBy::ErrorResult with (rv) %}
@@ -68,7 +70,7 @@ already_AddRefed<{{ obj.name()|class_name_cpp }}> {{ obj.name()|class_name_cpp }
   {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
 ) {
-  {%- call cpp::to_ffi_call_with_prefix("mHandle", meth) %}
+  {%- call cpp::to_ffi_call_with_prefix(namespace, "mHandle", meth) %}
 }
 {%- endfor %}
 

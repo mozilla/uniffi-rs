@@ -7,21 +7,29 @@ use std::path::Path;
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase};
+use serde::{Deserialize, Serialize};
 
 use crate::interface::*;
+use crate::MergeWith;
 
 // Some config options for the caller to customize the generated Swift.
 // Note that this can only be used to control details of the Swift *that do not affect the underlying component*,
 // since the details of the underlying component are entirely determined by the `ComponentInterface`.
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     // No config options yet.
 }
 
-impl Config {
-    pub fn from(_ci: &ComponentInterface) -> Self {
-        Config {
-            // No config options yet
-        }
+impl From<&ComponentInterface> for Config {
+    fn from(_ci: &ComponentInterface) -> Self {
+        Config {}
+    }
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, _other: &Self) -> Self {
+        self.clone()
     }
 }
 
@@ -114,10 +122,56 @@ mod filters {
             FFIType::UInt64 => "uint64_t".into(),
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
+            FFIType::RustCString => "const char*_Nonnull".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
-            FFIType::RustString => "char*_Nonnull".into(),
             FFIType::RustError => "NativeRustError".into(),
-            FFIType::ForeignStringRef => "const char*_Nonnull".into(),
+            FFIType::ForeignBytes => "ForeignBytes".into(),
+        })
+    }
+
+    pub fn literal_swift(literal: &Literal) -> Result<String, askama::Error> {
+        fn typed_number(type_: &Type, num_str: String) -> Result<String, askama::Error> {
+            Ok(match type_ {
+                // special case Int32.
+                Type::Int32 => num_str,
+                // otherwise use constructor e.g. UInt8(x)
+                Type::Int8
+                | Type::UInt8
+                | Type::Int16
+                | Type::UInt16
+                | Type::UInt32
+                | Type::Int64
+                | Type::UInt64
+                | Type::Float32
+                | Type::Float64 => format!("{}({})", type_swift(type_)?, num_str),
+                _ => panic!("Unexpected literal: {} is not a number", num_str),
+            })
+        }
+
+        Ok(match literal {
+            Literal::Boolean(v) => format!("{}", v),
+            Literal::String(s) => format!("\"{}\"", s),
+            Literal::Null => "nil".into(),
+            Literal::EmptySequence => "[]".into(),
+            Literal::EmptyMap => "[:]".into(),
+            Literal::Enum(v, _) => format!(".{}", enum_variant_swift(v)?),
+            Literal::Int(i, radix, type_) => typed_number(
+                type_,
+                match radix {
+                    Radix::Octal => format!("0o{:o}", i),
+                    Radix::Decimal => format!("{}", i),
+                    Radix::Hexadecimal => format!("{:#x}", i),
+                },
+            )?,
+            Literal::UInt(i, radix, type_) => typed_number(
+                type_,
+                match radix {
+                    Radix::Octal => format!("0o{:o}", i),
+                    Radix::Decimal => format!("{}", i),
+                    Radix::Hexadecimal => format!("{:#x}", i),
+                },
+            )?,
+            Literal::Float(string, type_) => typed_number(type_, string.clone())?,
         })
     }
 

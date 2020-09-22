@@ -2,6 +2,19 @@
 
 version: 2.1
 
+commands:
+  install-mdbook:
+    steps:
+      - run:
+          name: Install mdBook
+          command: |
+            mkdir -p $HOME/.bin
+            pushd $HOME/.bin
+            curl -sfSL --retry 5 --retry-delay 10 https://github.com/rust-lang-nursery/mdBook/releases/download/v0.4.2/mdbook-v0.4.2-x86_64-unknown-linux-gnu.tar.gz | tar xz
+            echo 'export PATH="$HOME/.bin:$PATH"' >> $BASH_ENV
+            popd
+orbs:
+  gh-pages: sugarshin/gh-pages@0.0.6
 jobs:
   Check Rust formatting:
     docker:
@@ -29,6 +42,17 @@ jobs:
       - run: cat ~/.profile >> $BASH_ENV
       - checkout
       - run: cargo test
+  Deploy website:
+    docker:
+      - image: circleci/node:latest
+    resource_class: small
+    steps:
+      - install-mdbook
+      - checkout
+      - run: mdbook build docs/manual
+      - gh-pages/deploy:
+          build-dir: docs/manual/book
+          ssh-fingerprints: "9d:06:af:45:32:f9:71:b7:57:00:81:7f:70:6b:d1:49"
 
 workflows:
   version: 2
@@ -41,3 +65,9 @@ workflows:
   run-tests:
     jobs:
       - Rust and Foreign Language tests
+  deploy-website:
+    jobs:
+      - Deploy website:
+          filters:
+            branches:
+              only: main

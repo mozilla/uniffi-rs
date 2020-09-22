@@ -4,16 +4,35 @@
 
 class RustBuffer(ctypes.Structure):
     _fields_ = [
-        ("len", ctypes.c_long),
+        ("capacity", ctypes.c_int32),
+        ("len", ctypes.c_int32),
         ("data", ctypes.POINTER(ctypes.c_char)),
     ]
 
     @staticmethod
     def alloc(size):
-        return _UniFFILib.{{ ci.ffi_bytebuffer_alloc().name() }}(size)
+        return rust_call_with_error(InternalError, _UniFFILib.{{ ci.ffi_rustbuffer_alloc().name() }}, size)
+
+    @staticmethod
+    def reserve(rbuf, additional):
+        return rust_call_with_error(InternalError, _UniFFILib.{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
 
     def free(self):
-        return _UniFFILib.{{ ci.ffi_bytebuffer_free().name() }}(self)
+        return rust_call_with_error(InternalError, _UniFFILib.{{ ci.ffi_rustbuffer_free().name() }}, self)
 
     def __str__(self):
-        return "RustBuffer(len={}, data={})".format(self.len, self.data[0:self.len])
+        return "RustBuffer(capacity={}, len={}, data={})".format(
+            self.capacity,
+            self.len,
+            self.data[0:self.len]
+        )
+
+
+class ForeignBytes(ctypes.Structure):
+    _fields_ = [
+        ("len", ctypes.c_int32),
+        ("data", ctypes.POINTER(ctypes.c_char)),
+    ]
+
+    def __str__(self):
+        return "ForeignBytes(len={}, data={})".format(self.len, self.data[0:self.len])

@@ -2,18 +2,25 @@
 name = "uniffi_bindgen"
 version = "0.1.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+description = "a multi-language bindings generator for rust (codegen and cli tooling)"
+documentation = "https://mozilla.github.io/uniffi-rs"
+homepage = "https://mozilla.github.io/uniffi-rs"
+repository = "https://github.com/mozilla/uniffi-rs"
 license = "MPL-2.0"
+license-file = "../LICENSE"
 edition = "2018"
+keywords = ["ffi", "bindgen"]
 
 [[bin]]
 name = "uniffi-bindgen"
 path = "src/main.rs"
 
 [dependencies]
-# cargo_metadata = { git = "https://github.com/oli-obk/cargo_metadata", rev = "64ee6d1d169103ed60ae4de5ddf84da751e7d841" }
+cargo_metadata = "0.11"
 weedle = "0.11"
 anyhow = "1"
 askama = "0.10"
 heck = "0.3"
 clap = "2"
 serde = "1"
+toml = "0.5.6"

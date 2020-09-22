@@ -34,16 +34,13 @@ class {{ rec.name() }}(object):
 
     @classmethod
     def _lower(cls, v):
-        rbuf = RustBuffer.alloc(cls._lowersIntoSize(v))
-        cls._lowerInto(v, RustBufferStream(rbuf))
-        return rbuf
-
-    @classmethod
-    def _lowersIntoSize(cls, v):
-        return 0 + \
-            {%- for field in rec.fields() %}
-            {{ "(v.{})"|format(field.name())|lowers_into_size_py(field.type_()) }}{% if loop.last %}{% else %} + \{% endif %}
-            {%- endfor %}
+        buf = RustBufferBuilder()
+        try:
+            cls._lowerInto(v, buf)
+            return buf.finalize()
+        except Exception:
+            buf.discard()
+            raise
 
     @classmethod
     def _lowerInto(cls, v, buf):

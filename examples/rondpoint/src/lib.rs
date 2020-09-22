@@ -168,4 +168,93 @@ impl Stringifier {
     }
 }
 
+#[derive(Debug, Clone)]
+struct Optionneur;
+impl Optionneur {
+    fn new() -> Self {
+        Optionneur
+    }
+    fn sinon_string(&self, value: String) -> String {
+        value
+    }
+    fn sinon_null(&self, value: Option<String>) -> Option<String> {
+        value
+    }
+    fn sinon_boolean(&self, value: bool) -> bool {
+        value
+    }
+    fn sinon_sequence(&self, value: Vec<String>) -> Vec<String> {
+        value
+    }
+
+    fn sinon_zero(&self, value: Option<i32>) -> Option<i32> {
+        value
+    }
+
+    fn sinon_u8_dec(&self, value: u8) -> u8 {
+        value
+    }
+    fn sinon_i8_dec(&self, value: i8) -> i8 {
+        value
+    }
+    fn sinon_u16_dec(&self, value: u16) -> u16 {
+        value
+    }
+    fn sinon_i16_dec(&self, value: i16) -> i16 {
+        value
+    }
+    fn sinon_u32_dec(&self, value: u32) -> u32 {
+        value
+    }
+    fn sinon_i32_dec(&self, value: i32) -> i32 {
+        value
+    }
+    fn sinon_u64_dec(&self, value: u64) -> u64 {
+        value
+    }
+    fn sinon_i64_dec(&self, value: i64) -> i64 {
+        value
+    }
+
+    fn sinon_u8_hex(&self, value: u8) -> u8 {
+        value
+    }
+    fn sinon_i8_hex(&self, value: i8) -> i8 {
+        value
+    }
+    fn sinon_u16_hex(&self, value: u16) -> u16 {
+        value
+    }
+    fn sinon_i16_hex(&self, value: i16) -> i16 {
+        value
+    }
+    fn sinon_u32_hex(&self, value: u32) -> u32 {
+        value
+    }
+    fn sinon_i32_hex(&self, value: i32) -> i32 {
+        value
+    }
+    fn sinon_u64_hex(&self, value: u64) -> u64 {
+        value
+    }
+    fn sinon_i64_hex(&self, value: i64) -> i64 {
+        value
+    }
+
+    fn sinon_u32_oct(&self, value: u32) -> u32 {
+        value
+    }
+
+    fn sinon_f32(&self, value: f32) -> f32 {
+        value
+    }
+    fn sinon_f64(&self, value: f64) -> f64 {
+        value
+    }
+
+    fn sinon_enum(&self, value: Enumeration) -> Enumeration {
+        value
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/rondpoint.uniffi.rs"));

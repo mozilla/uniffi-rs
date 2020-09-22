@@ -1,16 +1,25 @@
 extension RustBuffer {
+    // Allocate a new buffer, copying the contents of a `UInt8` array.
     init(bytes: [UInt8]) {
-        // TODO: This also copies the buffer. Can we write directly into
-        // a Rust buffer?
-        let rustBuffer = {{ ci.ffi_bytebuffer_alloc().name() }}(UInt32(bytes.count))
-        let pointer = UnsafeMutableBufferPointer(start: rustBuffer.data, count: Int(rustBuffer.len))
-        bytes.copyBytes(to: pointer)
-        self.init(len: Int64(pointer.count), data: pointer.baseAddress!)
+        let rbuf = bytes.withUnsafeBufferPointer { ptr in
+            try! rustCall(InternalError.unknown()) { err in
+                {{ ci.ffi_rustbuffer_from_bytes().name() }}(ForeignBytes(bufferPointer: ptr), err)
+            }
+        }
+        self.init(capacity: rbuf.capacity, len: rbuf.len, data: rbuf.data)
     }
 
-    // Frees the buffer in place. The buffer must not be used after this is
-    // called.
+    // Frees the buffer in place.
+    // The buffer must not be used after this is called.
     func deallocate() {
-        {{ ci.ffi_bytebuffer_free().name() }}(self)
+        try! rustCall(InternalError.unknown()) { err in
+            {{ ci.ffi_rustbuffer_free().name() }}(self, err)
+        }
+    }
+}
+
+extension ForeignBytes {
+    init(bufferPointer: UnsafeBufferPointer<UInt8>) {
+        self.init(len: Int32(bufferPointer.count), data: bufferPointer.baseAddress)
     }
 }

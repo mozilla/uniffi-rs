@@ -1,7 +1,7 @@
 {#
 // In here we define conversions between a native reference to Swift errors
 // We use the RustError protocol to define the requirements. Any implementers of the protocol
-// Can be generated from a NativeRustError. 
+// Can be generated from a NativeRustError.
 
 #}
 
@@ -32,9 +32,16 @@ enum InternalError: RustError {
 
     static func fromConsuming(_ rustError: NativeRustError) throws -> Self? {
         let message = rustError.message
+        defer {
+            if message != nil {
+                try! rustCall(InternalError.unknown()) { err in
+                    {{ ci.ffi_string_free().name() }}(message!, err)
+                }
+            }
+        }
         switch rustError.code {
         case 0: return nil
-        default: return .unknown(message: try String.lift(message!))
+        default: return .unknown(message: String(cString: message!))
         }
     }
 }
@@ -64,12 +71,19 @@ public enum {{e.name()}}: RustError {
     // function
     static func fromConsuming(_ rustError: NativeRustError) throws -> Self? {
         let message = rustError.message
+        defer {
+            if message != nil {
+                try! rustCall(InternalError.unknown()) { err in
+                    {{ ci.ffi_string_free().name() }}(message!, err)
+                }
+            }
+        }
         switch rustError.code {
             case 0:
                 return nil
             {% for value in e.values() %}
             case {{loop.index}}:
-                return .{{value}}(message: try String.lift(message!))
+                return .{{value}}(message: String(cString: message!))
             {% endfor %}
             default:
                 return nil

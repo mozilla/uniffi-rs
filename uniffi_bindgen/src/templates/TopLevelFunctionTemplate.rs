@@ -4,7 +4,7 @@
 // send data across the FFI, which will fail to compile if the provided function does not match what's
 // specified in the IDL.    
 #}
-
+#[allow(clippy::all)]
 #[no_mangle]
 pub extern "C" fn {{ func.ffi_func().name() }}(
     {% call rs::arg_list_ffi_decl(func.ffi_func()) %}

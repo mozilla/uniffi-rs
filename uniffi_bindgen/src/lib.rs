@@ -58,7 +58,7 @@
 //!
 //! ### 3) Generate and include component scaffolding from the IDL file
 //!
-//! First you will need to install `uniffi-bindgen` on your system using `cargo install uniffi-bindgen`.
+//! First you will need to install `uniffi-bindgen` on your system using `cargo install uniffi_bindgen`.
 //! Then add to your crate `uniffi_build` under `[build-dependencies]`.
 //! Finally, add a `build.rs` script to your crate and have it call [uniffi_build::generate_scaffolding](uniffi_build::generate_scaffolding)
 //! to process your `.idl` file. This will generate some Rust code to be included in the top-level source
@@ -89,13 +89,18 @@
 //! to load and use the compiled rust code via its C-compatible FFI.
 //!
 
+#![warn(rust_2018_idioms)]
+#![allow(unknown_lints)]
+
 const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, bail, Context, Result};
+use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::io::prelude::*;
 use std::{
     collections::HashMap,
+    env,
     fs::File,
     path::{Path, PathBuf},
     process::Command,
@@ -119,11 +124,10 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
 ) -> Result<()> {
     let manifest_path_override = manifest_path_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let idl_file = PathBuf::from(idl_file.as_ref())
-        .canonicalize()
-        .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
+    let idl_file = idl_file.as_ref();
     let component = parse_idl(&idl_file)?;
-    // ensure_versions_compatibility(&idl_file, manifest_path_override)?;
+    let _config = get_config(&component);
+    ensure_versions_compatibility(&idl_file, manifest_path_override)?;
     let mut filename = Path::new(&idl_file)
         .file_stem()
         .ok_or_else(|| anyhow!("not a file"))?
@@ -141,7 +145,6 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     Ok(())
 }
 
-/*
 // If the crate for which we are generating bindings for depends on
 // a `uniffi` runtime version that doesn't agree with our own version,
 // the developer of that said crate will be in a world of pain.
@@ -153,11 +156,7 @@ fn ensure_versions_compatibility(
     // If --manifest-path is not provided, we run cargo `metadata` in the .idl dir.
     match manifest_path_override {
         Some(p) => {
-            metadata_cmd.manifest_path(
-                PathBuf::from(p)
-                    .canonicalize()
-                    .map_err(|e| anyhow!("Failed to find Cargo.toml file: {:?}", e))?,
-            );
+            metadata_cmd.manifest_path(p);
         }
         None => {
             metadata_cmd.current_dir(idl_file.parent().ok_or_else(|| anyhow!("no parent!"))?);
@@ -185,7 +184,6 @@ fn ensure_versions_compatibility(
     }
     Ok(())
 }
-*/
 
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
@@ -199,10 +197,18 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file.as_ref())
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
+
     let component = parse_idl(&idl_file)?;
+    let config = get_config(&component)?;
     let out_dir = get_out_dir(&idl_file, out_dir_override)?;
     for language in target_languages {
-        bindings::write_bindings(&component, &out_dir, language.try_into()?, try_format_code)?;
+        bindings::write_bindings(
+            &config.bindings,
+            &component,
+            &out_dir,
+            language.try_into()?,
+            try_format_code,
+        )?;
     }
     Ok(())
 }
@@ -219,7 +225,9 @@ pub fn run_tests<P: AsRef<Path>>(
     let idl_file = PathBuf::from(idl_file)
         .canonicalize()
         .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
+
     let component = parse_idl(&idl_file)?;
+    let config = get_config(&component)?;
 
     // Group the test scripts by language first.
     let mut language_tests: HashMap<TargetLanguage, Vec<String>> = HashMap::new();
@@ -235,13 +243,36 @@ pub fn run_tests<P: AsRef<Path>>(
     }
 
     for (lang, test_scripts) in language_tests {
-        bindings::write_bindings(&component, &cdylib_dir, lang, true)?;
-        bindings::compile_bindings(&component, &cdylib_dir, lang)?;
+        bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
+        bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;
         }
     }
     Ok(())
+}
+
+fn get_config(component: &ComponentInterface) -> Result<Config> {
+    let default_config: Config = component.into();
+
+    let pkg_path: PathBuf = env::var("CARGO_MANIFEST_DIR")
+        .expect("Missing $CARGO_MANIFEST_DIR, cannot load config file")
+        .into();
+
+    let config_file = pkg_path.join("uniffi.toml").canonicalize();
+
+    let config_file = match config_file {
+        Ok(f) => f,
+        Err(_) => return Ok(default_config),
+    };
+
+    let contents = slurp_file(&config_file)
+        .with_context(|| format!("Failed to read config file from {:?}", &config_file))?;
+
+    let loaded_config: Config = toml::de::from_str(&contents)
+        .with_context(|| format!("Failed to generate config from file {:?}", &config_file))?;
+
+    Ok(loaded_config.merge_with(&default_config))
 }
 
 fn get_out_dir(idl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
@@ -271,4 +302,40 @@ fn slurp_file(file_name: &Path) -> Result<String> {
     let mut f = File::open(file_name)?;
     f.read_to_string(&mut contents)?;
     Ok(contents)
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+struct Config {
+    #[serde(default)]
+    bindings: bindings::Config,
+}
+
+impl From<&ComponentInterface> for Config {
+    fn from(ci: &ComponentInterface) -> Self {
+        Config {
+            bindings: ci.into(),
+        }
+    }
+}
+
+pub trait MergeWith {
+    fn merge_with(&self, other: &Self) -> Self;
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            bindings: self.bindings.merge_with(&other.bindings),
+        }
+    }
+}
+
+impl<T: Clone> MergeWith for Option<T> {
+    fn merge_with(&self, other: &Self) -> Self {
+        match (self, other) {
+            (Some(_), _) => self.clone(),
+            (None, Some(_)) => other.clone(),
+            (None, None) => None,
+        }
+    }
 }

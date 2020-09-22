@@ -3,7 +3,7 @@
 
 @file:Suppress("NAME_SHADOWING")
 
-package {{ config.package_name }};
+package {{ config.package_name() }};
 
 // Common helper code.
 //
@@ -12,9 +12,9 @@ package {{ config.package_name }};
 //
 // However, it's important that the detils of how this helper code works (e.g. the
 // way that different builtin types are passed across the FFI) exactly match what's
-// expected by the rust code on the other side of the interface. In practice right
+// expected by the Rust code on the other side of the interface. In practice right
 // now that means coming from the exact some version of `uniffi` that was used to
-// compile the rust component. The easiest way to ensure this is to bundle the Kotlin
+// compile the Rust component. The easiest way to ensure this is to bundle the Kotlin
 // helpers directly inline like we're doing here.
 
 import com.sun.jna.Library

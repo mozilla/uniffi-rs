@@ -7,7 +7,11 @@ class {{ obj.name()|class_name_py }}(object):
     {%- endfor %}
 
     def __del__(self):
-        _UniFFILib.{{ obj.ffi_object_free().name() }}(self._handle)
+        rust_call_with_error(
+            InternalError,
+            _UniFFILib.{{ obj.ffi_object_free().name() }},
+            self._handle
+        )
 
     {% for meth in obj.methods() -%}
     {%- match meth.return_type() -%}

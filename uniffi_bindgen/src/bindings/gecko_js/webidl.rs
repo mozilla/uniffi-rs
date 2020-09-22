@@ -141,7 +141,11 @@ impl ReturningBindingFunction for Method {
 /// Returns `true` if a type is returned via an out parameter; `false` if
 /// by value.
 fn is_out_param_type(type_: &Type) -> bool {
-    matches!(type_, Type::String | Type::Optional(_) | Type::Record(_) | Type::Map(_) | Type::Sequence(_))
+    match type_ {
+        Type::String | Type::Record(_) | Type::Map(_) | Type::Sequence(_) => true,
+        Type::Optional(inner) => is_out_param_type(inner),
+        _ => false,
+    }
 }
 
 /// Describes how a function returns its result.

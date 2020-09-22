@@ -1,5 +1,7 @@
 # uniffi - a multi-language bindings generator for rust
 
+- [User manual](https://mozilla.github.io/uniffi-rs/)
+
 This is a little experiment in building cross-platform components in Rust, based on things
 we've learned in the [mozilla/application-services](https://github.com/mozilla/application-services)
 project.
@@ -37,7 +39,7 @@ continues to evolve.
 Using `uniffi`, you can:
 
 * Implement your software component as a `cdylib` crate in Rust; let's say the code is in `./src/lib.rs`.
-* Specify the desired component API using an abstract *Interface Definition Language*, in a separate file like `./src/lib.idl`.
+* Specify the desired component API using an *Interface Definition Language* (specifically, a variant of WebIDL) in a separate file like `./src/lib.idl`.
 * Run `uniffi-bindgen scaffolding ./src/lib.idl` to generate a bunch of boilerplate rust code that exposes this API as a C-compatible FFI layer.
   * Update `./src/lib.rs` to `include!()` this scaffolding code as part of your crate.
 * `cargo build` your crate as normal to produce a shared library.
@@ -78,7 +80,7 @@ and is currently the best source of truth for syntax and semantics of the IDL.
 Things that are implemented so far:
 
 * Primitive numeric types, equivalents to those offered by Rust (`u32`, `f64`, etc).
-* Strings (which are always unicode, like Rust's `String`).
+* Strings (which are always UTF-8, like Rust's `String`).
 * C-style enums (just the discriminant, no associated data).
 * C-style structs containing named fields (we call these *records*).
 * Sequences of all of the above (like Rust's `Vec<T>`).
@@ -143,4 +145,4 @@ It's up to you to combine the generated foreign-language code and the compiled r
 a suitable format for distribution (e.g. a `.jar` or android package for Kotlin).
 
 ## Code of Conduct
-Please check the project's [code of conduct](./CODE_OF_CONDUCT.md)
+Please check the project's [code of conduct](./CODE_OF_CONDUCT.md).
