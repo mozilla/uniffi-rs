@@ -84,6 +84,11 @@ impl RustBuffer {
             .expect("buffer length negative or overflowed")
     }
 
+    /// Returns true if the length of the buffer is 0.
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
     /// Creates a `RustBuffer` zero-filed to the requested size.
     ///
     /// The resulting vector will not be automatically dropped; you must
@@ -160,6 +165,12 @@ impl RustBuffer {
     /// which does not respect the invairiants on `len` and `capacity`.
     pub fn destroy(self) {
         drop(self.destroy_into_vec());
+    }
+}
+
+impl Default for RustBuffer {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
