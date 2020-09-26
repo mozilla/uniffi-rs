@@ -1,0 +1,12 @@
+[workspace]
+members = [
+  "uniffi_bindgen",
+  "uniffi_build",
+  "uniffi_macros",
+  "uniffi",
+  "examples/arithmetic",
+  "examples/geometry",
+  "examples/rondpoint",
+  "examples/sprites",
+  "examples/todolist"
+]
