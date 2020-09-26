@@ -15,11 +15,10 @@ use super::webidl::{
     BindingArgument, BindingFunction, ReturnBy, ReturningBindingFunction, ThrowBy,
 };
 
-// Some config options for the caller to customize the generated Gecko bindings.
-// Note that this can only be used to control details *that do not affect the
-// underlying component*, since the details of the underlying component are
-// entirely determined by the `ComponentInterface`.
-
+/// Config options for the generated Firefox front-end bindings. Note that this
+/// can only be used to control details *that do not affect the underlying
+/// component*, since the details of the underlying component are entirely
+/// determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     // ...
@@ -53,8 +52,8 @@ impl<'config, 'ci> WebIdl<'config, 'ci> {
 }
 
 /// A shared header file that's included by all our bindings. This defines
-/// common serialization logic and `extern` declarations for the FFI. Note that
-/// the bindings always include this header file, never the other way around.
+/// common serialization logic and `extern` declarations for the FFI. Thes
+/// namespace and interface source files `#include` this file.
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "SharedHeaderTemplate.h")]
 pub struct SharedHeader<'config, 'ci> {
@@ -68,7 +67,8 @@ impl<'config, 'ci> SharedHeader<'config, 'ci> {
     }
 }
 
-/// A header file generated for a namespace with top-level functions.
+/// A header file generated for a namespace containing top-level functions. If
+/// the namespace in the UniFFI IDL file is empty, this file isn't generated.
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "NamespaceHeaderTemplate.h")]
 pub struct NamespaceHeader<'config, 'ci> {
@@ -87,7 +87,8 @@ impl<'config, 'ci> NamespaceHeader<'config, 'ci> {
     }
 }
 
-/// An implementation file generated for a namespace with top-level functions.
+/// An implementation file for a namespace with top-level functions. If the
+/// namespace in the UniFFI IDL is empty, this isn't generated.
 #[derive(Template)]
 #[template(syntax = "cpp", escape = "none", path = "NamespaceTemplate.cpp")]
 pub struct Namespace<'config, 'ci> {
@@ -106,7 +107,7 @@ impl<'config, 'ci> Namespace<'config, 'ci> {
     }
 }
 
-/// A header file generated for an interface.
+/// A header file generated for each interface in the UniFFI IDL.
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "InterfaceHeaderTemplate.h")]
 pub struct InterfaceHeader<'config, 'ci> {
@@ -125,7 +126,7 @@ impl<'config, 'ci> InterfaceHeader<'config, 'ci> {
     }
 }
 
-/// An implementation file generated for a namespace with top-level functions.
+/// An implementation file generated for each interface in the UniFFI IDL.
 #[derive(Template)]
 #[template(syntax = "cpp", escape = "none", path = "InterfaceTemplate.cpp")]
 pub struct Interface<'config, 'ci> {
@@ -144,13 +145,35 @@ impl<'config, 'ci> Interface<'config, 'ci> {
     }
 }
 
-/// Filters for our Askama templates above. These output C++, XPIDL, and
-/// WebIDL.
+/// Filters for our Askama templates above. These output C++ and WebIDL.
 mod filters {
     use super::*;
     use std::fmt;
 
-    /// Declares a WebIDL type in the interface for this library.
+    /// Declares a WebIDL type.
+    ///
+    /// Terminology clarification: UniFFI IDL, the `ComponentInterface`,
+    /// and Firefox's WebIDL use different but overlapping names for
+    /// the same types.
+    ///
+    /// * `Type::Record` is called a "dictionary" in Firefox WebIDL. It's
+    ///   represented as `dictionary T` in UniFFI IDL and WebIDL.
+    /// * `Type::Object` is called an "interface" in Firefox WebIDL. It's
+    ///   represented as `interface T` in UniFFI IDL and WebIDL.
+    /// * `Type::Optional` is called "nullable" in Firefox WebIDL. It's
+    ///   represented as `T?` in UniFFI IDL and WebIDL.
+    /// * `Type::Map` is called a "record" in Firefox WebIDL. It's represented
+    ///   as `record<string, T>` in UniFFI IDL, and `record<DOMString, T>` in
+    ///   WebIDL.
+    ///
+    /// There are also semantic differences:
+    ///
+    /// * In UniFFI IDL, all `dictionary` members are required by default; in
+    ///   WebIDL, they're all optional. The generated WebIDL file adds a
+    ///   `required` keyword to each member.
+    /// * In UniFFI IDL, an argument can specify a default value directly.
+    ///   In WebIDL, arguments with default values must have the `optional`
+    ///   keyword.
     pub fn type_webidl(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8 => "byte".into(),
@@ -175,7 +198,7 @@ mod filters {
         })
     }
 
-    /// ...
+    /// Emits a literal default value for WebIDL.
     pub fn literal_webidl(literal: &Literal) -> Result<String, askama::Error> {
         Ok(match literal {
             Literal::Boolean(v) => format!("{}", v),
@@ -427,7 +450,10 @@ mod filters {
 
     pub fn enum_variant_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         // TODO: Make sure this does the right thing for hyphenated variants.
-        // Example: "bookmark-added" becomes `Bookmark_added`.
+        // Example: "bookmark-added" should become `Bookmark_added`, because
+        // that's what Firefox's `Codegen.py` spits out.
+        //
+        // https://github.com/mozilla/uniffi-rs/issues/294
         Ok(nm.to_string().to_camel_case())
     }
 

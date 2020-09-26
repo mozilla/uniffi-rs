@@ -1,17 +1,28 @@
 namespace {{ ci.namespace()|detail_cpp }} {
 
-/// A helper class to read values out of a Rust byte buffer.
+// Estimates the worst-case UTF-8 encoded length for a UTF-16 string.
+CheckedInt<size_t> EstimateUTF8Length(size_t aUTF16Length) {
+  // `ConvertUtf16toUtf8` expects the destination to have at least three times
+  // as much space as the source string, even if it doesn't use the excess
+  // capacity.
+  CheckedInt<size_t> length(aUTF16Length);
+  length *= 3;
+  return length;
+}
+
+/// Reads values out of a byte buffer received from Rust.
 class MOZ_STACK_CLASS Reader final {
  public:
   explicit Reader(const RustBuffer& aBuffer) : mBuffer(aBuffer), mOffset(0) {}
 
-  /// Indicates if the offset has reached the end of the buffer.
-  bool HasRemaining() {
-    return static_cast<int64_t>(mOffset.value()) < mBuffer.mLen;
-  }
+  /// Returns `true` if there are unread bytes in the buffer, or `false` if the
+  /// current position has reached the end of the buffer. If `HasRemaining()`
+  /// returns `false`, attempting to read any more values from the buffer will
+  /// assert.
+  bool HasRemaining() { return mOffset.value() < mBuffer.mLen; }
 
-  /// Helpers to read fixed-width primitive types at the current offset.
-  /// Fixed-width integers are read in big endian order.
+  /// `Read{U}Int{8, 16, 32, 64}` read fixed-width integers from the buffer at
+  /// the current position.
 
   uint8_t ReadUInt8() {
     return ReadAt<uint8_t>(
@@ -24,6 +35,9 @@ class MOZ_STACK_CLASS Reader final {
     return ReadAt<uint16_t>([this](size_t aOffset) {
       uint16_t value;
       memcpy(&value, &mBuffer.mData[aOffset], sizeof(uint16_t));
+      // `PR_ntohs` ("network to host, short") because the UniFFI serialization
+      // format encodes integers in big-endian order (also called
+      // "network byte order").
       return PR_ntohs(value);
     });
   }
@@ -50,42 +64,51 @@ class MOZ_STACK_CLASS Reader final {
 
   int64_t ReadInt64() { return BitwiseCast<int64_t>(ReadUInt64()); }
 
+  /// `Read{Float, Double}` reads a floating-point number from the buffer at
+  /// the current position.
+
   float ReadFloat() { return BitwiseCast<float>(ReadUInt32()); }
 
   double ReadDouble() { return BitwiseCast<double>(ReadUInt64()); }
 
-  /// Reads a length-prefixed UTF-8 encoded string at the current offset. The
-  /// closure takes a `Span` pointing to the raw bytes, which it can use to
-  /// copy the bytes into an `nsCString` or `nsString`.
-  ///
-  /// Safety: The closure must copy the span's contents into a new owned string.
-  /// It must not hold on to the span, as its contents will be invalidated when
-  /// the backing Rust byte buffer is freed. It must not call any other methods
-  /// on the reader.
-  template <typename T>
-  void ReadRawString(
-      T& aString,
-      const std::function<void(Span<const char>, T& aString)>& aClosure) {
-    uint32_t length = ReadUInt32();
-    CheckedInt<size_t> newOffset = mOffset;
+  /// Reads a sequence or record length from the buffer at the current position.
+  size_t ReadLength() {
+    // The UniFFI serialization format uses signed integers for lengths.
+    int32_t length = ReadInt32();
+    MOZ_RELEASE_ASSERT(length >= 0);
+    return static_cast<size_t>(length);
+  }
+
+  /// Reads a UTF-8 encoded string at the current position.
+  void ReadCString(nsACString& aValue) {
+    int32_t length = ReadInt32();
+    CheckedInt<int32_t> newOffset = mOffset;
     newOffset += length;
     AssertInBounds(newOffset);
-    const char* begin =
-        reinterpret_cast<const char*>(&mBuffer.mData[mOffset.value()]);
-    aClosure(Span(begin, length), aString);
+    aValue.Append(AsChars(Span(&mBuffer.mData[mOffset.value()], length)));
+    mOffset = newOffset;
+  }
+
+  /// Reads a UTF-16 encoded string at the current position.
+  void ReadString(nsAString& aValue) {
+    uint32_t length = ReadUInt32();
+    CheckedInt<int32_t> newOffset = mOffset;
+    newOffset += length;
+    AssertInBounds(newOffset);
+    AppendUTF8toUTF16(AsChars(Span(&mBuffer.mData[mOffset.value()], length)),
+                      aValue);
     mOffset = newOffset;
   }
 
  private:
-  void AssertInBounds(const CheckedInt<size_t>& aNewOffset) const {
+  void AssertInBounds(const CheckedInt<int32_t>& aNewOffset) const {
     MOZ_RELEASE_ASSERT(aNewOffset.isValid() &&
-                       static_cast<int64_t>(aNewOffset.value()) <=
-                           mBuffer.mLen);
+                       aNewOffset.value() <= mBuffer.mLen);
   }
 
   template <typename T>
   T ReadAt(const std::function<T(size_t)>& aClosure) {
-    CheckedInt<size_t> newOffset = mOffset;
+    CheckedInt<int32_t> newOffset = mOffset;
     newOffset += sizeof(T);
     AssertInBounds(newOffset);
     T result = aClosure(mOffset.value());
@@ -94,16 +117,26 @@ class MOZ_STACK_CLASS Reader final {
   }
 
   const RustBuffer& mBuffer;
-  CheckedInt<size_t> mOffset;
+  CheckedInt<int32_t> mOffset;
 };
 
+/// Writes values into a Rust buffer.
 class MOZ_STACK_CLASS Writer final {
  public:
-  explicit Writer(size_t aCapacity) : mBuffer(aCapacity) {}
+  Writer() {
+    RustError err = {0, nullptr};
+    mBuffer = {{ ci.ffi_rustbuffer_alloc().name() }}(0, &err);
+    if (err.mCode) {
+      MOZ_ASSERT(false, "Failed to allocate Rust buffer");
+    }
+  }
+
+  /// `Write{U}Int{8, 16, 32, 64}` write fixed-width integers into the buffer at
+  /// the current position.
 
   void WriteUInt8(const uint8_t& aValue) {
-    WriteAt<uint8_t>(aValue, [this](size_t aOffset, const uint8_t& aValue) {
-      mBuffer[aOffset] = aValue;
+    WriteAt<uint8_t>(aValue, [](uint8_t* aBuffer, const uint8_t& aValue) {
+      *aBuffer = aValue;
     });
   }
 
@@ -111,15 +144,13 @@ class MOZ_STACK_CLASS Writer final {
     WriteUInt8(BitwiseCast<uint8_t>(aValue));
   }
 
-  // This code uses `memcpy` and other eye-twitchy patterns because it
-  // originally wrote values directly into a `RustBuffer`, instead of
-  // an intermediate `nsTArray`. Once #251 is fixed, we can return to
-  // doing that, and remove `ToRustBuffer`.
-
   void WriteUInt16(const uint16_t& aValue) {
-    WriteAt<uint16_t>(aValue, [this](size_t aOffset, const uint16_t& aValue) {
+    WriteAt<uint16_t>(aValue, [](uint8_t* aBuffer, const uint16_t& aValue) {
+      // `PR_htons` ("host to network, short") because, as mentioned above, the
+      // UniFFI serialization format encodes integers in big-endian (network
+      // byte) order.
       uint16_t value = PR_htons(aValue);
-      memcpy(&mBuffer.Elements()[aOffset], &value, sizeof(uint16_t));
+      memcpy(aBuffer, &value, sizeof(uint16_t));
     });
   }
 
@@ -128,9 +159,9 @@ class MOZ_STACK_CLASS Writer final {
   }
 
   void WriteUInt32(const uint32_t& aValue) {
-    WriteAt<uint32_t>(aValue, [this](size_t aOffset, const uint32_t& aValue) {
+    WriteAt<uint32_t>(aValue, [](uint8_t* aBuffer, const uint32_t& aValue) {
       uint32_t value = PR_htonl(aValue);
-      memcpy(&mBuffer.Elements()[aOffset], &value, sizeof(uint32_t));
+      memcpy(aBuffer, &value, sizeof(uint32_t));
     });
   }
 
@@ -139,15 +170,18 @@ class MOZ_STACK_CLASS Writer final {
   }
 
   void WriteUInt64(const uint64_t& aValue) {
-    WriteAt<uint64_t>(aValue, [this](size_t aOffset, const uint64_t& aValue) {
+    WriteAt<uint64_t>(aValue, [](uint8_t* aBuffer, const uint64_t& aValue) {
       uint64_t value = PR_htonll(aValue);
-      memcpy(&mBuffer.Elements()[aOffset], &value, sizeof(uint64_t));
+      memcpy(aBuffer, &value, sizeof(uint64_t));
     });
   }
 
   void WriteInt64(const int64_t& aValue) {
     WriteUInt64(BitwiseCast<uint64_t>(aValue));
   }
+
+  /// `Write{Float, Double}` writes a floating-point number into the buffer at
+  /// the current position.
 
   void WriteFloat(const float& aValue) {
     WriteUInt32(BitwiseCast<uint32_t>(aValue));
@@ -157,83 +191,80 @@ class MOZ_STACK_CLASS Writer final {
     WriteUInt64(BitwiseCast<uint64_t>(aValue));
   }
 
-  /// Writes a length-prefixed UTF-8 encoded string at the current offset. The
-  /// closure takes a `Span` pointing to the byte buffer, which it should fill
-  /// with bytes and return the actual number of bytes written.
-  ///
-  /// This function is (more than a little) convoluted. It's written this way
-  /// because we want to support UTF-8 and UTF-16 strings. The "size hint" is
-  /// the maximum number of bytes that the closure can write. For UTF-8 strings,
-  /// this is just the length. For UTF-16 strings, which must be converted to
-  /// UTF-8, this can be up to three times the length. Once the closure tells us
-  /// how many bytes it's actually written, we can write the length prefix, and
-  /// advance the current offset.
-  ///
-  /// Safety: The closure must copy the string's contents into the span, and
-  /// return the exact number of bytes it copied. Returning the wrong count can
-  /// either truncate the string, or leave uninitialized memory in the buffer.
-  /// The closure must not call any other methods on the writer.
-  void WriteRawString(size_t aSizeHint,
-                      const std::function<size_t(Span<char>)>& aClosure) {
-    // First, make sure the buffer is big enough to hold the length prefix.
-    // We'll start writing our string directly after the prefix.
-    CheckedInt<size_t> newOffset = mOffset;
-    newOffset += sizeof(uint32_t);
-    AssertInBounds(newOffset);
-    char* begin =
-        reinterpret_cast<char*>(&mBuffer.Elements()[newOffset.value()]);
+  /// Writes a sequence or record length into the buffer at the current
+  /// position.
+  void WriteLength(size_t aValue) {
+    MOZ_RELEASE_ASSERT(
+        aValue <= static_cast<size_t>(std::numeric_limits<int32_t>::max()));
+    WriteInt32(static_cast<int32_t>(aValue));
+  }
 
-    // Next, ensure the buffer has space for enough bytes up to the size hint.
-    // We may write fewer bytes than hinted, but we need to handle the worst
-    // case if needed.
-    newOffset += aSizeHint;
-    AssertInBounds(newOffset);
+  /// Writes a UTF-8 encoded string at the current offset.
+  void WriteCString(const nsACString& aValue) {
+    CheckedInt<size_t> size(aValue.Length());
+    size += sizeof(uint32_t);  // For the length prefix.
+    MOZ_RELEASE_ASSERT(size.isValid());
+    Reserve(size.value());
 
-    // Call the closure to write the bytes directly into the buffer.
-    size_t bytesWritten = aClosure(Span(begin, aSizeHint));
+    // Write the length prefix first...
+    uint32_t lengthPrefix = PR_htonl(aValue.Length());
+    memcpy(&mBuffer.mData[mBuffer.mLen], &lengthPrefix, sizeof(uint32_t));
 
-    // Great, now we know the real length! Write it at the beginning.
+    // ...Then the string.
+    memcpy(&mBuffer.mData[mBuffer.mLen + sizeof(uint32_t)],
+           aValue.BeginReading(), aValue.Length());
+
+    mBuffer.mLen += static_cast<int32_t>(size.value());
+  }
+
+  /// Writes a UTF-16 encoded string at the current offset.
+  void WriteString(const nsAString& aValue) {
+    auto maxSize = EstimateUTF8Length(aValue.Length());
+    maxSize += sizeof(uint32_t);  // For the length prefix.
+    MOZ_RELEASE_ASSERT(maxSize.isValid());
+    Reserve(maxSize.value());
+
+    // Convert the string to UTF-8 first...
+    auto span = AsWritableChars(Span(
+        &mBuffer.mData[mBuffer.mLen + sizeof(uint32_t)], aValue.Length() * 3));
+    size_t bytesWritten = ConvertUtf16toUtf8(aValue, span);
+
+    // And then write the length prefix, with the actual number of bytes
+    // written.
     uint32_t lengthPrefix = PR_htonl(bytesWritten);
-    memcpy(&mBuffer.Elements()[mOffset.value()], &lengthPrefix,
-           sizeof(uint32_t));
+    memcpy(&mBuffer.mData[mBuffer.mLen], &lengthPrefix, sizeof(uint32_t));
 
-    // And figure out our actual offset.
-    newOffset -= aSizeHint;
-    newOffset += bytesWritten;
-    AssertInBounds(newOffset);
-    mOffset = newOffset;
+    mBuffer.mLen += static_cast<int32_t>(bytesWritten) + sizeof(uint32_t);
   }
 
-  RustBuffer ToRustBuffer() {
-    auto size = static_cast<int32_t>(mOffset.value());
-    ForeignBytes bytes = {size, mBuffer.Elements()};
-    RustError err = {0, nullptr};
-    RustBuffer buffer = {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, &err);
-    if (err.mCode) {
-      MOZ_ASSERT(false, "Failed to copy serialized data into Rust buffer");
-    }
-    return buffer;
-  }
+  /// Returns the buffer.
+  RustBuffer Buffer() { return mBuffer; }
 
  private:
-  void AssertInBounds(const CheckedInt<size_t>& aNewOffset) const {
-    MOZ_RELEASE_ASSERT(aNewOffset.isValid() &&
-                       aNewOffset.value() <= mBuffer.Capacity());
+  /// Reserves the requested number of bytes in the Rust buffer, aborting on
+  /// allocation failure.
+  void Reserve(size_t aBytes) {
+    if (aBytes >= static_cast<size_t>(std::numeric_limits<int32_t>::max())) {
+      NS_ABORT_OOM(aBytes);
+    }
+    RustError err = {0, nullptr};
+    RustBuffer newBuffer = {{ ci.ffi_rustbuffer_reserve().name() }}(
+      mBuffer, static_cast<int32_t>(aBytes), &err);
+    if (err.mCode) {
+      NS_ABORT_OOM(aBytes);
+    }
+    mBuffer = newBuffer;
   }
 
   template <typename T>
   void WriteAt(const T& aValue,
-               const std::function<void(size_t, const T&)>& aClosure) {
-    CheckedInt<size_t> newOffset = mOffset;
-    newOffset += sizeof(T);
-    AssertInBounds(newOffset);
-    mBuffer.SetLength(newOffset.value());
-    aClosure(mOffset.value(), aValue);
-    mOffset = newOffset;
+               const std::function<void(uint8_t*, const T&)>& aClosure) {
+    Reserve(sizeof(T));
+    aClosure(&mBuffer.mData[mBuffer.mLen], aValue);
+    mBuffer.mLen += sizeof(T);
   }
 
-  nsTArray<uint8_t> mBuffer;
-  CheckedInt<size_t> mOffset;
+  RustBuffer mBuffer;
 };
 
 /// A "trait" struct with specializations for types that can be read and
@@ -241,10 +272,6 @@ class MOZ_STACK_CLASS Writer final {
 /// types.
 template <typename T>
 struct Serializable {
-  /// Returns the size of the serialized value, in bytes. This is used to
-  /// calculate the allocation size for the Rust byte buffer.
-  static CheckedInt<size_t> Size(const T& aValue) = delete;
-
   /// Reads a value of type `T` from a byte buffer.
   static bool ReadFrom(Reader& aReader, T& aValue) = delete;
 
@@ -259,7 +286,17 @@ struct Serializable {
 /// the FFI can be lifted into a value of type `T`.
 template <typename T, typename FfiType>
 struct ViaFfi {
+  /// Converts a low-level `FfiType`, which is a POD (Plain Old Data) type that
+  /// can be passed over the FFI, into a high-level type `T`.
+  ///
+  /// `T` is passed as an "out" parameter because some high-level types, like
+  /// dictionaries, can't be returned by value.
   static bool Lift(const FfiType& aLowered, T& aLifted) = delete;
+
+  /// Converts a high-level type `T` into a low-level `FfiType`. `FfiType` is
+  /// returned by value because it's guaranteed to be a POD, and because it
+  /// simplifies the `ViaFfi::Lower` calls that are generated for each argument
+  /// to an FFI function.
   static FfiType Lower(const T& aLifted) = delete;
 };
 
@@ -268,9 +305,6 @@ struct ViaFfi {
 #define UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(Type, readFunc, writeFunc)  \
   template <>                                                                \
   struct Serializable<Type> {                                                \
-    static CheckedInt<size_t> Size(const Type& aValue) {                     \
-      return sizeof(Type);                                                   \
-    }                                                                        \
     [[nodiscard]] static bool ReadFrom(Reader& aReader, Type& aValue) {      \
       aValue = aReader.readFunc();                                           \
       return true;                                                           \
@@ -299,12 +333,11 @@ UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(int64_t, ReadInt64, WriteInt64);
 UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(float, ReadFloat, WriteFloat);
 UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(double, ReadDouble, WriteDouble);
 
-/// Booleans are passed as unsigned integers over the FFI, because JNA doesn't
-/// handle `bool`s well.
+/// In the UniFFI serialization format, Booleans are passed as `int8_t`s over
+/// the FFI.
 
 template <>
 struct Serializable<bool> {
-  static CheckedInt<size_t> Size(const bool& aValue) { return 1; }
   [[nodiscard]] static bool ReadFrom(Reader& aReader, bool& aValue) {
     aValue = aReader.ReadUInt8() != 0;
     return true;
@@ -341,26 +374,12 @@ struct ViaFfi<bool, int8_t> {
 
 template <>
 struct Serializable<nsACString> {
-  static CheckedInt<size_t> Size(const nsACString& aValue) {
-    CheckedInt<size_t> size(aValue.Length());
-    size += sizeof(uint32_t);  // For the length prefix.
-    return size;
-  }
-
   [[nodiscard]] static bool ReadFrom(Reader& aReader, nsACString& aValue) {
-    aValue.Truncate();
-    aReader.ReadRawString<nsACString>(
-        aValue, [](Span<const char> aRawString, nsACString& aValue) {
-          aValue.Append(aRawString);
-        });
+    aReader.ReadCString(aValue);
     return true;
   }
-
   static void WriteInto(Writer& aWriter, const nsACString& aValue) {
-    aWriter.WriteRawString(aValue.Length(), [&](Span<char> aRawString) {
-      memcpy(aRawString.Elements(), aValue.BeginReading(), aRawString.Length());
-      return aRawString.Length();
-    });
+    aWriter.WriteCString(aValue);
   }
 };
 
@@ -368,7 +387,6 @@ template <>
 struct ViaFfi<nsACString, RustBuffer> {
   [[nodiscard]] static bool Lift(const RustBuffer& aLowered,
                                  nsACString& aLifted) {
-    aLifted.Truncate();
     if (aLowered.mData) {
       aLifted.Append(AsChars(Span(aLowered.mData, aLowered.mLen)));
       RustError err = {0, nullptr};
@@ -382,6 +400,9 @@ struct ViaFfi<nsACString, RustBuffer> {
   }
 
   [[nodiscard]] static RustBuffer Lower(const nsACString& aLifted) {
+    MOZ_RELEASE_ASSERT(
+        aLifted.Length() <=
+        static_cast<size_t>(std::numeric_limits<int32_t>::max()));
     RustError err = {0, nullptr};
     ForeignBytes bytes = {
         static_cast<int32_t>(aLifted.Length()),
@@ -394,55 +415,14 @@ struct ViaFfi<nsACString, RustBuffer> {
   }
 };
 
-/// Shared traits for serializing `nsString`s and `nsAString`s.
-template <typename T>
-struct StringTraits {
-  static CheckedInt<size_t> Size(const T& aValue) {
-    auto size = EstimateUTF8Length(aValue);
-    size += sizeof(uint32_t);  // For the length prefix.
-    return size;
-  }
-
-  [[nodiscard]] static bool ReadFrom(Reader& aReader, T& aValue) {
-    aValue.Truncate();
-    aReader.ReadRawString<T>(aValue,
-                             [](Span<const char> aRawString, T& aValue) {
-                               AppendUTF8toUTF16(aRawString, aValue);
-                             });
-    return true;
-  }
-
-  static void WriteInto(Writer& aWriter, const T& aValue) {
-    auto length = EstimateUTF8Length(aValue);
-    MOZ_RELEASE_ASSERT(length.isValid());
-    aWriter.WriteRawString(length.value(), [&](Span<char> aRawString) {
-      return ConvertUtf16toUtf8(aValue, aRawString);
-    });
-  }
-
-  /// Estimates the UTF-8 encoded length of a UTF-16 string. This is a
-  /// worst-case estimate.
-  static CheckedInt<size_t> EstimateUTF8Length(const T& aUTF16) {
-    CheckedInt<size_t> length(aUTF16.Length());
-    // `ConvertUtf16toUtf8` expects the destination to have at least three times
-    // as much space as the source string.
-    length *= 3;
-    return length;
-  }
-};
-
 template <>
 struct Serializable<nsAString> {
-  static CheckedInt<size_t> Size(const nsAString& aValue) {
-    return StringTraits<nsAString>::Size(aValue);
-  }
-
   [[nodiscard]] static bool ReadFrom(Reader& aReader, nsAString& aValue) {
-    return StringTraits<nsAString>::ReadFrom(aReader, aValue);
+    aReader.ReadString(aValue);
+    return true;
   }
-
   static void WriteInto(Writer& aWriter, const nsAString& aValue) {
-    StringTraits<nsAString>::WriteInto(aWriter, aValue);
+    aWriter.WriteString(aValue);
   }
 };
 
@@ -450,7 +430,6 @@ template <>
 struct ViaFfi<nsAString, RustBuffer> {
   [[nodiscard]] static bool Lift(const RustBuffer& aLowered,
                                  nsAString& aLifted) {
-    aLifted.Truncate();
     if (aLowered.mData) {
       CopyUTF8toUTF16(AsChars(Span(aLowered.mData, aLowered.mLen)), aLifted);
       RustError err = {0, nullptr};
@@ -464,34 +443,35 @@ struct ViaFfi<nsAString, RustBuffer> {
   }
 
   [[nodiscard]] static RustBuffer Lower(const nsAString& aLifted) {
-    // Encode the string to UTF-8, then make a Rust string from the contents.
-    // This copies the string twice, but is safe.
-    nsAutoCString utf8;
-    CopyUTF16toUTF8(aLifted, utf8);
-    ForeignBytes bytes = {
-        static_cast<int32_t>(utf8.Length()),
-        reinterpret_cast<const uint8_t*>(utf8.BeginReading())};
+    auto maxSize = EstimateUTF8Length(aLifted.Length());
+    MOZ_RELEASE_ASSERT(
+        maxSize.isValid() &&
+        maxSize.value() <=
+            static_cast<size_t>(std::numeric_limits<int32_t>::max()));
+
     RustError err = {0, nullptr};
-    RustBuffer lowered = {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, &err);
+    RustBuffer lowered = {{ ci.ffi_rustbuffer_alloc().name() }}(
+      static_cast<int32_t>(maxSize.value()), &err);
     if (err.mCode) {
       MOZ_ASSERT(false, "Failed to lower `nsAString` into Rust string");
     }
+
+    auto span = AsWritableChars(Span(lowered.mData, aLifted.Length() * 3));
+    size_t bytesWritten = ConvertUtf16toUtf8(aLifted, span);
+    lowered.mLen = static_cast<int32_t>(bytesWritten);
+
     return lowered;
   }
 };
 
 template <>
 struct Serializable<nsString> {
-  static CheckedInt<size_t> Size(const nsString& aValue) {
-    return StringTraits<nsString>::Size(aValue);
-  }
-
   [[nodiscard]] static bool ReadFrom(Reader& aReader, nsString& aValue) {
-    return StringTraits<nsString>::ReadFrom(aReader, aValue);
+    aReader.ReadString(aValue);
+    return true;
   }
-
   static void WriteInto(Writer& aWriter, const nsString& aValue) {
-    StringTraits<nsString>::WriteInto(aWriter, aValue);
+    aWriter.WriteString(aValue);
   }
 };
 
@@ -508,18 +488,11 @@ struct Serializable<nsString> {
 
 template <typename T>
 struct Serializable<dom::Nullable<T>> {
-  static CheckedInt<size_t> Size(const dom::Nullable<T>& aValue) {
-    if (aValue.IsNull()) {
-      return 1;
-    }
-    CheckedInt<size_t> size(1);
-    size += Serializable<T>::Size(aValue.Value());
-    return size;
-  }
-
-  [[nodiscard]] static bool ReadFrom(Reader& aReader, dom::Nullable<T>& aValue) {
+  [[nodiscard]] static bool ReadFrom(Reader& aReader,
+                                     dom::Nullable<T>& aValue) {
     uint8_t hasValue = aReader.ReadUInt8();
     if (hasValue != 0 && hasValue != 1) {
+      MOZ_ASSERT(false);
       return false;
     }
     if (!hasValue) {
@@ -553,55 +526,29 @@ struct Serializable<dom::Nullable<T>> {
 /// arguments; `nsTArray<T>` is for sequence return values and dictionary
 /// members.
 
-/// Shared traits for serializing sequences.
-template <typename T>
-struct SequenceTraits {
-  static CheckedInt<size_t> Size(const T& aValue) {
-    CheckedInt<size_t> size;
-    size += sizeof(int32_t);  // For the length prefix.
-    for (const typename T::elem_type& element : aValue) {
-      size += Serializable<typename T::elem_type>::Size(element);
-    }
-    return size;
-  }
-
-  static void WriteInto(Writer& aWriter, const T& aValue) {
-    aWriter.WriteUInt32(aValue.Length());
-    for (const typename T::elem_type& element : aValue) {
-      Serializable<typename T::elem_type>::WriteInto(aWriter, element);
-    }
-  }
-};
-
 template <typename T>
 struct Serializable<dom::Sequence<T>> {
-  static CheckedInt<size_t> Size(const dom::Sequence<T>& aValue) {
-    return SequenceTraits<dom::Sequence<T>>::Size(aValue);
-  }
-
   // We leave `ReadFrom` unimplemented because sequences should only be
   // lowered from the C++ WebIDL binding to the FFI. If the FFI function
   // returns a sequence, it'll be lifted into an `nsTArray<T>`, not a
   // `dom::Sequence<T>`. See the note about sequences above.
   [[nodiscard]] static bool ReadFrom(Reader& aReader,
-                                    dom::Sequence<T>& aValue) = delete;
+                                     dom::Sequence<T>& aValue) = delete;
 
   static void WriteInto(Writer& aWriter, const dom::Sequence<T>& aValue) {
-    SequenceTraits<dom::Sequence<T>>::WriteInto(aWriter, aValue);
+    aWriter.WriteLength(aValue.Length());
+    for (const T& element : aValue) {
+      Serializable<T>::WriteInto(aWriter, element);
+    }
   }
 };
 
 template <typename T>
 struct Serializable<nsTArray<T>> {
-  static CheckedInt<size_t> Size(const nsTArray<T>& aValue) {
-    return SequenceTraits<nsTArray<T>>::Size(aValue);
-  }
-
   [[nodiscard]] static bool ReadFrom(Reader& aReader, nsTArray<T>& aValue) {
-    uint32_t length = aReader.ReadUInt32();
+    size_t length = aReader.ReadLength();
     aValue.SetCapacity(length);
-    aValue.TruncateLength(0);
-    for (uint32_t i = 0; i < length; ++i) {
+    for (size_t i = 0; i < length; ++i) {
       if (!Serializable<T>::ReadFrom(aReader, *aValue.AppendElement())) {
         return false;
       }
@@ -610,27 +557,19 @@ struct Serializable<nsTArray<T>> {
   };
 
   static void WriteInto(Writer& aWriter, const nsTArray<T>& aValue) {
-    SequenceTraits<nsTArray<T>>::WriteInto(aWriter, aValue);
+    aWriter.WriteLength(aValue.Length());
+    for (const T& element : aValue) {
+      Serializable<T>::WriteInto(aWriter, element);
+    }
   }
 };
 
 template <typename K, typename V>
 struct Serializable<Record<K, V>> {
-  static CheckedInt<size_t> Size(const Record<K, V>& aValue) {
-    CheckedInt<size_t> size;
-    size += sizeof(uint32_t);  // For the length prefix.
-    for (const typename Record<K, V>::EntryType& entry : aValue.Entries()) {
-      size += Serializable<K>::Size(entry.mKey);
-      size += Serializable<V>::Size(entry.mValue);
-    }
-    return size;
-  }
-
   [[nodiscard]] static bool ReadFrom(Reader& aReader, Record<K, V>& aValue) {
-    uint32_t length = aReader.ReadUInt32();
+    size_t length = aReader.ReadLength();
     aValue.Entries().SetCapacity(length);
-    aValue.Entries().TruncateLength(0);
-    for (uint32_t i = 0; i < length; ++i) {
+    for (size_t i = 0; i < length; ++i) {
       typename Record<K, V>::EntryType* entry =
           aValue.Entries().AppendElement();
       if (!Serializable<K>::ReadFrom(aReader, entry->mKey)) {
@@ -644,7 +583,7 @@ struct Serializable<Record<K, V>> {
   };
 
   static void WriteInto(Writer& aWriter, const Record<K, V>& aValue) {
-    aWriter.WriteUInt32(aValue.Entries().Length());
+    aWriter.WriteLength(aValue.Entries().Length());
     for (const typename Record<K, V>::EntryType& entry : aValue.Entries()) {
       Serializable<K>::WriteInto(aWriter, entry.mKey);
       Serializable<V>::WriteInto(aWriter, entry.mValue);
@@ -676,11 +615,9 @@ struct ViaFfi<T, RustBuffer> {
   }
 
   [[nodiscard]] static RustBuffer Lower(const T& aLifted) {
-    CheckedInt<size_t> size = Serializable<T>::Size(aLifted);
-    MOZ_RELEASE_ASSERT(size.isValid());
-    auto writer = Writer(size.value());
+    auto writer = Writer();
     Serializable<T>::WriteInto(writer, aLifted);
-    return writer.ToRustBuffer();
+    return writer.Buffer();
   }
 };
 

@@ -23,7 +23,7 @@ NS_INTERFACE_MAP_END
 
 {{ obj.name()|class_name_cpp }}::{{ obj.name()|class_name_cpp }}(
   nsIGlobalObject* aGlobal,
-  int64_t aHandle
+  uint64_t aHandle
 ) : mGlobal(aGlobal), mHandle(aHandle) {}
 
 {{ obj.name()|class_name_cpp }}::~{{ obj.name()|class_name_cpp }}() {

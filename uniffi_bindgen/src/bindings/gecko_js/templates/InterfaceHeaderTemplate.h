@@ -23,7 +23,7 @@ class {{ obj.name()|class_name_cpp }} final : public nsISupports, public nsWrapp
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS({{ obj.name()|class_name_cpp }})
 
-  {{ obj.name()|class_name_cpp }}(nsIGlobalObject* aGlobal, int64_t aHandle);
+  {{ obj.name()|class_name_cpp }}(nsIGlobalObject* aGlobal, uint64_t aHandle);
 
   JSObject* WrapObject(JSContext* aCx,
                        JS::Handle<JSObject*> aGivenProto) override;
@@ -52,7 +52,7 @@ class {{ obj.name()|class_name_cpp }} final : public nsISupports, public nsWrapp
   ~{{ obj.name()|class_name_cpp }}();
 
   nsCOMPtr<nsIGlobalObject> mGlobal;
-  int64_t mHandle;
+  uint64_t mHandle;
 };
 
 }  // namespace dom

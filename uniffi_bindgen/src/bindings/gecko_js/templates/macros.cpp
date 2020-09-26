@@ -38,6 +38,8 @@
   if ({{ err }}.mCode) {
     {%- match func.throw_by() %}
     {%- when ThrowBy::ErrorResult with (rv) %}
+    {# /* TODO: Improve error throwing. See https://github.com/mozilla/uniffi-rs/issues/295
+          for details. */ -#}
     {{ rv }}.ThrowOperationError({{ err }}.mMessage);
     {%- when ThrowBy::Assert %}
     MOZ_ASSERT(false);
@@ -47,11 +49,11 @@
   {%- match func.return_by() %}
   {%- when ReturnBy::OutParam with (name, type_) %}
   DebugOnly<bool> ok_ = {{ namespace|lift_cpp(type_, result, name) }};
-  MOZ_ASSERT(ok_);
+  MOZ_RELEASE_ASSERT(ok_);
   {%- when ReturnBy::Value with (type_) %}
   {{ type_|type_cpp }} retVal_;
   DebugOnly<bool> ok_ = {{ namespace|lift_cpp(type_, result, "retVal_") }};
-  MOZ_ASSERT(ok_);
+  MOZ_RELEASE_ASSERT(ok_);
   return retVal_;
   {%- when ReturnBy::Void %}{%- endmatch %}
 {%- endmacro -%}

@@ -6,6 +6,7 @@
 
 #include <functional>
 
+#include "nsDebug.h"
 #include "nsTArray.h"
 #include "prnetdb.h"
 
@@ -59,10 +60,6 @@ struct ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
 
 template <>
 struct Serializable<{{ e.name()|class_name_cpp }}> {
-  static CheckedInt<size_t> Size(const {{ e.name()|class_name_cpp }}& aValue) {
-    return sizeof(uint32_t);
-  }
-
   static MOZ_MUST_USE bool ReadFrom(Reader& aReader, {{ e.name()|class_name_cpp }}& aValue) {
     auto rawValue = aReader.ReadUInt32();
     return ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t>::Lift(rawValue, aValue);
@@ -77,14 +74,6 @@ struct Serializable<{{ e.name()|class_name_cpp }}> {
 {% for rec in ci.iter_record_definitions() -%}
 template <>
 struct Serializable<{{ rec.name()|class_name_cpp }}> {
-  static CheckedInt<size_t> Size(const {{ rec.name()|class_name_cpp }}& aValue) {
-    CheckedInt<size_t> size;
-    {%- for field in rec.fields() %}
-    size += Serializable<{{ field.type_()|type_cpp }}>::Size(aValue.{{ field.name()|field_name_cpp }});
-    {%- endfor %}
-    return size;
-  }
-
   static MOZ_MUST_USE bool ReadFrom(Reader& aReader, {{ rec.name()|class_name_cpp }}& aValue) {
     {%- for field in rec.fields() %}
     if (!Serializable<{{ field.type_()|type_cpp }}>::ReadFrom(aReader, aValue.{{ field.name()|field_name_cpp }})) {
