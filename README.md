@@ -10,6 +10,13 @@ It's currently at the "basic prototype" stage - the core idea seems to work, but
 missing details and it needs a lot of polish. We're currently focussed on making it useable for a
 real shipping component.
 
+If this sounds interesting to you, please dive in! You can:
+
+* File or work on [issues](https://github.com/mozilla/uniffi-rs/issues) here in GitHub.
+* Join discussions in the [Cross-Platform Rust Components](https://chat.mozilla.org/#/room/#rust-components:mozilla.org)
+  room on Matrix.
+* Review the project's [code of conduct](./CODE_OF_CONDUCT.md).
+
 ## What?
 
 We're interested in building re-useable components for sync- and storage-related browser
