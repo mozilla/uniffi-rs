@@ -31,7 +31,7 @@ namespace {{ ci.namespace()|detail_cpp }} {
 {% for e in ci.iter_enum_definitions() %}
 template <>
 struct ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
-  static MOZ_MUST_USE bool Lift(const uint32_t& aLowered, {{ e.name()|class_name_cpp }}& aLifted) {
+  [[nodiscard]] static bool Lift(const uint32_t& aLowered, {{ e.name()|class_name_cpp }}& aLifted) {
     switch (aLowered) {
       {% for variant in e.variants() -%}
       case {{ loop.index }}:
@@ -45,7 +45,7 @@ struct ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
     return true;
   }
 
-  static MOZ_MUST_USE uint32_t Lower(const {{ e.name()|class_name_cpp }}& aLifted) {
+  [[nodiscard]] static uint32_t Lower(const {{ e.name()|class_name_cpp }}& aLifted) {
     switch (aLifted) {
       {% for variant in e.variants() -%}
       case {{ e.name()|class_name_cpp }}::{{ variant|enum_variant_cpp }}:
@@ -60,7 +60,7 @@ struct ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t> {
 
 template <>
 struct Serializable<{{ e.name()|class_name_cpp }}> {
-  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, {{ e.name()|class_name_cpp }}& aValue) {
+  [[nodiscard]] static bool ReadFrom(Reader& aReader, {{ e.name()|class_name_cpp }}& aValue) {
     auto rawValue = aReader.ReadUInt32();
     return ViaFfi<{{ e.name()|class_name_cpp }}, uint32_t>::Lift(rawValue, aValue);
   }
@@ -74,7 +74,7 @@ struct Serializable<{{ e.name()|class_name_cpp }}> {
 {% for rec in ci.iter_record_definitions() -%}
 template <>
 struct Serializable<{{ rec.name()|class_name_cpp }}> {
-  static MOZ_MUST_USE bool ReadFrom(Reader& aReader, {{ rec.name()|class_name_cpp }}& aValue) {
+  [[nodiscard]] static bool ReadFrom(Reader& aReader, {{ rec.name()|class_name_cpp }}& aValue) {
     {%- for field in rec.fields() %}
     if (!Serializable<{{ field.type_()|type_cpp }}>::ReadFrom(aReader, aValue.{{ field.name()|field_name_cpp }})) {
       return false;
