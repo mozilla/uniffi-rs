@@ -1,6 +1,6 @@
 namespace {{ ci.namespace()|detail_cpp }} {
 
-// Estimates the worst-case UTF-8 encoded length for a UTF-16 string.
+/// Estimates the worst-case UTF-8 encoded length for a UTF-16 string.
 CheckedInt<size_t> EstimateUTF8Length(size_t aUTF16Length) {
   // `ConvertUtf16toUtf8` expects the destination to have at least three times
   // as much space as the source string, even if it doesn't use the excess
@@ -74,14 +74,14 @@ class MOZ_STACK_CLASS Reader final {
   /// Reads a sequence or record length from the buffer at the current position.
   size_t ReadLength() {
     // The UniFFI serialization format uses signed integers for lengths.
-    int32_t length = ReadInt32();
+    auto length = ReadInt32();
     MOZ_RELEASE_ASSERT(length >= 0);
     return static_cast<size_t>(length);
   }
 
   /// Reads a UTF-8 encoded string at the current position.
   void ReadCString(nsACString& aValue) {
-    int32_t length = ReadInt32();
+    auto length = ReadInt32();
     CheckedInt<int32_t> newOffset = mOffset;
     newOffset += length;
     AssertInBounds(newOffset);
@@ -91,7 +91,7 @@ class MOZ_STACK_CLASS Reader final {
 
   /// Reads a UTF-16 encoded string at the current position.
   void ReadString(nsAString& aValue) {
-    uint32_t length = ReadUInt32();
+    auto length = ReadInt32();
     CheckedInt<int32_t> newOffset = mOffset;
     newOffset += length;
     AssertInBounds(newOffset);
@@ -127,7 +127,7 @@ class MOZ_STACK_CLASS Writer final {
     RustError err = {0, nullptr};
     mBuffer = {{ ci.ffi_rustbuffer_alloc().name() }}(0, &err);
     if (err.mCode) {
-      MOZ_ASSERT(false, "Failed to allocate Rust buffer");
+      MOZ_ASSERT(false, "Failed to allocate empty Rust buffer");
     }
   }
 
@@ -333,17 +333,19 @@ UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(int64_t, ReadInt64, WriteInt64);
 UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(float, ReadFloat, WriteFloat);
 UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE(double, ReadDouble, WriteDouble);
 
+#undef UNIFFI_SPECIALIZE_SERIALIZABLE_PRIMITIVE
+
 /// In the UniFFI serialization format, Booleans are passed as `int8_t`s over
 /// the FFI.
 
 template <>
 struct Serializable<bool> {
   [[nodiscard]] static bool ReadFrom(Reader& aReader, bool& aValue) {
-    aValue = aReader.ReadUInt8() != 0;
+    aValue = aReader.ReadInt8() != 0;
     return true;
   }
   static void WriteInto(Writer& aWriter, const bool& aValue) {
-    aWriter.WriteUInt8(aValue ? 1 : 0);
+    aWriter.WriteInt8(aValue ? 1 : 0);
   }
 };
 
@@ -359,7 +361,7 @@ struct ViaFfi<bool, int8_t> {
 };
 
 /// Strings are length-prefixed and UTF-8 encoded when serialized
-/// into byte buffers, and are passed as UTF-8 encoded `ForeignBytes`s over
+/// into Rust buffers, and are passed as UTF-8 encoded `RustBuffer`s over
 /// the FFI.
 ///
 /// Gecko has two string types: `nsCString` for "narrow" strings, and `nsString`
@@ -490,7 +492,7 @@ template <typename T>
 struct Serializable<dom::Nullable<T>> {
   [[nodiscard]] static bool ReadFrom(Reader& aReader,
                                      dom::Nullable<T>& aValue) {
-    uint8_t hasValue = aReader.ReadUInt8();
+    auto hasValue = aReader.ReadInt8();
     if (hasValue != 0 && hasValue != 1) {
       MOZ_ASSERT(false);
       return false;
@@ -509,9 +511,9 @@ struct Serializable<dom::Nullable<T>> {
 
   static void WriteInto(Writer& aWriter, const dom::Nullable<T>& aValue) {
     if (aValue.IsNull()) {
-      aWriter.WriteUInt8(0);
+      aWriter.WriteInt8(0);
     } else {
-      aWriter.WriteUInt8(1);
+      aWriter.WriteInt8(1);
       Serializable<T>::WriteInto(aWriter, aValue.Value());
     }
   }
@@ -546,7 +548,7 @@ struct Serializable<dom::Sequence<T>> {
 template <typename T>
 struct Serializable<nsTArray<T>> {
   [[nodiscard]] static bool ReadFrom(Reader& aReader, nsTArray<T>& aValue) {
-    size_t length = aReader.ReadLength();
+    auto length = aReader.ReadLength();
     aValue.SetCapacity(length);
     for (size_t i = 0; i < length; ++i) {
       if (!Serializable<T>::ReadFrom(aReader, *aValue.AppendElement())) {
@@ -564,10 +566,14 @@ struct Serializable<nsTArray<T>> {
   }
 };
 
+/// Records are length-prefixed, followed by the serialization of each
+/// key and value. They're always serialized, and never passed directly over the
+/// FFI.
+
 template <typename K, typename V>
 struct Serializable<Record<K, V>> {
   [[nodiscard]] static bool ReadFrom(Reader& aReader, Record<K, V>& aValue) {
-    size_t length = aReader.ReadLength();
+    auto length = aReader.ReadLength();
     aValue.Entries().SetCapacity(length);
     for (size_t i = 0; i < length; ++i) {
       typename Record<K, V>::EntryType* entry =
