@@ -40,7 +40,7 @@ impl ForeignBytes {
     ///
     /// Panics if the provided struct has a null pointer but non-zero length.
     /// Panics if the provided length is negative.
-    pub fn as_slice<'a>(&'a self) -> &'a [u8] {
+    pub fn as_slice(&self) -> &[u8] {
         if self.data.is_null() {
             assert!(self.len == 0, "null ForeignBytes had non-zero length");
             &[]
@@ -58,6 +58,11 @@ impl ForeignBytes {
         self.len
             .try_into()
             .expect("bytes length negative or overflowed")
+    }
+
+    /// Returns true if the length of this slice of bytes is 0.
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
     }
 }
 

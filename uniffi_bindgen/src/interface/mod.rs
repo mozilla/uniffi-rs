@@ -155,7 +155,7 @@ impl<'ci> ComponentInterface {
         // Our implementation of `Hash` mixes in all of the public API of the component,
         // as well as the version string of uniffi.
         self.hash(&mut hasher);
-        return hasher.finish();
+        hasher.finish()
     }
 
     /// The namespace to use in FFI-level function definitions.
@@ -330,7 +330,7 @@ impl<'ci> ComponentInterface {
     }
 
     fn derive_ffi_funcs(&mut self) -> Result<()> {
-        let ci_prefix = self.ffi_namespace().to_string();
+        let ci_prefix = self.ffi_namespace();
         for func in self.functions.iter_mut() {
             func.derive_ffi_func(&ci_prefix)?;
         }
@@ -1330,14 +1330,14 @@ impl From<&Argument> for FFIArgument {
 mod test {
     use super::*;
 
-    const IDL1: &'static str = r#"
+    const IDL1: &str = r#"
         namespace foobar{};
         enum Test {
             "test_me",
         };
     "#;
 
-    const IDL2: &'static str = r#"
+    const IDL2: &str = r#"
         namespace hello {
             u64 world();
         };
