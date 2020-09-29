@@ -11,7 +11,7 @@ edition = "2018"
 keywords = ["ffi", "bindgen"]
 
 [dependencies]
-cargo_metadata = "0.11"
+cargo_metadata = "0.11.3"
 anyhow = "1"
 uniffi_bindgen = { path = "../uniffi_bindgen", optional = true, version = "0.2.0" }
 
