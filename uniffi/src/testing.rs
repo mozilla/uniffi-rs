@@ -129,5 +129,5 @@ fn run_uniffi_bindgen_test(out_dir: &str, idl_file: &str, test_file: &str) -> Re
 
 #[cfg(feature = "builtin-bindgen")]
 fn run_uniffi_bindgen_test(out_dir: &str, idl_file: &str, test_file: &str) -> Result<()> {
-    uniffi_bindgen::run_tests(out_dir, idl_file, vec![test_file])
+    uniffi_bindgen::run_tests(out_dir, idl_file, vec![test_file], None)
 }
