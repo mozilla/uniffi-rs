@@ -4,7 +4,7 @@
 {% import "macros.cpp" as cpp %}
 
 #include "mozilla/dom/{{ obj.name()|header_name_cpp }}.h"
-#include "mozilla/dom/{{ namespace|header_name_cpp }}Shared.h"
+#include "mozilla/dom/{{ context.namespace()|header_name_cpp }}Shared.h"
 
 namespace mozilla {
 namespace dom {
@@ -13,10 +13,10 @@ namespace dom {
 // the only member that needs to be cycle-collected; if we ever add any JS
 // object members or other interfaces to the class, those should be collected,
 // too.
-NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE({{ obj.name()|class_name_webidl }}, mGlobal)
-NS_IMPL_CYCLE_COLLECTING_ADDREF({{ obj.name()|class_name_webidl }})
-NS_IMPL_CYCLE_COLLECTING_RELEASE({{ obj.name()|class_name_webidl }})
-NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION({{ obj.name()|class_name_webidl }})
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE({{ obj.name()|class_name_webidl(context) }}, mGlobal)
+NS_IMPL_CYCLE_COLLECTING_ADDREF({{ obj.name()|class_name_webidl(context) }})
+NS_IMPL_CYCLE_COLLECTING_RELEASE({{ obj.name()|class_name_webidl(context) }})
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION({{ obj.name()|class_name_webidl(context) }})
   NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
   NS_INTERFACE_MAP_ENTRY(nsISupports)
 NS_INTERFACE_MAP_END
@@ -47,7 +47,7 @@ already_AddRefed<{{ obj.name()|class_name_cpp }}> {{ obj.name()|class_name_cpp }
   {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
 ) {
-  {%- call cpp::to_ffi_call_head(namespace, cons, "err", "handle") %}
+  {%- call cpp::to_ffi_call_head(context, cons, "err", "handle") %}
   if (err.mCode) {
     {%- match cons.throw_by() %}
     {%- when ThrowBy::ErrorResult with (rv) %}
@@ -70,7 +70,7 @@ already_AddRefed<{{ obj.name()|class_name_cpp }}> {{ obj.name()|class_name_cpp }
   {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
 ) {
-  {%- call cpp::to_ffi_call_with_prefix(namespace, "mHandle", meth) %}
+  {%- call cpp::to_ffi_call_with_prefix(context, "mHandle", meth) %}
 }
 {%- endfor %}
 

@@ -2,15 +2,15 @@
 // Trust me, you don't want to mess with it!
 
 {%- for rec in ci.iter_record_definitions() %}
-dictionary {{ rec.name()|class_name_webidl }} {
+dictionary {{ rec.name()|class_name_webidl(context) }} {
   {%- for field in rec.fields() %}
-  required {{ field.type_()|type_webidl }} {{ field.name()|var_name_webidl }};
+  required {{ field.type_()|type_webidl(context) }} {{ field.name()|var_name_webidl }};
   {%- endfor %}
 };
 {% endfor %}
 
 {%- for e in ci.iter_enum_definitions() %}
-enum {{ e.name()|class_name_webidl }} {
+enum {{ e.name()|class_name_webidl(context) }} {
   {% for variant in e.variants() %}
   "{{ variant|enum_variant_webidl }}"{%- if !loop.last %}, {% endif %}
   {% endfor %}
@@ -20,7 +20,7 @@ enum {{ e.name()|class_name_webidl }} {
 {%- let functions = ci.iter_function_definitions() %}
 {%- if !functions.is_empty() %}
 [ChromeOnly, Exposed=Window]
-namespace {{ ci.namespace()|class_name_webidl }} {
+namespace {{ ci.namespace()|class_name_webidl(context) }} {
   {#-
   // We'll need to figure out how to handle async methods. One option is
   // to declare them as `async foo()`, or an `[Async]` or `[BackgroundThread]`
@@ -32,9 +32,9 @@ namespace {{ ci.namespace()|class_name_webidl }} {
   {%- if func.throws().is_some() %}
   [Throws]
   {% endif %}
-  {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl }}{% when None %}void{% endmatch %} {{ func.name()|fn_name_webidl }}(
+  {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %} {{ func.name()|fn_name_webidl }}(
     {%- for arg in func.arguments() %}
-    {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl }} {{ arg.name() }}
+    {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl(context) }} {{ arg.name() }}
     {%- match arg.default_value() %}
     {%- when Some with (literal) %} = {{ literal|literal_webidl }}
     {%- else %}
@@ -48,14 +48,14 @@ namespace {{ ci.namespace()|class_name_webidl }} {
 
 {%- for obj in ci.iter_object_definitions() %}
 [ChromeOnly, Exposed=Window]
-interface {{ obj.name()|class_name_webidl }} {
+interface {{ obj.name()|class_name_webidl(context) }} {
   {%- for cons in obj.constructors() %}
   {%- if cons.throws().is_some() %}
   [Throws]
   {% endif %}
   constructor(
       {%- for arg in cons.arguments() %}
-      {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl }} {{ arg.name() }}
+      {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl(context) }} {{ arg.name() }}
       {%- match arg.default_value() %}
       {%- when Some with (literal) %} = {{ literal|literal_webidl }}
       {%- else %}
@@ -69,9 +69,9 @@ interface {{ obj.name()|class_name_webidl }} {
   {%- if meth.throws().is_some() %}
   [Throws]
   {% endif %}
-  {%- match meth.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl }}{% when None %}void{% endmatch %} {{ meth.name()|fn_name_webidl }}(
+  {%- match meth.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %} {{ meth.name()|fn_name_webidl }}(
       {%- for arg in meth.arguments() %}
-      {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl }} {{ arg.name() }}
+      {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl(context) }} {{ arg.name() }}
       {%- match arg.default_value() %}
       {%- when Some with (literal) %} = {{ literal|literal_webidl }}
       {%- else %}

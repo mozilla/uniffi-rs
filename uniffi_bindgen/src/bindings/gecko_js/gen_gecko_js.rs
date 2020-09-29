@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::borrow::Cow;
+
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase};
@@ -15,24 +17,92 @@ use super::webidl::{
     BindingArgument, BindingFunction, ReturnBy, ReturningBindingFunction, ThrowBy,
 };
 
+#[derive(Clone, Copy)]
+pub struct Context<'config, 'ci> {
+    config: &'config Config,
+    ci: &'ci ComponentInterface,
+}
+
+impl<'config, 'ci> Context<'config, 'ci> {
+    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
+        Context { config, ci }
+    }
+
+    pub fn with_definiton_prefix<'a>(&self, name: &'a str) -> Cow<'a, str> {
+        match self.config.definition_prefix.as_ref() {
+            Some(prefix) => Cow::Owned(format!("{}{}", prefix, name)),
+            None => Cow::Borrowed(name),
+        }
+    }
+
+    pub fn namespace(&self) -> Cow<'ci, str> {
+        self.with_definiton_prefix(self.ci.namespace())
+    }
+
+    /// Returns the name to use for the `RustBuffer` type.
+    pub fn ffi_rustbuffer_type(&self) -> String {
+        format!("{}_RustBuffer", self.ci.ffi_namespace())
+    }
+
+    /// Returns the name to use for the `ForeignBytes` type.
+    pub fn ffi_foreignbytes_type(&self) -> String {
+        format!("{}_ForeignBytes", self.ci.ffi_namespace())
+    }
+
+    /// Returns the name to use for the `RustError` type.
+    pub fn ffi_rusterror_type(&self) -> String {
+        format!("{}_RustError", self.ci.ffi_namespace())
+    }
+
+    /// Returns the name to use for the internal `detail` C++ namespace.
+    pub fn detail_name(&self) -> String {
+        format!("{}_detail", self.ci.namespace())
+    }
+}
+
 /// Config options for the generated Firefox front-end bindings. Note that this
 /// can only be used to control details *that do not affect the underlying
 /// component*, since the details of the underlying component are entirely
 /// determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    // ...
+    /// Specifies an optional prefix to use for all definitions (interfaces,
+    /// dictionaries, enums, and namespaces) in the generated Firefox WebIDL
+    /// binding. If a prefix is not specified, the Firefox WebIDL definitions
+    /// will use the same names as the UDL.
+    ///
+    /// For example, if the prefix is `Hola`, and the UDL for the component
+    /// declares `namespace foo`, `dictionary Bar`, and `interface Baz`, the
+    /// definitions will be exposed in Firefox WebIDL as `HolaFoo`, `HolaBar`,
+    /// and `HolaBaz`.
+    ///
+    /// This option exists because definition names all share a global
+    /// namespace (further, all WebIDL namespaces, interfaces, and enums are
+    /// exposed on `window`), so they must be unique. Firefox will fail to
+    /// compile if two different WebIDL files declare interfaces, dictionaries,
+    /// enums, or namespaces with the same name.
+    ///
+    /// For this reason, web standards often prefix their definitions: for
+    /// example, the dictionary to create a `PushSubscription` is called
+    /// `PushSubscriptionOptionsInit`, not just `Init`. For UniFFI components,
+    /// prefixing definitions in UDL would make it awkward to consume from other
+    /// languages that _do_ have namespaces.
+    ///
+    /// So we expose the prefix as an option for just Gecko JS bindings.
+    pub definition_prefix: Option<String>,
 }
 
 impl From<&ComponentInterface> for Config {
     fn from(_ci: &ComponentInterface) -> Self {
-        Config {}
+        Config::default()
     }
 }
 
 impl MergeWith for Config {
-    fn merge_with(&self, _other: &Self) -> Self {
-        self.clone()
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            definition_prefix: self.definition_prefix.merge_with(&other.definition_prefix),
+        }
     }
 }
 
@@ -43,11 +113,17 @@ impl MergeWith for Config {
 pub struct WebIdl<'config, 'ci> {
     config: &'config Config,
     ci: &'ci ComponentInterface,
+    context: Context<'config, 'ci>,
 }
 
 impl<'config, 'ci> WebIdl<'config, 'ci> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        Self { config, ci }
+        let context = Context::new(config, ci);
+        Self {
+            config,
+            ci,
+            context,
+        }
     }
 }
 
@@ -59,11 +135,17 @@ impl<'config, 'ci> WebIdl<'config, 'ci> {
 pub struct SharedHeader<'config, 'ci> {
     config: &'config Config,
     ci: &'ci ComponentInterface,
+    context: Context<'config, 'ci>,
 }
 
 impl<'config, 'ci> SharedHeader<'config, 'ci> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        Self { config, ci }
+        let context = Context::new(config, ci);
+        Self {
+            config,
+            ci,
+            context,
+        }
     }
 }
 
@@ -72,18 +154,13 @@ impl<'config, 'ci> SharedHeader<'config, 'ci> {
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "NamespaceHeaderTemplate.h")]
 pub struct NamespaceHeader<'config, 'ci> {
-    config: &'config Config,
-    namespace: &'ci str,
+    context: Context<'config, 'ci>,
     functions: &'ci [Function],
 }
 
 impl<'config, 'ci> NamespaceHeader<'config, 'ci> {
-    pub fn new(config: &'config Config, namespace: &'ci str, functions: &'ci [Function]) -> Self {
-        Self {
-            config,
-            namespace,
-            functions,
-        }
+    pub fn new(context: Context<'config, 'ci>, functions: &'ci [Function]) -> Self {
+        Self { context, functions }
     }
 }
 
@@ -92,18 +169,13 @@ impl<'config, 'ci> NamespaceHeader<'config, 'ci> {
 #[derive(Template)]
 #[template(syntax = "cpp", escape = "none", path = "NamespaceTemplate.cpp")]
 pub struct Namespace<'config, 'ci> {
-    config: &'config Config,
-    namespace: &'ci str,
+    context: Context<'config, 'ci>,
     functions: &'ci [Function],
 }
 
 impl<'config, 'ci> Namespace<'config, 'ci> {
-    pub fn new(config: &'config Config, namespace: &'ci str, functions: &'ci [Function]) -> Self {
-        Self {
-            config,
-            namespace,
-            functions,
-        }
+    pub fn new(context: Context<'config, 'ci>, functions: &'ci [Function]) -> Self {
+        Self { context, functions }
     }
 }
 
@@ -111,18 +183,13 @@ impl<'config, 'ci> Namespace<'config, 'ci> {
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "InterfaceHeaderTemplate.h")]
 pub struct InterfaceHeader<'config, 'ci> {
-    config: &'config Config,
-    namespace: &'ci str,
+    context: Context<'config, 'ci>,
     obj: &'ci Object,
 }
 
 impl<'config, 'ci> InterfaceHeader<'config, 'ci> {
-    pub fn new(config: &'config Config, namespace: &'ci str, obj: &'ci Object) -> Self {
-        Self {
-            config,
-            namespace,
-            obj,
-        }
+    pub fn new(context: Context<'config, 'ci>, obj: &'ci Object) -> Self {
+        Self { context, obj }
     }
 }
 
@@ -130,18 +197,13 @@ impl<'config, 'ci> InterfaceHeader<'config, 'ci> {
 #[derive(Template)]
 #[template(syntax = "cpp", escape = "none", path = "InterfaceTemplate.cpp")]
 pub struct Interface<'config, 'ci> {
-    config: &'config Config,
-    namespace: &'ci str,
+    context: Context<'config, 'ci>,
     obj: &'ci Object,
 }
 
 impl<'config, 'ci> Interface<'config, 'ci> {
-    pub fn new(config: &'config Config, namespace: &'ci str, obj: &'ci Object) -> Self {
-        Self {
-            config,
-            namespace,
-            obj,
-        }
+    pub fn new(context: Context<'config, 'ci>, obj: &'ci Object) -> Self {
+        Self { context, obj }
     }
 }
 
@@ -174,7 +236,7 @@ mod filters {
     /// * In UniFFI IDL, an argument can specify a default value directly.
     ///   In WebIDL, arguments with default values must have the `optional`
     ///   keyword.
-    pub fn type_webidl(type_: &Type) -> Result<String, askama::Error> {
+    pub fn type_webidl(type_: &Type, context: &Context<'_, '_>) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8 => "byte".into(),
             Type::UInt8 => "octet".into(),
@@ -190,11 +252,13 @@ mod filters {
             Type::Float64 => "double".into(),
             Type::Boolean => "boolean".into(),
             Type::String => "DOMString".into(),
-            Type::Enum(name) | Type::Record(name) | Type::Object(name) => class_name_webidl(name)?,
+            Type::Enum(name) | Type::Record(name) | Type::Object(name) => {
+                class_name_webidl(name, context)?
+            }
             Type::Error(name) => panic!("[TODO: type_webidl({:?})]", type_),
-            Type::Optional(inner) => format!("{}?", type_webidl(inner)?),
-            Type::Sequence(inner) => format!("sequence<{}>", type_webidl(inner)?),
-            Type::Map(inner) => format!("record<DOMString, {}>", type_webidl(inner)?),
+            Type::Optional(inner) => format!("{}?", type_webidl(inner, context)?),
+            Type::Sequence(inner) => format!("sequence<{}>", type_webidl(inner, context)?),
+            Type::Map(inner) => format!("record<DOMString, {}>", type_webidl(inner, context)?),
         })
     }
 
@@ -222,7 +286,7 @@ mod filters {
     }
 
     /// Declares a C type in the `extern` declarations.
-    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
+    pub fn type_ffi(type_: &FFIType, context: &Context<'_, '_>) -> Result<String, askama::Error> {
         Ok(match type_ {
             FFIType::Int8 => "int8_t".into(),
             FFIType::UInt8 => "uint8_t".into(),
@@ -235,9 +299,9 @@ mod filters {
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
             FFIType::RustCString => "const char*".into(),
-            FFIType::RustBuffer => "RustBuffer".into(),
-            FFIType::RustError => "RustError".into(),
-            FFIType::ForeignBytes => "ForeignBytes".into(),
+            FFIType::RustBuffer => context.ffi_rustbuffer_type(),
+            FFIType::RustError => context.ffi_rusterror_type(),
+            FFIType::ForeignBytes => context.ffi_foreignbytes_type(),
         })
     }
 
@@ -362,13 +426,13 @@ mod filters {
         })
     }
 
-    pub fn detail_cpp(namespace: &str) -> Result<String, askama::Error> {
-        Ok(format!("{}_detail", namespace))
-    }
-
     /// Generates an expression for lowering a C++ type into a C type when
     /// calling an FFI function.
-    pub fn lower_cpp(namespace: &str, type_: &Type, from: &str) -> Result<String, askama::Error> {
+    pub fn lower_cpp(
+        type_: &Type,
+        from: &str,
+        context: &Context<'_, '_>,
+    ) -> Result<String, askama::Error> {
         let lifted = match type_ {
             // Since our in argument type is `nsAString`, we need to use that
             // to instantiate `ViaFfi`, not `nsString`.
@@ -379,12 +443,11 @@ mod filters {
             },
             _ => in_arg_type_cpp(type_)?,
         };
-        let detail = detail_cpp(namespace)?;
         Ok(format!(
             "{}::ViaFfi<{}, {}>::Lower({})",
-            detail,
+            context.detail(),
             lifted,
-            type_ffi(&FFIType::from(type_))?,
+            type_ffi(&FFIType::from(type_), context)?,
             from
         ))
     }
@@ -392,10 +455,10 @@ mod filters {
     /// Generates an expression for lifting a C return type from the FFI into a
     /// C++ out parameter.
     pub fn lift_cpp(
-        namespace: &str,
         type_: &Type,
         from: &str,
         into: &str,
+        context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         let lifted = match type_ {
             // Out arguments are also `nsAString`, so we need to use it for the
@@ -407,12 +470,11 @@ mod filters {
             },
             _ => type_cpp(type_)?,
         };
-        let detail = detail_cpp(namespace)?;
         Ok(format!(
             "{}::ViaFfi<{}, {}>::Lift({}, {})",
-            detail,
+            context.detail(),
             lifted,
-            type_ffi(&FFIType::from(type_))?,
+            type_ffi(&FFIType::from(type_), context)?,
             from,
             into,
         ))
@@ -426,8 +488,8 @@ mod filters {
         Ok(nm.to_string().to_mixed_case())
     }
 
-    pub fn class_name_webidl(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_camel_case())
+    pub fn class_name_webidl(nm: &str, context: &Context<'_, '_>) -> Result<String, askama::Error> {
+        Ok(context.with_definiton_prefix(nm).to_camel_case())
     }
 
     pub fn class_name_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {

@@ -13,7 +13,7 @@
 
 #include "mozilla/RefPtr.h"
 
-#include "mozilla/dom/{{ namespace|class_name_webidl }}Binding.h"
+#include "mozilla/dom/{{ context.namespace()|class_name_webidl(context) }}Binding.h"
 
 namespace mozilla {
 namespace dom {

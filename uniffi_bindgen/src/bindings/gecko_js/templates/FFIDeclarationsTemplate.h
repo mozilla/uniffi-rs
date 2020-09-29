@@ -1,17 +1,17 @@
 extern "C" {
 
-struct RustBuffer {
+struct {{ context.ffi_rustbuffer_type() }} {
   int32_t mCapacity;
   int32_t mLen;
   uint8_t* mData;
 };
 
-struct ForeignBytes {
+struct {{ context.ffi_foreignbytes_type() }} {
   int32_t mLen;
   const uint8_t* mData;
 };
 
-struct RustError {
+struct {{ context.ffi_rusterror_type() }} {
   int32_t mCode;
   char* mMessage;
 };
@@ -19,16 +19,16 @@ struct RustError {
 {% for func in ci.iter_ffi_function_definitions() -%}
 {%- match func.return_type() -%}
 {%- when Some with (type_) %}
-{{ type_|type_ffi }}
+{{ type_|type_ffi(context) }}
 {% when None %}
 void
 {%- endmatch %}
 {{ func.name() }}(
     {%- for arg in func.arguments() %}
-    {{ arg.type_()|type_ffi }} {{ arg.name() -}}{%- if loop.last -%}{%- else -%},{%- endif -%}
+    {{ arg.type_()|type_ffi(context) }} {{ arg.name() -}}{%- if loop.last -%}{%- else -%},{%- endif -%}
     {%- endfor %}
     {%- if func.arguments().len() > 0 %},{% endif %}
-    RustError* uniffi_out_err
+    {{ context.ffi_rusterror_type() }}* uniffi_out_err
 );
 
 {% endfor -%}

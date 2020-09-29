@@ -26,7 +26,7 @@ namespace dom {
 
 {% include "RustBufferHelper.h" %}
 
-namespace {{ ci.namespace()|detail_cpp }} {
+namespace {{ context.detail() }} {
 
 {% for e in ci.iter_enum_definitions() %}
 template <>
@@ -91,7 +91,7 @@ struct Serializable<{{ rec.name()|class_name_cpp }}> {
 };
 {% endfor %}
 
-}  // namespace {{ ci.namespace()|detail_cpp }}
+}  // namespace {{ context.detail() }}
 
 }  // namespace dom
 }  // namespace mozilla

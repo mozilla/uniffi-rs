@@ -132,10 +132,11 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bin
     // source file.
     let functions = ci.iter_function_definitions();
     if !functions.is_empty() {
-        let header = NamespaceHeader::new(config, ci.namespace(), functions.as_slice())
+        let context = gen_gecko_js::Context::new(config, ci);
+        let header = NamespaceHeader::new(context, functions.as_slice())
             .render()
             .context("Failed to render top-level namespace header")?;
-        let source = Namespace::new(config, ci.namespace(), functions.as_slice())
+        let source = Namespace::new(context, functions.as_slice())
             .render()
             .context("Failed to render top-level namespace binding")?;
         sources.push(Source {
@@ -148,10 +149,11 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bin
     // Now generate one header/source pair for each interface.
     let objects = ci.iter_object_definitions();
     for obj in objects {
-        let header = InterfaceHeader::new(config, ci.namespace(), &obj)
+        let context = gen_gecko_js::Context::new(config, ci);
+        let header = InterfaceHeader::new(context, &obj)
             .render()
             .with_context(|| format!("Failed to render {} header", obj.name()))?;
-        let source = Interface::new(config, ci.namespace(), &obj)
+        let source = Interface::new(context, &obj)
             .render()
             .with_context(|| format!("Failed to render {} binding", obj.name()))?;
         sources.push(Source {

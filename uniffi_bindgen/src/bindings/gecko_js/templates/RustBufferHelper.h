@@ -1,4 +1,4 @@
-namespace {{ ci.namespace()|detail_cpp }} {
+namespace {{ context.detail() }} {
 
 /// Estimates the worst-case UTF-8 encoded length for a UTF-16 string.
 CheckedInt<size_t> EstimateUTF8Length(size_t aUTF16Length) {
@@ -13,7 +13,7 @@ CheckedInt<size_t> EstimateUTF8Length(size_t aUTF16Length) {
 /// Reads values out of a byte buffer received from Rust.
 class MOZ_STACK_CLASS Reader final {
  public:
-  explicit Reader(const RustBuffer& aBuffer) : mBuffer(aBuffer), mOffset(0) {}
+  explicit Reader(const {{ context.ffi_rustbuffer_type() }}& aBuffer) : mBuffer(aBuffer), mOffset(0) {}
 
   /// Returns `true` if there are unread bytes in the buffer, or `false` if the
   /// current position has reached the end of the buffer. If `HasRemaining()`
@@ -116,7 +116,7 @@ class MOZ_STACK_CLASS Reader final {
     return result;
   }
 
-  const RustBuffer& mBuffer;
+  const {{ context.ffi_rustbuffer_type() }}& mBuffer;
   CheckedInt<int32_t> mOffset;
 };
 
@@ -124,7 +124,7 @@ class MOZ_STACK_CLASS Reader final {
 class MOZ_STACK_CLASS Writer final {
  public:
   Writer() {
-    RustError err = {0, nullptr};
+    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
     mBuffer = {{ ci.ffi_rustbuffer_alloc().name() }}(0, &err);
     if (err.mCode) {
       MOZ_ASSERT(false, "Failed to allocate empty Rust buffer");
@@ -238,7 +238,7 @@ class MOZ_STACK_CLASS Writer final {
   }
 
   /// Returns the buffer.
-  RustBuffer Buffer() { return mBuffer; }
+  {{ context.ffi_rustbuffer_type() }} Buffer() { return mBuffer; }
 
  private:
   /// Reserves the requested number of bytes in the Rust buffer, aborting on
@@ -247,8 +247,8 @@ class MOZ_STACK_CLASS Writer final {
     if (aBytes >= static_cast<size_t>(std::numeric_limits<int32_t>::max())) {
       NS_ABORT_OOM(aBytes);
     }
-    RustError err = {0, nullptr};
-    RustBuffer newBuffer = {{ ci.ffi_rustbuffer_reserve().name() }}(
+    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
+    {{ context.ffi_rustbuffer_type() }} newBuffer = {{ ci.ffi_rustbuffer_reserve().name() }}(
       mBuffer, static_cast<int32_t>(aBytes), &err);
     if (err.mCode) {
       NS_ABORT_OOM(aBytes);
@@ -264,7 +264,7 @@ class MOZ_STACK_CLASS Writer final {
     mBuffer.mLen += sizeof(T);
   }
 
-  RustBuffer mBuffer;
+  {{ context.ffi_rustbuffer_type() }} mBuffer;
 };
 
 /// A "trait" struct with specializations for types that can be read and
@@ -386,12 +386,12 @@ struct Serializable<nsACString> {
 };
 
 template <>
-struct ViaFfi<nsACString, RustBuffer> {
-  [[nodiscard]] static bool Lift(const RustBuffer& aLowered,
+struct ViaFfi<nsACString, {{ context.ffi_rustbuffer_type() }}> {
+  [[nodiscard]] static bool Lift(const {{ context.ffi_rustbuffer_type() }}& aLowered,
                                  nsACString& aLifted) {
     if (aLowered.mData) {
       aLifted.Append(AsChars(Span(aLowered.mData, aLowered.mLen)));
-      RustError err = {0, nullptr};
+      {{ context.ffi_rusterror_type() }} err = {0, nullptr};
       {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &err);
       if (err.mCode) {
         MOZ_ASSERT(false, "Failed to lift `nsACString` from Rust buffer");
@@ -401,15 +401,15 @@ struct ViaFfi<nsACString, RustBuffer> {
     return true;
   }
 
-  [[nodiscard]] static RustBuffer Lower(const nsACString& aLifted) {
+  [[nodiscard]] static {{ context.ffi_rustbuffer_type() }} Lower(const nsACString& aLifted) {
     MOZ_RELEASE_ASSERT(
         aLifted.Length() <=
         static_cast<size_t>(std::numeric_limits<int32_t>::max()));
-    RustError err = {0, nullptr};
-    ForeignBytes bytes = {
+    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
+    {{ context.ffi_foreignbytes_type() }} bytes = {
         static_cast<int32_t>(aLifted.Length()),
         reinterpret_cast<const uint8_t*>(aLifted.BeginReading())};
-    RustBuffer lowered = {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, &err);
+    {{ context.ffi_rustbuffer_type() }} lowered = {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, &err);
     if (err.mCode) {
       MOZ_ASSERT(false, "Failed to lower `nsACString` into Rust string");
     }
@@ -429,12 +429,12 @@ struct Serializable<nsAString> {
 };
 
 template <>
-struct ViaFfi<nsAString, RustBuffer> {
-  [[nodiscard]] static bool Lift(const RustBuffer& aLowered,
+struct ViaFfi<nsAString, {{ context.ffi_rustbuffer_type() }}> {
+  [[nodiscard]] static bool Lift(const {{ context.ffi_rustbuffer_type() }}& aLowered,
                                  nsAString& aLifted) {
     if (aLowered.mData) {
       CopyUTF8toUTF16(AsChars(Span(aLowered.mData, aLowered.mLen)), aLifted);
-      RustError err = {0, nullptr};
+      {{ context.ffi_rusterror_type() }} err = {0, nullptr};
       {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &err);
       if (err.mCode) {
         MOZ_ASSERT(false, "Failed to lift `nsAString` from Rust buffer");
@@ -444,15 +444,15 @@ struct ViaFfi<nsAString, RustBuffer> {
     return true;
   }
 
-  [[nodiscard]] static RustBuffer Lower(const nsAString& aLifted) {
+  [[nodiscard]] static {{ context.ffi_rustbuffer_type() }} Lower(const nsAString& aLifted) {
     auto maxSize = EstimateUTF8Length(aLifted.Length());
     MOZ_RELEASE_ASSERT(
         maxSize.isValid() &&
         maxSize.value() <=
             static_cast<size_t>(std::numeric_limits<int32_t>::max()));
 
-    RustError err = {0, nullptr};
-    RustBuffer lowered = {{ ci.ffi_rustbuffer_alloc().name() }}(
+    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
+    {{ context.ffi_rustbuffer_type() }} lowered = {{ ci.ffi_rustbuffer_alloc().name() }}(
       static_cast<int32_t>(maxSize.value()), &err);
     if (err.mCode) {
       MOZ_ASSERT(false, "Failed to lower `nsAString` into Rust string");
@@ -601,8 +601,8 @@ struct Serializable<Record<K, V>> {
 /// buffer. This is analogous to the `ViaFfiUsingByteBuffer` trait in Rust.
 
 template <typename T>
-struct ViaFfi<T, RustBuffer> {
-  [[nodiscard]] static bool Lift(const RustBuffer& aLowered, T& aLifted) {
+struct ViaFfi<T, {{ context.ffi_rustbuffer_type() }}> {
+  [[nodiscard]] static bool Lift(const {{ context.ffi_rustbuffer_type() }}& aLowered, T& aLifted) {
     auto reader = Reader(aLowered);
     if (!Serializable<T>::ReadFrom(reader, aLifted)) {
       return false;
@@ -611,7 +611,7 @@ struct ViaFfi<T, RustBuffer> {
       MOZ_ASSERT(false);
       return false;
     }
-    RustError err = {0, nullptr};
+    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
     {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &err);
     if (err.mCode) {
       MOZ_ASSERT(false, "Failed to free Rust buffer after lifting contents");
@@ -620,11 +620,11 @@ struct ViaFfi<T, RustBuffer> {
     return true;
   }
 
-  [[nodiscard]] static RustBuffer Lower(const T& aLifted) {
+  [[nodiscard]] static {{ context.ffi_rustbuffer_type() }} Lower(const T& aLifted) {
     auto writer = Writer();
     Serializable<T>::WriteInto(writer, aLifted);
     return writer.Buffer();
   }
 };
 
-}  // namespace {{ ci.namespace()|detail_cpp }}
+}  // namespace {{ context.detail() }}

@@ -3,18 +3,18 @@
 
 {% import "macros.cpp" as cpp %}
 
-#ifndef mozilla_dom_{{ namespace|header_name_cpp }}
-#define mozilla_dom_{{ namespace|header_name_cpp }}
+#ifndef mozilla_dom_{{ context.namespace()|header_name_cpp }}
+#define mozilla_dom_{{ context.namespace()|header_name_cpp }}
 
-#include "mozilla/dom/{{ namespace|header_name_cpp }}Binding.h"
+#include "mozilla/dom/{{ context.namespace()|header_name_cpp }}Binding.h"
 
 namespace mozilla {
 namespace dom {
 
-class {{ namespace|class_name_cpp }} final {
+class {{ context.namespace()|class_name_cpp }} final {
  public:
-  {{ namespace|class_name_cpp }}() = default;
-  ~{{ namespace|class_name_cpp }}() = default;
+  {{ context.namespace()|class_name_cpp }}() = default;
+  ~{{ context.namespace()|class_name_cpp }}() = default;
 
   {%- for func in functions %}
 
@@ -30,4 +30,4 @@ class {{ namespace|class_name_cpp }} final {
 }  // namespace dom
 }  // namespace mozilla
 
-#endif  // mozilla_dom_{{ namespace|header_name_cpp }}
+#endif  // mozilla_dom_{{ context.namespace()|header_name_cpp }}
