@@ -21,7 +21,7 @@ class {{ obj.name()|class_name_py }}(object):
         {%- call py::coerce_args_extra_indent(meth) %}
         _retval = {% call py::to_ffi_call_with_prefix("self._handle", meth) %}
         return {{ "_retval"|lift_py(return_type) }}
-    
+
     {%- when None -%}
     def {{ meth.name()|fn_name_py }}(self, {% call py::arg_list_decl(meth) %}):
         {%- call py::coerce_args_extra_indent(meth) %}

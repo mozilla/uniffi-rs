@@ -1,6 +1,3 @@
-# This is a helper for safely working with byte buffers returned from the Rust code.
-# It's basically a wrapper around a length and a data pointer, corresponding to the
-# `ffi_support::ByteBuffer` struct on the rust side.
 
 class RustBuffer(ctypes.Structure):
     _fields_ = [
@@ -26,6 +23,116 @@ class RustBuffer(ctypes.Structure):
             self.len,
             self.data[0:self.len]
         )
+
+    @contextlib.contextmanager
+    def allocWithBuilder():
+        """Context-manger to allocate a buffer using a RustBufferBuilder.
+
+        The allocated buffer will be automatically freed if an error occurs, ensuring that
+        we don't accidentally leak it.
+        """
+        builder = RustBufferBuilder()
+        try:
+            yield builder
+        except:
+            builder.discard()
+            raise
+
+    @contextlib.contextmanager
+    def consumeWithStream(self):
+        """Context-manager to consume a buffer using a RustBufferStream.
+
+        The RustBuffer will be freed once the context-manager exits, ensuring that we don't
+        leak it even if an error occurs.
+        """
+        try:
+            s = RustBufferStream(self)
+            yield s
+            if s.remaining() != 0:
+                raise RuntimeError("junk data left in buffer after consuming")
+        finally:
+            self.free()
+
+    # For every type that lowers into a RustBuffer, we provide helper methods for
+    # conveniently doing the lifting and lowering. Putting them on this internal
+    # helper object (rather than, say, as methods on the public classes) makes it
+    # easier for us to hide these implementation details from consumers, in the face
+    # of python's free-for-all type system.
+
+    {%- for typ in ci.iter_types() -%}
+    {%- let canonical_type_name = typ.canonical_name() -%}
+    {%- match typ -%}
+
+    {% when Type::String -%}
+    # The primitive String type.
+
+    @staticmethod
+    def allocFromString(value):
+        with RustBuffer.allocWithBuilder() as builder:
+            builder.write(value.encode("utf-8"))
+            return builder.finalize()
+
+    def consumeIntoString(self):
+        with self.consumeWithStream() as stream:
+            return stream.read(stream.remaining()).decode("utf-8")
+
+    {% when Type::Record with (record_name) -%}
+    {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
+    # The Record type {{ record_name }}.
+
+    @staticmethod
+    def allocFrom{{ canonical_type_name }}(v):
+        with RustBuffer.allocWithBuilder() as builder:
+            builder.write{{ canonical_type_name }}(v)
+            return builder.finalize()
+
+    def consumeInto{{ canonical_type_name }}(self):
+        with self.consumeWithStream() as stream:
+            return stream.read{{ canonical_type_name }}()
+
+    {% when Type::Optional with (inner_type) -%}
+    # The Optional<T> type for {{ inner_type.canonical_name() }}.
+
+    @staticmethod
+    def allocFrom{{ canonical_type_name }}(v):
+        with RustBuffer.allocWithBuilder() as builder:
+            builder.write{{ canonical_type_name }}(v)
+            return builder.finalize()
+
+    def consumeInto{{ canonical_type_name }}(self):
+        with self.consumeWithStream() as stream:
+            return stream.read{{ canonical_type_name }}()
+
+    {% when Type::Sequence with (inner_type) -%}
+    # The Sequence<T> type for {{ inner_type.canonical_name() }}.
+
+    @staticmethod
+    def allocFrom{{ canonical_type_name }}(v):
+        with RustBuffer.allocWithBuilder() as builder:
+            builder.write{{ canonical_type_name }}(v)
+            return builder.finalize()
+
+    def consumeInto{{ canonical_type_name }}(self):
+        with self.consumeWithStream() as stream:
+            return stream.read{{ canonical_type_name }}()
+
+    {% when Type::Map with (inner_type) -%}
+    # The Map<T> type for {{ inner_type.canonical_name() }}.
+
+    @staticmethod
+    def allocFrom{{ canonical_type_name }}(v):
+        with RustBuffer.allocWithBuilder() as builder:
+            builder.write{{ canonical_type_name }}(v)
+            return builder.finalize()
+
+    def consumeInto{{ canonical_type_name }}(self):
+        with self.consumeWithStream() as stream:
+            return stream.read{{ canonical_type_name }}()
+
+    {%- else -%}
+    {#- No code emitted for types that don't lower into a RustBuffer -#}
+    {%- endmatch -%}
+    {%- endfor %}
 
 
 class ForeignBytes(ctypes.Structure):

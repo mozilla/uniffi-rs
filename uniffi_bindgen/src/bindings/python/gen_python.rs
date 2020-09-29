@@ -60,7 +60,7 @@ mod filters {
             FFIType::Float64 => "ctypes.c_double".to_string(),
             FFIType::RustCString => "ctypes.c_voidp".to_string(),
             FFIType::RustBuffer => "RustBuffer".to_string(),
-            FFIType::RustError => "RustError".to_string(),
+            FFIType::RustError => "ctypes.POINTER(RustError)".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
         })
     }
@@ -103,20 +103,16 @@ mod filters {
             | Type::Int32
             | Type::UInt32
             | Type::Int64
-            | Type::UInt64
-            | Type::Float32
-            | Type::Float64
-            | Type::String
-            | Type::Boolean
-            | Type::Object(_)
-            | Type::Error(_) => format!("{} = {}", nm, nm),
-            Type::Enum(type_name) => format!("{} = {}({})", nm, type_name, nm),
-            Type::Record(type_name) => format!("{} = {}._coerce({})", nm, type_name, nm),
+            | Type::UInt64 => format!("int({})", nm), // TODO: check max/min value
+            Type::Float32 | Type::Float64 => format!("float({})", nm),
+            Type::Boolean => format!("bool({})", nm),
+            Type::String | Type::Object(_) | Type::Error(_) | Type::Record(_) => nm.to_string(),
+            Type::Enum(name) => format!("{}({})", class_name_py(name)?, nm),
             Type::Optional(t) => format!("(None if {} is None else {})", nm, coerce_py(nm, t)?),
-            Type::Sequence(t) => format!("({} for x in {})", coerce_py(&"x", t)?, nm), // TODO: name hygiene,
+            Type::Sequence(t) => format!("list({} for x in {})", coerce_py(&"x", t)?, nm),
             Type::Map(t) => format!(
-                "({}:{} for (k, v) in {}.items())",
-                coerce_py(&"k", t)?,
+                "dict(({},{}) for (k, v) in {}.items())",
+                coerce_py(&"k", &Type::String)?,
                 coerce_py(&"v", t)?,
                 nm
             ),
@@ -126,80 +122,49 @@ mod filters {
     pub fn lower_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
-            | Type::Int16
-            | Type::Int32
-            | Type::Int64
             | Type::UInt8
+            | Type::Int16
             | Type::UInt16
+            | Type::Int32
             | Type::UInt32
+            | Type::Int64
             | Type::UInt64
             | Type::Float32
-            | Type::Float64
-            | Type::Boolean => nm.to_string(),
-            Type::Enum(_) => format!("{}.value", nm),
-            Type::String => format!("{}.encode('utf-8')", nm),
-            Type::Record(type_name) => format!("{}._lower({})", type_name, nm),
-            Type::Optional(_type) => format!(
-                "lowerOptional({}, lambda buf, v: {})",
-                nm,
-                lower_into_py(&"buf", &"v", type_)?
+            | Type::Float64 => nm.to_string(),
+            Type::Boolean => format!("(1 if {} else 0)", nm),
+            Type::String => format!("RustBuffer.allocFromString({})", nm),
+            Type::Enum(_) => format!("({}.value)", nm),
+            Type::Object(_) => format!("({}._handle)", nm),
+            Type::Error(_) => panic!("No support for lowering errors, yet"),
+            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
+                "RustBuffer.allocFrom{}({})",
+                class_name_py(&type_.canonical_name())?,
+                nm
             ),
-            _ => panic!("[TODO: lower_py({:?})]", type_),
-        })
-    }
-
-    pub fn lower_into_py(
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
-        let nm = var_name_py(nm)?;
-        Ok(match type_ {
-            Type::Float64 => format!("{}.putDouble({})", target, nm),
-            Type::UInt32 => format!("{}.putInt({})", target, nm),
-            Type::String => format!("{}.putString({})", target, nm),
-            Type::Record(type_name) => format!("{}._lowerInto({}, {})", type_name, nm, target),
-            _ => panic!("[TODO: lower_into_py({:?})]", type_),
         })
     }
 
     pub fn lift_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
-            | Type::Int16
-            | Type::Int32
-            | Type::Int64
             | Type::UInt8
+            | Type::Int16
             | Type::UInt16
+            | Type::Int32
             | Type::UInt32
-            | Type::UInt64
-            | Type::Float32
-            | Type::Float64
-            | Type::Boolean => format!("{}", nm),
-            Type::Enum(type_name) => format!("{}({})", type_name, nm),
-            Type::String => format!("liftString({})", nm),
-            Type::Record(type_name) => format!("{}._lift({})", type_name, nm),
-            Type::Optional(type_) => format!(
-                "liftOptional({}, lambda buf: {})",
+            | Type::Int64
+            | Type::UInt64 => format!("int({})", nm),
+            Type::Float32 | Type::Float64 => format!("float({})", nm),
+            Type::Boolean => format!("(True if {} else False)", nm),
+            Type::String => format!("{}.consumeIntoString()", nm),
+            Type::Enum(name) => format!("{}({})", class_name_py(name)?, nm),
+            Type::Object(_) => panic!("No support for lifting objects, yet"),
+            Type::Error(_) => panic!("No support for lowering errors, yet"),
+            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
+                "{}.consumeInto{}()",
                 nm,
-                lift_from_py(&"buf", type_)?
+                class_name_py(&type_.canonical_name())?
             ),
-            Type::Sequence(type_) => format!(
-                "liftSequence({}, lambda buf: {})",
-                nm,
-                lift_from_py(&"buf", type_)?
-            ),
-            _ => panic!("[TODO: lift_py({:?})]", type_),
-        })
-    }
-
-    pub fn lift_from_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            Type::UInt32 => format!("{}.getInt()", nm),
-            Type::Float64 => format!("{}.getDouble()", nm),
-            Type::Record(type_name) => format!("{}._liftFrom({})", type_name, nm),
-            Type::String => format!("{}.getString()", nm),
-            _ => panic!("[TODO: lift_from_py({:?})]", type_),
         })
     }
 }

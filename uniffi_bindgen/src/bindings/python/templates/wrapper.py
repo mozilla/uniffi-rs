@@ -20,8 +20,8 @@ import struct
 import contextlib
 
 {% include "RustBufferTemplate.py" %}
-
-{% include "RustBufferHelper.py" %}
+{% include "RustBufferStream.py" %}
+{% include "RustBufferBuilder.py" %}
 
 # Error definitions
 {% include "ErrorTemplate.py" %}
