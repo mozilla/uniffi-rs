@@ -10,7 +10,7 @@
 //! the `uniffi_macros` crate.
 
 use anyhow::{bail, Result};
-// use cargo_metadata::Message;
+use cargo_metadata::Message;
 use lazy_static::lazy_static;
 use std::{
     collections::HashMap,
@@ -56,8 +56,6 @@ pub fn run_foreign_language_testcase(pkg_dir: &str, idl_file: &str, test_file: &
 /// Internally, this function does a bit of caching and concurrency management to avoid rebuilding
 /// the component for multiple testcases.
 pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
-    unimplemented!()
-    /*
     // Have we already compiled this component?
     let mut compiled_components = COMPILED_COMPONENTS.lock().unwrap();
     if let Some(cdylib_file) = compiled_components.get(pkg_dir) {
@@ -108,7 +106,6 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
     // Cache the result for subsequent tests.
     compiled_components.insert(pkg_dir.to_string(), cdylib_file.clone());
     Ok(cdylib_file)
-    */
 }
 
 /// Execute the `uniffi-bindgen test` command.
