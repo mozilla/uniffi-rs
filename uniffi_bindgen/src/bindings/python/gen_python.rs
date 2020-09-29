@@ -67,14 +67,26 @@ mod filters {
 
     pub fn literal_py(literal: &Literal) -> Result<String, askama::Error> {
         Ok(match literal {
-            Literal::Boolean(v) => format!("{}", v),
+            Literal::Boolean(v) => {
+                if *v {
+                    "True".into()
+                } else {
+                    "False".into()
+                }
+            }
             // use the double-quote form to match with the other languages, and quote escapes.
             Literal::String(s) => format!("\"{}\"", s),
             Literal::Null => "None".into(),
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "{}".into(),
-
-            _ => panic!("Literal unsupported by python"),
+            Literal::Enum(v, type_) => match type_ {
+                Type::Enum(name) => format!("{}.{}", class_name_py(name)?, enum_name_py(v)?),
+                _ => panic!("Unexpected type in enum literal: {:?}", type_),
+            },
+            // TODO: render with the intended radix.
+            Literal::Int(i, _radix, _type_) => format!("{}", i),
+            Literal::UInt(i, _radix, _type_) => format!("{}", i),
+            Literal::Float(string, _type_) => string.clone(),
         })
     }
 
