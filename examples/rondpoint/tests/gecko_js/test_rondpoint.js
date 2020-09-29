@@ -1,14 +1,29 @@
+/*
+ * This file is an xpcshell test that exercises the Rondpoint binding in
+ * Firefox. Non-Gecko JS consumers can safely ignore it.
+ *
+ * If you're working on the Gecko JS bindings, you'll want to either copy or
+ * symlink this folder into m-c, and add the `xpcshell.ini` file in this
+ * folder to an `XPCSHELL_TESTS_MANIFESTS` section in the `moz.build` file
+ * that references the generated bindings.
+ *
+ * Currently, this must be done manually, though we're looking at ways to
+ * run `uniffi-bindgen` as part of the Firefox build, and keep the UniFFI
+ * bindings tests in the tree. https://github.com/mozilla/uniffi-rs/issues/272
+ * has more details.
+ */
+
 add_task(async function test_rondpoint() {
   deepEqual(
     Rondpoint.copieDictionnaire({
       un: "deux",
-      deux: false,
+      deux: true,
       petitNombre: 0,
       grosNombre: 123456789,
     }),
     {
       un: "deux",
-      deux: false,
+      deux: true,
       petitNombre: 0,
       grosNombre: 123456789,
     }
@@ -66,10 +81,31 @@ add_task(async function test_retourneur() {
   [
     "",
     "abc",
+    "null\0byte",
     "été",
     "ښي لاس ته لوستلو لوستل",
     "😻emoji 👨‍👧‍👦multi-emoji, 🇨🇭a flag, a canal, panama",
   ].forEach(v => equal(rt.identiqueString(v), v));
+
+  [-1, 0, 1].forEach(v => {
+    let dict = {
+      petitNombre: v,
+      courtNombre: v,
+      nombreSimple: v,
+      grosNombre: v,
+    };
+    deepEqual(rt.identiqueNombresSignes(dict), dict);
+  });
+
+  [0, 1].forEach(v => {
+    let dict = {
+      petitNombre: v,
+      courtNombre: v,
+      nombreSimple: v,
+      grosNombre: v,
+    };
+    deepEqual(rt.identiqueNombres(dict), dict);
+  });
 });
 
 add_task(async function test_stringifier() {
@@ -138,4 +174,35 @@ add_task(async function test_stringifier() {
       strictEqual(st[method](v), expected);
     }
   }
+});
+
+add_task(async function test_optionneur() {
+  let op = new Optionneur();
+
+  equal(op.sinonString(), "default");
+  strictEqual(op.sinonBoolean(), false);
+  deepEqual(op.sinonSequence(), []);
+
+  // Nullables.
+  strictEqual(op.sinonNull(), null);
+  strictEqual(op.sinonZero(), 0);
+
+  // Decimal integers.
+  equal(op.sinonI8Dec(), -42);
+  equal(op.sinonU8Dec(), 42);
+  equal(op.sinonI16Dec(), 42);
+  equal(op.sinonU16Dec(), 42);
+  equal(op.sinonI32Dec(), 42);
+  equal(op.sinonU32Dec(), 42);
+  equal(op.sinonI64Dec(), 42);
+  equal(op.sinonU64Dec(), 42);
+
+  // Hexadecimal integers.
+  equal(op.sinonI8Hex(), -0x7f);
+  equal(op.sinonU8Hex(), 0xff);
+
+  // Enums.
+  ["un", "deux", "trois"].forEach(v => {
+    equal(op.sinonEnum(v), v);
+  });
 });
