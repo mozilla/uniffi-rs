@@ -479,21 +479,22 @@ mod filters {
         from: &str,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
-        let lifted = match type_ {
+        let (lifted, nullable) = match type_ {
             // Since our in argument type is `nsAString`, we need to use that
             // to instantiate `ViaFfi`, not `nsString`.
-            Type::String => "nsAString".into(),
+            Type::String => ("nsAString".into(), false),
             Type::Optional(inner) => match inner.as_ref() {
-                Type::String => "nsAString".into(),
-                _ => in_arg_type_cpp(type_, context)?,
+                Type::String => ("nsAString".into(), true),
+                _ => (in_arg_type_cpp(type_, context)?, false),
             },
-            _ => in_arg_type_cpp(type_, context)?,
+            _ => (in_arg_type_cpp(type_, context)?, false),
         };
         Ok(format!(
-            "{}::ViaFfi<{}, {}>::Lower({})",
+            "{}::ViaFfi<{}, {}, {}>::Lower({})",
             context.detail_name(),
             lifted,
             type_ffi(&FFIType::from(type_), context)?,
+            nullable,
             from
         ))
     }
@@ -506,21 +507,22 @@ mod filters {
         into: &str,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
-        let lifted = match type_ {
+        let (lifted, nullable) = match type_ {
             // Out arguments are also `nsAString`, so we need to use it for the
             // instantiation.
-            Type::String => "nsAString".into(),
+            Type::String => ("nsAString".into(), false),
             Type::Optional(inner) => match inner.as_ref() {
-                Type::String => "nsAString".into(),
-                _ => type_cpp(type_, context)?,
+                Type::String => ("nsAString".into(), true),
+                _ => (type_cpp(type_, context)?, false),
             },
-            _ => type_cpp(type_, context)?,
+            _ => (type_cpp(type_, context)?, false),
         };
         Ok(format!(
-            "{}::ViaFfi<{}, {}>::Lift({}, {})",
+            "{}::ViaFfi<{}, {}, {}>::Lift({}, {})",
             context.detail_name(),
             lifted,
             type_ffi(&FFIType::from(type_), context)?,
+            nullable,
             from,
             into,
         ))

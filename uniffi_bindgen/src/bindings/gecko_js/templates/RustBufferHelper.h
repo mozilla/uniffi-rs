@@ -210,7 +210,8 @@ class MOZ_STACK_CLASS Writer final {
     uint32_t lengthPrefix = PR_htonl(aValue.Length());
     memcpy(&mBuffer.mData[mBuffer.mLen], &lengthPrefix, sizeof(uint32_t));
 
-    // ...Then the string.
+    // ...Then the string. We just copy the string byte-for-byte into the
+    // buffer here; the Rust side of the FFI will ensure it's valid UTF-8.
     memcpy(&mBuffer.mData[mBuffer.mLen + sizeof(uint32_t)],
            aValue.BeginReading(), aValue.Length());
 
@@ -284,7 +285,11 @@ struct Serializable {
 /// As above, this gives us compile-time type checking for type pairs. If
 /// `ViaFfi<T, U>::Lift(U, T)` compiles, we know that a value of type `U` from
 /// the FFI can be lifted into a value of type `T`.
-template <typename T, typename FfiType>
+///
+/// The `Nullable` parameter is used to specialize nullable and non-null
+/// strings, which have the same `T` and `FfiType`, but are represented
+/// differently over the FFI.
+template <typename T, typename FfiType, bool Nullable = false>
 struct ViaFfi {
   /// Converts a low-level `FfiType`, which is a POD (Plain Old Data) type that
   /// can be passed over the FFI, into a high-level type `T`.
@@ -363,16 +368,11 @@ struct ViaFfi<bool, int8_t> {
 /// Strings are length-prefixed and UTF-8 encoded when serialized
 /// into Rust buffers, and are passed as UTF-8 encoded `RustBuffer`s over
 /// the FFI.
-///
-/// Gecko has two string types: `nsCString` for "narrow" strings, and `nsString`
-/// for "wide" strings. `nsCString`s don't have a fixed encoding: these can be
-/// ASCII, Latin-1, or UTF-8. `nsString`s are always UTF-16. JS prefers
-/// `nsString` (UTF-16; also called `DOMString` in WebIDL); `nsCString`s
-/// (`ByteString` in WebIDL) are pretty uncommon.
-///
-/// `nsCString`s can be passed to Rust directly, and copied byte-for-byte into
-/// buffers. The UniFFI scaffolding code will ensure they're valid UTF-8. But
-/// `nsString`s must be converted to UTF-8 first.
+
+/// `ns{A}CString` is Gecko's "narrow" (8 bits per character) string type.
+/// These don't have a fixed encoding: they can be ASCII, Latin-1, or UTF-8.
+/// They're called `ByteString`s in WebIDL, and they're pretty uncommon compared
+/// to `ns{A}String`.
 
 template <>
 struct Serializable<nsACString> {
@@ -386,7 +386,7 @@ struct Serializable<nsACString> {
 };
 
 template <>
-struct ViaFfi<nsACString, {{ context.ffi_rustbuffer_type() }}> {
+struct ViaFfi<nsACString, {{ context.ffi_rustbuffer_type() }}, false> {
   [[nodiscard]] static bool Lift(const {{ context.ffi_rustbuffer_type() }}& aLowered,
                                  nsACString& aLifted) {
     if (aLowered.mData) {
@@ -418,6 +418,22 @@ struct ViaFfi<nsACString, {{ context.ffi_rustbuffer_type() }}> {
 };
 
 template <>
+struct Serializable<nsCString> {
+  [[nodiscard]] static bool ReadFrom(Reader& aReader, nsCString& aValue) {
+    aReader.ReadCString(aValue);
+    return true;
+  }
+  static void WriteInto(Writer& aWriter, const nsCString& aValue) {
+    aWriter.WriteCString(aValue);
+  }
+};
+
+/// `ns{A}String` is Gecko's "wide" (16 bits per character) string type.
+/// These are always UTF-16, so we need to convert them to UTF-8 before
+/// passing them to Rust. WebIDL calls these `DOMString`s, and they're
+/// ubiquitous.
+
+template <>
 struct Serializable<nsAString> {
   [[nodiscard]] static bool ReadFrom(Reader& aReader, nsAString& aValue) {
     aReader.ReadString(aValue);
@@ -429,7 +445,7 @@ struct Serializable<nsAString> {
 };
 
 template <>
-struct ViaFfi<nsAString, {{ context.ffi_rustbuffer_type() }}> {
+struct ViaFfi<nsAString, {{ context.ffi_rustbuffer_type() }}, false> {
   [[nodiscard]] static bool Lift(const {{ context.ffi_rustbuffer_type() }}& aLowered,
                                  nsAString& aLifted) {
     if (aLowered.mData) {
@@ -618,6 +634,67 @@ struct ViaFfi<T, {{ context.ffi_rustbuffer_type() }}> {
     auto writer = Writer();
     Serializable<T>::WriteInto(writer, aLifted);
     return writer.Buffer();
+  }
+};
+
+/// Nullable strings are a special case. In Gecko C++, there's no type-level
+/// way to distinguish between nullable and non-null strings: the WebIDL
+/// bindings layer passes `nsAString` for both `DOMString` and `DOMString?`.
+/// But the Rust side of the FFI expects nullable strings to be serialized as
+/// `Nullable<nsA{C}String>`, not `nsA{C}String`.
+///
+/// These specializations serialize nullable strings as if they were
+/// `Nullable<nsA{C}String>`.
+
+template <>
+struct ViaFfi<nsACString, {{ context.ffi_rustbuffer_type() }}, true> {
+  [[nodiscard]] static bool Lift(const {{ context.ffi_rustbuffer_type() }}& aLowered,
+                                 nsACString& aLifted) {
+    auto value = dom::Nullable<nsCString>();
+    if (!ViaFfi<dom::Nullable<nsCString>, {{ context.ffi_rustbuffer_type() }}>::Lift(aLowered, value)) {
+      return false;
+    }
+    if (value.IsNull()) {
+      // `SetIsVoid` marks the string as "voided". The JS engine will reflect
+      // voided strings as `null`, not `""`.
+      aLifted.SetIsVoid(true);
+    } else {
+      aLifted = value.Value();
+    }
+    return true;
+  }
+
+  [[nodiscard]] static {{ context.ffi_rustbuffer_type() }} Lower(const nsACString& aLifted) {
+    auto value = dom::Nullable<nsCString>();
+    if (!aLifted.IsVoid()) {
+      value.SetValue() = aLifted;
+    }
+    return ViaFfi<dom::Nullable<nsCString>, {{ context.ffi_rustbuffer_type() }}>::Lower(value);
+  }
+};
+
+template <>
+struct ViaFfi<nsAString, {{ context.ffi_rustbuffer_type() }}, true> {
+  [[nodiscard]] static bool Lift(const {{ context.ffi_rustbuffer_type() }}& aLowered,
+                                 nsAString& aLifted) {
+    auto value = dom::Nullable<nsString>();
+    if (!ViaFfi<dom::Nullable<nsString>, {{ context.ffi_rustbuffer_type() }}>::Lift(aLowered, value)) {
+      return false;
+    }
+    if (value.IsNull()) {
+      aLifted.SetIsVoid(true);
+    } else {
+      aLifted = value.Value();
+    }
+    return true;
+  }
+
+  [[nodiscard]] static {{ context.ffi_rustbuffer_type() }} Lower(const nsAString& aLifted) {
+    auto value = dom::Nullable<nsString>();
+    if (!aLifted.IsVoid()) {
+      value.SetValue() = aLifted;
+    }
+    return ViaFfi<dom::Nullable<nsString>, {{ context.ffi_rustbuffer_type() }}>::Lower(value);
   }
 };
 
