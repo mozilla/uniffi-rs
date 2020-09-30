@@ -27,7 +27,7 @@ NS_INTERFACE_MAP_END
 ) : mGlobal(aGlobal), mHandle(aHandle) {}
 
 {{ obj.name()|type_name(context)|class_name_cpp }}::~{{ obj.name()|type_name(context)|class_name_cpp }}() {
-  RustError err = {0, nullptr};
+  {{ context.ffi_rusterror_type() }} err = {0, nullptr};
   {{ obj.ffi_object_free().name() }}(mHandle, &err);
   MOZ_ASSERT(!err.mCode);
 }
