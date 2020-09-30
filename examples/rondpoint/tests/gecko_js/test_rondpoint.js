@@ -3,9 +3,9 @@
  * Firefox. Non-Gecko JS consumers can safely ignore it.
  *
  * If you're working on the Gecko JS bindings, you'll want to either copy or
- * symlink this folder into m-c, and add the `xpcshell.ini` file in this
+ * symlink this folder into m-c, and add the `xpcshell.ini` manifest in this
  * folder to an `XPCSHELL_TESTS_MANIFESTS` section in the `moz.build` file
- * that references the generated bindings.
+ * that includes the generated bindings.
  *
  * Currently, this must be done manually, though we're looking at ways to
  * run `uniffi-bindgen` as part of the Firefox build, and keep the UniFFI
@@ -177,6 +177,8 @@ add_task(async function test_stringifier() {
 });
 
 add_task(async function test_optionneur() {
+  // Step 1: call the methods without arguments, and check against the IDL.
+
   let op = new Optionneur();
 
   equal(op.sinonString(), "default");
@@ -215,12 +217,41 @@ add_task(async function test_optionneur() {
   // Enums.
   equal(op.sinonEnum(), "trois");
 
-  ["foo", "bar"].forEach(v => {
-    equal(op.sinonString(v), v);
-  });
+  // Step 2. Convince ourselves that if we pass something else, then that
+  // changes the output.
 
-  // Enums.
-  ["un", "deux", "trois"].forEach(v => {
-    equal(op.sinonEnum(v), v);
+  let table = {
+    sinonString: ["foo", "bar"],
+    sinonBoolean: [true, false],
+    sinonNull: ["0", "1"],
+    sinonZero: [0, 1],
+    sinonU8Dec: [0, 1],
+    sinonI8Dec: [0, 1],
+    sinonU16Dec: [0, 1],
+    sinonI16Dec: [0, 1],
+    sinonU32Dec: [0, 1],
+    sinonI32Dec: [0, 1],
+    sinonU64Dec: [0, 1],
+    sinonI64Dec: [0, 1],
+    sinonU8Hex: [0, 1],
+    sinonI8Hex: [0, 1],
+    sinonU16Hex: [0, 1],
+    sinonI16Hex: [0, 1],
+    sinonU32Hex: [0, 1],
+    sinonI32Hex: [0, 1],
+    sinonU64Hex: [0, 1],
+    sinonI64Hex: [0, 1],
+    sinonU32Oct: [0, 1],
+    sinonF32: [0, 1],
+    sinonF64: [0, 1],
+    sinonEnum: ["un", "deux", "trois"],
+  };
+  for (let method in table) {
+    for (let v of table[method]) {
+      strictEqual(op[method](v), v);
+    }
+  }
+  [["a", "b"], []].forEach(v => {
+    deepEqual(op.sinonSequence(v), v);
   });
 });
