@@ -18,12 +18,12 @@
 namespace mozilla {
 namespace dom {
 
-class {{ obj.name()|type_name(context)|class_name_cpp }} final : public nsISupports, public nsWrapperCache {
+class {{ obj.name()|class_name_cpp(context) }} final : public nsISupports, public nsWrapperCache {
  public:
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS({{ obj.name()|type_name(context)|class_name_cpp }})
+  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS({{ obj.name()|class_name_cpp(context) }})
 
-  {{ obj.name()|type_name(context)|class_name_cpp }}(nsIGlobalObject* aGlobal, uint64_t aHandle);
+  {{ obj.name()|class_name_cpp(context) }}(nsIGlobalObject* aGlobal, uint64_t aHandle);
 
   JSObject* WrapObject(JSContext* aCx,
                        JS::Handle<JSObject*> aGivenProto) override;
@@ -32,24 +32,24 @@ class {{ obj.name()|type_name(context)|class_name_cpp }} final : public nsISuppo
 
   {%- for cons in obj.constructors() %}
 
-  static already_AddRefed<{{ obj.name()|type_name(context)|class_name_cpp }}> Constructor(
+  static already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> Constructor(
     {%- for arg in cons.binding_arguments() %}
-    {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+    {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
     {%- endfor %}
   );
   {%- endfor %}
 
   {%- for meth in obj.methods() %}
 
-  {% match meth.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp }}{% else %}void{% endmatch %} {{ meth.name()|fn_name_cpp }}(
+  {% match meth.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ meth.name()|fn_name_cpp }}(
     {%- for arg in meth.binding_arguments() %}
-    {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+    {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
     {%- endfor %}
   );
   {%- endfor %}
 
  private:
-  ~{{ obj.name()|type_name(context)|class_name_cpp }}();
+  ~{{ obj.name()|class_name_cpp(context) }}();
 
   nsCOMPtr<nsIGlobalObject> mGlobal;
   uint64_t mHandle;

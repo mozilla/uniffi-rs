@@ -44,14 +44,14 @@
     {%- when ThrowBy::Assert %}
     MOZ_ASSERT(false);
     {%- endmatch %}
-    return {% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|dummy_ret_value_cpp }}{% else %}{% endmatch %};
+    return {% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|dummy_ret_value_cpp(context) }}{% else %}{% endmatch %};
   }
   {%- match func.return_by() %}
   {%- when ReturnBy::OutParam with (name, type_) %}
   DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, name, context) }};
   MOZ_RELEASE_ASSERT(ok_);
   {%- when ReturnBy::Value with (type_) %}
-  {{ type_|type_cpp }} retVal_;
+  {{ type_|type_cpp(context) }} retVal_;
   DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, "retVal_", context) }};
   MOZ_RELEASE_ASSERT(ok_);
   return retVal_;

@@ -11,16 +11,16 @@
 namespace mozilla {
 namespace dom {
 
-class {{ context.namespace()|type_name(context)|class_name_cpp }} final {
+class {{ context.namespace()|class_name_cpp(context) }} final {
  public:
-  {{ context.namespace()|type_name(context)|class_name_cpp }}() = default;
-  ~{{ context.namespace()|type_name(context)|class_name_cpp }}() = default;
+  {{ context.namespace()|class_name_cpp(context) }}() = default;
+  ~{{ context.namespace()|class_name_cpp(context) }}() = default;
 
   {%- for func in functions %}
 
-  static {% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp }}{% else %}void{% endmatch %} {{ func.name()|fn_name_cpp }}(
+  static {% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ func.name()|fn_name_cpp }}(
     {%- for arg in func.binding_arguments() %}
-    {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+    {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
     {%- endfor %}
   );
 

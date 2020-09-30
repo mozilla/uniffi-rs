@@ -200,6 +200,24 @@ add_task(async function test_optionneur() {
   // Hexadecimal integers.
   equal(op.sinonI8Hex(), -0x7f);
   equal(op.sinonU8Hex(), 0xff);
+  equal(op.sinonI16Hex(), 0x7f);
+  equal(op.sinonU16Hex(), 0xffff);
+  equal(op.sinonI32Hex(), 0x7fffffff);
+  equal(op.sinonU32Hex(), 0xffffffff);
+
+  // Octal integers.
+  equal(op.sinonU32Oct(), 493);
+
+  // Floats.
+  equal(op.sinonF32(), 42);
+  equal(op.sinonF64(), 42.1);
+
+  // Enums.
+  equal(op.sinonEnum(), "trois");
+
+  ["foo", "bar"].forEach(v => {
+    equal(op.sinonString(v), v);
+  });
 
   // Enums.
   ["un", "deux", "trois"].forEach(v => {

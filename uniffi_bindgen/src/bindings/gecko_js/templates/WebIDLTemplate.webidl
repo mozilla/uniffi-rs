@@ -2,7 +2,7 @@
 // Trust me, you don't want to mess with it!
 
 {%- for rec in ci.iter_record_definitions() %}
-dictionary {{ rec.name()|type_name(context)|class_name_webidl  }} {
+dictionary {{ rec.name()|class_name_webidl(context)  }} {
   {%- for field in rec.fields() %}
   required {{ field.type_()|type_webidl(context) }} {{ field.name()|var_name_webidl }};
   {%- endfor %}
@@ -10,7 +10,7 @@ dictionary {{ rec.name()|type_name(context)|class_name_webidl  }} {
 {% endfor %}
 
 {%- for e in ci.iter_enum_definitions() %}
-enum {{ e.name()|type_name(context)|class_name_webidl  }} {
+enum {{ e.name()|class_name_webidl(context)  }} {
   {% for variant in e.variants() %}
   "{{ variant|enum_variant_webidl }}"{%- if !loop.last %}, {% endif %}
   {% endfor %}
@@ -20,7 +20,7 @@ enum {{ e.name()|type_name(context)|class_name_webidl  }} {
 {%- let functions = ci.iter_function_definitions() %}
 {%- if !functions.is_empty() %}
 [ChromeOnly, Exposed=Window]
-namespace {{ context.namespace()|type_name(context)|class_name_webidl }} {
+namespace {{ context.namespace()|class_name_webidl(context) }} {
   {% for func in functions %}
   {%- if func.throws().is_some() %}
   [Throws]
@@ -41,7 +41,7 @@ namespace {{ context.namespace()|type_name(context)|class_name_webidl }} {
 
 {%- for obj in ci.iter_object_definitions() %}
 [ChromeOnly, Exposed=Window]
-interface {{ obj.name()|type_name(context)|class_name_webidl  }} {
+interface {{ obj.name()|class_name_webidl(context)  }} {
   {%- for cons in obj.constructors() %}
   {%- if cons.throws().is_some() %}
   [Throws]

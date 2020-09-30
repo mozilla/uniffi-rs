@@ -30,12 +30,12 @@ namespace {{ context.detail_name() }} {
 
 {% for e in ci.iter_enum_definitions() %}
 template <>
-struct ViaFfi<{{ e.name()|type_name(context)|class_name_cpp }}, uint32_t> {
-  [[nodiscard]] static bool Lift(const uint32_t& aLowered, {{ e.name()|type_name(context)|class_name_cpp }}& aLifted) {
+struct ViaFfi<{{ e.name()|class_name_cpp(context) }}, uint32_t> {
+  [[nodiscard]] static bool Lift(const uint32_t& aLowered, {{ e.name()|class_name_cpp(context) }}& aLifted) {
     switch (aLowered) {
       {% for variant in e.variants() -%}
       case {{ loop.index }}:
-        aLifted = {{ e.name()|type_name(context)|class_name_cpp }}::{{ variant|enum_variant_cpp }};
+        aLifted = {{ e.name()|class_name_cpp(context) }}::{{ variant|enum_variant_cpp }};
         break;
       {% endfor -%}
       default:
@@ -45,10 +45,10 @@ struct ViaFfi<{{ e.name()|type_name(context)|class_name_cpp }}, uint32_t> {
     return true;
   }
 
-  [[nodiscard]] static uint32_t Lower(const {{ e.name()|type_name(context)|class_name_cpp }}& aLifted) {
+  [[nodiscard]] static uint32_t Lower(const {{ e.name()|class_name_cpp(context) }}& aLifted) {
     switch (aLifted) {
       {% for variant in e.variants() -%}
-      case {{ e.name()|type_name(context)|class_name_cpp }}::{{ variant|enum_variant_cpp }}:
+      case {{ e.name()|class_name_cpp(context) }}::{{ variant|enum_variant_cpp }}:
         return {{ loop.index }};
       {% endfor -%}
       default:
@@ -59,33 +59,33 @@ struct ViaFfi<{{ e.name()|type_name(context)|class_name_cpp }}, uint32_t> {
 };
 
 template <>
-struct Serializable<{{ e.name()|type_name(context)|class_name_cpp }}> {
-  [[nodiscard]] static bool ReadFrom(Reader& aReader, {{ e.name()|type_name(context)|class_name_cpp }}& aValue) {
+struct Serializable<{{ e.name()|class_name_cpp(context) }}> {
+  [[nodiscard]] static bool ReadFrom(Reader& aReader, {{ e.name()|class_name_cpp(context) }}& aValue) {
     auto rawValue = aReader.ReadUInt32();
-    return ViaFfi<{{ e.name()|type_name(context)|class_name_cpp }}, uint32_t>::Lift(rawValue, aValue);
+    return ViaFfi<{{ e.name()|class_name_cpp(context) }}, uint32_t>::Lift(rawValue, aValue);
   }
 
-  static void WriteInto(Writer& aWriter, const {{ e.name()|type_name(context)|class_name_cpp }}& aValue) {
-    aWriter.WriteUInt32(ViaFfi<{{ e.name()|type_name(context)|class_name_cpp }}, uint32_t>::Lower(aValue));
+  static void WriteInto(Writer& aWriter, const {{ e.name()|class_name_cpp(context) }}& aValue) {
+    aWriter.WriteUInt32(ViaFfi<{{ e.name()|class_name_cpp(context) }}, uint32_t>::Lower(aValue));
   }
 };
 {% endfor %}
 
 {% for rec in ci.iter_record_definitions() -%}
 template <>
-struct Serializable<{{ rec.name()|type_name(context)|class_name_cpp }}> {
-  [[nodiscard]] static bool ReadFrom(Reader& aReader, {{ rec.name()|type_name(context)|class_name_cpp }}& aValue) {
+struct Serializable<{{ rec.name()|class_name_cpp(context) }}> {
+  [[nodiscard]] static bool ReadFrom(Reader& aReader, {{ rec.name()|class_name_cpp(context) }}& aValue) {
     {%- for field in rec.fields() %}
-    if (!Serializable<{{ field.type_()|type_cpp }}>::ReadFrom(aReader, aValue.{{ field.name()|field_name_cpp }})) {
+    if (!Serializable<{{ field.type_()|type_cpp(context) }}>::ReadFrom(aReader, aValue.{{ field.name()|field_name_cpp }})) {
       return false;
     }
     {%- endfor %}
     return true;
   }
 
-  static void WriteInto(Writer& aWriter, const {{ rec.name()|type_name(context)|class_name_cpp }}& aValue) {
+  static void WriteInto(Writer& aWriter, const {{ rec.name()|class_name_cpp(context) }}& aValue) {
     {%- for field in rec.fields() %}
-    Serializable<{{ field.type_()|type_cpp }}>::WriteInto(aWriter, aValue.{{ field.name()|field_name_cpp }});
+    Serializable<{{ field.type_()|type_cpp(context) }}>::WriteInto(aWriter, aValue.{{ field.name()|field_name_cpp }});
     {%- endfor %}
   }
 };

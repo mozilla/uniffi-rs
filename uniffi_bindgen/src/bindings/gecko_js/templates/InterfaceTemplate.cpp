@@ -13,38 +13,38 @@ namespace dom {
 // the only member that needs to be cycle-collected; if we ever add any JS
 // object members or other interfaces to the class, those should be collected,
 // too.
-NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE({{ obj.name()|type_name(context)|class_name_cpp }}, mGlobal)
-NS_IMPL_CYCLE_COLLECTING_ADDREF({{ obj.name()|type_name(context)|class_name_cpp }})
-NS_IMPL_CYCLE_COLLECTING_RELEASE({{ obj.name()|type_name(context)|class_name_cpp }})
-NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION({{ obj.name()|type_name(context)|class_name_cpp }})
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE({{ obj.name()|class_name_cpp(context) }}, mGlobal)
+NS_IMPL_CYCLE_COLLECTING_ADDREF({{ obj.name()|class_name_cpp(context) }})
+NS_IMPL_CYCLE_COLLECTING_RELEASE({{ obj.name()|class_name_cpp(context) }})
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION({{ obj.name()|class_name_cpp(context) }})
   NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
   NS_INTERFACE_MAP_ENTRY(nsISupports)
 NS_INTERFACE_MAP_END
 
-{{ obj.name()|type_name(context)|class_name_cpp }}::{{ obj.name()|type_name(context)|class_name_cpp }}(
+{{ obj.name()|class_name_cpp(context) }}::{{ obj.name()|class_name_cpp(context) }}(
   nsIGlobalObject* aGlobal,
   uint64_t aHandle
 ) : mGlobal(aGlobal), mHandle(aHandle) {}
 
-{{ obj.name()|type_name(context)|class_name_cpp }}::~{{ obj.name()|type_name(context)|class_name_cpp }}() {
+{{ obj.name()|class_name_cpp(context) }}::~{{ obj.name()|class_name_cpp(context) }}() {
   {{ context.ffi_rusterror_type() }} err = {0, nullptr};
   {{ obj.ffi_object_free().name() }}(mHandle, &err);
   MOZ_ASSERT(!err.mCode);
 }
 
-JSObject* {{ obj.name()|type_name(context)|class_name_cpp }}::WrapObject(
+JSObject* {{ obj.name()|class_name_cpp(context) }}::WrapObject(
   JSContext* aCx,
   JS::Handle<JSObject*> aGivenProto
 ) {
-  return dom::{{ obj.name()|type_name(context)|class_name_cpp }}_Binding::Wrap(aCx, this, aGivenProto);
+  return dom::{{ obj.name()|class_name_cpp(context) }}_Binding::Wrap(aCx, this, aGivenProto);
 }
 
 {%- for cons in obj.constructors() %}
 
 /* static */
-already_AddRefed<{{ obj.name()|type_name(context)|class_name_cpp }}> {{ obj.name()|type_name(context)|class_name_cpp }}::Constructor(
+already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> {{ obj.name()|class_name_cpp(context) }}::Constructor(
   {%- for arg in cons.binding_arguments() %}
-  {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+  {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
 ) {
   {%- call cpp::to_ffi_call_head(context, cons, "err", "handle") %}
@@ -58,16 +58,16 @@ already_AddRefed<{{ obj.name()|type_name(context)|class_name_cpp }}> {{ obj.name
     return nullptr;
   }
   nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(aGlobal.GetAsSupports());
-  auto result = MakeRefPtr<{{ obj.name()|type_name(context)|class_name_cpp }}>(global, handle);
+  auto result = MakeRefPtr<{{ obj.name()|class_name_cpp(context) }}>(global, handle);
   return result.forget();
 }
 {%- endfor %}
 
 {%- for meth in obj.methods() %}
 
-{% match meth.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp }}{% else %}void{% endmatch %} {{ obj.name()|type_name(context)|class_name_cpp }}::{{ meth.name()|fn_name_cpp }}(
+{% match meth.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ obj.name()|class_name_cpp(context) }}::{{ meth.name()|fn_name_cpp }}(
   {%- for arg in meth.binding_arguments() %}
-  {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
+  {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
 ) {
   {%- call cpp::to_ffi_call_with_prefix(context, "mHandle", meth) %}
