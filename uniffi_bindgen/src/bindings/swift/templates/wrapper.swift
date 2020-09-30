@@ -2,7 +2,10 @@
 // Trust me, you don't want to mess with it!
 
 import Foundation
-import uniffi_{{ ci.namespace() }}
+
+{% if !config.suppress_header_imports() -%}
+import {{ config.module_name() }}
+{% endif -%}
 
 {% include "RustBufferTemplate.swift" %}
 {% include "RustBufferHelper.swift" %}

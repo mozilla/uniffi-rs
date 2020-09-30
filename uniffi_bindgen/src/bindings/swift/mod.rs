@@ -50,7 +50,7 @@ pub fn write_bindings(
 
     let mut m =
         File::create(&module_map_file).context("Failed to create .modulemap file for bindings")?;
-    write!(m, "{}", generate_module_map(&ci, &header_file)?)?;
+    write!(m, "{}", generate_module_map(config, &ci, &header_file)?)?;
 
     let mut l = File::create(&source_file).context("Failed to create .swift file for bindings")?;
     write!(l, "{}", library)?;
@@ -83,9 +83,9 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bin
     Ok(Bindings { header, library })
 }
 
-fn generate_module_map(ci: &ComponentInterface, header_path: &Path) -> Result<String> {
+fn generate_module_map(config: &Config, ci: &ComponentInterface, header_path: &Path) -> Result<String> {
     use askama::Template;
-    let module_map = ModuleMap::new(&ci, header_path)
+    let module_map = ModuleMap::new(&config, &ci, header_path)
         .render()
         .map_err(|_| anyhow!("failed to render Swift module map"))?;
     Ok(module_map)
