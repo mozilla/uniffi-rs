@@ -12,53 +12,9 @@ use serde::{Deserialize, Serialize};
 use crate::interface::*;
 use crate::MergeWith;
 
-use super::namespace_to_file_name;
 use super::webidl::{
     BindingArgument, BindingFunction, ReturnBy, ReturningBindingFunction, ThrowBy,
 };
-
-#[derive(Clone, Copy)]
-pub struct Context<'config, 'ci> {
-    config: &'config Config,
-    ci: &'ci ComponentInterface,
-}
-
-impl<'config, 'ci> Context<'config, 'ci> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        Context { config, ci }
-    }
-
-    pub fn with_definiton_prefix<'a>(&self, name: &'a str) -> Cow<'a, str> {
-        match self.config.definition_prefix.as_ref() {
-            Some(prefix) => Cow::Owned(format!("{}{}", prefix, name)),
-            None => Cow::Borrowed(name),
-        }
-    }
-
-    pub fn namespace(&self) -> Cow<'ci, str> {
-        self.with_definiton_prefix(self.ci.namespace())
-    }
-
-    /// Returns the name to use for the `RustBuffer` type.
-    pub fn ffi_rustbuffer_type(&self) -> String {
-        format!("{}_RustBuffer", self.ci.ffi_namespace())
-    }
-
-    /// Returns the name to use for the `ForeignBytes` type.
-    pub fn ffi_foreignbytes_type(&self) -> String {
-        format!("{}_ForeignBytes", self.ci.ffi_namespace())
-    }
-
-    /// Returns the name to use for the `RustError` type.
-    pub fn ffi_rusterror_type(&self) -> String {
-        format!("{}_RustError", self.ci.ffi_namespace())
-    }
-
-    /// Returns the name to use for the internal `detail` C++ namespace.
-    pub fn detail_name(&self) -> String {
-        format!("{}_detail", self.ci.namespace())
-    }
-}
 
 /// Config options for the generated Firefox front-end bindings. Note that this
 /// can only be used to control details *that do not affect the underlying
@@ -106,46 +62,117 @@ impl MergeWith for Config {
     }
 }
 
+/// A context associates config options with a component interface, and provides
+/// helper methods that are shared between all templates and filters in this
+/// module.
+#[derive(Clone, Copy)]
+pub struct Context<'config, 'ci> {
+    config: &'config Config,
+    ci: &'ci ComponentInterface,
+}
+
+impl<'config, 'ci> Context<'config, 'ci> {
+    /// Creates a new context with options for the given component interface.
+    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
+        Context { config, ci }
+    }
+
+    /// Returns the `RustBuffer` type name.
+    ///
+    /// A `RustBuffer` is a Plain Old Data struct that holds a pointer to a
+    /// Rust byte buffer, along with its length and capacity. Because the
+    /// generated binding for each component declares its own FFI symbols in an
+    /// `extern "C"` block, the `RustBuffer` type name must be unique for each
+    /// component.
+    ///
+    /// Declaring multiple types with the same name in an `extern "C"` block,
+    /// even if they're in different header files, will fail the build because
+    /// it violates the One Definition Rule.
+    pub fn ffi_rustbuffer_type(&self) -> String {
+        format!("{}_RustBuffer", self.ci.ffi_namespace())
+    }
+
+    /// Returns the `ForeignBytes` type name.
+    ///
+    /// `ForeignBytes` is a Plain Old Data struct that holds a pointer to some
+    /// memory allocated by C++, along with its length. See the docs for
+    /// `ffi_rustbuffer_type` about why this type name must be unique for each
+    /// component.
+    pub fn ffi_foreignbytes_type(&self) -> String {
+        format!("{}_ForeignBytes", self.ci.ffi_namespace())
+    }
+
+    /// Returns the `RustError` type name.
+    ///
+    /// A `RustError` is a Plain Old Data struct that holds an error code and
+    /// a message string. See the docs for `ffi_rustbuffer_type` about why this
+    /// type name must be unique for each component.
+    pub fn ffi_rusterror_type(&self) -> String {
+        format!("{}_RustError", self.ci.ffi_namespace())
+    }
+
+    /// Returns the name to use for the `detail` C++ namespace, which contains
+    /// the serialization helpers and other internal types. This name must be
+    /// unique for each component.
+    pub fn detail_name(&self) -> String {
+        format!("{}_detail", self.ci.namespace())
+    }
+
+    /// Returns the unprefixed, unmodified component namespace name. This is
+    /// exposed for convenience, where a template has access to the context but
+    /// not the component interface.
+    pub fn namespace(&self) -> &'ci str {
+        self.ci.namespace()
+    }
+
+    /// Returns the type name to use for an interface, dictionary, enum, or
+    /// namespace with the given `ident` in the generated WebIDL and C++ code.
+    pub fn type_name<'a>(&self, ident: &'a str) -> Cow<'a, str> {
+        // Prepend the definition prefix if there is one; otherwise, just pass
+        // the name back as-is.
+        match self.config.definition_prefix.as_ref() {
+            Some(prefix) => Cow::Owned(format!("{}{}", prefix, ident)),
+            None => Cow::Borrowed(ident),
+        }
+    }
+
+    /// Returns the C++ header or source file name to use for the given
+    /// WebIDL interface or namespace name.
+    pub fn header_name(&self, ident: &str) -> String {
+        self.type_name(ident).to_camel_case()
+    }
+}
+
 /// A template for a Firefox WebIDL file. We only generate one of these per
 /// component.
 #[derive(Template)]
 #[template(syntax = "webidl", escape = "none", path = "WebIDLTemplate.webidl")]
 pub struct WebIdl<'config, 'ci> {
-    config: &'config Config,
-    ci: &'ci ComponentInterface,
     context: Context<'config, 'ci>,
+    ci: &'ci ComponentInterface,
 }
 
 impl<'config, 'ci> WebIdl<'config, 'ci> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
         let context = Context::new(config, ci);
-        Self {
-            config,
-            ci,
-            context,
-        }
+        Self { context, ci }
     }
 }
 
 /// A shared header file that's included by all our bindings. This defines
-/// common serialization logic and `extern` declarations for the FFI. Thes
+/// common serialization logic and `extern` declarations for the FFI. These
 /// namespace and interface source files `#include` this file.
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "SharedHeaderTemplate.h")]
 pub struct SharedHeader<'config, 'ci> {
-    config: &'config Config,
-    ci: &'ci ComponentInterface,
     context: Context<'config, 'ci>,
+    ci: &'ci ComponentInterface,
 }
 
 impl<'config, 'ci> SharedHeader<'config, 'ci> {
     pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
         let context = Context::new(config, ci);
-        Self {
-            config,
-            ci,
-            context,
-        }
+        Self { context, ci }
     }
 }
 
@@ -210,7 +237,6 @@ impl<'config, 'ci> Interface<'config, 'ci> {
 /// Filters for our Askama templates above. These output C++ and WebIDL.
 mod filters {
     use super::*;
-    use std::fmt;
 
     /// Declares a WebIDL type.
     ///
@@ -253,9 +279,13 @@ mod filters {
             Type::Boolean => "boolean".into(),
             Type::String => "DOMString".into(),
             Type::Enum(name) | Type::Record(name) | Type::Object(name) => {
-                class_name_webidl(name, context)?
+                class_name_webidl(&context.type_name(name))?
             }
-            Type::Error(name) => panic!("[TODO: type_webidl({:?})]", type_),
+            Type::Error(_name) => {
+                // TODO: We don't currently throw typed errors; see
+                // https://github.com/mozilla/uniffi-rs/issues/295.
+                panic!("[TODO: type_webidl({:?})]", type_)
+            }
             Type::Optional(inner) => format!("{}?", type_webidl(inner, context)?),
             Type::Sequence(inner) => format!("sequence<{}>", type_webidl(inner, context)?),
             Type::Map(inner) => format!("record<DOMString, {}>", type_webidl(inner, context)?),
@@ -333,7 +363,11 @@ mod filters {
             }
             Type::Sequence(inner) => format!("nsTArray<{}>", type_cpp(inner)?),
             Type::Map(inner) => format!("Record<nsString, {}>", type_cpp(inner)?),
-            Type::Error(name) => panic!("[TODO: type_cpp({:?})]", type_),
+            Type::Error(_name) => {
+                // TODO: We don't currently throw typed errors; see
+                // https://github.com/mozilla/uniffi-rs/issues/295.
+                panic!("[TODO: type_cpp({:?})]", type_)
+            }
         })
     }
 
@@ -422,7 +456,11 @@ mod filters {
             Type::Optional(_) | Type::Record(_) | Type::Map(_) | Type::Sequence(_) => {
                 format!("{}()", type_cpp(return_type)?)
             }
-            Type::Error(_) => panic!("[TODO: dummy_ret_value_cpp({:?})]", return_type),
+            Type::Error(_) => {
+                // TODO: We don't currently throw typed errors; see
+                // https://github.com/mozilla/uniffi-rs/issues/295.
+                panic!("[TODO: dummy_ret_value_cpp({:?})]", return_type)
+            }
         })
     }
 
@@ -445,7 +483,7 @@ mod filters {
         };
         Ok(format!(
             "{}::ViaFfi<{}, {}>::Lower({})",
-            context.detail(),
+            context.detail_name(),
             lifted,
             type_ffi(&FFIType::from(type_), context)?,
             from
@@ -472,7 +510,7 @@ mod filters {
         };
         Ok(format!(
             "{}::ViaFfi<{}, {}>::Lift({}, {})",
-            context.detail(),
+            context.detail_name(),
             lifted,
             type_ffi(&FFIType::from(type_), context)?,
             from,
@@ -480,46 +518,59 @@ mod filters {
         ))
     }
 
-    pub fn var_name_webidl(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn var_name_webidl(nm: &str) -> Result<String, askama::Error> {
+        Ok(nm.to_mixed_case())
+    }
+
+    pub fn enum_variant_webidl(nm: &str) -> Result<String, askama::Error> {
+        Ok(nm.to_mixed_case())
+    }
+
+    /// Declares a type name in C++ or WebIDL, including the optional
+    /// definition prefix if one is configured.
+    pub fn type_name(nm: &str, context: &Context<'_, '_>) -> Result<String, askama::Error> {
+        Ok(context.type_name(nm).to_camel_case())
+    }
+
+    pub fn header_name_cpp(nm: &str, context: &Context<'_, '_>) -> Result<String, askama::Error> {
+        Ok(context.header_name(nm))
+    }
+
+    /// Declares an interface, dictionary, enum, or namespace name in WebIDL.
+    pub fn class_name_webidl(nm: &str) -> Result<String, askama::Error> {
+        Ok(nm.to_camel_case())
+    }
+
+    /// Declares a class name in C++.
+    pub fn class_name_cpp(nm: &str) -> Result<String, askama::Error> {
+        Ok(nm.to_camel_case())
+    }
+
+    /// Declares a method name in WebIDL.
+    pub fn fn_name_webidl(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 
-    pub fn enum_variant_webidl(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
-    }
-
-    pub fn class_name_webidl(nm: &str, context: &Context<'_, '_>) -> Result<String, askama::Error> {
-        Ok(context.with_definiton_prefix(nm).to_camel_case())
-    }
-
-    pub fn class_name_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    /// Declares a class or instance method name in C++. Function and methods
+    /// names are UpperCamelCase in C++, even though they're mixedCamelCase in
+    /// WebIDL.
+    pub fn fn_name_cpp(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 
-    pub fn fn_name_webidl(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
-    }
-
-    /// For interface implementations, function and methods names are
-    /// UpperCamelCase, even though they're mixedCamelCase in WebIDL.
-    pub fn fn_name_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_camel_case())
-    }
-
+    /// `Codegen.py` emits field names as `mFieldName`. The `m` prefix is Gecko
+    /// style for struct members.
     pub fn field_name_cpp(nm: &str) -> Result<String, askama::Error> {
         Ok(format!("m{}", nm.to_camel_case()))
     }
 
-    pub fn enum_variant_cpp(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        // TODO: Make sure this does the right thing for hyphenated variants.
+    pub fn enum_variant_cpp(nm: &str) -> Result<String, askama::Error> {
+        // TODO: Make sure this does the right thing for hyphenated variants
+        // (https://github.com/mozilla/uniffi-rs/issues/294), or the generated
+        // code won't compile.
+        //
         // Example: "bookmark-added" should become `Bookmark_added`, because
         // that's what Firefox's `Codegen.py` spits out.
-        //
-        // https://github.com/mozilla/uniffi-rs/issues/294
-        Ok(nm.to_string().to_camel_case())
-    }
-
-    pub fn header_name_cpp(nm: &str) -> Result<String, askama::Error> {
-        Ok(namespace_to_file_name(nm))
+        Ok(nm.to_camel_case())
     }
 }

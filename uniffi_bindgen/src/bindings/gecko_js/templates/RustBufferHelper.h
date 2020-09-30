@@ -1,4 +1,4 @@
-namespace {{ context.detail() }} {
+namespace {{ context.detail_name() }} {
 
 /// Estimates the worst-case UTF-8 encoded length for a UTF-16 string.
 CheckedInt<size_t> EstimateUTF8Length(size_t aUTF16Length) {
@@ -480,12 +480,6 @@ struct Serializable<nsString> {
 /// Nullable values are prefixed by a tag: 0 if none; 1 followed by the
 /// serialized value if some. These are turned into Rust `Option<T>`s.
 ///
-/// Fun fact: WebIDL also has a `dom::Optional<T>` type. They both use
-/// `mozilla::Maybe<T>` under the hood, but their semantics are different.
-/// `Nullable<T>` means JS must pass some value for the argument or dictionary
-/// field: either `T` or `null`. `Optional<T>` means JS can omit the argument
-/// or member entirely.
-///
 /// These are always serialized, never passed directly over the FFI.
 
 template <typename T>
@@ -627,4 +621,4 @@ struct ViaFfi<T, {{ context.ffi_rustbuffer_type() }}> {
   }
 };
 
-}  // namespace {{ context.detail() }}
+}  // namespace {{ context.detail_name() }}

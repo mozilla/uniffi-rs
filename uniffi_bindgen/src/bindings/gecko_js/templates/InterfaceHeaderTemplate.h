@@ -3,8 +3,8 @@
 
 {% import "macros.cpp" as cpp %}
 
-#ifndef mozilla_dom_{{ obj.name()|header_name_cpp }}
-#define mozilla_dom_{{ obj.name()|header_name_cpp }}
+#ifndef mozilla_dom_{{ obj.name()|header_name_cpp(context) }}
+#define mozilla_dom_{{ obj.name()|header_name_cpp(context) }}
 
 #include "jsapi.h"
 #include "nsCOMPtr.h"
@@ -13,17 +13,17 @@
 
 #include "mozilla/RefPtr.h"
 
-#include "mozilla/dom/{{ context.namespace()|class_name_webidl(context) }}Binding.h"
+#include "mozilla/dom/{{ context.namespace()|header_name_cpp(context) }}Binding.h"
 
 namespace mozilla {
 namespace dom {
 
-class {{ obj.name()|class_name_cpp }} final : public nsISupports, public nsWrapperCache {
+class {{ obj.name()|type_name(context)|class_name_cpp }} final : public nsISupports, public nsWrapperCache {
  public:
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS({{ obj.name()|class_name_cpp }})
+  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS({{ obj.name()|type_name(context)|class_name_cpp }})
 
-  {{ obj.name()|class_name_cpp }}(nsIGlobalObject* aGlobal, uint64_t aHandle);
+  {{ obj.name()|type_name(context)|class_name_cpp }}(nsIGlobalObject* aGlobal, uint64_t aHandle);
 
   JSObject* WrapObject(JSContext* aCx,
                        JS::Handle<JSObject*> aGivenProto) override;
@@ -32,7 +32,7 @@ class {{ obj.name()|class_name_cpp }} final : public nsISupports, public nsWrapp
 
   {%- for cons in obj.constructors() %}
 
-  static already_AddRefed<{{ obj.name()|class_name_cpp }}> Constructor(
+  static already_AddRefed<{{ obj.name()|type_name(context)|class_name_cpp }}> Constructor(
     {%- for arg in cons.binding_arguments() %}
     {{ arg|arg_type_cpp }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
     {%- endfor %}
@@ -49,7 +49,7 @@ class {{ obj.name()|class_name_cpp }} final : public nsISupports, public nsWrapp
   {%- endfor %}
 
  private:
-  ~{{ obj.name()|class_name_cpp }}();
+  ~{{ obj.name()|type_name(context)|class_name_cpp }}();
 
   nsCOMPtr<nsIGlobalObject> mGlobal;
   uint64_t mHandle;
@@ -58,4 +58,4 @@ class {{ obj.name()|class_name_cpp }} final : public nsISupports, public nsWrapp
 }  // namespace dom
 }  // namespace mozilla
 
-#endif  // mozilla_dom_{{ obj.name()|header_name_cpp }}
+#endif  // mozilla_dom_{{ obj.name()|header_name_cpp(context) }}

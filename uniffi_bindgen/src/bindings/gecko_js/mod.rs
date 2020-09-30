@@ -18,16 +18,9 @@ pub use gen_gecko_js::{
 
 use super::super::interface::ComponentInterface;
 
-pub struct Source {
+pub struct Binding {
     name: String,
-    header: String,
-    source: String,
-}
-
-pub struct Bindings {
-    webidl: String,
-    shared_header: String,
-    sources: Vec<Source>,
+    contents: String,
 }
 
 /// Generate uniffi component bindings for Firefox.
@@ -62,110 +55,82 @@ pub fn write_bindings(
     out_dir: &Path,
     _try_format_code: bool,
 ) -> Result<()> {
-    use heck::CamelCase;
-
     let out_path = PathBuf::from(out_dir);
-
-    let Bindings {
-        webidl,
-        shared_header,
-        sources,
-    } = generate_bindings(config, ci)?;
-
-    let mut webidl_file = out_path.clone();
-    webidl_file.push(format!("{}.webidl", namespace_to_file_name(ci.namespace())));
-    let mut w = File::create(&webidl_file).context("Failed to create WebIDL file for bindings")?;
-    write!(w, "{}", webidl)?;
-
-    let mut shared_header_file = out_path.clone();
-    shared_header_file.push(format!(
-        "{}Shared.h",
-        namespace_to_file_name(ci.namespace())
-    ));
-    let mut h = File::create(&shared_header_file)
-        .context("Failed to create shared header file for bindings")?;
-    write!(h, "{}", shared_header)?;
-
-    for Source {
-        name,
-        header,
-        source,
-    } in sources
-    {
-        let mut header_file = out_path.clone();
-        header_file.push(format!("{}.h", namespace_to_file_name(&name)));
-        let mut h = File::create(&header_file)
-            .with_context(|| format!("Failed to create header file for `{}` bindings", name))?;
-        write!(h, "{}", header)?;
-
-        let mut source_file = out_path.clone();
-        source_file.push(format!("{}.cpp", namespace_to_file_name(&name)));
-        let mut w = File::create(&source_file)
-            .with_context(|| format!("Failed to create header file for `{}` bindings", name))?;
-        write!(w, "{}", source)?;
+    let bindings = generate_bindings(config, ci)?;
+    for binding in bindings {
+        let mut file = out_path.clone();
+        file.push(&binding.name);
+        let mut f = File::create(&file)
+            .with_context(|| format!("Failed to create file `{}`", binding.name))?;
+        write!(f, "{}", binding.contents)?;
     }
-
     Ok(())
 }
 
-pub fn namespace_to_file_name(namespace: &str) -> String {
-    use heck::CamelCase;
-    namespace.to_camel_case()
-}
-
 /// Generate Gecko bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
+pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Vec<Binding>> {
     use askama::Template;
-    use heck::CamelCase;
+
+    let mut bindings = Vec::new();
+
+    let context = gen_gecko_js::Context::new(config, ci);
 
     let webidl = WebIdl::new(config, ci)
         .render()
         .context("Failed to render WebIDL bindings")?;
+    bindings.push(Binding {
+        name: format!("{}.webidl", context.header_name(context.namespace())),
+        contents: webidl,
+    });
 
     let shared_header = SharedHeader::new(config, ci)
         .render()
         .context("Failed to render shared header")?;
-
-    let mut sources = Vec::new();
+    bindings.push(Binding {
+        name: format!("{}Shared.h", context.header_name(context.namespace())),
+        contents: shared_header,
+    });
 
     // Top-level functions go in one namespace, which needs its own header and
     // source file.
     let functions = ci.iter_function_definitions();
     if !functions.is_empty() {
-        let context = gen_gecko_js::Context::new(config, ci);
         let header = NamespaceHeader::new(context, functions.as_slice())
             .render()
             .context("Failed to render top-level namespace header")?;
+        bindings.push(Binding {
+            name: format!("{}.h", context.header_name(context.namespace())),
+            contents: header,
+        });
+
         let source = Namespace::new(context, functions.as_slice())
             .render()
             .context("Failed to render top-level namespace binding")?;
-        sources.push(Source {
-            name: ci.namespace().into(),
-            header,
-            source,
+        bindings.push(Binding {
+            name: format!("{}.cpp", context.header_name(context.namespace())),
+            contents: source,
         });
     }
 
     // Now generate one header/source pair for each interface.
     let objects = ci.iter_object_definitions();
     for obj in objects {
-        let context = gen_gecko_js::Context::new(config, ci);
         let header = InterfaceHeader::new(context, &obj)
             .render()
             .with_context(|| format!("Failed to render {} header", obj.name()))?;
+        bindings.push(Binding {
+            name: format!("{}.h", context.header_name(obj.name())),
+            contents: header,
+        });
+
         let source = Interface::new(context, &obj)
             .render()
             .with_context(|| format!("Failed to render {} binding", obj.name()))?;
-        sources.push(Source {
-            name: obj.name().into(),
-            header,
-            source,
-        });
+        bindings.push(Binding {
+            name: format!("{}.cpp", context.header_name(obj.name())),
+            contents: source,
+        })
     }
 
-    Ok(Bindings {
-        webidl,
-        shared_header,
-        sources,
-    })
+    Ok(bindings)
 }
