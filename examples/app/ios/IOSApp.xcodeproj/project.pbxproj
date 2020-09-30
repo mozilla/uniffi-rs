@@ -13,7 +13,26 @@
 		395A881E251A062D00562F33 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 395A881D251A062D00562F33 /* Preview Assets.xcassets */; };
 		395A8829251A062D00562F33 /* IOSAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8828251A062D00562F33 /* IOSAppTests.swift */; };
 		395A8834251A062D00562F33 /* IOSAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8833251A062D00562F33 /* IOSAppUITests.swift */; };
+		CEEB59CB25263C7E003C87D1 /* todolist.idl in Sources */ = {isa = PBXBuildFile; fileRef = CEEB59CA25263C7E003C87D1 /* todolist.idl */; };
+		CEEB5A0025264123003C87D1 /* libuniffi_todolist.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		CEEB59B725263AEF003C87D1 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.idl";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)-Bridging-Header.h",
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).swift",
+			);
+			script = "# Generate swift bindings for the todolist rust library.\n../../../target/debug/uniffi-bindgen generate $INPUT_FILE_PATH --language swift --out-dir $DERIVED_FILE_DIR --config-path $SRCROOT/uniffi.toml\necho \"Generate files in $DERIVED_FILE_DIR\"\n";
+		};
+/* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
 		395A8825251A062D00562F33 /* PBXContainerItemProxy */ = {
@@ -45,6 +64,9 @@
 		395A882F251A062D00562F33 /* IOSAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IOSAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		395A8833251A062D00562F33 /* IOSAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSAppUITests.swift; sourceTree = "<group>"; };
 		395A8835251A062D00562F33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		39C5D6D82524F95400BDBA8A /* IOSApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IOSApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		CEEB59CA25263C7E003C87D1 /* todolist.idl */ = {isa = PBXFileReference; lastKnownFileType = text; name = todolist.idl; path = ../shared/src/todolist.idl; sourceTree = "<group>"; };
+		CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuniffi_todolist.a; path = ../../../target/universal/debug/libuniffi_todolist.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEEB5A0025264123003C87D1 /* libuniffi_todolist.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,10 +98,13 @@
 		395A880A251A062C00562F33 = {
 			isa = PBXGroup;
 			children = (
+				CEEB59CA25263C7E003C87D1 /* todolist.idl */,
+				39C5D6D82524F95400BDBA8A /* IOSApp-Bridging-Header.h */,
 				395A8815251A062C00562F33 /* IOSApp */,
 				395A8827251A062D00562F33 /* IOSAppTests */,
 				395A8832251A062D00562F33 /* IOSAppUITests */,
 				395A8814251A062C00562F33 /* Products */,
+				CEEB59FE25264123003C87D1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -130,6 +156,14 @@
 			path = IOSAppUITests;
 			sourceTree = "<group>";
 		};
+		CEEB59FE25264123003C87D1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -137,12 +171,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 395A8838251A062D00562F33 /* Build configuration list for PBXNativeTarget "IOSApp" */;
 			buildPhases = (
-				39BF3FE42523A708005159C0 /* ShellScript */,
+				CEEB59EB25263ECE003C87D1 /* ShellScript */,
 				395A880F251A062C00562F33 /* Sources */,
 				395A8810251A062C00562F33 /* Frameworks */,
 				395A8811251A062C00562F33 /* Resources */,
 			);
 			buildRules = (
+				CEEB59B725263AEF003C87D1 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -256,17 +291,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		39BF3FE42523A708005159C0 /* ShellScript */ = {
+		CEEB59EB25263ECE003C87D1 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/../shared/src/todolist.idl",
-				"$(SRCROOT)/uniffi.toml",
 			);
 			outputFileListPaths = (
 			);
@@ -274,7 +306,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Generate swift bindings for the todolist rust library.\n../../../target/debug/uniffi-bindgen generate $SRCROOT/../shared/src/todolist.idl --language swift --out-dir $DERIVED_FILE_DIR --config-path $SRCROOT/uniffi.toml\necho \"Generate files in $DERIVED_FILE_DIR\"\n";
+			shellScript = "bash $SRCROOT/xc-universal-binary.sh libuniffi_todolist.a uniffi-example-app $SRCROOT/../../../ debug\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -283,6 +315,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEEB59CB25263C7E003C87D1 /* todolist.idl in Sources */,
 				395A8819251A062C00562F33 /* ContentView.swift in Sources */,
 				395A8817251A062C00562F33 /* ExampleApp.swift in Sources */,
 			);
@@ -451,8 +484,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = ../../../target/universal/debug;
 				PRODUCT_BUNDLE_IDENTIFIER = org.mozilla.example.uniffi.IOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "IOSApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -473,8 +508,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = ../../../target/universal/debug;
 				PRODUCT_BUNDLE_IDENTIFIER = org.mozilla.example.uniffi.IOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "IOSApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

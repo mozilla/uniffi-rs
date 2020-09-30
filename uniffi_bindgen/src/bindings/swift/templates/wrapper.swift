@@ -3,10 +3,6 @@
 
 import Foundation
 
-{% if !config.suppress_header_imports() -%}
-import {{ config.module_name() }}
-{% endif -%}
-
 {% include "RustBufferTemplate.swift" %}
 {% include "RustBufferHelper.swift" %}
 

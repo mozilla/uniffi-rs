@@ -23,10 +23,17 @@ struct ContentView: View {
                     Text("-").padding()
                 }
                 Button("+") {
+                    testFunc()
                     clicked = clicked + 1
                 }.padding()
             }
         }
+    }
+
+    func testFunc() {
+        let bobo = TodoList()
+        try! bobo.addItem(todo: "test test")
+        print(try! bobo.getFirst())
     }
 }
 
