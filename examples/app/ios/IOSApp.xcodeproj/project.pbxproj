@@ -137,6 +137,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 395A8838251A062D00562F33 /* Build configuration list for PBXNativeTarget "IOSApp" */;
 			buildPhases = (
+				39BF3FE42523A708005159C0 /* ShellScript */,
 				395A880F251A062C00562F33 /* Sources */,
 				395A8810251A062C00562F33 /* Frameworks */,
 				395A8811251A062C00562F33 /* Resources */,
@@ -253,6 +254,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		39BF3FE42523A708005159C0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../shared/src/todolist.idl",
+				"$(SRCROOT)/uniffi.toml",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Generate swift bindings for the todolist rust library.\n../../../target/debug/uniffi-bindgen generate $SRCROOT/../shared/src/todolist.idl --language swift --out-dir $DERIVED_FILE_DIR --config-path $SRCROOT/uniffi.toml\necho \"Generate files in $DERIVED_FILE_DIR\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		395A880F251A062C00562F33 /* Sources */ = {

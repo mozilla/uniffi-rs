@@ -1,0 +1,3 @@
+[bindings.swift]
+suppress_import_headers = true
+module_name = "TodoList"
