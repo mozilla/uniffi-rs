@@ -118,15 +118,17 @@ use scaffolding::RustScaffolding;
 // such as the `extern "C"` function definitions and record data types.
 pub fn generate_component_scaffolding<P: AsRef<Path>>(
     idl_file: P,
+    config_file_override: Option<P>,
     out_dir_override: Option<P>,
     manifest_path_override: Option<P>,
     format_code: bool,
 ) -> Result<()> {
     let manifest_path_override = manifest_path_override.as_ref().map(|p| p.as_ref());
+    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let idl_file = idl_file.as_ref();
     let component = parse_idl(&idl_file)?;
-    let _config = get_config(&component);
+    let _config = get_config(&component, idl_file, config_file_override);
     ensure_versions_compatibility(&idl_file, manifest_path_override)?;
     let mut filename = Path::new(&idl_file)
         .file_stem()
@@ -159,7 +161,11 @@ fn ensure_versions_compatibility(
             metadata_cmd.manifest_path(p);
         }
         None => {
-            metadata_cmd.current_dir(idl_file.parent().ok_or_else(|| anyhow!("no parent!"))?);
+            metadata_cmd.current_dir(
+                idl_file
+                    .parent()
+                    .ok_or_else(|| anyhow!("IDL file has no parent folder!"))?,
+            );
         }
     };
     let metadata = metadata_cmd
@@ -189,17 +195,17 @@ fn ensure_versions_compatibility(
 // Rust code.
 pub fn generate_bindings<P: AsRef<Path>>(
     idl_file: P,
+    config_file_override: Option<P>,
     target_languages: Vec<&str>,
     out_dir_override: Option<P>,
     try_format_code: bool,
 ) -> Result<()> {
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let idl_file = PathBuf::from(idl_file.as_ref())
-        .canonicalize()
-        .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
+    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+    let idl_file = idl_file.as_ref();
 
     let component = parse_idl(&idl_file)?;
-    let config = get_config(&component)?;
+    let config = get_config(&component, idl_file, config_file_override)?;
     let out_dir = get_out_dir(&idl_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
@@ -219,15 +225,14 @@ pub fn run_tests<P: AsRef<Path>>(
     cdylib_dir: P,
     idl_file: P,
     test_scripts: Vec<&str>,
+    config_file_override: Option<P>,
 ) -> Result<()> {
     let cdylib_dir = cdylib_dir.as_ref();
     let idl_file = idl_file.as_ref();
-    let idl_file = PathBuf::from(idl_file)
-        .canonicalize()
-        .map_err(|e| anyhow!("Failed to find idl file: {:?}", e))?;
+    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
     let component = parse_idl(&idl_file)?;
-    let config = get_config(&component)?;
+    let config = get_config(&component, idl_file, config_file_override)?;
 
     // Group the test scripts by language first.
     let mut language_tests: HashMap<TargetLanguage, Vec<String>> = HashMap::new();
@@ -252,27 +257,37 @@ pub fn run_tests<P: AsRef<Path>>(
     Ok(())
 }
 
-fn get_config(component: &ComponentInterface) -> Result<Config> {
+fn get_config(
+    component: &ComponentInterface,
+    idl_file: &Path,
+    config_file_override: Option<&Path>,
+) -> Result<Config> {
     let default_config: Config = component.into();
 
-    let pkg_path: PathBuf = env::var("CARGO_MANIFEST_DIR")
-        .expect("Missing $CARGO_MANIFEST_DIR, cannot load config file")
-        .into();
-
-    let config_file = pkg_path.join("uniffi.toml").canonicalize();
-
-    let config_file = match config_file {
-        Ok(f) => f,
-        Err(_) => return Ok(default_config),
+    let config_file: Option<PathBuf> = match config_file_override {
+        Some(cfg) => Some(PathBuf::from(cfg)),
+        None => {
+            let path_guess = idl_file
+                .parent()
+                .ok_or_else(|| anyhow!("IDL file has no parent folder!"))?
+                .join("uniffi.toml");
+            match path_guess.canonicalize() {
+                Ok(f) => Some(f),
+                Err(_) => None,
+            }
+        }
     };
 
-    let contents = slurp_file(&config_file)
-        .with_context(|| format!("Failed to read config file from {:?}", &config_file))?;
-
-    let loaded_config: Config = toml::de::from_str(&contents)
-        .with_context(|| format!("Failed to generate config from file {:?}", &config_file))?;
-
-    Ok(loaded_config.merge_with(&default_config))
+    match config_file {
+        Some(path) => {
+            let contents = slurp_file(&path)
+                .with_context(|| format!("Failed to read config file from {:?}", &path))?;
+            let loaded_config: Config = toml::de::from_str(&contents)
+                .with_context(|| format!("Failed to generate config from file {:?}", &path))?;
+            Ok(loaded_config.merge_with(&default_config))
+        }
+        None => Ok(default_config),
+    }
 }
 
 fn get_out_dir(idl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {

@@ -48,5 +48,5 @@ fn run_uniffi_bindgen_scaffolding(out_dir: &str, idl_file: &str) -> Result<()> {
 
 #[cfg(feature = "builtin-bindgen")]
 fn run_uniffi_bindgen_scaffolding(out_dir: &str, idl_file: &str) -> Result<()> {
-    uniffi_bindgen::generate_component_scaffolding(idl_file, Some(out_dir), None, true)
+    uniffi_bindgen::generate_component_scaffolding(idl_file, None, Some(out_dir), None, true)
 }
