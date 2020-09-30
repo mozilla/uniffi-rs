@@ -97,6 +97,12 @@ pub enum Type {
     Map(/* String, */ Box<Type>),
 }
 
+impl Type {
+    pub fn to_ffi(&self) -> FFIType {
+        FFIType::from(self)
+    }
+}
+
 /// When passing data across the FFI, each `Type` value will be lowered into a corresponding
 /// `FFIType` value. This conversion tells you which one.
 impl From<&Type> for FFIType {
