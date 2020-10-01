@@ -28,7 +28,7 @@ namespace dom {
 
 namespace {{ context.detail_name() }} {
 
-{% for e in enums %}
+{% for e in ci.iter_enum_definitions() %}
 template <>
 struct ViaFfi<{{ e.name()|class_name_cpp(context) }}, uint32_t> {
   [[nodiscard]] static bool Lift(const uint32_t& aLowered, {{ e.name()|class_name_cpp(context) }}& aLifted) {
@@ -71,12 +71,12 @@ struct Serializable<{{ e.name()|class_name_cpp(context) }}> {
 };
 {% endfor %}
 
-{% for rec in dictionaries -%}
+{% for rec in ci.iter_record_definitions() -%}
 template <>
 struct Serializable<{{ rec.name()|class_name_cpp(context) }}> {
   [[nodiscard]] static bool ReadFrom(Reader& aReader, {{ rec.name()|class_name_cpp(context) }}& aValue) {
-    {%- for field in rec.members() %}
-    if (!Serializable<{{ field.type_()|type_cpp(context) }}>::ReadFrom(aReader, aValue.{{ field.name()|field_name_cpp }})) {
+    {%- for field in rec.fields() %}
+    if (!Serializable<{{ field.webidl_type()|type_cpp(context) }}>::ReadFrom(aReader, aValue.{{ field.name()|field_name_cpp }})) {
       return false;
     }
     {%- endfor %}
@@ -84,8 +84,8 @@ struct Serializable<{{ rec.name()|class_name_cpp(context) }}> {
   }
 
   static void WriteInto(Writer& aWriter, const {{ rec.name()|class_name_cpp(context) }}& aValue) {
-    {%- for field in rec.members() %}
-    Serializable<{{ field.type_()|type_cpp(context) }}>::WriteInto(aWriter, aValue.{{ field.name()|field_name_cpp }});
+    {%- for field in rec.fields() %}
+    Serializable<{{ field.webidl_type()|type_cpp(context) }}>::WriteInto(aWriter, aValue.{{ field.name()|field_name_cpp }});
     {%- endfor %}
   }
 };

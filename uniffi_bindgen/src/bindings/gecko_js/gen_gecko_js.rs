@@ -13,8 +13,8 @@ use crate::interface::*;
 use crate::MergeWith;
 
 use super::webidl::{
-    BindingArgument, ReturnBy, ThrowBy, WebIDLDictionary, WebIDLFunction, WebIDLInterface,
-    WebIDLType,
+    ArgumentExt, BindingArgument, ConstructorExt, FieldExt, FunctionExt, MethodExt, ReturnBy,
+    ThrowBy, WebIDLType,
 };
 
 /// Config options for the generated Firefox front-end bindings. Note that this
@@ -150,27 +150,12 @@ impl<'config, 'ci> Context<'config, 'ci> {
 #[template(syntax = "webidl", escape = "none", path = "WebIDLTemplate.webidl")]
 pub struct WebIDL<'config, 'ci> {
     context: Context<'config, 'ci>,
-    dictionaries: &'ci [WebIDLDictionary],
-    enums: &'ci [Enum],
-    functions: &'ci [WebIDLFunction],
-    interfaces: &'ci [WebIDLInterface],
+    ci: &'ci ComponentInterface,
 }
 
 impl<'config, 'ci> WebIDL<'config, 'ci> {
-    pub fn new(
-        context: Context<'config, 'ci>,
-        dictionaries: &'ci [WebIDLDictionary],
-        enums: &'ci [Enum],
-        functions: &'ci [WebIDLFunction],
-        interfaces: &'ci [WebIDLInterface],
-    ) -> Self {
-        Self {
-            context,
-            dictionaries,
-            enums,
-            functions,
-            interfaces,
-        }
+    pub fn new(context: Context<'config, 'ci>, ci: &'ci ComponentInterface) -> Self {
+        Self { context, ci }
     }
 }
 
@@ -182,23 +167,11 @@ impl<'config, 'ci> WebIDL<'config, 'ci> {
 pub struct SharedHeader<'config, 'ci> {
     context: Context<'config, 'ci>,
     ci: &'ci ComponentInterface,
-    dictionaries: &'ci [WebIDLDictionary],
-    enums: &'ci [Enum],
 }
 
 impl<'config, 'ci> SharedHeader<'config, 'ci> {
-    pub fn new(
-        context: Context<'config, 'ci>,
-        ci: &'ci ComponentInterface,
-        dictionaries: &'ci [WebIDLDictionary],
-        enums: &'ci [Enum],
-    ) -> Self {
-        Self {
-            context,
-            ci,
-            dictionaries,
-            enums,
-        }
+    pub fn new(context: Context<'config, 'ci>, ci: &'ci ComponentInterface) -> Self {
+        Self { context, ci }
     }
 }
 
@@ -208,11 +181,11 @@ impl<'config, 'ci> SharedHeader<'config, 'ci> {
 #[template(syntax = "c", escape = "none", path = "NamespaceHeaderTemplate.h")]
 pub struct NamespaceHeader<'config, 'ci> {
     context: Context<'config, 'ci>,
-    functions: &'ci [WebIDLFunction],
+    functions: &'ci [Function],
 }
 
 impl<'config, 'ci> NamespaceHeader<'config, 'ci> {
-    pub fn new(context: Context<'config, 'ci>, functions: &'ci [WebIDLFunction]) -> Self {
+    pub fn new(context: Context<'config, 'ci>, functions: &'ci [Function]) -> Self {
         Self { context, functions }
     }
 }
@@ -223,11 +196,11 @@ impl<'config, 'ci> NamespaceHeader<'config, 'ci> {
 #[template(syntax = "cpp", escape = "none", path = "NamespaceTemplate.cpp")]
 pub struct Namespace<'config, 'ci> {
     context: Context<'config, 'ci>,
-    functions: &'ci [WebIDLFunction],
+    functions: &'ci [Function],
 }
 
 impl<'config, 'ci> Namespace<'config, 'ci> {
-    pub fn new(context: Context<'config, 'ci>, functions: &'ci [WebIDLFunction]) -> Self {
+    pub fn new(context: Context<'config, 'ci>, functions: &'ci [Function]) -> Self {
         Self { context, functions }
     }
 }
@@ -237,11 +210,11 @@ impl<'config, 'ci> Namespace<'config, 'ci> {
 #[template(syntax = "c", escape = "none", path = "InterfaceHeaderTemplate.h")]
 pub struct InterfaceHeader<'config, 'ci> {
     context: Context<'config, 'ci>,
-    obj: &'ci WebIDLInterface,
+    obj: &'ci Object,
 }
 
 impl<'config, 'ci> InterfaceHeader<'config, 'ci> {
-    pub fn new(context: Context<'config, 'ci>, obj: &'ci WebIDLInterface) -> Self {
+    pub fn new(context: Context<'config, 'ci>, obj: &'ci Object) -> Self {
         Self { context, obj }
     }
 }
@@ -251,11 +224,11 @@ impl<'config, 'ci> InterfaceHeader<'config, 'ci> {
 #[template(syntax = "cpp", escape = "none", path = "InterfaceTemplate.cpp")]
 pub struct Interface<'config, 'ci> {
     context: Context<'config, 'ci>,
-    obj: &'ci WebIDLInterface,
+    obj: &'ci Object,
 }
 
 impl<'config, 'ci> Interface<'config, 'ci> {
-    pub fn new(context: Context<'config, 'ci>, obj: &'ci WebIDLInterface) -> Self {
+    pub fn new(context: Context<'config, 'ci>, obj: &'ci Object) -> Self {
         Self { context, obj }
     }
 }
@@ -293,27 +266,27 @@ mod filters {
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
-            WebIDLType::Wrapped(Type::Int8) => "byte".into(),
-            WebIDLType::Wrapped(Type::UInt8) => "octet".into(),
-            WebIDLType::Wrapped(Type::Int16) => "short".into(),
-            WebIDLType::Wrapped(Type::UInt16) => "unsigned short".into(),
-            WebIDLType::Wrapped(Type::Int32) => "long".into(),
-            WebIDLType::Wrapped(Type::UInt32) => "unsigned long".into(),
-            WebIDLType::Wrapped(Type::Int64) => "long long".into(),
-            WebIDLType::Wrapped(Type::UInt64) => "unsigned long long".into(),
-            WebIDLType::Wrapped(Type::Float32) => "float".into(),
+            WebIDLType::Flat(Type::Int8) => "byte".into(),
+            WebIDLType::Flat(Type::UInt8) => "octet".into(),
+            WebIDLType::Flat(Type::Int16) => "short".into(),
+            WebIDLType::Flat(Type::UInt16) => "unsigned short".into(),
+            WebIDLType::Flat(Type::Int32) => "long".into(),
+            WebIDLType::Flat(Type::UInt32) => "unsigned long".into(),
+            WebIDLType::Flat(Type::Int64) => "long long".into(),
+            WebIDLType::Flat(Type::UInt64) => "unsigned long long".into(),
+            WebIDLType::Flat(Type::Float32) => "float".into(),
             // Note: Not `unrestricted double`; we don't want to allow NaNs
             // and infinity.
-            WebIDLType::Wrapped(Type::Float64) => "double".into(),
-            WebIDLType::Wrapped(Type::Boolean) => "boolean".into(),
-            WebIDLType::Wrapped(Type::String) => "DOMString".into(),
-            WebIDLType::Wrapped(Type::Enum(name))
-            | WebIDLType::Dictionary(name)
-            | WebIDLType::Interface(name) => class_name_webidl(name, context)?,
+            WebIDLType::Flat(Type::Float64) => "double".into(),
+            WebIDLType::Flat(Type::Boolean) => "boolean".into(),
+            WebIDLType::Flat(Type::String) => "DOMString".into(),
+            WebIDLType::Flat(Type::Enum(name))
+            | WebIDLType::Flat(Type::Record(name))
+            | WebIDLType::Flat(Type::Object(name)) => class_name_webidl(name, context)?,
             WebIDLType::Nullable(inner) => format!("{}?", type_webidl(inner, context)?),
             WebIDLType::Optional(inner) => type_webidl(inner, context)?,
             WebIDLType::Sequence(inner) => format!("sequence<{}>", type_webidl(inner, context)?),
-            WebIDLType::Record(inner) => {
+            WebIDLType::Map(inner) => {
                 format!("record<DOMString, {}>", type_webidl(inner, context)?)
             }
             _ => unreachable!("type_webidl({:?})", type_),
@@ -369,38 +342,38 @@ mod filters {
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
-            WebIDLType::Wrapped(Type::Int8) => "int8_t".into(),
-            WebIDLType::Wrapped(Type::UInt8) => "uint8_t".into(),
-            WebIDLType::Wrapped(Type::Int16) => "int16_t".into(),
-            WebIDLType::Wrapped(Type::UInt16) => "uint16_t".into(),
-            WebIDLType::Wrapped(Type::Int32) => "int32_t".into(),
-            WebIDLType::Wrapped(Type::UInt32) => "uint32_t".into(),
-            WebIDLType::Wrapped(Type::Int64) => "int64_t".into(),
-            WebIDLType::Wrapped(Type::UInt64) => "uint64_t".into(),
-            WebIDLType::Wrapped(Type::Float32) => "float".into(),
-            WebIDLType::Wrapped(Type::Float64) => "double".into(),
-            WebIDLType::Wrapped(Type::Boolean) => "bool".into(),
-            WebIDLType::Wrapped(Type::String) => "nsString".into(),
-            WebIDLType::Wrapped(Type::Enum(name)) | WebIDLType::Dictionary(name) => {
+            WebIDLType::Flat(Type::Int8) => "int8_t".into(),
+            WebIDLType::Flat(Type::UInt8) => "uint8_t".into(),
+            WebIDLType::Flat(Type::Int16) => "int16_t".into(),
+            WebIDLType::Flat(Type::UInt16) => "uint16_t".into(),
+            WebIDLType::Flat(Type::Int32) => "int32_t".into(),
+            WebIDLType::Flat(Type::UInt32) => "uint32_t".into(),
+            WebIDLType::Flat(Type::Int64) => "int64_t".into(),
+            WebIDLType::Flat(Type::UInt64) => "uint64_t".into(),
+            WebIDLType::Flat(Type::Float32) => "float".into(),
+            WebIDLType::Flat(Type::Float64) => "double".into(),
+            WebIDLType::Flat(Type::Boolean) => "bool".into(),
+            WebIDLType::Flat(Type::String) => "nsString".into(),
+            WebIDLType::Flat(Type::Enum(name)) | WebIDLType::Flat(Type::Record(name)) => {
                 class_name_cpp(name, context)?
             }
-            WebIDLType::Interface(name) => {
+            WebIDLType::Flat(Type::Object(name)) => {
                 format!("OwningNonNull<{}>", class_name_cpp(name, context)?)
             }
             WebIDLType::Nullable(inner) => {
                 // Nullable objects become `RefPtr<T>` (instead of
                 // `OwningNonNull<T>`); all others become `Nullable<T>`.
                 match inner.as_ref() {
-                    WebIDLType::Interface(name) => {
+                    WebIDLType::Flat(Type::Object(name)) => {
                         format!("RefPtr<{}>", class_name_cpp(name, context)?)
                     }
-                    WebIDLType::Wrapped(Type::String) => "nsString".into(),
+                    WebIDLType::Flat(Type::String) => "nsString".into(),
                     _ => format!("Nullable<{}>", type_cpp(inner, context)?),
                 }
             }
             WebIDLType::Optional(inner) => format!("Optional<{}>", type_cpp(inner, context)?),
             WebIDLType::Sequence(inner) => format!("nsTArray<{}>", type_cpp(inner, context)?),
-            WebIDLType::Record(inner) => format!("Record<nsString, {}>", type_cpp(inner, context)?),
+            WebIDLType::Map(inner) => format!("Record<nsString, {}>", type_cpp(inner, context)?),
             _ => unreachable!("type_cpp({:?})", type_),
         })
     }
@@ -411,7 +384,7 @@ mod filters {
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
             WebIDLType::Nullable(inner) => match inner.as_ref() {
-                WebIDLType::Interface(_) | WebIDLType::Wrapped(Type::String) => {
+                WebIDLType::Flat(Type::Object(_)) | WebIDLType::Flat(Type::String) => {
                     type_cpp(type_, context)?
                 }
                 _ => format!("Nullable<{}>", in_arg_type_cpp(inner, context)?),
@@ -437,29 +410,33 @@ mod filters {
                 // `nsString` becomes `nsAString` when passed as an argument,
                 // and nullable objects are passed as pointers. Sequences map
                 // to the `Sequence` type, not `nsTArray`.
-                match arg.type_() {
-                    WebIDLType::Wrapped(Type::String) => "const nsAString&".into(),
-                    WebIDLType::Interface(name) => format!("{}&", class_name_cpp(&name, context)?),
+                match arg.webidl_type() {
+                    WebIDLType::Flat(Type::String) => "const nsAString&".into(),
+                    WebIDLType::Flat(Type::Object(name)) => {
+                        format!("{}&", class_name_cpp(&name, context)?)
+                    }
                     WebIDLType::Nullable(inner) => match inner.as_ref() {
-                        WebIDLType::Wrapped(Type::String) => "const nsAString&".into(),
-                        WebIDLType::Interface(name) => {
+                        WebIDLType::Flat(Type::String) => "const nsAString&".into(),
+                        WebIDLType::Flat(Type::Object(name)) => {
                             format!("{}*", class_name_cpp(&name, context)?)
                         }
-                        _ => format!("const {}&", in_arg_type_cpp(&arg.type_(), context)?),
+                        _ => format!("const {}&", in_arg_type_cpp(&arg.webidl_type(), context)?),
                     },
-                    WebIDLType::Dictionary(_) | WebIDLType::Record(_) | WebIDLType::Sequence(_) => {
-                        format!("const {}&", in_arg_type_cpp(&arg.type_(), context)?)
+                    WebIDLType::Flat(Type::Record(_))
+                    | WebIDLType::Map(_)
+                    | WebIDLType::Sequence(_) => {
+                        format!("const {}&", in_arg_type_cpp(&arg.webidl_type(), context)?)
                     }
-                    _ => in_arg_type_cpp(&arg.type_(), context)?,
+                    _ => in_arg_type_cpp(&arg.webidl_type(), context)?,
                 }
             }
             BindingArgument::Out(type_) => {
                 // Out arguments are usually passed by reference. `nsString`
                 // becomes `nsAString`.
                 match type_ {
-                    WebIDLType::Wrapped(Type::String) => "nsAString&".into(),
+                    WebIDLType::Flat(Type::String) => "nsAString&".into(),
                     WebIDLType::Optional(inner) => match inner.as_ref() {
-                        WebIDLType::Wrapped(Type::String) => "nsAString&".into(),
+                        WebIDLType::Flat(Type::String) => "nsAString&".into(),
                         _ => format!("{}&", type_cpp(type_, context)?),
                     },
                     _ => format!("{}&", type_cpp(type_, context)?),
@@ -474,11 +451,11 @@ mod filters {
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
-            WebIDLType::Interface(name) => {
+            WebIDLType::Flat(Type::Object(name)) => {
                 format!("already_AddRefed<{}>", class_name_cpp(name, context)?)
             }
             WebIDLType::Optional(inner) => match inner.as_ref() {
-                WebIDLType::Interface(name) => {
+                WebIDLType::Flat(Type::Object(name)) => {
                     format!("already_AddRefed<{}>", class_name_cpp(name, context)?)
                 }
                 _ => type_cpp(type_, context)?,
@@ -495,26 +472,26 @@ mod filters {
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match return_type {
-            WebIDLType::Wrapped(Type::Int8)
-            | WebIDLType::Wrapped(Type::UInt8)
-            | WebIDLType::Wrapped(Type::Int16)
-            | WebIDLType::Wrapped(Type::UInt16)
-            | WebIDLType::Wrapped(Type::Int32)
-            | WebIDLType::Wrapped(Type::UInt32)
-            | WebIDLType::Wrapped(Type::Int64)
-            | WebIDLType::Wrapped(Type::UInt64) => "0".into(),
-            WebIDLType::Wrapped(Type::Float32) => "0.0f".into(),
-            WebIDLType::Wrapped(Type::Float64) => "0.0".into(),
-            WebIDLType::Wrapped(Type::Boolean) => "false".into(),
-            WebIDLType::Wrapped(Type::Enum(name)) => {
+            WebIDLType::Flat(Type::Int8)
+            | WebIDLType::Flat(Type::UInt8)
+            | WebIDLType::Flat(Type::Int16)
+            | WebIDLType::Flat(Type::UInt16)
+            | WebIDLType::Flat(Type::Int32)
+            | WebIDLType::Flat(Type::UInt32)
+            | WebIDLType::Flat(Type::Int64)
+            | WebIDLType::Flat(Type::UInt64) => "0".into(),
+            WebIDLType::Flat(Type::Float32) => "0.0f".into(),
+            WebIDLType::Flat(Type::Float64) => "0.0".into(),
+            WebIDLType::Flat(Type::Boolean) => "false".into(),
+            WebIDLType::Flat(Type::Enum(name)) => {
                 format!("{}::EndGuard_", class_name_cpp(name, context)?)
             }
-            WebIDLType::Interface(_) => "nullptr".into(),
-            WebIDLType::Wrapped(Type::String) => "EmptyString()".into(),
+            WebIDLType::Flat(Type::Object(_)) => "nullptr".into(),
+            WebIDLType::Flat(Type::String) => "EmptyString()".into(),
             WebIDLType::Optional(_)
             | WebIDLType::Nullable(_)
-            | WebIDLType::Dictionary(_)
-            | WebIDLType::Record(_)
+            | WebIDLType::Flat(Type::Record(_))
+            | WebIDLType::Map(_)
             | WebIDLType::Sequence(_) => format!("{}()", type_cpp(return_type, context)?),
             _ => unreachable!("dummy_ret_value_cpp({:?})", return_type),
         })
@@ -530,9 +507,9 @@ mod filters {
         let (lifted, nullable) = match type_ {
             // Since our in argument type is `nsAString`, we need to use that
             // to instantiate `ViaFfi`, not `nsString`.
-            WebIDLType::Wrapped(Type::String) => ("nsAString".into(), false),
+            WebIDLType::Flat(Type::String) => ("nsAString".into(), false),
             WebIDLType::Optional(inner) => match inner.as_ref() {
-                WebIDLType::Wrapped(Type::String) => ("nsAString".into(), true),
+                WebIDLType::Flat(Type::String) => ("nsAString".into(), true),
                 _ => (in_arg_type_cpp(type_, context)?, false),
             },
             _ => (in_arg_type_cpp(type_, context)?, false),
@@ -558,9 +535,9 @@ mod filters {
         let (lifted, nullable) = match type_ {
             // Out arguments are also `nsAString`, so we need to use it for the
             // instantiation.
-            WebIDLType::Wrapped(Type::String) => ("nsAString".into(), false),
+            WebIDLType::Flat(Type::String) => ("nsAString".into(), false),
             WebIDLType::Optional(inner) => match inner.as_ref() {
-                WebIDLType::Wrapped(Type::String) => ("nsAString".into(), true),
+                WebIDLType::Flat(Type::String) => ("nsAString".into(), true),
                 _ => (type_cpp(type_, context)?, false),
             },
             _ => (type_cpp(type_, context)?, false),

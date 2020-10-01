@@ -9,10 +9,10 @@
   {{ context.ffi_rusterror_type() }} err = {0, nullptr};
   {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi(context) }} loweredRetVal_ ={% else %}{% endmatch %}{{ func.ffi_func().name() }}(
     {{ prefix }}
-    {%- let args = func.webidl_arguments() -%}
+    {%- let args = func.arguments() -%}
     {%- if !args.is_empty() %},{% endif -%}
     {%- for arg in args %}
-    {{ arg.type_()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
+    {{ arg.webidl_type()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
     {%- endfor %}
     , &err
   );
@@ -25,9 +25,9 @@
 {%- macro to_ffi_call_head(context, func, error, result) %}
   {{ context.ffi_rusterror_type() }} {{ error }} = {0, nullptr};
   {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi(context) }} {{ result }} ={% else %}{% endmatch %}{{ func.ffi_func().name() }}(
-    {%- let args = func.webidl_arguments() -%}
+    {%- let args = func.arguments() -%}
     {%- for arg in args %}
-    {{ arg.type_()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
+    {{ arg.webidl_type()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
     {%- endfor %}
     {% if !args.is_empty() %}, {% endif %}&{{ error }}
   );
