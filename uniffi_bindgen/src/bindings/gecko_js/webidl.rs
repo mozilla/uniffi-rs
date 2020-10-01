@@ -307,10 +307,13 @@ impl ArgumentExt for Argument {
     }
 
     fn optional(&self) -> bool {
-        match self.type_() {
-            Type::Optional(inner) => matches!(inner.as_ref(), Type::Record(_)),
-            _ => self.default_value().is_some(),
+        if self.webidl_default_value().is_some() {
+            return true;
         }
+        if let Type::Optional(inner) = self.type_() {
+            return matches!(inner.as_ref(), Type::Record(_));
+        }
+        false
     }
 
     fn webidl_default_value(&self) -> Option<Literal> {
