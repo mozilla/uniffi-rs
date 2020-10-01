@@ -8,7 +8,7 @@ First, add `uniffi` to your crate dependencies: it is the runtime support code t
 
 ```toml
 [dependencies]
-uniffi = "0.2"
+uniffi = "0.3"
 ```
 
 Important note: the `uniffi` version must be the same as the `uniffi-bindgen` command-line tool installed on your system.
@@ -17,7 +17,7 @@ Then let's add `uniffi_build` to your build dependencies: it generates the Rust 
 
 ```toml
 [build-dependencies]
-uniffi_build = "0.2"
+uniffi_build = "0.3"
 ```
 
 Then create a `build.rs` file next to `Cargo.toml` that will use `uniffi_build`:
