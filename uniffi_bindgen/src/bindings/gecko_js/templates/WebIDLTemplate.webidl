@@ -4,7 +4,11 @@
 {%- for rec in ci.iter_record_definitions() %}
 dictionary {{ rec.name()|class_name_webidl(context)  }} {
   {%- for field in rec.fields() %}
-  required {{ field.type_()|type_webidl(context) }} {{ field.name()|var_name_webidl }};
+  {% if field.required() -%}required{%- else -%}{%- endif %} {{ field.webidl_type()|type_webidl(context) }} {{ field.name()|var_name_webidl }}
+  {%- match field.webidl_default_value() %}
+  {%- when Some with (literal) %} = {{ literal|literal_webidl }}
+  {%- else %}
+  {%- endmatch %};
   {%- endfor %}
 };
 {% endfor %}
@@ -25,10 +29,10 @@ namespace {{ context.namespace()|class_name_webidl(context) }} {
   {%- if func.throws().is_some() %}
   [Throws]
   {% endif %}
-  {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %} {{ func.name()|fn_name_webidl }}(
+  {%- match func.webidl_return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %} {{ func.name()|fn_name_webidl }}(
     {%- for arg in func.arguments() %}
-    {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl(context) }} {{ arg.name() }}
-    {%- match arg.default_value() %}
+    {% if arg.optional() -%}optional{%- else -%}{%- endif %} {{ arg.webidl_type()|type_webidl(context) }} {{ arg.name() }}
+    {%- match arg.webidl_default_value() %}
     {%- when Some with (literal) %} = {{ literal|literal_webidl }}
     {%- else %}
     {%- endmatch %}
@@ -48,8 +52,8 @@ interface {{ obj.name()|class_name_webidl(context)  }} {
   {% endif %}
   constructor(
       {%- for arg in cons.arguments() %}
-      {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl(context) }} {{ arg.name() }}
-      {%- match arg.default_value() %}
+      {% if arg.optional() -%}optional{%- else -%}{%- endif %} {{ arg.webidl_type()|type_webidl(context) }} {{ arg.name() }}
+      {%- match arg.webidl_default_value() %}
       {%- when Some with (literal) %} = {{ literal|literal_webidl }}
       {%- else %}
       {%- endmatch %}
@@ -62,10 +66,10 @@ interface {{ obj.name()|class_name_webidl(context)  }} {
   {%- if meth.throws().is_some() %}
   [Throws]
   {% endif %}
-  {%- match meth.return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %} {{ meth.name()|fn_name_webidl }}(
+  {%- match meth.webidl_return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %} {{ meth.name()|fn_name_webidl }}(
       {%- for arg in meth.arguments() %}
-      {% if arg.default_value().is_some() -%}optional{%- else -%}{%- endif %} {{ arg.type_()|type_webidl(context) }} {{ arg.name() }}
-      {%- match arg.default_value() %}
+      {% if arg.optional() -%}optional{%- else -%}{%- endif %} {{ arg.webidl_type()|type_webidl(context) }} {{ arg.name() }}
+      {%- match arg.webidl_default_value() %}
       {%- when Some with (literal) %} = {{ literal|literal_webidl }}
       {%- else %}
       {%- endmatch %}

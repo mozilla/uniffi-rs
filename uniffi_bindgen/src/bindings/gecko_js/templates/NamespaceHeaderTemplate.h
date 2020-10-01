@@ -18,8 +18,8 @@ class {{ context.namespace()|class_name_cpp(context) }} final {
 
   {%- for func in functions %}
 
-  static {% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ func.name()|fn_name_cpp }}(
-    {%- for arg in func.binding_arguments() %}
+  static {% match func.cpp_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ func.name()|fn_name_cpp }}(
+    {%- for arg in func.cpp_arguments() %}
     {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
     {%- endfor %}
   );

@@ -13,7 +13,7 @@ use anyhow::{Context, Result};
 pub mod gen_gecko_js;
 mod webidl;
 pub use gen_gecko_js::{
-    Config, Interface, InterfaceHeader, Namespace, NamespaceHeader, SharedHeader, WebIdl,
+    Config, Interface, InterfaceHeader, Namespace, NamespaceHeader, SharedHeader, WebIDL,
 };
 
 use super::super::interface::ComponentInterface;
@@ -75,7 +75,7 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Vec
 
     let context = gen_gecko_js::Context::new(config, ci);
 
-    let webidl = WebIdl::new(config, ci)
+    let webidl = WebIDL::new(context, ci)
         .render()
         .context("Failed to render WebIDL bindings")?;
     bindings.push(Binding {
@@ -83,7 +83,7 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Vec
         contents: webidl,
     });
 
-    let shared_header = SharedHeader::new(config, ci)
+    let shared_header = SharedHeader::new(context, ci)
         .render()
         .context("Failed to render shared header")?;
     bindings.push(Binding {

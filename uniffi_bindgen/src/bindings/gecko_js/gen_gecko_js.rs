@@ -13,7 +13,8 @@ use crate::interface::*;
 use crate::MergeWith;
 
 use super::webidl::{
-    BindingArgument, BindingFunction, ReturnBy, ReturningBindingFunction, ThrowBy,
+    ArgumentExt, CPPArgument, ConstructorExt, FieldExt, FunctionExt, MethodExt, ReturnBy, ThrowBy,
+    WebIDLType,
 };
 
 /// Config options for the generated Firefox front-end bindings. Note that this
@@ -147,14 +148,13 @@ impl<'config, 'ci> Context<'config, 'ci> {
 /// component.
 #[derive(Template)]
 #[template(syntax = "webidl", escape = "none", path = "WebIDLTemplate.webidl")]
-pub struct WebIdl<'config, 'ci> {
+pub struct WebIDL<'config, 'ci> {
     context: Context<'config, 'ci>,
     ci: &'ci ComponentInterface,
 }
 
-impl<'config, 'ci> WebIdl<'config, 'ci> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        let context = Context::new(config, ci);
+impl<'config, 'ci> WebIDL<'config, 'ci> {
+    pub fn new(context: Context<'config, 'ci>, ci: &'ci ComponentInterface) -> Self {
         Self { context, ci }
     }
 }
@@ -170,8 +170,7 @@ pub struct SharedHeader<'config, 'ci> {
 }
 
 impl<'config, 'ci> SharedHeader<'config, 'ci> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        let context = Context::new(config, ci);
+    pub fn new(context: Context<'config, 'ci>, ci: &'ci ComponentInterface) -> Self {
         Self { context, ci }
     }
 }
@@ -262,33 +261,35 @@ mod filters {
     /// * In UniFFI IDL, an argument can specify a default value directly.
     ///   In WebIDL, arguments with default values must have the `optional`
     ///   keyword.
-    pub fn type_webidl(type_: &Type, context: &Context<'_, '_>) -> Result<String, askama::Error> {
+    pub fn type_webidl(
+        type_: &WebIDLType,
+        context: &Context<'_, '_>,
+    ) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::Int8 => "byte".into(),
-            Type::UInt8 => "octet".into(),
-            Type::Int16 => "short".into(),
-            Type::UInt16 => "unsigned short".into(),
-            Type::Int32 => "long".into(),
-            Type::UInt32 => "unsigned long".into(),
-            Type::Int64 => "long long".into(),
-            Type::UInt64 => "unsigned long long".into(),
-            Type::Float32 => "float".into(),
+            WebIDLType::Flat(Type::Int8) => "byte".into(),
+            WebIDLType::Flat(Type::UInt8) => "octet".into(),
+            WebIDLType::Flat(Type::Int16) => "short".into(),
+            WebIDLType::Flat(Type::UInt16) => "unsigned short".into(),
+            WebIDLType::Flat(Type::Int32) => "long".into(),
+            WebIDLType::Flat(Type::UInt32) => "unsigned long".into(),
+            WebIDLType::Flat(Type::Int64) => "long long".into(),
+            WebIDLType::Flat(Type::UInt64) => "unsigned long long".into(),
+            WebIDLType::Flat(Type::Float32) => "float".into(),
             // Note: Not `unrestricted double`; we don't want to allow NaNs
             // and infinity.
-            Type::Float64 => "double".into(),
-            Type::Boolean => "boolean".into(),
-            Type::String => "DOMString".into(),
-            Type::Enum(name) | Type::Record(name) | Type::Object(name) => {
-                class_name_webidl(name, context)?
+            WebIDLType::Flat(Type::Float64) => "double".into(),
+            WebIDLType::Flat(Type::Boolean) => "boolean".into(),
+            WebIDLType::Flat(Type::String) => "DOMString".into(),
+            WebIDLType::Flat(Type::Enum(name))
+            | WebIDLType::Flat(Type::Record(name))
+            | WebIDLType::Flat(Type::Object(name)) => class_name_webidl(name, context)?,
+            WebIDLType::Nullable(inner) => format!("{}?", type_webidl(inner, context)?),
+            WebIDLType::Optional(inner) => type_webidl(inner, context)?,
+            WebIDLType::Sequence(inner) => format!("sequence<{}>", type_webidl(inner, context)?),
+            WebIDLType::Map(inner) => {
+                format!("record<DOMString, {}>", type_webidl(inner, context)?)
             }
-            Type::Error(_name) => {
-                // TODO: We don't currently throw typed errors; see
-                // https://github.com/mozilla/uniffi-rs/issues/295.
-                panic!("[TODO: type_webidl({:?})]", type_)
-            }
-            Type::Optional(inner) => format!("{}?", type_webidl(inner, context)?),
-            Type::Sequence(inner) => format!("sequence<{}>", type_webidl(inner, context)?),
-            Type::Map(inner) => format!("record<DOMString, {}>", type_webidl(inner, context)?),
+            _ => unreachable!("type_webidl({:?})", type_),
         })
     }
 
@@ -336,87 +337,114 @@ mod filters {
     }
 
     /// Declares a C++ type.
-    pub fn type_cpp(type_: &Type, context: &Context<'_, '_>) -> Result<String, askama::Error> {
+    pub fn type_cpp(
+        type_: &WebIDLType,
+        context: &Context<'_, '_>,
+    ) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::Int8 => "int8_t".into(),
-            Type::UInt8 => "uint8_t".into(),
-            Type::Int16 => "int16_t".into(),
-            Type::UInt16 => "uint16_t".into(),
-            Type::Int32 => "int32_t".into(),
-            Type::UInt32 => "uint32_t".into(),
-            Type::Int64 => "int64_t".into(),
-            Type::UInt64 => "uint64_t".into(),
-            Type::Float32 => "float".into(),
-            Type::Float64 => "double".into(),
-            Type::Boolean => "bool".into(),
-            Type::String => "nsString".into(),
-            Type::Enum(name) | Type::Record(name) => class_name_cpp(name, context)?,
-            Type::Object(name) => format!("OwningNonNull<{}>", class_name_cpp(name, context)?),
-            Type::Optional(inner) => {
+            WebIDLType::Flat(Type::Int8) => "int8_t".into(),
+            WebIDLType::Flat(Type::UInt8) => "uint8_t".into(),
+            WebIDLType::Flat(Type::Int16) => "int16_t".into(),
+            WebIDLType::Flat(Type::UInt16) => "uint16_t".into(),
+            WebIDLType::Flat(Type::Int32) => "int32_t".into(),
+            WebIDLType::Flat(Type::UInt32) => "uint32_t".into(),
+            WebIDLType::Flat(Type::Int64) => "int64_t".into(),
+            WebIDLType::Flat(Type::UInt64) => "uint64_t".into(),
+            WebIDLType::Flat(Type::Float32) => "float".into(),
+            WebIDLType::Flat(Type::Float64) => "double".into(),
+            WebIDLType::Flat(Type::Boolean) => "bool".into(),
+            WebIDLType::Flat(Type::String) => "nsString".into(),
+            WebIDLType::Flat(Type::Enum(name)) | WebIDLType::Flat(Type::Record(name)) => {
+                class_name_cpp(name, context)?
+            }
+            WebIDLType::Flat(Type::Object(name)) => {
+                format!("OwningNonNull<{}>", class_name_cpp(name, context)?)
+            }
+            WebIDLType::Nullable(inner) => {
                 // Nullable objects become `RefPtr<T>` (instead of
                 // `OwningNonNull<T>`); all others become `Nullable<T>`.
                 match inner.as_ref() {
-                    Type::Object(name) => format!("RefPtr<{}>", class_name_cpp(name, context)?),
-                    Type::String => "nsString".into(),
+                    WebIDLType::Flat(Type::Object(name)) => {
+                        format!("RefPtr<{}>", class_name_cpp(name, context)?)
+                    }
+                    WebIDLType::Flat(Type::String) => "nsString".into(),
                     _ => format!("Nullable<{}>", type_cpp(inner, context)?),
                 }
             }
-            Type::Sequence(inner) => format!("nsTArray<{}>", type_cpp(inner, context)?),
-            Type::Map(inner) => format!("Record<nsString, {}>", type_cpp(inner, context)?),
-            Type::Error(_name) => {
-                // TODO: We don't currently throw typed errors; see
-                // https://github.com/mozilla/uniffi-rs/issues/295.
-                panic!("[TODO: type_cpp({:?})]", type_)
-            }
+            WebIDLType::Optional(inner) => format!("Optional<{}>", type_cpp(inner, context)?),
+            WebIDLType::Sequence(inner) => format!("nsTArray<{}>", type_cpp(inner, context)?),
+            WebIDLType::Map(inner) => format!("Record<nsString, {}>", type_cpp(inner, context)?),
+            _ => unreachable!("type_cpp({:?})", type_),
         })
     }
 
-    fn in_arg_type_cpp(type_: &Type, context: &Context<'_, '_>) -> Result<String, askama::Error> {
+    fn in_arg_type_cpp(
+        type_: &WebIDLType,
+        context: &Context<'_, '_>,
+    ) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::Optional(inner) => match inner.as_ref() {
-                Type::Object(_) | Type::String => type_cpp(type_, context)?,
+            WebIDLType::Nullable(inner) => match inner.as_ref() {
+                WebIDLType::Flat(Type::Object(_)) | WebIDLType::Flat(Type::String) => {
+                    type_cpp(type_, context)?
+                }
                 _ => format!("Nullable<{}>", in_arg_type_cpp(inner, context)?),
             },
-            Type::Sequence(inner) => format!("Sequence<{}>", in_arg_type_cpp(&inner, context)?),
+            WebIDLType::Sequence(inner) => {
+                format!("Sequence<{}>", in_arg_type_cpp(&inner, context)?)
+            }
             _ => type_cpp(type_, context)?,
         })
     }
 
     /// Declares a C++ in or out argument type.
     pub fn arg_type_cpp(
-        arg: &BindingArgument<'_>,
+        arg: &CPPArgument<'_>,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match arg {
-            BindingArgument::GlobalObject => "GlobalObject&".into(),
-            BindingArgument::ErrorResult => "ErrorResult&".into(),
-            BindingArgument::In(arg) => {
+            CPPArgument::GlobalObject => "GlobalObject&".into(),
+            CPPArgument::ErrorResult => "ErrorResult&".into(),
+            CPPArgument::In(arg) => {
                 // In arguments are usually passed by `const` reference for
                 // object types, and by value for primitives. As an exception,
                 // `nsString` becomes `nsAString` when passed as an argument,
                 // and nullable objects are passed as pointers. Sequences map
                 // to the `Sequence` type, not `nsTArray`.
-                match arg.type_() {
-                    Type::String => "const nsAString&".into(),
-                    Type::Object(name) => format!("{}&", class_name_cpp(&name, context)?),
-                    Type::Optional(inner) => match inner.as_ref() {
-                        Type::String => "const nsAString&".into(),
-                        Type::Object(name) => format!("{}*", class_name_cpp(&name, context)?),
-                        _ => format!("const {}&", in_arg_type_cpp(&arg.type_(), context)?),
-                    },
-                    Type::Record(_) | Type::Map(_) | Type::Sequence(_) => {
-                        format!("const {}&", in_arg_type_cpp(&arg.type_(), context)?)
+                match arg.webidl_type() {
+                    WebIDLType::Flat(Type::String) => "const nsAString&".into(),
+                    WebIDLType::Flat(Type::Object(name)) => {
+                        format!("{}&", class_name_cpp(&name, context)?)
                     }
-                    _ => in_arg_type_cpp(&arg.type_(), context)?,
+                    WebIDLType::Nullable(inner) => match inner.as_ref() {
+                        WebIDLType::Flat(Type::String) => "const nsAString&".into(),
+                        WebIDLType::Flat(Type::Object(name)) => {
+                            format!("{}*", class_name_cpp(&name, context)?)
+                        }
+                        _ => format!("const {}&", in_arg_type_cpp(&arg.webidl_type(), context)?),
+                    },
+                    WebIDLType::Optional(inner) => {
+                        let type_name = if arg.webidl_default_value().is_some() {
+                            in_arg_type_cpp(inner.as_ref(), context)?
+                        } else {
+                            in_arg_type_cpp(&arg.webidl_type(), context)?
+                        };
+                        format!("const {}&", type_name)
+                    }
+                    WebIDLType::Flat(Type::Record(_))
+                    | WebIDLType::Map(_)
+                    | WebIDLType::Sequence(_) => {
+                        format!("const {}&", in_arg_type_cpp(&arg.webidl_type(), context)?)
+                    }
+                    _ => in_arg_type_cpp(&arg.webidl_type(), context)?,
                 }
             }
-            BindingArgument::Out(type_) => {
+            CPPArgument::Out(type_) => {
                 // Out arguments are usually passed by reference. `nsString`
                 // becomes `nsAString`.
                 match type_ {
-                    Type::String => "nsAString&".into(),
-                    Type::Optional(inner) => match inner.as_ref() {
-                        Type::String => "nsAString&".into(),
+                    WebIDLType::Flat(Type::String) => "nsAString&".into(),
+                    WebIDLType::Nullable(inner) => match inner.as_ref() {
+                        WebIDLType::Flat(Type::String) => "nsAString&".into(),
                         _ => format!("{}&", type_cpp(type_, context)?),
                     },
                     _ => format!("{}&", type_cpp(type_, context)?),
@@ -426,11 +454,16 @@ mod filters {
     }
 
     /// Declares a C++ return type.
-    pub fn ret_type_cpp(type_: &Type, context: &Context<'_, '_>) -> Result<String, askama::Error> {
+    pub fn ret_type_cpp(
+        type_: &WebIDLType,
+        context: &Context<'_, '_>,
+    ) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::Object(name) => format!("already_AddRefed<{}>", class_name_cpp(name, context)?),
-            Type::Optional(inner) => match inner.as_ref() {
-                Type::Object(name) => {
+            WebIDLType::Flat(Type::Object(name)) => {
+                format!("already_AddRefed<{}>", class_name_cpp(name, context)?)
+            }
+            WebIDLType::Nullable(inner) => match inner.as_ref() {
+                WebIDLType::Flat(Type::Object(name)) => {
                     format!("already_AddRefed<{}>", class_name_cpp(name, context)?)
                 }
                 _ => type_cpp(type_, context)?,
@@ -443,48 +476,48 @@ mod filters {
     /// declares a return type must return some value of that type, even if it
     /// throws a DOM exception via the `ErrorResult`.
     pub fn dummy_ret_value_cpp(
-        return_type: &Type,
+        return_type: &WebIDLType,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match return_type {
-            Type::Int8
-            | Type::UInt8
-            | Type::Int16
-            | Type::UInt16
-            | Type::Int32
-            | Type::UInt32
-            | Type::Int64
-            | Type::UInt64 => "0".into(),
-            Type::Float32 => "0.0f".into(),
-            Type::Float64 => "0.0".into(),
-            Type::Boolean => "false".into(),
-            Type::Enum(name) => format!("{}::EndGuard_", class_name_cpp(name, context)?),
-            Type::Object(_) => "nullptr".into(),
-            Type::String => "EmptyString()".into(),
-            Type::Optional(_) | Type::Record(_) | Type::Map(_) | Type::Sequence(_) => {
-                format!("{}()", type_cpp(return_type, context)?)
+            WebIDLType::Flat(Type::Int8)
+            | WebIDLType::Flat(Type::UInt8)
+            | WebIDLType::Flat(Type::Int16)
+            | WebIDLType::Flat(Type::UInt16)
+            | WebIDLType::Flat(Type::Int32)
+            | WebIDLType::Flat(Type::UInt32)
+            | WebIDLType::Flat(Type::Int64)
+            | WebIDLType::Flat(Type::UInt64) => "0".into(),
+            WebIDLType::Flat(Type::Float32) => "0.0f".into(),
+            WebIDLType::Flat(Type::Float64) => "0.0".into(),
+            WebIDLType::Flat(Type::Boolean) => "false".into(),
+            WebIDLType::Flat(Type::Enum(name)) => {
+                format!("{}::EndGuard_", class_name_cpp(name, context)?)
             }
-            Type::Error(_) => {
-                // TODO: We don't currently throw typed errors; see
-                // https://github.com/mozilla/uniffi-rs/issues/295.
-                panic!("[TODO: dummy_ret_value_cpp({:?})]", return_type)
-            }
+            WebIDLType::Flat(Type::Object(_)) => "nullptr".into(),
+            WebIDLType::Flat(Type::String) => "EmptyString()".into(),
+            WebIDLType::Optional(_)
+            | WebIDLType::Nullable(_)
+            | WebIDLType::Flat(Type::Record(_))
+            | WebIDLType::Map(_)
+            | WebIDLType::Sequence(_) => format!("{}()", type_cpp(return_type, context)?),
+            _ => unreachable!("dummy_ret_value_cpp({:?})", return_type),
         })
     }
 
     /// Generates an expression for lowering a C++ type into a C type when
     /// calling an FFI function.
     pub fn lower_cpp(
-        type_: &Type,
+        type_: &WebIDLType,
         from: &str,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         let (lifted, nullable) = match type_ {
             // Since our in argument type is `nsAString`, we need to use that
             // to instantiate `ViaFfi`, not `nsString`.
-            Type::String => ("nsAString".into(), false),
-            Type::Optional(inner) => match inner.as_ref() {
-                Type::String => ("nsAString".into(), true),
+            WebIDLType::Flat(Type::String) => ("nsAString".into(), false),
+            WebIDLType::Nullable(inner) => match inner.as_ref() {
+                WebIDLType::Flat(Type::String) => ("nsAString".into(), true),
                 _ => (in_arg_type_cpp(type_, context)?, false),
             },
             _ => (in_arg_type_cpp(type_, context)?, false),
@@ -502,7 +535,7 @@ mod filters {
     /// Generates an expression for lifting a C return type from the FFI into a
     /// C++ out parameter.
     pub fn lift_cpp(
-        type_: &Type,
+        type_: &WebIDLType,
         from: &str,
         into: &str,
         context: &Context<'_, '_>,
@@ -510,9 +543,9 @@ mod filters {
         let (lifted, nullable) = match type_ {
             // Out arguments are also `nsAString`, so we need to use it for the
             // instantiation.
-            Type::String => ("nsAString".into(), false),
-            Type::Optional(inner) => match inner.as_ref() {
-                Type::String => ("nsAString".into(), true),
+            WebIDLType::Flat(Type::String) => ("nsAString".into(), false),
+            WebIDLType::Nullable(inner) => match inner.as_ref() {
+                WebIDLType::Flat(Type::String) => ("nsAString".into(), true),
                 _ => (type_cpp(type_, context)?, false),
             },
             _ => (type_cpp(type_, context)?, false),

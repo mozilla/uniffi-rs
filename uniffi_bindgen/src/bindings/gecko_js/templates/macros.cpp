@@ -12,7 +12,7 @@
     {%- let args = func.arguments() -%}
     {%- if !args.is_empty() %},{% endif -%}
     {%- for arg in args %}
-    {{ arg.type_()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
+    {{ arg.webidl_type()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
     {%- endfor %}
     , &err
   );
@@ -27,7 +27,7 @@
   {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi(context) }} {{ result }} ={% else %}{% endmatch %}{{ func.ffi_func().name() }}(
     {%- let args = func.arguments() -%}
     {%- for arg in args %}
-    {{ arg.type_()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
+    {{ arg.webidl_type()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
     {%- endfor %}
     {% if !args.is_empty() %}, {% endif %}&{{ error }}
   );
@@ -36,7 +36,7 @@
 {# /* Handles errors and lifts the return value from an FFI function. */ #}
 {%- macro _to_ffi_call_tail(context, func, err, result) %}
   if ({{ err }}.mCode) {
-    {%- match func.throw_by() %}
+    {%- match func.cpp_throw_by() %}
     {%- when ThrowBy::ErrorResult with (rv) %}
     {# /* TODO: Improve error throwing. See https://github.com/mozilla/uniffi-rs/issues/295
           for details. */ -#}
@@ -44,9 +44,9 @@
     {%- when ThrowBy::Assert %}
     MOZ_ASSERT(false);
     {%- endmatch %}
-    return {% match func.binding_return_type() %}{% when Some with (type_) %}{{ type_|dummy_ret_value_cpp(context) }}{% else %}{% endmatch %};
+    return {% match func.cpp_return_type() %}{% when Some with (type_) %}{{ type_|dummy_ret_value_cpp(context) }}{% else %}{% endmatch %};
   }
-  {%- match func.return_by() %}
+  {%- match func.cpp_return_by() %}
   {%- when ReturnBy::OutParam with (name, type_) %}
   DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, name, context) }};
   MOZ_RELEASE_ASSERT(ok_);
