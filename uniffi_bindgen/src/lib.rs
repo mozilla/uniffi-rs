@@ -161,11 +161,7 @@ fn ensure_versions_compatibility(
             metadata_cmd.manifest_path(p);
         }
         None => {
-            metadata_cmd.current_dir(
-                idl_file
-                    .parent()
-                    .ok_or_else(|| anyhow!("IDL file has no parent folder!"))?,
-            );
+            metadata_cmd.current_dir(guess_crate_root(idl_file)?);
         }
     };
     let metadata = metadata_cmd
@@ -257,6 +253,23 @@ pub fn run_tests<P: AsRef<Path>>(
     Ok(())
 }
 
+/// Guess the root directory of the crate from the path of its IDL file.
+///
+/// For now, we assume that the IDL file is in `./src/something.idl` relative
+/// to the crate root. We might consider something more sophisticated in
+/// future.
+fn guess_crate_root(idl_file: &Path) -> Result<&Path> {
+    let path_guess = idl_file
+        .parent()
+        .ok_or_else(|| anyhow!("IDL file has no parent folder!"))?
+        .parent()
+        .ok_or_else(|| anyhow!("IDL file has no grand-parent folder!"))?;
+    if !path_guess.join("Cargo.toml").is_file() {
+        bail!("IDL file does not appear to be inside a crate")
+    }
+    Ok(path_guess)
+}
+
 fn get_config(
     component: &ComponentInterface,
     idl_file: &Path,
@@ -267,11 +280,8 @@ fn get_config(
     let config_file: Option<PathBuf> = match config_file_override {
         Some(cfg) => Some(PathBuf::from(cfg)),
         None => {
-            let path_guess = idl_file
-                .parent()
-                .ok_or_else(|| anyhow!("IDL file has no parent folder!"))?
-                .join("uniffi.toml");
-            match path_guess.canonicalize() {
+            let crate_root = guess_crate_root(idl_file)?.join("uniffi.toml");
+            match crate_root.canonicalize() {
                 Ok(f) => Some(f),
                 Err(_) => None,
             }
@@ -352,5 +362,28 @@ impl<T: Clone> MergeWith for Option<T> {
             (None, Some(_)) => other.clone(),
             (None, None) => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_guessing_of_crate_root_directory_from_idl_file() {
+        // When running this test, this will be the ./uniffi_bindgen directory.
+        let this_crate_root = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+
+        let example_crate_root = this_crate_root
+            .parent()
+            .expect("should have a parent directory")
+            .join("./examples/arithmetic");
+        assert_eq!(
+            guess_crate_root(&example_crate_root.join("./src/arthmetic.idl")).unwrap(),
+            example_crate_root
+        );
+
+        let not_a_crate_root = &this_crate_root.join("./src/templates");
+        assert!(guess_crate_root(&not_a_crate_root.join("./src/example.idl")).is_err());
     }
 }
