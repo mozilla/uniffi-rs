@@ -257,6 +257,14 @@ pub fn run_tests<P: AsRef<Path>>(
     Ok(())
 }
 
+fn search_up(dir: &Path, filename: &str) -> Option<PathBuf> {
+    let guess = dir.join(filename);
+    match guess.canonicalize() {
+        Ok(f) => Some(f),
+        Err(_) => search_up(dir.parent()?, filename),
+    }
+}
+
 fn get_config(
     component: &ComponentInterface,
     idl_file: &Path,
@@ -266,16 +274,14 @@ fn get_config(
 
     let config_file: Option<PathBuf> = match config_file_override {
         Some(cfg) => Some(PathBuf::from(cfg)),
-        None => {
-            let path_guess = idl_file
+        None => search_up(
+            idl_file
+                .canonicalize()?
+                .as_path()
                 .parent()
-                .ok_or_else(|| anyhow!("IDL file has no parent folder!"))?
-                .join("uniffi.toml");
-            match path_guess.canonicalize() {
-                Ok(f) => Some(f),
-                Err(_) => None,
-            }
-        }
+                .ok_or_else(|| anyhow!("IDL file has no parent folder!"))?,
+            "uniffi.toml",
+        ),
     };
 
     match config_file {
