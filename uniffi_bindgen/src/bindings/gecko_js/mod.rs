@@ -13,7 +13,7 @@ use anyhow::{Context, Result};
 pub mod gen_gecko_js;
 mod webidl;
 pub use gen_gecko_js::{
-    Config, Interface, InterfaceHeader, Namespace, NamespaceHeader, SharedHeader, WebIdl,
+    Config, Interface, InterfaceHeader, Namespace, NamespaceHeader, SharedHeader, WebIDL,
 };
 
 use super::super::interface::ComponentInterface;
@@ -75,15 +75,38 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Vec
 
     let context = gen_gecko_js::Context::new(config, ci);
 
-    let webidl = WebIdl::new(config, ci)
-        .render()
-        .context("Failed to render WebIDL bindings")?;
+    let dictionaries: Vec<_> = ci
+        .iter_record_definitions()
+        .into_iter()
+        .map(webidl::WebIDLDictionary::new)
+        .collect();
+    let enums = ci.iter_enum_definitions();
+    let functions: Vec<_> = ci
+        .iter_function_definitions()
+        .into_iter()
+        .map(webidl::WebIDLFunction::new)
+        .collect();
+    let interfaces: Vec<_> = ci
+        .iter_object_definitions()
+        .into_iter()
+        .map(webidl::WebIDLInterface::new)
+        .collect();
+
+    let webidl = WebIDL::new(
+        context,
+        dictionaries.as_slice(),
+        enums.as_slice(),
+        functions.as_slice(),
+        interfaces.as_slice(),
+    )
+    .render()
+    .context("Failed to render WebIDL bindings")?;
     bindings.push(Binding {
         name: format!("{}.webidl", context.header_name(context.namespace())),
         contents: webidl,
     });
 
-    let shared_header = SharedHeader::new(config, ci)
+    let shared_header = SharedHeader::new(context, ci, dictionaries.as_slice(), enums.as_slice())
         .render()
         .context("Failed to render shared header")?;
     bindings.push(Binding {
@@ -93,7 +116,6 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Vec
 
     // Top-level functions go in one namespace, which needs its own header and
     // source file.
-    let functions = ci.iter_function_definitions();
     if !functions.is_empty() {
         let header = NamespaceHeader::new(context, functions.as_slice())
             .render()
@@ -113,8 +135,7 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Vec
     }
 
     // Now generate one header/source pair for each interface.
-    let objects = ci.iter_object_definitions();
-    for obj in objects {
+    for obj in interfaces {
         let header = InterfaceHeader::new(context, &obj)
             .render()
             .with_context(|| format!("Failed to render {} header", obj.name()))?;

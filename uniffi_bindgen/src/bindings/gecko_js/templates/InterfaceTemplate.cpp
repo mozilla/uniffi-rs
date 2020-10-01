@@ -43,13 +43,13 @@ JSObject* {{ obj.name()|class_name_cpp(context) }}::WrapObject(
 
 /* static */
 already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> {{ obj.name()|class_name_cpp(context) }}::Constructor(
-  {%- for arg in cons.binding_arguments() %}
+  {%- for arg in cons.cpp_arguments() %}
   {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
 ) {
   {%- call cpp::to_ffi_call_head(context, cons, "err", "handle") %}
   if (err.mCode) {
-    {%- match cons.throw_by() %}
+    {%- match cons.cpp_throw_by() %}
     {%- when ThrowBy::ErrorResult with (rv) %}
     {{ rv }}.ThrowOperationError(err.mMessage);
     {%- when ThrowBy::Assert %}
@@ -65,8 +65,8 @@ already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> {{ obj.name()|class_n
 
 {%- for meth in obj.methods() %}
 
-{% match meth.binding_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ obj.name()|class_name_cpp(context) }}::{{ meth.name()|fn_name_cpp }}(
-  {%- for arg in meth.binding_arguments() %}
+{% match meth.cpp_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ obj.name()|class_name_cpp(context) }}::{{ meth.name()|fn_name_cpp }}(
+  {%- for arg in meth.cpp_arguments() %}
   {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
 ) {
