@@ -529,6 +529,45 @@ struct Serializable<dom::Nullable<T>> {
   }
 };
 
+/// Optionals are serialized the same way as nullables. The distinction
+/// doesn't matter in UniFFI, because Rust doesn't have optional
+/// arguments or struct fields, but does matter in WebIDL: nullable means
+/// "was passed, but can be `null`," but optional means "may or may not
+/// be passed."
+///
+/// These are always serialized, never passed directly over the FFI.
+
+template <typename T>
+struct Serializable<dom::Optional<T>> {
+  [[nodiscard]] static bool ReadFrom(Reader& aReader,
+                                     dom::Optional<T>& aValue) {
+    auto hasValue = aReader.ReadInt8();
+    if (hasValue != 0 && hasValue != 1) {
+      MOZ_ASSERT(false);
+      return false;
+    }
+    if (!hasValue) {
+      aValue = dom::Optional<T>();
+      return true;
+    }
+    T value;
+    if (!Serializable<T>::ReadFrom(aReader, value)) {
+      return false;
+    }
+    aValue = dom::Optional<T>(std::move(value));
+    return true;
+  };
+
+  static void WriteInto(Writer& aWriter, const dom::Optional<T>& aValue) {
+    if (!aValue.WasPassed()) {
+      aWriter.WriteInt8(0);
+    } else {
+      aWriter.WriteInt8(1);
+      Serializable<T>::WriteInto(aWriter, aValue.Value());
+    }
+  }
+};
+
 /// Sequences are length-prefixed, followed by the serialization of each
 /// element. They're always serialized, and never passed directly over the
 /// FFI.
