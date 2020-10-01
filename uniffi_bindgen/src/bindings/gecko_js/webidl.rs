@@ -122,7 +122,7 @@ pub trait FunctionExt {
 
     /// Returns a list of arguments to declare for this function in the C++
     /// implementation, including any extras and out parameters.
-    fn cpp_arguments(&self) -> Vec<BindingArgument<'_>>;
+    fn cpp_arguments(&self) -> Vec<CPPArgument<'_>>;
 
     /// Returns the C++ return type of this function, or `None` if the function
     /// doesn't return a value, or returns it via an out parameter.
@@ -142,23 +142,23 @@ impl FunctionExt for Function {
         self.return_type().cloned().map(WebIDLType::from)
     }
 
-    fn cpp_arguments(&self) -> Vec<BindingArgument<'_>> {
+    fn cpp_arguments(&self) -> Vec<CPPArgument<'_>> {
         let args = self.arguments();
         let mut result = Vec::with_capacity(args.len() + 3);
         // All static methods take a `GlobalObject`.
-        result.push(BindingArgument::GlobalObject);
+        result.push(CPPArgument::GlobalObject);
         // ...Then the declared WebIDL arguments...
-        result.extend(args.into_iter().map(|arg| BindingArgument::In(arg)));
+        result.extend(args.into_iter().map(|arg| CPPArgument::In(arg)));
         // ...Then the out param, depending on the return type.
         if let Some(type_) = self
             .webidl_return_type()
             .filter(|type_| type_.needs_out_param())
         {
-            result.push(BindingArgument::Out(type_));
+            result.push(CPPArgument::Out(type_));
         }
         // ...And finally, the `ErrorResult` to throw errors.
         if self.throws().is_some() {
-            result.push(BindingArgument::ErrorResult);
+            result.push(CPPArgument::ErrorResult);
         }
         result
     }
@@ -187,7 +187,7 @@ impl FunctionExt for Function {
 pub trait ConstructorExt {
     /// Returns a list of arguments to declare for this constructor in the C++
     /// implementation, including any extras and out parameters.
-    fn cpp_arguments(&self) -> Vec<BindingArgument<'_>>;
+    fn cpp_arguments(&self) -> Vec<CPPArgument<'_>>;
 
     /// Indicates how this constructor throws errors, either by an `ErrorResult`
     /// parameter, or by a fatal assertion.
@@ -195,18 +195,18 @@ pub trait ConstructorExt {
 }
 
 impl ConstructorExt for Constructor {
-    fn cpp_arguments(&self) -> Vec<BindingArgument<'_>> {
+    fn cpp_arguments(&self) -> Vec<CPPArgument<'_>> {
         let args = self.arguments();
         let mut result = Vec::with_capacity(args.len() + 2);
         // First the `GlobalObject`, just like for static methods...
-        result.push(BindingArgument::GlobalObject);
-        result.extend(args.into_iter().map(|arg| BindingArgument::In(arg)));
+        result.push(CPPArgument::GlobalObject);
+        result.extend(args.into_iter().map(|arg| CPPArgument::In(arg)));
         // Constructors never take out params, since they must return an
         // instance of the object.
         if self.throws().is_some() {
             // ...But they can throw, so pass an `ErrorResult` if we need to
             // throw errors.
-            result.push(BindingArgument::ErrorResult);
+            result.push(CPPArgument::ErrorResult);
         }
         result
     }
@@ -227,7 +227,7 @@ pub trait MethodExt {
 
     /// Returns a list of arguments to declare for this method in the C++
     /// implementation, including any extras and out parameters.
-    fn cpp_arguments(&self) -> Vec<BindingArgument<'_>>;
+    fn cpp_arguments(&self) -> Vec<CPPArgument<'_>>;
 
     /// Returns the C++ return type of this function, or `None` if the method
     /// doesn't return a value, or returns it via an out parameter.
@@ -247,21 +247,21 @@ impl MethodExt for Method {
         self.return_type().cloned().map(WebIDLType::from)
     }
 
-    fn cpp_arguments(&self) -> Vec<BindingArgument<'_>> {
+    fn cpp_arguments(&self) -> Vec<CPPArgument<'_>> {
         let args = self.arguments();
         let mut result = Vec::with_capacity(args.len() + 2);
         // Methods don't take a `GlobalObject` as their first argument.
-        result.extend(args.into_iter().map(|arg| BindingArgument::In(arg)));
+        result.extend(args.into_iter().map(|arg| CPPArgument::In(arg)));
         if let Some(type_) = self
             .webidl_return_type()
             .filter(|type_| type_.needs_out_param())
         {
             // ...But they can take out params, since they return values.
-            result.push(BindingArgument::Out(type_));
+            result.push(CPPArgument::Out(type_));
         }
         if self.throws().is_some() {
             // ...And they can throw.
-            result.push(BindingArgument::ErrorResult);
+            result.push(CPPArgument::ErrorResult);
         }
         result
     }
@@ -406,7 +406,7 @@ pub enum ThrowBy {
 }
 
 /// Describes a function argument.
-pub enum BindingArgument<'a> {
+pub enum CPPArgument<'a> {
     /// The argument is a `GlobalObject`, passed to constructors, static, and
     /// namespace methods.
     GlobalObject,
@@ -421,14 +421,14 @@ pub enum BindingArgument<'a> {
     Out(WebIDLType),
 }
 
-impl<'a> BindingArgument<'a> {
+impl<'a> CPPArgument<'a> {
     /// Returns the argument name.
     pub fn name(&self) -> &'a str {
         match self {
-            BindingArgument::GlobalObject => "aGlobal",
-            BindingArgument::ErrorResult => "aRv",
-            BindingArgument::In(arg) => arg.name(),
-            BindingArgument::Out(_) => "aRetVal",
+            CPPArgument::GlobalObject => "aGlobal",
+            CPPArgument::ErrorResult => "aRv",
+            CPPArgument::In(arg) => arg.name(),
+            CPPArgument::Out(_) => "aRetVal",
         }
     }
 }

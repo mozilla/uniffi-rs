@@ -13,8 +13,8 @@ use crate::interface::*;
 use crate::MergeWith;
 
 use super::webidl::{
-    ArgumentExt, BindingArgument, ConstructorExt, FieldExt, FunctionExt, MethodExt, ReturnBy,
-    ThrowBy, WebIDLType,
+    ArgumentExt, CPPArgument, ConstructorExt, FieldExt, FunctionExt, MethodExt, ReturnBy, ThrowBy,
+    WebIDLType,
 };
 
 /// Config options for the generated Firefox front-end bindings. Note that this
@@ -398,13 +398,13 @@ mod filters {
 
     /// Declares a C++ in or out argument type.
     pub fn arg_type_cpp(
-        arg: &BindingArgument<'_>,
+        arg: &CPPArgument<'_>,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match arg {
-            BindingArgument::GlobalObject => "GlobalObject&".into(),
-            BindingArgument::ErrorResult => "ErrorResult&".into(),
-            BindingArgument::In(arg) => {
+            CPPArgument::GlobalObject => "GlobalObject&".into(),
+            CPPArgument::ErrorResult => "ErrorResult&".into(),
+            CPPArgument::In(arg) => {
                 // In arguments are usually passed by `const` reference for
                 // object types, and by value for primitives. As an exception,
                 // `nsString` becomes `nsAString` when passed as an argument,
@@ -430,7 +430,7 @@ mod filters {
                     _ => in_arg_type_cpp(&arg.webidl_type(), context)?,
                 }
             }
-            BindingArgument::Out(type_) => {
+            CPPArgument::Out(type_) => {
                 // Out arguments are usually passed by reference. `nsString`
                 // becomes `nsAString`.
                 match type_ {
