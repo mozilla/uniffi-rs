@@ -2,6 +2,9 @@
 // Trust me, you don't want to mess with it!
 
 import Foundation
+{% if is_testing -%}
+import {{ config.module_name() }}
+{% endif -%}
 
 {% include "RustBufferTemplate.swift" %}
 {% include "RustBufferHelper.swift" %}

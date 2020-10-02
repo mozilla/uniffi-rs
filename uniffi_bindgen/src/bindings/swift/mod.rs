@@ -31,7 +31,7 @@ pub fn write_bindings(
     ci: &ComponentInterface,
     out_dir: &Path,
     try_format_code: bool,
-    _is_testing: bool,
+    is_testing: bool,
 ) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
@@ -41,7 +41,7 @@ pub fn write_bindings(
     let mut source_file = out_path.clone();
     source_file.push(format!("{}.swift", ci.namespace()));
 
-    let Bindings { header, library } = generate_bindings(config, &ci)?;
+    let Bindings { header, library } = generate_bindings(config, &ci, is_testing)?;
     
     let header_filename = config.header_filename();
     let mut header_file = out_path;
@@ -74,12 +74,12 @@ pub fn write_bindings(
 }
 
 /// Generate Swift bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
+pub fn generate_bindings(config: &Config, ci: &ComponentInterface, is_testing: bool) -> Result<Bindings> {
     use askama::Template;
     let header = BridgingHeader::new(config, &ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
-    let library = SwiftWrapper::new(&config, &ci)
+    let library = SwiftWrapper::new(&config, &ci, is_testing)
         .render()
         .map_err(|_| anyhow!("failed to render Swift library"))?;
     Ok(Bindings { header, library })

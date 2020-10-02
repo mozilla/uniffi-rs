@@ -18,13 +18,9 @@ use crate::MergeWith;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    suppress_header_imports: Option<bool>,
     module_name: Option<String>,
 }
 impl Config {
-    pub fn suppress_header_imports(&self) -> bool {
-        self.suppress_header_imports.unwrap_or(false)
-    }
     pub fn module_name(&self) -> String {
         match self.module_name.as_ref() {
             Some(name) => name.clone(),
@@ -39,11 +35,9 @@ impl Config {
     }
 }
 
-
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
-            suppress_header_imports: None,
             module_name: Some(format!("uniffi_{}", ci.namespace())),
         }
     }
@@ -52,7 +46,6 @@ impl From<&ComponentInterface> for Config {
 impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
-            suppress_header_imports: self.suppress_header_imports.merge_with(&other.suppress_header_imports),
             module_name: self.module_name.merge_with(&other.module_name),
         }
     }
@@ -93,13 +86,15 @@ impl<'config, 'ci, 'header> ModuleMap<'config, 'ci, 'header> {
 pub struct SwiftWrapper<'config, 'ci> {
     config: &'config Config,
     ci: &'ci ComponentInterface,
+    is_testing: bool,
 }
 
 impl<'config, 'ci> SwiftWrapper<'config, 'ci> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
+    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, is_testing: bool) -> Self {
         Self {
             config,
             ci,
+            is_testing,
         }
     }
 }
