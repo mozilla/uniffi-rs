@@ -35,14 +35,14 @@ pub fn write_bindings(
     let out_path = PathBuf::from(out_dir);
 
     let mut module_map_file = out_path.clone();
-    module_map_file.push(format!("{}.modulemap", config.module_name()));
+    module_map_file.push(config.modulemap_filename());
 
     let mut source_file = out_path.clone();
     source_file.push(format!("{}.swift", ci.namespace()));
 
     let Bindings { header, library } = generate_bindings(config, &ci)?;
     
-    let header_filename = format!("{}-Bridging-Header.h", ci.namespace());
+    let header_filename = config.header_filename();
     let mut header_file = out_path;
     header_file.push(&header_filename);
 
@@ -97,7 +97,7 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
     let out_path = PathBuf::from(out_dir);
 
     let mut module_map_file = out_path.clone();
-    module_map_file.push(format!("{}.modulemap", config.module_name()));
+    module_map_file.push(config.modulemap_filename());
 
     let mut module_map_file_option = OsString::from("-fmodule-map-file=");
     module_map_file_option.push(module_map_file.as_os_str());
