@@ -22,6 +22,7 @@ pub fn write_bindings(
     ci: &ComponentInterface,
     out_dir: &Path,
     try_format_code: bool,
+    _is_testing: bool,
 ) -> Result<()> {
     let mut kt_file = full_bindings_path(&config, out_dir)?;
     std::fs::create_dir_all(&kt_file)?;

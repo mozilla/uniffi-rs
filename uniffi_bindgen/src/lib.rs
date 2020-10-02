@@ -210,6 +210,7 @@ pub fn generate_bindings<P: AsRef<Path>>(
             &out_dir,
             language.try_into()?,
             try_format_code,
+            false,
         )?;
     }
     Ok(())
@@ -244,7 +245,7 @@ pub fn run_tests<P: AsRef<Path>>(
     }
 
     for (lang, test_scripts) in language_tests {
-        bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
+        bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true, true)?;
         bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;

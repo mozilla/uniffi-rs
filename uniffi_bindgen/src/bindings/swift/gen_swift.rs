@@ -31,6 +31,12 @@ impl Config {
             None => "uniffi".into(),
         }
     }
+    pub fn modulemap_filename(&self) -> String {
+        format!("{}.modulemap", self.module_name())
+    }
+    pub fn header_filename(&self) -> String {
+        format!("{}-Bridging-Header.h", self.module_name())
+    }
 }
 
 
