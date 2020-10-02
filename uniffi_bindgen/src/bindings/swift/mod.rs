@@ -35,22 +35,23 @@ pub fn write_bindings(
     let out_path = PathBuf::from(out_dir);
 
     let mut module_map_file = out_path.clone();
-    module_map_file.push(format!("uniffi_{}.modulemap", ci.namespace()));
+    module_map_file.push(format!("{}.modulemap", config.module_name()));
 
-    let mut header_file = out_path.clone();
-    header_file.push(format!("{}-Bridging-Header.h", ci.namespace()));
-
-    let mut source_file = out_path;
+    let mut source_file = out_path.clone();
     source_file.push(format!("{}.swift", ci.namespace()));
 
     let Bindings { header, library } = generate_bindings(config, &ci)?;
+    
+    let header_filename = format!("{}-Bridging-Header.h", ci.namespace());
+    let mut header_file = out_path;
+    header_file.push(&header_filename);
 
     let mut h = File::create(&header_file).context("Failed to create .h file for bindings")?;
     write!(h, "{}", header)?;
 
     let mut m =
         File::create(&module_map_file).context("Failed to create .modulemap file for bindings")?;
-    write!(m, "{}", generate_module_map(config, &ci, &header_file)?)?;
+    write!(m, "{}", generate_module_map(config, &ci, &Path::new(&header_filename))?)?;
 
     let mut l = File::create(&source_file).context("Failed to create .swift file for bindings")?;
     write!(l, "{}", library)?;
@@ -92,11 +93,11 @@ fn generate_module_map(config: &Config, ci: &ComponentInterface, header_path: &P
 }
 
 /// ...
-pub fn compile_bindings(_config: &Config, ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
+pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
     let mut module_map_file = out_path.clone();
-    module_map_file.push(format!("uniffi_{}.modulemap", ci.namespace()));
+    module_map_file.push(format!("{}.modulemap", config.module_name()));
 
     let mut module_map_file_option = OsString::from("-fmodule-map-file=");
     module_map_file_option.push(module_map_file.as_os_str());

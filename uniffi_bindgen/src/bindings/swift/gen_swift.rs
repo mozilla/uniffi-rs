@@ -22,10 +22,10 @@ pub struct Config {
     module_name: Option<String>,
 }
 impl Config {
-    fn suppress_header_imports(&self) -> bool {
+    pub fn suppress_header_imports(&self) -> bool {
         self.suppress_header_imports.unwrap_or(false)
     }
-    fn module_name(&self) -> String {
+    pub fn module_name(&self) -> String {
         match self.module_name.as_ref() {
             Some(name) => name.clone(),
             None => "uniffi".into(),
