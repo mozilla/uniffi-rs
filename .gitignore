@@ -4,3 +4,4 @@ target
 .*.swp
 *.jar
 .vscode
+xcuserdata
