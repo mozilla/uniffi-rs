@@ -284,7 +284,9 @@ mod filters {
             | WebIDLType::Flat(Type::Record(name))
             | WebIDLType::Flat(Type::Object(name)) => class_name_webidl(name, context)?,
             WebIDLType::Nullable(inner) => format!("{}?", type_webidl(inner, context)?),
-            WebIDLType::Optional(inner) => type_webidl(inner, context)?,
+            WebIDLType::Optional(inner) | WebIDLType::OptionalWithDefaultValue(inner) => {
+                type_webidl(inner, context)?
+            }
             WebIDLType::Sequence(inner) => format!("sequence<{}>", type_webidl(inner, context)?),
             WebIDLType::Map(inner) => {
                 format!("record<DOMString, {}>", type_webidl(inner, context)?)
@@ -371,6 +373,7 @@ mod filters {
                     _ => format!("Nullable<{}>", type_cpp(inner, context)?),
                 }
             }
+            WebIDLType::OptionalWithDefaultValue(inner) => type_cpp(inner, context)?,
             WebIDLType::Optional(inner) => format!("Optional<{}>", type_cpp(inner, context)?),
             WebIDLType::Sequence(inner) => format!("nsTArray<{}>", type_cpp(inner, context)?),
             WebIDLType::Map(inner) => format!("Record<nsString, {}>", type_cpp(inner, context)?),
@@ -422,17 +425,11 @@ mod filters {
                         }
                         _ => format!("const {}&", in_arg_type_cpp(&arg.webidl_type(), context)?),
                     },
-                    WebIDLType::Optional(inner) => {
-                        let type_name = if arg.webidl_default_value().is_some() {
-                            in_arg_type_cpp(inner.as_ref(), context)?
-                        } else {
-                            in_arg_type_cpp(&arg.webidl_type(), context)?
-                        };
-                        format!("const {}&", type_name)
-                    }
                     WebIDLType::Flat(Type::Record(_))
                     | WebIDLType::Map(_)
-                    | WebIDLType::Sequence(_) => {
+                    | WebIDLType::Sequence(_)
+                    | WebIDLType::Optional(_)
+                    | WebIDLType::OptionalWithDefaultValue(_) => {
                         format!("const {}&", in_arg_type_cpp(&arg.webidl_type(), context)?)
                     }
                     _ => in_arg_type_cpp(&arg.webidl_type(), context)?,
@@ -496,6 +493,9 @@ mod filters {
             }
             WebIDLType::Flat(Type::Object(_)) => "nullptr".into(),
             WebIDLType::Flat(Type::String) => "EmptyString()".into(),
+            WebIDLType::OptionalWithDefaultValue(inner) => {
+                dummy_ret_value_cpp(inner.as_ref(), context)?
+            }
             WebIDLType::Optional(_)
             | WebIDLType::Nullable(_)
             | WebIDLType::Flat(Type::Record(_))
@@ -516,6 +516,7 @@ mod filters {
             // Since our in argument type is `nsAString`, we need to use that
             // to instantiate `ViaFfi`, not `nsString`.
             WebIDLType::Flat(Type::String) => ("nsAString".into(), false),
+            WebIDLType::OptionalWithDefaultValue(_) => (type_cpp(type_, context)?, true),
             WebIDLType::Nullable(inner) => match inner.as_ref() {
                 WebIDLType::Flat(Type::String) => ("nsAString".into(), true),
                 _ => (in_arg_type_cpp(type_, context)?, false),
@@ -544,6 +545,7 @@ mod filters {
             // Out arguments are also `nsAString`, so we need to use it for the
             // instantiation.
             WebIDLType::Flat(Type::String) => ("nsAString".into(), false),
+            WebIDLType::OptionalWithDefaultValue(_) => (type_cpp(type_, context)?, true),
             WebIDLType::Nullable(inner) => match inner.as_ref() {
                 WebIDLType::Flat(Type::String) => ("nsAString".into(), true),
                 _ => (type_cpp(type_, context)?, false),

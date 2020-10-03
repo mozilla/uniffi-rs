@@ -737,4 +737,45 @@ struct ViaFfi<nsAString, {{ context.ffi_rustbuffer_type() }}, true> {
   }
 };
 
+/// Partial specialization for all non-null types on the C++ side that should be
+/// serialized as if they were nullable. This is analogous to a blanket
+/// implementation of `ViaFfiUsingByteBuffer` for `Option<T>` in Rust.
+
+template <typename T>
+struct ViaFfi<T, {{ context.ffi_rustbuffer_type() }}, true> {
+  [[nodiscard]] static bool Lift(const {{ context.ffi_rustbuffer_type() }}& aLowered,
+                                 T& aLifted) {
+    auto reader = Reader(aLowered);
+    auto hasValue = reader.ReadInt8();
+    if (hasValue != 0 && hasValue != 1) {
+      MOZ_ASSERT(false);
+      return false;
+    }
+    if (!hasValue) {
+      return true;
+    }
+    if (!Serializable<T>::ReadFrom(reader, aLifted)) {
+      return false;
+    }
+    if (reader.HasRemaining()) {
+      MOZ_ASSERT(false);
+      return false;
+    }
+    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
+    {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &err);
+    if (err.mCode) {
+      MOZ_ASSERT(false, "Failed to free Rust buffer after lifting contents");
+      return false;
+    }
+    return true;
+  }
+
+  [[nodiscard]] static {{ context.ffi_rustbuffer_type() }} Lower(const T& aLifted) {
+    auto writer = Writer();
+    writer.WriteInt8(1);
+    Serializable<T>::WriteInto(writer, aLifted);
+    return writer.Buffer();
+  }
+};
+
 }  // namespace {{ context.detail_name() }}

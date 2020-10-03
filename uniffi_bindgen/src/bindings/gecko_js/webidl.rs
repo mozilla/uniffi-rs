@@ -50,6 +50,13 @@ pub enum WebIDLType {
     Nullable(Box<WebIDLType>),
     Optional(Box<WebIDLType>),
 
+    /// Optionals with a default value are a grab bag of special cases in Gecko.
+    /// In the generated C++ bindings, the type of an optional with a default
+    /// value is `T`, not `Optional<T>`. However, it must be serialized as if
+    /// it's an `Optional<T>`, since that's what the Rust side of the FFI
+    /// expects.
+    OptionalWithDefaultValue(Box<WebIDLType>),
+
     /// Sequences are the same as their UniFFI counterparts.
     Sequence(Box<WebIDLType>),
 
@@ -64,7 +71,19 @@ impl WebIDLType {
         match self {
             WebIDLType::Flat(Type::String) | WebIDLType::Flat(Type::Record(_)) => true,
             WebIDLType::Map(_) | WebIDLType::Sequence(_) => true,
-            WebIDLType::Optional(inner) | WebIDLType::Nullable(inner) => inner.needs_out_param(),
+            WebIDLType::Optional(inner)
+            | WebIDLType::OptionalWithDefaultValue(inner)
+            | WebIDLType::Nullable(inner) => inner.needs_out_param(),
+            _ => false,
+        }
+    }
+
+    pub fn is_optional_record(&self) -> bool {
+        match self {
+            WebIDLType::OptionalWithDefaultValue(inner) => match inner.as_ref() {
+                WebIDLType::Flat(Type::Record(_)) => true,
+                _ => false,
+            },
             _ => false,
         }
     }
@@ -94,7 +113,9 @@ impl From<Type> for WebIDLType {
                 panic!("[TODO: From<Type>({:?})]", type_)
             }
             Type::Optional(inner) => match *inner {
-                Type::Record(name) => WebIDLType::Optional(Box::new(Type::Record(name).into())),
+                Type::Record(name) => {
+                    WebIDLType::OptionalWithDefaultValue(Box::new(Type::Record(name).into()))
+                }
                 inner => WebIDLType::Nullable(Box::new(inner.into())),
             },
             Type::Sequence(inner) => WebIDLType::Sequence(Box::new((*inner).into())),
@@ -108,6 +129,7 @@ impl From<&WebIDLType> for FFIType {
         match type_ {
             WebIDLType::Flat(inner) => inner.into(),
             WebIDLType::Optional(_)
+            | WebIDLType::OptionalWithDefaultValue(_)
             | WebIDLType::Nullable(_)
             | WebIDLType::Sequence(_)
             | WebIDLType::Map(_) => FFIType::RustBuffer,
@@ -310,9 +332,6 @@ impl ArgumentExt for Argument {
         if self.webidl_default_value().is_some() {
             return true;
         }
-        if let Type::Optional(inner) = self.type_() {
-            return matches!(inner.as_ref(), Type::Record(_));
-        }
         false
     }
 
@@ -320,15 +339,12 @@ impl ArgumentExt for Argument {
         if let Some(literal) = self.default_value() {
             return Some(literal);
         }
-        match self.type_() {
-            Type::Optional(inner) => match inner.as_ref() {
-                // Nullable UDL dictionaries must declare a default value
-                // in WebIDL.
-                Type::Record(_) => Some(Literal::EmptyMap),
-                _ => None,
-            },
-            _ => None,
+        if self.webidl_type().is_optional_record() {
+            // Nullable UDL dictionaries must declare a default value
+            // in WebIDL.
+            return Some(Literal::EmptyMap);
         }
+        None
     }
 }
 
@@ -363,15 +379,12 @@ impl FieldExt for Field {
     }
 
     fn webidl_default_value(&self) -> Option<Literal> {
-        match self.type_() {
-            Type::Optional(inner) => match inner.as_ref() {
-                // Nullable UDL dictionaries must declare a default value
-                // in WebIDL.
-                Type::Record(_) => Some(Literal::EmptyMap),
-                _ => None,
-            },
-            _ => None,
+        if self.webidl_type().is_optional_record() {
+            // Nullable UDL dictionaries must declare a default value
+            // in WebIDL.
+            return Some(Literal::EmptyMap);
         }
+        return None;
     }
 }
 
