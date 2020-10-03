@@ -547,14 +547,13 @@ struct Serializable<dom::Optional<T>> {
       return false;
     }
     if (!hasValue) {
-      aValue = dom::Optional<T>();
       return true;
     }
     T value;
     if (!Serializable<T>::ReadFrom(aReader, value)) {
       return false;
     }
-    aValue = dom::Optional<T>(std::move(value));
+    aValue.Construct(std::move(value));
     return true;
   };
 

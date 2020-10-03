@@ -51,7 +51,7 @@ already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> {{ obj.name()|class_n
   if (err.mCode) {
     {%- match cons.cpp_throw_by() %}
     {%- when ThrowBy::ErrorResult with (rv) %}
-    {{ rv }}.ThrowOperationError(err.mMessage);
+    {{ rv }}.ThrowOperationError(nsDependentCString(err.mMessage));
     {%- when ThrowBy::Assert %}
     MOZ_ASSERT(false);
     {%- endmatch %}

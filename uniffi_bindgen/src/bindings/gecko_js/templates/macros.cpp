@@ -40,7 +40,7 @@
     {%- when ThrowBy::ErrorResult with (rv) %}
     {# /* TODO: Improve error throwing. See https://github.com/mozilla/uniffi-rs/issues/295
           for details. */ -#}
-    {{ rv }}.ThrowOperationError({{ err }}.mMessage);
+    {{ rv }}.ThrowOperationError(nsDependentCString({{ err }}.mMessage));
     {%- when ThrowBy::Assert %}
     MOZ_ASSERT(false);
     {%- endmatch %}
