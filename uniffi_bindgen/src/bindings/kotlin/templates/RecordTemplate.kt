@@ -1,6 +1,11 @@
 data class {{ rec.name()|class_name_kt }} (
     {%- for field in rec.fields() %}
-    val {{ field.name()|var_name_kt }}: {{ field.type_()|type_kt }}{% if loop.last %}{% else %},{% endif %}
+    val {{ field.name()|var_name_kt }}: {{ field.type_()|type_kt -}}
+    {%- match field.default_value() %}
+        {%- when Some with(literal) %} = {{ literal|literal_kt }}
+        {%- else %}
+    {%- endmatch -%}
+    {% if !loop.last %}, {% endif %}
     {%- endfor %}
 ) {
     companion object {

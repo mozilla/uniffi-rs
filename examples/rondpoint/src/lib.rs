@@ -257,4 +257,22 @@ impl Optionneur {
     }
 }
 
+struct OptionneurDictionnaire {
+    i8_var: i8,
+    u8_var: u8,
+    i16_var: i16,
+    u16_var: u16,
+    i32_var: i32,
+    u32_var: u32,
+    i64_var: i64,
+    u64_var: u64,
+    float_var: f32,
+    double_var: f64,
+    boolean_var: bool,
+    string_var: String,
+    list_var: Vec<String>,
+    enumeration_var: Enumeration,
+    dictionnaire_var: Option<minusculeMAJUSCULEEnum>,
+}
+
 include!(concat!(env!("OUT_DIR"), "/rondpoint.uniffi.rs"));

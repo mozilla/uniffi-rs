@@ -115,3 +115,21 @@ interface Optionneur {
   // Enums, which we have to treat as strings in the IDL frontend.
   Enumeration sinon_enum(optional Enumeration value = "Trois");
 };
+
+dictionary OptionneurDictionnaire {
+  i8 i8_var = -8;
+  u8 u8_var = 8;
+  i16 i16_var = -0x10;
+  u16 u16_var = 0x10;
+  i32 i32_var = -32;
+  u32 u32_var = 32;
+  i64 i64_var = -64;
+  u64 u64_var = 64;
+  float float_var = 4.0;
+  double double_var = 8.0;
+  boolean boolean_var = true;
+  string string_var = "default";
+  sequence<string> list_var = [];
+  Enumeration enumeration_var = "DEUX";
+  minusculeMAJUSCULEEnum? dictionnaire_var = null;
+};
