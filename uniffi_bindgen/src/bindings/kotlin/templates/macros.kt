@@ -55,6 +55,12 @@ rustCall(
     {%- endfor %}
 {%- endmacro %}
 
+{% macro arg_list_protocol(func) %}
+    {%- for arg in func.arguments() -%}
+        {{ arg.name()|var_name_kt }}: {{ arg.type_()|type_kt -}}
+        {%- if !loop.last %}, {% endif -%}
+    {%- endfor %}
+{%- endmacro %}
 {#-
 // Arglist as used in the _UniFFILib function declations.
 // Note unfiltered name but type_ffi filters.
