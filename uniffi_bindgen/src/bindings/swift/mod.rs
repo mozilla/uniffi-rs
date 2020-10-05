@@ -42,7 +42,7 @@ pub fn write_bindings(
     source_file.push(format!("{}.swift", ci.namespace()));
 
     let Bindings { header, library } = generate_bindings(config, &ci, is_testing)?;
-    
+
     let header_filename = config.header_filename();
     let mut header_file = out_path;
     header_file.push(&header_filename);
@@ -52,7 +52,11 @@ pub fn write_bindings(
 
     let mut m =
         File::create(&module_map_file).context("Failed to create .modulemap file for bindings")?;
-    write!(m, "{}", generate_module_map(config, &ci, &Path::new(&header_filename))?)?;
+    write!(
+        m,
+        "{}",
+        generate_module_map(config, &ci, &Path::new(&header_filename))?
+    )?;
 
     let mut l = File::create(&source_file).context("Failed to create .swift file for bindings")?;
     write!(l, "{}", library)?;
@@ -74,7 +78,11 @@ pub fn write_bindings(
 }
 
 /// Generate Swift bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(config: &Config, ci: &ComponentInterface, is_testing: bool) -> Result<Bindings> {
+pub fn generate_bindings(
+    config: &Config,
+    ci: &ComponentInterface,
+    is_testing: bool,
+) -> Result<Bindings> {
     use askama::Template;
     let header = BridgingHeader::new(config, &ci)
         .render()
@@ -85,7 +93,11 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface, is_testing: b
     Ok(Bindings { header, library })
 }
 
-fn generate_module_map(config: &Config, ci: &ComponentInterface, header_path: &Path) -> Result<String> {
+fn generate_module_map(
+    config: &Config,
+    ci: &ComponentInterface,
+    header_path: &Path,
+) -> Result<String> {
     use askama::Template;
     let module_map = ModuleMap::new(&config, &ci, header_path)
         .render()

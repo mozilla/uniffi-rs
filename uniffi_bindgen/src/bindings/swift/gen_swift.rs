@@ -76,8 +76,16 @@ pub struct ModuleMap<'config, 'ci, 'header> {
 }
 
 impl<'config, 'ci, 'header> ModuleMap<'config, 'ci, 'header> {
-    pub fn new(config: &'config Config, _ci: &'ci ComponentInterface, header: &'header Path) -> Self {
-        Self { config, _ci, header }
+    pub fn new(
+        config: &'config Config,
+        _ci: &'ci ComponentInterface,
+        header: &'header Path,
+    ) -> Self {
+        Self {
+            config,
+            _ci,
+            header,
+        }
     }
 }
 
