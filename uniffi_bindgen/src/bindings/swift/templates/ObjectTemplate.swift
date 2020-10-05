@@ -1,4 +1,15 @@
-public class {{ obj.name() }} {
+
+public protocol {{ obj.name() }}Protocol {
+    {% for meth in obj.methods() -%}
+    func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_protocol(meth) %}) {% call swift::throws(meth) -%}
+    {%- match meth.return_type() -%}
+    {%- when Some with (return_type) %} -> {{ return_type|type_swift -}}
+    {%- else -%}
+    {%- endmatch %}
+    {% endfor %}
+}
+
+public class {{ obj.name() }}: {{ obj.name() }}Protocol {
     private let handle: UInt64
 
     {%- for cons in obj.constructors() %}
