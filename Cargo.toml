@@ -8,6 +8,5 @@ members = [
   "examples/geometry",
   "examples/rondpoint",
   "examples/sprites",
-  "examples/todolist",
-  "examples/app/shared"
+  "examples/todolist"
 ]

@@ -35,31 +35,33 @@ pub fn write_bindings(
 ) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
-    let mut module_map_file = out_path.clone();
-    module_map_file.push(config.modulemap_filename());
-
     let mut source_file = out_path.clone();
     source_file.push(format!("{}.swift", ci.namespace()));
 
     let Bindings { header, library } = generate_bindings(config, &ci, is_testing)?;
 
     let header_filename = config.header_filename();
-    let mut header_file = out_path;
+    let mut header_file = out_path.clone();
     header_file.push(&header_filename);
 
     let mut h = File::create(&header_file).context("Failed to create .h file for bindings")?;
     write!(h, "{}", header)?;
 
-    let mut m =
-        File::create(&module_map_file).context("Failed to create .modulemap file for bindings")?;
-    write!(
-        m,
-        "{}",
-        generate_module_map(config, &ci, &Path::new(&header_filename))?
-    )?;
-
     let mut l = File::create(&source_file).context("Failed to create .swift file for bindings")?;
     write!(l, "{}", library)?;
+
+    if is_testing {
+        let mut module_map_file = out_path;
+        module_map_file.push(config.modulemap_filename());
+
+        let mut m = File::create(&module_map_file)
+            .context("Failed to create .modulemap file for bindings")?;
+        write!(
+            m,
+            "{}",
+            generate_module_map(config, &ci, &Path::new(&header_filename))?
+        )?;
+    }
 
     if try_format_code {
         if let Err(e) = Command::new("swiftformat")

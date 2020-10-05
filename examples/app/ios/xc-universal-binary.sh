@@ -24,8 +24,8 @@ STATIC_LIB_NAME=${1}
 FFI_TARGET=${2}
 # path to app services root
 SRC_ROOT=${3}
-# buildvariant from our xcconfigs
-BUILDVARIANT=${4}
+# buildvariant from our xcconfigs 
+BUILDVARIANT=$(echo "${4}" | tr '[:upper:]' '[:lower:]') 
 
 RELFLAG=
 RELDIR="debug"
