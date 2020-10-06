@@ -193,3 +193,27 @@ assert(op.sinonEnum() == .trois)
 
 // enums
 [.un, .deux, .trois].affirmAllerRetour(op.sinonEnum)
+
+// Testing defaulting properties in record types.
+let defaultes = OptionneurDictionnaire()
+let explicite = OptionneurDictionnaire(
+    i8Var: Int8(-8),
+    u8Var: UInt8(8),
+    i16Var: Int16(-16),
+    u16Var: UInt16(0x10),
+    i32Var: -32,
+    u32Var: UInt32(32),
+    i64Var: Int64(-64),
+    u64Var: UInt64(64),
+    floatVar: Float(4.0),
+    doubleVar: Double(8.0),
+    booleanVar: true,
+    stringVar: "default",
+    listVar: [],
+    enumerationVar: .deux,
+    dictionnaireVar: nil
+)  
+
+// …and makes sure they travel across and back the FFI.
+assert(defaultes == explicite)
+[defaultes].affirmAllerRetour(rt.identiqueOptionneurDictionnaire)

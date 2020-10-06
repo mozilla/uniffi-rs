@@ -120,6 +120,12 @@ impl Retourneur {
     fn identique_nombres(&self, value: DictionnaireNombres) -> DictionnaireNombres {
         value
     }
+    fn identique_optionneur_dictionnaire(
+        &self,
+        value: OptionneurDictionnaire,
+    ) -> OptionneurDictionnaire {
+        value
+    }
 }
 
 #[derive(Debug, Clone)]

@@ -57,6 +57,7 @@ interface Retourneur {
 
   DictionnaireNombresSignes identique_nombres_signes(DictionnaireNombresSignes value);
   DictionnaireNombres       identique_nombres(DictionnaireNombres value);
+  OptionneurDictionnaire    identique_optionneur_dictionnaire(OptionneurDictionnaire value);
 };
 
 interface Stringifier {
