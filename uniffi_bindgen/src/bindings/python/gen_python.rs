@@ -83,9 +83,17 @@ mod filters {
                 Type::Enum(name) => format!("{}.{}", class_name_py(name)?, enum_name_py(v)?),
                 _ => panic!("Unexpected type in enum literal: {:?}", type_),
             },
-            // TODO: render with the intended radix.
-            Literal::Int(i, _radix, _type_) => format!("{}", i),
-            Literal::UInt(i, _radix, _type_) => format!("{}", i),
+            // https://docs.python.org/3/reference/lexical_analysis.html#integer-literals
+            Literal::Int(i, radix, _) => match radix {
+                Radix::Octal => format!("0o{:o}", i),
+                Radix::Decimal => format!("{}", i),
+                Radix::Hexadecimal => format!("{:#x}", i),
+            },
+            Literal::UInt(i, radix, _) => match radix {
+                Radix::Octal => format!("0o{:o}", i),
+                Radix::Decimal => format!("{}", i),
+                Radix::Hexadecimal => format!("{:#x}", i),
+            },
             Literal::Float(string, _type_) => string.clone(),
         })
     }
