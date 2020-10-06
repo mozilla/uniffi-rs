@@ -30,7 +30,7 @@
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)-Bridging-Header.h",
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).swift",
 			);
-			script = "# Generate swift bindings for the todolist rust library.\n../../../target/debug/uniffi-bindgen generate $INPUT_FILE_PATH --language swift --out-dir $DERIVED_FILE_DIR\necho \"Generate files in $DERIVED_FILE_DIR\"\n";
+			script = "# Generate swift bindings for the todolist rust library.\n\"$SRCROOT/../../../target/debug/uniffi-bindgen\" generate \"$INPUT_FILE_PATH\" --language swift --out-dir \"$DERIVED_FILE_DIR\"\necho \"Generate files in $DERIVED_FILE_DIR\"\n";
 		};
 /* End PBXBuildRule section */
 
@@ -306,7 +306,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "bash $SRCROOT/xc-universal-binary.sh libuniffi_todolist.a uniffi-example-todolist $SRCROOT/../../../ $CONFIGURATION\n";
+			shellScript = "bash $SRCROOT/xc-universal-binary.sh libuniffi_todolist.a uniffi-example-todolist $SRCROOT/../../.. $CONFIGURATION\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -484,7 +484,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = ../../../target/universal/debug;
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../../target/universal/debug";
 				PRODUCT_BUNDLE_IDENTIFIER = org.mozilla.example.uniffi.IOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "IOSApp-Bridging-Header.h";
@@ -508,7 +508,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = ../../../target/universal/debug;
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../../target/universal/release";
 				PRODUCT_BUNDLE_IDENTIFIER = org.mozilla.example.uniffi.IOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "IOSApp-Bridging-Header.h";
