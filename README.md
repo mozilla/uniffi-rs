@@ -54,7 +54,7 @@ Using `uniffi`, you can:
   and expose it to Kotlin code using your nice high-level component API!
   * Try passing `-l swift` or `-l python` to produce bindings for other languages.
 
-For a concrete example, check out [`./examples/arithmetic/`](./examples/arithmetic/README.md) for a small
+For a concrete example, check out [`./examples/arithmetic/`](./examples/arithmetic) for a small
 but fully-functional crate built in this style.
 
 
