@@ -31,29 +31,37 @@ pub fn write_bindings(
     ci: &ComponentInterface,
     out_dir: &Path,
     try_format_code: bool,
+    is_testing: bool,
 ) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
-    let mut module_map_file = out_path.clone();
-    module_map_file.push(format!("uniffi_{}.modulemap", ci.namespace()));
-
-    let mut header_file = out_path.clone();
-    header_file.push(format!("{}-Bridging-Header.h", ci.namespace()));
-
-    let mut source_file = out_path;
+    let mut source_file = out_path.clone();
     source_file.push(format!("{}.swift", ci.namespace()));
 
-    let Bindings { header, library } = generate_bindings(config, &ci)?;
+    let Bindings { header, library } = generate_bindings(config, &ci, is_testing)?;
+
+    let header_filename = config.header_filename();
+    let mut header_file = out_path.clone();
+    header_file.push(&header_filename);
 
     let mut h = File::create(&header_file).context("Failed to create .h file for bindings")?;
     write!(h, "{}", header)?;
 
-    let mut m =
-        File::create(&module_map_file).context("Failed to create .modulemap file for bindings")?;
-    write!(m, "{}", generate_module_map(&ci, &header_file)?)?;
-
     let mut l = File::create(&source_file).context("Failed to create .swift file for bindings")?;
     write!(l, "{}", library)?;
+
+    if is_testing {
+        let mut module_map_file = out_path;
+        module_map_file.push(config.modulemap_filename());
+
+        let mut m = File::create(&module_map_file)
+            .context("Failed to create .modulemap file for bindings")?;
+        write!(
+            m,
+            "{}",
+            generate_module_map(config, &ci, &Path::new(&header_filename))?
+        )?;
+    }
 
     if try_format_code {
         if let Err(e) = Command::new("swiftformat")
@@ -72,31 +80,39 @@ pub fn write_bindings(
 }
 
 /// Generate Swift bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
+pub fn generate_bindings(
+    config: &Config,
+    ci: &ComponentInterface,
+    is_testing: bool,
+) -> Result<Bindings> {
     use askama::Template;
     let header = BridgingHeader::new(config, &ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
-    let library = SwiftWrapper::new(&config, &ci)
+    let library = SwiftWrapper::new(&config, &ci, is_testing)
         .render()
         .map_err(|_| anyhow!("failed to render Swift library"))?;
     Ok(Bindings { header, library })
 }
 
-fn generate_module_map(ci: &ComponentInterface, header_path: &Path) -> Result<String> {
+fn generate_module_map(
+    config: &Config,
+    ci: &ComponentInterface,
+    header_path: &Path,
+) -> Result<String> {
     use askama::Template;
-    let module_map = ModuleMap::new(&ci, header_path)
+    let module_map = ModuleMap::new(&config, &ci, header_path)
         .render()
         .map_err(|_| anyhow!("failed to render Swift module map"))?;
     Ok(module_map)
 }
 
 /// ...
-pub fn compile_bindings(_config: &Config, ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
+pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
     let mut module_map_file = out_path.clone();
-    module_map_file.push(format!("uniffi_{}.modulemap", ci.namespace()));
+    module_map_file.push(config.modulemap_filename());
 
     let mut module_map_file_option = OsString::from("-fmodule-map-file=");
     module_map_file_option.push(module_map_file.as_os_str());

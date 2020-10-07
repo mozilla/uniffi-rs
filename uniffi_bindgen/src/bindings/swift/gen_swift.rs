@@ -18,18 +18,36 @@ use crate::MergeWith;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    // No config options yet.
+    module_name: Option<String>,
+}
+impl Config {
+    pub fn module_name(&self) -> String {
+        match self.module_name.as_ref() {
+            Some(name) => name.clone(),
+            None => "uniffi".into(),
+        }
+    }
+    pub fn modulemap_filename(&self) -> String {
+        format!("{}.modulemap", self.module_name())
+    }
+    pub fn header_filename(&self) -> String {
+        format!("{}-Bridging-Header.h", self.module_name())
+    }
 }
 
 impl From<&ComponentInterface> for Config {
-    fn from(_ci: &ComponentInterface) -> Self {
-        Config {}
+    fn from(ci: &ComponentInterface) -> Self {
+        Config {
+            module_name: Some(format!("uniffi_{}", ci.namespace())),
+        }
     }
 }
 
 impl MergeWith for Config {
-    fn merge_with(&self, _other: &Self) -> Self {
-        self.clone()
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            module_name: self.module_name.merge_with(&other.module_name),
+        }
     }
 }
 
@@ -51,29 +69,40 @@ impl<'config, 'ci> BridgingHeader<'config, 'ci> {
 
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "ModuleMapTemplate.modulemap")]
-pub struct ModuleMap<'ci, 'header> {
-    ci: &'ci ComponentInterface,
+pub struct ModuleMap<'config, 'ci, 'header> {
+    config: &'config Config,
+    _ci: &'ci ComponentInterface,
     header: &'header Path,
 }
 
-impl<'ci, 'header> ModuleMap<'ci, 'header> {
-    pub fn new(ci: &'ci ComponentInterface, header: &'header Path) -> Self {
-        Self { ci, header }
+impl<'config, 'ci, 'header> ModuleMap<'config, 'ci, 'header> {
+    pub fn new(
+        config: &'config Config,
+        _ci: &'ci ComponentInterface,
+        header: &'header Path,
+    ) -> Self {
+        Self {
+            config,
+            _ci,
+            header,
+        }
     }
 }
 
 #[derive(Template)]
 #[template(syntax = "swift", escape = "none", path = "wrapper.swift")]
 pub struct SwiftWrapper<'config, 'ci> {
-    _config: &'config Config,
+    config: &'config Config,
     ci: &'ci ComponentInterface,
+    is_testing: bool,
 }
 
 impl<'config, 'ci> SwiftWrapper<'config, 'ci> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
+    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, is_testing: bool) -> Self {
         Self {
-            _config: config,
+            config,
             ci,
+            is_testing,
         }
     }
 }
