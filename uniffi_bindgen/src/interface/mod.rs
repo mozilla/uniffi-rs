@@ -1090,6 +1090,9 @@ impl Field {
     pub fn type_(&self) -> Type {
         self.type_.clone()
     }
+    pub fn default_value(&self) -> Option<Literal> {
+        self.default.clone()
+    }
 }
 
 impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {

@@ -57,6 +57,7 @@ listOf(-1, 0, 1).map { DictionnaireNombresSignes(it.toByte(), it.toShort(), it.t
 listOf(0, 1).map { DictionnaireNombres(it.toUByte(), it.toUShort(), it.toUInt(), it.toULong()) }
     .affirmAllerRetour(rt::identiqueNombres)
 
+
 rt.destroy()
 
 // Test one way across the FFI.
@@ -203,3 +204,30 @@ listOf(0.0, 1.0).affirmAllerRetour(op::sinonF64)
 Enumeration.values().toList().affirmAllerRetour(op::sinonEnum)
 
 op.destroy()
+
+// Testing defaulting properties in record types.
+val defaultes = OptionneurDictionnaire()
+val explicite = OptionneurDictionnaire(
+    i8Var = -8,
+    u8Var = 8u,
+    i16Var = -16,
+    u16Var = 0x10u,
+    i32Var = -32,
+    u32Var = 32u,
+    i64Var = -64L,
+    u64Var = 64uL,
+    floatVar = 4.0f,
+    doubleVar = 8.0,
+    booleanVar = true,
+    stringVar = "default",
+    listVar = listOf(),
+    enumerationVar = Enumeration.DEUX,
+    dictionnaireVar = null
+)
+assert(defaultes == explicite)
+
+// …and makes sure they travel across and back the FFI.
+val rt2 = Retourneur()
+listOf(defaultes).affirmAllerRetour(rt2::identiqueOptionneurDictionnaire)
+
+rt2.destroy()

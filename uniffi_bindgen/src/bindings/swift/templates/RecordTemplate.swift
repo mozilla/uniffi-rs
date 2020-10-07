@@ -7,7 +7,12 @@ public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi,
     // declare one manually.
     public init(
         {%- for field in rec.fields() %}
-        {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}{% if loop.last %}{% else %},{% endif %}
+        {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift -}}
+        {%- match field.default_value() %}
+            {%- when Some with(literal) %} = {{ literal|literal_swift }}
+            {%- else %}
+        {%- endmatch -%}
+        {% if !loop.last %}, {% endif %}
         {%- endfor %}
     ) {
         {%- for field in rec.fields() %}
