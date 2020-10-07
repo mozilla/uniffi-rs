@@ -1,4 +1,4 @@
-public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi, Equatable {
+public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi, Equatable, Hashable {
     {%- for field in rec.fields() %}
     let {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
     {%- endfor %}
@@ -40,6 +40,12 @@ public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi,
     func write(into buf: Writer) {
         {%- for field in rec.fields() %}
         {{ field.name()|var_name_swift }}.write(into: buf)
+        {%- endfor %}
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        {%- for field in rec.fields() %}
+        hasher.combine({{ field.name()|var_name_swift }})
         {%- endfor %}
     }
 }

@@ -55,6 +55,15 @@
     {%- endfor %}
 {%- endmacro %}
 
+
+{% macro arg_list_protocol(func) %}
+    {%- for arg in func.arguments() -%}
+        {{ arg.name()|var_name_swift }}: {{ arg.type_()|type_swift -}}
+        {%- if !loop.last %}, {% endif -%}
+    {%- endfor %}
+{%- endmacro %}
+
+
 {#-
 // Arglist as used in the _UniFFILib function declations.
 // Note unfiltered name but type_ffi filters.

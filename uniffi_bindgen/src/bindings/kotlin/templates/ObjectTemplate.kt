@@ -1,6 +1,16 @@
+public interface {{ obj.name()|class_name_kt }}Interface {
+    {% for meth in obj.methods() -%}
+    fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %})
+    {%- match meth.return_type() -%}
+    {%- when Some with (return_type) %}: {{ return_type|type_kt -}}
+    {%- else -%}
+    {%- endmatch %}
+    {% endfor %}
+}
+
 class {{ obj.name()|class_name_kt }}(
     handle: Long
-) : FFIObject(AtomicLong(handle)) {
+) : FFIObject(AtomicLong(handle)), {{ obj.name()|class_name_kt }}Interface {
 
     {%- for cons in obj.constructors() %}
     constructor({% call kt::arg_list_decl(cons) -%}) :
@@ -32,7 +42,7 @@ class {{ obj.name()|class_name_kt }}(
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
-    fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %}): {{ return_type|type_kt }} =
+    override fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_protocol(meth) %}): {{ return_type|type_kt }} =
         callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
@@ -40,7 +50,7 @@ class {{ obj.name()|class_name_kt }}(
         }
     
     {%- when None -%}
-    fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %}) =
+    override fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_protocol(meth) %}) =
         callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %} 
         }
