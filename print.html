@@ -427,6 +427,31 @@ impl TodoList {
 };
 </code></pre>
 <p>By convention, the <code>constructor()</code> calls the Rust's <code>new()</code> method.</p>
+<p>Conceptually, these <code>interface</code> objects are live Rust objects that have a proxy on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being call in Rust.</p>
+<p><code>uniffi</code> will generate these proxies of live objects with an interface or protocol.</p>
+<p>e.g. in Kotlin.</p>
+<pre><code class="language-kotlin">interface TodoListInterface {
+    fun addItem(todo: String)
+    fun getItems(): List&lt;String&gt;
+}
+
+class TodoList : TodoListInterface {
+   // implementations to call the Rust code.
+}
+</code></pre>
+<p>When working with these objects, it may be helpful to always pass the interface or protocol, but construct the concrete implementation.</p>
+<p>e.g. in Swift</p>
+<pre><code class="language-swift">let todoList = TodoList()
+todoList.addItem(todo: &quot;Write documentation&quot;)
+display(list: todoList)
+
+func display(list: TodoListProtocol) {
+    let items = list.getItems()
+    items.forEach {
+        print($0)
+    }
+}
+</code></pre>
 <h1><a class="header" href="#integrating-with-gradle" id="integrating-with-gradle">Integrating with Gradle</a></h1>
 <p>It is possible to generate Kotlin bindings at compile time for Kotlin Android projects. We'd like to make a gradle plugin for that, but until then you can add to your <code>build.gradle</code> the following:</p>
 <pre><code class="language-groovy">android.libraryVariants.all { variant -&gt;
