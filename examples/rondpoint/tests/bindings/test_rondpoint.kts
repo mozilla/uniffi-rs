@@ -121,7 +121,7 @@ listOf(0.0, 1.0, -1.0, Double.MIN_VALUE, Double.MAX_VALUE).affirmEnchaine(st::to
 st.destroy()
 
 // Prove to ourselves that default arguments are being used.
-// Step 1: call the methods without arguments, and check against the IDL.
+// Step 1: call the methods without arguments, and check against the UDL.
 val op = Optionneur()
 
 assert(op.sinonString() == "default")

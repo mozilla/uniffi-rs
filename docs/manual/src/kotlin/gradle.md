@@ -7,7 +7,7 @@ android.libraryVariants.all { variant ->
     def t = tasks.register("generate${variant.name.capitalize()}UniffiBindings", Exec) {
         workingDir "${project.projectDir}"
         // Runs the bindings generation, note that you must have uniffi-bindgen installed and in your PATH environment variable
-        commandLine 'uniffi-bindgen', 'generate', '<PATH TO .idl FILE>', '--language', 'kotlin', '--out-dir', "${buildDir}/generated/source/uniffi/${variant.name}/java"
+        commandLine 'uniffi-bindgen', 'generate', '<PATH TO .udl FILE>', '--language', 'kotlin', '--out-dir', "${buildDir}/generated/source/uniffi/${variant.name}/java"
     }
     variant.javaCompileProvider.get().dependsOn(t)
     def sourceSet = variant.sourceSets.find { it.name == variant.name }

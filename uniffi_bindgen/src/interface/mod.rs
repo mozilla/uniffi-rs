@@ -205,7 +205,7 @@ impl<'ci> ComponentInterface {
     /// Since these names are an internal implementation detail that is not typically visible to
     /// consumers, we take the opportunity to add an additional safety guard by including a 4-hex-char
     /// checksum in each name. If foreign-language bindings attempt to load and use a version of the
-    /// Rust code compiled from a different IDL definition than the one used for the bindings themselves,
+    /// Rust code compiled from a different UDL definition than the one used for the bindings themselves,
     /// then there is a high probability of checksum mismatch and they will fail to link against the
     /// compiled Rust code. The result will be an ugly inscrutable link-time error, but that is a lot
     /// better than triggering potentially arbitrary memory unsafety!
@@ -1128,7 +1128,7 @@ pub enum Literal {
     // formatting duplication by using only signed and unsigned variants.
     UInt(u64, Radix, Type),
     Int(i64, Radix, Type),
-    // Pass the string representation through as typed in the IDL.
+    // Pass the string representation through as typed in the UDL.
     // This avoids a lot of uncertainty around precision and accuracy,
     // though bindings for languages less sophisticated number parsing than WebIDL
     // will have to do extra work.
@@ -1326,7 +1326,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
 
 /// Represents an "extern C"-style function that will be part of the FFI.
 ///
-/// These can't be declared explicitly in the IDL, but rather, are derived automatically
+/// These can't be declared explicitly in the UDL, but rather, are derived automatically
 /// from the high-level interface. Each callable thing in the component API will have a
 /// corresponding `FFIFunction` through which it can be invoked, and uniffi also provides
 /// some built-in `FFIFunction` helpers for use in the foreign language bindings.
@@ -1380,14 +1380,14 @@ impl From<&Argument> for FFIArgument {
 mod test {
     use super::*;
 
-    const IDL1: &str = r#"
+    const UDL1: &str = r#"
         namespace foobar{};
         enum Test {
             "test_me",
         };
     "#;
 
-    const IDL2: &str = r#"
+    const UDL2: &str = r#"
         namespace hello {
             u64 world();
         };
@@ -1398,9 +1398,9 @@ mod test {
 
     #[test]
     fn test_checksum_always_matches_for_same_webidl() {
-        for idl in &[IDL1, IDL2] {
-            let ci1 = ComponentInterface::from_webidl(idl).unwrap();
-            let ci2 = ComponentInterface::from_webidl(idl).unwrap();
+        for udl in &[UDL1, UDL2] {
+            let ci1 = ComponentInterface::from_webidl(udl).unwrap();
+            let ci2 = ComponentInterface::from_webidl(udl).unwrap();
             assert_eq!(ci1.checksum(), ci2.checksum());
         }
     }
@@ -1410,8 +1410,8 @@ mod test {
         // There is a small probability of this test spuriously failing due to hash collision.
         // If it happens often enough to be a problem, probably this whole "checksum" thing
         // is not working out as intended.
-        let ci1 = ComponentInterface::from_webidl(IDL1).unwrap();
-        let ci2 = ComponentInterface::from_webidl(IDL2).unwrap();
+        let ci1 = ComponentInterface::from_webidl(UDL1).unwrap();
+        let ci2 = ComponentInterface::from_webidl(UDL2).unwrap();
         assert_ne!(ci1.checksum(), ci2.checksum());
     }
 
@@ -1420,9 +1420,9 @@ mod test {
         // There is a small probability of this test spuriously failing due to hash collision.
         // If it happens often enough to be a problem, probably this whole "checksum" thing
         // is not working out as intended.
-        for idl in &[IDL1, IDL2] {
-            let ci1 = ComponentInterface::from_webidl(idl).unwrap();
-            let mut ci2 = ComponentInterface::from_webidl(idl).unwrap();
+        for udl in &[UDL1, UDL2] {
+            let ci1 = ComponentInterface::from_webidl(udl).unwrap();
+            let mut ci2 = ComponentInterface::from_webidl(udl).unwrap();
             ci2.uniffi_version = String::from("fake-version");
             assert_ne!(ci1.checksum(), ci2.checksum());
         }

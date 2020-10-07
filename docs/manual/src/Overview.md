@@ -6,8 +6,8 @@ Note that this tool will not help you ship a Rust library to these platforms, bu
 
 ## Design
 
-uniffi requires to write an Interface Definition Language ([IDL](https://heycam.github.io/webidl/)) file describing the methods and data structures available to the targeted languages.  
-This .idl file, whose definitions must match with the exposed Rust code, is then used to generate Rust *scaffolding* code and foreign-languages *bindings*. This process can take place either during the build process or be manually initiated by the developer.
+uniffi requires to write an Interface Definition Language (based on [WebIDL](https://heycam.github.io/webidl/)) file describing the methods and data structures available to the targeted languages.  
+This .udl (Uniffi Definition Language) file, whose definitions must match with the exposed Rust code, is then used to generate Rust *scaffolding* code and foreign-languages *bindings*. This process can take place either during the build process or be manually initiated by the developer.
 
 ![uniffi diagram](./uniffi_diagram.png)
 

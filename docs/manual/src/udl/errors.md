@@ -3,7 +3,7 @@
 It is often the case that a function does not return `T` in Rust but `Result<T, E>` to reflect that it is fallible.  
 For uniffi to expose this error, your error type (`E`) must be an `enum` and implement `std::error::Error` ([thiserror](https://crates.io/crates/thiserror) works!).
 
-Here's how you would write a Rust failible function and how you'd expose it in IDL:
+Here's how you would write a Rust failible function and how you'd expose it in UDL:
 
 ```rust
 #[derive(Debug, thiserror::Error)]
@@ -17,7 +17,7 @@ fn add(a: u64, b: u64) -> Result<u64, ArithmeticError> {
 }
 ```
 
-And in IDL:
+And in UDL:
 
 ```
 [Error]

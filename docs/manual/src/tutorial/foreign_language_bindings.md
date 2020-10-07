@@ -6,7 +6,7 @@ As stated in the [Overview](../Overview.md), this library and tutorial does not 
 
 Run
 ```
-uniffi-bindgen generate src/math.idl --language kotlin
+uniffi-bindgen generate src/math.udl --language kotlin
 ```
 then have a look at `src/uniffi/math/math.kt`
 
@@ -14,7 +14,7 @@ then have a look at `src/uniffi/math/math.kt`
 
 Run
 ```
-uniffi-bindgen generate src/math.idl --language swift
+uniffi-bindgen generate src/math.udl --language swift
 ```
 then check out `src/math.swift`
 

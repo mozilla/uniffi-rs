@@ -24,11 +24,11 @@ Then create a `build.rs` file next to `Cargo.toml` that will use `uniffi_build`:
 
 ```rust
 fn main() {
-    uniffi_build::generate_scaffolding("./src/math.idl").unwrap();
+    uniffi_build::generate_scaffolding("./src/math.udl").unwrap();
 }
 ```
 
-**Note:** This is the equivalent of calling (and does it under the hood) `uniffi-bindgen scaffolding src/math.idl --out-dir <OUT_DIR>`.
+**Note:** This is the equivalent of calling (and does it under the hood) `uniffi-bindgen scaffolding src/math.udl --out-dir <OUT_DIR>`.
 
 Lastly, we include the generated scaffolding code in our `lib.rs`:
 ```rust

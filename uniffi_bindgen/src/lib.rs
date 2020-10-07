@@ -24,7 +24,7 @@
 //!
 //! Start by thinking about the interface you want to expose for use
 //! from other languages. Use the Interface Definition Language to specify your interface
-//! in a `.idl` file, where it can be processed by the tools from this crate.
+//! in a `.udl` file, where it can be processed by the tools from this crate.
 //! For example you might define an interface like this:
 //!
 //! ```text
@@ -56,16 +56,16 @@
 //! }
 //! ```
 //!
-//! ### 3) Generate and include component scaffolding from the IDL file
+//! ### 3) Generate and include component scaffolding from the UDL file
 //!
 //! First you will need to install `uniffi-bindgen` on your system using `cargo install uniffi_bindgen`.
 //! Then add to your crate `uniffi_build` under `[build-dependencies]`.
 //! Finally, add a `build.rs` script to your crate and have it call [uniffi_build::generate_scaffolding](uniffi_build::generate_scaffolding)
-//! to process your `.idl` file. This will generate some Rust code to be included in the top-level source
-//! code of your crate. If your IDL file is named `example.idl`, then your build script would call:
+//! to process your `.udl` file. This will generate some Rust code to be included in the top-level source
+//! code of your crate. If your UDL file is named `example.udl`, then your build script would call:
 //!
 //! ```text
-//! uniffi_build::generate_scaffolding("./src/example.idl")
+//! uniffi_build::generate_scaffolding("./src/example.udl")
 //! ```
 //!
 //! This would output a rust file named `example.uniffi.rs`, ready to be
@@ -82,10 +82,10 @@
 //! It is done by calling (in kotlin for example):
 //!
 //! ```text
-//! uniffi-bindgen --language kotlin ./src/example.idl
+//! uniffi-bindgen --language kotlin ./src/example.udl
 //! ```
 //!
-//! This will produce a file `example.kt` in the same directory as the .idl file, containing kotlin bindings
+//! This will produce a file `example.kt` in the same directory as the .udl file, containing kotlin bindings
 //! to load and use the compiled rust code via its C-compatible FFI.
 //!
 
@@ -114,10 +114,10 @@ use bindings::TargetLanguage;
 use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
-// Generate the infrastructural Rust code for implementing the IDL interface,
+// Generate the infrastructural Rust code for implementing the UDL interface,
 // such as the `extern "C"` function definitions and record data types.
 pub fn generate_component_scaffolding<P: AsRef<Path>>(
-    idl_file: P,
+    udl_file: P,
     config_file_override: Option<P>,
     out_dir_override: Option<P>,
     manifest_path_override: Option<P>,
@@ -126,16 +126,16 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     let manifest_path_override = manifest_path_override.as_ref().map(|p| p.as_ref());
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let idl_file = idl_file.as_ref();
-    let component = parse_idl(&idl_file)?;
-    let _config = get_config(&component, idl_file, config_file_override);
-    ensure_versions_compatibility(&idl_file, manifest_path_override)?;
-    let mut filename = Path::new(&idl_file)
+    let udl_file = udl_file.as_ref();
+    let component = parse_udl(&udl_file)?;
+    let _config = get_config(&component, udl_file, config_file_override);
+    ensure_versions_compatibility(&udl_file, manifest_path_override)?;
+    let mut filename = Path::new(&udl_file)
         .file_stem()
         .ok_or_else(|| anyhow!("not a file"))?
         .to_os_string();
     filename.push(".uniffi.rs");
-    let mut out_dir = get_out_dir(&idl_file, out_dir_override)?;
+    let mut out_dir = get_out_dir(&udl_file, out_dir_override)?;
     out_dir.push(filename);
     let mut f =
         File::create(&out_dir).map_err(|e| anyhow!("Failed to create output file: {:?}", e))?;
@@ -151,17 +151,17 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
 // a `uniffi` runtime version that doesn't agree with our own version,
 // the developer of that said crate will be in a world of pain.
 fn ensure_versions_compatibility(
-    idl_file: &Path,
+    udl_file: &Path,
     manifest_path_override: Option<&Path>,
 ) -> Result<()> {
     let mut metadata_cmd = cargo_metadata::MetadataCommand::new();
-    // If --manifest-path is not provided, we run cargo `metadata` in the .idl dir.
+    // If --manifest-path is not provided, we run cargo `metadata` in the .udl dir.
     match manifest_path_override {
         Some(p) => {
             metadata_cmd.manifest_path(p);
         }
         None => {
-            metadata_cmd.current_dir(guess_crate_root(idl_file)?);
+            metadata_cmd.current_dir(guess_crate_root(udl_file)?);
         }
     };
     let metadata = metadata_cmd
@@ -190,7 +190,7 @@ fn ensure_versions_compatibility(
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
 pub fn generate_bindings<P: AsRef<Path>>(
-    idl_file: P,
+    udl_file: P,
     config_file_override: Option<P>,
     target_languages: Vec<&str>,
     out_dir_override: Option<P>,
@@ -198,11 +198,11 @@ pub fn generate_bindings<P: AsRef<Path>>(
 ) -> Result<()> {
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
-    let idl_file = idl_file.as_ref();
+    let udl_file = udl_file.as_ref();
 
-    let component = parse_idl(&idl_file)?;
-    let config = get_config(&component, idl_file, config_file_override)?;
-    let out_dir = get_out_dir(&idl_file, out_dir_override)?;
+    let component = parse_udl(&udl_file)?;
+    let config = get_config(&component, udl_file, config_file_override)?;
+    let out_dir = get_out_dir(&udl_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
             &config.bindings,
@@ -220,16 +220,16 @@ pub fn generate_bindings<P: AsRef<Path>>(
 // Note that the cdylib we're testing against must be built already.
 pub fn run_tests<P: AsRef<Path>>(
     cdylib_dir: P,
-    idl_file: P,
+    udl_file: P,
     test_scripts: Vec<&str>,
     config_file_override: Option<P>,
 ) -> Result<()> {
     let cdylib_dir = cdylib_dir.as_ref();
-    let idl_file = idl_file.as_ref();
+    let udl_file = udl_file.as_ref();
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
-    let component = parse_idl(&idl_file)?;
-    let config = get_config(&component, idl_file, config_file_override)?;
+    let component = parse_udl(&udl_file)?;
+    let config = get_config(&component, udl_file, config_file_override)?;
 
     // Group the test scripts by language first.
     let mut language_tests: HashMap<TargetLanguage, Vec<String>> = HashMap::new();
@@ -254,26 +254,26 @@ pub fn run_tests<P: AsRef<Path>>(
     Ok(())
 }
 
-/// Guess the root directory of the crate from the path of its IDL file.
+/// Guess the root directory of the crate from the path of its UDL file.
 ///
-/// For now, we assume that the IDL file is in `./src/something.idl` relative
+/// For now, we assume that the UDL file is in `./src/something.udl` relative
 /// to the crate root. We might consider something more sophisticated in
 /// future.
-fn guess_crate_root(idl_file: &Path) -> Result<&Path> {
-    let path_guess = idl_file
+fn guess_crate_root(udl_file: &Path) -> Result<&Path> {
+    let path_guess = udl_file
         .parent()
-        .ok_or_else(|| anyhow!("IDL file has no parent folder!"))?
+        .ok_or_else(|| anyhow!("UDL file has no parent folder!"))?
         .parent()
-        .ok_or_else(|| anyhow!("IDL file has no grand-parent folder!"))?;
+        .ok_or_else(|| anyhow!("UDL file has no grand-parent folder!"))?;
     if !path_guess.join("Cargo.toml").is_file() {
-        bail!("IDL file does not appear to be inside a crate")
+        bail!("UDL file does not appear to be inside a crate")
     }
     Ok(path_guess)
 }
 
 fn get_config(
     component: &ComponentInterface,
-    idl_file: &Path,
+    udl_file: &Path,
     config_file_override: Option<&Path>,
 ) -> Result<Config> {
     let default_config: Config = component.into();
@@ -281,7 +281,7 @@ fn get_config(
     let config_file: Option<PathBuf> = match config_file_override {
         Some(cfg) => Some(PathBuf::from(cfg)),
         None => {
-            let crate_root = guess_crate_root(idl_file)?.join("uniffi.toml");
+            let crate_root = guess_crate_root(udl_file)?.join("uniffi.toml");
             match crate_root.canonicalize() {
                 Ok(f) => Some(f),
                 Err(_) => None,
@@ -301,7 +301,7 @@ fn get_config(
     }
 }
 
-fn get_out_dir(idl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
+fn get_out_dir(udl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
     Ok(match out_dir_override {
         Some(s) => {
             // Create the directory if it doesn't exist yet.
@@ -309,18 +309,18 @@ fn get_out_dir(idl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathB
             s.canonicalize()
                 .map_err(|e| anyhow!("Unable to find out-dir: {:?}", e))?
         }
-        None => idl_file
+        None => udl_file
             .parent()
             .ok_or_else(|| anyhow!("File has no parent directory"))?
             .to_owned(),
     })
 }
 
-fn parse_idl(idl_file: &Path) -> Result<ComponentInterface> {
-    let idl =
-        slurp_file(idl_file).map_err(|_| anyhow!("Failed to read IDL from {:?}", &idl_file))?;
-    idl.parse::<interface::ComponentInterface>()
-        .map_err(|e| anyhow!("Failed to parse IDL: {}", e))
+fn parse_udl(udl_file: &Path) -> Result<ComponentInterface> {
+    let udl =
+        slurp_file(udl_file).map_err(|_| anyhow!("Failed to read UDL from {:?}", &udl_file))?;
+    udl.parse::<interface::ComponentInterface>()
+        .map_err(|e| anyhow!("Failed to parse UDL: {}", e))
 }
 
 fn slurp_file(file_name: &Path) -> Result<String> {
@@ -371,7 +371,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_guessing_of_crate_root_directory_from_idl_file() {
+    fn test_guessing_of_crate_root_directory_from_udl_file() {
         // When running this test, this will be the ./uniffi_bindgen directory.
         let this_crate_root = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
 
@@ -380,11 +380,11 @@ mod test {
             .expect("should have a parent directory")
             .join("./examples/arithmetic");
         assert_eq!(
-            guess_crate_root(&example_crate_root.join("./src/arthmetic.idl")).unwrap(),
+            guess_crate_root(&example_crate_root.join("./src/arthmetic.udl")).unwrap(),
             example_crate_root
         );
 
         let not_a_crate_root = &this_crate_root.join("./src/templates");
-        assert!(guess_crate_root(&not_a_crate_root.join("./src/example.idl")).is_err());
+        assert!(guess_crate_root(&not_a_crate_root.join("./src/example.udl")).is_err());
     }
 }

@@ -47,35 +47,35 @@ add_task(async function test_retourneur() {
   let rt = new Retourneur();
 
   // Booleans.
-  [true, false].forEach(v => strictEqual(rt.identiqueBoolean(v), v));
+  [true, false].forEach((v) => strictEqual(rt.identiqueBoolean(v), v));
 
   // Bytes.
-  [-128, 127].forEach(v => equal(rt.identiqueI8(v), v));
-  [0x00, 0xff].forEach(v => equal(rt.identiqueU8(v), v));
+  [-128, 127].forEach((v) => equal(rt.identiqueI8(v), v));
+  [0x00, 0xff].forEach((v) => equal(rt.identiqueU8(v), v));
 
   // Shorts.
-  [-Math.pow(2, 15), Math.pow(2, 15) - 1].forEach(v =>
+  [-Math.pow(2, 15), Math.pow(2, 15) - 1].forEach((v) =>
     equal(rt.identiqueI16(v), v)
   );
-  [0, 0xffff].forEach(v => equal(rt.identiqueU16(v), v));
+  [0, 0xffff].forEach((v) => equal(rt.identiqueU16(v), v));
 
   // Ints.
-  [0, 1, -1, -Math.pow(2, 31), Math.pow(2, 31) - 1].forEach(v =>
+  [0, 1, -1, -Math.pow(2, 31), Math.pow(2, 31) - 1].forEach((v) =>
     equal(rt.identiqueI32(v), v)
   );
-  [0, Math.pow(2, 32) - 1].forEach(v => equal(rt.identiqueU32(v), v));
+  [0, Math.pow(2, 32) - 1].forEach((v) => equal(rt.identiqueU32(v), v));
 
   // Longs.
-  [0, 1, -1, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER].forEach(v =>
+  [0, 1, -1, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER].forEach((v) =>
     equal(rt.identiqueI64(v), v)
   );
-  [0, 1, Number.MAX_SAFE_INTEGER].forEach(v => equal(rt.identiqueU64(v), v));
+  [0, 1, Number.MAX_SAFE_INTEGER].forEach((v) => equal(rt.identiqueU64(v), v));
 
   // Floats.
-  [0, 1, 0.25].forEach(v => equal(rt.identiqueFloat(v), v));
+  [0, 1, 0.25].forEach((v) => equal(rt.identiqueFloat(v), v));
 
   // Doubles.
-  [0, 1, 0.25].forEach(v => equal(rt.identiqueDouble(v), v));
+  [0, 1, 0.25].forEach((v) => equal(rt.identiqueDouble(v), v));
 
   // Strings.
   [
@@ -85,9 +85,9 @@ add_task(async function test_retourneur() {
     "été",
     "ښي لاس ته لوستلو لوستل",
     "😻emoji 👨‍👧‍👦multi-emoji, 🇨🇭a flag, a canal, panama",
-  ].forEach(v => equal(rt.identiqueString(v), v));
+  ].forEach((v) => equal(rt.identiqueString(v), v));
 
-  [-1, 0, 1].forEach(v => {
+  [-1, 0, 1].forEach((v) => {
     let dict = {
       petitNombre: v,
       courtNombre: v,
@@ -97,7 +97,7 @@ add_task(async function test_retourneur() {
     deepEqual(rt.identiqueNombresSignes(dict), dict);
   });
 
-  [0, 1].forEach(v => {
+  [0, 1].forEach((v) => {
     let dict = {
       petitNombre: v,
       courtNombre: v,
@@ -177,7 +177,7 @@ add_task(async function test_stringifier() {
 });
 
 add_task(async function test_optionneur() {
-  // Step 1: call the methods without arguments, and check against the IDL.
+  // Step 1: call the methods without arguments, and check against the UDL.
 
   let op = new Optionneur();
 
@@ -251,7 +251,7 @@ add_task(async function test_optionneur() {
       strictEqual(op[method](v), v);
     }
   }
-  [["a", "b"], []].forEach(v => {
+  [["a", "b"], []].forEach((v) => {
     deepEqual(op.sinonSequence(v), v);
   });
 });

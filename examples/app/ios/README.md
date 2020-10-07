@@ -16,13 +16,13 @@ This will not be a complete tutorial on how to use `uniffi`, just the bits to ge
 
 1. In Xcode, right click on the project in the Project Navigator.
 2. Add a file to the iOS project
-3. Find the `idl` file in the Rust project.
+3. Find the `udl` file in the Rust project.
 
-## Tell Xcode what to do with `idl` files.
+## Tell Xcode what to do with `udl` files.
 
 1. In Xcode, click on the project in the Project Navigator.
 2. In the main window, select the app's main target, and then select "Build Rules".
-3. Add a custom rule, to process sources files with names matching `*.idl`.
+3. Add a custom rule, to process sources files with names matching `*.udl`.
 4. Use `uniffi-bindgen` on each file to generate the headers and swift scaffolding.
 
 ```sh
@@ -146,4 +146,4 @@ let todolist = TodoList()
 todolist.addEntry(entry: TodoListEntry(text: "Make uniffi work on iOS"))
 ```
 
-When you need to make a change to the Rust API, add the Rust parts, then the IDL, and Xcode should pick up the changes on the next build.
+When you need to make a change to the Rust API, add the Rust parts, then the UDL, and Xcode should pick up the changes on the next build.

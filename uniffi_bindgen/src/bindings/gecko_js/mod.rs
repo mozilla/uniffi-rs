@@ -35,13 +35,12 @@ pub struct Binding {
 /// So the Gecko backend generates:
 ///
 /// * A single WebIDL file with the component interface. This is similar to the
-///   UniFFI IDL format, but the names of some types are different.
+///   UniFFI UDL format, but the names of some types are different.
 /// * A shared C++ header, with serialization helpers for all built-in and
 ///   interface types.
 /// * A header and source file for the namespace, if the component defines any
 ///   top-level functions.
-/// * A header and source file for each `interface` declaration in the UniFFI.
-///   IDL.
+/// * A header and source file for each `interface` declaration in the UDL.
 ///
 /// These files should be checked in to the Firefox source tree. The WebIDL
 /// file goes in `dom/chrome-webidl`, and the header and source files can be

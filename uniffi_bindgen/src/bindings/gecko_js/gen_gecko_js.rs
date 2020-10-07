@@ -176,7 +176,7 @@ impl<'config, 'ci> SharedHeader<'config, 'ci> {
 }
 
 /// A header file generated for a namespace containing top-level functions. If
-/// the namespace in the UniFFI IDL file is empty, this file isn't generated.
+/// the namespace in the UDL file is empty, this file isn't generated.
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "NamespaceHeaderTemplate.h")]
 pub struct NamespaceHeader<'config, 'ci> {
@@ -191,7 +191,7 @@ impl<'config, 'ci> NamespaceHeader<'config, 'ci> {
 }
 
 /// An implementation file for a namespace with top-level functions. If the
-/// namespace in the UniFFI IDL is empty, this isn't generated.
+/// namespace in the UDL is empty, this isn't generated.
 #[derive(Template)]
 #[template(syntax = "cpp", escape = "none", path = "NamespaceTemplate.cpp")]
 pub struct Namespace<'config, 'ci> {
@@ -205,7 +205,7 @@ impl<'config, 'ci> Namespace<'config, 'ci> {
     }
 }
 
-/// A header file generated for each interface in the UniFFI IDL.
+/// A header file generated for each interface in the UDL.
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "InterfaceHeaderTemplate.h")]
 pub struct InterfaceHeader<'config, 'ci> {
@@ -219,7 +219,7 @@ impl<'config, 'ci> InterfaceHeader<'config, 'ci> {
     }
 }
 
-/// An implementation file generated for each interface in the UniFFI IDL.
+/// An implementation file generated for each interface in the UDL.
 #[derive(Template)]
 #[template(syntax = "cpp", escape = "none", path = "InterfaceTemplate.cpp")]
 pub struct Interface<'config, 'ci> {
@@ -239,26 +239,26 @@ mod filters {
 
     /// Declares a WebIDL type.
     ///
-    /// Terminology clarification: UniFFI IDL, the `ComponentInterface`,
+    /// Terminology clarification: UDL, the `ComponentInterface`,
     /// and Firefox's WebIDL use different but overlapping names for
     /// the same types.
     ///
     /// * `Type::Record` is called a "dictionary" in Firefox WebIDL. It's
-    ///   represented as `dictionary T` in UniFFI IDL and WebIDL.
+    ///   represented as `dictionary T` in UDL and WebIDL.
     /// * `Type::Object` is called an "interface" in Firefox WebIDL. It's
-    ///   represented as `interface T` in UniFFI IDL and WebIDL.
+    ///   represented as `interface T` in UDL and WebIDL.
     /// * `Type::Optional` is called "nullable" in Firefox WebIDL. It's
-    ///   represented as `T?` in UniFFI IDL and WebIDL.
+    ///   represented as `T?` in UDL and WebIDL.
     /// * `Type::Map` is called a "record" in Firefox WebIDL. It's represented
-    ///   as `record<string, T>` in UniFFI IDL, and `record<DOMString, T>` in
+    ///   as `record<string, T>` in UDL, and `record<DOMString, T>` in
     ///   WebIDL.
     ///
     /// There are also semantic differences:
     ///
-    /// * In UniFFI IDL, all `dictionary` members are required by default; in
+    /// * In UDL, all `dictionary` members are required by default; in
     ///   WebIDL, they're all optional. The generated WebIDL file adds a
     ///   `required` keyword to each member.
-    /// * In UniFFI IDL, an argument can specify a default value directly.
+    /// * In UDL, an argument can specify a default value directly.
     ///   In WebIDL, arguments with default values must have the `optional`
     ///   keyword.
     pub fn type_webidl(

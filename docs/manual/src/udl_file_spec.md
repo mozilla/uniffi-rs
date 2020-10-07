@@ -1,8 +1,8 @@
-# The IDL file
+# The UDL file
 
 This file defines which functions, methods and types are exposed to the foreign-language bindings.
 
-```idl
+```udl
 namespace sprites {
   Point translate([ByRef] Point position, Vector direction);
 };
