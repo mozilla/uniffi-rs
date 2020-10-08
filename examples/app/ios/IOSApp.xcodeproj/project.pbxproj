@@ -13,7 +13,7 @@
 		395A881E251A062D00562F33 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 395A881D251A062D00562F33 /* Preview Assets.xcassets */; };
 		395A8829251A062D00562F33 /* IOSAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8828251A062D00562F33 /* IOSAppTests.swift */; };
 		395A8834251A062D00562F33 /* IOSAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8833251A062D00562F33 /* IOSAppUITests.swift */; };
-		CEEB59CB25263C7E003C87D1 /* todolist.idl in Sources */ = {isa = PBXBuildFile; fileRef = CEEB59CA25263C7E003C87D1 /* todolist.idl */; };
+		CEEB59CB25263C7E003C87D1 /* todolist.udl in Sources */ = {isa = PBXBuildFile; fileRef = CEEB59CA25263C7E003C87D1 /* todolist.udl */; };
 		CEEB5A0025264123003C87D1 /* libuniffi_todolist.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */; };
 /* End PBXBuildFile section */
 
@@ -21,7 +21,7 @@
 		CEEB59B725263AEF003C87D1 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.idl";
+			filePatterns = "*.udl";
 			fileType = pattern.proxy;
 			inputFiles = (
 			);
@@ -65,7 +65,7 @@
 		395A8833251A062D00562F33 /* IOSAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSAppUITests.swift; sourceTree = "<group>"; };
 		395A8835251A062D00562F33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		39C5D6D82524F95400BDBA8A /* IOSApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IOSApp-Bridging-Header.h"; sourceTree = "<group>"; };
-		CEEB59CA25263C7E003C87D1 /* todolist.idl */ = {isa = PBXFileReference; lastKnownFileType = text; name = todolist.idl; path = ../../todolist/src/todolist.idl; sourceTree = "<group>"; };
+		CEEB59CA25263C7E003C87D1 /* todolist.udl */ = {isa = PBXFileReference; lastKnownFileType = text; name = todolist.udl; path = ../../todolist/src/todolist.udl; sourceTree = "<group>"; };
 		CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuniffi_todolist.a; path = ../../../target/universal/debug/libuniffi_todolist.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -98,7 +98,7 @@
 		395A880A251A062C00562F33 = {
 			isa = PBXGroup;
 			children = (
-				CEEB59CA25263C7E003C87D1 /* todolist.idl */,
+				CEEB59CA25263C7E003C87D1 /* todolist.udl */,
 				39C5D6D82524F95400BDBA8A /* IOSApp-Bridging-Header.h */,
 				395A8815251A062C00562F33 /* IOSApp */,
 				395A8827251A062D00562F33 /* IOSAppTests */,
@@ -315,7 +315,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CEEB59CB25263C7E003C87D1 /* todolist.idl in Sources */,
+				CEEB59CB25263C7E003C87D1 /* todolist.udl in Sources */,
 				395A8819251A062C00562F33 /* ContentView.swift in Sources */,
 				395A8817251A062C00562F33 /* ExampleApp.swift in Sources */,
 			);

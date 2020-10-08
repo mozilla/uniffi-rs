@@ -10,7 +10,7 @@ struct TodoEntry {
 }
 ```
 
-can be converted in IDL to:
+can be converted in UDL to:
 
 ```idl
 dictionary TodoEntry {

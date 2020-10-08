@@ -1,7 +1,7 @@
 {#
-// For each record declared in the IDL, we assume the caller has provided a corresponding
+// For each record declared in the UDL, we assume the caller has provided a corresponding
 // rust `struct` with the declared fields. We provide the traits for sending it across the FFI.
-// If the caller's struct does not match the shape and types declared in the IDL then the rust
+// If the caller's struct does not match the shape and types declared in the UDL then the rust
 // compiler will complain with a type error.
 #}
 
@@ -17,7 +17,7 @@ unsafe impl uniffi::ViaFfi for {{ rec.name() }} {
     }
 
     fn write<B: uniffi::deps::bytes::BufMut>(&self, buf: &mut B) {
-        // If the provided struct doesn't match the fields declared in the IDL, then
+        // If the provided struct doesn't match the fields declared in the UDL, then
         // the generated code here will fail to compile with somewhat helpful error.
         {%- for field in rec.fields() %}
         uniffi::ViaFfi::write(&self.{{ field.name() }}, buf);

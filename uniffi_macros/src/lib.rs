@@ -22,7 +22,7 @@ use syn::{bracketed, punctuated::Punctuated, LitStr, Token};
 /// environment to let it load the component bindings, and will pass iff the script
 /// exits successfully.
 ///
-/// To use it, invoke the macro with the idl file as the first argument, then
+/// To use it, invoke the macro with the udl file as the first argument, then
 /// one or more file paths relative to the crate root directory.
 /// It will produce one `#[test]` function per file, in a manner designed to
 /// play nicely with `cargo test` and its test filtering options.
@@ -33,7 +33,7 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
     let pkg_dir = env::var("CARGO_MANIFEST_DIR")
         .expect("Missing $CARGO_MANIFEST_DIR, cannot build tests for generated bindings");
     // For each file found, generate a matching testcase.
-    let idl_file = &paths.idl_file;
+    let udl_file = &paths.udl_file;
     let test_functions = paths.test_scripts
         .iter()
         .map(|file_path| {
@@ -50,7 +50,7 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
             quote! {
                 #[test]
                 fn #test_name () -> uniffi::deps::anyhow::Result<()> {
-                    uniffi::testing::run_foreign_language_testcase(#pkg_dir, #idl_file, #test_file_path)
+                    uniffi::testing::run_foreign_language_testcase(#pkg_dir, #udl_file, #test_file_path)
                 }
             }
         })
@@ -64,13 +64,13 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
 /// Newtype to simplifying parsing a list of file paths from macro input.
 #[derive(Debug)]
 struct FilePaths {
-    idl_file: String,
+    udl_file: String,
     test_scripts: Vec<String>,
 }
 
 impl syn::parse::Parse for FilePaths {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let idl_file: LitStr = input.parse()?;
+        let udl_file: LitStr = input.parse()?;
         let _comma: Token![,] = input.parse()?;
         let array_contents;
         bracketed!(array_contents in input);
@@ -79,7 +79,7 @@ impl syn::parse::Parse for FilePaths {
             .map(|s| s.value())
             .collect();
         Ok(FilePaths {
-            idl_file: idl_file.value(),
+            udl_file: udl_file.value(),
             test_scripts,
         })
     }

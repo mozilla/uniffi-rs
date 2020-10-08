@@ -67,7 +67,7 @@ pub mod deps {
 /// or might not match with the corresponding code in the generated foreign-language bindings.
 ///
 /// In general, you should not need to implement this trait by hand, and should instead rely on
-/// implementations generated from your component IDL via the `uniffi-bindgen scaffolding` command.
+/// implementations generated from your component UDL via the `uniffi-bindgen scaffolding` command.
 
 pub unsafe trait ViaFfi: Sized {
     /// The low-level type used for passing values of this type over the FFI.

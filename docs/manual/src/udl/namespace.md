@@ -1,6 +1,6 @@
 # Namespace
 
-Every IDL file *must* have a `namespace` block:
+Every UDL file *must* have a `namespace` block:
 
 ```idl
 namespace math {

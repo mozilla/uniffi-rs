@@ -2,7 +2,7 @@
 
 The following built-in types can be passed as arguments/returned by Rust methods:
 
-| Rust type            | IDL type               | Notes                             |
+| Rust type            | UDL type               | Notes                             |
 |----------------------|------------------------|-----------------------------------|
 | `bool`               | `boolean`              |                                   |
 | `u8/i8..u64/i64`     | `u8/i8..u64/i64`       |                                   |

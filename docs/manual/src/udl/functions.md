@@ -1,6 +1,6 @@
 # Functions
 
-All top-level *functions* get exposed through the IDL's `namespace` block.
+All top-level *functions* get exposed through the UDL's `namespace` block.
 For example, if the crate's `lib.rs` file contains:
 
 ```rust
@@ -9,7 +9,7 @@ fn hello_world() -> String {
 }
 ```
 
-The IDL file will look like:
+The UDL file will look like:
 
 ```idl
 namespace Example {

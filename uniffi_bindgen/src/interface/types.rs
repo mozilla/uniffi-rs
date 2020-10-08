@@ -258,10 +258,10 @@ impl TypeUniverse {
     }
 }
 
-/// Trait to help with an early "type discovery" phase when processing the IDL.
+/// Trait to help with an early "type discovery" phase when processing the UDL.
 ///
 /// Ths trait does structural matching against weedle AST nodes from a parsed
-/// IDL file, looking for all the newly-defined types in the file and accumulating
+/// UDL file, looking for all the newly-defined types in the file and accumulating
 /// them in the given `TypeUniverse`. Doing this in a preliminary pass means that
 /// we know how to resolve names to types when building up the full interface
 /// definition.
@@ -331,10 +331,10 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
     }
 }
 
-/// Trait to help resolving an IDL type node to a [Type].
+/// Trait to help resolving an UDL type node to a [Type].
 ///
 /// Ths trait does structural matching against type-related weedle AST nodes from
-/// a parsed IDL file, turning them into a corresponding [Type] struct. It uses the
+/// a parsed UDL file, turning them into a corresponding [Type] struct. It uses the
 /// known type definitions in a [TypeUniverse] to resolve names, and so it assumes
 /// that we've already done a [TypeFinder] pass.
 ///
@@ -476,7 +476,7 @@ impl TypeResolver for weedle::types::DoubleType {
 
 /// Resolve built-in API types by name.
 ///
-/// Given an identifier from the IDL, this will return `Some(Type)` if it names one of the
+/// Given an identifier from the UDL, this will return `Some(Type)` if it names one of the
 /// built-in primitive types or `None` if it names something else.
 fn resolve_builtin_type(name: &str) -> Option<Type> {
     match name {

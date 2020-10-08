@@ -16,17 +16,17 @@ Newcomers are recommended to explore them in the following order:
   meant to show how interacting with strings works.
 * [`.rondpoint`](./rondpoint/) exercises complex data types by round-tripping them from the foreign-language
   code, through rust and back agian.
-* [`./fxa-client`](./fxa-client/) doesn't work yet, but it contains aspirational example of what the IDL
+* [`./fxa-client`](./fxa-client/) doesn't work yet, but it contains aspirational example of what the UDL
   might look like for an actual real-world component.
 
 Each example has the following structure:
 
-* `src/<namespace>.idl`, the component interface definition which defines the main object and its methods.
+* `src/<namespace>.udl`, the component interface definition which defines the main object and its methods.
   This is processed by functions in `build.rs` to generate Rust scaffolding for the component.
 * `src/lib.rs`, the core implementation of the component in Rust. This basically
   pulls in the generated Rust scaffolding via `include!()` and fills in function implementations.
 * `Cargo.toml` configures the crate to build a `cdylib` with an appropriate name, matching the
-  namespace defined in the IDL file.
+  namespace defined in the UDL file.
 * Some small test scripts that double as API examples in each target foreign language:
   * Kotlin `tests/bindings/test_<namespace>.kts`
   * Swift `tests/bindings/test_<namespace>.swift`
@@ -51,10 +51,10 @@ With that in place, try the following:
 * Run `cargo test`.  This will run each of the foreign-language testcases against the compiled Rust code,
   confirming whether everything is working as intended.
 * Explore the build process in more detail:
-  * Run `cargo run -p uniffi_bindgen scaffolding ./src/<namespace>.idl`.
+  * Run `cargo run -p uniffi_bindgen scaffolding ./src/<namespace>.udl`.
     This will generate the Rust scaffolding code which exposes a C FFI for the component.
     You can view the generatd code in `./src/<namespace>.uniffi.rs`.
-  * Run `cargo run -p uniffi_bindgen generate --language kotlin ./src/arithmetic.idl`.
+  * Run `cargo run -p uniffi_bindgen generate --language kotlin ./src/arithmetic.udl`.
     This will generate the foreign-language bindings for Kotlin, which load the compiled Rust code
     and use the C FFI generated above to interact with it.
     You can view the generated code in `./src/uniffi/<namespace>/<namespace>.kt`.

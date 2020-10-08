@@ -4,7 +4,7 @@
 // corresponding to each method.
 //
 // If the caller's implementation of the struct does not match with the methods or types specified
-// in the IDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)
+// in the UDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)
 // error message when processing this generated code.
 {% let handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) %}
 uniffi::deps::lazy_static::lazy_static! {
@@ -23,7 +23,7 @@ uniffi::deps::lazy_static::lazy_static! {
     pub extern "C" fn {{ cons.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> u64 {
         uniffi::deps::log::debug!("{{ cons.ffi_func().name() }}");
-        // If the constructor does not have the same signature as declared in the IDL, then
+        // If the constructor does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
         {% call rs::to_rs_constructor_call(obj, cons) %}
     }
@@ -36,7 +36,7 @@ uniffi::deps::lazy_static::lazy_static! {
         {%- call rs::arg_list_ffi_decl(meth.ffi_func()) %}
     ) -> {% call rs::return_type_func(meth) %} {
         uniffi::deps::log::debug!("{{ meth.ffi_func().name() }}");
-        // If the method does not have the same signature as declared in the IDL, then
+        // If the method does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
         {% call rs::to_rs_method_call(obj, meth) %}
     }

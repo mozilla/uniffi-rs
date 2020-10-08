@@ -8,7 +8,7 @@ enum Animal {
 }
 ```
 
-Can be exposed in the IDL file with:
+Can be exposed in the UDL file with:
 
 ```idl
 enum Animal {

@@ -112,7 +112,7 @@ extension Array where Element: Equatable {
 }
 
 // Prove to ourselves that default arguments are being used.
-// Step 1: call the methods without arguments, and check against the IDL.
+// Step 1: call the methods without arguments, and check against the UDL.
 let op = Optionneur()
 
 assert(op.sinonString() == "default")

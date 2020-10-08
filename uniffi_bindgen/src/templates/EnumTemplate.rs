@@ -1,10 +1,10 @@
 {#
-// For each enum declared in the IDL, we assume the caller as provided a corresponding
+// For each enum declared in the UDL, we assume the caller as provided a corresponding
 // rust `enum`. We provide the traits for sending it across the FFI, which will fail to
-// compile if the provided struct has a different shape to the one declared in the IDL.
+// compile if the provided struct has a different shape to the one declared in the UDL.
 //
 // The enum will be sent over the FFI as a u32, with values assigned according to the
-// order of items *as declared in the IDL file*. This might be different to the order
+// order of items *as declared in the UDL file*. This might be different to the order
 // of items as declared in the rust code, but no harm will come from it.
 #}
 unsafe impl uniffi::ViaFfi for {{ e.name() }} {
@@ -12,7 +12,7 @@ unsafe impl uniffi::ViaFfi for {{ e.name() }} {
 
     fn lower(self) -> Self::FfiType {
         match self {
-            // If the provided enum doesn't match the options defined in the IDL then
+            // If the provided enum doesn't match the options defined in the UDL then
             // this match will fail to compile, with a type error to guide the way.
             {%- for variant in e.variants() %}
             {{ e.name() }}::{{ variant }} => {{ loop.index }},
