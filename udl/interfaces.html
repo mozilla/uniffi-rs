@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Structs/Dictionaries - The uniffi user guide</title>
+        <title>Interfaces/Objects - The uniffi user guide</title>
         
         
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/idl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../idl_file_spec.html"><strong aria-hidden="true">2.</strong> The IDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../idl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../idl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../idl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../idl/structs.html" class="active"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../idl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../idl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../idl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html" class="active"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -159,40 +159,80 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#structsdictionaries" id="structsdictionaries">Structs/Dictionaries</a></h1>
-<p>Dictionaries can be compared to POJOs in the Java world: just a data structure holding some data.</p>
+                        <h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
+<p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.<br />
+Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="./structs.html">Dictionary</a>.</p>
+<p>The following Rust code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>struct TodoEntry {
-    done: bool,
-    due_date: u64,
-    text: String,
+</span>struct TodoList {
+    items: Vec&lt;String&gt;
+}
+
+impl TodoList {
+    fn new() -&gt; Self {
+        TodoList {
+            items: Vec::new()
+        }
+    }
+
+    fn add_item(&amp;mut self, todo: String) {
+        self.items.push(todo);
+    }
+
+    fn get_items(&amp;self) -&gt; Vec&lt;String&gt; {
+        self.items.clone()
+    }
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>can be converted in IDL to:</p>
-<pre><code class="language-idl">dictionary TodoEntry {
-    boolean done;
-    u64 due_date;
-    string text;
+<p>would be exposed using:</p>
+<pre><code class="language-idl">interface TodoList {
+    constructor();
+    void add_item(string todo);
+    sequence&lt;string&gt; get_items();
 };
-
 </code></pre>
-<p>Dictionaries can contain each other and every other data type available, except objects.</p>
+<p>By convention, the <code>constructor()</code> calls the Rust's <code>new()</code> method.</p>
+<p>Conceptually, these <code>interface</code> objects are live Rust objects that have a proxy on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being call in Rust.</p>
+<p><code>uniffi</code> will generate these proxies of live objects with an interface or protocol.</p>
+<p>e.g. in Kotlin.</p>
+<pre><code class="language-kotlin">interface TodoListInterface {
+    fun addItem(todo: String)
+    fun getItems(): List&lt;String&gt;
+}
+
+class TodoList : TodoListInterface {
+   // implementations to call the Rust code.
+}
+</code></pre>
+<p>When working with these objects, it may be helpful to always pass the interface or protocol, but construct the concrete implementation.</p>
+<p>e.g. in Swift</p>
+<pre><code class="language-swift">let todoList = TodoList()
+todoList.addItem(todo: &quot;Write documentation&quot;)
+display(list: todoList)
+
+func display(list: TodoListProtocol) {
+    let items = list.getItems()
+    items.forEach {
+        print($0)
+    }
+}
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../idl/enumerations.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../udl/errors.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../idl/functions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../kotlin/gradle.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -204,13 +244,13 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../idl/enumerations.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../udl/errors.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../idl/functions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../kotlin/gradle.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 

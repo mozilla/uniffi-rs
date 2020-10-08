@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="tutorial/idl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="idl_file_spec.html"><strong aria-hidden="true">2.</strong> The IDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="idl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="idl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="idl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="idl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="idl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="idl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="idl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="udl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="udl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -166,8 +166,8 @@
 It fits in the practice of consolidating business logic in a single Rust library while targeting multiple platforms, making it simpler to develop and maintain a cross-platform codebase.<br />
 Note that this tool will not help you ship a Rust library to these platforms, but simply not have to write bindings code by hand <a href="https://i.kym-cdn.com/photos/images/newsfeed/000/572/078/d6d.jpg">[0]</a>.</p>
 <h2><a class="header" href="#design" id="design">Design</a></h2>
-<p>uniffi requires to write an Interface Definition Language (<a href="https://heycam.github.io/webidl/">IDL</a>) file describing the methods and data structures available to the targeted languages.<br />
-This .idl file, whose definitions must match with the exposed Rust code, is then used to generate Rust <em>scaffolding</em> code and foreign-languages <em>bindings</em>. This process can take place either during the build process or be manually initiated by the developer.</p>
+<p>uniffi requires to write an Interface Definition Language (based on <a href="https://heycam.github.io/webidl/">WebIDL</a>) file describing the methods and data structures available to the targeted languages.<br />
+This .udl (Uniffi Definition Language) file, whose definitions must match with the exposed Rust code, is then used to generate Rust <em>scaffolding</em> code and foreign-languages <em>bindings</em>. This process can take place either during the build process or be manually initiated by the developer.</p>
 <p><img src="./uniffi_diagram.png" alt="uniffi diagram" /></p>
 <h2><a class="header" href="#supported-languages" id="supported-languages">Supported languages</a></h2>
 <ul>
@@ -199,18 +199,18 @@ This .idl file, whose definitions must match with the exposed Rust code, is then
 name = &quot;&lt;library name&gt;&quot;
 </code></pre>
 <p>to your crate's <code>Cargo.toml</code>.</p>
-<h1><a class="header" href="#the-idl-file" id="the-idl-file">The IDL file</a></h1>
-<p>We describe in a IDL (Interface Definition Language) file <em>what</em> is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (<code>u32</code>) and not custom data structures but we still want to expose the <code>add</code> method.<br />
-Let's create a <code>math.idl</code> file in the <code>math</code> crate's <code>src/</code> folder:</p>
+<h1><a class="header" href="#the-udl-file" id="the-udl-file">The UDL file</a></h1>
+<p>We describe in a UDL (a type of IDL, Interface Definition Language) file <em>what</em> is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (<code>u32</code>) and not custom data structures but we still want to expose the <code>add</code> method.<br />
+Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code>src/</code> folder:</p>
 <pre><code class="language-idl">namespace math {
   u32 add(u32 a, u32 b);
 };
 </code></pre>
 <p>Here you can note multiple things:</p>
 <ul>
-<li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any idl file, even if there ain't any exposed function (e.g. <code>namespace foo {}</code>).</li>
+<li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any udl file, even if there ain't any exposed function (e.g. <code>namespace foo {}</code>).</li>
 <li>The <code>add</code> function is in the <code>namespace</code> block. That's because on the Rust side it is a top-level <em>function</em>, we will see later how to to handle <em>methods</em>.</li>
-<li>Rust's <code>u32</code> is also IDL's <code>u32</code>, but it is not always true! (TODO table correspondance)</li>
+<li>Rust's <code>u32</code> is also UDL's <code>u32</code>, but it is not always true! (TODO table correspondance)</li>
 </ul>
 <p><strong>Note:</strong> If any of the things you expose in the <code>idl</code> file do not have an equivalent in your Rust crate, you will get a hard error. Try changing the <code>u32</code> result type to <code>u64</code> and see what happens!</p>
 <h1><a class="header" href="#rust-scaffolding" id="rust-scaffolding">Rust scaffolding</a></h1>
@@ -227,10 +227,10 @@ uniffi_build = &quot;0.3&quot;
 </code></pre>
 <p>Then create a <code>build.rs</code> file next to <code>Cargo.toml</code> that will use <code>uniffi_build</code>:</p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
-    uniffi_build::generate_scaffolding(&quot;./src/math.idl&quot;).unwrap();
+    uniffi_build::generate_scaffolding(&quot;./src/math.udl&quot;).unwrap();
 }
 </code></pre></pre>
-<p><strong>Note:</strong> This is the equivalent of calling (and does it under the hood) <code>uniffi-bindgen scaffolding src/math.idl --out-dir &lt;OUT_DIR&gt;</code>.</p>
+<p><strong>Note:</strong> This is the equivalent of calling (and does it under the hood) <code>uniffi-bindgen scaffolding src/math.udl --out-dir &lt;OUT_DIR&gt;</code>.</p>
 <p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code>:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -244,19 +244,19 @@ uniffi_build = &quot;0.3&quot;
 <p>As stated in the <a href="tutorial/../Overview.html">Overview</a>, this library and tutorial does not cover <em>how</em> to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.</p>
 <h2><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h2>
 <p>Run</p>
-<pre><code>uniffi-bindgen generate src/math.idl --language kotlin
+<pre><code>uniffi-bindgen generate src/math.udl --language kotlin
 </code></pre>
 <p>then have a look at <code>src/uniffi/math/math.kt</code></p>
 <h2><a class="header" href="#swift" id="swift">Swift</a></h2>
 <p>Run</p>
-<pre><code>uniffi-bindgen generate src/math.idl --language swift
+<pre><code>uniffi-bindgen generate src/math.udl --language swift
 </code></pre>
 <p>then check out <code>src/math.swift</code></p>
 <p>Note that these commands could be integrated as part of your gradle/XCode build process.</p>
 <p>This is it, you have an MVP integration of uniffi in your project.</p>
-<h1><a class="header" href="#the-idl-file-1" id="the-idl-file-1">The IDL file</a></h1>
+<h1><a class="header" href="#the-udl-file-1" id="the-udl-file-1">The UDL file</a></h1>
 <p>This file defines which functions, methods and types are exposed to the foreign-language bindings.</p>
-<pre><code class="language-idl">namespace sprites {
+<pre><code class="language-udl">namespace sprites {
   Point translate([ByRef] Point position, Vector direction);
 };
 
@@ -278,7 +278,7 @@ interface Sprite {
 };
 </code></pre>
 <h1><a class="header" href="#namespace" id="namespace">Namespace</a></h1>
-<p>Every IDL file <em>must</em> have a <code>namespace</code> block:</p>
+<p>Every UDL file <em>must</em> have a <code>namespace</code> block:</p>
 <pre><code class="language-idl">namespace math {
   double exp(double a);
 };
@@ -287,11 +287,11 @@ interface Sprite {
 <ul>
 <li>It identifies the name of the generated Rust scaffolding file <code>&lt;namespace&gt;.uniffi.rs</code>.</li>
 <li>It identifies the package name of the generated foreign-language bindings (e.g. <code>uniffi.&lt;namespace&gt;</code> in Kotlin)</li>
-<li>It also contains all <a href="idl/./functions.html">top-level <em>functions</em></a> that get exposed to foreign-language bindings.</li>
+<li>It also contains all <a href="udl/./functions.html">top-level <em>functions</em></a> that get exposed to foreign-language bindings.</li>
 </ul>
 <h1><a class="header" href="#built-in-types" id="built-in-types">Built-in types</a></h1>
 <p>The following built-in types can be passed as arguments/returned by Rust methods:</p>
-<table><thead><tr><th>Rust type</th><th>IDL type</th><th>Notes</th></tr></thead><tbody>
+<table><thead><tr><th>Rust type</th><th>UDL type</th><th>Notes</th></tr></thead><tbody>
 <tr><td><code>bool</code></td><td><code>boolean</code></td><td></td></tr>
 <tr><td><code>u8/i8..u64/i64</code></td><td><code>u8/i8..u64/i64</code></td><td></td></tr>
 <tr><td><code>f32</code></td><td><code>float</code></td><td></td></tr>
@@ -302,7 +302,7 @@ interface Sprite {
 <tr><td><code>Vec&lt;T&gt;</code></td><td><code>sequence&lt;T&gt;</code></td><td></td></tr>
 <tr><td><code>HashMap&lt;String, T&gt;</code></td><td><code>record&lt;DOMString, T&gt;</code></td><td>Only string keys are supported</td></tr>
 <tr><td><code>()</code></td><td><code>void</code></td><td>Empty return</td></tr>
-<tr><td><code>Result&lt;T, E&gt;</code></td><td>N/A</td><td>See <a href="idl/./errors.html">Errors</a> section</td></tr>
+<tr><td><code>Result&lt;T, E&gt;</code></td><td>N/A</td><td>See <a href="udl/./errors.html">Errors</a> section</td></tr>
 </tbody></table>
 <p>And of course you can use your own types, which is covered in the following sections.</p>
 <h1><a class="header" href="#enumerations" id="enumerations">Enumerations</a></h1>
@@ -316,7 +316,7 @@ interface Sprite {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Can be exposed in the IDL file with:</p>
+<p>Can be exposed in the UDL file with:</p>
 <pre><code class="language-idl">enum Animal {
   &quot;Dog&quot;,
   &quot;Cat&quot;,
@@ -335,7 +335,7 @@ interface Sprite {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>can be converted in IDL to:</p>
+<p>can be converted in UDL to:</p>
 <pre><code class="language-idl">dictionary TodoEntry {
     boolean done;
     u64 due_date;
@@ -345,7 +345,7 @@ interface Sprite {
 </code></pre>
 <p>Dictionaries can contain each other and every other data type available, except objects.</p>
 <h1><a class="header" href="#functions" id="functions">Functions</a></h1>
-<p>All top-level <em>functions</em> get exposed through the IDL's <code>namespace</code> block.
+<p>All top-level <em>functions</em> get exposed through the UDL's <code>namespace</code> block.
 For example, if the crate's <code>lib.rs</code> file contains:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -355,7 +355,7 @@ For example, if the crate's <code>lib.rs</code> file contains:</p>
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>The IDL file will look like:</p>
+<p>The UDL file will look like:</p>
 <pre><code class="language-idl">namespace Example {
     string hello_world();
 }
@@ -363,7 +363,7 @@ For example, if the crate's <code>lib.rs</code> file contains:</p>
 <h1><a class="header" href="#throwing-errors" id="throwing-errors">Throwing errors</a></h1>
 <p>It is often the case that a function does not return <code>T</code> in Rust but <code>Result&lt;T, E&gt;</code> to reflect that it is fallible.<br />
 For uniffi to expose this error, your error type (<code>E</code>) must be an <code>enum</code> and implement <code>std::error::Error</code> (<a href="https://crates.io/crates/thiserror">thiserror</a> works!).</p>
-<p>Here's how you would write a Rust failible function and how you'd expose it in IDL:</p>
+<p>Here's how you would write a Rust failible function and how you'd expose it in UDL:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -378,7 +378,7 @@ fn add(a: u64, b: u64) -&gt; Result&lt;u64, ArithmeticError&gt; {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>And in IDL:</p>
+<p>And in UDL:</p>
 <pre><code>[Error]
 enum ArithmeticError {
   &quot;IntegerOverflow&quot;,
@@ -393,7 +393,7 @@ namespace arithmetic {
 <p>On the other side (Kotlin, Swift etc.), a proper exception will be thrown if <code>Result::is_err()</code> is <code>true</code>.</p>
 <h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
 <p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.<br />
-Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="idl/./structs.html">Dictionary</a>.</p>
+Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="udl/./structs.html">Dictionary</a>.</p>
 <p>The following Rust code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -458,7 +458,7 @@ func display(list: TodoListProtocol) {
     def t = tasks.register(&quot;generate${variant.name.capitalize()}UniffiBindings&quot;, Exec) {
         workingDir &quot;${project.projectDir}&quot;
         // Runs the bindings generation, note that you must have uniffi-bindgen installed and in your PATH environment variable
-        commandLine 'uniffi-bindgen', 'generate', '&lt;PATH TO .idl FILE&gt;', '--language', 'kotlin', '--out-dir', &quot;${buildDir}/generated/source/uniffi/${variant.name}/java&quot;
+        commandLine 'uniffi-bindgen', 'generate', '&lt;PATH TO .udl FILE&gt;', '--language', 'kotlin', '--out-dir', &quot;${buildDir}/generated/source/uniffi/${variant.name}/java&quot;
     }
     variant.javaCompileProvider.get().dependsOn(t)
     def sourceSet = variant.sourceSets.find { it.name == variant.name }
@@ -470,7 +470,7 @@ func display(list: TodoListProtocol) {
 <p>The generated bindings should appear in the project sources in Android Studio.</p>
 <h1><a class="header" href="#integrating-with-xcode" id="integrating-with-xcode">Integrating with XCode</a></h1>
 <p>It is possible to generate Swift bindings at compile time for XCode projects.
-In your project configuration, add a &quot;Run Script Phase&quot; that applies to <code>*.idl</code> files:</p>
+In your project configuration, add a &quot;Run Script Phase&quot; that applies to <code>*.udl</code> files:</p>
 <pre><code class="language-bash">$HOME/.cargo/bin/uniffi-bindgen generate $INPUT_FILE_PATH --language swift --out-dir $DERIVED_FILE_DIR\n
 </code></pre>
 

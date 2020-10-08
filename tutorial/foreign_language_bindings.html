@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/idl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html" class="active"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../idl_file_spec.html"><strong aria-hidden="true">2.</strong> The IDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../idl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../idl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../idl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../idl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../idl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../idl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../idl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html" class="active"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -163,12 +163,12 @@
 <p>As stated in the <a href="../Overview.html">Overview</a>, this library and tutorial does not cover <em>how</em> to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.</p>
 <h2><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h2>
 <p>Run</p>
-<pre><code>uniffi-bindgen generate src/math.idl --language kotlin
+<pre><code>uniffi-bindgen generate src/math.udl --language kotlin
 </code></pre>
 <p>then have a look at <code>src/uniffi/math/math.kt</code></p>
 <h2><a class="header" href="#swift" id="swift">Swift</a></h2>
 <p>Run</p>
-<pre><code>uniffi-bindgen generate src/math.idl --language swift
+<pre><code>uniffi-bindgen generate src/math.udl --language swift
 </code></pre>
 <p>then check out <code>src/math.swift</code></p>
 <p>Note that these commands could be integrated as part of your gradle/XCode build process.</p>
@@ -185,7 +185,7 @@
                         
 
                         
-                            <a rel="next" href="../idl_file_spec.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../udl_file_spec.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -203,7 +203,7 @@
                 
 
                 
-                    <a rel="next" href="../idl_file_spec.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../udl_file_spec.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
