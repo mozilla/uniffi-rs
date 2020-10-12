@@ -17,7 +17,7 @@
 //!    FFI value.
 //!  * How to ["lift"](ViaFfi::lift) low-level FFI values back into rust values of that type.
 //!  * How to [write](ViaFfi::write) rust values of that type into a buffer, for cases
-//!    where they are part of a compount data structure that is serialized for transfer.
+//!    where they are part of a compound data structure that is serialized for transfer.
 //!  * How to [read](ViaFfi::read) rust values of that type from buffer, for cases
 //!    where they are received as part of a compound data structure that was serialized for transfer.
 //!
@@ -152,7 +152,11 @@ pub fn try_lift_from_buffer<T: ViaFfi>(buf: RustBuffer) -> Result<T> {
 /// helper function to instead return an explicit error, to help with debugging.
 pub fn check_remaining<B: Buf>(buf: &B, num_bytes: usize) -> Result<()> {
     if buf.remaining() < num_bytes {
-        bail!("not enough bytes remaining in buffer");
+        bail!(format!(
+            "not enough bytes remaining in buffer ({} < {})",
+            buf.remaining(),
+            num_bytes
+        ));
     }
     Ok(())
 }

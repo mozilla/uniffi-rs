@@ -18,7 +18,17 @@ inline fun <reified Lib : Library> loadIndirect(
 
 internal interface _UniFFILib : Library {
     companion object {
-        internal var INSTANCE: _UniFFILib = loadIndirect(componentName = "{{ ci.namespace() }}")
+        internal val INSTANCE: _UniFFILib by lazy { 
+            loadIndirect<_UniFFILib>(componentName = "{{ ci.namespace() }}")
+            {% let callback_interfaces = ci.iter_callback_interface_definitions() %}
+            {%- if !callback_interfaces.is_empty() -%}
+            .also { lib: _UniFFILib ->
+                {% for cb in callback_interfaces -%}
+                CallbackInterface{{ cb.name()|class_name_kt }}Internals.register(lib)
+                {% endfor -%}
+            }
+            {% endif %}
+        }
     }
 
     {% for func in ci.iter_ffi_function_definitions() -%}

@@ -112,6 +112,7 @@ impl From<Type> for WebIDLType {
                 // https://github.com/mozilla/uniffi-rs/issues/295.
                 panic!("[TODO: From<Type>({:?})]", type_)
             }
+            Type::CallbackInterface(_) => panic!("Callback interfaces unimplemented"),
             Type::Optional(inner) => match *inner {
                 Type::Record(name) => {
                     WebIDLType::OptionalWithDefaultValue(Box::new(Type::Record(name).into()))

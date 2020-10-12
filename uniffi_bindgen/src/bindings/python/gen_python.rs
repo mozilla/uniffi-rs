@@ -62,6 +62,7 @@ mod filters {
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::RustError => "ctypes.POINTER(RustError)".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
+            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not unimplemented"),
         })
     }
 
@@ -127,6 +128,7 @@ mod filters {
             Type::Float32 | Type::Float64 => format!("float({})", nm),
             Type::Boolean => format!("bool({})", nm),
             Type::String | Type::Object(_) | Type::Error(_) | Type::Record(_) => nm.to_string(),
+            Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
             Type::Enum(name) => format!("{}({})", class_name_py(name)?, nm),
             Type::Optional(t) => format!("(None if {} is None else {})", nm, coerce_py(nm, t)?),
             Type::Sequence(t) => format!("list({} for x in {})", coerce_py(&"x", t)?, nm),
@@ -155,6 +157,7 @@ mod filters {
             Type::String => format!("RustBuffer.allocFromString({})", nm),
             Type::Enum(_) => format!("({}.value)", nm),
             Type::Object(_) => format!("({}._handle)", nm),
+            Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
                 "RustBuffer.allocFrom{}({})",
@@ -179,6 +182,7 @@ mod filters {
             Type::String => format!("{}.consumeIntoString()", nm),
             Type::Enum(name) => format!("{}({})", class_name_py(name)?, nm),
             Type::Object(_) => panic!("No support for lifting objects, yet"),
+            Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
                 "{}.consumeInto{}()",

@@ -49,4 +49,16 @@
 {% include "ObjectTemplate.rs" %}
 {% endfor %}
 
+// For each Callback Interface definition we generate:
+//  * a holder for a `ForeignCallback`, which will be responsible for all method calls for all callbacks of that type.
+//  * an init function to accept that `ForeignCallback` from the foreign language, and put it in the holder.
+//  * a proxy `struct` which implements the trait that the Callback Interface corresponds to.
+//    - for each method, arguments will be packed into a `RustBuffer` and sent over the `ForeignCallback` to be 
+//      unpacked and called. The return value is packed into another `RustBuffer` and sent back to Rust.
+//    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
+//    - a `Send` `impl` so `Object`s can store callbacks.
+{% for obj in ci.iter_callback_interface_definitions() %}
+{% include "CallbackInterfaceTemplate.rs" %}
+{% endfor %}
+
 {%- import "macros.rs" as rs -%}

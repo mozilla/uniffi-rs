@@ -1,0 +1,37 @@
+namespace callbacks {};
+
+interface Telephone {
+  void call(boolean domestic, OnCallAnswered call_responder);
+};
+
+callback interface OnCallAnswered {
+  string hello();
+  void busy();
+  void text_received(string text);
+};
+
+callback interface RoundTripper {
+  boolean get_bool(boolean v, boolean arg2);
+  string get_string(string v, boolean arg2);
+  string? get_option(string? v, boolean arg2);
+  sequence<i32> get_list(sequence<i32> v, boolean arg2);
+};
+
+interface RoundTripperToRust {
+  boolean get_bool(RoundTripper callback, boolean v, boolean arg2);
+  string get_string(RoundTripper callback, string v, boolean arg2);
+  string? get_option(RoundTripper callback, string? v, boolean arg2);
+  sequence<i32> get_list(RoundTripper callback, sequence<i32> v, boolean arg2);
+};
+
+callback interface Stringifier {
+  string from_simple_type(i32 value);
+  // Test if types are collected from callback interfaces.
+  // kotlinc compile time error if not.
+  string from_complex_type(sequence<f64?>? values); 
+};
+
+interface StringUtil {
+  constructor(Stringifier callback);
+  string from_simple_type(i32 value);
+};

@@ -128,9 +128,11 @@ mod filters {
             Type::Float64 => "Double".into(),
             Type::Boolean => "Bool".into(),
             Type::String => "String".into(),
-            Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
-                class_name_swift(name)?
-            }
+            Type::Enum(name)
+            | Type::Record(name)
+            | Type::Object(name)
+            | Type::Error(name)
+            | Type::CallbackInterface(name) => class_name_swift(name)?,
             Type::Optional(type_) => format!("{}?", type_swift(type_)?),
             Type::Sequence(type_) => format!("[{}]", type_swift(type_)?),
             Type::Map(type_) => format!("[String:{}]", type_swift(type_)?),
@@ -155,6 +157,7 @@ mod filters {
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::RustError => "NativeRustError".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
+            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not unimplemented"),
         })
     }
 
