@@ -49,11 +49,11 @@
   {%- match func.cpp_return_by() %}
   {%- when ReturnBy::OutParam with (name, type_) %}
   DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, name, context) }};
-  MOZ_RELEASE_ASSERT(ok_);
+  MOZ_ASSERT(ok_);
   {%- when ReturnBy::Value with (type_) %}
   {{ type_|type_cpp(context) }} retVal_;
   DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, "retVal_", context) }};
-  MOZ_RELEASE_ASSERT(ok_);
+  MOZ_ASSERT(ok_);
   return retVal_;
   {%- when ReturnBy::Void %}{%- endmatch %}
 {%- endmacro -%}
