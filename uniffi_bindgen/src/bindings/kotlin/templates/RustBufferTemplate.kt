@@ -2,11 +2,13 @@
 // A rust-owned buffer is represented by its capacity, its current length, and a
 // pointer to the underlying data.
 
-@Structure.FieldOrder("capacity", "len", "data")
+@Structure.FieldOrder("capacity", "len", "data", "padding")
 open class RustBuffer : Structure() {
     @JvmField var capacity: Int = 0
     @JvmField var len: Int = 0
     @JvmField var data: Pointer? = null
+    // Ref https://github.com/mozilla/uniffi-rs/issues/334 for this weird "padding" field.
+    @JvmField var padding: Long = 0
 
     class ByValue : RustBuffer(), Structure.ByValue
 
@@ -37,10 +39,13 @@ open class RustBuffer : Structure() {
 // then we might as well copy it into a `RustBuffer`. But it's here for API
 // completeness.
 
-@Structure.FieldOrder("len", "data")
+@Structure.FieldOrder("len", "data", "padding", "padding2")
 open class ForeignBytes : Structure() {
     @JvmField var len: Int = 0
     @JvmField var data: Pointer? = null
+    // Ref https://github.com/mozilla/uniffi-rs/issues/334 for these weird "padding" fields.
+    @JvmField var padding: Long = 0
+    @JvmField var padding2: Int = 0
 
     class ByValue : ForeignBytes(), Structure.ByValue
 }

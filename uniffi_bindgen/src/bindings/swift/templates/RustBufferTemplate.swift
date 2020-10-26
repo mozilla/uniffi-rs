@@ -6,7 +6,8 @@ extension RustBuffer {
                 {{ ci.ffi_rustbuffer_from_bytes().name() }}(ForeignBytes(bufferPointer: ptr), err)
             }
         }
-        self.init(capacity: rbuf.capacity, len: rbuf.len, data: rbuf.data)
+        // Ref https://github.com/mozilla/uniffi-rs/issues/334 for the extra "padding" arg.
+        self.init(capacity: rbuf.capacity, len: rbuf.len, data: rbuf.data, padding: 0)
     }
 
     // Frees the buffer in place.
@@ -20,6 +21,7 @@ extension RustBuffer {
 
 extension ForeignBytes {
     init(bufferPointer: UnsafeBufferPointer<UInt8>) {
-        self.init(len: Int32(bufferPointer.count), data: bufferPointer.baseAddress)
+        // Ref https://github.com/mozilla/uniffi-rs/issues/334 for the extra "padding" args.
+        self.init(len: Int32(bufferPointer.count), data: bufferPointer.baseAddress, padding: 0, padding2: 0)
     }
 }
