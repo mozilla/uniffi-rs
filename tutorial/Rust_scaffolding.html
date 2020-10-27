@@ -164,12 +164,12 @@
 <p>Now we generate some Rust helper code to make the <code>add</code> method available to foreign-language bindings.</p>
 <p>First, add <code>uniffi</code> to your crate dependencies: it is the runtime support code that powers uniffi's serialization of data types across languages:</p>
 <pre><code class="language-toml">[dependencies]
-uniffi = &quot;0.3&quot;
+uniffi = &quot;0.4&quot;
 </code></pre>
 <p>Important note: the <code>uniffi</code> version must be the same as the <code>uniffi-bindgen</code> command-line tool installed on your system.</p>
 <p>Then let's add <code>uniffi_build</code> to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C-compatible FFI layer.</p>
 <pre><code class="language-toml">[build-dependencies]
-uniffi_build = &quot;0.3&quot;
+uniffi_build = &quot;0.4&quot;
 </code></pre>
 <p>Then create a <code>build.rs</code> file next to <code>Cargo.toml</code> that will use <code>uniffi_build</code>:</p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
