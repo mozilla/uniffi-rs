@@ -3,13 +3,13 @@ extern "C" {
 struct {{ context.ffi_rustbuffer_type() }} {
   int32_t mCapacity;
   int32_t mLen;
-  uint8_t *mData;
+  uint8_t* mData;
   uint64_t mPadding;
 };
 
 struct {{ context.ffi_foreignbytes_type() }} {
   int32_t mLen;
-  const uint8_t *mData;
+  const uint8_t* mData;
   int64_t mPadding;
   int32_t mPadding2;
 };
