@@ -64,7 +64,7 @@ class RustBufferBuilder() {
 
     init {
         val rbuf = RustBuffer.alloc(16) // Totally arbitrary initial size
-        rbuf.len = 0
+        rbuf.writeField("len", 0)
         this.setRustBuffer(rbuf)
     }
 
@@ -78,7 +78,10 @@ class RustBufferBuilder() {
 
     fun finalize() : RustBuffer.ByValue {
         val rbuf = this.rbuf
-        rbuf.len = this.bbuf!!.position()
+        // Ensure that the JVM-level field is written through to native memory
+        // before turning the buffer, in case its recipient uses it in a context
+        // JNA doesn't apply its automatic synchronization logic.
+        rbuf.writeField("len", this.bbuf!!.position())
         this.setRustBuffer(RustBuffer.ByValue())
         return rbuf
     }
@@ -95,7 +98,7 @@ class RustBufferBuilder() {
         // here, trying the write and growing if it throws a `BufferOverflowException`.
         // Benchmarking needed.
         if (this.bbuf!!.position() + size > this.rbuf.capacity) {
-            this.rbuf.len = this.bbuf!!.position()
+            rbuf.writeField("len", this.bbuf!!.position())
             this.setRustBuffer(RustBuffer.reserve(this.rbuf, size))
         }
         write(this.bbuf!!)
