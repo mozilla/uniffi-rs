@@ -58,6 +58,9 @@ pub struct RustBuffer {
     len: i32,
     /// The pointer to the allocated buffer of the `Vec<u8>`.
     data: *mut u8,
+    /// This forces the struct to be larger than 16 bytes, as a temporary workaround for a bug in JNA.
+    /// See https://github.com/mozilla/uniffi-rs/issues/334 for details.
+    padding: i64,
 }
 
 impl RustBuffer {
@@ -67,6 +70,23 @@ impl RustBuffer {
     /// arrange to call `destroy` or `destroy_into_vec` when finished with it.
     pub fn new() -> Self {
         Self::from_vec(Vec::new())
+    }
+
+    /// Creates a `RustBuffer` from its constituent fields.
+    ///
+    /// This is intended mainly as an internal convenience function and should not
+    /// be used outside of this module.
+    ///
+    /// # Safety
+    ///
+    /// You must ensure that the raw parts uphold the documented invariants of this class.
+    pub unsafe fn from_raw_parts(data: *mut u8, len: i32, capacity: i32) -> Self {
+        Self {
+            capacity,
+            len,
+            data,
+            padding: 0,
+        }
     }
 
     /// Get the current length of the buffer, as a `usize`.
@@ -119,11 +139,7 @@ impl RustBuffer {
         let capacity = i32::try_from(v.capacity()).expect("buffer capacity cannot fit into a i32.");
         let len = i32::try_from(v.len()).expect("buffer length cannot fit into a i32.");
         let mut v = std::mem::ManuallyDrop::new(v);
-        Self {
-            capacity,
-            len,
-            data: v.as_mut_ptr(),
-        }
+        unsafe { Self::from_raw_parts(v.as_mut_ptr(), len, capacity) }
     }
 
     /// Converts this `RustBuffer` back into an owned `Vec<u8>`.
@@ -177,11 +193,7 @@ impl Default for RustBuffer {
 unsafe impl crate::deps::ffi_support::IntoFfi for RustBuffer {
     type Value = Self;
     fn ffi_default() -> Self {
-        Self {
-            capacity: 0,
-            len: 0,
-            data: std::ptr::null_mut(),
-        }
+        unsafe { Self::from_raw_parts(std::ptr::null_mut(), 0, 0) }
     }
     fn into_ffi_value(self) -> Self::Value {
         self
@@ -220,11 +232,7 @@ mod test {
     #[test]
     fn test_rustbuffer_null_means_empty() {
         // This is how foreign-language code might cheaply indicate an empty buffer.
-        let rbuf = RustBuffer {
-            capacity: 0,
-            len: 0,
-            data: std::ptr::null_mut(),
-        };
+        let rbuf = unsafe { RustBuffer::from_raw_parts(std::ptr::null_mut(), 0, 0) };
         assert_eq!(rbuf.destroy_into_vec().as_slice(), &[0u8; 0]);
     }
 
@@ -232,22 +240,14 @@ mod test {
     #[should_panic]
     fn test_rustbuffer_null_must_have_no_capacity() {
         // We guard against foreign-language code providing this kind of invalid struct.
-        let rbuf = RustBuffer {
-            capacity: 1,
-            len: 0,
-            data: std::ptr::null_mut(),
-        };
+        let rbuf = unsafe { RustBuffer::from_raw_parts(std::ptr::null_mut(), 0, 1) };
         rbuf.destroy_into_vec();
     }
     #[test]
     #[should_panic]
     fn test_rustbuffer_null_must_have_zero_length() {
         // We guard against foreign-language code providing this kind of invalid struct.
-        let rbuf = RustBuffer {
-            capacity: 0,
-            len: 12,
-            data: std::ptr::null_mut(),
-        };
+        let rbuf = unsafe { RustBuffer::from_raw_parts(std::ptr::null_mut(), 12, 0) };
         rbuf.destroy_into_vec();
     }
 
@@ -256,11 +256,7 @@ mod test {
     fn test_rustbuffer_provided_capacity_must_be_non_negative() {
         // We guard against foreign-language code providing this kind of invalid struct.
         let mut v = vec![0u8, 1, 2];
-        let rbuf = RustBuffer {
-            capacity: -7,
-            len: 3,
-            data: v.as_mut_ptr(),
-        };
+        let rbuf = unsafe { RustBuffer::from_raw_parts(v.as_mut_ptr(), 3, -7) };
         rbuf.destroy_into_vec();
     }
 
@@ -269,11 +265,7 @@ mod test {
     fn test_rustbuffer_provided_len_must_be_non_negative() {
         // We guard against foreign-language code providing this kind of invalid struct.
         let mut v = vec![0u8, 1, 2];
-        let rbuf = RustBuffer {
-            capacity: 3,
-            len: -1,
-            data: v.as_mut_ptr(),
-        };
+        let rbuf = unsafe { RustBuffer::from_raw_parts(v.as_mut_ptr(), -1, 3) };
         rbuf.destroy_into_vec();
     }
 
@@ -282,11 +274,7 @@ mod test {
     fn test_rustbuffer_provided_len_must_not_exceed_capacity() {
         // We guard against foreign-language code providing this kind of invalid struct.
         let mut v = vec![0u8, 1, 2];
-        let rbuf = RustBuffer {
-            capacity: 2,
-            len: 3,
-            data: v.as_mut_ptr(),
-        };
+        let rbuf = unsafe { RustBuffer::from_raw_parts(v.as_mut_ptr(), 3, 2) };
         rbuf.destroy_into_vec();
     }
 

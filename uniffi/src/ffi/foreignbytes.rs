@@ -31,9 +31,30 @@ pub struct ForeignBytes {
     len: i32,
     /// The pointer to the foreign-owned bytes.
     data: *const u8,
+    /// This forces the struct to be larger than 16 bytes, as a temporary workaround for a bug in JNA.
+    /// See https://github.com/mozilla/uniffi-rs/issues/334 for details.
+    padding: i64,
+    padding2: i32,
 }
 
 impl ForeignBytes {
+    /// Creates a `ForeignBytes` from its constituent fields.
+    ///
+    /// This is intended mainly as an internal convenience function and should not
+    /// be used outside of this module.
+    ///
+    /// # Safety
+    ///
+    /// You must ensure that the raw parts uphold the documented invariants of this class.
+    pub unsafe fn from_raw_parts(data: *const u8, len: i32) -> Self {
+        Self {
+            len,
+            data,
+            padding: 0,
+            padding2: 0,
+        }
+    }
+
     /// View the foreign bytes as a `&[u8]`.
     ///
     /// # Panics
@@ -72,10 +93,7 @@ mod test {
     #[test]
     fn test_foreignbytes_access() {
         let v = vec![1u8, 2, 3];
-        let fbuf = ForeignBytes {
-            len: 3,
-            data: v.as_ptr(),
-        };
+        let fbuf = unsafe { ForeignBytes::from_raw_parts(v.as_ptr(), 3) };
         assert_eq!(fbuf.len(), 3);
         assert_eq!(fbuf.as_slice(), &[1u8, 2, 3]);
     }
@@ -83,30 +101,21 @@ mod test {
     #[test]
     fn test_foreignbytes_empty() {
         let v = Vec::<u8>::new();
-        let fbuf = ForeignBytes {
-            len: 0,
-            data: v.as_ptr(),
-        };
+        let fbuf = unsafe { ForeignBytes::from_raw_parts(v.as_ptr(), 0) };
         assert_eq!(fbuf.len(), 0);
         assert_eq!(fbuf.as_slice(), &[0u8; 0]);
     }
 
     #[test]
     fn test_foreignbytes_null_means_empty() {
-        let fbuf = ForeignBytes {
-            len: 0,
-            data: std::ptr::null_mut(),
-        };
+        let fbuf = unsafe { ForeignBytes::from_raw_parts(std::ptr::null_mut(), 0) };
         assert_eq!(fbuf.as_slice(), &[0u8; 0]);
     }
 
     #[test]
     #[should_panic]
     fn test_foreignbytes_null_must_have_zero_length() {
-        let fbuf = ForeignBytes {
-            len: 12,
-            data: std::ptr::null_mut(),
-        };
+        let fbuf = unsafe { ForeignBytes::from_raw_parts(std::ptr::null_mut(), 12) };
         fbuf.as_slice();
     }
 
@@ -114,10 +123,7 @@ mod test {
     #[should_panic]
     fn test_foreignbytes_provided_len_must_be_non_negative() {
         let v = vec![0u8, 1, 2];
-        let fbuf = ForeignBytes {
-            len: -1,
-            data: v.as_ptr(),
-        };
+        let fbuf = unsafe { ForeignBytes::from_raw_parts(v.as_ptr(), -1) };
         fbuf.as_slice();
     }
 }

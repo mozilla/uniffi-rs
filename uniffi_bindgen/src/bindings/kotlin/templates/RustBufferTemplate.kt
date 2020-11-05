@@ -2,11 +2,13 @@
 // A rust-owned buffer is represented by its capacity, its current length, and a
 // pointer to the underlying data.
 
-@Structure.FieldOrder("capacity", "len", "data")
+@Structure.FieldOrder("capacity", "len", "data", "padding")
 open class RustBuffer : Structure() {
     @JvmField var capacity: Int = 0
     @JvmField var len: Int = 0
     @JvmField var data: Pointer? = null
+    // Ref https://github.com/mozilla/uniffi-rs/issues/334 for this weird "padding" field.
+    @JvmField var padding: Long = 0
 
     class ByValue : RustBuffer(), Structure.ByValue
 
@@ -37,10 +39,13 @@ open class RustBuffer : Structure() {
 // then we might as well copy it into a `RustBuffer`. But it's here for API
 // completeness.
 
-@Structure.FieldOrder("len", "data")
+@Structure.FieldOrder("len", "data", "padding", "padding2")
 open class ForeignBytes : Structure() {
     @JvmField var len: Int = 0
     @JvmField var data: Pointer? = null
+    // Ref https://github.com/mozilla/uniffi-rs/issues/334 for these weird "padding" fields.
+    @JvmField var padding: Long = 0
+    @JvmField var padding2: Int = 0
 
     class ByValue : ForeignBytes(), Structure.ByValue
 }
@@ -59,7 +64,7 @@ class RustBufferBuilder() {
 
     init {
         val rbuf = RustBuffer.alloc(16) // Totally arbitrary initial size
-        rbuf.len = 0
+        rbuf.writeField("len", 0)
         this.setRustBuffer(rbuf)
     }
 
@@ -73,7 +78,10 @@ class RustBufferBuilder() {
 
     fun finalize() : RustBuffer.ByValue {
         val rbuf = this.rbuf
-        rbuf.len = this.bbuf!!.position()
+        // Ensure that the JVM-level field is written through to native memory
+        // before turning the buffer, in case its recipient uses it in a context
+        // JNA doesn't apply its automatic synchronization logic.
+        rbuf.writeField("len", this.bbuf!!.position())
         this.setRustBuffer(RustBuffer.ByValue())
         return rbuf
     }
@@ -90,7 +98,7 @@ class RustBufferBuilder() {
         // here, trying the write and growing if it throws a `BufferOverflowException`.
         // Benchmarking needed.
         if (this.bbuf!!.position() + size > this.rbuf.capacity) {
-            this.rbuf.len = this.bbuf!!.position()
+            rbuf.writeField("len", this.bbuf!!.position())
             this.setRustBuffer(RustBuffer.reserve(this.rbuf, size))
         }
         write(this.bbuf!!)

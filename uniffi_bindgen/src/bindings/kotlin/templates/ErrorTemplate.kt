@@ -113,7 +113,7 @@ internal open class {{e.name()}} : RustError() {
             {% for value in e.values() -%}
             {{loop.index}} -> return {{e.name()}}Exception.{{value}}(message) as E
             {% endfor -%}
-            else -> throw RuntimeException("Invalid error received...")
+            else -> throw RuntimeException("Invalid error received: $code, $message")
         }
     }
 }
