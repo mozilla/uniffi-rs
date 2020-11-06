@@ -18,8 +18,8 @@ path = "src/main.rs"
 cargo_metadata = "0.12"
 weedle = "0.11"
 anyhow = "1"
-askama = "0.10"
+askama = { version = "0.10", default-features = false, features = ["config"] }
 heck = "0.3"
-clap = "2"
+clap = { version = "2", default-features = false }
 serde = "1"
 toml = "0.5"
