@@ -1170,11 +1170,14 @@ fn convert_default_value(
             radix
         };
 
+        // Using `strip_prefix` would be better here, but that's not available in the version
+        // of Rust that is currently used in mozilla-central. Using `trim_start_matches` will
+        // *repeatedly* strip the given prefix, but that's fine because legit literals can't
+        // contain multiple instances of it anyway.
         let string = if string.starts_with('-') {
-            ("-".to_string() + string[1..].strip_prefix("0x").unwrap_or(&string[1..]))
-                .to_lowercase()
+            ("-".to_string() + string[1..].trim_start_matches("0x")).to_lowercase()
         } else {
-            string.strip_prefix("0x").unwrap_or(&string).to_lowercase()
+            string.trim_start_matches("0x").to_lowercase()
         };
 
         Ok(match type_ {
