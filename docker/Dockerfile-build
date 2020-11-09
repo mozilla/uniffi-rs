@@ -35,7 +35,9 @@ RUN sudo apt-get update -qq \
     && sudo apt-get clean
 
 RUN rustup update \
-    && rustup default stable
+    # This specific version of Rust is required for compatibility with mozilla-central
+    && rustup install 1.43.0 \
+    && rustup default 1.43.0
 
 RUN mkdir -p /tmp/setup-swift \
     && cd /tmp/setup-swift \

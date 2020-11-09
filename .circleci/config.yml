@@ -41,6 +41,9 @@ jobs:
     steps:
       - run: cat ~/.profile >> $BASH_ENV
       - run:
+          name: "Print the Rust version, to help with debugging"
+          command: rustc --version
+      - run:
           name: "Set RUSTFLAGS to fail the build if there are warnings"
           command: echo 'export RUSTFLAGS="-D warnings"' >> $BASH_ENV
       - checkout

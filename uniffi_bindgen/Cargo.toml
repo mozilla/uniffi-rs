@@ -15,7 +15,7 @@ name = "uniffi-bindgen"
 path = "src/main.rs"
 
 [dependencies]
-cargo_metadata = "0.12"
+cargo_metadata = "0.11"
 weedle = "0.11"
 anyhow = "1"
 askama = { version = "0.10", default-features = false, features = ["config"] }
