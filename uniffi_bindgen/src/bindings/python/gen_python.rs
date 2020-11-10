@@ -62,7 +62,7 @@ mod filters {
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::RustError => "ctypes.POINTER(RustError)".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
-            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not unimplemented"),
+            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
         })
     }
 

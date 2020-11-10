@@ -29,8 +29,8 @@ inline fun <T : FFIObject, R> T.use(block: (T) -> R) =
         }
     }
 
-typealias Handle = Long
-class ConcurrentHandleMap<T>(
+internal typealias Handle = Long
+internal class ConcurrentHandleMap<T>(
     private val leftMap: MutableMap<Handle, T> = mutableMapOf(),
     private val rightMap: MutableMap<T, Handle> = mutableMapOf()
 ) {

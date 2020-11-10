@@ -335,7 +335,7 @@ mod filters {
             FFIType::RustBuffer => context.ffi_rustbuffer_type(),
             FFIType::RustError => context.ffi_rusterror_type(),
             FFIType::ForeignBytes => context.ffi_foreignbytes_type(),
-            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not unimplemented"),
+            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
         })
     }
 

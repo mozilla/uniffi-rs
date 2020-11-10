@@ -47,27 +47,27 @@ impl {{ trait_name }} for {{ trait_impl }} {
 
     {#- Packing args into a RustBuffer #}
         {% if meth.arguments().len() == 0 -%}
-        let in_rbuf = uniffi::RustBuffer::new();
+        let args_rbuf = uniffi::RustBuffer::new();
         {% else -%}
-        let mut in_buf = Vec::new();
+        let mut args_buf = Vec::new();
         {% for arg in meth.arguments() -%}
-            {{ arg.name()|write_rs("&mut in_buf", arg.type_()) -}};
+            {{ arg.name()|write_rs("&mut args_buf", arg.type_()) -}};
         {% endfor -%}
-        let in_rbuf = uniffi::RustBuffer::from_vec(in_buf);
+        let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
         {% endif -%}
 
     {#- Calling into foreign code. #}
-        let _out_rbuf = unsafe { callback(self.handle, {{ loop.index }}, in_rbuf) };
+        let ret_rbuf = unsafe { callback(self.handle, {{ loop.index }}, args_rbuf) };
 
     {#- Unpacking the RustBuffer to return to Rust #}
         {% match meth.return_type() -%}
         {% when Some with (return_type) -%}
-        let vec = _out_rbuf.destroy_into_vec();
-        let mut out_buf = vec.as_slice();
-        let rval = {{ "&mut out_buf"|read_rs(return_type) }};
+        let vec = ret_rbuf.destroy_into_vec();
+        let mut ret_buf = vec.as_slice();
+        let rval = {{ "&mut ret_buf"|read_rs(return_type) }};
         rval
         {%- else -%}
-        uniffi::RustBuffer::destroy(_out_rbuf);
+        uniffi::RustBuffer::destroy(ret_rbuf);
         {%- endmatch %}
     }
     {%- endfor %}

@@ -159,10 +159,7 @@ impl<'ci> ComponentInterface {
     }
 
     /// Get an Callback interface definition by name, or None if no such interface is defined.
-    pub fn get_foreign_callback_interface_definition(
-        &self,
-        name: &str,
-    ) -> Option<&CallbackInterface> {
+    pub fn get_callback_interface_definition(&self, name: &str) -> Option<&CallbackInterface> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
         self.callback_interfaces.iter().find(|o| o.name == name)
     }
@@ -1121,10 +1118,6 @@ impl CallbackInterface {
             type_: FFIType::ForeignCallback,
         }];
         self.ffi_init_callback.return_type = None;
-
-        // for meth in self.methods.iter_mut() {
-        //     meth.derive_ffi_func(ci_prefix, &self.name)?
-        // }
         Ok(())
     }
 }
