@@ -9,6 +9,7 @@ const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift", "gecko_js"];
 fn main() -> Result<()> {
     let matches = clap::App::new("uniffi-bindgen")
         .about("Scaffolding and bindings generator for Rust")
+        .version(clap::crate_version!())
         .subcommand(
             clap::SubCommand::with_name("generate")
                 .about("Generate foreign language bindings")
