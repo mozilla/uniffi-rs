@@ -29,7 +29,7 @@ namespace {{ context.namespace()|class_name_webidl(context) }} {
   {%- if func.throws().is_some() %}
   [Throws]
   {% endif %}
-  {%- match func.webidl_return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %} {{ func.name()|fn_name_webidl }}(
+  {%- match func.webidl_return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %}> {{ func.name()|fn_name_webidl }}(
     {%- for arg in func.arguments() %}
     {% if arg.optional() -%}optional{%- else -%}{%- endif %} {{ arg.webidl_type()|type_webidl(context) }} {{ arg.name() }}
     {%- match arg.webidl_default_value() %}
@@ -66,7 +66,7 @@ interface {{ obj.name()|class_name_webidl(context)  }} {
   {%- if meth.throws().is_some() %}
   [Throws]
   {% endif %}
-  {%- match meth.webidl_return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %} {{ meth.name()|fn_name_webidl }}(
+  Promise<{%- match meth.webidl_return_type() -%}{%- when Some with (type_) %}{{ type_|type_webidl(context) }}{% when None %}void{% endmatch %}> {{ meth.name()|fn_name_webidl }}(
       {%- for arg in meth.arguments() %}
       {% if arg.optional() -%}optional{%- else -%}{%- endif %} {{ arg.webidl_type()|type_webidl(context) }} {{ arg.name() }}
       {%- match arg.webidl_default_value() %}

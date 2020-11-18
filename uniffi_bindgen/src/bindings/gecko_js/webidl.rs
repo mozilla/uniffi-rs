@@ -279,7 +279,7 @@ impl MethodExt for Method {
             .filter(|type_| type_.needs_out_param())
         {
             // ...But they can take out params, since they return values.
-            result.push(CPPArgument::Out(type_));
+            //result.push(CPPArgument::Out(type_));
         }
         if self.throws().is_some() {
             // ...And they can throw.
@@ -403,11 +403,13 @@ pub enum ReturnBy {
 
 impl ReturnBy {
     fn from_return_type(type_: WebIDLType) -> Self {
-        if type_.needs_out_param() {
-            ReturnBy::OutParam("aRetVal", type_)
-        } else {
-            ReturnBy::Value(type_)
-        }
+        // if type_.needs_out_param() {
+        //     ReturnBy::OutParam("aRetVal", type_)
+        // } else {
+        //     ReturnBy::Value(type_)
+        // }
+        ReturnBy::Value(type_)
+
     }
 }
 

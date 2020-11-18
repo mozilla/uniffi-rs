@@ -5,18 +5,25 @@
 
 #include "mozilla/dom/{{ obj.name()|header_name_cpp(context) }}.h"
 #include "mozilla/dom/{{ context.namespace()|header_name_cpp(context) }}Shared.h"
+#include "mozilla/dom/Promise.h"
+#include "mozilla/MozPromise.h"
+#include "nsISerialEventTarget.h"
+#include "MainThreadUtils.h"
+#include "nsAppRunner.h"
 
 namespace mozilla {
-namespace dom {
+  namespace dom {
 
-// Cycle collection boilerplate for our interface implementation. `mGlobal` is
-// the only member that needs to be cycle-collected; if we ever add any JS
-// object members or other interfaces to the class, those should be collected,
-// too.
-NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE({{ obj.name()|class_name_cpp(context) }}, mGlobal)
-NS_IMPL_CYCLE_COLLECTING_ADDREF({{ obj.name()|class_name_cpp(context) }})
-NS_IMPL_CYCLE_COLLECTING_RELEASE({{ obj.name()|class_name_cpp(context) }})
-NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION({{ obj.name()|class_name_cpp(context) }})
+  // Cycle collection boilerplate for our interface implementation. `mGlobal` is
+  // the only member that needs to be cycle-collected; if we ever add any JS
+  // object members or other interfaces to the class, those should be collected,
+  // too.
+  NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(
+      {{obj.name() | class_name_cpp(context)}}, mGlobal)
+  NS_IMPL_CYCLE_COLLECTING_ADDREF({{obj.name() | class_name_cpp(context)}})
+  NS_IMPL_CYCLE_COLLECTING_RELEASE({{obj.name() | class_name_cpp(context)}})
+  NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION({{obj.name() |
+                                            class_name_cpp(context)}})
   NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
   NS_INTERFACE_MAP_ENTRY(nsISupports)
 NS_INTERFACE_MAP_END
@@ -37,6 +44,16 @@ JSObject* {{ obj.name()|class_name_cpp(context) }}::WrapObject(
   JS::Handle<JSObject*> aGivenProto
 ) {
   return dom::{{ obj.name()|class_name_cpp(context) }}_Binding::Wrap(aCx, this, aGivenProto);
+}
+
+using nimbus_1725_MozPromise = MozPromise < {{context.ffi_rustbuffer_type()}}, {{context.ffi_rusterror_type()}}, false >;
+
+RefPtr<nsISerialEventTarget> {{ obj.name()|class_name_cpp(context) }}::GetBackgroundTarget() {
+  if (!mBackgroundET) {
+    MOZ_ALWAYS_SUCCEEDS(NS_CreateBackgroundTaskQueue(
+      "SystemInfoThread", getter_AddRefs(mBackgroundET)));
+  }
+  return mBackgroundET;
 }
 
 {%- for cons in obj.constructors() %}
@@ -65,7 +82,7 @@ already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> {{ obj.name()|class_n
 
 {%- for meth in obj.methods() %}
 
-{% match meth.cpp_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ obj.name()|class_name_cpp(context) }}::{{ meth.name()|fn_name_cpp }}(
+already_AddRefed<Promise> {{ obj.name()|class_name_cpp(context) }}::{{ meth.name()|fn_name_cpp }}(
   {%- for arg in meth.cpp_arguments() %}
   {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
   {%- endfor %}
@@ -75,4 +92,4 @@ already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> {{ obj.name()|class_n
 {%- endfor %}
 
 }  // namespace dom
-}  // namespace mozilla
+} // namespace mozilla
