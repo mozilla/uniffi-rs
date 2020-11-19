@@ -21,11 +21,13 @@
   mozilla::InvokeAsync(
       backgroundET, __func__,
       [mHandle=mHandle
-        {%- let args = func.arguments() -%}
-        {%- if !args.is_empty() %},{% endif -%}
-        {%- for arg in args %}
-        {{ arg.name() }}={{ arg.name()}}{%- if !loop.last %},{% endif -%}
-        {%- endfor %}]() {
+       {%- let args = func.arguments() -%}{%- if !args.is_empty() %},{% endif -%}
+
+       {%- for arg in args %}
+       {{ arg.name() }}={% match arg.type_() %}{% when Type::String %}PromiseFlatString({{ arg.name() }}){% else %}{{ arg.name() }}{% endmatch %}
+
+      {%- if !loop.last %},{% endif -%}
+      {%- endfor %}]() {
         if (XRE_IsParentProcess() && NS_IsMainThread()) {
           MOZ_CRASH("lambda called outside of parent process main thread");
         }
