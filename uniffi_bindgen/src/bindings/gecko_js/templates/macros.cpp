@@ -20,23 +20,25 @@
   RefPtr<nsISerialEventTarget> backgroundET = GetBackgroundTarget();
   mozilla::InvokeAsync(
       backgroundET, __func__,
-      [mHandle=mHandle]() { // XXX should be templ vars, not literal
+      [mHandle=mHandle
+        {%- let args = func.arguments() -%}
+        {%- if !args.is_empty() %},{% endif -%}
+        {%- for arg in args %}
+        {{ arg.name() }}={{ arg.name()}}{%- if !loop.last %},{% endif -%}
+        {%- endfor %}]() {
         if (XRE_IsParentProcess() && NS_IsMainThread()) {
           MOZ_CRASH("lambda called outside of parent process main thread");
-      }
+        }
 
       {{ context.ffi_rusterror_type() }} err = {0, nullptr};
-
       {% match func.ffi_func().return_type() %}
-      {% when Some with(type_) %}const {{ type_|type_ffi(context) }} loweredRetVal_ = {% else %}{% endmatch %}{{ func.ffi_func().name() }}(
+      {% when Some with(type_) %}const {{ type_|type_ffi(context) }} loweredRetVal_ =  {% else %}
+      {% endmatch %}{{ func.ffi_func().name() }}(
     {{ prefix }}
-    {%- let args = func.arguments() -%}
     {%- if !args.is_empty() %},{% endif -%}
     {%- for arg in args %}
     {{ arg.webidl_type()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
-    {%- endfor %}
-    , &err
-  );
+    {%- endfor %}, &err);
   {%- call _to_ffi_call_tail(context, func, "err", "loweredRetVal_") -%}
 {%- endmacro -%}
 
@@ -56,20 +58,19 @@
 
 {# /* Handles errors and lifts the return value from an FFI function. */ #}
 {%- macro _to_ffi_call_tail(context, func, err, result) %}
-  if ({{ err }}.mCode) {
-    {%- match func.cpp_throw_by() %}
-    {%- when ThrowBy::ErrorResult with (rv) %}
-    {# /* TODO: Improve error throwing. See https://github.com/mozilla/uniffi-rs/issues/295
-          for details. */ -#}
-    {{ rv }}.ThrowOperationError(nsDependentCString({{ err }}.mMessage));
-    return nimbus_1725_MozPromise::CreateAndReject(std::move(err), __func__);
-    {%- when ThrowBy::Assert %}
-    MOZ_ASSERT(false);
-    {%- endmatch %}
+    if ({{ err }}.mCode) {
+      {%- match func.cpp_throw_by() %}
+      {%- when ThrowBy::ErrorResult with (rv) %}
+      {# /* TODO: Improve error throwing. See https://github.com/mozilla/uniffi-rs/issues/295
+          for details. XXXdmose code below is different now that we're async */ -#}
+      return nimbus_1725_MozPromise::CreateAndReject(std::move({{ err }}), __func__);
+      {%- when ThrowBy::Assert %}
+      {%- endmatch %}
+    }
 
-    return nimbus_1725_MozPromise::CreateAndResolve(std::move(loweredRetVal_), __func__);
+    return nimbus_1725_MozPromise::CreateAndResolve(std::move({{ result }}), __func__);
   })->Then(GetCurrentSerialEventTarget(), __func__,
-    [promise]({{ context.ffi_rustbuffer_type() }} rustBuf) {
+    [promise]({% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi(context) }} {% else %}{% endmatch %} {{result}}) {
       /* resolve DOM promise */
 
       {%- match func.cpp_return_by() %}
@@ -77,8 +78,7 @@
       DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, name, context) }};
       MOZ_ASSERT(ok_);
       {%- when ReturnBy::Value with (type_) %}
-
-      { type_ | type_cpp(context) }} retVal_;
+      {{ type_|type_cpp(context) }} retVal_;
       DebugOnly<bool> ok_ = {{ type_|lift_cpp(result, "retVal_", context) }};
       MOZ_ASSERT(ok_);
       promise->MaybeResolve(retVal_);
