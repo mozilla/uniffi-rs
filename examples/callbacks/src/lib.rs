@@ -24,7 +24,7 @@ impl Telephone {
     }
 }
 
-trait RoundTripper {
+trait ForeignGetters {
     fn get_bool(&self, v: bool, arg2: bool) -> bool;
     fn get_string(&self, v: String, arg2: bool) -> String;
     fn get_option(&self, v: Option<String>, arg2: bool) -> Option<String>;
@@ -32,45 +32,45 @@ trait RoundTripper {
 }
 
 #[derive(Debug, Clone)]
-pub struct RoundTripperToRust;
+pub struct RustGetters;
 
-impl RoundTripperToRust {
+impl RustGetters {
     pub fn new() -> Self {
-        RoundTripperToRust
+        RustGetters
     }
-    fn get_bool(&self, callback: Box<dyn RoundTripper>, v: bool, arg2: bool) -> bool {
+    fn get_bool(&self, callback: Box<dyn ForeignGetters>, v: bool, arg2: bool) -> bool {
         callback.get_bool(v, arg2)
     }
-    fn get_string(&self, callback: Box<dyn RoundTripper>, v: String, arg2: bool) -> String {
+    fn get_string(&self, callback: Box<dyn ForeignGetters>, v: String, arg2: bool) -> String {
         callback.get_string(v, arg2)
     }
     fn get_option(
         &self,
-        callback: Box<dyn RoundTripper>,
+        callback: Box<dyn ForeignGetters>,
         v: Option<String>,
         arg2: bool,
     ) -> Option<String> {
         callback.get_option(v, arg2)
     }
-    fn get_list(&self, callback: Box<dyn RoundTripper>, v: Vec<i32>, arg2: bool) -> Vec<i32> {
+    fn get_list(&self, callback: Box<dyn ForeignGetters>, v: Vec<i32>, arg2: bool) -> Vec<i32> {
         callback.get_list(v, arg2)
     }
 }
 
 // Use Send if we want to store the callback in an exposed object.
-trait Stringifier: Send + std::fmt::Debug {
+trait StoredForeignStringifier: Send + std::fmt::Debug {
     fn from_simple_type(&self, value: i32) -> String;
     fn from_complex_type(&self, values: Option<Vec<Option<f64>>>) -> String;
 }
 
 #[derive(Debug)]
-pub struct StringUtil {
-    callback: Box<dyn Stringifier>,
+pub struct RustStringifier {
+    callback: Box<dyn StoredForeignStringifier>,
 }
 
-impl StringUtil {
-    fn new(callback: Box<dyn Stringifier>) -> Self {
-        StringUtil { callback }
+impl RustStringifier {
+    fn new(callback: Box<dyn StoredForeignStringifier>) -> Self {
+        RustStringifier { callback }
     }
 
     fn from_simple_type(&self, value: i32) -> String {

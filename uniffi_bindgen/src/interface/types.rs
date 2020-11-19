@@ -65,7 +65,7 @@ pub enum FFIType {
     /// passing it to the appropriate `string_free` FFI function.
     RustError,
     /// A pointer to a single function in to the foreign language.
-    /// Typically, this isn't the callback that's exposed to foreign languages
+    /// This function contains all the machinery to make callbacks work on the foreign language side.
     ForeignCallback,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.

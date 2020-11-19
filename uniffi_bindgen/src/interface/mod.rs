@@ -158,7 +158,7 @@ impl<'ci> ComponentInterface {
         self.callback_interfaces.to_vec()
     }
 
-    /// Get an Callback interface definition by name, or None if no such interface is defined.
+    /// Get a Callback interface definition by name, or None if no such interface is defined.
     pub fn get_callback_interface_definition(&self, name: &str) -> Option<&CallbackInterface> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
         self.callback_interfaces.iter().find(|o| o.name == name)
@@ -1138,10 +1138,10 @@ impl Hash for CallbackInterface {
 impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<CallbackInterface> {
         if self.attributes.is_some() {
-            bail!("interface attributes are not supported yet");
+            bail!("callback interface attributes are not supported yet");
         }
         if self.inheritance.is_some() {
-            bail!("interface inheritence is not supported");
+            bail!("callback interface inheritence is not supported");
         }
         let mut object = CallbackInterface::new(self.identifier.0.to_string());
         for member in &self.members.body {

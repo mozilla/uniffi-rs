@@ -82,9 +82,10 @@ mod filters {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         Ok(match type_ {
-            Type::CallbackInterface(type_name) => {
-                format!("<{}Proxy as uniffi::ViaFfi>::lower({})", type_name, nm,)
-            }
+            Type::CallbackInterface(type_name) => unimplemented!(
+                "uniffi::ViaFfi::lower is not supported for callback interfaces ({})",
+                type_name
+            ),
             _ => format!("<{} as uniffi::ViaFfi>::lower({})", type_rs(type_)?, nm),
         })
     }
@@ -113,9 +114,9 @@ mod filters {
         type_: &Type,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::CallbackInterface(type_name) => format!(
-                "Box::new(<{}Proxy as uniffi::ViaFfi>::write(&{}, {})",
-                type_name, nm, target,
+            Type::CallbackInterface(type_name) => unimplemented!(
+                "uniffi::ViaFfi::write is not supported for callback interfaces ({})",
+                type_name
             ),
             _ => format!(
                 "<{} as uniffi::ViaFfi>::write(&{}, {})",
@@ -129,9 +130,9 @@ mod filters {
     /// Get a Rust expression for writing a value into a byte buffer.
     pub fn read_rs(target: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::CallbackInterface(type_name) => format!(
-                "Box::new(<{}Proxy as uniffi::ViaFfi>::try_read({}).unwrap()",
-                type_name, target,
+            Type::CallbackInterface(type_name) => unimplemented!(
+                "uniffi::ViaFfi::try_read is not supported for callback interfaces ({})",
+                type_name
             ),
             _ => format!(
                 "<{} as uniffi::ViaFfi>::try_read({}).unwrap()",

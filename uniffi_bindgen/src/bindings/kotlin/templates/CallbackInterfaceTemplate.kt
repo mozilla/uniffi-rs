@@ -18,7 +18,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
     override fun invoke(handle: Long, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue {
         return {{ callback_internals }}.handleMap.callWithResult(handle) { cb -> 
             when (method) {
-                0 -> {{ callback_internals }}.drop(handle)
+                IDX_CALLBACK_FREE -> {{ callback_internals }}.drop(handle)
                 {% for meth in obj.methods() -%}
                 {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt -%}
                 {{ loop.index }} -> this.{{ method_name }}(cb, args)
@@ -65,11 +65,11 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
 }
 
 internal object {{ callback_internals }}: CallbackInternals<{{ type_name }}>(
-    {{ callback_interface_impl }}()
+    foreignCallback = {{ callback_interface_impl }}()
 ) {
     override fun register(lib: _UniFFILib) {
         rustCall(InternalError.ByReference()) { err ->
-            lib.{{ obj.ffi_init_callback().name() }}(foreignCallback, err)
+            lib.{{ obj.ffi_init_callback().name() }}(this.foreignCallback, err)
         }
     }
 }
