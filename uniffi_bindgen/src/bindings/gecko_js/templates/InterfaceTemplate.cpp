@@ -46,11 +46,6 @@ JSObject* {{ obj.name()|class_name_cpp(context) }}::WrapObject(
   return dom::{{ obj.name()|class_name_cpp(context) }}_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-using nimbus_1725_MozPromise = MozPromise < {{context.ffi_rustbuffer_type()}}, {{context.ffi_rusterror_type()}}, false >;
-
-using nimbus_1725_MozPromiseVoid = MozPromise < void, {{context.ffi_rusterror_type()}}, false >;
-
-
 RefPtr<nsISerialEventTarget> {{ obj.name()|class_name_cpp(context) }}::GetBackgroundTarget() {
   if (!mBackgroundET) {
     MOZ_ALWAYS_SUCCEEDS(NS_CreateBackgroundTaskQueue(

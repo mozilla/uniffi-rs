@@ -30,15 +30,15 @@
           MOZ_CRASH("lambda called outside of parent process main thread");
         }
 
-      {{ context.ffi_rusterror_type() }} err = {0, nullptr};
-      {% match func.ffi_func().return_type() %}
-      {% when Some with(type_) %}const {{ type_|type_ffi(context) }} loweredRetVal_ =  {% else %}
-      {% endmatch %}{{ func.ffi_func().name() }}(
-    {{ prefix }}
-    {%- if !args.is_empty() %},{% endif -%}
-    {%- for arg in args %}
-    {{ arg.webidl_type()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
-    {%- endfor %}, &err);
+        {{ context.ffi_rusterror_type() }} err = {0, nullptr};
+        const{% match func.ffi_func().return_type() %}
+        {% when Some with(type_) %}{{ type_|type_ffi(context) }} loweredRetVal_ = {% else %}int8_t loweredRetVal_ = 0; // MozPromise doesn't support void, so we use a dummy boolean (sigh)
+        {% endmatch %}{{ func.ffi_func().name() }}(
+          {{ prefix }}
+          {%- if !args.is_empty() %},{% endif -%}
+          {%- for arg in args %}
+          {{ arg.webidl_type()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
+          {%- endfor %}, &err);
   {%- call _to_ffi_call_tail(context, func, "err", "loweredRetVal_") -%}
 {%- endmacro -%}
 
@@ -63,14 +63,14 @@
       {%- when ThrowBy::ErrorResult with (rv) %}
       {# /* TODO: Improve error throwing. See https://github.com/mozilla/uniffi-rs/issues/295
           for details. XXXdmose code below is different now that we're async */ -#}
-      return nimbus_1725_MozPromise::CreateAndReject(std::move({{ err }}), __func__);
+      return MozPromise< {% match func.ffi_func().return_type() %} {% when Some with (type_) %}{{ type_|type_ffi(context) }} {% else %} int8_t{% endmatch %}, {{ context.ffi_rusterror_type() }}, false>::CreateAndReject(std::move({{ err }}), __func__);
       {%- when ThrowBy::Assert %}
       {%- endmatch %}
     }
 
-    return nimbus_1725_MozPromise::CreateAndResolve(std::move({{ result }}), __func__);
+    return MozPromise<{% match func.ffi_func().return_type() %}{% when Some with (type_) %}{{ type_|type_ffi(context) }} {% else %}int8_t{% endmatch %}, {{ context.ffi_rusterror_type() }}, false>::CreateAndResolve(std::move({{ result }}), __func__);
   })->Then(GetCurrentSerialEventTarget(), __func__,
-    [promise]({% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi(context) }} {% else %}{% endmatch %} {{result}}) {
+    [promise]({% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi(context) }} {% else %}const int8_t{% endmatch %} {{result}}) {
       /* resolve DOM promise */
 
       {%- match func.cpp_return_by() %}
@@ -83,7 +83,7 @@
       MOZ_ASSERT(ok_);
       promise->MaybeResolve(retVal_);
       {%- when ReturnBy::Void %}
-      promise->MaybeResolve(void);
+      promise->MaybeResolveWithUndefined();
       {%- endmatch %}
     },
     [promise]({{ context.ffi_rusterror_type() }} err) {
