@@ -1,0 +1,18 @@
+[package]
+name = "i356-enum-without-int-helpers"
+edition = "2018"
+version = "0.5.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+name = "uniffi_regression_test_i356"
+
+[dependencies]
+uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+
+[build-dependencies]
+uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}

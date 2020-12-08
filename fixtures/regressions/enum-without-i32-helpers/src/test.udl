@@ -1,0 +1,15 @@
+// We define an enum, and do not use the i32 datatype.
+// This should compile and run fine, but in https://github.com/mozilla/uniffi-rs/issues/356
+// we were accidentally assuming the presence of i32 datatype helpers in the generated code.
+//
+// Note that one of the important properties of this file is what it *doesn't* do,
+// i.e. that it doesn't directly use any integer types.
+
+enum Which {
+  "Yeah",
+  "Nah"
+};
+
+namespace regression_test_i356 {
+  Which which(boolean arg);
+};
