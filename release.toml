@@ -1,0 +1,9 @@
+tag-name = "v{{version}}"
+no-dev-version = true
+consolidate-commits = true
+
+# Our branching/tagging setup isn't supported by the tool just yet.
+# It wants to do one tag per crate, whereas we want a single unified tag.
+# So we have to tag manually for now.
+disable-tag = true
+disable-push = true
