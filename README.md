@@ -171,7 +171,7 @@ It's not (yet) quite an ideal fit for our workflow, but it helps! Steps:
     * This is a limitation of using `cargo release` in a workspace,
       ref [sunng87/cargo-release#222](https://github.com/sunng87/cargo-release/issues/222)
 5. Tag the release commit in github.
-    * `git tag v0.6.0`
-    * `git push origin v0.6.0`
+    * `git tag vX.Y.Z`
+    * `git push origin vX.Y.Z`
 6. Push your branch, and make a PR to request it be merged to the main branch.
     * `git push origin`
