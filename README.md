@@ -153,3 +153,26 @@ a suitable format for distribution (e.g. a `.jar` or android package for Kotlin)
 
 ## Code of Conduct
 Please check the project's [code of conduct](./CODE_OF_CONDUCT.md).
+
+## Release Process
+
+We use [cargo-release](https://crates.io/crates/cargo-release) to simplify the release process.
+It's not (yet) quite an ideal fit for our workflow, but it helps! Steps:
+
+1. Start a new branch for the release. We typically use a single branch for all point releases,
+   so it should be named something like `release-v0.6.x`:
+    * `git checkout -b release-v{MAJOR}.{MINOR}.x`
+    * `git push -u origin release-v{MAJOR}.{MINOR}.x`
+2. Run `cargo release --dry-run -vv {MAJOR}.{MINOR}.{PATCH}` and check that the things
+   it is proposing to do seem reasonable.
+3. Run `cargo release {MAJOR}.{MINOR}.{PATCH}` to bump version numbers and
+   publish the release to crates.io.
+4. Run `git commit --amend` to fix up the version number in the commit message.
+    * Manually replace `{{version}}` with `v{MAJOR}.{MINOR}.{PATCH}`.
+    * This is a limitation of using `cargo release` in a workspace,
+      ref [sunng87/cargo-release#222](https://github.com/sunng87/cargo-release/issues/222)
+5. Tag the release commit in github.
+    * `git tag v{MAJOR}.{MINOR}.{PATCH}`
+    * `git push origin v{MAJOR}.{MINOR}.{PATCH}`
+6. Push your branch, and make a PR to request it be merged to the main branch.
+    * `git push origin`
