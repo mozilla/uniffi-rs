@@ -331,6 +331,7 @@ mod filters {
             FFIType::UInt64 => "uint64_t".into(),
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
+            FFIType::Pointer(_) => "void*".into(), // TODO: name the type
             FFIType::RustCString => "const char*".into(),
             FFIType::RustBuffer => context.ffi_rustbuffer_type(),
             FFIType::RustError => context.ffi_rusterror_type(),

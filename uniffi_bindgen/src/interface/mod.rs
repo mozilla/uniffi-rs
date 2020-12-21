@@ -710,6 +710,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
 ///
 /// In WebIDL these correspond to the `interface` keyword.
 ///
+/// TODO: these docs are wrong for raw pointer objects.
 /// At the FFI layer, objects are represented by an opaque integer handle and a set of functions
 /// a common prefix. The object's constuctors are functions that return new objects by handle,
 /// and its methods are functions that take a handle as first argument. The foreign language
@@ -755,8 +756,8 @@ impl Object {
     fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
         self.ffi_func_free.name = format!("ffi_{}_{}_object_free", ci_prefix, self.name);
         self.ffi_func_free.arguments = vec![FFIArgument {
-            name: "handle".to_string(),
-            type_: FFIType::UInt64,
+            name: "obj".to_string(),
+            type_: FFIType::Pointer(self.name.clone()),
         }];
         self.ffi_func_free.return_type = None;
         for cons in self.constructors.iter_mut() {
@@ -795,7 +796,9 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Constructor(t) => {
-                    object.constructors.push(t.convert(ci)?);
+                    let mut cons = t.convert(ci)?;
+                    cons.object_name.push_str(object.name.as_str());
+                    object.constructors.push(cons);
                 }
                 weedle::interface::InterfaceMember::Operation(t) => {
                     let mut method = t.convert(ci)?;
@@ -814,11 +817,13 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 
 // Represents a constructor for an object type.
 //
+// TODO: update handle docs for raw pointers.
 // In the FFI, this will be a function that returns a handle for an instance
 // of the corresponding object type.
 #[derive(Debug, Clone)]
 pub struct Constructor {
     name: String,
+    object_name: String,
     arguments: Vec<Argument>,
     ffi_func: FFIFunction,
     attributes: Attributes,
@@ -848,7 +853,7 @@ impl Constructor {
         self.ffi_func.name.push_str("_");
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(FFIArgument::from).collect();
-        self.ffi_func.return_type = Some(FFIType::UInt64);
+        self.ffi_func.return_type = Some(FFIType::Pointer(self.object_name.clone()));
         Ok(())
     }
 }
@@ -871,6 +876,7 @@ impl Default for Constructor {
     fn default() -> Self {
         Constructor {
             name: String::from("new"),
+            object_name: Default::default(),
             arguments: Vec::new(),
             ffi_func: Default::default(),
             attributes: Attributes(Vec::new()),
@@ -882,6 +888,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Constructor> {
         Ok(Constructor {
             name: String::from("new"), // TODO: get the name from an attribute maybe?
+            object_name: Default::default(),
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
             attributes: match &self.attributes {
@@ -894,6 +901,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 
 // Represents an instance method for an object type.
 //
+// TODO: update handle docs for raw pointers.
 // The in FFI, this will be a function whose first argument is a handle for an
 // instance of the corresponding object type.
 #[derive(Debug, Clone)]
@@ -925,7 +933,7 @@ impl Method {
 
     pub fn first_argument(&self) -> Argument {
         Argument {
-            name: "handle".to_string(),
+            name: "obj".to_string(),
             // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
             // is contained in the proper `TypeUniverse`, but this works for now.
             type_: Type::Object(self.object_name.clone()),

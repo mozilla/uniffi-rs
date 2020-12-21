@@ -2,16 +2,16 @@
 // This would be a good candidate for isolating in its own ffi-support lib.
 
 abstract class FFIObject(
-    private val handle: AtomicLong
+    private val pointer: AtomicReference<Pointer?>
 ) {
     open fun destroy() {
-        this.handle.set(0L)
+        this.pointer.set(null)
     }
 
-    internal inline fun <R> callWithHandle(block: (handle: Long) -> R) =
-        this.handle.get().let { handle -> 
-            if (handle != 0L) {
-                block(handle)
+    internal inline fun <R> callWithPointer(block: (pointer: Pointer) -> R) =
+        this.pointer.get().let { pointer ->
+            if (pointer != null) {
+                block(pointer)
             } else {
                 throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
             }

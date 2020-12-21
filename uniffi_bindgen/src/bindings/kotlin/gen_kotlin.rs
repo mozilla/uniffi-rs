@@ -102,6 +102,7 @@ mod filters {
             FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
             FFIType::Float32 => "Float".to_string(),
             FFIType::Float64 => "Double".to_string(),
+            FFIType::Pointer(_) => "Pointer".to_string(), // TODO: name the type?
             FFIType::RustCString => "Pointer".to_string(),
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
             FFIType::RustError => "RustError".to_string(),

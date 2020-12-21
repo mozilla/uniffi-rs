@@ -23,7 +23,7 @@ import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 {% include "RustBufferTemplate.kt" %}
 

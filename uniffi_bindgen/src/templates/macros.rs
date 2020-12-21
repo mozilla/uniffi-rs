@@ -38,12 +38,12 @@
 {% macro to_rs_constructor_call(obj, cons) %}
 {% match cons.throws() %}
 {% when Some with (e) %}
-UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_result(err, || -> Result<{{obj.name()}}, {{e}}> {
+uniffi::deps::ffi_support::call_with_result(err, || -> Result<{{ obj.name() }}, {{e}}> {
     let _retval = {{ obj.name() }}::{% call to_rs_call(cons) %}?;
     Ok(_retval)
 })
 {% else %}
-UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_output(err, || {
+uniffi::deps::ffi_support::call_with_output(err, || {
     {{ obj.name() }}::{% call to_rs_call(cons) %}
 })
 {% endmatch %}
@@ -52,12 +52,22 @@ UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_output(err, || {
 {% macro to_rs_method_call(obj, meth) %}
 {% match meth.throws() %}
 {% when Some with (e) %}
-UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_result_mut(err, {{ meth.first_argument().name() }}, |obj| -> Result<{% call return_type_func(meth) %}, {{e}}> {
+uniffi::deps::ffi_support::call_with_result(err, || -> Result<{% call return_type_func(meth) %}, {{e}}> {
+    // We're declaring the argument type as an `Option<Box<T>>` but the value is owned by the foreign code,
+    // we so don't want to drop the Box. Probably it would be better to encode this as a reference type.
+    let mut obj_box = std::mem::ManuallyDrop::new(obj.expect("Must receive a non-null object pointer"));
+    // TODO: terrifically unsafe to assume we can take a mutable reference here! Needs locks etc.
+    let obj = obj_box.as_mut();
     let _retval = {{ obj.name() }}::{%- call to_rs_call_with_prefix("obj", meth) -%}?;
     Ok({% call ret(meth) %})
 })
 {% else %}
-UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_output_mut(err, {{ meth.first_argument().name() }}, |obj| {
+uniffi::deps::ffi_support::call_with_output(err, || {
+    // We're declaring the argument type as an `Option<Box<T>>` but the value is owned by the foreign code,
+    // we so don't want to drop the Box. Probably it would be better to encode this as a reference type.
+    let mut obj_box = std::mem::ManuallyDrop::new(obj.expect("Must receive a non-null object pointer"));
+    // TODO: terrifically unsafe to assume we can take a mutable reference here! Needs locks etc.
+    let obj = obj_box.as_mut();
     let _retval = {{ obj.name() }}::{%- call to_rs_call_with_prefix("obj", meth) -%};
     {% call ret(meth) %}
 })

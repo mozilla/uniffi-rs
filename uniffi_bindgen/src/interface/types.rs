@@ -49,6 +49,8 @@ pub enum FFIType {
     Int64,
     Float32,
     Float64,
+    /// A pointer to a named struct type.
+    Pointer(String),
     /// A `char*` pointer belonging to a rust-owned CString.
     /// If you've got one of these, you must call the appropriate rust function to free it.
     /// This is currently only used for error messages, and may go away in future.
@@ -124,8 +126,8 @@ impl From<&Type> for FFIType {
             // Strings are always owned rust values.
             // We might add a separate type for borrowed strings in future.
             Type::String => FFIType::RustBuffer,
-            // Objects are passed as opaque integer handles.
-            Type::Object(_) => FFIType::UInt64,
+            // Objects are passed as raw pointers.
+            Type::Object(name) => FFIType::Pointer(name.into()),
             // Enums are passed as integers.
             Type::Enum(_) => FFIType::UInt32,
             // Errors have their own special type.

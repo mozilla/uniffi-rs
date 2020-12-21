@@ -70,7 +70,7 @@ fn switcheroo(b: bool) -> bool {
 // Even if roundtripping works, it's possible we have
 // symmetrical errors that cancel each other out.
 #[derive(Debug, Clone)]
-struct Retourneur;
+pub struct Retourneur;
 impl Retourneur {
     fn new() -> Self {
         Retourneur
@@ -129,7 +129,7 @@ impl Retourneur {
 }
 
 #[derive(Debug, Clone)]
-struct Stringifier;
+pub struct Stringifier;
 
 #[allow(dead_code)]
 impl Stringifier {
@@ -175,7 +175,7 @@ impl Stringifier {
 }
 
 #[derive(Debug, Clone)]
-struct Optionneur;
+pub struct Optionneur;
 impl Optionneur {
     fn new() -> Self {
         Optionneur

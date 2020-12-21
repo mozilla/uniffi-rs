@@ -38,9 +38,11 @@
 {% endfor -%}
 
 // For each Object definition, we assume the caller has provided an appropriately-shaped `struct`
-// with an `impl` for each method on the object. We create a `ConcurrentHandleMap` for safely handing
-// out references to these structs to foreign language code, and we provide a `pub extern "C"` function
-// corresponding to each method.
+// with an `impl` for each method on the object. We generate some boxing code in order to represent
+// instances of this struct as raw pointers in the FFI, and some static assertions to ensure this
+// is safe (well...TBD exactly the circumstances under which this is safe, but it's a start).
+// We provide a `pub extern "C"` function corresponding to each method on the object, which takes
+// an instance pointer as first argument.
 //
 // If the caller's implementation of the struct does not match with the methods or types specified
 // in the UDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)

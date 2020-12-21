@@ -58,6 +58,7 @@ mod filters {
             FFIType::UInt64 => "ctypes.c_uint64".to_string(),
             FFIType::Float32 => "ctypes.c_float".to_string(),
             FFIType::Float64 => "ctypes.c_double".to_string(),
+            FFIType::Pointer(_) => "ctypes.c_voidp".to_string(), // TODO: name the type?
             FFIType::RustCString => "ctypes.c_voidp".to_string(),
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::RustError => "ctypes.POINTER(RustError)".to_string(),
