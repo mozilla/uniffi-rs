@@ -61,7 +61,7 @@ import kotlin.concurrent.withLock
 {% endfor %}
 
 // Callback Interfaces
-{% for obj in ci.iter_callback_interface_definitions() %}
+{% for cbi in ci.iter_callback_interface_definitions() %}
 {% include "CallbackInterfaceTemplate.kt" %}
 {% endfor %}
 

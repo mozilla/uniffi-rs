@@ -1,6 +1,6 @@
-{% let type_name = obj.name()|class_name_kt %}
+{% let type_name = cbi.name()|class_name_kt %}
 public interface {{ type_name }} {
-    {% for meth in obj.methods() -%}
+    {% for meth in cbi.methods() -%}
     fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %})
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) %}: {{ return_type|type_kt -}}
@@ -9,7 +9,7 @@ public interface {{ type_name }} {
     {% endfor %}
 }
 
-{% let canonical_type_name = format!("CallbackInterface{}", type_name) %}
+{% let canonical_type_name = cbi.type_().canonical_name()|class_name_kt %}
 {% let callback_internals = format!("{}Internals", canonical_type_name) -%}
 {% let callback_interface_impl = format!("{}FFI", canonical_type_name) -%}
 
@@ -19,7 +19,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
         return {{ callback_internals }}.handleMap.callWithResult(handle) { cb -> 
             when (method) {
                 IDX_CALLBACK_FREE -> {{ callback_internals }}.drop(handle)
-                {% for meth in obj.methods() -%}
+                {% for meth in cbi.methods() -%}
                 {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt -%}
                 {{ loop.index }} -> this.{{ method_name }}(cb, args)
                 {% endfor %}
@@ -28,7 +28,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
         }
     }
 
-    {% for meth in obj.methods() -%}
+    {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt %}
     private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue): RustBuffer.ByValue =
         try {
@@ -69,7 +69,7 @@ internal object {{ callback_internals }}: CallbackInternals<{{ type_name }}>(
 ) {
     override fun register(lib: _UniFFILib) {
         rustCall(InternalError.ByReference()) { err ->
-            lib.{{ obj.ffi_init_callback().name() }}(this.foreignCallback, err)
+            lib.{{ cbi.ffi_init_callback().name() }}(this.foreignCallback, err)
         }
     }
 }

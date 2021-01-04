@@ -31,7 +31,7 @@
 {% endfor %}
 
 // Callback Interface defitions, corresponding to UDL `callback interface` definitions.
-{% for obj in ci.iter_callback_interface_definitions() %}
+{% for cbi in ci.iter_callback_interface_definitions() %}
 {% include "CallbackInterfaceTemplate.rs" %}
 {% endfor %}
 

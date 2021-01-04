@@ -35,14 +35,6 @@ pub struct ForeignCallbackInternals {
     callback_ptr: AtomicUsize,
 }
 
-impl Default for ForeignCallbackInternals {
-    fn default() -> Self {
-        ForeignCallbackInternals {
-            callback_ptr: AtomicUsize::new(0),
-        }
-    }
-}
-
 impl ForeignCallbackInternals {
     pub const fn new() -> Self {
         ForeignCallbackInternals {
@@ -57,9 +49,7 @@ impl ForeignCallbackInternals {
             .compare_and_swap(0, as_usize, Ordering::SeqCst);
         if old_ptr != 0 {
             // This is an internal bug, the other side of the FFI should ensure
-            // it sets this only once. Note that this is actually going to be
-            // before logging is initialized in practice, so there's not a lot
-            // we can actually do here.
+            // it sets this only once.
             panic!("Bug: call set_callback multiple times. This is likely a uniffi bug");
         }
     }

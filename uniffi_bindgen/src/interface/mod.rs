@@ -1103,6 +1103,10 @@ impl CallbackInterface {
         &self.name
     }
 
+    pub fn type_(&self) -> Type {
+        Type::CallbackInterface(self.name.clone())
+    }
+
     pub fn methods(&self) -> Vec<&Method> {
         self.methods.iter().collect()
     }

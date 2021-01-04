@@ -9,9 +9,8 @@
 //    - for each method, arguments will be packed into a `RustBuffer` and sent over the `ForeignCallback` to be 
 //      unpacked and called. The return value is packed into another `RustBuffer` and sent back to Rust.
 //    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
-//    - a `Send` `impl` so `Object`s can store callbacks.
 #}
-{% let trait_name = obj.name() -%}
+{% let trait_name = cbi.name() -%}
 {% let trait_impl = format!("{}Proxy", trait_name) -%}
 {% let foreign_callback_internals = format!("foreign_callback_{}_internals", trait_name)|upper -%}
 
@@ -19,7 +18,7 @@
 static {{ foreign_callback_internals }}: uniffi::ForeignCallbackInternals = uniffi::ForeignCallbackInternals::new();
 
 #[no_mangle]
-pub extern "C" fn {{ obj.ffi_init_callback().name() }}(callback: uniffi::ForeignCallback) {
+pub extern "C" fn {{ cbi.ffi_init_callback().name() }}(callback: uniffi::ForeignCallback) {
     {{ foreign_callback_internals }}.set_callback(callback);
 }
 
@@ -29,12 +28,6 @@ struct {{ trait_impl }} {
   handle: u64
 }
 
-// We need Send so we can stash the callbacks in objects we're sharing with foreign languages
-// i.e. in the handle map.
-// Prepared for our target trait to declare:
-//  `trait {{ trait_name }}: Send + std::fmt::Debug`
-unsafe impl Send for {{ trait_impl }} {}
-
 impl Drop for {{ trait_impl }} {
     fn drop(&mut self) {
         let callback = {{ foreign_callback_internals }}.get_callback().unwrap();
@@ -43,7 +36,7 @@ impl Drop for {{ trait_impl }} {
 }
 
 impl {{ trait_name }} for {{ trait_impl }} {
-    {%- for meth in obj.methods() %}
+    {%- for meth in cbi.methods() %}
 
     {#- Method declaration #}
     fn {{ meth.name() -}}
@@ -53,7 +46,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
     {% else -%}
     {%- endmatch -%} { 
     {#- Method body #}
-        uniffi::deps::log::debug!("{{ obj.name() }}.{{ meth.name() }}");
+        uniffi::deps::log::debug!("{{ cbi.name() }}.{{ meth.name() }}");
 
     {#- Packing args into a RustBuffer #}
         {% if meth.arguments().len() == 0 -%}

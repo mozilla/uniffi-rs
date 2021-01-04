@@ -19,7 +19,7 @@ impl Telephone {
             let _ = call_responder.hello();
         } else {
             call_responder.busy();
-            call_responder.text_received("Pas maintenant!".into());
+            call_responder.text_received("Not now, I'm on another call!".into());
         }
     }
 }

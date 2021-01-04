@@ -31,7 +31,7 @@ interface RustGetters {
 /// These objects are implemented by the foreign language and passed 
 /// to Rust. Rust then calls methods on it when it needs to.
 /// Rust developers need to declare these traits extending `Send` so 
-/// They can be stored in Rust— i.e. not passed in as an argument to
+/// they can be stored in Rust— i.e. not passed in as an argument to
 /// be used immediately.
 callback interface StoredForeignStringifier {
   string from_simple_type(i32 value);
