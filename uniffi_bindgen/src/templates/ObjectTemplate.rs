@@ -22,6 +22,9 @@ unsafe impl uniffi::deps::ffi_support::IntoFfi for {{ obj.name() }} {
     fn into_ffi_value(self) -> Self::Value { Some(Box::new(self)) }
 }
 
+// For thread-safety, we only support raw pointers on things that are Sync and Send.
+uniffi::deps::static_assertions::assert_impl_all!({{ obj.name() }}: Sync, Send);
+
 #[no_mangle]
 pub extern "C" fn {{ obj.ffi_object_free().name() }}(obj : Option<Box<{{ obj.name() }}>>) {
     drop(obj);

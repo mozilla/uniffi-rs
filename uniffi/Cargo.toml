@@ -17,6 +17,7 @@ bytes = "0.5"
 ffi-support = "~0.4.2"
 lazy_static = "1.4"
 log = "0.4"
+static_assertions = "1"
 # Regular dependencies
 cargo_metadata = "0.11"
 paste = "1.0"

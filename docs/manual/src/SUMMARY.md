@@ -24,3 +24,9 @@ Hello everyone
 # Swift
 
 - [Integrating with XCode](./swift/xcode.md)
+
+# Internals
+
+- [Lifting, Lowering, and Serialization](./internals/lifting_and_lowering.md)
+  - [Serialization format](./internals/serialization_format.md)
+- [Managing object references](./internals/object_references.md)

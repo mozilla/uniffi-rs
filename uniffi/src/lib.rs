@@ -47,6 +47,7 @@ pub mod deps {
     pub use ffi_support;
     pub use lazy_static;
     pub use log;
+    pub use static_assertions;
 }
 
 /// Trait defining how to transfer values via the FFI layer.
