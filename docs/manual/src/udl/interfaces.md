@@ -156,7 +156,7 @@ impl Counter {
 }
 ```
 
-This version uses the `AtomicU64` struct for interior mutability, which is both `Sync` and
+This version uses an `AtomicU64` for interior mutability, which is both `Sync` and
 `Send` and hence will compile successfully:
 
 ```rust
@@ -178,6 +178,3 @@ impl Counter {
     }
 }
 ```
-
-Uniffi aims to uphold Rust's safety guarantees at all times, without requiring the
-foreign-language code to know or care about them.
