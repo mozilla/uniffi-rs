@@ -72,3 +72,21 @@ func display(list: TodoListProtocol) {
     }
 }
 ```
+
+## Concurrent Access
+
+Since interfaces represent mutable data, uniffi has to take extra care
+to uphold Rust's safety guarantees around shared and mutable references.
+The foreign-language code may attempt to operate on an interface instance
+from multiple threads, and it's important that this not violate Rust's
+assumption that there is at most a single mutable reference to a struct
+at any point in time.
+
+Uniffi enforces this using runtime locking. Each interface instance
+has an associated lock which is transparently acquired at the beginning of each
+call to a method of that instance, and released once the method returns. This
+approach is simple and safe, but it means that all method calls on an instance
+are run in a strictly sequential fashion, limiting concurrency.
+
+You can read more about the technical details in the docs on the
+[internal details of managing object references](../internals/object_references.md).
