@@ -13,6 +13,7 @@ dictionary Vector {
   double dy;
 };
 
+[Threadsafe]
 interface Sprite {
   // Should be an optional, but I had to test nullable args :)
   constructor(Point? initial_position);
