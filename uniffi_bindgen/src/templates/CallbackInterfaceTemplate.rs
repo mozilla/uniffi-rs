@@ -35,6 +35,8 @@ impl Drop for {{ trait_impl }} {
     }
 }
 
+uniffi::deps::static_assertions::assert_impl_all!({{ trait_impl }}: Send);
+
 impl {{ trait_name }} for {{ trait_impl }} {
     {%- for meth in cbi.methods() %}
 
@@ -68,8 +70,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
         {% when Some with (return_type) -%}
         let vec = ret_rbuf.destroy_into_vec();
         let mut ret_buf = vec.as_slice();
-        let rval = {{ "&mut ret_buf"|read_rs(return_type) }};
-        rval
+        {{ "&mut ret_buf"|read_rs(return_type) }}
         {%- else -%}
         uniffi::RustBuffer::destroy(ret_rbuf);
         {%- endmatch %}

@@ -23,6 +23,9 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
                 {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt -%}
                 {{ loop.index }} -> this.{{ method_name }}(cb, args)
                 {% endfor %}
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalError.
+                // https://github.com/mozilla/uniffi-rs/issues/351
                 else -> RustBuffer.ByValue()
             }
         }
@@ -57,6 +60,8 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
                 {%- else -%}
                 .let { RustBuffer.ByValue() }
                 {% endmatch -%}
+                // TODO catch errors and report them back to Rust. 
+                // https://github.com/mozilla/uniffi-rs/issues/351
         } finally {
             RustBuffer.free(args)
         }
