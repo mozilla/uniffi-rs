@@ -1,0 +1,311 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Lifting, Lowering, and Serialization - The uniffi user guide</title>
+        
+        
+
+
+        <!-- Custom HTML head -->
+        
+
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        
+        <link rel="icon" href="../favicon.svg">
+        
+        
+        <link rel="shortcut icon" href="../favicon.png">
+        
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html" class="active"><strong aria-hidden="true">5.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">6.</strong> Managing object references</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">The uniffi user guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#lifting-lowering-and-serialization" id="lifting-lowering-and-serialization">Lifting, Lowering and Serialization</a></h1>
+<p>Uniffi is able to transfer rich data types back-and-forth between the Rust
+code and the foreign-language code via a process we refer to as &quot;lowering&quot;
+and &quot;lifting&quot;.</p>
+<p>Recall that uniffi interoperates between different languages by defining
+a C-style FFI layer which operates in terms of primitive data types and
+plain functions. To transfer data from one side of this layer to the other,
+the sending side &quot;<em><strong>lowers</strong></em>&quot; the data from a language-specific data type
+into one of the primitive types supported by the FFI-layer functions, and the
+receiving side &quot;<em><strong>lifts</strong></em>&quot; that primitive type into its own language-specific
+data type.</p>
+<p>Lifting and lowering simple types such as integers is done by directly casting the
+value to and from an appropriate type. For complex types such as optionals and
+records we currently implement lifting and lowering by serializing into a byte
+buffer, but this is an implementation detail that may change in future. (See
+<a href="/docs/adr/0002-serialize-complex-datatypes.html">ADR-0002</a> for the reasoning
+behind this choice).</p>
+<p>As a concrete example, consider this interface for accumulating a list of integers:</p>
+<pre><code class="language-idl">namespace example {
+  sequence&lt;i32&gt; add_to_list(i32 item);
+}
+</code></pre>
+<p>Calling this function from foreign language code involves the following steps:</p>
+<ol>
+<li>The user-provided calling code invokes the <code>add_to_list</code> function that is expoed by the
+uniffi-generated foreign language bindings, passing <code>item</code> as an appropriate language-native
+integer.</li>
+<li>The foreign language bindings <em><strong>lower</strong></em> each argument to a function call into
+something that can be passed over the C-style FFI. Since the <code>item</code> argument is a plain integer,
+it is lowered by casting to an <code>int32_t</code>.</li>
+<li>The foreign language bindings pass the lowered arguments to a C FFI function named
+like <code>example_XYZ_add_to_list</code> that is exposed by the uniffi-generated Rust scaffolding.</li>
+<li>The Rust scaffolding <em><strong>lifts</strong></em> each argument received over the FFI into a native
+Rust type. Since <code>item</code> is a plain integer it is lifted by casting to a Rust <code>i32</code>.</li>
+<li>The Rust scaffolding passes the lifted arguments to the user-provided Rust code for
+the <code>add_to_list</code> function, which returns a <code>Vec&lt;i32&gt;</code>.</li>
+<li>The Rust scaffolding now needs to <em><strong>lower</strong></em> the return value in order to pass it back
+to the foreign language code. Since this is a complex data type, it is lowered by serializing
+the values into a byte buffer and returning the buffer pointer and length from the
+FFI function.</li>
+<li>The foreign language bindings receive the return value and need to <em><strong>lift</strong></em> it into an
+appropriate native data type. Since it is a complex data type, it is lifted by deserializing
+from the returned byte buffer into a language-native list of integers.</li>
+</ol>
+<h2><a class="header" href="#lowered-types" id="lowered-types">Lowered Types</a></h2>
+<table><thead><tr><th>UDL Type</th><th>Representation in the C FFI</th></tr></thead><tbody>
+<tr><td><code>i8</code>/<code>i16</code>/<code>i32</code>/<code>i64</code></td><td><code>int8_t</code>/<code>int16_t</code>/<code>int32_t</code>/<code>int64_t</code></td></tr>
+<tr><td><code>u8</code>/<code>u16</code>/<code>u32</code>/<code>u64</code></td><td><code>uint8_t</code>/<code>uint16_t</code>/<code>uint32_t</code>/<code>uint64_t</code></td></tr>
+<tr><td><code>f32</code>/<code>float</code></td><td><code>float</code></td></tr>
+<tr><td><code>f64</code>/<code>double</code></td><td><code>double</code></td></tr>
+<tr><td><code>boolean</code></td><td><code>int8_t</code>, either <code>0</code> or <code>1</code></td></tr>
+<tr><td><code>string</code></td><td><code>RustBuffer</code> struct pointing to utf8 bytes</td></tr>
+<tr><td><code>T?</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>sequence&lt;T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>record&lt;string, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>enum</code></td><td><code>uint32_t</code> indicating variant, numbered in declaration order starting from 1</td></tr>
+<tr><td><code>dictionary</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>interface</code></td><td><code>uint64_t</code> opaque integer handle</td></tr>
+</tbody></table>
+<h2><a class="header" href="#serialization-format" id="serialization-format">Serialization Format</a></h2>
+<p>When serializing complex data types into a byte buffer, uniffi uses an
+ad-hoc fixed-width format which is designed mainly for simplicity.
+The details of this format are internal only and may change between versions of uniffi.</p>
+<table><thead><tr><th>UDL Type</th><th>Representation in serialized bytes</th></tr></thead><tbody>
+<tr><td><code>i8</code>/<code>i16</code>/<code>i32</code>/<code>i64</code></td><td>Fixed-width 1/2/4/8-byte signed integer, big-endian</td></tr>
+<tr><td><code>u8</code>/<code>u16</code>/<code>u32</code>/<code>u64</code></td><td>Fixed-width 1/2/4/8-byte unsigned integer, big-endian</td></tr>
+<tr><td><code>f32</code>/<code>float</code></td><td>Fixed-width 4-byte float, big-endian</td></tr>
+<tr><td><code>f64</code>/<code>double</code></td><td>Fixed-width 8-byte double, big-endian</td></tr>
+<tr><td><code>boolean</code></td><td>Fixed-width 1-byte signed integer, either <code>0</code> or <code>1</code></td></tr>
+<tr><td><code>string</code></td><td>Serialized <code>i32</code> length followed by utf-8 string bytes; no trailing null</td></tr>
+<tr><td><code>T?</code></td><td>If null, serialized <code>boolean</code> false; if non-null, serialized <code>boolean</code> true followed by serialized <code>T</code></td></tr>
+<tr><td><code>sequence&lt;T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>T</code></td></tr>
+<tr><td><code>record&lt;string, T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td></tr>
+<tr><td><code>enum</code></td><td>Serialized <code>u32</code> indicating variant, numbered in declaration order starting from 1</td></tr>
+<tr><td><code>dictionary</code></td><td>The serialized value of each field, in declaration order</td></tr>
+<tr><td><code>interface</code></td><td><em>Cannot currently be serialized</em></td></tr>
+</tbody></table>
+<p>Note that length fields in this format are serialized as <em>signed</em> integers
+despite the fact that they will always be non-negative. This is to help
+ease compatibility with JVM-based languages since the JVM uses signed 32-bit
+integers for its size fields internally.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../swift/xcode.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../internals/object_references.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="../swift/xcode.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="../internals/object_references.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

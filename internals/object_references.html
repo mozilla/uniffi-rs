@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Enumerations - The uniffi user guide</title>
+        <title>Managing object references - The uniffi user guide</title>
         
         
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html" class="active"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">5.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">6.</strong> Managing object references</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">5.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html" class="active"><strong aria-hidden="true">6.</strong> Managing object references</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -159,39 +159,101 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#enumerations" id="enumerations">Enumerations</a></h1>
-<p>An enumeration defined in Rust code as</p>
+                        <h1><a class="header" href="#managing-object-references" id="managing-object-references">Managing Object References</a></h1>
+<p>Uniffi <a href="../udl/interfaces.html">interfaces</a> represent instances of objects
+that have methods and contain shared mutable state. One of Rust's core innovations
+is its ability to provide compile-time guarantees about working with such instances,
+including:</p>
+<ul>
+<li>Ensuring that each instance has a unique owner responsible for disposing of it.</li>
+<li>Ensuring that there is only a single writer <em>or</em> multiple readers of an object
+active at any point in the program.</li>
+<li>Guarding against data races.</li>
+</ul>
+<p>Uniffi aims to maintain these guarantees even when the Rust code is being invoked
+from a foreign language, at the cost of turning them into run-time checks rather
+than compile-time guarantees.</p>
+<p>We achieve this by indirecting all object access through a
+<a href="https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/index.html">handle map</a>,
+a mapping from opaque integer handles to object instances. This indirection
+imposes a small runtime cost but helps us guard against errors or oversights
+in the generated bindings.</p>
+<p>For each interface declared in the UDL, the uniffi-generated Rust scaffolding
+will create a global <a href="https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html">ffi_support::ConcurrentHandleMap</a> that is responsible for owning all instances
+of that interface, and handing out references to them when methods are called.</p>
+<p>For example, given a interface definition like this:</p>
+<pre><code class="language-idl">interface TodoList {
+    constructor();
+    void add_item(string todo);
+    sequence&lt;string&gt; get_items();
+};
+</code></pre>
+<p>The Rust scaffolding would define a lazyily-initialized global static like:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>enum Animal {
-    Dog,
-    Cat,
+</span>lazy_static! {
+    static ref UNIFFI_HANDLE_MAP_TODOLIST: ConcurrentHandleMap&lt;TodoList&gt; = ConcurrentHandleMap::new();
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Can be exposed in the UDL file with:</p>
-<pre><code class="language-idl">enum Animal {
-  &quot;Dog&quot;,
-  &quot;Cat&quot;,
-};
-</code></pre>
-<p>Note that enumerations with associated data are not yet supported.</p>
+<p>On the Rust side of the generated bindings, the instance constructor will create an instance of the
+corresponding <code>TodoList</code> Rust struct, insert it into the handlemap, and return the resulting integer
+handle to the foreign language code:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub extern &quot;C&quot; fn todolist_TodoList_new(err: &amp;mut ExternError) -&gt; u64 {
+    // Give ownership of the new instance to the handlemap.
+    // We will only ever operate on borrowed references to it.
+    UNIFFI_HANDLE_MAP_TODOLIST.insert_with_output(err, || TodoList::new())
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>When invoking a method on the instance, the foreign-language code passes the integer handle back
+to the Rust code, which borrows a reference to the instance from the handlemap for the duration
+of the method call:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub extern &quot;C&quot; fn todolist_TodoList_add_item(handle: u64, todo: RustBuffer, err: &amp;mut ExternError) -&gt; () {
+    let todo = &lt;String as uniffi::ViaFfi&gt;::try_lift(todo).unwrap()
+    // Borrow a reference to the instance so that we can call a method on it.
+    UNIFFI_HANDLE_MAP_TODOLIST.call_with_result_mut(err, handle, |obj| -&gt; Result&lt;(), TodoError&gt; {
+        TodoList::add_item(obj, todo)
+    })
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Finally, when the foreign-language code frees the instance, it passes the integer handle to
+a special destructor function so that the Rust code can delete it from the handlemap:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub extern &quot;C&quot; fn ffi_todolist_TodoList_object_free(handle: u64) {
+    UNIFFI_HANDLE_MAP_TODOLIST.delete_u64(handle);
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>This indirection gives us some important safety properties:</p>
+<ul>
+<li>If the generated bindings incorrectly pass an invalid handle, or a handle for a different type of object,
+then the handlemap will throw an error with high probability, providing some amount of run-time typechecking
+for correctness of the generated bindings.</li>
+<li>The <code>ConcurrentHandleMap</code> class wraps each instance with a <code>Mutex</code>, which serializes access to the instance
+and upholds Rust's guarantees against shared mutable access.</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../udl/builtin_types.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../internals/lifting_and_lowering.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
-                        
-                            <a rel="next" href="../udl/structs.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
                         
 
                         <div style="clear: both"></div>
@@ -201,15 +263,11 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../udl/builtin_types.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../internals/lifting_and_lowering.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
-                
-                    <a rel="next" href="../udl/structs.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
                 
             </nav>
 

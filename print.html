@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="udl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="udl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="udl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="udl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="swift/xcode.html"><strong aria-hidden="true">4.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="internals/lifting_and_lowering.html"><strong aria-hidden="true">5.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="internals/object_references.html"><strong aria-hidden="true">6.</strong> Managing object references</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -452,6 +452,20 @@ func display(list: TodoListProtocol) {
     }
 }
 </code></pre>
+<h2><a class="header" href="#concurrent-access" id="concurrent-access">Concurrent Access</a></h2>
+<p>Since interfaces represent mutable data, uniffi has to take extra care
+to uphold Rust's safety guarantees around shared and mutable references.
+The foreign-language code may attempt to operate on an interface instance
+from multiple threads, and it's important that this not violate Rust's
+assumption that there is at most a single mutable reference to a struct
+at any point in time.</p>
+<p>Uniffi enforces this using runtime locking. Each interface instance
+has an associated lock which is transparently acquired at the beginning of each
+call to a method of that instance, and released once the method returns. This
+approach is simple and safe, but it means that all method calls on an instance
+are run in a strictly sequential fashion, limiting concurrency.</p>
+<p>You can read more about the technical details in the docs on the
+<a href="udl/../internals/object_references.html">internal details of managing object references</a>.</p>
 <h1><a class="header" href="#integrating-with-gradle" id="integrating-with-gradle">Integrating with Gradle</a></h1>
 <p>It is possible to generate Kotlin bindings at compile time for Kotlin Android projects. We'd like to make a gradle plugin for that, but until then you can add to your <code>build.gradle</code> the following:</p>
 <pre><code class="language-groovy">android.libraryVariants.all { variant -&gt;
@@ -473,6 +487,171 @@ func display(list: TodoListProtocol) {
 In your project configuration, add a &quot;Run Script Phase&quot; that applies to <code>*.udl</code> files:</p>
 <pre><code class="language-bash">$HOME/.cargo/bin/uniffi-bindgen generate $INPUT_FILE_PATH --language swift --out-dir $DERIVED_FILE_DIR\n
 </code></pre>
+<h1><a class="header" href="#lifting-lowering-and-serialization" id="lifting-lowering-and-serialization">Lifting, Lowering and Serialization</a></h1>
+<p>Uniffi is able to transfer rich data types back-and-forth between the Rust
+code and the foreign-language code via a process we refer to as &quot;lowering&quot;
+and &quot;lifting&quot;.</p>
+<p>Recall that uniffi interoperates between different languages by defining
+a C-style FFI layer which operates in terms of primitive data types and
+plain functions. To transfer data from one side of this layer to the other,
+the sending side &quot;<em><strong>lowers</strong></em>&quot; the data from a language-specific data type
+into one of the primitive types supported by the FFI-layer functions, and the
+receiving side &quot;<em><strong>lifts</strong></em>&quot; that primitive type into its own language-specific
+data type.</p>
+<p>Lifting and lowering simple types such as integers is done by directly casting the
+value to and from an appropriate type. For complex types such as optionals and
+records we currently implement lifting and lowering by serializing into a byte
+buffer, but this is an implementation detail that may change in future. (See
+<a href="internals//docs/adr/0002-serialize-complex-datatypes.html">ADR-0002</a> for the reasoning
+behind this choice).</p>
+<p>As a concrete example, consider this interface for accumulating a list of integers:</p>
+<pre><code class="language-idl">namespace example {
+  sequence&lt;i32&gt; add_to_list(i32 item);
+}
+</code></pre>
+<p>Calling this function from foreign language code involves the following steps:</p>
+<ol>
+<li>The user-provided calling code invokes the <code>add_to_list</code> function that is expoed by the
+uniffi-generated foreign language bindings, passing <code>item</code> as an appropriate language-native
+integer.</li>
+<li>The foreign language bindings <em><strong>lower</strong></em> each argument to a function call into
+something that can be passed over the C-style FFI. Since the <code>item</code> argument is a plain integer,
+it is lowered by casting to an <code>int32_t</code>.</li>
+<li>The foreign language bindings pass the lowered arguments to a C FFI function named
+like <code>example_XYZ_add_to_list</code> that is exposed by the uniffi-generated Rust scaffolding.</li>
+<li>The Rust scaffolding <em><strong>lifts</strong></em> each argument received over the FFI into a native
+Rust type. Since <code>item</code> is a plain integer it is lifted by casting to a Rust <code>i32</code>.</li>
+<li>The Rust scaffolding passes the lifted arguments to the user-provided Rust code for
+the <code>add_to_list</code> function, which returns a <code>Vec&lt;i32&gt;</code>.</li>
+<li>The Rust scaffolding now needs to <em><strong>lower</strong></em> the return value in order to pass it back
+to the foreign language code. Since this is a complex data type, it is lowered by serializing
+the values into a byte buffer and returning the buffer pointer and length from the
+FFI function.</li>
+<li>The foreign language bindings receive the return value and need to <em><strong>lift</strong></em> it into an
+appropriate native data type. Since it is a complex data type, it is lifted by deserializing
+from the returned byte buffer into a language-native list of integers.</li>
+</ol>
+<h2><a class="header" href="#lowered-types" id="lowered-types">Lowered Types</a></h2>
+<table><thead><tr><th>UDL Type</th><th>Representation in the C FFI</th></tr></thead><tbody>
+<tr><td><code>i8</code>/<code>i16</code>/<code>i32</code>/<code>i64</code></td><td><code>int8_t</code>/<code>int16_t</code>/<code>int32_t</code>/<code>int64_t</code></td></tr>
+<tr><td><code>u8</code>/<code>u16</code>/<code>u32</code>/<code>u64</code></td><td><code>uint8_t</code>/<code>uint16_t</code>/<code>uint32_t</code>/<code>uint64_t</code></td></tr>
+<tr><td><code>f32</code>/<code>float</code></td><td><code>float</code></td></tr>
+<tr><td><code>f64</code>/<code>double</code></td><td><code>double</code></td></tr>
+<tr><td><code>boolean</code></td><td><code>int8_t</code>, either <code>0</code> or <code>1</code></td></tr>
+<tr><td><code>string</code></td><td><code>RustBuffer</code> struct pointing to utf8 bytes</td></tr>
+<tr><td><code>T?</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>sequence&lt;T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>record&lt;string, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>enum</code></td><td><code>uint32_t</code> indicating variant, numbered in declaration order starting from 1</td></tr>
+<tr><td><code>dictionary</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>interface</code></td><td><code>uint64_t</code> opaque integer handle</td></tr>
+</tbody></table>
+<h2><a class="header" href="#serialization-format" id="serialization-format">Serialization Format</a></h2>
+<p>When serializing complex data types into a byte buffer, uniffi uses an
+ad-hoc fixed-width format which is designed mainly for simplicity.
+The details of this format are internal only and may change between versions of uniffi.</p>
+<table><thead><tr><th>UDL Type</th><th>Representation in serialized bytes</th></tr></thead><tbody>
+<tr><td><code>i8</code>/<code>i16</code>/<code>i32</code>/<code>i64</code></td><td>Fixed-width 1/2/4/8-byte signed integer, big-endian</td></tr>
+<tr><td><code>u8</code>/<code>u16</code>/<code>u32</code>/<code>u64</code></td><td>Fixed-width 1/2/4/8-byte unsigned integer, big-endian</td></tr>
+<tr><td><code>f32</code>/<code>float</code></td><td>Fixed-width 4-byte float, big-endian</td></tr>
+<tr><td><code>f64</code>/<code>double</code></td><td>Fixed-width 8-byte double, big-endian</td></tr>
+<tr><td><code>boolean</code></td><td>Fixed-width 1-byte signed integer, either <code>0</code> or <code>1</code></td></tr>
+<tr><td><code>string</code></td><td>Serialized <code>i32</code> length followed by utf-8 string bytes; no trailing null</td></tr>
+<tr><td><code>T?</code></td><td>If null, serialized <code>boolean</code> false; if non-null, serialized <code>boolean</code> true followed by serialized <code>T</code></td></tr>
+<tr><td><code>sequence&lt;T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>T</code></td></tr>
+<tr><td><code>record&lt;string, T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td></tr>
+<tr><td><code>enum</code></td><td>Serialized <code>u32</code> indicating variant, numbered in declaration order starting from 1</td></tr>
+<tr><td><code>dictionary</code></td><td>The serialized value of each field, in declaration order</td></tr>
+<tr><td><code>interface</code></td><td><em>Cannot currently be serialized</em></td></tr>
+</tbody></table>
+<p>Note that length fields in this format are serialized as <em>signed</em> integers
+despite the fact that they will always be non-negative. This is to help
+ease compatibility with JVM-based languages since the JVM uses signed 32-bit
+integers for its size fields internally.</p>
+<h1><a class="header" href="#managing-object-references" id="managing-object-references">Managing Object References</a></h1>
+<p>Uniffi <a href="internals/../udl/interfaces.html">interfaces</a> represent instances of objects
+that have methods and contain shared mutable state. One of Rust's core innovations
+is its ability to provide compile-time guarantees about working with such instances,
+including:</p>
+<ul>
+<li>Ensuring that each instance has a unique owner responsible for disposing of it.</li>
+<li>Ensuring that there is only a single writer <em>or</em> multiple readers of an object
+active at any point in the program.</li>
+<li>Guarding against data races.</li>
+</ul>
+<p>Uniffi aims to maintain these guarantees even when the Rust code is being invoked
+from a foreign language, at the cost of turning them into run-time checks rather
+than compile-time guarantees.</p>
+<p>We achieve this by indirecting all object access through a
+<a href="https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/index.html">handle map</a>,
+a mapping from opaque integer handles to object instances. This indirection
+imposes a small runtime cost but helps us guard against errors or oversights
+in the generated bindings.</p>
+<p>For each interface declared in the UDL, the uniffi-generated Rust scaffolding
+will create a global <a href="https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html">ffi_support::ConcurrentHandleMap</a> that is responsible for owning all instances
+of that interface, and handing out references to them when methods are called.</p>
+<p>For example, given a interface definition like this:</p>
+<pre><code class="language-idl">interface TodoList {
+    constructor();
+    void add_item(string todo);
+    sequence&lt;string&gt; get_items();
+};
+</code></pre>
+<p>The Rust scaffolding would define a lazyily-initialized global static like:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>lazy_static! {
+    static ref UNIFFI_HANDLE_MAP_TODOLIST: ConcurrentHandleMap&lt;TodoList&gt; = ConcurrentHandleMap::new();
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>On the Rust side of the generated bindings, the instance constructor will create an instance of the
+corresponding <code>TodoList</code> Rust struct, insert it into the handlemap, and return the resulting integer
+handle to the foreign language code:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub extern &quot;C&quot; fn todolist_TodoList_new(err: &amp;mut ExternError) -&gt; u64 {
+    // Give ownership of the new instance to the handlemap.
+    // We will only ever operate on borrowed references to it.
+    UNIFFI_HANDLE_MAP_TODOLIST.insert_with_output(err, || TodoList::new())
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>When invoking a method on the instance, the foreign-language code passes the integer handle back
+to the Rust code, which borrows a reference to the instance from the handlemap for the duration
+of the method call:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub extern &quot;C&quot; fn todolist_TodoList_add_item(handle: u64, todo: RustBuffer, err: &amp;mut ExternError) -&gt; () {
+    let todo = &lt;String as uniffi::ViaFfi&gt;::try_lift(todo).unwrap()
+    // Borrow a reference to the instance so that we can call a method on it.
+    UNIFFI_HANDLE_MAP_TODOLIST.call_with_result_mut(err, handle, |obj| -&gt; Result&lt;(), TodoError&gt; {
+        TodoList::add_item(obj, todo)
+    })
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Finally, when the foreign-language code frees the instance, it passes the integer handle to
+a special destructor function so that the Rust code can delete it from the handlemap:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub extern &quot;C&quot; fn ffi_todolist_TodoList_object_free(handle: u64) {
+    UNIFFI_HANDLE_MAP_TODOLIST.delete_u64(handle);
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>This indirection gives us some important safety properties:</p>
+<ul>
+<li>If the generated bindings incorrectly pass an invalid handle, or a handle for a different type of object,
+then the handlemap will throw an error with high probability, providing some amount of run-time typechecking
+for correctness of the generated bindings.</li>
+<li>The <code>ConcurrentHandleMap</code> class wraps each instance with a <code>Mutex</code>, which serializes access to the instance
+and upholds Rust's guarantees against shared mutable access.</li>
+</ul>
 
                     </main>
 
