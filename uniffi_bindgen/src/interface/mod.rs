@@ -724,7 +724,7 @@ pub struct Object {
     constructors: Vec<Constructor>,
     methods: Vec<Method>,
     ffi_func_free: FFIFunction,
-    attributes: Attributes,
+    threadsafe: bool,
 }
 
 impl Object {
@@ -734,7 +734,7 @@ impl Object {
             constructors: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
-            attributes: Default::default(),
+            threadsafe: false,
         }
     }
 
@@ -752,6 +752,10 @@ impl Object {
 
     pub fn ffi_object_free(&self) -> &FFIFunction {
         &self.ffi_func_free
+    }
+
+    pub fn threadsafe(&self) -> bool {
+        self.threadsafe
     }
 
     fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
@@ -790,6 +794,11 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         if self.inheritance.is_some() {
             bail!("interface inheritence is not supported");
         }
+        let attributes = match &self.attributes {
+            Some(attrs) => Attributes::try_from(attrs)?,
+            None => Default::default(),
+        };
+        attributes.validate_for_object()?;
         let mut object = Object::new(self.identifier.0.to_string());
         for member in &self.members.body {
             match member {
@@ -807,12 +816,11 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         if object.constructors.is_empty() {
             object.constructors.push(Default::default());
         }
-        object.attributes = match &self.attributes {
-            Some(attr) => Attributes::try_from(attr)?,
-            None => Attributes(Vec::new()),
-        };
-        object.attributes.validate_for_object()?;
 
+        object.threadsafe = attributes
+            .0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::Threadsafe));
         Ok(object)
     }
 }

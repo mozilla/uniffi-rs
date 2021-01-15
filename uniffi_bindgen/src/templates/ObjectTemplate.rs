@@ -6,9 +6,16 @@
 // If the caller's implementation of the struct does not match with the methods or types specified
 // in the UDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)
 // error message when processing this generated code.
-{% let handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) %}
+{% let handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) -%}
+
 uniffi::deps::lazy_static::lazy_static! {
-    static ref {{ handle_map }}: uniffi::deps::ffi_support::ConcurrentHandleMap<{{ obj.name() }}> = uniffi::deps::ffi_support::ConcurrentHandleMap::new();
+    {%- if obj.threadsafe() %}
+    static ref {{ handle_map }}: uniffi::ffi::handle_map::NonLockingHandleMap<{{ obj.name() }}> = 
+        uniffi::ffi::handle_map::NonLockingHandleMap::new();
+    {%- else %}
+    static ref {{ handle_map }}: uniffi::deps::ffi_support::ConcurrentHandleMap<{{ obj.name() }}> = 
+        uniffi::deps::ffi_support::ConcurrentHandleMap::new();
+    {%- endif %}
 }
 
     {% let ffi_free = obj.ffi_object_free() -%}
