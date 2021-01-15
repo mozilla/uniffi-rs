@@ -3,16 +3,18 @@ use ffi_support::Handle;
 use ffi_support::HandleError;
 use ffi_support::HandleMap;
 use ffi_support::IntoFfi;
-use std::sync::Mutex;
 use std::sync::RwLock;
 
-pub struct NonLockingHandleMap<T> {
+pub struct NonLockingHandleMap<T>
+where
+    T: Sync + Send,
+{
     /// The underlying map. Public so that more advanced use-cases
     /// may use it as they please.
-    pub map: RwLock<HandleMap<Mutex<T>>>,
+    pub map: RwLock<HandleMap<T>>,
 }
 
-impl<T> NonLockingHandleMap<T> {
+impl<T: Sync + Send> NonLockingHandleMap<T> {
     /// Construct a new `NonLockingHandleMap`.
     pub fn new() -> Self {
         Self {
@@ -49,7 +51,7 @@ impl<T> NonLockingHandleMap<T> {
         // could always insert anyway (by matching on LockResult), but that
         // seems... really quite dubious.
         let mut map = self.map.write().unwrap();
-        map.insert(Mutex::new(v))
+        map.insert(v)
     }
 
     /// Remove an item from the map.
@@ -88,8 +90,9 @@ impl<T> NonLockingHandleMap<T> {
     /// block until all other threads have finished any read/write operations.
     pub fn remove(&self, h: Handle) -> Result<Option<T>, HandleError> {
         let mut map = self.map.write().unwrap();
-        let mutex = map.remove(h)?;
-        Ok(mutex.into_inner().ok())
+        let v = map.remove(h)?;
+        // TODO sense check.
+        Ok(Some(v))
     }
 
     /// Convenient wrapper for `remove` which takes a `u64` that it will
@@ -128,41 +131,9 @@ impl<T> NonLockingHandleMap<T> {
         F: FnOnce(&T) -> Result<R, E>,
         E: From<HandleError>,
     {
-        self.get_mut(h, |v| callback(v))
-    }
-
-    /// Call `callback` with a mutable reference to the item from the map, after
-    /// acquiring the necessary locks.
-    ///
-    /// # Locking
-    ///
-    /// Note that this requires taking both:
-    ///
-    /// - The map's read lock, and so it will block until all other threads have
-    ///   finished any write operations.
-    /// - The mutex on the slot the handle is mapped to.
-    ///
-    /// And so it will block if there are ongoing write operations, or if
-    /// another thread is reading from the same handle.
-    ///
-    /// # Panics
-    ///
-    /// This will panic if a previous `get()` or `get_mut()` call has panicked
-    /// inside it's callback. The only solution to this is to remove and reinsert
-    /// said item.
-    ///
-    /// (It may also panic if the handle map detects internal state corruption,
-    /// however this should not happen except for bugs in the handle map code).
-    pub fn get_mut<F, E, R>(&self, h: Handle, callback: F) -> Result<R, E>
-    where
-        F: FnOnce(&mut T) -> Result<R, E>,
-        E: From<HandleError>,
-    {
-        // XXX figure out how to handle poison...
         let map = self.map.read().unwrap();
-        let mtx = map.get(h)?;
-        let mut hm = mtx.lock().unwrap();
-        callback(&mut *hm)
+        let hm = map.get(h)?;
+        callback(&*hm)
     }
 
     /// Convenient wrapper for `get` which takes a `u64` that it will convert to
@@ -190,56 +161,7 @@ impl<T> NonLockingHandleMap<T> {
         self.get(Handle::from_u64(u)?, callback)
     }
 
-    /// Convenient wrapper for `get_mut` which takes a `u64` that it will
-    /// convert to a handle.
-    ///
-    /// The main benefit (besides convenience) of this over the version
-    /// that takes a [`Handle`] is that it allows handling handle-related errors
-    /// in one place.
-    ///
-    /// # Locking
-    ///
-    /// Note that this requires taking both:
-    ///
-    /// - The map's read lock, and so it will block until all other threads have
-    ///   finished any write operations.
-    /// - The mutex on the slot the handle is mapped to.
-    ///
-    /// And so it will block if there are ongoing write operations, or if
-    /// another thread is reading from the same handle.
-    pub fn get_mut_u64<F, E, R>(&self, u: u64, callback: F) -> Result<R, E>
-    where
-        F: FnOnce(&mut T) -> Result<R, E>,
-        E: From<HandleError>,
-    {
-        self.get_mut(Handle::from_u64(u)?, callback)
-    }
-
     /// Helper that performs both a [`call_with_result`] and [`get`](NonLockingHandleMap::get_mut).
-    pub fn call_with_result_mut<R, E, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(&mut T) -> Result<R, E>,
-        ExternError: From<E>,
-        R: IntoFfi,
-    {
-        use ffi_support::call_with_result;
-        call_with_result(out_error, || -> Result<_, ExternError> {
-            // We can't reuse get_mut here because it would require E:
-            // From<HandleError>, which is inconvenient...
-            let h = Handle::from_u64(h)?;
-            let map = self.map.read().unwrap();
-            let mtx = map.get(h)?;
-            let mut hm = mtx.lock().unwrap();
-            Ok(callback(&mut *hm)?)
-        })
-    }
-
-    /// Helper that performs both a [`call_with_result`] and [`get`](NonLockingHandleMap::get).
     pub fn call_with_result<R, E, F>(
         &self,
         out_error: &mut ExternError,
@@ -251,7 +173,15 @@ impl<T> NonLockingHandleMap<T> {
         ExternError: From<E>,
         R: IntoFfi,
     {
-        self.call_with_result_mut(out_error, h, |r| callback(r))
+        use ffi_support::call_with_result;
+        call_with_result(out_error, || -> Result<_, ExternError> {
+            // We can't reuse get_mut here because it would require E:
+            // From<HandleError>, which is inconvenient...
+            let h = Handle::from_u64(h)?;
+            let map = self.map.read().unwrap();
+            let hm = map.get(h)?;
+            Ok(callback(&*hm)?)
+        })
     }
 
     /// Helper that performs both a [`call_with_output`] and [`get`](NonLockingHandleMap::get).
@@ -266,22 +196,6 @@ impl<T> NonLockingHandleMap<T> {
         R: IntoFfi,
     {
         self.call_with_result(out_error, h, |r| -> Result<_, HandleError> {
-            Ok(callback(r))
-        })
-    }
-
-    /// Helper that performs both a [`call_with_output`] and [`get_mut`](NonLockingHandleMap::get).
-    pub fn call_with_output_mut<R, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(&mut T) -> R,
-        R: IntoFfi,
-    {
-        self.call_with_result_mut(out_error, h, |r| -> Result<_, HandleError> {
             Ok(callback(r))
         })
     }
@@ -321,7 +235,7 @@ impl<T> NonLockingHandleMap<T> {
     }
 }
 
-impl<T> Default for NonLockingHandleMap<T> {
+impl<T: Sync + Send> Default for NonLockingHandleMap<T> {
     #[inline]
     fn default() -> Self {
         Self::new()

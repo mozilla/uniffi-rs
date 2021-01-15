@@ -9,13 +9,11 @@
 {% let handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) -%}
 
 uniffi::deps::lazy_static::lazy_static! {
-    {%- if obj.threadsafe() %}
-    static ref {{ handle_map }}: uniffi::ffi::handle_map::NonLockingHandleMap<{{ obj.name() }}> = 
-        uniffi::ffi::handle_map::NonLockingHandleMap::new();
-    {%- else %}
-    static ref {{ handle_map }}: uniffi::deps::ffi_support::ConcurrentHandleMap<{{ obj.name() }}> = 
-        uniffi::deps::ffi_support::ConcurrentHandleMap::new();
-    {%- endif %}
+    {%- let handle_map_type = obj.threadsafe()|choose(
+        "uniffi::ffi::handle_map::NonLockingHandleMap",
+        "uniffi::deps::ffi_support::ConcurrentHandleMap")
+    %}
+    static ref {{ handle_map }}: {{ handle_map_type }}<{{ obj.name() }}> = {{ handle_map_type }}::new();
 }
 
     {% let ffi_free = obj.ffi_object_free() -%}
