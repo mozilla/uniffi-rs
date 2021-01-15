@@ -9,5 +9,6 @@ members = [
   "examples/rondpoint",
   "examples/sprites",
   "examples/todolist",
+  "examples/threadsafe",
   "fixtures/regressions/enum-without-i32-helpers",
 ]
