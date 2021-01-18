@@ -13,6 +13,7 @@ name = "uniffi_threadsafe"
 [dependencies]
 uniffi_macros = {path = "../../uniffi_macros"}
 uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
+static_assertions = "1.1.0"
 
 [build-dependencies]
 uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}

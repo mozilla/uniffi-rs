@@ -5,17 +5,17 @@
 import java.util.concurrent.*
 import uniffi.threadsafe.*
 
-/// We'd like to write objects so different methods be executed on multiple 
+/// We'd like to write objects so different methods can be executed on multiple 
 /// threads at the same time.
 ///
 /// We have two Rust implementations of the same object.
-/// The objects can be busy-wait, thus blocking the caller thread for sometime.
+/// The objects can busy-wait, thus blocking the caller thread for some time.
 /// On a different thread, the same object can increment a counter. The counter
-/// should only increment when when busy.
+/// should only increment when busy.
 ///
 /// This function calls the busy-wait on one thread, and the incrementIfBusy 
 /// multiple times on another.
-fun countConcurrently(busyWait: () -> Int, incrementIfBusy: () -> Int): Int {
+fun countWhileBusy(busyWait: () -> Int, incrementIfBusy: () -> Int): Int {
     val executor = Executors.newFixedThreadPool(3)
     return try {
         val busyWaiting: Future<Int> = executor.submit(Callable {
@@ -49,7 +49,7 @@ val WAIT_FOR = 100_000
 /// holds a mutex throughout the busyWait, and incrementIfBusy is only
 /// called once that mutex is cleared, when it's not busy anymore.
 Counter().use { counter -> 
-    val count = countConcurrently(
+    val count = countWhileBusy(
         { counter.busyWait(WAIT_FOR) },
         { counter.incrementIfBusy() }
     )
@@ -60,7 +60,7 @@ Counter().use { counter ->
 /// which declares that the Rust library code will look after locking itself,
 /// and not rely on the default locking strategy.
 ThreadsafeCounter().use { counter -> 
-    val count = countConcurrently(
+    val count = countWhileBusy(
         { counter.busyWait(WAIT_FOR) },
         { counter.incrementIfBusy() }
     )

@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use static_assertions;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 
 /// Simulation of a task doing something to keep a thread busy.
@@ -51,8 +52,7 @@ struct ThreadsafeCounter {
     count: AtomicI32,
 }
 
-unsafe impl Send for ThreadsafeCounter {}
-unsafe impl Sync for ThreadsafeCounter {}
+static_assertions::assert_impl_all!(ThreadsafeCounter: Send, Sync);
 
 impl ThreadsafeCounter {
     fn new() -> Self {
