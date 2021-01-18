@@ -243,6 +243,96 @@ impl<T: Sync + Send> Default for ArcHandleMap<T> {
     }
 }
 
-/// We alias this type here to make the distinction between the 
-/// unfortunately named ConcurrentHandleMap 
+/// Make a type alias to contrast the two handle map implementations.
 pub type MutexHandleMap<T> = ffi_support::ConcurrentHandleMap<T>;
+
+/// A trait to help the code generation a bit tidier.
+///
+/// We'll implement it only for the `MutexHandleMap` which asks for `FnOnce(&mut T)`
+/// callbacks, but we'll give `ArcHandleMap` very similar looking methods, that
+/// accept `FnOnce(&T)` callbacks.
+///
+/// When generating the code in the `to_rs_method_call` macro in `macros.rs`, the code will be lexically
+/// identical.
+pub trait UniffiMethodCall<T> {
+    fn method_call_with_result<R, E, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(&mut T) -> Result<R, E>,
+        ExternError: From<E>,
+        R: IntoFfi;
+
+    fn method_call_with_output<R, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(&mut T) -> R,
+        R: IntoFfi;
+}
+
+impl<T> UniffiMethodCall<T> for MutexHandleMap<T> {
+    fn method_call_with_result<R, E, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(&mut T) -> Result<R, E>,
+        ExternError: From<E>,
+        R: IntoFfi,
+    {
+        self.call_with_result_mut(out_error, h, callback)
+    }
+
+    fn method_call_with_output<R, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(&mut T) -> R,
+        R: IntoFfi,
+    {
+        self.call_with_output_mut(out_error, h, callback)
+    }
+}
+
+/// The faux implementation of `UniffiMethodCall` which differs from the real one
+/// by not requiring `mut` references to `T`.
+impl<T: Sync + Send> ArcHandleMap<T> {
+    pub fn method_call_with_result<R, E, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(&T) -> Result<R, E>,
+        ExternError: From<E>,
+        R: IntoFfi,
+    {
+        self.call_with_result(out_error, h, callback)
+    }
+
+    pub fn method_call_with_output<R, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(&T) -> R,
+        R: IntoFfi,
+    {
+        self.call_with_output(out_error, h, callback)
+    }
+}
