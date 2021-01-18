@@ -1,10 +1,19 @@
-use ffi_support::ExternError;
-use ffi_support::Handle;
-use ffi_support::HandleError;
-use ffi_support::HandleMap;
-use ffi_support::IntoFfi;
+use ffi_support::{ExternError, Handle, HandleError, HandleMap, IntoFfi};
 use std::sync::{Arc, RwLock};
 
+/// `ArcHandleMap` is a relatively thin wrapper around `RwLock<HandleMap<Arc<T>>>`.
+/// This is only suitable for objects that implement `Sync` and `Send` and is
+/// for objects that are able to look after their own locking, and need to be called
+/// from multiple foreign language threads at the same time.
+///
+/// In contrast, the `ConcurrentHandleMap` is aliased as `MutexHandleMap` to show the difference:
+/// objects with `mut` methods can be used, but the objects can only be accessed from one thread
+/// at a time.
+///
+/// The `Threadsafe` annotation is used to choose which handle map `uniffi` uses.
+///
+/// This module also provides the `UniffiMethodCall` trait, which allows generated scaffolding
+/// to switch almost seemlessly.
 pub struct ArcHandleMap<T>
 where
     T: Sync + Send,
@@ -42,10 +51,7 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     /// Insert an item into the map, returning the newly allocated handle to the
     /// item.
     ///
-    /// # Locking
-    ///
-    /// Note that this requires taking the map's write lock, and so it will
-    /// block until all other threads have finished any read/write operations.
+    /// This takes the map's `write` lock.
     pub fn insert(&self, v: T) -> Handle {
         // Fails if the lock is poisoned. Not clear what we should do here... We
         // could always insert anyway (by matching on LockResult), but that
@@ -56,10 +62,7 @@ impl<T: Sync + Send> ArcHandleMap<T> {
 
     /// Remove an item from the map.
     ///
-    /// # Locking
-    ///
-    /// Note that this requires taking the map's write lock, and so it will
-    /// block until all other threads have finished any read/write operations.
+    /// This takes the map's `write` lock.
     pub fn delete(&self, h: Handle) -> Result<(), HandleError> {
         // We use `remove` and not delete (and use the inner block) to ensure
         // that if `v`'s destructor panics, we aren't holding the write lock
@@ -84,16 +87,13 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     /// Remove an item from the map, returning either the item,
     /// or None if its guard mutex got poisoned at some point.
     ///
-    /// # Locking
-    ///
-    /// Note that this requires taking the map's write lock, and so it will
-    /// block until all other threads have finished any read/write operations.
+    /// This takes the map's `write` lock, and unwraps the `Arc`.
     pub fn remove(&self, h: Handle) -> Result<Option<T>, HandleError> {
         let mut map = self.map.write().unwrap();
         let arc = map.remove(h)?;
         match Arc::try_unwrap(arc) {
             Ok(obj) => Ok(Some(obj)),
-            _ => Err(HandleError::InvalidHandle),
+            _ => Ok(None),
         }
     }
 
@@ -110,12 +110,8 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     /// Call `callback` with a non-mutable reference to the item from the map,
     /// after acquiring the necessary locks.
     ///
-    /// # Locking
-    ///
-    /// Note that this requires taking:
-    ///
-    /// - The map's read lock, and so it will block until all other threads have
-    ///   finished any write operations.
+    /// This takes the map's `read` lock for as long as needed to clone the inner `Arc`.
+    /// This is so the lock isn't held while the callback is in use.
     ///
     /// # Panics
     ///
@@ -144,12 +140,7 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     /// that takes a [`Handle`] is that it allows handling handle-related errors
     /// in one place.
     ///
-    /// # Locking
-    ///
-    /// Note that this requires taking:
-    ///
-    /// - The map's read lock, and so it will block until all other threads have
-    ///   finished any write operations.
+    /// This takes the map's `read` lock.
     pub fn get_u64<F, E, R>(&self, u: u64, callback: F) -> Result<R, E>
     where
         F: FnOnce(&T) -> Result<R, E>,
@@ -159,6 +150,9 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     }
 
     /// Helper that performs both a [`call_with_result`] and [`get`](ArcHandleMap::get).
+    ///
+    /// This takes the map's `read` lock for as long as needed to clone the inner `Arc`.
+    /// This is so the lock isn't held while the callback is in use.
     pub fn call_with_result<R, E, F>(
         &self,
         out_error: &mut ExternError,
@@ -203,6 +197,8 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     /// Use `constructor` to create and insert a `T`, while inside a
     /// [`call_with_result`] call (to handle panics and map errors onto an
     /// `ExternError`).
+    ///
+    /// This takes the map's `write` lock.
     pub fn insert_with_result<E, F>(&self, out_error: &mut ExternError, constructor: F) -> u64
     where
         F: std::panic::UnwindSafe + FnOnce() -> Result<T, E>,
