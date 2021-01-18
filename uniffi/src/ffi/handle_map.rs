@@ -3,7 +3,7 @@ use ffi_support::Handle;
 use ffi_support::HandleError;
 use ffi_support::HandleMap;
 use ffi_support::IntoFfi;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
 pub struct NonLockingHandleMap<T>
 where
@@ -11,7 +11,7 @@ where
 {
     /// The underlying map. Public so that more advanced use-cases
     /// may use it as they please.
-    pub map: RwLock<HandleMap<T>>,
+    pub map: RwLock<HandleMap<Arc<T>>>,
 }
 
 impl<T: Sync + Send> NonLockingHandleMap<T> {
@@ -51,7 +51,7 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
         // could always insert anyway (by matching on LockResult), but that
         // seems... really quite dubious.
         let mut map = self.map.write().unwrap();
-        map.insert(v)
+        map.insert(Arc::new(v))
     }
 
     /// Remove an item from the map.
@@ -90,9 +90,11 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
     /// block until all other threads have finished any read/write operations.
     pub fn remove(&self, h: Handle) -> Result<Option<T>, HandleError> {
         let mut map = self.map.write().unwrap();
-        let v = map.remove(h)?;
-        // TODO sense check.
-        Ok(Some(v))
+        let arc = map.remove(h)?;
+        match Arc::try_unwrap(arc) {
+            Ok(obj) => Ok(Some(obj)),
+            _ => Err(HandleError::InvalidHandle),
+        }
     }
 
     /// Convenient wrapper for `remove` which takes a `u64` that it will
@@ -116,9 +118,6 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
     ///   finished any write operations.
     /// - The mutex on the slot the handle is mapped to.
     ///
-    /// And so it will block if there are ongoing write operations, or if
-    /// another thread is reading from the same handle.
-    ///
     /// # Panics
     ///
     /// This will panic if a previous `get()` or `get_mut()` call has panicked
@@ -131,9 +130,12 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
         F: FnOnce(&T) -> Result<R, E>,
         E: From<HandleError>,
     {
-        let map = self.map.read().unwrap();
-        let hm = map.get(h)?;
-        callback(&*hm)
+        let obj = {
+            let map = self.map.read().unwrap();
+            let obj = map.get(h)?;
+            Arc::clone(&obj)
+        };
+        callback(&*obj)
     }
 
     /// Convenient wrapper for `get` which takes a `u64` that it will convert to
@@ -145,14 +147,10 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
     ///
     /// # Locking
     ///
-    /// Note that this requires taking both:
+    /// Note that this requires taking:
     ///
     /// - The map's read lock, and so it will block until all other threads have
     ///   finished any write operations.
-    /// - The mutex on the slot the handle is mapped to.
-    ///
-    /// And so it will block if there are ongoing write operations, or if
-    /// another thread is reading from the same handle.
     pub fn get_u64<F, E, R>(&self, u: u64, callback: F) -> Result<R, E>
     where
         F: FnOnce(&T) -> Result<R, E>,
@@ -175,12 +173,15 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
     {
         use ffi_support::call_with_result;
         call_with_result(out_error, || -> Result<_, ExternError> {
-            // We can't reuse get_mut here because it would require E:
+            // We can't reuse `get` here because it would require E:
             // From<HandleError>, which is inconvenient...
             let h = Handle::from_u64(h)?;
-            let map = self.map.read().unwrap();
-            let hm = map.get(h)?;
-            Ok(callback(&*hm)?)
+            let obj = {
+                let map = self.map.read().unwrap();
+                let obj = map.get(h)?;
+                Arc::clone(&obj)
+            };
+            Ok(callback(&*obj)?)
         })
     }
 
