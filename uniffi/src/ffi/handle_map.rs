@@ -5,7 +5,7 @@ use ffi_support::HandleMap;
 use ffi_support::IntoFfi;
 use std::sync::{Arc, RwLock};
 
-pub struct NonLockingHandleMap<T>
+pub struct ArcHandleMap<T>
 where
     T: Sync + Send,
 {
@@ -14,15 +14,15 @@ where
     pub map: RwLock<HandleMap<Arc<T>>>,
 }
 
-impl<T: Sync + Send> NonLockingHandleMap<T> {
-    /// Construct a new `NonLockingHandleMap`.
+impl<T: Sync + Send> ArcHandleMap<T> {
+    /// Construct a new `ArcHandleMap`.
     pub fn new() -> Self {
-        Self {
+        ArcHandleMap {
             map: RwLock::new(HandleMap::new()),
         }
     }
 
-    /// Get the number of entries in the `NonLockingHandleMap`.
+    /// Get the number of entries in the `ArcHandleMap`.
     ///
     /// This takes the map's `read` lock.
     #[inline]
@@ -31,7 +31,7 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
         map.len()
     }
 
-    /// Returns true if the `NonLockingHandleMap` is empty.
+    /// Returns true if the `ArcHandleMap` is empty.
     ///
     /// This takes the map's `read` lock.
     #[inline]
@@ -159,7 +159,7 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
         self.get(Handle::from_u64(u)?, callback)
     }
 
-    /// Helper that performs both a [`call_with_result`] and [`get`](NonLockingHandleMap::get_mut).
+    /// Helper that performs both a [`call_with_result`] and [`get`](ArcHandleMap::get).
     pub fn call_with_result<R, E, F>(
         &self,
         out_error: &mut ExternError,
@@ -185,7 +185,7 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
         })
     }
 
-    /// Helper that performs both a [`call_with_output`] and [`get`](NonLockingHandleMap::get).
+    /// Helper that performs both a [`call_with_output`] and [`get`](ArcHandleMap::get).
     pub fn call_with_output<R, F>(
         &self,
         out_error: &mut ExternError,
@@ -220,7 +220,7 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
     }
 
     /// Equivalent to
-    /// [`insert_with_result`](NonLockingHandleMap::insert_with_result) for the
+    /// [`insert_with_result`](ArcHandleMap::insert_with_result) for the
     /// case where the constructor cannot produce an error.
     ///
     /// The name is somewhat dubious, since there's no `output`, but it's intended to make it
@@ -236,9 +236,13 @@ impl<T: Sync + Send> NonLockingHandleMap<T> {
     }
 }
 
-impl<T: Sync + Send> Default for NonLockingHandleMap<T> {
+impl<T: Sync + Send> Default for ArcHandleMap<T> {
     #[inline]
     fn default() -> Self {
         Self::new()
     }
 }
+
+/// We alias this type here to make the distinction between the 
+/// unfortunately named ConcurrentHandleMap 
+pub type MutexHandleMap<T> = ffi_support::ConcurrentHandleMap<T>;

@@ -10,10 +10,11 @@
 
 uniffi::deps::lazy_static::lazy_static! {
     {%- let handle_map_type = obj.threadsafe()|choose(
-        "uniffi::ffi::handle_map::NonLockingHandleMap",
-        "uniffi::deps::ffi_support::ConcurrentHandleMap")
+        "uniffi::ffi::handle_map::ArcHandleMap",
+        "uniffi::ffi::handle_map::MutexHandleMap")
     %}
-    static ref {{ handle_map }}: {{ handle_map_type }}<{{ obj.name() }}> = {{ handle_map_type }}::new();
+    static ref {{ handle_map }}: {{ handle_map_type }}<{{ obj.name() }}>
+        = Default::default();
 }
 
     {% let ffi_free = obj.ffi_object_free() -%}
