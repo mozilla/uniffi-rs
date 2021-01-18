@@ -112,16 +112,15 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     ///
     /// # Locking
     ///
-    /// Note that this requires taking both:
+    /// Note that this requires taking:
     ///
     /// - The map's read lock, and so it will block until all other threads have
     ///   finished any write operations.
-    /// - The mutex on the slot the handle is mapped to.
     ///
     /// # Panics
     ///
-    /// This will panic if a previous `get()` or `get_mut()` call has panicked
-    /// inside it's callback. The solution to this
+    /// This will panic if a previous `get()` call has panicked
+    /// inside its callback.
     ///
     /// (It may also panic if the handle map detects internal state corruption,
     /// however this should not happen except for bugs in the handle map code).
@@ -334,5 +333,86 @@ impl<T: Sync + Send> ArcHandleMap<T> {
         R: IntoFfi,
     {
         self.call_with_output(out_error, h, callback)
+    }
+}
+
+/// Tests that check our behavior when panicing.
+///
+/// Naturally these require panic=unwind, which means we can't run them when
+/// generating coverage (well, `-Zprofile`-based coverage can't -- although
+/// ptrace-based coverage like tarpaulin can), and so we turn them off.
+///
+/// (For clarity, `cfg(coverage)` is not a standard thing. We add it in
+/// `automation/emit_coverage_info.sh`, and you can force it by adding
+/// "--cfg coverage" to your RUSTFLAGS manually if you need to do so).
+///
+/// Note: these tests are derived directly from ffi_support::ConcurrentHandleMap.
+#[cfg(not(coverage))]
+#[allow(unused_imports)]
+mod panic_tests {
+    use super::ArcHandleMap;
+    use ffi_support::{call_with_result, ErrorCode, ExternError};
+
+    #[derive(PartialEq, Debug)]
+    pub(super) struct Foobar(usize);
+
+    struct PanicOnDrop(());
+    impl Drop for PanicOnDrop {
+        fn drop(&mut self) {
+            panic!("intentional panic (drop)");
+        }
+    }
+
+    #[test]
+    fn test_panicking_drop() {
+        let map = ArcHandleMap::new();
+        let h = map.insert(PanicOnDrop(())).into_u64();
+        let mut e = ExternError::success();
+        call_with_result(&mut e, || map.delete_u64(h));
+        assert_eq!(e.get_code(), ErrorCode::PANIC);
+        let _ = unsafe { e.get_and_consume_message() };
+        assert!(!map.map.is_poisoned());
+        let inner = map.map.read().unwrap();
+        assert_eq!(inner.len(), 0);
+    }
+
+    #[test]
+    fn test_panicking_call_with() {
+        let map = ArcHandleMap::new();
+        let h = map.insert(Foobar(0)).into_u64();
+        let mut e = ExternError::success();
+        map.call_with_output(&mut e, h, |_thing| {
+            panic!("intentional panic (call_with_output)");
+        });
+
+        assert_eq!(e.get_code(), ErrorCode::PANIC);
+        let _ = unsafe { e.get_and_consume_message() };
+        {
+            assert!(!map.map.is_poisoned());
+            let inner = map.map.read().unwrap();
+            assert_eq!(inner.len(), 1);
+        }
+        assert!(map.delete_u64(h).is_ok());
+        assert!(!map.map.is_poisoned());
+        let inner = map.map.read().unwrap();
+        assert_eq!(inner.len(), 0);
+    }
+
+    #[test]
+    fn test_panicking_insert_with() {
+        let map = ArcHandleMap::new();
+        let mut e = ExternError::success();
+        let res = map.insert_with_output(&mut e, || {
+            panic!("intentional panic (insert_with_output)");
+        });
+
+        assert_eq!(e.get_code(), ErrorCode::PANIC);
+        let _ = unsafe { e.get_and_consume_message() };
+
+        assert_eq!(res, 0);
+
+        assert!(!map.map.is_poisoned());
+        let inner = map.map.read().unwrap();
+        assert_eq!(inner.len(), 0);
     }
 }
