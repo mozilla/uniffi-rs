@@ -15,10 +15,10 @@ import uniffi.threadsafe.*
 ///
 /// This function calls the busy-wait on one thread, and the incrementIfBusy 
 /// multiple times on another.
-fun countWhileBusy(busyWait: () -> Int, incrementIfBusy: () -> Int): Int {
+fun countWhileBusy(busyWait: () -> Unit, incrementIfBusy: () -> Int): Int {
     val executor = Executors.newFixedThreadPool(3)
     return try {
-        val busyWaiting: Future<Int> = executor.submit(Callable {
+        val busyWaiting: Future<Unit> = executor.submit(Callable {
             busyWait()
         })
 
@@ -42,7 +42,7 @@ fun countWhileBusy(busyWait: () -> Int, incrementIfBusy: () -> Int): Int {
 // long enough for us to incrementIfBusy.
 // If the Rust compiler gets too smart, and optimizes the busy wait loop away,
 // then no number high enough will make the tests work.
-val WAIT_FOR = 100_000
+val WAIT_FOR = 300 // ms
 
 /// The first implementation uses Uniffi's default locking strategy.
 /// Unfortunately, this counter does not work as we would like: uniffi
