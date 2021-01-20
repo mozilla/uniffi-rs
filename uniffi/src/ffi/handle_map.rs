@@ -18,6 +18,9 @@ use std::sync::{Arc, RwLock};
 ///
 /// This module also provides the `UniffiMethodCall` trait, which allows generated scaffolding
 /// to switch almost seemlessly.
+// Some care is taken to protect that handlemap itself being read and written concurrently, and
+// that the lock is held for the least amount of time; however, if it is ever poisoned, it will
+// panic on both read and write.
 pub struct ArcHandleMap<T>
 where
     T: Sync + Send,
@@ -55,18 +58,16 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     /// Insert an item into the map, returning the newly allocated handle to the
     /// item.
     ///
-    /// This takes the map's `write` lock.
+    /// This takes the map's `write` lock which the object is inserted.
     pub fn insert(&self, v: T) -> Handle {
-        // Fails if the lock is poisoned. Not clear what we should do here... We
-        // could always insert anyway (by matching on LockResult), but that
-        // seems... really quite dubious.
         let mut map = self.map.write().unwrap();
         map.insert(Arc::new(v))
     }
 
     /// Remove an item from the map.
     ///
-    /// This takes the map's `write` lock.
+    /// This takes the map's `write` lock while removing from the map, but
+    /// not while the object is being dropped.
     pub fn delete(&self, h: Handle) -> Result<(), HandleError> {
         // We use `remove` and not delete (and use the inner block) to ensure
         // that if `v`'s destructor panics, we aren't holding the write lock
@@ -117,13 +118,8 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     /// This takes the map's `read` lock for as long as needed to clone the inner `Arc`.
     /// This is so the lock isn't held while the callback is in use.
     ///
-    /// # Panics
-    ///
-    /// This will panic if a previous `get()` call has panicked
-    /// inside its callback.
-    ///
-    /// (It may also panic if the handle map detects internal state corruption,
-    /// however this should not happen except for bugs in the handle map code).
+    /// This takes the map's `read` lock for as long as needed to clone the inner `Arc`.
+    /// This is so the lock isn't held while the callback is in use.
     pub fn get<F, E, R>(&self, h: Handle, callback: F) -> Result<R, E>
     where
         F: FnOnce(&T) -> Result<R, E>,
@@ -144,7 +140,8 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     /// that takes a [`Handle`] is that it allows handling handle-related errors
     /// in one place.
     ///
-    /// This takes the map's `read` lock.
+    /// This takes the map's `read` lock for as long as needed to clone the inner `Arc`.
+    /// This is so the lock isn't held while the callback is in use.
     pub fn get_u64<F, E, R>(&self, u: u64, callback: F) -> Result<R, E>
     where
         F: FnOnce(&T) -> Result<R, E>,
@@ -202,7 +199,8 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     /// [`call_with_result`] call (to handle panics and map errors onto an
     /// `ExternError`).
     ///
-    /// This takes the map's `write` lock.
+    /// This takes the map's `write` lock for as long as needed to insert into the map.
+    /// This is so the lock isn't held while the constructor is being called.
     pub fn insert_with_result<E, F>(&self, out_error: &mut ExternError, constructor: F) -> u64
     where
         F: std::panic::UnwindSafe + FnOnce() -> Result<T, E>,
@@ -336,7 +334,7 @@ impl<T: Sync + Send> ArcHandleMap<T> {
     }
 }
 
-/// Tests that check our behavior when panicing.
+/// Tests that check our behavior when panicking.
 ///
 /// Naturally these require panic=unwind, which means we can't run them when
 /// generating coverage (well, `-Zprofile`-based coverage can't -- although
