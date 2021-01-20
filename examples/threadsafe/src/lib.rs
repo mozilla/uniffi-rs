@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use static_assertions;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 
 /// Simulation of a task doing something to keep a thread busy.
@@ -40,7 +39,7 @@ impl Counter {
 
     fn increment_if_busy(&mut self) -> i32 {
         if self.is_busy {
-            self.count = self.count + 1;
+            self.count += 1;
         }
 
         self.count
@@ -76,13 +75,11 @@ impl ThreadsafeCounter {
     }
 
     fn increment_if_busy(&self) -> i32 {
-        let current = if self.is_busy.load(Ordering::SeqCst) {
+        if self.is_busy.load(Ordering::SeqCst) {
             self.count.fetch_add(1, Ordering::SeqCst) + 1
         } else {
             self.count.load(Ordering::SeqCst)
-        };
-
-        current
+        }
     }
 }
 
