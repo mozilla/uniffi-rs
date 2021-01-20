@@ -3,9 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 pub mod foreignbytes;
-pub mod handle_map;
+pub mod handle_maps;
 pub mod rustbuffer;
 
 pub use foreignbytes::*;
-pub use handle_map::*;
+pub use handle_maps::*;
 pub use rustbuffer::*;

@@ -10,8 +10,8 @@
 
 uniffi::deps::lazy_static::lazy_static! {
     {%- let handle_map_type = obj.threadsafe()|choose(
-        "uniffi::ffi::handle_map::ArcHandleMap",
-        "uniffi::ffi::handle_map::MutexHandleMap")
+        "uniffi::ffi::handle_maps::ArcHandleMap",
+        "uniffi::ffi::handle_maps::MutexHandleMap")
     %}
     static ref {{ handle_map }}: {{ handle_map_type }}<{{ obj.name() }}>
         = Default::default();
