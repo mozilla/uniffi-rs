@@ -724,6 +724,7 @@ pub struct Object {
     constructors: Vec<Constructor>,
     methods: Vec<Method>,
     ffi_func_free: FFIFunction,
+    threadsafe: bool,
 }
 
 impl Object {
@@ -733,6 +734,7 @@ impl Object {
             constructors: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
+            threadsafe: false,
         }
     }
 
@@ -750,6 +752,10 @@ impl Object {
 
     pub fn ffi_object_free(&self) -> &FFIFunction {
         &self.ffi_func_free
+    }
+
+    pub fn threadsafe(&self) -> bool {
+        self.threadsafe
     }
 
     fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
@@ -785,12 +791,14 @@ impl Hash for Object {
 
 impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Object> {
-        if self.attributes.is_some() {
-            bail!("interface attributes are not supported yet");
-        }
         if self.inheritance.is_some() {
             bail!("interface inheritence is not supported");
         }
+        let attributes = match &self.attributes {
+            Some(attrs) => Attributes::try_from(attrs)?,
+            None => Default::default(),
+        };
+        attributes.validate_for_object()?;
         let mut object = Object::new(self.identifier.0.to_string());
         for member in &self.members.body {
             match member {
@@ -808,6 +816,11 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         if object.constructors.is_empty() {
             object.constructors.push(Default::default());
         }
+
+        object.threadsafe = attributes
+            .0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::Threadsafe));
         Ok(object)
     }
 }
@@ -873,7 +886,7 @@ impl Default for Constructor {
             name: String::from("new"),
             arguments: Vec::new(),
             ffi_func: Default::default(),
-            attributes: Attributes(Vec::new()),
+            attributes: Default::default(),
         }
     }
 }
@@ -1241,6 +1254,7 @@ fn convert_default_value(
 #[derive(Debug, Clone, Hash)]
 pub enum Attribute {
     ByRef,
+    Threadsafe,
     Throws(String),
     Error,
 }
@@ -1260,6 +1274,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
             weedle::attribute::ExtendedAttribute::NoArgs(attr) => match (attr.0).0 {
                 "ByRef" => Ok(Attribute::ByRef),
                 "Error" => Ok(Attribute::Error),
+                "Threadsafe" => Ok(Attribute::Threadsafe),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             weedle::attribute::ExtendedAttribute::Ident(identity) => {
@@ -1302,6 +1317,22 @@ impl Attributes {
             Attribute::Throws(inner) => Some(inner.as_ref()),
             _ => None,
         })
+    }
+
+    fn validate_for_object(&self) -> Result<()> {
+        for attr in self.0.iter() {
+            match attr {
+                Attribute::Threadsafe => continue,
+                _ => bail!(format!("{:?} not supported for Objects", attr)),
+            }
+        }
+        Ok(())
+    }
+}
+
+impl Default for Attributes {
+    fn default() -> Self {
+        Attributes(Vec::new())
     }
 }
 

@@ -1,11 +1,16 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+namespace threadsafe {};
 
-pub mod foreignbytes;
-pub mod handle_maps;
-pub mod rustbuffer;
+interface Counter {
+  void busy_wait(i32 ms);
+  i32 increment_if_busy();
+};
 
-pub use foreignbytes::*;
-pub use handle_maps::*;
-pub use rustbuffer::*;
+[Threadsafe]
+interface ThreadsafeCounter {
+  void busy_wait(i32 ms);
+  i32 increment_if_busy();
+};
+

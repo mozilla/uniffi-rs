@@ -22,6 +22,18 @@ mod filters {
     use super::*;
     use std::fmt;
 
+    pub fn choose(
+        expr_value: &bool,
+        then_value: &dyn fmt::Display,
+        else_value: &dyn fmt::Display,
+    ) -> Result<String, askama::Error> {
+        Ok(if *expr_value {
+            then_value.to_string()
+        } else {
+            else_value.to_string()
+        })
+    }
+
     pub fn type_rs(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8 => "i8".into(),

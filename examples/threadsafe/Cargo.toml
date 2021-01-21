@@ -1,0 +1,19 @@
+[package]
+name = "uniffi-example-threadsafe"
+edition = "2018"
+version = "0.6.1"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+name = "uniffi_threadsafe"
+
+[dependencies]
+uniffi_macros = {path = "../../uniffi_macros"}
+uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
+static_assertions = "1.1.0"
+
+[build-dependencies]
+uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}

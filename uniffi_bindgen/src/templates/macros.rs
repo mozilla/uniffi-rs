@@ -49,20 +49,24 @@ UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_output(err, || {
 {% endmatch %}
 {% endmacro %}
 
-{% macro to_rs_method_call(obj, meth) %}
-{% match meth.throws() %}
-{% when Some with (e) %}
-UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_result_mut(err, {{ meth.first_argument().name() }}, |obj| -> Result<{% call return_type_func(meth) %}, {{e}}> {
+{% macro to_rs_method_call(obj, meth) -%}
+{% let this_handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) -%}
+{% if !obj.threadsafe() -%}
+use uniffi::UniffiMethodCall;
+{%- endif -%}
+{% match meth.throws() -%}
+{% when Some with (e) -%}
+{{ this_handle_map }}.method_call_with_result(err, {{ meth.first_argument().name() }}, |obj| -> Result<{% call return_type_func(meth) %}, {{e}}> {
     let _retval = {{ obj.name() }}::{%- call to_rs_call_with_prefix("obj", meth) -%}?;
     Ok({% call ret(meth) %})
 })
-{% else %}
-UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.call_with_output_mut(err, {{ meth.first_argument().name() }}, |obj| {
+{% else -%}
+{{ this_handle_map }}.method_call_with_output(err, {{ meth.first_argument().name() }}, |obj| {
     let _retval = {{ obj.name() }}::{%- call to_rs_call_with_prefix("obj", meth) -%};
     {% call ret(meth) %}
 })
-{% endmatch %}
-{% endmacro %}
+{% endmatch -%}
+{% endmacro -%}
 
 {% macro to_rs_function_call(func) %}
 {% match func.throws() %}
