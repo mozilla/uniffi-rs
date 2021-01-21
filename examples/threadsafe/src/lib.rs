@@ -17,7 +17,9 @@ fn busy_wait(ms: i32) {
 // This counter is a naive implementation of a counter that _should_ allow the
 // waiting on one thread, and counting on another thread.
 // It relies on uniffi's default locking mechanisms, provided by the
-// `MutexHandleMap`, so doesn't actually work.
+// `MutexHandleMap`, so doesn't actually work: the mutex is held while the
+// `busy_wait` method is called, so `increment_if_busy` calls wait
+// for `busy_wait` to finish.
 struct Counter {
     is_busy: bool,
     count: i32,

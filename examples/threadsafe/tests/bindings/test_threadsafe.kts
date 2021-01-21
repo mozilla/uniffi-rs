@@ -37,11 +37,8 @@ fun countWhileBusy(busyWait: () -> Unit, incrementIfBusy: () -> Int): Int {
     }
 }
 
-// busyWait will cycle for this many iterations.
-// The faster your machine, the higher this needs to simulate busy waiting
-// long enough for us to incrementIfBusy.
-// If the Rust compiler gets too smart, and optimizes the busy wait loop away,
-// then no number high enough will make the tests work.
+// `busyWait` will block the thread while sleeping for this many
+// milliseconds.
 val WAIT_FOR = 300 // ms
 
 /// The first implementation uses Uniffi's default locking strategy.
