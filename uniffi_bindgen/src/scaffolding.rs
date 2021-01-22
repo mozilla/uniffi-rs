@@ -51,6 +51,7 @@ mod filters {
             Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
                 name.clone()
             }
+            Type::CallbackInterface(name) => format!("Box<dyn {}>", name),
             Type::Optional(t) => format!("Option<{}>", type_rs(t)?),
             Type::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
             Type::Map(t) => format!("std::collections::HashMap<String, {}>", type_rs(t)?),
@@ -73,27 +74,71 @@ mod filters {
             FFIType::RustBuffer => "uniffi::RustBuffer".into(),
             FFIType::RustError => "uniffi::deps::ffi_support::ExternError".into(),
             FFIType::ForeignBytes => "uniffi::ForeignBytes".into(),
+            FFIType::ForeignCallback => "uniffi::ForeignCallback".into(),
         })
     }
 
     pub fn lower_rs(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
-        Ok(format!(
-            "<{} as uniffi::ViaFfi>::lower({})",
-            type_rs(type_)?,
-            nm
-        ))
+        Ok(match type_ {
+            Type::CallbackInterface(type_name) => unimplemented!(
+                "uniffi::ViaFfi::lower is not supported for callback interfaces ({})",
+                type_name
+            ),
+            _ => format!("<{} as uniffi::ViaFfi>::lower({})", type_rs(type_)?, nm),
+        })
     }
 
     pub fn lift_rs(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         // This will panic if the bindings provide an invalid value over the FFI.
-        Ok(format!(
-            "<{} as uniffi::ViaFfi>::try_lift({}).unwrap()",
-            type_rs(type_)?,
-            nm
-        ))
+        Ok(match type_ {
+            Type::CallbackInterface(type_name) => format!(
+                "Box::new(<{}Proxy as uniffi::ViaFfi>::try_lift({}).unwrap())",
+                type_name, nm,
+            ),
+            _ => format!(
+                "<{} as uniffi::ViaFfi>::try_lift({}).unwrap()",
+                type_rs(type_)?,
+                nm
+            ),
+        })
+    }
+
+    /// Get a Rust expression for writing a value into a byte buffer.
+    pub fn write_rs(
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+        type_: &Type,
+    ) -> Result<String, askama::Error> {
+        Ok(match type_ {
+            Type::CallbackInterface(type_name) => unimplemented!(
+                "uniffi::ViaFfi::write is not supported for callback interfaces ({})",
+                type_name
+            ),
+            _ => format!(
+                "<{} as uniffi::ViaFfi>::write(&{}, {})",
+                type_rs(type_)?,
+                nm,
+                target
+            ),
+        })
+    }
+
+    /// Get a Rust expression for writing a value into a byte buffer.
+    pub fn read_rs(target: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        Ok(match type_ {
+            Type::CallbackInterface(type_name) => unimplemented!(
+                "uniffi::ViaFfi::try_read is not supported for callback interfaces ({})",
+                type_name
+            ),
+            _ => format!(
+                "<{} as uniffi::ViaFfi>::try_read({}).unwrap()",
+                type_rs(type_)?,
+                target
+            ),
+        })
     }
 }

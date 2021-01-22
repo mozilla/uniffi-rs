@@ -81,9 +81,11 @@ mod filters {
             // These types need conversion, and special handling for lifting/lowering.
             Type::Boolean => "Boolean".to_string(),
             Type::String => "String".to_string(),
-            Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
-                class_name_kt(name)?
-            }
+            Type::Enum(name)
+            | Type::Record(name)
+            | Type::Object(name)
+            | Type::Error(name)
+            | Type::CallbackInterface(name) => class_name_kt(name)?,
             Type::Optional(t) => format!("{}?", type_kt(t)?),
             Type::Sequence(t) => format!("List<{}>", type_kt(t)?),
             Type::Map(t) => format!("Map<String, {}>", type_kt(t)?),
@@ -106,6 +108,7 @@ mod filters {
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
             FFIType::RustError => "RustError".to_string(),
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+            FFIType::ForeignCallback => "ForeignCallback".to_string(),
         })
     }
 
@@ -179,6 +182,11 @@ mod filters {
     pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
+            Type::CallbackInterface(_) => format!(
+                "{}Internals.lower({})",
+                class_name_kt(&type_.canonical_name())?,
+                nm,
+            ),
             Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
                 format!("lower{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }
@@ -197,6 +205,12 @@ mod filters {
     ) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
+            Type::CallbackInterface(_) => format!(
+                "{}Internals.write({}, {})",
+                class_name_kt(&type_.canonical_name())?,
+                nm,
+                target,
+            ),
             Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
                 "write{}({}, {})",
                 class_name_kt(&type_.canonical_name())?,
@@ -214,6 +228,11 @@ mod filters {
     pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
+            Type::CallbackInterface(_) => format!(
+                "{}Internals.lift({})",
+                class_name_kt(&type_.canonical_name())?,
+                nm,
+            ),
             Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
                 format!("lift{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }
@@ -228,6 +247,11 @@ mod filters {
     pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
+            Type::CallbackInterface(_) => format!(
+                "{}Internals.read({})",
+                class_name_kt(&type_.canonical_name())?,
+                nm,
+            ),
             Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
                 format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }

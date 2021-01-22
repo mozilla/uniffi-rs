@@ -24,6 +24,9 @@ import com.sun.jna.Structure
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 {% include "RustBufferTemplate.kt" %}
 
@@ -55,6 +58,11 @@ import java.util.concurrent.atomic.AtomicLong
 // Objects
 {% for obj in ci.iter_object_definitions() %}
 {% include "ObjectTemplate.kt" %}
+{% endfor %}
+
+// Callback Interfaces
+{% for cbi in ci.iter_callback_interface_definitions() %}
+{% include "CallbackInterfaceTemplate.kt" %}
 {% endfor %}
 
 {% import "macros.kt" as kt %}

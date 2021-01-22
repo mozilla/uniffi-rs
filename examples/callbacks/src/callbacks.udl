@@ -1,0 +1,48 @@
+namespace callbacks {};
+
+interface Telephone {
+  void call(boolean domestic, OnCallAnswered call_responder);
+};
+
+callback interface OnCallAnswered {
+  string hello();
+  void busy();
+  void text_received(string text);
+};
+
+/// These objects are implemented by the foreign language and passed 
+/// to Rust. Rust then calls methods on it when it needs to.
+callback interface ForeignGetters {
+  boolean get_bool(boolean v, boolean arg2);
+  string get_string(string v, boolean arg2);
+  string? get_option(string? v, boolean arg2);
+  sequence<i32> get_list(sequence<i32> v, boolean arg2);
+};
+
+/// These objects are implemented in Rust, and call out to `ForeignGetters`
+/// to get the value.
+interface RustGetters {
+  boolean get_bool(ForeignGetters callback, boolean v, boolean arg2);
+  string get_string(ForeignGetters callback, string v, boolean arg2);
+  string? get_option(ForeignGetters callback, string? v, boolean arg2);
+  sequence<i32> get_list(ForeignGetters callback, sequence<i32> v, boolean arg2);
+};
+
+/// These objects are implemented by the foreign language and passed 
+/// to Rust. Rust then calls methods on it when it needs to.
+/// Rust developers need to declare these traits extending `Send` so 
+/// they can be stored in Rust— i.e. not passed in as an argument to
+/// be used immediately.
+callback interface StoredForeignStringifier {
+  string from_simple_type(i32 value);
+  // Test if types are collected from callback interfaces.
+  // kotlinc compile time error if not.
+  string from_complex_type(sequence<f64?>? values); 
+};
+
+/// Rust object that uses the StoredForeignStringifier to produce string representations
+/// of passed arguments.
+interface RustStringifier {
+  constructor(StoredForeignStringifier callback);
+  string from_simple_type(i32 value);
+};

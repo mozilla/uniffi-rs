@@ -64,6 +64,9 @@ pub enum FFIType {
     /// The string is owned by rust and allocated on the rust heap, and must be freed by
     /// passing it to the appropriate `string_free` FFI function.
     RustError,
+    /// A pointer to a single function in to the foreign language.
+    /// This function contains all the machinery to make callbacks work on the foreign language side.
+    ForeignCallback,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
 }
@@ -91,6 +94,7 @@ pub enum Type {
     Record(String),
     Enum(String),
     Error(String),
+    CallbackInterface(String),
     // Structurally recursive types.
     Optional(Box<Type>),
     Sequence(Box<Type>),
@@ -126,6 +130,8 @@ impl From<&Type> for FFIType {
             Type::String => FFIType::RustBuffer,
             // Objects are passed as opaque integer handles.
             Type::Object(_) => FFIType::UInt64,
+            // Callback interfaces are passed as opaque integer handles.
+            Type::CallbackInterface(_) => FFIType::UInt64,
             // Enums are passed as integers.
             Type::Enum(_) => FFIType::UInt32,
             // Errors have their own special type.
@@ -168,6 +174,7 @@ impl Type {
             Type::Error(nm) => format!("Error{}", nm),
             Type::Enum(nm) => format!("Enum{}", nm),
             Type::Record(nm) => format!("Record{}", nm),
+            Type::CallbackInterface(nm) => format!("CallbackInterface{}", nm),
             // Recursive types.
             // These add a prefix to the name of the underlying type.
             // The component API definition cannot give names to recursive types, so as long as the
@@ -285,6 +292,7 @@ impl TypeFinder for weedle::Definition<'_> {
             weedle::Definition::Dictionary(d) => d.add_type_definitions_to(types),
             weedle::Definition::Enum(d) => d.add_type_definitions_to(types),
             weedle::Definition::Typedef(d) => d.add_type_definitions_to(types),
+            weedle::Definition::CallbackInterface(d) => d.add_type_definitions_to(types),
             _ => Ok(()),
         }
     }
@@ -328,6 +336,16 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
         // a good long while before we consider implementing a more complex delayed resolution strategy.
         let t = types.resolve_type_expression(&self.type_)?;
         types.add_type_definition(self.identifier.0, t)
+    }
+}
+
+impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
+    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+        if self.attributes.is_some() {
+            bail!("no typedef attributes are currently supported");
+        }
+        let name = self.identifier.0.to_string();
+        types.add_type_definition(self.identifier.0, Type::CallbackInterface(name))
     }
 }
 

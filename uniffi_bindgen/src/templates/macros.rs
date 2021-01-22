@@ -31,6 +31,15 @@
     {% if func.arguments().len() > 0 %},{% endif %} err: &mut uniffi::deps::ffi_support::ExternError,
 {%- endmacro -%}
 
+{%- macro arg_list_decl_with_prefix(prefix, meth) %}
+    {{- prefix -}}
+    {%- if meth.arguments().len() > 0 %}, {# whitespace #}
+        {%- for arg in meth.arguments() %}
+            {{- arg.name() }}: {{ arg.type_()|type_rs -}}{% if loop.last %}{% else %},{% endif %}
+        {%- endfor %}
+    {%- endif %}
+{%- endmacro -%}
+
 {% macro return_type_func(func) %}{% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi }}{%- else -%}(){%- endmatch -%}{%- endmacro -%}
 
 {% macro ret(func) %}{% match func.return_type() %}{% when Some with (return_type) %}{{ "_retval"|lower_rs(return_type) }}{% else %}_retval{% endmatch %}{% endmacro %}

@@ -76,6 +76,7 @@ pub struct ComponentInterface {
     records: Vec<Record>,
     functions: Vec<Function>,
     objects: Vec<Object>,
+    callback_interfaces: Vec<CallbackInterface>,
     errors: Vec<Error>,
 }
 
@@ -150,6 +151,17 @@ impl<'ci> ComponentInterface {
     pub fn get_object_definition(&self, name: &str) -> Option<&Object> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
         self.objects.iter().find(|o| o.name == name)
+    }
+
+    /// List the definitions for every Callback Interface type in the interface.
+    pub fn iter_callback_interface_definitions(&self) -> Vec<CallbackInterface> {
+        self.callback_interfaces.to_vec()
+    }
+
+    /// Get a Callback interface definition by name, or None if no such interface is defined.
+    pub fn get_callback_interface_definition(&self, name: &str) -> Option<&CallbackInterface> {
+        // TODO: probably we could store these internally in a HashMap to make this easier?
+        self.callback_interfaces.iter().find(|o| o.name == name)
     }
 
     /// List the definitions for every Error type in the interface.
@@ -308,6 +320,11 @@ impl<'ci> ComponentInterface {
                     .chain(obj.methods.iter().map(|f| f.ffi_func.clone()))
             })
             .flatten()
+            .chain(
+                self.callback_interfaces
+                    .iter()
+                    .map(|cb| cb.ffi_init_callback.clone()),
+            )
             .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
             .chain(
                 vec![
@@ -365,6 +382,12 @@ impl<'ci> ComponentInterface {
         Ok(())
     }
 
+    fn add_callback_interface_definition(&mut self, defn: CallbackInterface) -> Result<()> {
+        // Note that there will be no duplicates thanks to the previous type-finding pass.
+        self.callback_interfaces.push(defn);
+        Ok(())
+    }
+
     fn add_error_definition(&mut self, defn: Error) -> Result<()> {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.errors.push(defn);
@@ -382,6 +405,9 @@ impl<'ci> ComponentInterface {
         }
         for obj in self.objects.iter_mut() {
             obj.derive_ffi_funcs(&ci_prefix)?;
+        }
+        for callback in self.callback_interfaces.iter_mut() {
+            callback.derive_ffi_funcs(&ci_prefix)?;
         }
         Ok(())
     }
@@ -405,6 +431,7 @@ impl Hash for ComponentInterface {
         self.records.hash(state);
         self.functions.hash(state);
         self.objects.hash(state);
+        self.callback_interfaces.hash(state);
         self.errors.hash(state);
     }
 }
@@ -454,6 +481,10 @@ impl APIBuilder for weedle::Definition<'_> {
             weedle::Definition::Interface(d) => {
                 let obj = d.convert(ci)?;
                 ci.add_object_definition(obj)
+            }
+            weedle::Definition::CallbackInterface(d) => {
+                let obj = d.convert(ci)?;
+                ci.add_callback_interface_definition(obj)
             }
             _ => bail!("don't know how to deal with {:?}", self),
         }
@@ -1049,6 +1080,88 @@ impl APIConverter<Error> for weedle::EnumDefinition<'_> {
                 .map(|v| v.0.to_string())
                 .collect(),
         })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct CallbackInterface {
+    name: String,
+    methods: Vec<Method>,
+    ffi_init_callback: FFIFunction,
+}
+
+impl CallbackInterface {
+    fn new(name: String) -> CallbackInterface {
+        CallbackInterface {
+            name,
+            methods: Default::default(),
+            ffi_init_callback: Default::default(),
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn type_(&self) -> Type {
+        Type::CallbackInterface(self.name.clone())
+    }
+
+    pub fn methods(&self) -> Vec<&Method> {
+        self.methods.iter().collect()
+    }
+
+    pub fn ffi_init_callback(&self) -> &FFIFunction {
+        &self.ffi_init_callback
+    }
+
+    fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
+        self.ffi_init_callback.name = format!("ffi_{}_{}_init_callback", ci_prefix, self.name);
+        self.ffi_init_callback.arguments = vec![FFIArgument {
+            name: "callback_stub".to_string(),
+            type_: FFIType::ForeignCallback,
+        }];
+        self.ffi_init_callback.return_type = None;
+        Ok(())
+    }
+}
+
+impl Hash for CallbackInterface {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // We don't include the FFIFunc in the hash calculation, because:
+        //  - it is entirely determined by the other fields,
+        //    so excluding it is safe.
+        //  - its `name` property includes a checksum derived from  the very
+        //    hash value we're trying to calculate here, so excluding it
+        //    avoids a weird circular depenendency in the calculation.
+        self.name.hash(state);
+        self.methods.hash(state);
+    }
+}
+
+impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<CallbackInterface> {
+        if self.attributes.is_some() {
+            bail!("callback interface attributes are not supported yet");
+        }
+        if self.inheritance.is_some() {
+            bail!("callback interface inheritence is not supported");
+        }
+        let mut object = CallbackInterface::new(self.identifier.0.to_string());
+        for member in &self.members.body {
+            match member {
+                weedle::interface::InterfaceMember::Operation(t) => {
+                    let mut method = t.convert(ci)?;
+                    method.object_name.push_str(object.name.as_str());
+                    object.methods.push(method);
+                }
+                _ => bail!(
+                    "no support for callback interface member type {:?} yet",
+                    member
+                ),
+            }
+        }
+        Ok(object)
     }
 }
 
