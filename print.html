@@ -392,8 +392,8 @@ namespace arithmetic {
 </code></pre>
 <p>On the other side (Kotlin, Swift etc.), a proper exception will be thrown if <code>Result::is_err()</code> is <code>true</code>.</p>
 <h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
-<p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.<br />
-Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="udl/./structs.html">Dictionary</a>.</p>
+<p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.</p>
+<p>Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="udl/./structs.html">Dictionary</a>.</p>
 <p>The following Rust code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -459,11 +459,100 @@ The foreign-language code may attempt to operate on an interface instance
 from multiple threads, and it's important that this not violate Rust's
 assumption that there is at most a single mutable reference to a struct
 at any point in time.</p>
-<p>Uniffi enforces this using runtime locking. Each interface instance
+<p>By default, uniffi enforces this using runtime locking. Each interface instance
 has an associated lock which is transparently acquired at the beginning of each
 call to a method of that instance, and released once the method returns. This
 approach is simple and safe, but it means that all method calls on an instance
 are run in a strictly sequential fashion, limiting concurrency.</p>
+<p>You can opt out of this protection by marking the interface as threadsafe:</p>
+<pre><code class="language-idl">[Threadsafe]
+interface Counter {
+    constructor();
+    void increment();
+    u64 get();
+};
+</code></pre>
+<p>The uniffi-generated code will allow concurrent method calls on threadsafe interfaces
+without any locking.</p>
+<p>For this to be safe, the underlying Rust struct must adhere to certain restrictions, and
+uniffi's generated Rust scaffolding will emit compile-time errors if it does not.</p>
+<p>The Rust struct must not expose any methods that take <code>&amp;mut self</code>. The following implementation
+of the <code>Counter</code> interface will fail to compile because it relies on mutable references:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Counter {
+    value: u64
+}
+
+impl Counter {
+    fn new() -&gt; Self {
+        Self { value: 0 }
+    }
+
+    // No mutable references to self allowed in [Threadsafe] interfaces.
+    fn increment(&amp;mut self) {
+        self.value = self.value + 1;
+    }
+
+    fn get(&amp;self) -&gt; u64 {
+        self.value
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Implementations can instead use Rust's &quot;interior mutability&quot; pattern. However, they
+must do so in a way that is both <code>Sync</code> and <code>Send</code>, since the foreign-language code
+may operate on the instance from multiple threads. The following implementation of the
+<code>Counter</code> interface will fail to compile because <code>RefCell</code> is not <code>Send</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Counter {
+    value: RefCell&lt;u64&gt;
+}
+
+impl Counter {
+    fn new() -&gt; Self {
+        // `RefCell` is not `Sync`, so neither is `Counter`.
+        Self { value: RefCell::new(0) }
+    }
+
+    fn increment(&amp;self) {
+        let mut value = self.value.borrow_mut();
+        *value = *value + 1;
+    }
+
+    fn get(&amp;self) -&gt; u64 {
+        *self.value.borrow()
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>This version uses an <code>AtomicU64</code> for interior mutability, which is both <code>Sync</code> and
+<code>Send</code> and hence will compile successfully:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Counter {
+    value: AtomicU64
+}
+
+impl Counter {
+    fn new() -&gt; Self {
+        Self { value: AtomicU64::new(0) }
+    }
+
+    fn increment(&amp;self) {
+        self.value.fetch_add(1, Ordering::SeqCst);
+    }
+
+    fn get(&amp;self) -&gt; u64 {
+        self.value.load(Ordering::SeqCst)
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
 <p>You can read more about the technical details in the docs on the
 <a href="udl/../internals/object_references.html">internal details of managing object references</a>.</p>
 <h1><a class="header" href="#integrating-with-gradle" id="integrating-with-gradle">Integrating with Gradle</a></h1>
@@ -511,7 +600,7 @@ behind this choice).</p>
 </code></pre>
 <p>Calling this function from foreign language code involves the following steps:</p>
 <ol>
-<li>The user-provided calling code invokes the <code>add_to_list</code> function that is expoed by the
+<li>The user-provided calling code invokes the <code>add_to_list</code> function that is exposed by the
 uniffi-generated foreign language bindings, passing <code>item</code> as an appropriate language-native
 integer.</li>
 <li>The foreign language bindings <em><strong>lower</strong></em> each argument to a function call into
@@ -582,13 +671,14 @@ active at any point in the program.</li>
 <p>Uniffi aims to maintain these guarantees even when the Rust code is being invoked
 from a foreign language, at the cost of turning them into run-time checks rather
 than compile-time guarantees.</p>
+<h2><a class="header" href="#handle-maps" id="handle-maps">Handle Maps</a></h2>
 <p>We achieve this by indirecting all object access through a
 <a href="https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/index.html">handle map</a>,
 a mapping from opaque integer handles to object instances. This indirection
 imposes a small runtime cost but helps us guard against errors or oversights
 in the generated bindings.</p>
 <p>For each interface declared in the UDL, the uniffi-generated Rust scaffolding
-will create a global <a href="https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html">ffi_support::ConcurrentHandleMap</a> that is responsible for owning all instances
+will create a global handlemap that is responsible for owning all instances
 of that interface, and handing out references to them when methods are called.</p>
 <p>For example, given a interface definition like this:</p>
 <pre><code class="language-idl">interface TodoList {
@@ -620,7 +710,7 @@ handle to the foreign language code:</p>
 <span class="boring">}
 </span></code></pre></pre>
 <p>When invoking a method on the instance, the foreign-language code passes the integer handle back
-to the Rust code, which borrows a reference to the instance from the handlemap for the duration
+to the Rust code, which borrows a mutable reference to the instance from the handlemap for the duration
 of the method call:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -649,8 +739,23 @@ a special destructor function so that the Rust code can delete it from the handl
 <li>If the generated bindings incorrectly pass an invalid handle, or a handle for a different type of object,
 then the handlemap will throw an error with high probability, providing some amount of run-time typechecking
 for correctness of the generated bindings.</li>
-<li>The <code>ConcurrentHandleMap</code> class wraps each instance with a <code>Mutex</code>, which serializes access to the instance
-and upholds Rust's guarantees against shared mutable access.</li>
+<li>The handlemap can ensure we uphold Rust's requirements around unique mutable references and threadsafey,
+using a combination of compile-time checks and runtime locking depending on the details of the underlying
+Rust struct that implements the interface.</li>
+</ul>
+<h2><a class="header" href="#managing-concurrency" id="managing-concurrency">Managing Concurrency</a></h2>
+<p>By default, uniffi uses the <a href="https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html">ffi_support::ConcurrentHandleMap</a> struct as the handlemap for each declared instance. This class
+wraps each instance with a <code>Mutex</code>, which serializes access to the instance and upholds Rust's guarantees
+against shared mutable access.  This approach is simple and safe, but it means that all method calls
+on an instance are run in a strictly sequential fashion, limiting concurrency.</p>
+<p>For instances that are explicited tagged with the <code>[Threadsafe]</code> attribute, uniffi instead uses
+a custom <code>ArcHandleMap</code> struct. This replaces the run-time <code>Mutex</code> with compile-time assertions
+about the safety of the underlying Rust struct. Specifically:</p>
+<ul>
+<li>The <code>ArcHandleMap</code> will never give out a mutable reference to an instance, forcing the
+underlying struct to use interior mutability and manage its own locking.</li>
+<li>The <code>ArcHandleMap</code> can only contain structs that are <code>Sync</code> and <code>Send</code>, ensuring that
+shared references can safely be accessed from multiple threads.</li>
 </ul>
 
                     </main>

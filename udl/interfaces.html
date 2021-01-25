@@ -160,8 +160,8 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
-<p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.<br />
-Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="./structs.html">Dictionary</a>.</p>
+<p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.</p>
+<p>Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="./structs.html">Dictionary</a>.</p>
 <p>The following Rust code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -227,11 +227,100 @@ The foreign-language code may attempt to operate on an interface instance
 from multiple threads, and it's important that this not violate Rust's
 assumption that there is at most a single mutable reference to a struct
 at any point in time.</p>
-<p>Uniffi enforces this using runtime locking. Each interface instance
+<p>By default, uniffi enforces this using runtime locking. Each interface instance
 has an associated lock which is transparently acquired at the beginning of each
 call to a method of that instance, and released once the method returns. This
 approach is simple and safe, but it means that all method calls on an instance
 are run in a strictly sequential fashion, limiting concurrency.</p>
+<p>You can opt out of this protection by marking the interface as threadsafe:</p>
+<pre><code class="language-idl">[Threadsafe]
+interface Counter {
+    constructor();
+    void increment();
+    u64 get();
+};
+</code></pre>
+<p>The uniffi-generated code will allow concurrent method calls on threadsafe interfaces
+without any locking.</p>
+<p>For this to be safe, the underlying Rust struct must adhere to certain restrictions, and
+uniffi's generated Rust scaffolding will emit compile-time errors if it does not.</p>
+<p>The Rust struct must not expose any methods that take <code>&amp;mut self</code>. The following implementation
+of the <code>Counter</code> interface will fail to compile because it relies on mutable references:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Counter {
+    value: u64
+}
+
+impl Counter {
+    fn new() -&gt; Self {
+        Self { value: 0 }
+    }
+
+    // No mutable references to self allowed in [Threadsafe] interfaces.
+    fn increment(&amp;mut self) {
+        self.value = self.value + 1;
+    }
+
+    fn get(&amp;self) -&gt; u64 {
+        self.value
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Implementations can instead use Rust's &quot;interior mutability&quot; pattern. However, they
+must do so in a way that is both <code>Sync</code> and <code>Send</code>, since the foreign-language code
+may operate on the instance from multiple threads. The following implementation of the
+<code>Counter</code> interface will fail to compile because <code>RefCell</code> is not <code>Send</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Counter {
+    value: RefCell&lt;u64&gt;
+}
+
+impl Counter {
+    fn new() -&gt; Self {
+        // `RefCell` is not `Sync`, so neither is `Counter`.
+        Self { value: RefCell::new(0) }
+    }
+
+    fn increment(&amp;self) {
+        let mut value = self.value.borrow_mut();
+        *value = *value + 1;
+    }
+
+    fn get(&amp;self) -&gt; u64 {
+        *self.value.borrow()
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>This version uses an <code>AtomicU64</code> for interior mutability, which is both <code>Sync</code> and
+<code>Send</code> and hence will compile successfully:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Counter {
+    value: AtomicU64
+}
+
+impl Counter {
+    fn new() -&gt; Self {
+        Self { value: AtomicU64::new(0) }
+    }
+
+    fn increment(&amp;self) {
+        self.value.fetch_add(1, Ordering::SeqCst);
+    }
+
+    fn get(&amp;self) -&gt; u64 {
+        self.value.load(Ordering::SeqCst)
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
 <p>You can read more about the technical details in the docs on the
 <a href="../internals/object_references.html">internal details of managing object references</a>.</p>
 
