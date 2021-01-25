@@ -14,6 +14,8 @@ Uniffi aims to maintain these guarantees even when the Rust code is being invoke
 from a foreign language, at the cost of turning them into run-time checks rather
 than compile-time guarantees.
 
+## Handle Maps
+
 We achieve this by indirecting all object access through a
 [handle map](https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/index.html),
 a mapping from opaque integer handles to object instances. This indirection
@@ -21,7 +23,7 @@ imposes a small runtime cost but helps us guard against errors or oversights
 in the generated bindings.
 
 For each interface declared in the UDL, the uniffi-generated Rust scaffolding
-will create a global [ffi_support::ConcurrentHandleMap](https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html) that is responsible for owning all instances
+will create a global handlemap that is responsible for owning all instances
 of that interface, and handing out references to them when methods are called.
 
 For example, given a interface definition like this:
@@ -55,7 +57,7 @@ pub extern "C" fn todolist_TodoList_new(err: &mut ExternError) -> u64 {
 ```
 
 When invoking a method on the instance, the foreign-language code passes the integer handle back
-to the Rust code, which borrows a reference to the instance from the handlemap for the duration
+to the Rust code, which borrows a mutable reference to the instance from the handlemap for the duration
 of the method call:
 
 ```rust
@@ -82,5 +84,22 @@ This indirection gives us some important safety properties:
 * If the generated bindings incorrectly pass an invalid handle, or a handle for a different type of object,
   then the handlemap will throw an error with high probability, providing some amount of run-time typechecking
   for correctness of the generated bindings.
-* The `ConcurrentHandleMap` class wraps each instance with a `Mutex`, which serializes access to the instance
-  and upholds Rust's guarantees against shared mutable access.
+* The handlemap can ensure we uphold Rust's requirements around unique mutable references and threadsafey,
+  using a combination of compile-time checks and runtime locking depending on the details of the underlying
+  Rust struct that implements the interface.
+
+## Managing Concurrency
+
+By default, uniffi uses the [ffi_support::ConcurrentHandleMap](https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html) struct as the handlemap for each declared instance. This class
+wraps each instance with a `Mutex`, which serializes access to the instance and upholds Rust's guarantees
+against shared mutable access.  This approach is simple and safe, but it means that all method calls
+on an instance are run in a strictly sequential fashion, limiting concurrency.
+
+For instances that are explicited tagged with the `[Threadsafe]` attribute, uniffi instead uses
+a custom `ArcHandleMap` struct. This replaces the run-time `Mutex` with compile-time assertions
+about the safety of the underlying Rust struct. Specifically:
+
+* The `ArcHandleMap` will never give out a mutable reference to an instance, forcing the
+  underlying struct to use interior mutability and manage its own locking.
+* The `ArcHandleMap` can only contain structs that are `Sync` and `Send`, ensuring that
+  shared references can safely be accessed from multiple threads.
