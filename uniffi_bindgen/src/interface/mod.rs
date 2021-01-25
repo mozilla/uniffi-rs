@@ -76,6 +76,7 @@ pub struct ComponentInterface {
     records: Vec<Record>,
     functions: Vec<Function>,
     objects: Vec<Object>,
+    callback_interfaces: Vec<CallbackInterface>,
     errors: Vec<Error>,
 }
 
@@ -150,6 +151,17 @@ impl<'ci> ComponentInterface {
     pub fn get_object_definition(&self, name: &str) -> Option<&Object> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
         self.objects.iter().find(|o| o.name == name)
+    }
+
+    /// List the definitions for every Callback Interface type in the interface.
+    pub fn iter_callback_interface_definitions(&self) -> Vec<CallbackInterface> {
+        self.callback_interfaces.to_vec()
+    }
+
+    /// Get a Callback interface definition by name, or None if no such interface is defined.
+    pub fn get_callback_interface_definition(&self, name: &str) -> Option<&CallbackInterface> {
+        // TODO: probably we could store these internally in a HashMap to make this easier?
+        self.callback_interfaces.iter().find(|o| o.name == name)
     }
 
     /// List the definitions for every Error type in the interface.
@@ -308,6 +320,11 @@ impl<'ci> ComponentInterface {
                     .chain(obj.methods.iter().map(|f| f.ffi_func.clone()))
             })
             .flatten()
+            .chain(
+                self.callback_interfaces
+                    .iter()
+                    .map(|cb| cb.ffi_init_callback.clone()),
+            )
             .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
             .chain(
                 vec![
@@ -365,6 +382,12 @@ impl<'ci> ComponentInterface {
         Ok(())
     }
 
+    fn add_callback_interface_definition(&mut self, defn: CallbackInterface) -> Result<()> {
+        // Note that there will be no duplicates thanks to the previous type-finding pass.
+        self.callback_interfaces.push(defn);
+        Ok(())
+    }
+
     fn add_error_definition(&mut self, defn: Error) -> Result<()> {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.errors.push(defn);
@@ -382,6 +405,9 @@ impl<'ci> ComponentInterface {
         }
         for obj in self.objects.iter_mut() {
             obj.derive_ffi_funcs(&ci_prefix)?;
+        }
+        for callback in self.callback_interfaces.iter_mut() {
+            callback.derive_ffi_funcs(&ci_prefix)?;
         }
         Ok(())
     }
@@ -405,6 +431,7 @@ impl Hash for ComponentInterface {
         self.records.hash(state);
         self.functions.hash(state);
         self.objects.hash(state);
+        self.callback_interfaces.hash(state);
         self.errors.hash(state);
     }
 }
@@ -434,8 +461,7 @@ impl APIBuilder for weedle::Definition<'_> {
             weedle::Definition::Enum(d) => {
                 // We check if the enum represents an error...
                 let is_error = if let Some(attrs) = &d.attributes {
-                    let attributes = Attributes::try_from(attrs)?;
-                    attributes.contains_error_attr()
+                    EnumAttributes::try_from(attrs)?.contains_error_attr()
                 } else {
                     false
                 };
@@ -454,6 +480,10 @@ impl APIBuilder for weedle::Definition<'_> {
             weedle::Definition::Interface(d) => {
                 let obj = d.convert(ci)?;
                 ci.add_object_definition(obj)
+            }
+            weedle::Definition::CallbackInterface(d) => {
+                let obj = d.convert(ci)?;
+                ci.add_callback_interface_definition(obj)
             }
             _ => bail!("don't know how to deal with {:?}", self),
         }
@@ -526,7 +556,7 @@ pub struct Function {
     arguments: Vec<Argument>,
     return_type: Option<Type>,
     ffi_func: FFIFunction,
-    attributes: Attributes,
+    attributes: FunctionAttributes,
 }
 
 impl Function {
@@ -599,8 +629,8 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
             attributes: match &self.attributes {
-                Some(attr) => Attributes::try_from(attr)?,
-                None => Attributes(Vec::new()),
+                Some(attr) => FunctionAttributes::try_from(attr)?,
+                None => Default::default(),
             },
         })
     }
@@ -652,19 +682,14 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
             None => None,
             Some(v) => Some(convert_default_value(&v.value, &type_)?),
         };
+        let by_ref = match &self.attributes {
+            Some(attrs) => ArgumentAttributes::try_from(attrs)?.by_ref(),
+            None => false,
+        };
         Ok(Argument {
             name: self.identifier.0.to_string(),
             type_,
-            by_ref: match &self.attributes {
-                None => false,
-                Some(attrs) => Attributes::try_from(attrs)?
-                    .0
-                    .iter()
-                    .any(|attr| match attr {
-                        Attribute::ByRef => true,
-                        _ => false,
-                    }),
-            },
+            by_ref,
             optional: self.optional.is_some(),
             default,
         })
@@ -795,10 +820,9 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
             bail!("interface inheritence is not supported");
         }
         let attributes = match &self.attributes {
-            Some(attrs) => Attributes::try_from(attrs)?,
+            Some(attrs) => InterfaceAttributes::try_from(attrs)?,
             None => Default::default(),
         };
-        attributes.validate_for_object()?;
         let mut object = Object::new(self.identifier.0.to_string());
         for member in &self.members.body {
             match member {
@@ -817,10 +841,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
             object.constructors.push(Default::default());
         }
 
-        object.threadsafe = attributes
-            .0
-            .iter()
-            .any(|attr| matches!(attr, Attribute::Threadsafe));
+        object.threadsafe = attributes.threadsafe();
         Ok(object)
     }
 }
@@ -834,7 +855,7 @@ pub struct Constructor {
     name: String,
     arguments: Vec<Argument>,
     ffi_func: FFIFunction,
-    attributes: Attributes,
+    attributes: ConstructorAttributes,
 }
 
 impl Constructor {
@@ -898,8 +919,8 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
             attributes: match &self.attributes {
-                Some(attr) => Attributes::try_from(attr)?,
-                None => Attributes(Vec::new()),
+                Some(attr) => ConstructorAttributes::try_from(attr)?,
+                None => Default::default(),
             },
         })
     }
@@ -916,7 +937,7 @@ pub struct Method {
     return_type: Option<Type>,
     arguments: Vec<Argument>,
     ffi_func: FFIFunction,
-    attributes: Attributes,
+    attributes: MethodAttributes,
 }
 
 impl Method {
@@ -1010,8 +1031,8 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             return_type,
             ffi_func: Default::default(),
             attributes: match &self.attributes {
-                Some(attr) => Attributes::try_from(attr)?,
-                None => Attributes(Vec::new()),
+                Some(attr) => MethodAttributes::try_from(attr)?,
+                None => Default::default(),
             },
         })
     }
@@ -1049,6 +1070,88 @@ impl APIConverter<Error> for weedle::EnumDefinition<'_> {
                 .map(|v| v.0.to_string())
                 .collect(),
         })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct CallbackInterface {
+    name: String,
+    methods: Vec<Method>,
+    ffi_init_callback: FFIFunction,
+}
+
+impl CallbackInterface {
+    fn new(name: String) -> CallbackInterface {
+        CallbackInterface {
+            name,
+            methods: Default::default(),
+            ffi_init_callback: Default::default(),
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn type_(&self) -> Type {
+        Type::CallbackInterface(self.name.clone())
+    }
+
+    pub fn methods(&self) -> Vec<&Method> {
+        self.methods.iter().collect()
+    }
+
+    pub fn ffi_init_callback(&self) -> &FFIFunction {
+        &self.ffi_init_callback
+    }
+
+    fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
+        self.ffi_init_callback.name = format!("ffi_{}_{}_init_callback", ci_prefix, self.name);
+        self.ffi_init_callback.arguments = vec![FFIArgument {
+            name: "callback_stub".to_string(),
+            type_: FFIType::ForeignCallback,
+        }];
+        self.ffi_init_callback.return_type = None;
+        Ok(())
+    }
+}
+
+impl Hash for CallbackInterface {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // We don't include the FFIFunc in the hash calculation, because:
+        //  - it is entirely determined by the other fields,
+        //    so excluding it is safe.
+        //  - its `name` property includes a checksum derived from  the very
+        //    hash value we're trying to calculate here, so excluding it
+        //    avoids a weird circular depenendency in the calculation.
+        self.name.hash(state);
+        self.methods.hash(state);
+    }
+}
+
+impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<CallbackInterface> {
+        if self.attributes.is_some() {
+            bail!("callback interface attributes are not supported yet");
+        }
+        if self.inheritance.is_some() {
+            bail!("callback interface inheritence is not supported");
+        }
+        let mut object = CallbackInterface::new(self.identifier.0.to_string());
+        for member in &self.members.body {
+            match member {
+                weedle::interface::InterfaceMember::Operation(t) => {
+                    let mut method = t.convert(ci)?;
+                    method.object_name.push_str(object.name.as_str());
+                    object.methods.push(method);
+                }
+                _ => bail!(
+                    "no support for callback interface member type {:?} yet",
+                    member
+                ),
+            }
+        }
+        Ok(object)
     }
 }
 
@@ -1299,17 +1402,60 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
     }
 }
 
-/// Abstraction around a Vec<Attribute>.
+/// Abstractions around a Vec<Attribute>.
 ///
-/// This is a convenience for parsing a weedle list of attributes.
-#[derive(Debug, Clone, Hash)]
-pub struct Attributes(Vec<Attribute>);
+/// This is a convenience for parsing a weedle list of attributes for each of the
+/// syntactic constructs uniffi supports.
 
-impl Attributes {
+#[derive(Debug, Clone, Hash, Default)]
+pub struct InterfaceAttributes(Vec<Attribute>);
+
+impl InterfaceAttributes {
+    fn threadsafe(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::Threadsafe))
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::Threadsafe => Ok(()),
+            _ => bail!(format!("{:?} not supported for interface classes", attr)),
+        })?;
+        Ok(Self(attrs))
+    }
+}
+
+#[derive(Debug, Clone, Hash, Default)]
+pub struct EnumAttributes(Vec<Attribute>);
+
+impl EnumAttributes {
     pub fn contains_error_attr(&self) -> bool {
         self.0.iter().any(|attr| attr.is_error())
     }
+}
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::Error => Ok(()),
+            _ => bail!(format!("{:?} not supported for enums", attr)),
+        })?;
+        Ok(Self(attrs))
+    }
+}
 
+#[derive(Debug, Clone, Hash, Default)]
+pub struct FunctionAttributes(Vec<Attribute>);
+
+impl FunctionAttributes {
     fn get_throws_err(&self) -> Option<&str> {
         self.0.iter().find_map(|attr| match attr {
             // This will hopefully return a helpful compilation error
@@ -1318,44 +1464,81 @@ impl Attributes {
             _ => None,
         })
     }
-
-    fn validate_for_object(&self) -> Result<()> {
-        for attr in self.0.iter() {
-            match attr {
-                Attribute::Threadsafe => continue,
-                _ => bail!(format!("{:?} not supported for Objects", attr)),
-            }
-        }
-        Ok(())
-    }
 }
 
-impl Default for Attributes {
-    fn default() -> Self {
-        Attributes(Vec::new())
-    }
-}
-
-impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for Attributes {
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttributes {
     type Error = anyhow::Error;
     fn try_from(
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
-        let attrs = &weedle_attributes.body.list;
-
-        let mut hash_set = std::collections::HashSet::new();
-        for attr in attrs {
-            if !hash_set.insert(attr) {
-                anyhow::bail!("Duplicated ExtendedAttribute: {:?}", attr);
-            }
-        }
-
-        attrs
-            .iter()
-            .map(Attribute::try_from)
-            .collect::<Result<Vec<_>, _>>()
-            .map(Attributes)
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::Throws(_) => Ok(()),
+            _ => bail!(format!(
+                "{:?} not supported for functions, methods or constructors",
+                attr
+            )),
+        })?;
+        Ok(Self(attrs))
     }
+}
+
+// There may be some divergence between Methods and Functions at some point,
+// but not yet.
+type MethodAttributes = FunctionAttributes;
+
+// Similarly, currently Constructors only support the same attributes as Functions.
+// When this changes, (e.g. https://github.com/mozilla/uniffi-rs/issues/37 to support multiple
+// named constructors), ConstructorAttributes will need its own implementation.
+type ConstructorAttributes = FunctionAttributes;
+
+#[derive(Debug, Clone, Hash, Default)]
+pub struct ArgumentAttributes(Vec<Attribute>);
+
+impl ArgumentAttributes {
+    fn by_ref(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::ByRef))
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ArgumentAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::ByRef => Ok(()),
+            _ => bail!(format!("{:?} not supported for arguments", attr)),
+        })?;
+        Ok(Self(attrs))
+    }
+}
+
+fn parse_attributes<F>(
+    weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    validator: F,
+) -> Result<Vec<Attribute>>
+where
+    F: Fn(&Attribute) -> Result<()>,
+{
+    let attrs = &weedle_attributes.body.list;
+
+    let mut hash_set = std::collections::HashSet::new();
+    for attr in attrs {
+        if !hash_set.insert(attr) {
+            anyhow::bail!("Duplicated ExtendedAttribute: {:?}", attr);
+        }
+    }
+
+    let attrs = attrs
+        .iter()
+        .map(Attribute::try_from)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    for attr in attrs.iter() {
+        validator(&attr)?;
+    }
+
+    Ok(attrs)
 }
 
 /// Represents an "extern C"-style function that will be part of the FFI.

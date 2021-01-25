@@ -29,7 +29,7 @@ namespace example {
 
 Calling this function from foreign language code involves the following steps:
 
-1. The user-provided calling code invokes the `add_to_list` function that is expoed by the
+1. The user-provided calling code invokes the `add_to_list` function that is exposed by the
    uniffi-generated foreign language bindings, passing `item` as an appropriate language-native
    integer.
 2. The foreign language bindings ***lower*** each argument to a function call into

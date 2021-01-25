@@ -113,6 +113,13 @@ class RustBufferBuilder(object):
     def write{{ canonical_type_name }}(self):
         raise InternalError("RustBufferStream.write() not implemented yet for {{ canonical_type_name }}")
 
+    {% when Type::CallbackInterface with (object_name) -%}
+    # The Callback Interface type {{ object_name }}.
+    # Objects cannot currently be serialized, but we can produce a helpful error.
+
+    def write{{ canonical_type_name }}(self):
+        raise InternalError("RustBufferStream.write() not implemented yet for {{ canonical_type_name }}")
+
     {% when Type::Error with (error_name) -%}
     # The Error type {{ error_name }}.
     # Errors cannot currently be serialized, but we can produce a helpful error.
