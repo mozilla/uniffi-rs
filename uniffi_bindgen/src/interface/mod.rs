@@ -1340,9 +1340,9 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
 }
 
 #[derive(Debug, Clone, Hash, Default)]
-pub struct MethodAttributes(Vec<Attribute>);
+pub struct FunctionAttributes(Vec<Attribute>);
 
-impl MethodAttributes {
+impl FunctionAttributes {
     fn get_throws_err(&self) -> Option<&str> {
         self.0.iter().find_map(|attr| match attr {
             // This will hopefully return a helpful compilation error
@@ -1353,49 +1353,30 @@ impl MethodAttributes {
     }
 }
 
-impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for MethodAttributes {
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttributes {
     type Error = anyhow::Error;
     fn try_from(
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
-            _ => bail!(format!("{:?} not supported for methods", attr)),
+            _ => bail!(format!(
+                "{:?} not supported for functions, methods or constructors",
+                attr
+            )),
         })?;
         Ok(Self(attrs))
     }
 }
 
-// There may be some divergence between Functions and Methods at some point,
+// There may be some divergence between Methods and Functions at some point,
 // but not yet.
-type FunctionAttributes = MethodAttributes;
+type MethodAttributes = FunctionAttributes;
 
-#[derive(Debug, Clone, Hash, Default)]
-pub struct ConstructorAttributes(Vec<Attribute>);
-
-impl ConstructorAttributes {
-    fn get_throws_err(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            // This will hopefully return a helpful compilation error
-            // if the error is not defined.
-            Attribute::Throws(inner) => Some(inner.as_ref()),
-            _ => None,
-        })
-    }
-}
-
-impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttributes {
-    type Error = anyhow::Error;
-    fn try_from(
-        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
-    ) -> Result<Self, Self::Error> {
-        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::Throws(_) => Ok(()),
-            _ => bail!(format!("{:?} not supported for constructors", attr)),
-        })?;
-        Ok(Self(attrs))
-    }
-}
+// Similarly, currently Constructors only support the same attributes as Functions.
+// When this changes, (e.g. https://github.com/mozilla/uniffi-rs/issues/37 to support multiple
+// named constructors), ConstructorAttributes will need its own implementation.
+type ConstructorAttributes = FunctionAttributes;
 
 #[derive(Debug, Clone, Hash, Default)]
 pub struct ArgumentAttributes(Vec<Attribute>);
