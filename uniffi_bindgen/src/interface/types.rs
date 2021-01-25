@@ -28,7 +28,7 @@ use anyhow::Result;
 use std::convert::TryFrom;
 use std::{collections::hash_map::Entry, collections::HashMap, collections::HashSet};
 
-use super::Attributes;
+use super::EnumAttributes;
 
 /// Represents the restricted set of low-level types that can be used to construct
 /// the C-style FFI layer between a rust component and its foreign language bindings.
@@ -317,7 +317,7 @@ impl TypeFinder for weedle::EnumDefinition<'_> {
         let name = self.identifier.0.to_string();
         // Our error types are defined using an `enum` with a special attribute.
         if let Some(attrs) = &self.attributes {
-            let attrs = Attributes::try_from(attrs)?;
+            let attrs = EnumAttributes::try_from(attrs)?;
             if attrs.contains_error_attr() {
                 return types.add_type_definition(self.identifier.0, Type::Error(name));
             }
