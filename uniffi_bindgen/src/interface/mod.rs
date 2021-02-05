@@ -348,6 +348,25 @@ impl<'ci> ComponentInterface {
         self.types.resolve_type_expression(expr)
     }
 
+    fn resolve_return_type_expression(
+        &mut self,
+        expr: &weedle::types::ReturnType<'_>,
+    ) -> Result<Option<Type>> {
+        Ok(match expr {
+            weedle::types::ReturnType::Undefined(_) => None,
+            weedle::types::ReturnType::Type(t) => {
+                // Older versions of WebIDL used `void` for functions that don't return a value,
+                // while newer versions have replaced it with `undefined`. Special-case this for
+                // backwards compatibility for our consumers.
+                use weedle::types::{NonAnyType::Identifier, SingleType::NonAny, Type::Single};
+                match t {
+                    Single(NonAny(Identifier(id))) if id.type_.0 == "void" => None,
+                    _ => Some(self.resolve_type_expression(t)?),
+                }
+            }
+        })
+    }
+
     fn add_namespace_definition(&mut self, defn: Namespace) -> Result<()> {
         if !self.namespace.is_empty() {
             bail!("duplicate namespace definition");
@@ -613,10 +632,7 @@ impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {
 
 impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
-        let return_type = match &self.return_type {
-            weedle::types::ReturnType::Void(_) => None,
-            weedle::types::ReturnType::Type(t) => Some(ci.resolve_type_expression(t)?),
-        };
+        let return_type = ci.resolve_return_type_expression(&self.return_type)?;
         if let Some(Type::Object(_)) = return_type {
             bail!("Objects cannot currently be returned from functions");
         }
@@ -1013,10 +1029,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
         if let Some(weedle::interface::StringifierOrStatic::Stringifier(_)) = self.modifier {
             bail!("stringifiers are not supported");
         }
-        let return_type = match &self.return_type {
-            weedle::types::ReturnType::Void(_) => None,
-            weedle::types::ReturnType::Type(t) => Some(ci.resolve_type_expression(t)?),
-        };
+        let return_type = ci.resolve_return_type_expression(&self.return_type)?;
         if let Some(Type::Object(_)) = return_type {
             bail!("Objects cannot currently be returned from functions");
         }
