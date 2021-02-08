@@ -11,5 +11,5 @@ class {{ rec.name()|class_name_py }}(object):
         {%- for field in rec.fields() %}
         if self.{{ field.name()|var_name_py }} != other.{{ field.name()|var_name_py }}:
             return False
-        return True
         {%- endfor %}
+        return True

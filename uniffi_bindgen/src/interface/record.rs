@@ -88,10 +88,10 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
 // Represents an individual field on a Record.
 #[derive(Debug, Clone, Hash)]
 pub struct Field {
-    name: String,
-    type_: Type,
-    required: bool,
-    default: Option<Literal>,
+    pub(super) name: String,
+    pub(super) type_: Type,
+    pub(super) required: bool,
+    pub(super) default: Option<Literal>,
 }
 
 impl Field {

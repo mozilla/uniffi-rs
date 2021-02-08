@@ -97,7 +97,7 @@ class RustBufferBuilder(object):
     {% when Type::Boolean -%}
 
     def writeBool(self, v):
-        self._pack_into(1, ">b", 0 if v else 1)
+        self._pack_into(1, ">b", 1 if v else 0)
 
     {% when Type::String -%}
 
@@ -128,10 +128,21 @@ class RustBufferBuilder(object):
         raise InternalError("RustBufferStream.write() not implemented yet for {{ canonical_type_name }}")
 
     {% when Type::Enum with (enum_name) -%}
+    {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
     # The Enum type {{ enum_name }}.
 
     def write{{ canonical_type_name }}(self, v):
+        {%- if e.is_flat() %}
         self._pack_into(4, ">i", v.value)
+        {%- else -%}
+        {%- for variant in e.variants() %}
+        if v.is_{{ variant.name()|var_name_py }}():
+            self._pack_into(4, ">i", {{ loop.index }})
+            {%- for field in variant.fields() %}
+            self.write{{ field.type_().canonical_name()|class_name_py }}(v.{{ field.name() }})
+            {%- endfor %}
+        {%- endfor %}
+        {%- endif %}
 
     {% when Type::Record with (record_name) -%}
     {%- let rec = ci.get_record_definition(record_name).unwrap() -%}

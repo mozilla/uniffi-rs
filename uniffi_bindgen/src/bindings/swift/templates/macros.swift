@@ -55,6 +55,21 @@
     {%- endfor %}
 {%- endmacro %}
 
+{#-
+// Field lists as used in Swift declarations of Records and Enums.
+// Note the var_name_swift and type_swift filters.
+-#}
+{% macro field_list_decl(item) %}
+    {%- for field in item.fields() -%}
+        {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift -}}
+        {%- match field.default_value() %}
+            {%- when Some with(literal) %} = {{ literal|literal_swift }}
+            {%- else %}
+        {%- endmatch -%}
+        {% if !loop.last %}, {% endif %}
+    {%- endfor %}
+{%- endmacro %}
+
 
 {% macro arg_list_protocol(func) %}
     {%- for arg in func.arguments() -%}

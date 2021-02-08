@@ -133,14 +133,14 @@ impl Into<FFIType> for &Type {
             Type::Object(_) => FFIType::UInt64,
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface(_) => FFIType::UInt64,
-            // Enums are passed as integers.
-            Type::Enum(_) => FFIType::UInt32,
             // Errors have their own special type.
             Type::Error(_) => FFIType::RustError,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
-            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
-                FFIType::RustBuffer
-            }
+            Type::Enum(_)
+            | Type::Record(_)
+            | Type::Optional(_)
+            | Type::Sequence(_)
+            | Type::Map(_) => FFIType::RustBuffer,
         }
     }
 }
@@ -184,7 +184,7 @@ impl TypeUniverse {
         }
         let type_ = self.add_known_type(type_)?;
         match self.type_definitions.entry(name.to_string()) {
-            Entry::Occupied(_) => bail!("Conflicting type definition for {}", name),
+            Entry::Occupied(_) => bail!("Conflicting type definition for \"{}\"", name),
             Entry::Vacant(e) => {
                 e.insert(type_);
                 Ok(())
@@ -193,7 +193,7 @@ impl TypeUniverse {
     }
 
     /// Get the [Type] corresponding to a given name, if any.
-    fn get_type_definition(&self, name: &str) -> Option<Type> {
+    pub(super) fn get_type_definition(&self, name: &str) -> Option<Type> {
         self.type_definitions.get(name).cloned()
     }
 

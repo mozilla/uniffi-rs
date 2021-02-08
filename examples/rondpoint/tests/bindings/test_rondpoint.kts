@@ -6,7 +6,24 @@ assert(dico == copyDico)
 
 assert(copieEnumeration(Enumeration.DEUX) == Enumeration.DEUX)
 assert(copieEnumerations(listOf(Enumeration.UN, Enumeration.DEUX)) == listOf(Enumeration.UN, Enumeration.DEUX))
-assert(copieCarte(mapOf("1" to Enumeration.UN, "2" to Enumeration.DEUX)) == mapOf("1" to Enumeration.UN, "2" to Enumeration.DEUX))
+assert(copieCarte(mapOf(
+    "0" to EnumerationAvecDonnees.Zero,
+    "1" to EnumerationAvecDonnees.Un(1u),
+    "2" to EnumerationAvecDonnees.Deux(2u, "deux")
+)) == mapOf(
+    "0" to EnumerationAvecDonnees.Zero,
+    "1" to EnumerationAvecDonnees.Un(1u),
+    "2" to EnumerationAvecDonnees.Deux(2u, "deux")
+))
+
+val var1: EnumerationAvecDonnees = EnumerationAvecDonnees.Zero
+val var2: EnumerationAvecDonnees = EnumerationAvecDonnees.Un(1u)
+val var3: EnumerationAvecDonnees = EnumerationAvecDonnees.Un(2u)
+assert(var1 != var2)
+assert(var2 != var3)
+assert(var1 == EnumerationAvecDonnees.Zero)
+assert(var1 != EnumerationAvecDonnees.Un(1u))
+assert(var2 == EnumerationAvecDonnees.Un(1u))
 
 assert(switcheroo(false))
 

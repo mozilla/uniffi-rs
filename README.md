@@ -88,7 +88,7 @@ Things that are implemented so far:
 
 * Primitive numeric types, equivalents to those offered by Rust (`u32`, `f64`, etc).
 * Strings (which are always UTF-8, like Rust's `String`).
-* C-style enums (just the discriminant, no associated data).
+* Enums, including enums with associated data (aka "tagged unions" or "sum types").
 * C-style structs containing named fields (we call these *records*).
 * Sequences of all of the above (like Rust's `Vec<T>`).
 * Optional instances of all of the above (like Rust's `Option<T>`).
@@ -98,7 +98,6 @@ Things that are implemented so far:
 
 Things that are not implemented yet:
 
-* Enums with associated data.
 * Union types.
 * Efficient access to binary data (like Rust's `Vec<u8>`).
 * Passing object references to functions or methods.

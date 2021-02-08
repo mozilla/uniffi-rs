@@ -6,7 +6,20 @@ assert(dico == copyDico)
 
 assert(copieEnumeration(e: .deux) == .deux)
 assert(copieEnumerations(e: [.un, .deux]) == [.un, .deux])
-assert(copieCarte(c: ["1": .un, "2": .deux]) == ["1": .un, "2": .deux])
+assert(copieCarte(c:
+    ["0": .zero,
+    "1": .un(premier: 1),
+    "2": .deux(premier: 2, second: "deux")
+]) == [
+    "0": .zero,
+    "1": .un(premier: 1),
+    "2": .deux(premier: 2, second: "deux")
+])
+
+assert(EnumerationAvecDonnees.zero != EnumerationAvecDonnees.un(premier: 1))
+assert(EnumerationAvecDonnees.un(premier: 1) == EnumerationAvecDonnees.un(premier: 1))
+assert(EnumerationAvecDonnees.un(premier: 1) != EnumerationAvecDonnees.un(premier: 2))
+
 
 assert(switcheroo(b: false))
 

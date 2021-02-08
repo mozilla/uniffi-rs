@@ -110,7 +110,7 @@ impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_>
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Operation(t) => {
-                    let mut method = t.convert(ci)?;
+                    let mut method: Method = t.convert(ci)?;
                     method.object_name.push_str(object.name.as_str());
                     object.methods.push(method);
                 }
