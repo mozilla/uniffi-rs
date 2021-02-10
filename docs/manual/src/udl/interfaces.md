@@ -74,6 +74,27 @@ func display(list: TodoListProtocol) {
 }
 ```
 
+## Alternate Named Constructors
+
+In addition to the default constructor connected to the `::new()` method, you can specify
+alternate named constructors to create object instances in different ways. Each such constructor
+must be given an explicit name, provided in the UDL with the `[Name]` attribute like so:
+
+```idl
+interface TodoList {
+    // The default constructor makes an empty list.
+    constructor();
+    // This alternate constructor makes a new TodoList from a list of string items.
+    [Name=new_from_items]
+    constructor(sequence<string> items)
+    ...
+```
+
+For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
+in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
+Rust struct.
+
+
 ## Concurrent Access
 
 Since interfaces represent mutable data, uniffi has to take extra care

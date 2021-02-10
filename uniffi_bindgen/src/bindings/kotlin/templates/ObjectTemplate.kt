@@ -12,10 +12,12 @@ class {{ obj.name()|class_name_kt }}(
     handle: Long
 ) : FFIObject(AtomicLong(handle)), {{ obj.name()|class_name_kt }}Interface {
 
-    {%- for cons in obj.constructors() %}
+    {%- match obj.primary_constructor() %}
+    {%- when Some with (cons) %}
     constructor({% call kt::arg_list_decl(cons) -%}) :
         this({% call kt::to_ffi_call(cons) %})
-    {%- endfor %}
+    {%- when None %}
+    {%- endmatch %}
 
     /**
      * Disconnect the object from the underlying Rust object.
@@ -48,12 +50,21 @@ class {{ obj.name()|class_name_kt }}(
         }.let {
             {{ "it"|lift_kt(return_type) }}
         }
-    
+
     {%- when None -%}
     override fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_protocol(meth) %}) =
         callWithHandle {
-            {%- call kt::to_ffi_call_with_prefix("it", meth) %} 
+            {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }
     {% endmatch %}
     {% endfor %}
+
+    {% if obj.constructors().len() > 1 -%}
+    companion object {
+        {% for cons in obj.alternate_constructors() -%}
+        fun {{ cons.name()|fn_name_kt }}({% call kt::arg_list_decl(cons) %}): {{ obj.name()|class_name_kt }} =
+            {{ obj.name()|class_name_kt }}({% call kt::to_ffi_call(cons) %})
+        {% endfor %}
+    }
+    {%- endif %}
 }

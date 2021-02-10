@@ -27,6 +27,7 @@ use anyhow::{bail, Result};
 pub(super) enum Attribute {
     ByRef,
     Error,
+    Name(String),
     Threadsafe,
     Throws(String),
 }
@@ -54,24 +55,24 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
             },
             // Matches assignment-style attributes like ["Throws=Error"]
             weedle::attribute::ExtendedAttribute::Ident(identity) => {
-                if identity.lhs_identifier.0 == "Throws" {
-                    Ok(Attribute::Throws(match identity.rhs {
-                        weedle::attribute::IdentifierOrString::Identifier(identifier) => {
-                            identifier.0.to_string()
-                        }
-                        weedle::attribute::IdentifierOrString::String(str_lit) => {
-                            str_lit.0.to_string()
-                        }
-                    }))
-                } else {
-                    anyhow::bail!(
+                match identity.lhs_identifier.0 {
+                    "Name" => Ok(Attribute::Name(name_from_id_or_string(&identity.rhs))),
+                    "Throws" => Ok(Attribute::Throws(name_from_id_or_string(&identity.rhs))),
+                    _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
-                    )
+                    ),
                 }
             }
             _ => anyhow::bail!("Attribute not supported: {:?}", weedle_attribute),
         }
+    }
+}
+
+fn name_from_id_or_string(nm: &weedle::attribute::IdentifierOrString<'_>) -> String {
+    match nm {
+        weedle::attribute::IdentifierOrString::Identifier(identifier) => identifier.0.to_string(),
+        weedle::attribute::IdentifierOrString::String(str_lit) => str_lit.0.to_string(),
     }
 }
 
@@ -154,10 +155,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttribut
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
-            _ => bail!(format!(
-                "{:?} not supported for functions, methods or constructors",
-                attr
-            )),
+            _ => bail!(format!("{:?} not supported for functions or methods", attr)),
         })?;
         Ok(Self(attrs))
     }
@@ -218,10 +216,44 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
 // but not yet.
 pub(super) type MethodAttributes = FunctionAttributes;
 
-// Similarly, currently Constructors only support the same attributes as Functions.
-// When this changes, (e.g. https://github.com/mozilla/uniffi-rs/issues/37 to support multiple
-// named constructors), ConstructorAttributes will need its own implementation.
-pub(super) type ConstructorAttributes = FunctionAttributes;
+// Constructors can have a `Name` attribute, so need their own implementation.
+/// Represents UDL attributes that might appear on a function.
+///
+/// This supports the `[Throws=ErrorName]` attribute for functions that
+/// can produce an error.
+#[derive(Debug, Clone, Hash, Default)]
+pub(super) struct ConstructorAttributes(Vec<Attribute>);
+
+impl ConstructorAttributes {
+    pub(super) fn get_throws_err(&self) -> Option<&str> {
+        self.0.iter().find_map(|attr| match attr {
+            // This will hopefully return a helpful compilation error
+            // if the error is not defined.
+            Attribute::Throws(inner) => Some(inner.as_ref()),
+            _ => None,
+        })
+    }
+    pub(super) fn get_name(&self) -> Option<&str> {
+        self.0.iter().find_map(|attr| match attr {
+            Attribute::Name(inner) => Some(inner.as_ref()),
+            _ => None,
+        })
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::Throws(_) => Ok(()),
+            Attribute::Name(_) => Ok(()),
+            _ => bail!(format!("{:?} not supported for constructors", attr)),
+        })?;
+        Ok(Self(attrs))
+    }
+}
 
 #[cfg(test)]
 mod test {
@@ -242,6 +274,22 @@ mod test {
         let attr = Attribute::try_from(&node)?;
         assert!(matches!(attr, Attribute::Error));
         assert!(attr.is_error());
+        Ok(())
+    }
+
+    #[test]
+    fn test_name() -> Result<()> {
+        let (_, node) = weedle::attribute::ExtendedAttribute::parse("Name=Value").unwrap();
+        let attr = Attribute::try_from(&node)?;
+        assert!(matches!(attr, Attribute::Name(nm) if nm == "Value"));
+
+        let (_, node) = weedle::attribute::ExtendedAttribute::parse("Name").unwrap();
+        let err = Attribute::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "ExtendedAttributeNoArgs not supported: \"Name\""
+        );
+
         Ok(())
     }
 
@@ -317,8 +365,40 @@ mod test {
         let err = FunctionAttributes::try_from(&node).unwrap_err();
         assert_eq!(
             err.to_string(),
-            "ByRef not supported for functions, methods or constructors"
+            "ByRef not supported for functions or methods"
         );
+        Ok(())
+    }
+
+    #[test]
+    fn test_constructor_attributes() -> Result<()> {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Throws=Error]").unwrap();
+        let attrs = ConstructorAttributes::try_from(&node).unwrap();
+        assert!(matches!(attrs.get_throws_err(), Some("Error")));
+        assert!(matches!(attrs.get_name(), None));
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Name=MyFactory]").unwrap();
+        let attrs = ConstructorAttributes::try_from(&node).unwrap();
+        assert!(matches!(attrs.get_throws_err(), None));
+        assert!(matches!(attrs.get_name(), Some("MyFactory")));
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, Name=MyFactory]")
+                .unwrap();
+        let attrs = ConstructorAttributes::try_from(&node).unwrap();
+        assert!(matches!(attrs.get_throws_err(), Some("Error")));
+        assert!(matches!(attrs.get_name(), Some("MyFactory")));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_other_attributes_not_supported_for_constructors() -> Result<()> {
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, ByRef]").unwrap();
+        let err = ConstructorAttributes::try_from(&node).unwrap_err();
+        assert_eq!(err.to_string(), "ByRef not supported for constructors");
         Ok(())
     }
 

@@ -46,11 +46,30 @@ namespace {{ context.namespace()|class_name_webidl(context) }} {
 {%- for obj in ci.iter_object_definitions() %}
 [ChromeOnly, Exposed=Window]
 interface {{ obj.name()|class_name_webidl(context)  }} {
-  {%- for cons in obj.constructors() %}
+
+  {%- match obj.primary_constructor() %}
+  {%- when Some with (cons) %}
   {%- if cons.throws().is_some() %}
   [Throws]
   {% endif %}
   constructor(
+      {%- for arg in cons.arguments() %}
+      {% if arg.optional() -%}optional{%- else -%}{%- endif %} {{ arg.webidl_type()|type_webidl(context) }} {{ arg.name() }}
+      {%- match arg.webidl_default_value() %}
+      {%- when Some with (literal) %} = {{ literal|literal_webidl }}
+      {%- else %}
+      {%- endmatch %}
+      {%- if !loop.last %}, {% endif %}
+      {%- endfor %}
+  );
+  {%- when None %}
+  {%- endmatch %}
+
+  {%- for cons in obj.alternate_constructors() %}
+  {%- if cons.throws().is_some() %}
+  [Throws]
+  {% endif %}
+  {{ obj.name()|class_name_webidl(context)  }} {{ cons.name()|fn_name_webidl }}(
       {%- for arg in cons.arguments() %}
       {% if arg.optional() -%}optional{%- else -%}{%- endif %} {{ arg.webidl_type()|type_webidl(context) }} {{ arg.name() }}
       {%- match arg.webidl_default_value() %}
