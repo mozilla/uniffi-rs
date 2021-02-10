@@ -183,7 +183,7 @@ mod filters {
             Type::Enum(name) => format!("{}({})", class_name_py(name)?, nm),
             Type::Object(_) => panic!("No support for lifting objects, yet"),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
-            Type::Error(_) => panic!("No support for lowering errors, yet"),
+            Type::Error(_) => panic!("No support for lifting errors, yet"),
             Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
                 "{}.consumeInto{}()",
                 nm,

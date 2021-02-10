@@ -39,7 +39,8 @@ JSObject* {{ obj.name()|class_name_cpp(context) }}::WrapObject(
   return dom::{{ obj.name()|class_name_cpp(context) }}_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-{%- for cons in obj.constructors() %}
+{%- match obj.primary_constructor() %}
+{%- when Some with (cons) %}
 
 /* static */
 already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> {{ obj.name()|class_name_cpp(context) }}::Constructor(
@@ -61,10 +62,14 @@ already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> {{ obj.name()|class_n
   auto result = MakeRefPtr<{{ obj.name()|class_name_cpp(context) }}>(global, handle);
   return result.forget();
 }
+{%- when None %}
+{%- endmatch %}
+
+{%- for cons in obj.alternate_constructors() %}
+MOZ_STATIC_ASSERT(false, "Sorry the gecko-js backend does not yet support alternate constructors");
 {%- endfor %}
 
 {%- for meth in obj.methods() %}
-
 {% match meth.cpp_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ obj.name()|class_name_cpp(context) }}::{{ meth.name()|fn_name_cpp }}(
   {%- for arg in meth.cpp_arguments() %}
   {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}

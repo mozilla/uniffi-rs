@@ -9,14 +9,20 @@ public protocol {{ obj.name() }}Protocol {
     {% endfor %}
 }
 
-public class {{ obj.name() }}: {{ obj.name() }}Protocol {
+public class {{ obj.name()|class_name_swift }}: {{ obj.name() }}Protocol {
     private let handle: UInt64
 
-    {%- for cons in obj.constructors() %}
-    public init({% call swift::arg_list_decl(cons) -%}) {% call swift::throws(cons) %} {
-        self.handle = {% call swift::to_ffi_call(cons) %}
+    private init(fromRawHandle handle: UInt64) {
+        self.handle = handle
     }
-    {%- endfor %}
+
+    {%- match obj.primary_constructor() %}
+    {%- when Some with (cons) %}
+    public convenience init({% call swift::arg_list_decl(cons) -%}) {% call swift::throws(cons) %} {
+        self.init(fromRawHandle: {% call swift::to_ffi_call(cons) %})
+    }
+    {%- when None %}
+    {%- endmatch %}
 
     deinit {
         try! rustCall(InternalError.unknown()) { err in
@@ -24,7 +30,13 @@ public class {{ obj.name() }}: {{ obj.name() }}Protocol {
         }
     }
 
-    // TODO: Maybe merge the two templates (i.e the one with a return type and the one without)
+    {% for cons in obj.alternate_constructors() %}
+    public static func {{ cons.name()|fn_name_swift }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ obj.name()|class_name_swift }} {
+        return {{ obj.name()|class_name_swift }}(fromRawHandle: {% call swift::to_ffi_call(cons) %})
+    }
+    {% endfor %}
+
+    {# // TODO: Maybe merge the two templates (i.e the one with a return type and the one without) #}
     {% for meth in obj.methods() -%}
     {%- match meth.return_type() -%}
 

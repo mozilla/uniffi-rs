@@ -39,6 +39,12 @@ impl Sprite {
         }
     }
 
+    fn new_relative_to(reference: Point, direction: Vector) -> Sprite {
+        Sprite {
+            current_position: translate(&reference, direction),
+        }
+    }
+
     fn get_position(&self) -> Point {
         self.current_position.clone()
     }
