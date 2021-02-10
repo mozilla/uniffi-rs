@@ -61,7 +61,7 @@ Calling this function from foreign language code involves the following steps:
 | `string` | `RustBuffer` struct pointing to utf8 bytes |
 | `T?` | `RustBuffer` struct pointing to serialized bytes |
 | `sequence<T>` | `RustBuffer` struct pointing to serialized bytes |
-| `record<string, T>` | `RustBuffer` struct pointing to serialized bytes |
+| `record<DOMString, T>` | `RustBuffer` struct pointing to serialized bytes |
 | `enum` | `uint32_t` indicating variant, numbered in declaration order starting from 1  |
 | `dictionary` | `RustBuffer` struct pointing to serialized bytes |
 | `interface` | `uint64_t` opaque integer handle |
@@ -83,7 +83,7 @@ The details of this format are internal only and may change between versions of 
 | `string` | Serialized `i32` length followed by utf-8 string bytes; no trailing null |
 | `T?` | If null, serialized `boolean` false; if non-null, serialized `boolean` true followed by serialized `T` |
 | `sequence<T>` | Serialized `i32` item count followed by serialized items; each item is a serialized `T` |
-| `record<string, T>` | Serialized `i32` item count followed by serialized items; each item is a serialized `string` followed by a serialized `T` |
+| `record<DOMString, T>` | Serialized `i32` item count followed by serialized items; each item is a serialized `string` followed by a serialized `T` |
 | `enum` | Serialized `u32` indicating variant, numbered in declaration order starting from 1 |
 | `dictionary` | The serialized value of each field, in declaration order |
 | `interface` | *Cannot currently be serialized* |

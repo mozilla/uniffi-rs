@@ -250,7 +250,7 @@ mod filters {
     /// * `Type::Optional` is called "nullable" in Firefox WebIDL. It's
     ///   represented as `T?` in UDL and WebIDL.
     /// * `Type::Map` is called a "record" in Firefox WebIDL. It's represented
-    ///   as `record<string, T>` in UDL, and `record<DOMString, T>` in
+    ///   as `record<DOMString, T>` in UDL, and `record<DOMString, T>` in
     ///   WebIDL.
     ///
     /// There are also semantic differences:
