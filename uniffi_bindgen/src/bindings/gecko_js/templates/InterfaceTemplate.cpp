@@ -64,6 +64,9 @@ already_AddRefed<{{ obj.name()|class_name_cpp(context) }}> {{ obj.name()|class_n
 {%- endfor %}
 
 {%- for meth in obj.methods() %}
+{% if meth.is_static() %}
+MOZ_STATIC_ASSERT(false, "Sorry the gecko-js backend does not yet support static methods");
+{% endif %}
 
 {% match meth.cpp_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ obj.name()|class_name_cpp(context) }}::{{ meth.name()|fn_name_cpp }}(
   {%- for arg in meth.cpp_arguments() %}

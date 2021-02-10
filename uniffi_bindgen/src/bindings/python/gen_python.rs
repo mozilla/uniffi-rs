@@ -181,7 +181,7 @@ mod filters {
             Type::Boolean => format!("(True if {} else False)", nm),
             Type::String => format!("{}.consumeIntoString()", nm),
             Type::Enum(name) => format!("{}({})", class_name_py(name)?, nm),
-            Type::Object(_) => panic!("No support for lifting objects, yet"),
+            Type::Object(name) => format!("liftObject({}, {})", class_name_py(name)?, nm),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(

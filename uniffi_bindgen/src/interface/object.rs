@@ -253,7 +253,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
     }
 }
 
-// Represents an instance method for an object type.
+// Represents a static or instance method for an object type.
 //
 // The in FFI, this will be a function whose first argument is a handle for an
 // instance of the corresponding object type.
@@ -263,6 +263,7 @@ pub struct Method {
     pub(super) object_name: String,
     pub(super) return_type: Option<Type>,
     pub(super) arguments: Vec<Argument>,
+    pub(super) static_: bool,
     pub(super) ffi_func: FFIFunction,
     pub(super) attributes: MethodAttributes,
 }
@@ -280,19 +281,27 @@ impl Method {
         self.return_type.as_ref()
     }
 
+    pub fn is_static(&self) -> bool {
+        self.static_
+    }
+
     pub fn ffi_func(&self) -> &FFIFunction {
         &self.ffi_func
     }
 
-    pub fn first_argument(&self) -> Argument {
-        Argument {
-            name: "handle".to_string(),
-            // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
-            // is contained in the proper `TypeUniverse`, but this works for now.
-            type_: Type::Object(self.object_name.clone()),
-            by_ref: false,
-            optional: false,
-            default: None,
+    pub fn first_argument(&self) -> Option<Argument> {
+        if self.static_ {
+            None
+        } else {
+            Some(Argument {
+                name: "handle".to_string(),
+                // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
+                // is contained in the proper `TypeUniverse`, but this works for now.
+                type_: Type::Object(self.object_name.clone()),
+                by_ref: false,
+                optional: false,
+                default: None,
+            })
         }
     }
 
@@ -306,7 +315,8 @@ impl Method {
         self.ffi_func.name.push_str(obj_prefix);
         self.ffi_func.name.push_str("_");
         self.ffi_func.name.push_str(&self.name);
-        self.ffi_func.arguments = vec![self.first_argument()]
+        self.ffi_func.arguments = self
+            .first_argument()
             .iter()
             .chain(self.arguments.iter())
             .map(Into::into)
@@ -337,22 +347,30 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
         if self.special.is_some() {
             bail!("special operations not supported");
         }
-        if let Some(weedle::interface::StringifierOrStatic::Stringifier(_)) = self.modifier {
-            bail!("stringifiers are not supported");
-        }
+        let static_ = match self.modifier {
+            None => false,
+            Some(weedle::interface::StringifierOrStatic::Static(_)) => true,
+            Some(weedle::interface::StringifierOrStatic::Stringifier(_)) => {
+                bail!("stringifiers are not supported")
+            }
+        };
         let return_type = ci.resolve_return_type_expression(&self.return_type)?;
-        if let Some(Type::Object(_)) = return_type {
-            bail!("Objects cannot currently be returned from functions");
-        }
         Ok(Method {
             name: match self.identifier {
                 None => bail!("anonymous methods are not supported {:?}", self),
-                Some(id) => id.0.to_string(),
+                Some(id) => {
+                    let name = id.0.to_string();
+                    if name == "new" {
+                        bail!("the method name \"new\" is reserved for the default constructor");
+                    }
+                    name
+                }
             },
             // We don't know the name of the containing `Object` at this point, fill it in later.
             object_name: Default::default(),
             arguments: self.args.body.list.convert(ci)?,
             return_type,
+            static_,
             ffi_func: Default::default(),
             attributes: match &self.attributes {
                 Some(attr) => MethodAttributes::try_from(attr)?,
@@ -410,6 +428,38 @@ mod test {
             .iter()
             .find(|t| t.canonical_name() == "ObjectTesting")
             .is_some());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_static_vs_instance_methods() -> Result<()> {
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                u32 instance_method();
+                static u32 static_method();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(ci.iter_object_definitions().len(), 1);
+
+        let obj = ci.get_object_definition("Testing").unwrap();
+        assert_eq!(obj.methods().len(), 2);
+
+        let method = obj.methods()[0];
+        assert_eq!(method.name(), "instance_method");
+        assert!(!method.is_static());
+        assert_eq!(method.arguments.len(), 0);
+        assert!(method.first_argument().is_some());
+        assert_eq!(method.ffi_func.arguments.len(), 1);
+
+        let method = obj.methods()[1];
+        assert_eq!(method.name(), "static_method");
+        assert!(method.is_static());
+        assert_eq!(method.arguments.len(), 0);
+        assert!(method.first_argument().is_none());
+        assert_eq!(method.ffi_func.arguments.len(), 0);
 
         Ok(())
     }

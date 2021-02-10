@@ -1,16 +1,22 @@
 
 public protocol {{ obj.name() }}Protocol {
     {% for meth in obj.methods() -%}
+    {%- if ! meth.is_static() %}
     func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_protocol(meth) %}) {% call swift::throws(meth) -%}
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) %} -> {{ return_type|type_swift -}}
     {%- else -%}
     {%- endmatch %}
+    {%- endif %}
     {% endfor %}
 }
 
 public class {{ obj.name() }}: {{ obj.name() }}Protocol {
     private let handle: UInt64
+
+    init(fromRawHandle handle: UInt64) {
+        self.handle = handle
+    }
 
     {%- for cons in obj.constructors() %}
     public init({% call swift::arg_list_decl(cons) -%}) {% call swift::throws(cons) %} {
@@ -24,8 +30,27 @@ public class {{ obj.name() }}: {{ obj.name() }}Protocol {
         }
     }
 
-    // TODO: Maybe merge the two templates (i.e the one with a return type and the one without)
+    static func lift(_ handle: UInt64) throws -> {{ obj.name()|class_name_swift }} {
+        {{ obj.name()|class_name_swift }}(fromRawHandle: handle)
+    }
+
+    {# // TODO: Maybe merge the two templates (i.e the one with a return type and the one without) #}
     {% for meth in obj.methods() -%}
+    {%- if meth.is_static() %}
+    {%- match meth.return_type() -%}
+
+    {%- when Some with (return_type) -%}
+    public static func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_swift }} {
+        let _retval = {% call swift::to_ffi_call(meth) %}
+        return {% call swift::try(meth) %} {{ "_retval"|lift_swift(return_type) }}
+    }
+
+    {%- when None -%}
+    public static func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
+        {% call swift::to_ffi_call(meth) %}
+    }
+    {%- endmatch %}
+    {%- else -%}
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
@@ -39,5 +64,6 @@ public class {{ obj.name() }}: {{ obj.name() }}Protocol {
         {% call swift::to_ffi_call_with_prefix("self.handle", meth) %}
     }
     {%- endmatch %}
+    {%- endif %}
     {% endfor %}
 }

@@ -14,6 +14,24 @@ class {{ obj.name()|class_name_py }}(object):
         )
 
     {% for meth in obj.methods() -%}
+    {%- if meth.is_static() -%}
+    {%- match meth.return_type() -%}
+
+    {%- when Some with (return_type) -%}
+    @staticmethod
+    def {{ meth.name()|fn_name_py }}({% call py::arg_list_decl(meth) %}):
+        {%- call py::coerce_args_extra_indent(meth) %}
+        _retval = {% call py::to_ffi_call(meth) %}
+        return {{ "_retval"|lift_py(return_type) }}
+
+    {%- when None -%}
+    @staticmethod
+    def {{ meth.name()|fn_name_py }}({% call py::arg_list_decl(meth) %}):
+        {%- call py::coerce_args_extra_indent(meth) %}
+        {% call py::to_ffi_call(meth) %}
+    {% endmatch %}
+
+    {%- else -%}
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
@@ -27,4 +45,5 @@ class {{ obj.name()|class_name_py }}(object):
         {%- call py::coerce_args_extra_indent(meth) %}
         {% call py::to_ffi_call_with_prefix("self._handle", meth) %}
     {% endmatch %}
+    {% endif %}
     {% endfor %}

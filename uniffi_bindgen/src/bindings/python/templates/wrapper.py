@@ -22,6 +22,7 @@ import contextlib
 {% include "RustBufferTemplate.py" %}
 {% include "RustBufferStream.py" %}
 {% include "RustBufferBuilder.py" %}
+{% include "Helpers.py" %}
 
 # Error definitions
 {% include "ErrorTemplate.py" %}

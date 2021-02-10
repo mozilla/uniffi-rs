@@ -112,9 +112,6 @@ impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {
 impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
         let return_type = ci.resolve_return_type_expression(&self.return_type)?;
-        if let Some(Type::Object(_)) = return_type {
-            bail!("Objects cannot currently be returned from functions");
-        }
         Ok(Function {
             name: match self.identifier {
                 None => bail!("anonymous functions are not supported {:?}", self),

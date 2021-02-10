@@ -74,6 +74,25 @@ func display(list: TodoListProtocol) {
 }
 ```
 
+## Static Methods
+
+Interface methods can be marked with the `static` keyword to mark them as belonging to the interface
+itself rather than to a particular instance. Static methods are commonly used to make named alternatives to
+the default constructor, like this:
+
+```idl
+interface TodoList {
+    // The default constructor makes an empty list.
+    constructor();
+    // This static method is a shortcut for making a new TodoList from a list of items.
+    static TodoList new_from_items(sequence<string>)
+    ...
+```
+
+UniFFI will expose an appropriate static-method, class-method or similar in the foreign language binding,
+and will connect it to the Rust method of the same name on the underlying Rust struct.
+
+
 ## Concurrent Access
 
 Since interfaces represent mutable data, uniffi has to take extra care
