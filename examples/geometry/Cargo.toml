@@ -11,8 +11,5 @@ crate-type = ["cdylib"]
 name = "uniffi_geometry"
 
 [dependencies]
-uniffi_macros = {path = "../../uniffi_macros"}
+uniffi_macros = {path = "../../uniffi_macros", features=["builtin-bindgen"]}
 uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
-
-[build-dependencies]
-uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}

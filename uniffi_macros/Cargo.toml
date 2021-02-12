@@ -16,5 +16,13 @@ proc-macro = true
 [dependencies]
 proc-macro2 = "1.0"
 quote = "1.0"
-syn = { version = "1.0", features = ["extra-traits"] }
+syn = { version = "1.0", features = ["extra-traits", "full"] }
 glob = "0.3"
+tempfile = "3"
+uniffi_bindgen = { path = "../uniffi_bindgen", version = "= 0.7.0", optional = true }
+
+[features]
+default = []
+# Use the `uniffi_bindgen` from this workspace instead of the one installed on your system.
+# You probably only want to enable this feature if you're working on uniffi itself.
+builtin-bindgen = ["uniffi_bindgen"]
