@@ -82,8 +82,9 @@ Other directories of interest include:
   controls how values of various types are passed back-and-forth over the FFI layer, by means of the `ViaFfi` trait.
 - **[`./uniffi_build`](../uniffi_build):** This is a small hook to run `uniffi-bindgen` from the `build.rs` script
   of a UniFFI component, in order to automatically generate the Rust scaffolding as part of its build process.
-- **[`./uniffi_macros`](../uniffi_macros):** This contains some helper macros that UniFFI components can use to
-  simplify loading the generated scaffolding, and executing foreign-language tests.
+- **[`./uniffi_macros`](../uniffi_macros):** This contains the implementation of the
+  `declare_interface` macro, along with some helper macros that UniFFI components can
+  use for executing foreign-language tests.
 - **[`./fixtures`](../fixtures):** These are various test fixtures which we use to ensure good test coverage and
   guard against regressions.
 

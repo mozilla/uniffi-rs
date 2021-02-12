@@ -1,7 +1,7 @@
 # Managing Object References
 
-UniFFI [interfaces](../udl/interfaces.md) represent instances of objects
-that have methods and contain state. One of Rust's core innovations
+UniFFI [objects](../udl/objects.md) represent instances of objects
+that have methods and contain shared mutable state. One of Rust's core innovations
 is its ability to provide compile-time guarantees about working with such instances,
 including:
 
@@ -32,8 +32,8 @@ this is so.
 ## Lifetimes
 
 In order to allow for instances to be used as flexibly as possible from foreign-language code,
-UniFFI wraps all object instances in an `Arc` and leverages their reference-count based lifetimes,
-allowing UniFFI to largely stay out of handling lifetimes entirely for these objects.
+UniFFI requires all object instances to be wrapped in an `Arc` and leverages their reference-count
+based lifetimes, allowing UniFFI to largely stay out of handling lifetimes entirely for these objects.
 
 When constructing a new object, UniFFI is able to add the `Arc` automatically, because it
 knows that the return type of the Rust constructor must be a new uniquely-owned struct of
@@ -46,19 +46,20 @@ that the code behaves in the way that UniFFI expects.
 When accepting instances as arguments, the underlying Rust code can choose to accept it as an `Arc<T>`
 or as the underlying struct `T`, as there are different use-cases for each scenario.
 
-For example, given a interface definition like this:
+For example, given an object defined like this:
 
-```idl
-interface TodoList {
-    constructor();
-    void add_item(string todo);
-    sequence<string> get_items();
-};
+```rust
+![uniffi:declare_interface]
+mod todolist {
+    pub struct TodoList { .. };
+    impl TodoList {
+        pub fn new() -> Self { .. }
+        pub fn add_item(&mut self, item: String) { .. }
+    }
+}
 ```
 
-On the Rust side of the generated bindings, the instance constructor will create an instance of the
-corresponding `TodoList` Rust struct, wrap it in an `Arc<>` and return the Arc's raw pointer to the
-foreign language code:
+The Rust scaffolding would define a lazily-initialized global static like:
 
 ```rust
 pub extern "C" fn todolist_12ba_TodoList_new(

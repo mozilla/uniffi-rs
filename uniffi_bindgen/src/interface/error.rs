@@ -127,6 +127,10 @@ impl Error {
     pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
         self.enum_.contains_object_references(ci)
     }
+
+    pub fn docs(&self) -> Vec<&str> {
+        self.enum_.docs.iter().map(|v| v.as_str()).collect()
+    }
 }
 
 impl APIConverter<Error> for weedle::EnumDefinition<'_> {
@@ -136,6 +140,12 @@ impl APIConverter<Error> for weedle::EnumDefinition<'_> {
 }
 
 impl APIConverter<Error> for weedle::InterfaceDefinition<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Error> {
+        Ok(Error::from_enum(APIConverter::<Enum>::convert(self, ci)?))
+    }
+}
+
+impl APIConverter<Error> for &syn::ItemEnum {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Error> {
         Ok(Error::from_enum(APIConverter::<Enum>::convert(self, ci)?))
     }

@@ -48,13 +48,14 @@ use super::{APIConverter, ComponentInterface};
 /// and has a corresponding standalone function in the foreign language bindings.
 ///
 /// In the FFI, this will be a standalone function with appropriately lowered types.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Function {
     pub(super) name: String,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     pub(super) ffi_func: FFIFunction,
     pub(super) attributes: FunctionAttributes,
+    pub(super) docs: Vec<String>,
 }
 
 impl Function {
@@ -72,6 +73,10 @@ impl Function {
 
     pub fn return_type(&self) -> Option<&Type> {
         self.return_type.as_ref()
+    }
+
+    pub fn docs(&self) -> Vec<&str> {
+        self.docs.iter().map(|s| s.as_str()).collect()
     }
 
     pub fn ffi_func(&self) -> &FFIFunction {
@@ -141,8 +146,47 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
             },
             return_type,
             arguments: self.args.body.list.convert(ci)?,
-            ffi_func: Default::default(),
             attributes: FunctionAttributes::try_from(self.attributes.as_ref())?,
+            ..Default::default()
+        })
+    }
+}
+
+impl APIConverter<Function> for &syn::ItemFn {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
+        let attrs = super::synner::Attributes::try_from(&self.attrs)?;
+        // TODO: check a bunch of stuff, e.g. no async, no unsafe, no generics.
+        if self.sig.variadic.is_some() {
+            bail!("Variadic functions are not supported");
+        }
+        let mut attributes: Vec<super::attributes::Attribute> = vec![];
+        let return_type = match &self.sig.output {
+            syn::ReturnType::Default => None,
+            syn::ReturnType::Type(_, type_) => Some({
+                let (throws, returns) = super::synner::destructure_if_result_type(type_)?;
+                if let Some(err) = throws {
+                    attributes.push(super::attributes::Attribute::Throws(err));
+                }
+                returns
+            }),
+        };
+        let return_type = match return_type {
+            None => None,
+            Some(syn::Type::Tuple(t)) if t.elems.is_empty() => None,
+            Some(t) => Some(ci.resolve_type_expression(t)?),
+        };
+        Ok(Function {
+            name: self.sig.ident.to_string(),
+            arguments: self
+                .sig
+                .inputs
+                .iter()
+                .map(|arg| arg.convert(ci))
+                .collect::<Result<Vec<_>>>()?,
+            return_type,
+            attributes: super::attributes::FunctionAttributes::new(attributes),
+            docs: attrs.docs,
+            ..Default::default()
         })
     }
 }
@@ -206,6 +250,39 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
             by_ref,
             optional: self.optional.is_some(),
             default,
+        })
+    }
+}
+
+impl APIConverter<Argument> for &syn::FnArg {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Argument> {
+        let mut by_ref = false;
+        let (name, type_) = match self {
+            syn::FnArg::Receiver(_) => bail!("Cannot convert `self` arguments"),
+            syn::FnArg::Typed(p) => {
+                let name = super::synner::name_from_pattern(&p.pat)?;
+                if name == "self" {
+                    bail!("Cannot convert `self` arguments");
+                }
+                let type_ = match *p.ty {
+                    syn::Type::Reference(ref rt) => {
+                        by_ref = true;
+                        ci.resolve_type_expression(&*rt.elem)?
+                    }
+                    ref t => ci.resolve_type_expression(&*t)?,
+                };
+                (name, type_)
+            }
+        };
+        if let Type::Object(nm) = type_ {
+            bail!("Objects cannot currently be passed as arguments: {}", nm);
+        }
+        Ok(Argument {
+            name,
+            type_,
+            by_ref,
+            optional: false,
+            default: None,
         })
     }
 }

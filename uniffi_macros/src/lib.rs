@@ -10,7 +10,12 @@
 use quote::{format_ident, quote};
 use std::env;
 use std::path::PathBuf;
-use syn::{bracketed, punctuated::Punctuated, LitStr, Token};
+use syn::{bracketed, punctuated::Punctuated, spanned::Spanned, LitStr, Token};
+
+use uniffi_bindgen::{
+    interface::ComponentInterface,
+    scaffolding::{RustScaffolding, Template},
+};
 
 /// A macro to build testcases for a component's generated bindings.
 ///
@@ -22,8 +27,8 @@ use syn::{bracketed, punctuated::Punctuated, LitStr, Token};
 /// environment to let it load the component bindings, and will pass iff the script
 /// exits successfully.
 ///
-/// To use it, invoke the macro with the udl file as the first argument, then
-/// one or more file paths relative to the crate root directory.
+/// To use it, invoke the macro with the interface definition file as the first
+/// argument, then one or more file paths relative to the crate root directory.
 /// It will produce one `#[test]` function per file, in a manner designed to
 /// play nicely with `cargo test` and its test filtering options.
 #[proc_macro]
@@ -33,7 +38,7 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
     let pkg_dir = env::var("CARGO_MANIFEST_DIR")
         .expect("Missing $CARGO_MANIFEST_DIR, cannot build tests for generated bindings");
     // For each file found, generate a matching testcase.
-    let udl_file = &paths.udl_file;
+    let interface_file = &paths.interface_file;
     let test_functions = paths.test_scripts
         .iter()
         .map(|file_path| {
@@ -50,8 +55,10 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
             quote! {
                 #[test]
                 fn #test_name () -> uniffi::deps::anyhow::Result<()> {
-                    uniffi::testing::run_foreign_language_testcase(#pkg_dir, #udl_file, #test_file_path)
+                    uniffi::testing::run_foreign_language_testcase(#pkg_dir, #interface_file, #test_file_path)
                 }
+
+
             }
         })
         .collect::<Vec<proc_macro2::TokenStream>>();
@@ -64,13 +71,13 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
 /// Newtype to simplifying parsing a list of file paths from macro input.
 #[derive(Debug)]
 struct FilePaths {
-    udl_file: String,
+    interface_file: String,
     test_scripts: Vec<String>,
 }
 
 impl syn::parse::Parse for FilePaths {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let udl_file: LitStr = input.parse()?;
+        let interface_file: LitStr = input.parse()?;
         let _comma: Token![,] = input.parse()?;
         let array_contents;
         bracketed!(array_contents in input);
@@ -79,7 +86,7 @@ impl syn::parse::Parse for FilePaths {
             .map(|s| s.value())
             .collect();
         Ok(FilePaths {
-            udl_file: udl_file.value(),
+            interface_file: interface_file.value(),
             test_scripts,
         })
     }
@@ -111,4 +118,101 @@ pub fn include_scaffolding(component_name: proc_macro::TokenStream) -> proc_macr
             include!(concat!(env!("OUT_DIR"), "/", #name, ".uniffi.rs"));
         }
     }.into()
+}
+
+/// A macro to generate and include UniFFI component scaffolding.
+///
+/// This macro that can be used by UniFFI component crates to automatically generate
+/// and include the UniFFI component scaffolding and include it into their Rust code
+/// without the need for a separate `.udl` file or a separate build step. It can be
+/// be used like this:
+///
+/// ```rs
+///
+/// #[uniffi::declare_interface]
+/// mod my_example {
+///
+///     // The Rust code to implement the component goes inside here.
+///
+///     pub struct Example {
+///         pub fn hello(&self) -> String {
+///             String::new("world")
+///         }
+///     }
+/// }
+/// ```
+///
+/// The contents of the inline module must be Rust code that can be parsed into a UniFFI
+/// `ComponentInterface`, which means that it must satisfy a variety of restrictions so
+/// that UniFFI can correctly understand it. (The precise details of those restrictions
+/// are still being defined...).
+///
+/// After parsing the contents of the inline module, the macro will generate accompanying
+/// Rust scaffolding code to expose it via an `extern "C"` FFI and will lift the resulting
+/// code up to the top level of the containing module. The result makes the declared interface
+/// available both to other Rust consumers (via the written Rust code), and to bindings from
+/// foreign languages (via the generated FFI).
+///
+/// Ideally, this macro would work as an *inner* attribute on a module, so that users
+/// could write this at the top-level of their Rust code rather than using an inline
+/// submodule:
+///
+/// ```rs
+///
+/// #![uniffi::declare_interface]
+///
+/// // The Rust code to implement the component just follows the macro.
+///
+/// pub struct Example {
+///     pub fn hello(&self) -> String {
+///         String::new("world")
+///     }
+/// }
+/// ```
+///
+/// Unfortunately, inner attributes at the top level of a crate are still unstable, and
+/// even when enabled are quite fiddly to work with. But maybe one day..!
+///
+#[proc_macro_attribute]
+pub fn declare_interface(
+    _attrs: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    // We expect to be applied to an inline module declaration.
+    let mut module = syn::parse_macro_input!(item as syn::ItemMod);
+    // The contents of the module must declare a UniFFI-compatible interface.
+    // TODO: In theory, we should be able to handle errors from parsing out the ComponentInterface
+    // and report them to the user directly on their provided Rust code, in the same way that
+    // `rustc` does. That probably requires some cleaning up of our parsing logic though.
+    let ci = ComponentInterface::from_rust_module(&module)
+        .expect("Failed to parse a ComponentInterface from the provided Rust code");
+    // Generate the Rust scaffolding.
+    // For macro purposes it would be better to generate this directly via `quote!`
+    // rather than rendering to a string and re-parsing, but this'll do for now.
+    // TODO: again, errors should be reported as red squiggles on the user's Rust code.
+    let scaffolding = RustScaffolding::new(&ci)
+        .render()
+        .expect("Failed to generated Rust scaffolding");
+    let scaffolding: syn::File =
+        syn::parse_str(scaffolding.as_str()).expect("Failed to parse generated Rust scaffolding");
+    // Append the generated scaffolding to the inline module.
+    // Unwrapping is safe because, if the module didn't have content, we wouldn't have parsed it.
+    module.content.as_mut().unwrap().1.extend(scaffolding.items);
+    // Import the public items from the module so they're available at the top level,
+    // where you might normally expect them when writing Rust by hand.
+    let namespace = &module.ident;
+    let imports = ci
+        .iter_member_names()
+        .iter()
+        .map(|name| {
+            let name = syn::Ident::new(name, module.span());
+            quote! {
+                pub use #namespace::#name;
+            }
+        })
+        .collect::<Vec<_>>();
+    proc_macro::TokenStream::from(quote! {
+        #module
+        #(#imports)*
+    })
 }

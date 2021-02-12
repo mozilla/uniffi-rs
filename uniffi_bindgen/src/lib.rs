@@ -117,22 +117,26 @@ use scaffolding::RustScaffolding;
 // Generate the infrastructural Rust code for implementing the UDL interface,
 // such as the `extern "C"` function definitions and record data types.
 pub fn generate_component_scaffolding<P: AsRef<Path>>(
-    udl_file: P,
+    interface_file: P,
     config_file_override: Option<P>,
     out_dir_override: Option<P>,
     format_code: bool,
 ) -> Result<()> {
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let udl_file = udl_file.as_ref();
-    let component = parse_udl(udl_file)?;
-    let _config = get_config(&component, udl_file, config_file_override);
-    let mut filename = Path::new(&udl_file)
+    let interface_file = interface_file.as_ref();
+    let component = if matches!(interface_file.extension(), Some(ext) if ext == "rs") {
+        parse_rust(interface_file)?
+    } else {
+        parse_udl(interface_file)?
+    };
+    let _config = get_config(&component, interface_file, config_file_override);
+    let mut filename = Path::new(&interface_file)
         .file_stem()
         .ok_or_else(|| anyhow!("not a file"))?
         .to_os_string();
     filename.push(".uniffi.rs");
-    let mut out_dir = get_out_dir(udl_file, out_dir_override)?;
+    let mut out_dir = get_out_dir(interface_file, out_dir_override)?;
     out_dir.push(filename);
     let mut f =
         File::create(&out_dir).map_err(|e| anyhow!("Failed to create output file: {:?}", e))?;
@@ -147,7 +151,7 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
 pub fn generate_bindings<P: AsRef<Path>>(
-    udl_file: P,
+    interface_file: P,
     config_file_override: Option<P>,
     target_languages: Vec<&str>,
     out_dir_override: Option<P>,
@@ -155,11 +159,16 @@ pub fn generate_bindings<P: AsRef<Path>>(
 ) -> Result<()> {
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
-    let udl_file = udl_file.as_ref();
+    let interface_file = interface_file.as_ref();
 
-    let component = parse_udl(udl_file)?;
-    let config = get_config(&component, udl_file, config_file_override)?;
-    let out_dir = get_out_dir(udl_file, out_dir_override)?;
+    let component = if matches!(interface_file.extension(), Some(ext) if ext == "rs") {
+        parse_rust(interface_file)?
+    } else {
+        parse_udl(interface_file)?
+    };
+
+    let config = get_config(&component, interface_file, config_file_override)?;
+    let out_dir = get_out_dir(interface_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
             &config.bindings,
@@ -176,16 +185,23 @@ pub fn generate_bindings<P: AsRef<Path>>(
 // Note that the cdylib we're testing against must be built already.
 pub fn run_tests<P: AsRef<Path>>(
     cdylib_dir: P,
-    udl_file: P,
+    interface_file: P,
     test_scripts: Vec<&str>,
     config_file_override: Option<P>,
 ) -> Result<()> {
     let cdylib_dir = cdylib_dir.as_ref();
-    let udl_file = udl_file.as_ref();
+    let interface_file = interface_file.as_ref();
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+    println!("RUNNING TESTS {:?}", interface_file);
 
-    let component = parse_udl(udl_file)?;
-    let config = get_config(&component, udl_file, config_file_override)?;
+    let component = if matches!(interface_file.extension(), Some(ext) if ext == "rs") {
+        println!("FROM RUST");
+        parse_rust(interface_file)?
+    } else {
+        println!("FROM UDL");
+        parse_udl(interface_file)?
+    };
+    let config = get_config(&component, interface_file, config_file_override)?;
 
     // Group the test scripts by language first.
     let mut language_tests: HashMap<TargetLanguage, Vec<String>> = HashMap::new();
@@ -277,6 +293,12 @@ fn parse_udl(udl_file: &Path) -> Result<ComponentInterface> {
         slurp_file(udl_file).map_err(|_| anyhow!("Failed to read UDL from {:?}", &udl_file))?;
     udl.parse::<interface::ComponentInterface>()
         .map_err(|e| anyhow!("Failed to parse UDL: {}", e))
+}
+
+fn parse_rust(rs_file: &Path) -> Result<ComponentInterface> {
+    let rs = slurp_file(rs_file).map_err(|_| anyhow!("Failed to read Rust from {:?}", &rs_file))?;
+    interface::ComponentInterface::from_rust(&rs)
+        .map_err(|e| anyhow!("Failed to parse interface definition: {}", e))
 }
 
 fn slurp_file(file_name: &Path) -> Result<String> {
@@ -389,6 +411,11 @@ pub fn run_main() -> Result<()> {
                         .help("Do not format the generated code with rustfmt (useful for maintainers)"),
                 )
                 .arg(clap::Arg::with_name("udl_file").required(true)),
+        )
+        .subcommand(
+            clap::SubCommand::with_name("automagic")
+                .about("Do some magic ;-)")
+                .arg(clap::Arg::with_name("rs_file").required(true)),
         )
         .subcommand(
             clap::SubCommand::with_name("test")

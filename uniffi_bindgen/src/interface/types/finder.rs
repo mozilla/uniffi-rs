@@ -42,6 +42,15 @@ impl<T: TypeFinder> TypeFinder for &[T] {
     }
 }
 
+impl<T: TypeFinder> TypeFinder for &T {
+    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+        (*self).add_type_definitions_to(types)?;
+        Ok(())
+    }
+}
+
+// Weedle stuff.
+
 impl TypeFinder for weedle::Definition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         match self {
@@ -111,6 +120,146 @@ impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
     }
 }
 
+// Rust stuff.
+
+impl TypeFinder for &syn::File {
+    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+        // TODO: something about attributes
+        for item in &self.items {
+            types.add_type_definitions_from(item)?
+        }
+        Ok(())
+    }
+}
+
+impl TypeFinder for &syn::Item {
+    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+        match self {
+            syn::Item::Enum(e) => types.add_type_definitions_from(e)?,
+            syn::Item::Impl(i) => types.add_type_definitions_from(i)?,
+            syn::Item::Macro(m) => types.add_type_definitions_from(m)?,
+            syn::Item::Mod(m) => types.add_type_definitions_from(m)?,
+            syn::Item::Struct(s) => types.add_type_definitions_from(s)?,
+            syn::Item::Type(t) => types.add_type_definitions_from(t)?,
+            syn::Item::Union(_) => bail!("Unions are not yet supported"),
+            syn::Item::Use(u) => types.add_type_definitions_from(u)?,
+            syn::Item::Fn(f) => types.add_type_definitions_from(f)?,
+            syn::Item::Const(_) => (), // No types here yet; probably should check for `pub`.
+            _ => bail!("Haven't decided what to do with {:?} yet", self),
+        }
+        Ok(())
+    }
+}
+
+impl TypeFinder for &syn::ItemEnum {
+    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+        if !matches!(self.vis, syn::Visibility::Public(_)) {
+            bail!("Interfaces can only declare public enums");
+        }
+        let name = self.ident.to_string();
+        let attrs = super::super::synner::Attributes::try_from(&self.attrs)?;
+        if attrs.is_error {
+            types.add_type_definition(name.as_str(), Type::Error(name.clone()))?;
+        } else {
+            types.add_type_definition(name.as_str(), Type::Enum(name.clone()))?;
+        }
+        Ok(())
+    }
+}
+
+impl TypeFinder for &syn::ItemImpl {
+    fn add_type_definitions_to(&self, _types: &mut TypeUniverse) -> Result<()> {
+        let _name = super::super::synner::name_from_type(&self.self_ty);
+        // TODO: check that it was a previously-declared object type?
+        Ok(())
+    }
+}
+
+impl TypeFinder for &syn::ItemMacro {
+    fn add_type_definitions_to(&self, _types: &mut TypeUniverse) -> Result<()> {
+        // No types here...
+        Ok(())
+    }
+}
+
+impl TypeFinder for &syn::ItemFn {
+    fn add_type_definitions_to(&self, _types: &mut TypeUniverse) -> Result<()> {
+        // No types here...
+        Ok(())
+    }
+}
+
+impl TypeFinder for &syn::ItemMod {
+    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+        if matches!(self.vis, syn::Visibility::Public(_)) {
+            // TODO: ideally interfaces would not declare anything public that doesn't
+            // go through the uniffi ffi. For now, we need "public" things to be visible
+            // for testing. (but IMHO this is an architecture smell, the public things
+            // for testing should be made public via uniffi!).
+            // bail!("Interfaces must not declare public sub-modules");
+        }
+        match &self.content {
+            None => (),
+            Some((_, items)) => {
+                for item in items {
+                    types.add_type_definitions_from(item)?
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
+impl TypeFinder for &syn::ItemStruct {
+    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+        // Might be a record, or an object, not sure how to tell just by looking.
+        // For now, assume public fields iff Record.
+        if !matches!(self.vis, syn::Visibility::Public(_)) {
+            bail!("Interfaces can only declare public structs");
+        }
+        if !self.generics.params.is_empty() {
+            bail!("Interfaces cannot declare structs with generics")
+        }
+        let name = self.ident.to_string();
+        match &self.fields {
+            syn::Fields::Unit => {
+                types.add_type_definition(name.as_str(), Type::Object(name.clone()))?
+            }
+            syn::Fields::Unnamed(_) => {
+                bail!("Interfaces can only declare sturcts with named fields")
+            }
+            syn::Fields::Named(fields) => {
+                let has_public_fields = fields
+                    .named
+                    .iter()
+                    .any(|f| matches!(f.vis, syn::Visibility::Public(_)));
+                if has_public_fields {
+                    types.add_type_definition(name.as_str(), Type::Record(name.clone()))?
+                } else {
+                    types.add_type_definition(name.as_str(), Type::Object(name.clone()))?
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
+impl TypeFinder for &syn::ItemType {
+    fn add_type_definitions_to(&self, _types: &mut TypeUniverse) -> Result<()> {
+        // TODO: not sure what to do with `type` declarations yet...
+        Ok(())
+    }
+}
+
+impl TypeFinder for &syn::ItemUse {
+    fn add_type_definitions_to(&self, _types: &mut TypeUniverse) -> Result<()> {
+        if matches!(self.vis, syn::Visibility::Public(_)) {
+            bail!("Interfaces must not `pub use` anything");
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -139,7 +288,7 @@ mod test {
         "#;
         let idl = weedle::parse(UDL).unwrap();
         let mut types = TypeUniverse::default();
-        types.add_type_definitions_from(idl.as_ref())?;
+        types.add_type_definitions_from(idl.as_slice())?;
         assert_eq!(types.iter_known_types().count(), 5);
         assert!(
             matches!(types.get_type_definition("TestCallbacks").unwrap(), Type::CallbackInterface(nm) if nm == "TestCallbacks")
@@ -174,7 +323,7 @@ mod test {
         "#;
         let idl = weedle::parse(UDL).unwrap();
         let mut types = TypeUniverse::default();
-        let err = types.add_type_definitions_from(idl.as_ref()).unwrap_err();
+        let err = types.add_type_definitions_from(idl.as_slice()).unwrap_err();
         assert_eq!(err.to_string(), "unknown type reference: TestRecord");
     }
 }

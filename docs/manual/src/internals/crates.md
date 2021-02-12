@@ -19,8 +19,9 @@ The code for UniFFI is organized into the following crates:
   [`ViaFfi`](./api/uniffi/trait.ViaFfi.html) trait.
 - **[`./uniffi_build`](./api/uniffi_build/index.html):** This is a small hook to run `uniffi-bindgen` from the `build.rs` script
   of a UniFFI component, in order to automatically generate the Rust scaffolding as part of its build process.
-- **[`./uniffi_macros`](./api/uniffi_macros/index.html):** This contains some helper macros that UniFFI components can use to
-  simplify loading the generated scaffolding, and executing foreign-language tests.
+- **[`./uniffi_macros`](./api/uniffi_macros/index.html):** This contains the implementation of the
+  `declare_interface` macro, along with some helper macros that UniFFI components can
+  use for executing foreign-language tests.
 - **[`./examples`](https://github.com/mozilla/uniffi-rs/tree/main/examples):**
   This contains code examples that you can use to explore the code generation
   process.

@@ -75,6 +75,7 @@
 //! assert_eq!(e.variants()[1].fields()[0].name(), "first");
 //! # Ok::<(), anyhow::Error>(())
 //! ```
+use std::convert::TryFrom;
 
 use anyhow::{bail, Result};
 
@@ -87,12 +88,13 @@ use super::{APIConverter, ComponentInterface};
 ///
 /// Enums are passed across the FFI by serializing to a bytebuffer, with a
 /// i32 indicating the variant followed by the serialization of each field.
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Default)]
 pub struct Enum {
     pub(super) name: String,
     pub(super) variants: Vec<Variant>,
     // "Flat" enums do not have, and will never have, variants with associated data.
     pub(super) flat: bool,
+    pub(super) docs: Vec<String>,
 }
 
 impl Enum {
@@ -121,6 +123,10 @@ impl Enum {
                 .any(|f| ci.type_contains_unsigned_types(&f.type_))
         })
     }
+
+    pub fn docs(&self) -> Vec<&str> {
+        self.docs.iter().map(String::as_str).collect()
+    }
 }
 
 // Note that we have two `APIConverter` impls here - one for the `enum` case
@@ -143,6 +149,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
                 })
                 .collect::<Result<Vec<_>>>()?,
             flat: true,
+            ..Default::default()
         })
     }
 }
@@ -169,6 +176,25 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
                 })
                 .collect::<Result<Vec<_>>>()?,
             flat: false,
+            ..Default::default()
+        })
+    }
+}
+
+impl APIConverter<Enum> for &syn::ItemEnum {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Enum> {
+        let attrs = super::synner::Attributes::try_from(&self.attrs)?;
+        let variants = self
+            .variants
+            .iter()
+            .map(|v| v.convert(ci))
+            .collect::<Result<Vec<_>>>()?;
+        let flat = variants.iter().all(|v| v.fields().is_empty());
+        Ok(Enum {
+            name: self.ident.to_string(),
+            variants,
+            flat,
+            docs: attrs.docs,
         })
     }
 }
@@ -180,6 +206,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 pub struct Variant {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
+    pub(super) docs: Vec<String>,
 }
 
 impl Variant {
@@ -188,6 +215,10 @@ impl Variant {
     }
     pub fn fields(&self) -> Vec<&Field> {
         self.fields.iter().collect()
+    }
+
+    pub fn docs(&self) -> Vec<&str> {
+        self.docs.iter().map(String::as_str).collect()
     }
 
     pub fn has_fields(&self) -> bool {
@@ -228,6 +259,30 @@ impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
                 .iter()
                 .map(|arg| arg.convert(ci))
                 .collect::<Result<Vec<_>>>()?,
+            ..Default::default()
+        })
+    }
+}
+
+impl APIConverter<Variant> for &syn::Variant {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Variant> {
+        let attrs = super::synner::Attributes::try_from(&self.attrs)?;
+        if self.discriminant.is_some() {
+            bail!("Explicit enum discriminants are not supported");
+        }
+        let fields = match &self.fields {
+            syn::Fields::Unit => vec![],
+            syn::Fields::Unnamed(_) => bail!("Enum variants can only have named fields"),
+            syn::Fields::Named(f) => f
+                .named
+                .iter()
+                .map(|f| f.convert(ci))
+                .collect::<Result<Vec<_>>>()?,
+        };
+        Ok(Variant {
+            name: self.ident.to_string(),
+            fields,
+            docs: attrs.docs,
         })
     }
 }
@@ -260,6 +315,7 @@ impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
             type_,
             required: false,
             default: None,
+            docs: vec![],
         })
     }
 }

@@ -1,54 +1,36 @@
-# Structs/Dictionaries
+# Record Structs
 
 Dictionaries are how UniFFI represents structured data.
 They consist of one of more named *fields*, each of which holds a value of a particular type.
-Think of them like a Rust struct without any methods.
 
-A Rust struct like this:
+In the interface definition, they are distinguished from Object structs by the presence of
+public fields:
 
-```rust,no_run
-struct TodoEntry {
-    done: bool,
-    due_date: u64,
-    text: String,
+```rust
+#[uniffi::declare_interface]
+mod todolist {
+    struct TodoEntry {
+        pub done: bool,
+        pub due_date: u64,
+        pub text: String,
+    }
 }
 ```
 
-Can be exposed via UniFFI using UDL like this:
-
-```idl
-dictionary TodoEntry {
-    boolean done;
-    u64 due_date;
-    string text;
-};
-```
-
-The fields in a dictionary can be of almost any type, including objects or other dictionaries.
+The fields in a record can be of almost any type, including objects or other dictionaries.
 The current limitations are:
 
-* They cannot recursively contain another instance of the *same* dictionary type.
+* They cannot recursively contain another instance of the *same* record type.
 * They cannot contain references to callback interfaces.
+
+These restrictions may be lifted in future.
 
 ## Fields holding Object References
 
-If a dictionary contains a field whose type is an [interface](./interfaces.md), then that
+If a record contains a field whose type is an [object](./objects.md), then that
 field will hold a *reference* to an underlying instance of a Rust struct. The Rust code for
 working with such fields must store them as an `Arc` in order to help properly manage the
-lifetime of the instance. So if the UDL interface looked like this:
-
-```idl
-interface User {
-    // Some sort of "user" object that can own todo items
-};
-
-dictionary TodoEntry {
-    User owner;
-    string text;
-}
-```
-
-Then the corresponding Rust code would need to look like this:
+lifetime of the instance. Like this:
 
 ```rust,no_run
 struct TodoEntry {
@@ -68,10 +50,13 @@ You can read more about managing object references in the section on [interfaces
 
 Fields can be specified with a default value:
 
-```idl
-dictionary TodoEntry {
-    boolean done = false;
-    string text;
+TODO: what syntax will we use for this in Rust? Some sort of helper macro attribute like:
+
+```rust,no_run
+pub struct TodoEntry {
+    #[uniffi(default=false)]
+    done: bool,
+    text: String,
 };
 ```
 
@@ -91,19 +76,10 @@ If not set otherwise the default value for a field is used when constructing the
 
 ## Optional fields and default values
 
-Fields can be made optional using a `T?` type.
-
-```idl
-dictionary TodoEntry {
-    boolean done;
-    string? text;
-};
-```
-
-The corresponding Rust struct would need to look like this:
+Fields can be made optional using Rust's builtin `Option` type:
 
 ```rust,no_run
-struct TodoEntry {
+pub struct TodoEntry {
     done: bool,
     text: Option<String>,
 }
@@ -120,13 +96,14 @@ data class TodoEntry (
 }
 ```
 
-Optional fields can also be set to a default `null` value:
+Optional fields can also be set to a default `None` value:
 
-```idl
-dictionary TodoEntry {
-    boolean done;
-    string? text = null;
-};
+```rust,no_run
+pub struct TodoEntry {
+    done: bool,
+    #[uniffi(default=None)]
+    text: Option<String>,
+}
 ```
 
 The corresponding generated Kotlin code would be equivalent to:

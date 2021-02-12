@@ -71,23 +71,22 @@ use super::{APIConverter, ComponentInterface};
 ///
 /// TODO:
 ///  - maybe "Class" would be a better name than "Object" here?
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Object {
     pub(super) name: String,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     pub(super) ffi_func_free: FFIFunction,
     pub(super) uses_deprecated_threadsafe_attribute: bool,
+    pub(super) docs: Vec<String>,
 }
 
 impl Object {
     fn new(name: String) -> Object {
         Object {
             name,
-            constructors: Default::default(),
-            methods: Default::default(),
-            ffi_func_free: Default::default(),
             uses_deprecated_threadsafe_attribute: false,
+            ..Default::default()
         }
     }
 
@@ -97,6 +96,10 @@ impl Object {
 
     pub fn type_(&self) -> Type {
         Type::Object(self.name.clone())
+    }
+
+    pub fn docs(&self) -> Vec<&str> {
+        self.docs.iter().map(|s| s.as_str()).collect()
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {
@@ -148,11 +151,11 @@ impl Object {
     pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
         self.methods()
             .iter()
-            .any(|&meth| meth.contains_unsigned_types(&ci))
+            .any(|&meth| meth.contains_unsigned_types(ci))
             || self
                 .constructors()
                 .iter()
-                .any(|&constructor| constructor.contains_unsigned_types(&ci))
+                .any(|&constructor| constructor.contains_unsigned_types(ci))
     }
 }
 
@@ -211,6 +214,47 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
     }
 }
 
+impl APIConverter<Object> for &syn::ItemStruct {
+    fn convert(&self, _ci: &mut ComponentInterface) -> Result<Object> {
+        let attrs = super::synner::Attributes::try_from(&self.attrs)?;
+        let mut object = Object::new(self.ident.to_string());
+        object.docs = attrs.docs;
+        // Note that constructors, methods etc will be added when processing
+        // subsequent `impl` blocks.
+        Ok(object)
+    }
+}
+
+impl super::APIBuilder for &syn::ItemImpl {
+    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
+        let name = super::synner::name_from_type(&self.self_ty)?;
+        // TODO: add a bunch of checks that the code is not doing anything fishy...
+        for item in &self.items {
+            match item {
+                syn::ImplItem::Method(ref m) => {
+                    // Instance methods have a "receiver" as first argument, class methods do not.
+                    match m.sig.receiver() {
+                        None => {
+                            let cons = m.convert(ci)?;
+                            ci.with_object_definition_mut(name.as_str(), |defn| {
+                                defn.constructors.push(cons)
+                            })?;
+                        }
+                        Some(_) => {
+                            let meth = m.convert(ci)?;
+                            ci.with_object_definition_mut(name.as_str(), |defn| {
+                                defn.methods.push(meth)
+                            })?;
+                        }
+                    };
+                }
+                _ => bail!("Unsupported impl item type: {:?}", item),
+            }
+        }
+        Ok(())
+    }
+}
+
 // Represents a constructor for an object type.
 //
 // In the FFI, this will be a function that returns a pointer to an instance
@@ -221,6 +265,7 @@ pub struct Constructor {
     pub(super) arguments: Vec<Argument>,
     pub(super) ffi_func: FFIFunction,
     pub(super) attributes: ConstructorAttributes,
+    pub(super) docs: Vec<String>,
 }
 
 impl Constructor {
@@ -234,6 +279,10 @@ impl Constructor {
 
     pub fn full_arguments(&self) -> Vec<Argument> {
         self.arguments.to_vec()
+    }
+
+    pub fn docs(&self) -> Vec<&str> {
+        self.docs.iter().map(|s| s.as_str()).collect()
     }
 
     pub fn ffi_func(&self) -> &FFIFunction {
@@ -254,7 +303,7 @@ impl Constructor {
         self.ffi_func.return_type = Some(FFIType::RustArcPtr);
     }
 
-    fn is_primary_constructor(&self) -> bool {
+    pub fn is_primary_constructor(&self) -> bool {
         self.name == "new"
     }
 
@@ -286,6 +335,7 @@ impl Default for Constructor {
             arguments: Vec::new(),
             ffi_func: Default::default(),
             attributes: Default::default(),
+            docs: Default::default(),
         }
     }
 }
@@ -301,6 +351,45 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
             attributes,
+            ..Default::default()
+        })
+    }
+}
+
+impl APIConverter<Constructor> for &syn::ImplItemMethod {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Constructor> {
+        let attrs = super::synner::Attributes::try_from(&self.attrs)?;
+        // TODO: check a bunch of stuff, e.g. no async, no unsafe, no generics.
+        if self.sig.variadic.is_some() {
+            bail!("Variadic constructors are not supported");
+        }
+        let mut attributes: Vec<super::attributes::Attribute> = vec![];
+        let _return_type = match &self.sig.output {
+            syn::ReturnType::Default => bail!("Constructor must return object instance"),
+            syn::ReturnType::Type(_, type_) => {
+                let (throws, returns) = super::synner::destructure_if_result_type(type_)?;
+                match (throws, returns) {
+                    (None, t) => t,
+                    (Some(err), t) => {
+                        attributes.push(super::attributes::Attribute::Throws(err));
+                        t
+                    }
+                }
+            }
+        };
+        // TODO: can't check that it's returning the right thing, since we don't have
+        // object_name at this point :-/
+        Ok(Constructor {
+            name: self.sig.ident.to_string(),
+            arguments: self
+                .sig
+                .inputs
+                .iter()
+                .map(|arg| arg.convert(ci))
+                .collect::<Result<Vec<_>>>()?,
+            ffi_func: Default::default(),
+            attributes: super::attributes::ConstructorAttributes::new(attributes),
+            docs: attrs.docs,
         })
     }
 }
@@ -309,7 +398,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 //
 // The FFI will represent this as a function whose first/self argument is a
 // `FFIType::RustArcPtr` to the instance.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Method {
     pub(super) name: String,
     pub(super) object_name: String,
@@ -317,6 +406,7 @@ pub struct Method {
     pub(super) arguments: Vec<Argument>,
     pub(super) ffi_func: FFIFunction,
     pub(super) attributes: MethodAttributes,
+    pub(super) docs: Vec<String>,
 }
 
 impl Method {
@@ -347,6 +437,10 @@ impl Method {
 
     pub fn return_type(&self) -> Option<&Type> {
         self.return_type.as_ref()
+    }
+
+    pub fn docs(&self) -> Vec<&str> {
+        self.docs.iter().map(|s| s.as_str()).collect()
     }
 
     pub fn ffi_func(&self) -> &FFIFunction {
@@ -430,6 +524,49 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             return_type,
             ffi_func: Default::default(),
             attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
+            ..Default::default()
+        })
+    }
+}
+
+impl APIConverter<Method> for &syn::ImplItemMethod {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Method> {
+        let attrs = super::synner::Attributes::try_from(&self.attrs)?;
+        if self.sig.variadic.is_some() {
+            bail!("Variadic methods are not supported");
+        }
+        let mut attributes: Vec<super::attributes::Attribute> = vec![];
+        let return_type = match &self.sig.output {
+            syn::ReturnType::Default => None,
+            syn::ReturnType::Type(_, type_) => Some({
+                let (throws, returns) = super::synner::destructure_if_result_type(type_)?;
+                match (throws, returns) {
+                    (None, t) => t,
+                    (Some(err), t) => {
+                        attributes.push(super::attributes::Attribute::Throws(err));
+                        t
+                    }
+                }
+            }),
+        };
+        let return_type = match return_type {
+            None => None,
+            Some(syn::Type::Tuple(t)) if t.elems.is_empty() => None,
+            Some(t) => Some(ci.resolve_type_expression(t)?),
+        };
+        Ok(Method {
+            name: self.sig.ident.to_string(),
+            arguments: self
+                .sig
+                .inputs
+                .iter()
+                .skip(1)
+                .map(|arg| arg.convert(ci))
+                .collect::<Result<Vec<_>>>()?,
+            return_type,
+            attributes: super::attributes::MethodAttributes::new(attributes),
+            docs: attrs.docs,
+            ..Default::default()
         })
     }
 }

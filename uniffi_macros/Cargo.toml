@@ -18,3 +18,4 @@ proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "1.0", features = ["extra-traits"] }
 glob = "0.3"
+uniffi_bindgen = { path = "../uniffi_bindgen", version = "= 0.12.0" }

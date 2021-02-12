@@ -88,6 +88,31 @@ impl APIBuilder for weedle::NamespaceDefinition<'_> {
     }
 }
 
+impl APIBuilder for &syn::ItemMacro {
+    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
+        let (mod_name, macro_name) = super::synner::name_pair_from_path(&self.mac.path)?;
+        match (mod_name.as_str(), macro_name.as_str()) {
+            ("uniffi_macros", "include_scaffolding") => {
+                // Infer the component name from the included filename,
+                // in a weird bit of recursion. In future we'd just take
+                // this from a string literal somehow.
+                let arg = syn::parse2::<syn::LitStr>(self.mac.tokens.clone())?;
+                let name = arg
+                    .value()
+                    .split('.')
+                    .next()
+                    .ok_or_else(|| {
+                        anyhow::anyhow!("missing file name in `include_scaffolding` call")
+                    })?
+                    .to_string();
+                ci.add_namespace_definition(Namespace { name })?;
+            }
+            _ => bail!("Sorry, no macro invocations allowed apart from `include_scaffolding!(\"component_name\")`"),
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

@@ -155,6 +155,10 @@ impl<T: TryInto<EnumAttributes, Error = anyhow::Error>> TryFrom<Option<T>> for E
 pub(super) struct FunctionAttributes(Vec<Attribute>);
 
 impl FunctionAttributes {
+    pub(super) fn new(attrs: Vec<Attribute>) -> Self {
+        Self(attrs)
+    }
+
     pub(super) fn get_throws_err(&self) -> Option<&str> {
         self.0.iter().find_map(|attr| match attr {
             // This will hopefully return a helpful compilation error
@@ -287,6 +291,9 @@ impl<T: TryInto<InterfaceAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
 pub(super) struct ConstructorAttributes(Vec<Attribute>);
 
 impl ConstructorAttributes {
+    pub(super) fn new(attrs: Vec<Attribute>) -> Self {
+        Self(attrs)
+    }
     pub(super) fn get_throws_err(&self) -> Option<&str> {
         self.0.iter().find_map(|attr| match attr {
             // This will hopefully return a helpful compilation error
@@ -326,6 +333,10 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttri
 pub(super) struct MethodAttributes(Vec<Attribute>);
 
 impl MethodAttributes {
+    pub(super) fn new(attrs: Vec<Attribute>) -> Self {
+        Self(attrs)
+    }
+
     pub(super) fn get_throws_err(&self) -> Option<&str> {
         self.0.iter().find_map(|attr| match attr {
             // This will hopefully return a helpful compilation error

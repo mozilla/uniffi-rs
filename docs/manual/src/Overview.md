@@ -6,8 +6,15 @@ Note that this tool will not help you ship a Rust library to these platforms, bu
 
 ## Design
 
-UniFFI requires to write an Interface Definition Language (based on [WebIDL](https://heycam.github.io/webidl/)) file describing the methods and data structures available to the targeted languages.  
-This .udl (UniFFI Definition Language) file, whose definitions must match with the exposed Rust code, is then used to generate Rust *scaffolding* code and foreign-languages *bindings*. This process can take place either during the build process or be manually initiated by the developer.
+UniFFI requires you to declare the interface you want to expose to other languages using a restricted
+subset of Rust syntax, along with a couple of helper macros. This interface declaration is used
+to generate two things:
+
+* Alongside your hand-written Rust code, UniFFI will generate some Rust *scaffolding* that exposes
+your Rust datatypes and functions over a low-level C-compatible FFI.
+* For each target foreign language, UniFFI will use the interface declaration to generate
+*foreign-language bindings* that consume this low-level FFI and expose it via more idiomatic
+higher-level code in the target language.
 
 ![uniffi diagram](./uniffi_diagram.png)
 

@@ -36,6 +36,10 @@ use std::{
     time::{Duration, SystemTime},
 };
 
+// Re-export the main `declare_interface` macro so that consumers
+// only have to worry about a single `uniffi` crate.
+pub use uniffi_macros::declare_interface;
+
 pub mod ffi;
 pub use ffi::*;
 
