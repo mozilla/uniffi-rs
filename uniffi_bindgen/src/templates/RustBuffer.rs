@@ -4,6 +4,7 @@
 /// to the foreign-language code as a `RustBuffer` struct. Callers must eventually
 /// free the resulting buffer, either by explicitly calling the destructor defined below,
 /// or by passing ownership of the buffer back into Rust code.
+#[doc(hidden)]
 #[no_mangle]
 pub extern "C" fn {{ ci.ffi_rustbuffer_alloc().name() }}(size: i32, err: &mut uniffi::deps::ffi_support::ExternError) -> uniffi::RustBuffer {
     uniffi::deps::ffi_support::call_with_output(err, || {
@@ -19,6 +20,7 @@ pub extern "C" fn {{ ci.ffi_rustbuffer_alloc().name() }}(size: i32, err: &mut un
 /// # Safety
 /// This function will dereference a provided pointer in order to copy bytes from it, so
 /// make sure the `ForeignBytes` struct contains a valid pointer and length.
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes: uniffi::ForeignBytes, err: &mut uniffi::deps::ffi_support::ExternError) -> uniffi::RustBuffer {
     uniffi::deps::ffi_support::call_with_output(err, || {
@@ -33,6 +35,7 @@ pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes: unif
 /// The argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
 /// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
 /// corrupting the allocator state.
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_free().name() }}(buf: uniffi::RustBuffer, err: &mut uniffi::deps::ffi_support::ExternError) {
     uniffi::deps::ffi_support::call_with_output(err, || {
@@ -55,6 +58,7 @@ pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_free().name() }}(buf: uniffi::Rust
 /// The first argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
 /// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
 /// corrupting the allocator state.
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_reserve().name() }}(buf: uniffi::RustBuffer, additional: i32, err: &mut uniffi::deps::ffi_support::ExternError) -> uniffi::RustBuffer {
     uniffi::deps::ffi_support::call_with_output(err, || {
@@ -75,6 +79,7 @@ pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_reserve().name() }}(buf: uniffi::R
 /// obtained from a call into the rust code that returned a string.
 /// (In practice that means you got it from the `message` field of an `ExternError`,
 /// because that's currently the only place we use `char*` types in our API).
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn {{ ci.ffi_string_free().name() }}(cstr: *mut std::os::raw::c_char, err: &mut uniffi::deps::ffi_support::ExternError) {
     uniffi::deps::ffi_support::call_with_output(err, || {

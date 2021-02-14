@@ -5,6 +5,7 @@
 // specified in the UDL.    
 #}
 #[allow(clippy::all)]
+#[doc(hidden)]
 #[no_mangle]
 pub extern "C" fn {{ func.ffi_func().name() }}(
     {% call rs::arg_list_ffi_decl(func.ffi_func()) %}
