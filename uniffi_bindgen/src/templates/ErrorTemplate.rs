@@ -4,6 +4,7 @@
     // compile if the provided enum has a different shape to the one declared in the UDL. 
     // Here we define the neccessary converstion to allow the error to propegate through the FFI as an error.
 #}
+#[doc(hidden)]
 impl From<{{e.name()}}> for uniffi::deps::ffi_support::ExternError {
     fn from(err: {{e.name()}}) -> uniffi::deps::ffi_support::ExternError {
         // Errno just differentiate between the errors.

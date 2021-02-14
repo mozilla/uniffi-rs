@@ -15,14 +15,17 @@
 {% let foreign_callback_internals = format!("foreign_callback_{}_internals", trait_name)|upper -%}
 
 // Register a foreign callback for getting across the FFI.
+#[doc(hidden)]
 static {{ foreign_callback_internals }}: uniffi::ForeignCallbackInternals = uniffi::ForeignCallbackInternals::new();
 
+#[doc(hidden)]
 #[no_mangle]
 pub extern "C" fn {{ cbi.ffi_init_callback().name() }}(callback: uniffi::ForeignCallback) {
     {{ foreign_callback_internals }}.set_callback(callback);
 }
 
 // Make an implementation which will shell out to the foreign language.
+#[doc(hidden)]
 #[derive(Debug)]
 struct {{ trait_impl }} {
   handle: u64

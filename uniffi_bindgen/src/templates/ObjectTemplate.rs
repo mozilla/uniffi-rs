@@ -13,11 +13,13 @@ uniffi::deps::lazy_static::lazy_static! {
         "uniffi::ffi::handle_maps::ArcHandleMap",
         "uniffi::ffi::handle_maps::MutexHandleMap")
     %}
+    #[doc(hidden)]
     static ref {{ handle_map }}: {{ handle_map_type }}<{{ obj.name() }}>
         = Default::default();
 }
 
     {% let ffi_free = obj.ffi_object_free() -%}
+    #[doc(hidden)]
     #[no_mangle]
     pub extern "C" fn {{ ffi_free.name() }}(handle: u64) {
         let _ = {{ handle_map }}.delete_u64(handle);
@@ -25,6 +27,7 @@ uniffi::deps::lazy_static::lazy_static! {
 
 {%- for cons in obj.constructors() %}
     #[allow(clippy::all)]
+    #[doc(hidden)]
     #[no_mangle]
     pub extern "C" fn {{ cons.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> u64 {
@@ -37,6 +40,7 @@ uniffi::deps::lazy_static::lazy_static! {
 
 {%- for meth in obj.methods() %}
     #[allow(clippy::all)]
+    #[doc(hidden)]
     #[no_mangle]
     pub extern "C" fn {{ meth.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(meth.ffi_func()) %}

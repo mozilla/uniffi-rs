@@ -7,6 +7,7 @@
 // order of items *as declared in the UDL file*. This might be different to the order
 // of items as declared in the rust code, but no harm will come from it.
 #}
+#[doc(hidden)]
 unsafe impl uniffi::ViaFfi for {{ e.name() }} {
     type FfiType = u32;
 

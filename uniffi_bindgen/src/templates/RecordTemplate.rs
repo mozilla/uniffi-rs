@@ -4,7 +4,7 @@
 // If the caller's struct does not match the shape and types declared in the UDL then the rust
 // compiler will complain with a type error.
 #}
-
+#[doc(hidden)]
 unsafe impl uniffi::ViaFfi for {{ rec.name() }} {
     type FfiType = uniffi::RustBuffer;
 
