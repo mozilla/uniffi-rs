@@ -9,6 +9,7 @@
 #include "jsapi.h"
 #include "nsCOMPtr.h"
 #include "nsIGlobalObject.h"
+#include "nsISerialEventTarget.h"
 #include "nsWrapperCache.h"
 
 #include "mozilla/RefPtr.h"
@@ -41,7 +42,7 @@ class {{ obj.name()|class_name_cpp(context) }} final : public nsISupports, publi
 
   {%- for meth in obj.methods() %}
 
-  {% match meth.cpp_return_type() %}{% when Some with (type_) %}{{ type_|ret_type_cpp(context) }}{% else %}void{% endmatch %} {{ meth.name()|fn_name_cpp }}(
+  already_AddRefed<Promise> {{ meth.name()|fn_name_cpp }}(
     {%- for arg in meth.cpp_arguments() %}
     {{ arg|arg_type_cpp(context) }} {{ arg.name() }}{%- if !loop.last %},{% endif %}
     {%- endfor %}
@@ -52,6 +53,8 @@ class {{ obj.name()|class_name_cpp(context) }} final : public nsISupports, publi
   ~{{ obj.name()|class_name_cpp(context) }}();
 
   nsCOMPtr<nsIGlobalObject> mGlobal;
+  RefPtr<nsISerialEventTarget> GetBackgroundTarget();
+  RefPtr<nsISerialEventTarget> mBackgroundET;
   uint64_t mHandle;
 };
 
