@@ -213,7 +213,7 @@ from the returned byte buffer into a language-native list of integers.</li>
 <tr><td><code>string</code></td><td><code>RustBuffer</code> struct pointing to utf8 bytes</td></tr>
 <tr><td><code>T?</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>sequence&lt;T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
-<tr><td><code>record&lt;string, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>record&lt;DOMString, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>enum</code></td><td><code>uint32_t</code> indicating variant, numbered in declaration order starting from 1</td></tr>
 <tr><td><code>dictionary</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>interface</code></td><td><code>uint64_t</code> opaque integer handle</td></tr>
@@ -231,7 +231,7 @@ The details of this format are internal only and may change between versions of 
 <tr><td><code>string</code></td><td>Serialized <code>i32</code> length followed by utf-8 string bytes; no trailing null</td></tr>
 <tr><td><code>T?</code></td><td>If null, serialized <code>boolean</code> false; if non-null, serialized <code>boolean</code> true followed by serialized <code>T</code></td></tr>
 <tr><td><code>sequence&lt;T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>T</code></td></tr>
-<tr><td><code>record&lt;string, T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td></tr>
+<tr><td><code>record&lt;DOMString, T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td></tr>
 <tr><td><code>enum</code></td><td>Serialized <code>u32</code> indicating variant, numbered in declaration order starting from 1</td></tr>
 <tr><td><code>dictionary</code></td><td>The serialized value of each field, in declaration order</td></tr>
 <tr><td><code>interface</code></td><td><em>Cannot currently be serialized</em></td></tr>
