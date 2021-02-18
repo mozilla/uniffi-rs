@@ -1,6 +1,7 @@
 // A handful of classes and functions to support the generated data structures.
 // This would be a good candidate for isolating in its own ffi-support lib.
 
+{% if ci.iter_object_definitions().len() > 0 %}
 abstract class FFIObject(
     private val handle: AtomicLong
 ) {
@@ -28,7 +29,9 @@ inline fun <T : FFIObject, R> T.use(block: (T) -> R) =
             // swallow
         }
     }
+{% endif %}
 
+{% if ci.iter_callback_interface_definitions().len() > 0 %}
 internal typealias Handle = Long
 internal class ConcurrentHandleMap<T>(
     private val leftMap: MutableMap<Handle, T> = mutableMapOf(),
@@ -41,7 +44,7 @@ internal class ConcurrentHandleMap<T>(
     fun insert(obj: T): Handle =
         lock.withLock {
             rightMap[obj] ?:
-                currentHandle.getAndAccumulate(stride) { a, b -> a + b }
+                currentHandle.getAndAdd(stride)
                     .also { handle ->
                         leftMap[handle] = obj
                         rightMap[obj] = handle
@@ -105,3 +108,4 @@ internal abstract class CallbackInternals<CallbackInterface>(
     fun write(v: CallbackInterface, buf: RustBufferBuilder) =
         buf.putLong(lower(v))
 }
+{% endif %}

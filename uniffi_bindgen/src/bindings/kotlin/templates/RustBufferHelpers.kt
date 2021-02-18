@@ -377,7 +377,10 @@ internal fun lower{{ canonical_type_name }}(m: Map<String, {{ inner_type_name }}
 
 internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}>, buf: RustBufferBuilder) {
     buf.putInt(v.size)
-    v.forEach { k, v ->
+    // The parens on `(k, v)` here ensure we're calling the right method,
+    // which is important for compatibility with older android devices.
+    // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
+    v.forEach { (k, v) ->
         k.write(buf)
         {{ "v"|write_kt("buf", inner_type) }}
     }
