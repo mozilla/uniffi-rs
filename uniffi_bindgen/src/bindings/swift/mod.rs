@@ -140,7 +140,7 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
         .arg("-parse-as-library")
         .arg("-L")
         .arg(&out_path)
-        .arg(format!("-luniffi_{}", ci.namespace()))
+        .arg(format!("-l{}", config.cdylib_name()))
         .arg("-Xcc")
         .arg(module_map_file_option)
         .arg(source_file)

@@ -19,6 +19,7 @@ use crate::MergeWith;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     module_name: Option<String>,
+    cdylib_name: Option<String>,
 }
 impl Config {
     pub fn module_name(&self) -> String {
@@ -33,12 +34,20 @@ impl Config {
     pub fn header_filename(&self) -> String {
         format!("{}-Bridging-Header.h", self.module_name())
     }
+    pub fn cdylib_name(&self) -> String {
+        if let Some(cdylib_name) = &self.cdylib_name {
+            cdylib_name.clone()
+        } else {
+            "uniffi".into()
+        }
+    }
 }
 
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
             module_name: Some(format!("uniffi_{}", ci.namespace())),
+            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
         }
     }
 }
@@ -47,6 +56,7 @@ impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
             module_name: self.module_name.merge_with(&other.module_name),
+            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
         }
     }
 }

@@ -15,30 +15,44 @@ use crate::MergeWith;
 // sine the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    // No config options yet.
+    cdylib_name: Option<String>,
+}
+
+impl Config {
+    pub fn cdylib_name(&self) -> String {
+        if let Some(cdylib_name) = &self.cdylib_name {
+            cdylib_name.clone()
+        } else {
+            "uniffi".into()
+        }
+    }
 }
 
 impl From<&ComponentInterface> for Config {
-    fn from(_ci: &ComponentInterface) -> Self {
-        Config {}
+    fn from(ci: &ComponentInterface) -> Self {
+        Config {
+            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
+        }
     }
 }
 
 impl MergeWith for Config {
-    fn merge_with(&self, _other: &Self) -> Self {
-        self.clone()
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
+        }
     }
 }
 
 #[derive(Template)]
 #[template(syntax = "py", escape = "none", path = "wrapper.py")]
 pub struct PythonWrapper<'a> {
-    _config: Config,
+    config: Config,
     ci: &'a ComponentInterface,
 }
 impl<'a> PythonWrapper<'a> {
-    pub fn new(_config: Config, ci: &'a ComponentInterface) -> Self {
-        Self { _config, ci }
+    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
+        Self { config, ci }
     }
 }
 

@@ -16,18 +16,23 @@ use crate::MergeWith;
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
     package_name: Option<String>,
+    cdylib_name: Option<String>,
 }
 
 impl Config {
-    fn default_package_name() -> String {
-        "uniffi".into()
-    }
-
     pub fn package_name(&self) -> String {
         if let Some(package_name) = &self.package_name {
             package_name.clone()
         } else {
-            Config::default_package_name()
+            "uniffi".into()
+        }
+    }
+
+    pub fn cdylib_name(&self) -> String {
+        if let Some(cdylib_name) = &self.cdylib_name {
+            cdylib_name.clone()
+        } else {
+            "uniffi".into()
         }
     }
 }
@@ -36,6 +41,7 @@ impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
             package_name: Some(format!("uniffi.{}", ci.namespace())),
+            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
         }
     }
 }
@@ -44,6 +50,7 @@ impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
             package_name: self.package_name.merge_with(&other.package_name),
+            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
         }
     }
 }
