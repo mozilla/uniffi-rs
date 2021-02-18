@@ -13,6 +13,7 @@
 # compile the rust component. The easiest way to ensure this is to bundle the Python
 # helpers directly inline like we're doing here.
 
+import os
 import sys
 import ctypes
 import enum
