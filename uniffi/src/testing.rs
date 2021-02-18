@@ -85,13 +85,26 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
     if !child.wait()?.success() {
         bail!("Failed to execute `cargo build`");
     }
-    // If we didn't just build exactly one cdylib, we're going to have a bad time.
-    match cdylibs.len() {
+    // If we didn't just build exactly one cdylib, we're going to use the one most likely to be produced by `pkg_dir`,
+    // or we will have a bad time.
+    let cdylib = match cdylibs.len() {
         0 => bail!("Crate did not produce any cdylibs, it must not be a uniffi component"),
-        1 => (),
-        _ => bail!("Crate produced multiple cdylibs, it must not be a uniffi component"),
-    }
-    let cdylib_files: Vec<_> = cdylibs[0]
+        1 => &cdylibs[0],
+        _ => {
+                let package_name = Path::new(pkg_dir).file_name().and_then(|s| s.to_str()).unwrap();
+                match cdylibs.iter().find(|cdylib|cdylib.package_id.repr.starts_with(&format!("{:} ", package_name))) {
+                    Some(cdylib) => {
+                        log::warn!("Crate produced multiple cdylibs, using the one produced by {}", pkg_dir);
+                        cdylib
+                    }
+                    None => {
+                        bail!("Crate produced multiple cdylibs, none of which is produced by {}", pkg_dir);
+                    }
+                }
+                
+            },
+    };
+    let cdylib_files: Vec<_> = cdylib
         .filenames
         .iter()
         .filter(|nm| match nm.extension().unwrap_or_default().to_str() {
