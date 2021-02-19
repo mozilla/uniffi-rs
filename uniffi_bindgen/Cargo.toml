@@ -23,11 +23,3 @@ heck = "0.3"
 clap = { version = "2", default-features = false }
 serde = "1"
 toml = "0.5"
-
-# Workaround for an issue with `bitvec` on newer rusts, which we get via `nom`.
-# Hopefully we'll be able to remove this after a new release of `nom`.
-# Ref https://github.com/Geal/nom/pull/1286/.
-[dependencies.funty]
-version = ">1.0, <=1.1"
-optional = true
-default-features = false
