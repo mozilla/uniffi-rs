@@ -121,7 +121,7 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
         .filenames
         .iter()
         .filter(|nm| match nm.extension().unwrap_or_default().to_str() {
-            Some("dylib") | Some("so") => true,
+            Some(std::env::consts::DLL_EXTENSION) => true,
             _ => false,
         })
         .collect();

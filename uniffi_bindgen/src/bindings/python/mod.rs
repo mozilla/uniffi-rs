@@ -57,12 +57,13 @@ pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Res
 /// Execute the specifed python script, with environment based on the generated
 /// artifacts in the given output directory.
 pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
-    let mut pythonpath = env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
-    // This lets python find the compiled library for the rust component.
-    pythonpath.push(":");
-    pythonpath.push(out_dir);
     let mut cmd = Command::new("python3");
+    // This helps python find the generated .py wrapper for rust component.
+    let pythonpath = env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
+    let pythonpath =
+        env::join_paths(env::split_paths(&pythonpath).chain(vec![out_dir.to_path_buf()]))?;
     cmd.env("PYTHONPATH", pythonpath);
+    // We should now be able to execute the tests successfully.
     cmd.arg(script_file);
     let status = cmd
         .spawn()
