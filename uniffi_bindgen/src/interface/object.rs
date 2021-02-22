@@ -171,14 +171,14 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Constructor(t) => {
-                    let cons = t.convert(ci)?;
+                    let cons: Constructor = t.convert(ci)?;
                     if !member_names.insert(cons.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", cons.name())
                     }
                     object.constructors.push(cons);
                 }
                 weedle::interface::InterfaceMember::Operation(t) => {
-                    let mut method = t.convert(ci)?;
+                    let mut method: Method = t.convert(ci)?;
                     if !member_names.insert(method.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", method.name())
                     }
@@ -388,10 +388,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),
-            attributes: match &self.attributes {
-                Some(attr) => MethodAttributes::try_from(attr)?,
-                None => Default::default(),
-            },
+            attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
         })
     }
 }

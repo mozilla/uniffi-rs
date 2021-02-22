@@ -8,9 +8,21 @@ assert dico == copyDico
 
 assert copie_enumeration(Enumeration.DEUX) == Enumeration.DEUX
 assert copie_enumerations([Enumeration.UN, Enumeration.DEUX]) == [Enumeration.UN, Enumeration.DEUX]
-assert copie_carte({"1": Enumeration.UN, "2": Enumeration.DEUX}) == {"1": Enumeration.UN, "2": Enumeration.DEUX}
+assert copie_carte({
+    "0": EnumerationAvecDonnees.ZERO(),
+    "1": EnumerationAvecDonnees.UN(1),
+    "2": EnumerationAvecDonnees.DEUX(2, "deux"),
+}) == {
+    "0": EnumerationAvecDonnees.ZERO(),
+    "1": EnumerationAvecDonnees.UN(1),
+    "2": EnumerationAvecDonnees.DEUX(2, "deux"),
+}
 
 assert switcheroo(False) is True
+
+assert EnumerationAvecDonnees.ZERO() != EnumerationAvecDonnees.UN(1)
+assert EnumerationAvecDonnees.UN(1) == EnumerationAvecDonnees.UN(1)
+assert EnumerationAvecDonnees.UN(1) != EnumerationAvecDonnees.UN(2)
 
 # Test the roundtrip across the FFI.
 # This shows that the values we send come back in exactly the same state as we sent them.
@@ -19,9 +31,9 @@ assert switcheroo(False) is True
 rt = Retourneur()
 
 def affirmAllerRetour(vals, identique):
-  for v in vals:
-    id_v = identique(v)
-    assert id_v == v, f"Round-trip failure: {v} => {id_v}"
+    for v in vals:
+        id_v = identique(v)
+        assert id_v == v, f"Round-trip failure: {v} => {id_v}"
 
 MIN_I8 = -1 * 2**7
 MAX_I8 = 2**7 - 1
@@ -87,8 +99,8 @@ st = Stringifier()
 
 def affirmEnchaine(vals, toString, rustyStringify=lambda v: str(v).lower()):
     for v in vals:
-      str_v = toString(v)
-      assert rustyStringify(v) == str_v, f"String compare error {v} => {str_v}"
+        str_v = toString(v)
+        assert rustyStringify(v) == str_v, f"String compare error {v} => {str_v}"
 
 # Test the efficacy of the string transport from rust. If this fails, but everything else
 # works, then things are very weird.

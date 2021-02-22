@@ -5,16 +5,7 @@ public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi,
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(
-        {%- for field in rec.fields() %}
-        {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift -}}
-        {%- match field.default_value() %}
-            {%- when Some with(literal) %} = {{ literal|literal_swift }}
-            {%- else %}
-        {%- endmatch -%}
-        {% if !loop.last %}, {% endif %}
-        {%- endfor %}
-    ) {
+    public init({% call swift::field_list_decl(rec) %}) {
         {%- for field in rec.fields() %}
         self.{{ field.name()|var_name_swift }} = {{ field.name()|var_name_swift }}
         {%- endfor %}

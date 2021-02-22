@@ -123,10 +123,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
             return_type,
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
-            attributes: match &self.attributes {
-                Some(attr) => FunctionAttributes::try_from(attr)?,
-                None => Default::default(),
-            },
+            attributes: FunctionAttributes::try_from(self.attributes.as_ref())?,
         })
     }
 }
@@ -186,10 +183,7 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
             None => None,
             Some(v) => Some(convert_default_value(&v.value, &type_)?),
         };
-        let by_ref = match &self.attributes {
-            Some(attrs) => ArgumentAttributes::try_from(attrs)?.by_ref(),
-            None => false,
-        };
+        let by_ref = ArgumentAttributes::try_from(self.attributes.as_ref())?.by_ref();
         Ok(Argument {
             name: self.identifier.0.to_string(),
             type_,

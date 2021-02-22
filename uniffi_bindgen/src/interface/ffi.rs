@@ -18,7 +18,7 @@
 /// For the types that involve memory allocation, we make a distinction between
 /// "owned" types (the recipient must free it, or pass it to someone else) and
 /// "borrowed" types (the sender must keep it alive for the duration of the call).
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum FFIType {
     // N.B. there are no booleans at this layer, since they cause problems for JNA.
     UInt8,

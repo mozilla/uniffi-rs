@@ -35,6 +35,13 @@ pub enum Enumeration {
     Trois,
 }
 
+#[derive(Debug, Clone)]
+pub enum EnumerationAvecDonnees {
+    Zero,
+    Un { premier: u32 },
+    Deux { premier: u32, second: String },
+}
+
 #[allow(non_camel_case_types)]
 #[allow(non_snake_case)]
 pub struct minusculeMAJUSCULEDict {
@@ -54,7 +61,9 @@ fn copie_enumerations(e: Vec<Enumeration>) -> Vec<Enumeration> {
     e
 }
 
-fn copie_carte(e: HashMap<String, Enumeration>) -> HashMap<String, Enumeration> {
+fn copie_carte(
+    e: HashMap<String, EnumerationAvecDonnees>,
+) -> HashMap<String, EnumerationAvecDonnees> {
     e
 }
 

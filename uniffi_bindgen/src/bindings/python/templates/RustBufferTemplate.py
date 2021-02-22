@@ -92,6 +92,20 @@ class RustBuffer(ctypes.Structure):
         with self.consumeWithStream() as stream:
             return stream.read{{ canonical_type_name }}()
 
+    {% when Type::Enum with (enum_name) -%}
+    {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
+    # The Enum type {{ enum_name }}.
+
+    @staticmethod
+    def allocFrom{{ canonical_type_name }}(v):
+        with RustBuffer.allocWithBuilder() as builder:
+            builder.write{{ canonical_type_name }}(v)
+            return builder.finalize()
+
+    def consumeInto{{ canonical_type_name }}(self):
+        with self.consumeWithStream() as stream:
+            return stream.read{{ canonical_type_name }}()
+
     {% when Type::Optional with (inner_type) -%}
     # The Optional<T> type for {{ inner_type.canonical_name() }}.
 

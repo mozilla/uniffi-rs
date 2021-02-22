@@ -21,7 +21,7 @@ use std::convert::TryFrom;
 
 use anyhow::{bail, Result};
 
-use super::super::attributes::EnumAttributes;
+use super::super::attributes::{EnumAttributes, InterfaceAttributes};
 use super::{Type, TypeUniverse};
 
 /// Trait to help with an early "type discovery" phase when processing the UDL.
@@ -58,7 +58,12 @@ impl TypeFinder for weedle::Definition<'_> {
 impl TypeFinder for weedle::InterfaceDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
-        types.add_type_definition(self.identifier.0, Type::Object(name))
+        // Some enum types are defined using an `interface` with a special attribute.
+        if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_enum_attr() {
+            types.add_type_definition(self.identifier.0, Type::Enum(name))
+        } else {
+            types.add_type_definition(self.identifier.0, Type::Object(name))
+        }
     }
 }
 
@@ -73,13 +78,11 @@ impl TypeFinder for weedle::EnumDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
         // Our error types are defined using an `enum` with a special attribute.
-        if let Some(attrs) = &self.attributes {
-            let attrs = EnumAttributes::try_from(attrs)?;
-            if attrs.contains_error_attr() {
-                return types.add_type_definition(self.identifier.0, Type::Error(name));
-            }
+        if EnumAttributes::try_from(self.attributes.as_ref())?.contains_error_attr() {
+            types.add_type_definition(self.identifier.0, Type::Error(name))
+        } else {
+            types.add_type_definition(self.identifier.0, Type::Enum(name))
         }
-        types.add_type_definition(self.identifier.0, Type::Enum(name))
     }
 }
 

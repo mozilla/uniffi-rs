@@ -2,7 +2,7 @@ namespace rondpoint {
   Dictionnaire copie_dictionnaire(Dictionnaire d);
   Enumeration copie_enumeration(Enumeration e);
   sequence<Enumeration> copie_enumerations(sequence<Enumeration> e);
-  record<DOMString, Enumeration> copie_carte(record<DOMString, Enumeration> c);
+  record<DOMString, EnumerationAvecDonnees> copie_carte(record<DOMString, EnumerationAvecDonnees> c);
   boolean switcheroo(boolean b);
 };
 
@@ -18,6 +18,13 @@ enum Enumeration {
     "Un",
     "Deux",
     "Trois",
+};
+
+[Enum]
+interface EnumerationAvecDonnees {
+  Zero();
+  Un(u32 premier);
+  Deux(u32 premier, string second);
 };
 
 dictionary Dictionnaire {

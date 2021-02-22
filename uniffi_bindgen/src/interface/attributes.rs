@@ -14,7 +14,7 @@
 //! all handled by a single abstraction. This might need to be refactored in future
 //! if we grow significantly more complicated attribute handling.
 
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 
 use anyhow::{bail, Result};
 
@@ -26,6 +26,7 @@ use anyhow::{bail, Result};
 #[derive(Debug, Clone, Hash)]
 pub(super) enum Attribute {
     ByRef,
+    Enum,
     Error,
     Name(String),
     Threadsafe,
@@ -35,6 +36,9 @@ pub(super) enum Attribute {
 impl Attribute {
     pub fn is_error(&self) -> bool {
         matches!(self, Attribute::Error)
+    }
+    pub fn is_enum(&self) -> bool {
+        matches!(self, Attribute::Enum)
     }
 }
 
@@ -49,6 +53,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
             // Matches plain named attributes like "[ByRef"].
             weedle::attribute::ExtendedAttribute::NoArgs(attr) => match (attr.0).0 {
                 "ByRef" => Ok(Attribute::ByRef),
+                "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
                 "Threadsafe" => Ok(Attribute::Threadsafe),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
@@ -130,6 +135,16 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
     }
 }
 
+impl<T: TryInto<EnumAttributes, Error = anyhow::Error>> TryFrom<Option<T>> for EnumAttributes {
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
+    }
+}
+
 /// Represents UDL attributes that might appear on a function.
 ///
 /// This supports the `[Throws=ErrorName]` attribute for functions that
@@ -161,6 +176,18 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttribut
     }
 }
 
+impl<T: TryInto<FunctionAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
+    for FunctionAttributes
+{
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
+    }
+}
+
 /// Represents UDL attributes that might appear on a function argument.
 ///
 /// This supports the `[ByRef]` attribute for arguments that should be passed
@@ -187,11 +214,27 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ArgumentAttribut
     }
 }
 
+impl<T: TryInto<ArgumentAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
+    for ArgumentAttributes
+{
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
+    }
+}
+
 /// Represents UDL attributes that might appear on an `interface` definition.
 #[derive(Debug, Clone, Hash, Default)]
 pub(super) struct InterfaceAttributes(Vec<Attribute>);
 
 impl InterfaceAttributes {
+    pub fn contains_enum_attr(&self) -> bool {
+        self.0.iter().any(|attr| attr.is_enum())
+    }
+
     pub fn threadsafe(&self) -> bool {
         self.0
             .iter()
@@ -205,10 +248,27 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::Enum => Ok(()),
             Attribute::Threadsafe => Ok(()),
-            _ => bail!(format!("{:?} not supported for interface classes", attr)),
+            _ => bail!(format!("{:?} not supported for interface definition", attr)),
         })?;
+        // Can't be both `[Threadsafe]` and an `[Enum]`.
+        if attrs.len() > 1 {
+            bail!("conflicting attributes on interface definition");
+        }
         Ok(Self(attrs))
+    }
+}
+
+impl<T: TryInto<InterfaceAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
+    for InterfaceAttributes
+{
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
     }
 }
 
@@ -269,6 +329,15 @@ mod test {
     }
 
     #[test]
+    fn test_enum() -> Result<()> {
+        let (_, node) = weedle::attribute::ExtendedAttribute::parse("Enum").unwrap();
+        let attr = Attribute::try_from(&node)?;
+        assert!(matches!(attr, Attribute::Enum));
+        assert!(attr.is_enum());
+        Ok(())
+    }
+
+    #[test]
     fn test_error() -> Result<()> {
         let (_, node) = weedle::attribute::ExtendedAttribute::parse("Error").unwrap();
         let attr = Attribute::try_from(&node)?;
@@ -300,6 +369,7 @@ mod test {
         assert!(matches!(attr, Attribute::Threadsafe));
         Ok(())
     }
+
     #[test]
     fn test_throws() -> Result<()> {
         let (_, node) = weedle::attribute::ExtendedAttribute::parse("Throws=Name").unwrap();
@@ -441,11 +511,39 @@ mod test {
     }
 
     #[test]
+    fn test_enum_attribute() -> Result<()> {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Enum]").unwrap();
+        let attrs = InterfaceAttributes::try_from(&node).unwrap();
+        assert!(matches!(attrs.contains_enum_attr(), true));
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
+        let attrs = InterfaceAttributes::try_from(&node).unwrap();
+        assert!(matches!(attrs.contains_enum_attr(), false));
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Threadsafe]").unwrap();
+        let attrs = InterfaceAttributes::try_from(&node).unwrap();
+        assert!(matches!(attrs.contains_enum_attr(), false));
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Threadsafe, Enum]").unwrap();
+        let err = InterfaceAttributes::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "conflicting attributes on interface definition"
+        );
+
+        Ok(())
+    }
+
+    #[test]
     fn test_other_attributes_not_supported_for_interfaces() -> Result<()> {
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Threadsafe, Error]").unwrap();
         let err = InterfaceAttributes::try_from(&node).unwrap_err();
-        assert_eq!(err.to_string(), "Error not supported for interface classes");
+        assert_eq!(
+            err.to_string(),
+            "Error not supported for interface definition"
+        );
         Ok(())
     }
 }

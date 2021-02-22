@@ -113,9 +113,7 @@ impl<'ci> ComponentInterface {
         ci.types.add_type_definitions_from(defns.as_slice())?;
         // With those names resolved, we can build a complete representation of the API.
         APIBuilder::process(&defns, &mut ci)?;
-        if ci.namespace.is_empty() {
-            bail!("missing namespace definition");
-        }
+        ci.check_consistency()?;
         // Now that the high-level API is settled, we can derive the low-level FFI.
         ci.derive_ffi_funcs()?;
         Ok(ci)
@@ -423,8 +421,13 @@ impl<'ci> ComponentInterface {
 
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
     fn add_function_definition(&mut self, defn: Function) -> Result<()> {
+        // Since functions are not a first-class type, we have to check for duplicates here
+        // rather than relying on the type-finding pass to catch them.
         if self.functions.iter().any(|f| f.name == defn.name) {
-            bail!("duplicate function definition: {}", defn.name);
+            bail!("duplicate function definition: \"{}\"", defn.name);
+        }
+        if !matches!(self.types.get_type_definition(defn.name()), None) {
+            bail!("Conflicting type definition for \"{}\"", defn.name());
         }
         self.functions.push(defn);
         Ok(())
@@ -448,6 +451,29 @@ impl<'ci> ComponentInterface {
     fn add_error_definition(&mut self, defn: Error) -> Result<()> {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.errors.push(defn);
+        Ok(())
+    }
+
+    /// Perform global consistency checks on the declared interface.
+    ///
+    /// This method checks for consistency problems in the declared interface
+    /// as a whole, and which can only be detected after we've finished defining
+    /// the entire interface.
+    fn check_consistency(&self) -> Result<()> {
+        if self.namespace.is_empty() {
+            bail!("missing namespace definition");
+        }
+        // To keep codegen tractable, enum variant names must not shadow type names.
+        for e in self.enums.iter() {
+            for variant in e.variants.iter() {
+                if self.types.get_type_definition(variant.name()).is_some() {
+                    bail!(
+                        "Enum variant names must not shadow type names: \"{}\"",
+                        variant.name()
+                    )
+                }
+            }
+        }
         Ok(())
     }
 
@@ -524,12 +550,8 @@ impl APIBuilder for weedle::Definition<'_> {
             weedle::Definition::Namespace(d) => d.process(ci),
             weedle::Definition::Enum(d) => {
                 // We check if the enum represents an error...
-                let is_error = if let Some(attrs) = &d.attributes {
-                    attributes::EnumAttributes::try_from(attrs)?.contains_error_attr()
-                } else {
-                    false
-                };
-                if is_error {
+                let attrs = attributes::EnumAttributes::try_from(d.attributes.as_ref())?;
+                if attrs.contains_error_attr() {
                     let err = d.convert(ci)?;
                     ci.add_error_definition(err)
                 } else {
@@ -542,8 +564,14 @@ impl APIBuilder for weedle::Definition<'_> {
                 ci.add_record_definition(rec)
             }
             weedle::Definition::Interface(d) => {
-                let obj = d.convert(ci)?;
-                ci.add_object_definition(obj)
+                let attrs = attributes::InterfaceAttributes::try_from(d.attributes.as_ref())?;
+                if attrs.contains_enum_attr() {
+                    let e = d.convert(ci)?;
+                    ci.add_enum_definition(e)
+                } else {
+                    let obj = d.convert(ci)?;
+                    ci.add_object_definition(obj)
+                }
             }
             weedle::Definition::CallbackInterface(d) => {
                 let obj = d.convert(ci)?;
@@ -630,5 +658,74 @@ mod test {
             ci2.uniffi_version = String::from("fake-version");
             assert_ne!(ci1.checksum(), ci2.checksum());
         }
+    }
+
+    #[test]
+    fn test_duplicate_type_names_are_an_error() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                constructor();
+            };
+            dictionary Testing {
+                u32 field;
+            };
+        "#;
+        let err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "Conflicting type definition for \"Testing\""
+        );
+
+        const UDL2: &str = r#"
+            namespace test{};
+            enum Testing {
+                "one", "two"
+            };
+            [Error]
+            enum Testing { "three", "four" };
+        "#;
+        let err = ComponentInterface::from_webidl(UDL2).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "Conflicting type definition for \"Testing\""
+        );
+
+        const UDL3: &str = r#"
+            namespace test{
+                u32 Testing();
+            };
+            enum Testing {
+                "one", "two"
+            };
+        "#;
+        let err = ComponentInterface::from_webidl(UDL3).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "Conflicting type definition for \"Testing\""
+        );
+    }
+
+    #[test]
+    fn test_enum_variant_names_dont_shadow_types() {
+        // There are some edge-cases during codegen where we don't know how to disambiguate
+        // between an enum variant reference and a top-level type reference, so we
+        // disallow it in order to give a more scrutable error to the consumer.
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                constructor();
+            };
+            [Enum]
+            interface HardToCodegenFor {
+                Testing();
+                OtherVariant(u32 field);
+            };
+        "#;
+        let err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "Enum variant names must not shadow type names: \"Testing\""
+        );
     }
 }

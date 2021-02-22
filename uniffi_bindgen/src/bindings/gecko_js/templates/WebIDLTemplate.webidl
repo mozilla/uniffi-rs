@@ -14,9 +14,13 @@ dictionary {{ rec.name()|class_name_webidl(context)  }} {
 {% endfor %}
 
 {%- for e in ci.iter_enum_definitions() %}
+{% if ! e.is_flat() %}
+// Sorry the gecko-js backend does not yet support enums with associated data,
+// so this probably isn't going to compile just yet...
+{% endif %}
 enum {{ e.name()|class_name_webidl(context)  }} {
   {% for variant in e.variants() %}
-  "{{ variant|enum_variant_webidl }}"{%- if !loop.last %}, {% endif %}
+  "{{ variant.name()|enum_variant_webidl }}"{%- if !loop.last %}, {% endif %}
   {% endfor %}
 };
 {% endfor %}

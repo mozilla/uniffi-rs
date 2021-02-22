@@ -125,12 +125,28 @@ class RustBufferStream(object):
         raise InternalError("RustBufferStream.read not implemented yet for {{ canonical_type_name }}")
 
     {% when Type::Enum with (enum_name) -%}
+    {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
     # The Enum type {{ enum_name }}.
 
     def read{{ canonical_type_name }}(self):
-        return {{ enum_name|class_name_py }}(
-            self._unpack_from(4, ">i")
-        )
+        variant = self._unpack_from(4, ">i")
+        {% if e.is_flat() -%}
+        return {{ enum_name|class_name_py }}(variant)
+        {%- else -%}
+        {%- for variant in e.variants() %}
+        if variant == {{ loop.index }}:
+            {%- if variant.has_fields() %}
+            return {{ enum_name|class_name_py }}.{{ variant.name()|enum_name_py }}(
+                {%- for field in variant.fields() %}
+                self.read{{ field.type_().canonical_name()|class_name_py }}(){% if loop.last %}{% else %},{% endif %}
+                {%- endfor %}
+            )
+            {%- else %}
+            return {{ enum_name|class_name_py }}.{{ variant.name()|enum_name_py }}()
+            {% endif %}
+        {%- endfor %}
+        raise InternalError("Unexpected variant tag for {{ canonical_type_name }}")
+        {%- endif %}
 
     {% when Type::Record with (record_name) -%}
     {%- let rec = ci.get_record_definition(record_name).unwrap() -%}

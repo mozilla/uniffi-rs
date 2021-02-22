@@ -141,9 +141,10 @@ mod filters {
             | Type::UInt64 => format!("int({})", nm), // TODO: check max/min value
             Type::Float32 | Type::Float64 => format!("float({})", nm),
             Type::Boolean => format!("bool({})", nm),
-            Type::String | Type::Object(_) | Type::Error(_) | Type::Record(_) => nm.to_string(),
+            Type::String | Type::Object(_) | Type::Enum(_) | Type::Error(_) | Type::Record(_) => {
+                nm.to_string()
+            }
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
-            Type::Enum(name) => format!("{}({})", class_name_py(name)?, nm),
             Type::Optional(t) => format!("(None if {} is None else {})", nm, coerce_py(nm, t)?),
             Type::Sequence(t) => format!("list({} for x in {})", coerce_py(&"x", t)?, nm),
             Type::Map(t) => format!(
@@ -169,11 +170,14 @@ mod filters {
             | Type::Float64 => nm.to_string(),
             Type::Boolean => format!("(1 if {} else 0)", nm),
             Type::String => format!("RustBuffer.allocFromString({})", nm),
-            Type::Enum(_) => format!("({}.value)", nm),
             Type::Object(_) => format!("({}._handle)", nm),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
-            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
+            Type::Enum(_)
+            | Type::Record(_)
+            | Type::Optional(_)
+            | Type::Sequence(_)
+            | Type::Map(_) => format!(
                 "RustBuffer.allocFrom{}({})",
                 class_name_py(&type_.canonical_name())?,
                 nm
@@ -194,11 +198,14 @@ mod filters {
             Type::Float32 | Type::Float64 => format!("float({})", nm),
             Type::Boolean => format!("(True if {} else False)", nm),
             Type::String => format!("{}.consumeIntoString()", nm),
-            Type::Enum(name) => format!("{}({})", class_name_py(name)?, nm),
             Type::Object(_) => panic!("No support for lifting objects, yet"),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
-            Type::Error(_) => panic!("No support for lifting errors, yet"),
-            Type::Record(_) | Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
+            Type::Error(_) => panic!("No support for lowering errors, yet"),
+            Type::Enum(_)
+            | Type::Record(_)
+            | Type::Optional(_)
+            | Type::Sequence(_)
+            | Type::Map(_) => format!(
                 "{}.consumeInto{}()",
                 nm,
                 class_name_py(&type_.canonical_name())?

@@ -29,13 +29,17 @@ namespace dom {
 namespace {{ context.detail_name() }} {
 
 {% for e in ci.iter_enum_definitions() %}
+{% if !e.is_flat() %}
+MOZ_STATIC_ASSERT(false, "Sorry the gecko-js backend does not yet support enums with associated data: {{ e.name() }}");
+{% else %}
 template <>
-struct ViaFfi<{{ e.name()|class_name_cpp(context) }}, uint32_t> {
-  [[nodiscard]] static bool Lift(const uint32_t& aLowered, {{ e.name()|class_name_cpp(context) }}& aLifted) {
-    switch (aLowered) {
+struct Serializable<{{ e.name()|class_name_cpp(context) }}> {
+  [[nodiscard]] static bool ReadFrom(Reader& aReader, {{ e.name()|class_name_cpp(context) }}& aValue) {
+    auto variant = aReader.ReadInt32();
+    switch (variant) {
       {% for variant in e.variants() -%}
       case {{ loop.index }}:
-        aLifted = {{ e.name()|class_name_cpp(context) }}::{{ variant|enum_variant_cpp }};
+        aValue = {{ e.name()|class_name_cpp(context) }}::{{ variant.name()|enum_variant_cpp }};
         break;
       {% endfor -%}
       default:
@@ -45,30 +49,18 @@ struct ViaFfi<{{ e.name()|class_name_cpp(context) }}, uint32_t> {
     return true;
   }
 
-  [[nodiscard]] static uint32_t Lower(const {{ e.name()|class_name_cpp(context) }}& aLifted) {
-    switch (aLifted) {
+  static void WriteInto(Writer& aWriter, const {{ e.name()|class_name_cpp(context) }}& aValue) {
+    switch (aValue) {
       {% for variant in e.variants() -%}
-      case {{ e.name()|class_name_cpp(context) }}::{{ variant|enum_variant_cpp }}:
-        return {{ loop.index }};
+      case {{ e.name()|class_name_cpp(context) }}::{{ variant.name()|enum_variant_cpp }}:
+        aWriter.WriteInt32({{ loop.index }});
       {% endfor -%}
       default:
         MOZ_ASSERT(false, "Unknown raw enum value");
     }
-    return 0;
   }
 };
-
-template <>
-struct Serializable<{{ e.name()|class_name_cpp(context) }}> {
-  [[nodiscard]] static bool ReadFrom(Reader& aReader, {{ e.name()|class_name_cpp(context) }}& aValue) {
-    auto rawValue = aReader.ReadUInt32();
-    return ViaFfi<{{ e.name()|class_name_cpp(context) }}, uint32_t>::Lift(rawValue, aValue);
-  }
-
-  static void WriteInto(Writer& aWriter, const {{ e.name()|class_name_cpp(context) }}& aValue) {
-    aWriter.WriteUInt32(ViaFfi<{{ e.name()|class_name_cpp(context) }}, uint32_t>::Lower(aValue));
-  }
-};
+{% endif %}
 {% endfor %}
 
 {% for rec in ci.iter_record_definitions() -%}
