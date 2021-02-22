@@ -176,7 +176,26 @@
   &quot;Cat&quot;,
 };
 </code></pre>
-<p>Note that enumerations with associated data are not yet supported.</p>
+<p>Enumerations with associated data require a different syntax,
+due to the limitations of using WebIDL as the basis for UniFFI's interface language.
+An enum like this in Rust:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>enum IpAddr {
+  V4 {q1: u8, q2: u8, q3: u8, q4: u8},
+  V6 {addr: string},
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Can be exposed in the UDL file with:</p>
+<pre><code class="language-idl">[Enum]
+interface IpAddr {
+  V4(u8 q1, u8 q2, u8 q3, u8 q4);
+  V6(string addr);
+};
+</code></pre>
+<p>Only enums with named fields are supported by this syntax.</p>
 
                     </main>
 

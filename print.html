@@ -322,7 +322,26 @@ interface Sprite {
   &quot;Cat&quot;,
 };
 </code></pre>
-<p>Note that enumerations with associated data are not yet supported.</p>
+<p>Enumerations with associated data require a different syntax,
+due to the limitations of using WebIDL as the basis for UniFFI's interface language.
+An enum like this in Rust:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>enum IpAddr {
+  V4 {q1: u8, q2: u8, q3: u8, q4: u8},
+  V6 {addr: string},
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Can be exposed in the UDL file with:</p>
+<pre><code class="language-idl">[Enum]
+interface IpAddr {
+  V4(u8 q1, u8 q2, u8 q3, u8 q4);
+  V6(string addr);
+};
+</code></pre>
+<p>Only enums with named fields are supported by this syntax.</p>
 <h1><a class="header" href="#structsdictionaries" id="structsdictionaries">Structs/Dictionaries</a></h1>
 <p>Dictionaries can be compared to POJOs in the Java world: just a data structure holding some data.</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -646,7 +665,7 @@ from the returned byte buffer into a language-native list of integers.</li>
 <tr><td><code>T?</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>sequence&lt;T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>record&lt;DOMString, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
-<tr><td><code>enum</code></td><td><code>uint32_t</code> indicating variant, numbered in declaration order starting from 1</td></tr>
+<tr><td><code>enum</code> and <code>[Enum] interface</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>dictionary</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>interface</code></td><td><code>uint64_t</code> opaque integer handle</td></tr>
 </tbody></table>
@@ -664,7 +683,7 @@ The details of this format are internal only and may change between versions of 
 <tr><td><code>T?</code></td><td>If null, serialized <code>boolean</code> false; if non-null, serialized <code>boolean</code> true followed by serialized <code>T</code></td></tr>
 <tr><td><code>sequence&lt;T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>T</code></td></tr>
 <tr><td><code>record&lt;DOMString, T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td></tr>
-<tr><td><code>enum</code></td><td>Serialized <code>u32</code> indicating variant, numbered in declaration order starting from 1</td></tr>
+<tr><td><code>enum</code> and <code>[Enum] interface</code></td><td>Serialized <code>i32</code> indicating variant, numbered in declaration order starting from 1, followed by the serialized values of the variant's fields in declaration order</td></tr>
 <tr><td><code>dictionary</code></td><td>The serialized value of each field, in declaration order</td></tr>
 <tr><td><code>interface</code></td><td><em>Cannot currently be serialized</em></td></tr>
 </tbody></table>
