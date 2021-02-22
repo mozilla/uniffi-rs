@@ -154,23 +154,34 @@ pub struct ForeignCallbackInternals {
     callback_ptr: AtomicUsize,
 }
 
+const EMPTY_PTR: usize = 0;
+
 impl ForeignCallbackInternals {
     pub const fn new() -> Self {
         ForeignCallbackInternals {
-            callback_ptr: AtomicUsize::new(0),
+            callback_ptr: AtomicUsize::new(EMPTY_PTR),
         }
     }
 
     pub fn set_callback(&self, callback: ForeignCallback) {
         let as_usize = callback as usize;
-        let old_ptr = self
-            .callback_ptr
-            .compare_and_swap(0, as_usize, Ordering::SeqCst);
-        if old_ptr != 0 {
+        let old_ptr = self.callback_ptr.compare_exchange(
+            EMPTY_PTR,
+            as_usize,
+            Ordering::SeqCst,
+            Ordering::SeqCst,
+        );
+        match old_ptr {
+            // We get the previous value back. If this is anything except EMPTY_PTR,
+            // then this has been set before we get here.
+            Ok(EMPTY_PTR) => (),
+            _ =>
             // This is an internal bug, the other side of the FFI should ensure
             // it sets this only once.
-            panic!("Bug: call set_callback multiple times. This is likely a uniffi bug");
-        }
+            {
+                panic!("Bug: call set_callback multiple times. This is likely a uniffi bug")
+            }
+        };
     }
 
     pub fn get_callback(&self) -> Option<ForeignCallback> {
