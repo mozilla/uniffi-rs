@@ -31,4 +31,4 @@ fn equal(a: u64, b: u64) -> bool {
 
 type Result<T, E = ArithmeticError> = std::result::Result<T, E>;
 
-include!(concat!(env!("OUT_DIR"), "/arithmetic.uniffi.rs"));
+uniffi_macros::include_scaffolding!("arithmetic");

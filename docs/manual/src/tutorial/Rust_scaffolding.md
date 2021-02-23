@@ -30,10 +30,21 @@ fn main() {
 
 **Note:** This is the equivalent of calling (and does it under the hood) `uniffi-bindgen scaffolding src/math.udl --out-dir <OUT_DIR>`.
 
-Lastly, we include the generated scaffolding code in our `lib.rs`:
+Lastly, we include the generated scaffolding code in our `lib.rs`. If you've used the default build
+settings then this can be done using a handy macro:
+
+```rust
+uniffi_macros::include_scaffolding!("math");
+```
+
+If you have generated the scaffolding in a custom location, use the standard `!include` macro
+to include the generated file by name, like this:
+
+
 ```rust
 include!(concat!(env!("OUT_DIR"), "/math.uniffi.rs"));
 ```
+
 **Note:** The file name is always `<namespace>.uniffi.rs`.
 
 Great! `add` is ready to see the outside world!

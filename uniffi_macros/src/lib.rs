@@ -84,3 +84,31 @@ impl syn::parse::Parse for FilePaths {
         })
     }
 }
+
+/// A helper macro to include generated component scaffolding.
+///
+/// This is a simple convenience macro to include the UniFFI component
+/// scaffolding as built by `uniffi_build::generate_scaffolding`.
+/// Use it like so:
+///
+/// ```rs
+/// uniffi_macros::include_scaffolding!("my_component_name");
+/// ```
+///
+/// This will expand to the appropriate `include!` invocation to include
+/// the generated `my_component_name.uniffi.rs` (which it assumes has
+/// been successfully built by your crate's `build.rs` script).
+//
+#[proc_macro]
+pub fn include_scaffolding(component_name: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let name = syn::parse_macro_input!(component_name as syn::LitStr);
+    if std::env::var("OUT_DIR").is_err() {
+        quote! {
+            compile_error!("This macro assumes the crate has a build.rs script, but $OUT_DIR is not present");
+        }
+    } else {
+        quote! {
+            include!(concat!(env!("OUT_DIR"), "/", #name, ".uniffi.rs"));
+        }
+    }.into()
+}
