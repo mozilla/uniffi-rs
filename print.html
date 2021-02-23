@@ -231,7 +231,16 @@ uniffi_build = &quot;0.5&quot;
 }
 </code></pre></pre>
 <p><strong>Note:</strong> This is the equivalent of calling (and does it under the hood) <code>uniffi-bindgen scaffolding src/math.udl --out-dir &lt;OUT_DIR&gt;</code>.</p>
-<p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code>:</p>
+<p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code>. If you've used the default build
+settings then this can be done using a handy macro:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>uniffi_macros::include_scaffolding!(&quot;math&quot;);
+<span class="boring">}
+</span></code></pre></pre>
+<p>If you have generated the scaffolding in a custom location, use the standard <code>!include</code> macro
+to include the generated file by name, like this:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
