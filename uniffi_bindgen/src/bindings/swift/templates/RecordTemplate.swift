@@ -1,6 +1,6 @@
 public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi, Equatable, Hashable {
     {%- for field in rec.fields() %}
-    let {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
+    public let {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
     {%- endfor %}
 
     // Default memberwise initializers are never public by default, so we
