@@ -38,7 +38,7 @@ unsafe impl uniffi::ViaFfi for {{ e.name() }} {
                 {%- endfor %}
             }{% endif %},
             {%- endfor %}
-            v @ _ => uniffi::deps::anyhow::bail!("Invalid {{ e.name() }} enum value: {}", v),
+            v => uniffi::deps::anyhow::bail!("Invalid {{ e.name() }} enum value: {}", v),
         })
     }
 }
