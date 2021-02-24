@@ -41,12 +41,6 @@ struct ContentView: View {
     }
 }
 
-extension TodoEntry: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(text)
-    }
-}
-
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView(todoList: TodoList())
