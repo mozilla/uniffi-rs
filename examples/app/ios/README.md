@@ -26,14 +26,14 @@ This will not be a complete tutorial on how to use `uniffi`, just the bits to ge
 4. Use `uniffi-bindgen` on each file to generate the headers and swift scaffolding.
 
 ```sh
-uniffi-bindgen generate "$INPUT_FILE_PATH" --language swift --out-dir "$DERIVED_FILE_DIR"
+$HOME/.cargo/bin/uniffi-bindgen generate "$INPUT_FILE_PATH" --language swift --out-dir "$DERIVED_FILE_DIR"
 ```
 
 These will output two files Xcode is interested in.
 
 ```sh
 $(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).swift
-$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)-Bridging-Header.h
+$(DERIVED_FILE_DIR)/uniffi_$(INPUT_FILE_BASE)-Bridging-Header.h
 ```
 
 The header file is a descriptor of the C API to a library that hasn't been built yet. The Swift file is a Swift facade that calls that C API.
