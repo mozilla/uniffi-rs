@@ -1,7 +1,7 @@
 // Helper classes/extensions that don't change.
 // Someday, this will be in a libray of its own.
 
-extension Data {
+fileprivate extension Data {
     init(rustBuffer: RustBuffer) {
         // TODO: This copies the buffer. Can we read directly from a
         // Rust buffer?
@@ -10,7 +10,7 @@ extension Data {
 }
 
 // A helper class to read values out of a byte buffer.
-class Reader {
+fileprivate class Reader {
     let data: Data
     var offset: Data.Index
 
@@ -73,7 +73,7 @@ class Reader {
 }
 
 // A helper class to write values into a byte buffer.
-class Writer {
+fileprivate class Writer {
     var bytes: [UInt8]
     var offset: Array<UInt8>.Index
 
@@ -108,42 +108,42 @@ class Writer {
 
 
 // Types conforming to `Serializable` can be read and written in a bytebuffer.
-protocol Serializable {
+fileprivate protocol Serializable {
     func write(into: Writer)
     static func read(from: Reader) throws -> Self
 }
 
 // Types confirming to `ViaFfi` can be transferred back-and-for over the FFI.
 // This is analogous to the Rust trait of the same name.
-protocol ViaFfi: Serializable {
+fileprivate protocol ViaFfi: Serializable {
     associatedtype FfiType
     static func lift(_ v: FfiType) throws -> Self
     func lower() -> FfiType
 }
 
 // Types conforming to `Primitive` pass themselves directly over the FFI.
-protocol Primitive {}
+fileprivate protocol Primitive {}
 
 extension Primitive {
     typealias FfiType = Self
 
-    static func lift(_ v: Self) throws -> Self {
+    fileprivate static func lift(_ v: Self) throws -> Self {
         return v
     }
 
-    func lower() -> Self {
+    fileprivate func lower() -> Self {
         return self
     }
 }
 
 // Types conforming to `ViaFfiUsingByteBuffer` lift and lower into a bytebuffer.
 // Use this for complex types where it's hard to write a custom lift/lower.
-protocol ViaFfiUsingByteBuffer: Serializable {}
+fileprivate protocol ViaFfiUsingByteBuffer: Serializable {}
 
 extension ViaFfiUsingByteBuffer {
     typealias FfiType = RustBuffer
 
-    static func lift(_ buf: RustBuffer) throws -> Self {
+    fileprivate static func lift(_ buf: RustBuffer) throws -> Self {
       let reader = Reader(data: Data(rustBuffer: buf))
       let value = try Self.read(from: reader)
       if reader.hasRemaining() {
@@ -153,7 +153,7 @@ extension ViaFfiUsingByteBuffer {
       return value
     }
 
-    func lower() -> RustBuffer {
+    fileprivate func lower() -> RustBuffer {
       let writer = Writer()
       self.write(into: writer)
       return RustBuffer(bytes: writer.bytes)
@@ -165,7 +165,7 @@ extension ViaFfiUsingByteBuffer {
 extension String: ViaFfi {
     typealias FfiType = RustBuffer
 
-    static func lift(_ v: FfiType) throws -> Self {
+    fileprivate static func lift(_ v: FfiType) throws -> Self {
         defer {
             try! rustCall(InternalError.unknown()) { err in
                 {{ ci.ffi_rustbuffer_free().name() }}(v, err)
@@ -178,7 +178,7 @@ extension String: ViaFfi {
         return String(bytes: bytes, encoding: String.Encoding.utf8)!
     }
 
-    func lower() -> FfiType {
+    fileprivate func lower() -> FfiType {
         return self.utf8CString.withUnsafeBufferPointer { ptr in
             // The swift string gives us int8_t, we want uint8_t.
             ptr.withMemoryRebound(to: UInt8.self) { ptr in
@@ -192,12 +192,12 @@ extension String: ViaFfi {
         }
     }
 
-    static func read(from buf: Reader) throws -> Self {
+    fileprivate static func read(from buf: Reader) throws -> Self {
         let len: Int32 = try buf.readInt()
         return String(bytes: try buf.readBytes(count: Int(len)), encoding: String.Encoding.utf8)!
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         let len = Int32(self.utf8.count)
         buf.writeInt(len)
         buf.writeBytes(self.utf8)
@@ -208,125 +208,125 @@ extension String: ViaFfi {
 extension Bool: ViaFfi {
     typealias FfiType = Int8
 
-    static func read(from buf: Reader) throws -> Bool {
+    fileprivate static func read(from buf: Reader) throws -> Bool {
         return try self.lift(buf.readInt())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
     }
 
-    static func lift(_ v: Int8) throws -> Bool {
+    fileprivate static func lift(_ v: Int8) throws -> Bool {
         return v != 0
     }
 
-    func lower() -> Int8 {
+    fileprivate func lower() -> Int8 {
         return self ? 1 : 0
     }
 }
 
 extension UInt8: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> UInt8 {
+    fileprivate static func read(from buf: Reader) throws -> UInt8 {
         return try self.lift(buf.readInt())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
     }
 }
 
 extension Int8: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> Int8 {
+    fileprivate static func read(from buf: Reader) throws -> Int8 {
         return try self.lift(buf.readInt())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
     }
 }
 
 extension UInt16: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> UInt16 {
+    fileprivate static func read(from buf: Reader) throws -> UInt16 {
         return try self.lift(buf.readInt())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
     }
 }
 
 extension Int16: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> Int16 {
+    fileprivate static func read(from buf: Reader) throws -> Int16 {
         return try self.lift(buf.readInt())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
     }
 }
 
 extension UInt32: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> UInt32 {
+    fileprivate static func read(from buf: Reader) throws -> UInt32 {
         return try self.lift(buf.readInt())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
     }
 }
 
 extension Int32: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> Int32 {
+    fileprivate static func read(from buf: Reader) throws -> Int32 {
         return try self.lift(buf.readInt())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
     }
 }
 
 extension UInt64: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> UInt64 {
+    fileprivate static func read(from buf: Reader) throws -> UInt64 {
         return try self.lift(buf.readInt())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
     }
 }
 
 extension Int64: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> Int64 {
+    fileprivate static func read(from buf: Reader) throws -> Int64 {
         return try self.lift(buf.readInt())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeInt(self.lower())
     }
 }
 
 extension Float: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> Float {
+    fileprivate static func read(from buf: Reader) throws -> Float {
         return try self.lift(buf.readFloat())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeFloat(self.lower())
     }
 }
 
 extension Double: Primitive, ViaFfi {
-    static func read(from buf: Reader) throws -> Double {
+    fileprivate static func read(from buf: Reader) throws -> Double {
         return try self.lift(buf.readDouble())
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         buf.writeDouble(self.lower())
     }
 }
 
 extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: Serializable {
-    static func read(from buf: Reader) throws -> Self {
+    fileprivate static func read(from buf: Reader) throws -> Self {
         switch try buf.readInt() as Int8 {
         case 0: return nil
         case 1: return try Wrapped.read(from: buf)
@@ -334,7 +334,7 @@ extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: S
         }
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         guard let value = self else {
             buf.writeInt(Int8(0))
             return
@@ -345,7 +345,7 @@ extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: S
 }
 
 extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Serializable {
-    static func read(from buf: Reader) throws -> Self {
+    fileprivate static func read(from buf: Reader) throws -> Self {
         let len: Int32 = try buf.readInt()
         var seq = [Element]()
         seq.reserveCapacity(Int(len))
@@ -355,7 +355,7 @@ extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Seri
         return seq
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         let len = Int32(self.count)
         buf.writeInt(len)
         for item in self {
@@ -365,7 +365,7 @@ extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Seri
 }
 
 extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == String, Value: Serializable {
-    static func read(from buf: Reader) throws -> Self {
+    fileprivate static func read(from buf: Reader) throws -> Self {
         let len: Int32 = try buf.readInt()
         var dict = [String: Value]()
         dict.reserveCapacity(Int(len))
@@ -375,7 +375,7 @@ extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == S
         return dict
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         let len = Int32(self.count)
         buf.writeInt(len)
         for (key, value) in self {

@@ -1,4 +1,4 @@
-public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi, Equatable, Hashable {
+public struct {{ rec.name()|class_name_swift }}: Equatable, Hashable {
     {%- for field in rec.fields() %}
     public let {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
     {%- endfor %}
@@ -20,7 +20,15 @@ public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi,
         return true
     }
 
-    static func read(from buf: Reader) throws -> {{ rec.name()|class_name_swift }} {
+    public func hash(into hasher: inout Hasher) {
+        {%- for field in rec.fields() %}
+        hasher.combine({{ field.name()|var_name_swift }})
+        {%- endfor %}
+    }
+}
+
+extension {{ rec.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
+    fileprivate static func read(from buf: Reader) throws -> {{ rec.name()|class_name_swift }} {
         return try {{ rec.name()|class_name_swift }}(
             {%- for field in rec.fields() %}
             {{ field.name()|var_name_swift }}: {{ "buf"|read_swift(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
@@ -28,15 +36,9 @@ public struct {{ rec.name()|class_name_swift }}:  ViaFfiUsingByteBuffer, ViaFfi,
         )
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         {%- for field in rec.fields() %}
         {{ field.name()|var_name_swift }}.write(into: buf)
-        {%- endfor %}
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        {%- for field in rec.fields() %}
-        hasher.combine({{ field.name()|var_name_swift }})
         {%- endfor %}
     }
 }
