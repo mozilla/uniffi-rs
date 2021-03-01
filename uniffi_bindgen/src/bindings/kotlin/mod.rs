@@ -46,7 +46,7 @@ pub fn write_bindings(
 }
 
 fn full_bindings_path(config: &Config, out_dir: &Path) -> Result<PathBuf> {
-    let package_path = config.package_name().replace(".", "/");
+    let package_path: PathBuf = config.package_name().split(".").collect();
     Ok(PathBuf::from(out_dir).join(package_path))
 }
 
