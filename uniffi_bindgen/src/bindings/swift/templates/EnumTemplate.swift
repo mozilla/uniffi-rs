@@ -18,7 +18,7 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
             {% endfor -%}
         ){% endif -%}
         {% endfor %}
-        default: throw InternalError.unexpectedEnumCase
+        default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 

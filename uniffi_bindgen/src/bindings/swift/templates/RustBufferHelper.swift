@@ -25,7 +25,7 @@ fileprivate class Reader {
     func readInt<T: FixedWidthInteger>() throws -> T {
         let range = offset..<offset + MemoryLayout<T>.size
         guard data.count >= range.upperBound else {
-            throw InternalError.bufferOverflow
+            throw UniffiInternalError.bufferOverflow
         }
         if T.self == UInt8.self {
             let value = data[offset]
@@ -43,7 +43,7 @@ fileprivate class Reader {
     func readBytes(count: Int) throws -> Array<UInt8> {
         let range = offset..<(offset+count)
         guard data.count >= range.upperBound else {
-            throw InternalError.bufferOverflow
+            throw UniffiInternalError.bufferOverflow
         }
         var value = [UInt8](repeating: 0, count: count)
         value.withUnsafeMutableBufferPointer({ buffer in
@@ -125,7 +125,7 @@ fileprivate protocol ViaFfi: Serializable {
 fileprivate protocol Primitive {}
 
 extension Primitive {
-    typealias FfiType = Self
+    fileprivate typealias FfiType = Self
 
     fileprivate static func lift(_ v: Self) throws -> Self {
         return v
@@ -141,13 +141,13 @@ extension Primitive {
 fileprivate protocol ViaFfiUsingByteBuffer: Serializable {}
 
 extension ViaFfiUsingByteBuffer {
-    typealias FfiType = RustBuffer
+    fileprivate typealias FfiType = RustBuffer
 
     fileprivate static func lift(_ buf: RustBuffer) throws -> Self {
       let reader = Reader(data: Data(rustBuffer: buf))
       let value = try Self.read(from: reader)
       if reader.hasRemaining() {
-          throw InternalError.incompleteData
+          throw UniffiInternalError.incompleteData
       }
       buf.deallocate()
       return value
@@ -163,11 +163,11 @@ extension ViaFfiUsingByteBuffer {
 // Implement our protocols for the built-in types that we use.
 
 extension String: ViaFfi {
-    typealias FfiType = RustBuffer
+    fileprivate typealias FfiType = RustBuffer
 
     fileprivate static func lift(_ v: FfiType) throws -> Self {
         defer {
-            try! rustCall(InternalError.unknown()) { err in
+            try! rustCall(UniffiInternalError.unknown("String.lift")) { err in
                 {{ ci.ffi_rustbuffer_free().name() }}(v, err)
             }
         }
@@ -185,7 +185,7 @@ extension String: ViaFfi {
                 // The swift string gives us a trailing null byte, we don't want it.
                 let buf = UnsafeBufferPointer(rebasing: ptr.prefix(upTo: ptr.count - 1))
                 let bytes = ForeignBytes(bufferPointer: buf)
-                return try! rustCall(InternalError.unknown()) { err in
+                return try! rustCall(UniffiInternalError.unknown("String.lower")) { err in
                     {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, err)
                 }
             }
@@ -206,7 +206,7 @@ extension String: ViaFfi {
 
 
 extension Bool: ViaFfi {
-    typealias FfiType = Int8
+    fileprivate typealias FfiType = Int8
 
     fileprivate static func read(from buf: Reader) throws -> Bool {
         return try self.lift(buf.readInt())
@@ -330,7 +330,7 @@ extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: S
         switch try buf.readInt() as Int8 {
         case 0: return nil
         case 1: return try Wrapped.read(from: buf)
-        default: throw InternalError.unexpectedOptionalTag
+        default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
 

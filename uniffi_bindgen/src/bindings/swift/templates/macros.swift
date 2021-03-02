@@ -10,7 +10,7 @@
     {% when Some with (e) %}
     {{e}}.NoError
     {% else %}
-    InternalError.unknown()
+    UniffiInternalError.unknown("rustCall")
     {% endmatch %}
 ) { err in
     {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
@@ -23,7 +23,7 @@
     {%- when Some with (e) %}
     {{e}}.NoError
     {%- else %}
-    InternalError.unknown()
+    UniffiInternalError.unknown("rustCall")
     {%- endmatch %}
 ) { err in
     {{ func.ffi_func().name() }}(

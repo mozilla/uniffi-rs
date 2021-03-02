@@ -5,19 +5,19 @@
 
 #}
 
-protocol RustError: LocalizedError {
+fileprivate protocol RustError: LocalizedError {
     static func fromConsuming(_ rustError: NativeRustError) throws -> Self?
 }
 
 // An error type for FFI errors. These errors occur at the UniFFI level, not
 // the library level.
-enum InternalError: RustError {
+fileprivate enum UniffiInternalError: RustError {
     case bufferOverflow
     case incompleteData
     case unexpectedOptionalTag
     case unexpectedEnumCase
     case emptyResult
-    case unknown(message: String = "")
+    case unknown(_ message: String)
 
     public var errorDescription: String? {
         switch self {
@@ -30,18 +30,18 @@ enum InternalError: RustError {
         }
     }
 
-    static func fromConsuming(_ rustError: NativeRustError) throws -> Self? {
+    fileprivate static func fromConsuming(_ rustError: NativeRustError) throws -> Self? {
         let message = rustError.message
         defer {
             if message != nil {
-                try! rustCall(InternalError.unknown()) { err in
+                try! rustCall(UniffiInternalError.unknown("UniffiInternalError.fromConsuming")) { err in
                     {{ ci.ffi_string_free().name() }}(message!, err)
                 }
             }
         }
         switch rustError.code {
         case 0: return nil
-        default: return .unknown(message: String(cString: message!))
+        default: return .unknown(String(cString: message!))
         }
     }
 }
@@ -69,11 +69,11 @@ public enum {{e.name()}}: RustError {
     // The name is attempting to indicate that we free message if it
     // existed, and that it's a very bad idea to touch it after you call this
     // function
-    static func fromConsuming(_ rustError: NativeRustError) throws -> Self? {
+    fileprivate static func fromConsuming(_ rustError: NativeRustError) throws -> Self? {
         let message = rustError.message
         defer {
             if message != nil {
-                try! rustCall(InternalError.unknown()) { err in
+                try! rustCall(UniffiInternalError.unknown("{{e.name()}}.fromConsuming")) { err in
                     {{ ci.ffi_string_free().name() }}(message!, err)
                 }
             }
@@ -92,28 +92,28 @@ public enum {{e.name()}}: RustError {
 }
 {% endfor %}
 
-func rustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T {
+private func rustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T {
     return try unwrap(err) { native_err in
         return try cb(native_err)
     }
 }
 
-func nullableRustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T? {
+private func nullableRustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T? {
     return try tryUnwrap(err) { native_err in
         return try cb(native_err)
     }
 }
 
 @discardableResult
- func unwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T {
+private func unwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T {
     guard let result = try tryUnwrap(err, callback) else {
-        throw InternalError.emptyResult
+        throw UniffiInternalError.emptyResult
     }
     return result
 }
 
 @discardableResult
-func tryUnwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T? {
+private func tryUnwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T? {
     var native_err = NativeRustError(code: 0, message: nil)
     let returnedVal = try callback(&native_err)
     if let retErr = try E.fromConsuming(native_err) {
