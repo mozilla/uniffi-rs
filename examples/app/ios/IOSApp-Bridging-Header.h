@@ -6,6 +6,7 @@
 #ifndef IOSApp_Bridging_Header_h
 #define IOSApp_Bridging_Header_h
 
+#import "uniffi_arithmetic-Bridging-Header.h"
 #import "uniffi_todolist-Bridging-Header.h"
 
 #endif /* IOSApp_Bridging_Header_h */
