@@ -10,17 +10,16 @@
 // of the FFI, and thus useful to multiple uniffied crates.
 // We ensure they are declared exactly once, with a header guard, UNIFFI_SHARED_H.
 #ifdef UNIFFI_SHARED_H
-    // We also try to prevent mixing versions of shared uniffi header structs
-    // If you add anything to the #else block, you must increment the version in UNIFFI_VERSION_x_y_z.
-    #ifndef UNIFFI_VERSION_0_8_0
+    // We also try to prevent mixing versions of shared uniffi header structs.
+    // If you add anything to the #else block, you must increment the version in UNIFFI_SHARED_HEADER_V1
+    #ifndef UNIFFI_SHARED_HEADER_V1
         #error Combining helper code from multiple versions of uniffi is not supported
-    #endif // ndef UNIFFI_VERSION_0_8_0
+    #endif // ndef UNIFFI_SHARED_HEADER_V1
 #else
-    #define UNIFFI_SHARED_H
-    #define UNIFFI_VERSION_0_8_0
-    // ⚠️ Attention: If you change this #else block (ending in `#endif // def UNIFFI_SHARED_H`) ⚠️
-    // ⚠️ you must increment the version in all instance of UNIFFI_VERSION_ in this file to the ⚠️
-    // ⚠️ current uniffi version.                                                               ⚠️
+#define UNIFFI_SHARED_H
+#define UNIFFI_SHARED_HEADER_V1
+// ⚠️ Attention: If you change this #else block (ending in `#endif // def UNIFFI_SHARED_H`) you *must* ⚠️
+// ⚠️ increment the version in all instance of UNIFFI_SHARED_HEADER_V1 in this file.                   ⚠️
 
 typedef struct RustBuffer
 {
@@ -47,6 +46,8 @@ typedef struct NativeRustError {
     char *_Nullable message;
 } NativeRustError;
 
+// ⚠️ Attention: If you change this #else block (ending in `#endif // def UNIFFI_SHARED_H`) you *must* ⚠️
+// ⚠️ increment the version in all instance of UNIFFI_SHARED_HEADER_V1 in this file.                   ⚠️
 #endif // def UNIFFI_SHARED_H
   
 {% for func in ci.iter_ffi_function_definitions() -%}
