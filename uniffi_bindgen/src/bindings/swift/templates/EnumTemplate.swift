@@ -1,12 +1,14 @@
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
-public enum {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi, Equatable {
+public enum {{ e.name()|class_name_swift }}: Equatable {
     {% for variant in e.variants() %}
     case {{ variant.name()|enum_variant_swift }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
     {% endfor %}
+}
 
-    static func read(from buf: Reader) throws -> {{ e.name()|class_name_swift }} {
+extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
+    fileprivate static func read(from buf: Reader) throws -> {{ e.name()|class_name_swift }} {
         let variant: Int32 = try buf.readInt()
         switch variant {
         {% for variant in e.variants() %}
@@ -16,11 +18,11 @@ public enum {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi, Equa
             {% endfor -%}
         ){% endif -%}
         {% endfor %}
-        default: throw InternalError.unexpectedEnumCase
+        default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
-    func write(into buf: Writer) {
+    fileprivate func write(into buf: Writer) {
         switch self {
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}

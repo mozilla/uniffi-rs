@@ -7,13 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		394A808A25EED46500FAF26F /* todolist.udl in Sources */ = {isa = PBXBuildFile; fileRef = 39ADD16325E98FA5000EE485 /* todolist.udl */; };
+		394A808B25EED46500FAF26F /* arithmetic.udl in Sources */ = {isa = PBXBuildFile; fileRef = 39ADD15E25E98F92000EE485 /* arithmetic.udl */; };
 		395A8817251A062C00562F33 /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8816251A062C00562F33 /* ExampleApp.swift */; };
 		395A8819251A062C00562F33 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8818251A062C00562F33 /* ContentView.swift */; };
 		395A881B251A062D00562F33 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 395A881A251A062D00562F33 /* Assets.xcassets */; };
 		395A881E251A062D00562F33 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 395A881D251A062D00562F33 /* Preview Assets.xcassets */; };
 		395A8829251A062D00562F33 /* IOSAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8828251A062D00562F33 /* IOSAppTests.swift */; };
 		395A8834251A062D00562F33 /* IOSAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8833251A062D00562F33 /* IOSAppUITests.swift */; };
-		CEEB59CB25263C7E003C87D1 /* todolist.udl in Sources */ = {isa = PBXBuildFile; fileRef = CEEB59CA25263C7E003C87D1 /* todolist.udl */; };
+		39ADC3DF25E98792000EE485 /* libarithmetical.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 39ADC3DE25E98792000EE485 /* libarithmetical.a */; };
+		39ADD16D25E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = 39ADD16925E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		39ADD16F25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = 39ADD16B25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CEEB5A0025264123003C87D1 /* libuniffi_todolist.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */; };
 /* End PBXBuildFile section */
 
@@ -27,10 +31,10 @@
 			);
 			isEditable = 1;
 			outputFiles = (
-				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)-Bridging-Header.h",
-				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).swift",
+				"$(SRCROOT)/Generated/uniffi_$(INPUT_FILE_BASE)-Bridging-Header.h",
+				"$(SRCROOT)/Generated/$(INPUT_FILE_BASE).swift",
 			);
-			script = "# Generate swift bindings for the todolist rust library.\n\"$SRCROOT/../../../target/debug/uniffi-bindgen\" generate \"$INPUT_FILE_PATH\" --language swift --out-dir \"$DERIVED_FILE_DIR\"\necho \"Generate files in $DERIVED_FILE_DIR\"\n";
+			script = "# Generate swift bindings for the todolist rust library.\necho \"Generating files for $INPUT_FILE_PATH\"\n\"$SRCROOT/../../../target/debug/uniffi-bindgen\" generate \"$INPUT_FILE_PATH\" --language swift --out-dir \"$SRCROOT/Generated\"\necho \"Generated files for $INPUT_FILE_BASE in $SRCROOT/Generated\"\n";
 		};
 /* End PBXBuildRule section */
 
@@ -64,8 +68,14 @@
 		395A882F251A062D00562F33 /* IOSAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IOSAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		395A8833251A062D00562F33 /* IOSAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSAppUITests.swift; sourceTree = "<group>"; };
 		395A8835251A062D00562F33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		39ADC3DE25E98792000EE485 /* libarithmetical.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libarithmetical.a; path = ../../../target/universal/debug/libarithmetical.a; sourceTree = "<group>"; };
+		39ADD15E25E98F92000EE485 /* arithmetic.udl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = arithmetic.udl; path = ../../arithmetic/src/arithmetic.udl; sourceTree = "<group>"; };
+		39ADD16325E98FA5000EE485 /* todolist.udl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = todolist.udl; path = ../../todolist/src/todolist.udl; sourceTree = "<group>"; };
+		39ADD16925E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "uniffi_arithmetic-Bridging-Header.h"; sourceTree = "<group>"; };
+		39ADD16A25E990CA000EE485 /* arithmetic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = arithmetic.swift; sourceTree = "<group>"; };
+		39ADD16B25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "uniffi_todolist-Bridging-Header.h"; sourceTree = "<group>"; };
+		39ADD16C25E990CA000EE485 /* todolist.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = todolist.swift; sourceTree = "<group>"; };
 		39C5D6D82524F95400BDBA8A /* IOSApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IOSApp-Bridging-Header.h"; sourceTree = "<group>"; };
-		CEEB59CA25263C7E003C87D1 /* todolist.udl */ = {isa = PBXFileReference; lastKnownFileType = text; name = todolist.udl; path = ../../todolist/src/todolist.udl; sourceTree = "<group>"; };
 		CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuniffi_todolist.a; path = ../../../target/universal/debug/libuniffi_todolist.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -74,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				39ADC3DF25E98792000EE485 /* libarithmetical.a in Frameworks */,
 				CEEB5A0025264123003C87D1 /* libuniffi_todolist.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -98,11 +109,13 @@
 		395A880A251A062C00562F33 = {
 			isa = PBXGroup;
 			children = (
-				CEEB59CA25263C7E003C87D1 /* todolist.udl */,
+				39ADD16325E98FA5000EE485 /* todolist.udl */,
+				39ADD15E25E98F92000EE485 /* arithmetic.udl */,
 				39C5D6D82524F95400BDBA8A /* IOSApp-Bridging-Header.h */,
 				395A8815251A062C00562F33 /* IOSApp */,
 				395A8827251A062D00562F33 /* IOSAppTests */,
 				395A8832251A062D00562F33 /* IOSAppUITests */,
+				39ADD16825E990CA000EE485 /* Generated */,
 				395A8814251A062C00562F33 /* Products */,
 				CEEB59FE25264123003C87D1 /* Frameworks */,
 			);
@@ -156,9 +169,21 @@
 			path = IOSAppUITests;
 			sourceTree = "<group>";
 		};
+		39ADD16825E990CA000EE485 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				39ADD16925E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h */,
+				39ADD16A25E990CA000EE485 /* arithmetic.swift */,
+				39ADD16B25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h */,
+				39ADD16C25E990CA000EE485 /* todolist.swift */,
+			);
+			path = Generated;
+			sourceTree = "<group>";
+		};
 		CEEB59FE25264123003C87D1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				39ADC3DE25E98792000EE485 /* libarithmetical.a */,
 				CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */,
 			);
 			name = Frameworks;
@@ -166,14 +191,28 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		39ADC3F725E98DA6000EE485 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39ADD16F25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h in Headers */,
+				39ADD16D25E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
 		395A8812251A062C00562F33 /* IOSApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 395A8838251A062D00562F33 /* Build configuration list for PBXNativeTarget "IOSApp" */;
 			buildPhases = (
-				CEEB59EB25263ECE003C87D1 /* ShellScript */,
+				CEEB59EB25263ECE003C87D1 /* Build Universal Binary for todolist */,
+				39ADC3D125E980F1000EE485 /* Build Universal Binary for arithmetic */,
 				395A880F251A062C00562F33 /* Sources */,
 				395A8810251A062C00562F33 /* Frameworks */,
+				39ADC3F725E98DA6000EE485 /* Headers */,
 				395A8811251A062C00562F33 /* Resources */,
 			);
 			buildRules = (
@@ -291,7 +330,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		CEEB59EB25263ECE003C87D1 /* ShellScript */ = {
+		39ADC3D125E980F1000EE485 /* Build Universal Binary for arithmetic */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -300,6 +339,25 @@
 			);
 			inputPaths = (
 			);
+			name = "Build Universal Binary for arithmetic";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "bash $SRCROOT/xc-universal-binary.sh libarithmetical.a uniffi-example-arithmetic $SRCROOT/../../.. $CONFIGURATION\n";
+		};
+		CEEB59EB25263ECE003C87D1 /* Build Universal Binary for todolist */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Universal Binary for todolist";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -315,7 +373,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CEEB59CB25263C7E003C87D1 /* todolist.udl in Sources */,
+				394A808A25EED46500FAF26F /* todolist.udl in Sources */,
+				394A808B25EED46500FAF26F /* arithmetic.udl in Sources */,
 				395A8819251A062C00562F33 /* ContentView.swift in Sources */,
 				395A8817251A062C00562F33 /* ExampleApp.swift in Sources */,
 			);

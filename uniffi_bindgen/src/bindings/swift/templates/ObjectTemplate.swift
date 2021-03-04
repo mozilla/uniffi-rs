@@ -25,7 +25,7 @@ public class {{ obj.name()|class_name_swift }}: {{ obj.name() }}Protocol {
     {%- endmatch %}
 
     deinit {
-        try! rustCall(InternalError.unknown()) { err in
+        try! rustCall(UniffiInternalError.unknown("deinit")) { err in
             {{ obj.ffi_object_free().name() }}(handle, err)
         }
     }

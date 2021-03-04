@@ -10,7 +10,8 @@ struct ContentView: View {
     }
 
     var todoList: TodoList
-    @State private var clicked = 0
+    let stride: UInt64 = UInt64(1)
+    @State private var clicked = UInt64.zero
     @State private var text = ""
     var body: some View {
         VStack {
@@ -19,7 +20,7 @@ struct ContentView: View {
                 TextField("New task", text: $text, onCommit:  {
                     try! self.todoList.addEntry(entry: TodoEntry(text: "\(clicked) \(text)"))
                     text = ""
-                    clicked = clicked + 1
+                    clicked = try! add(a: clicked,  b: stride)
                 }).padding()
             }
 
@@ -32,7 +33,7 @@ struct ContentView: View {
                         if let i = index.first {
                             let entry = todoList.getEntries()[i]
                             try! todoList.clearItem(todo: entry.text)
-                            clicked = clicked - 1
+                            clicked = try! sub(a: clicked,  b: stride)
                         }
                     }
                 }
