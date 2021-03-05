@@ -120,9 +120,11 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
     let cdylib_files: Vec<_> = cdylib
         .filenames
         .iter()
-        .filter(|nm| match nm.extension().unwrap_or_default().to_str() {
-            Some(std::env::consts::DLL_EXTENSION) => true,
-            _ => false,
+        .filter(|nm| {
+            matches!(
+                nm.extension().unwrap_or_default().to_str(),
+                Some(std::env::consts::DLL_EXTENSION)
+            )
         })
         .collect();
     if cdylib_files.len() != 1 {

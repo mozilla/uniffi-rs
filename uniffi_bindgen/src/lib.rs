@@ -120,16 +120,13 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     udl_file: P,
     config_file_override: Option<P>,
     out_dir_override: Option<P>,
-    manifest_path_override: Option<P>,
     format_code: bool,
 ) -> Result<()> {
-    let manifest_path_override = manifest_path_override.as_ref().map(|p| p.as_ref());
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let udl_file = udl_file.as_ref();
     let component = parse_udl(&udl_file)?;
     let _config = get_config(&component, udl_file, config_file_override);
-    ensure_versions_compatibility(&udl_file, manifest_path_override)?;
     let mut filename = Path::new(&udl_file)
         .file_stem()
         .ok_or_else(|| anyhow!("not a file"))?
@@ -143,46 +140,6 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
         .map_err(|e| anyhow!("Failed to write output file: {:?}", e))?;
     if format_code {
         Command::new("rustfmt").arg(&out_dir).status()?;
-    }
-    Ok(())
-}
-
-// If the crate for which we are generating bindings for depends on
-// a `uniffi` runtime version that doesn't agree with our own version,
-// the developer of that said crate will be in a world of pain.
-fn ensure_versions_compatibility(
-    udl_file: &Path,
-    manifest_path_override: Option<&Path>,
-) -> Result<()> {
-    let mut metadata_cmd = cargo_metadata::MetadataCommand::new();
-    // If --manifest-path is not provided, we run cargo `metadata` in the .udl dir.
-    match manifest_path_override {
-        Some(p) => {
-            metadata_cmd.manifest_path(p);
-        }
-        None => {
-            metadata_cmd.current_dir(guess_crate_root(udl_file)?);
-        }
-    };
-    let metadata = metadata_cmd
-        .exec()
-        .map_err(|e| anyhow!("Failed to run cargo metadata: {:?}", e))?;
-    let uniffi_runtime_deps: Vec<cargo_metadata::Package> = metadata
-        .packages
-        .into_iter()
-        .filter(|p| p.name == "uniffi")
-        .collect();
-    if uniffi_runtime_deps.is_empty() {
-        bail!("It looks like the crate doesn't depend on the `uniffi` runtime. Please add `uniffi` as a dependency.");
-    }
-    if uniffi_runtime_deps.len() > 1 {
-        bail!("It looks like the workspace depends on multiple versions of `uniffi`. Please rectify the problem and try again.");
-    }
-    // XXX: Because we're still < 1.0.0, we compare the entire version string.
-    // Once we ship v1, we should compare only the MAJOR component.
-    let uniffi_runtime_version = uniffi_runtime_deps[0].version.to_string();
-    if uniffi_runtime_version != BINDGEN_VERSION {
-        bail!("The `uniffi` dependency version ({}) is different than `uniffi-bindgen` own version ({}). Please rectify the problem and try again.", uniffi_runtime_version, BINDGEN_VERSION);
     }
     Ok(())
 }
@@ -460,7 +417,6 @@ pub fn run_main() -> Result<()> {
             m.value_of_os("udl_file").unwrap(), // Required
             m.value_of_os("config"),
             m.value_of_os("out_dir"),
-            m.value_of_os("manifest"),
             !m.is_present("no_format"),
         )?,
         ("test", Some(m)) => crate::run_tests(
