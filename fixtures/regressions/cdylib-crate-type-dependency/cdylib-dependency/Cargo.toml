@@ -1,6 +1,6 @@
 [package]
 name = "cdylib-dependency"
-version = "0.7.2"
+version = "0.8.0"
 authors = ["king6cong <king6cong@gmail.com>"]
 edition = "2018"
 publish = false
