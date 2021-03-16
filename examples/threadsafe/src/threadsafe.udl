@@ -12,5 +12,9 @@ interface Counter {
 interface ThreadsafeCounter {
   void busy_wait(i32 ms);
   i32 increment_if_busy();
+  // A function that wants a signature of `fn cloneable(self: Arc<Self>)`
+  // so that it's capable of sending an Arc::clone somewhere else.
+  [SomethingSomethingArc] // probably want a better attribute? ;)
+  void cloneable();
 };
 

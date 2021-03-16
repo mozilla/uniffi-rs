@@ -23,12 +23,13 @@ use anyhow::{bail, Result};
 /// This is a convenience enum for parsing UDL attributes and erroring out if we encounter
 /// any unsupported ones. These don't convert directly into parts of a `ComponentInterface`, but
 /// may influence the properties of things like functions and arguments.
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, PartialEq)]
 pub(super) enum Attribute {
     ByRef,
     Error,
     Threadsafe,
     Throws(String),
+    SomethingSomethingArc,
 }
 
 impl Attribute {
@@ -50,6 +51,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "ByRef" => Ok(Attribute::ByRef),
                 "Error" => Ok(Attribute::Error),
                 "Threadsafe" => Ok(Attribute::Threadsafe),
+                "SomethingSomethingArc" => Ok(Attribute::SomethingSomethingArc),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -145,6 +147,10 @@ impl FunctionAttributes {
             _ => None,
         })
     }
+
+    pub(super) fn get_something_something_arc(&self) -> bool {
+        self.0.iter().any(|a| *a == Attribute::SomethingSomethingArc)
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttributes {
@@ -154,6 +160,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttribut
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
+            Attribute::SomethingSomethingArc => Ok(()), // XXX - not valid in ctors?
             _ => bail!(format!(
                 "{:?} not supported for functions, methods or constructors",
                 attr

@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
+use std::sync::Arc;
 
 /// Simulation of a task doing something to keep a thread busy.
 /// Up until now, everything has been synchronous and blocking, so
@@ -53,6 +54,7 @@ impl Counter {
 // It relies on its own locking mechanisms, and uses the `Threadsafe`
 // attribute to tell uniffi to use the `ArcHandleMap`, so avoid the default
 // locking strategy.
+#[derive(Debug)]
 struct ThreadsafeCounter {
     is_busy: AtomicBool,
     count: AtomicI32,
@@ -61,6 +63,7 @@ struct ThreadsafeCounter {
 // Interface structs labelled `Threadsafe` should (safely) implement
 // `Send` and `Sync`.
 static_assertions::assert_impl_all!(ThreadsafeCounter: Send, Sync);
+
 
 impl ThreadsafeCounter {
     fn new() -> Self {
@@ -82,6 +85,11 @@ impl ThreadsafeCounter {
         } else {
             self.count.load(Ordering::SeqCst)
         }
+    }
+
+    fn cloneable(self: Arc<Self>) {
+        // `self` is already an Arc::clone() so can be used directly.
+        println!("Got {:?}", self)
     }
 }
 

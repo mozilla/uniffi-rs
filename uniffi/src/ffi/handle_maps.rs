@@ -161,7 +161,7 @@ impl<T: Sync + Send> ArcHandleMap<T> {
         callback: F,
     ) -> R::Value
     where
-        F: std::panic::UnwindSafe + FnOnce(&T) -> Result<R, E>,
+        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> Result<R, E>,
         ExternError: From<E>,
         R: IntoFfi,
     {
@@ -175,7 +175,7 @@ impl<T: Sync + Send> ArcHandleMap<T> {
                 let obj = map.get(h)?;
                 Arc::clone(&obj)
             };
-            Ok(callback(&*obj)?)
+            Ok(callback(obj)?)
         })
     }
 
@@ -187,7 +187,7 @@ impl<T: Sync + Send> ArcHandleMap<T> {
         callback: F,
     ) -> R::Value
     where
-        F: std::panic::UnwindSafe + FnOnce(&T) -> R,
+        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> R,
         R: IntoFfi,
     {
         self.call_with_result(out_error, h, |r| -> Result<_, HandleError> {
@@ -313,7 +313,7 @@ impl<T: Sync + Send> ArcHandleMap<T> {
         callback: F,
     ) -> R::Value
     where
-        F: std::panic::UnwindSafe + FnOnce(&T) -> Result<R, E>,
+        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> Result<R, E>,
         ExternError: From<E>,
         R: IntoFfi,
     {
@@ -327,7 +327,7 @@ impl<T: Sync + Send> ArcHandleMap<T> {
         callback: F,
     ) -> R::Value
     where
-        F: std::panic::UnwindSafe + FnOnce(&T) -> R,
+        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> R,
         R: IntoFfi,
     {
         self.call_with_output(out_error, h, callback)
