@@ -2,6 +2,12 @@
 // Trust me, you don't want to mess with it!
 {% import "macros.rs" as rs %}
 
+// Check for compatibility between `uniffi` and `uniffi_bindgen` versions.
+// Note that we have an error message on the same line as the assertion.
+// This is important, because if the assertion fails, the compiler only
+// seems to show that single line as context for the user.
+uniffi::assert_compatible_version!("{{ uniffi_version }}"); // Please check that you depend on version {{ uniffi_version }} of the `uniffi` crate.
+
 {% include "RustBuffer.rs" %}
 
 // We generate error mappings into ffi_support::ExternErrors

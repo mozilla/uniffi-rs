@@ -28,3 +28,6 @@ default = []
 # Use the `uniffi_bindgen` from this workspace instead of the one installed on your system.
 # You probably only want to enable this feature if you're working on uniffi itself.
 builtin-bindgen = ["uniffi_bindgen"]
+
+[dev-dependencies]
+trybuild = "1"
