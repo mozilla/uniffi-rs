@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 
 lazy_static::lazy_static! {
     static ref NUM_ALIVE: RwLock<u64> = {
@@ -35,6 +35,13 @@ pub struct SimpleDict {
     maybe_float32: Option<f32>,
     float64: f64,
     maybe_float64: Option<f64>,
+    coveralls: Option<Arc<Coveralls>>,
+}
+
+#[derive(Debug, Clone)]
+pub enum MaybeSimpleDict {
+    Yeah { d: SimpleDict },
+    Nah,
 }
 
 fn create_some_dict() -> SimpleDict {
@@ -55,6 +62,7 @@ fn create_some_dict() -> SimpleDict {
         maybe_float32: Some(22.0 / 7.0),
         float64: 0.0,
         maybe_float64: Some(1.0),
+        coveralls: Some(Arc::new(Coveralls::new("some_dict".to_string()))),
     }
 }
 
@@ -76,6 +84,7 @@ fn create_none_dict() -> SimpleDict {
         maybe_float32: None,
         float64: 0.0,
         maybe_float64: None,
+        coveralls: None,
     }
 }
 
@@ -88,12 +97,18 @@ type Result<T, E = CoverallError> = std::result::Result<T, E>;
 #[derive(Debug)]
 pub struct Coveralls {
     name: String,
+    // A reference to another Coveralls. Currently will be only a reference
+    // to `self`, so will create a circular reference.
+    other: Mutex<Option<Arc<Self>>>,
 }
 
 impl Coveralls {
     fn new(name: String) -> Self {
         *NUM_ALIVE.write().unwrap() += 1;
-        Self { name }
+        Self {
+            name,
+            other: Mutex::new(None),
+        }
     }
 
     fn fallible_new(name: String, should_fail: bool) -> Result<Self> {
@@ -127,11 +142,60 @@ impl Coveralls {
     fn strong_count(self: Arc<Self>) -> u64 {
         Arc::strong_count(&self) as u64
     }
+
+    fn take_other(&self, other: Option<Arc<Self>>) {
+        *self.other.lock().unwrap() = other.map(|arc| Arc::clone(&arc))
+    }
+
+    fn get_other(&self) -> Option<Arc<Self>> {
+        (*self.other.lock().unwrap())
+            .as_ref()
+            .map(|other| Arc::clone(other))
+    }
+
+    fn take_other_fallible(self: Arc<Self>) -> Result<()> {
+        Err(CoverallError::TooManyHoles)
+    }
+
+    fn take_other_panic(self: Arc<Self>, message: String) {
+        panic!("{}", message);
+    }
+
+    fn clone_me(&self) -> Arc<Self> {
+        let other = self.other.lock().unwrap();
+        let new_other = Mutex::new(other.clone());
+        *NUM_ALIVE.write().unwrap() += 1;
+        Arc::new(Self {
+            name: self.name.clone(),
+            other: new_other,
+        })
+    }
 }
 
 impl Drop for Coveralls {
     fn drop(&mut self) {
         *NUM_ALIVE.write().unwrap() -= 1;
+    }
+}
+#[derive(Debug, Clone, Copy)]
+enum Color {
+    Red,
+    Blue,
+    Green,
+}
+
+#[derive(Debug)]
+struct Patch {
+    color: Color,
+}
+
+impl Patch {
+    fn new(color: Color) -> Self {
+        Self { color }
+    }
+
+    fn get_color(&self) -> Color {
+        self.color
     }
 }
 

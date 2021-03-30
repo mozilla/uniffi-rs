@@ -14,7 +14,7 @@ keywords = ["ffi", "bindgen"]
 # Re-exported dependencies used in generated Rust scaffolding files.
 anyhow = "1"
 bytes = "1.0"
-ffi-support = "~0.4.2"
+ffi-support = "~0.4.3"
 lazy_static = "1.4"
 log = "0.4"
 # Regular dependencies

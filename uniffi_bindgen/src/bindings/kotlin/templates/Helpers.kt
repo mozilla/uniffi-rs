@@ -2,20 +2,45 @@
 // This would be a good candidate for isolating in its own ffi-support lib.
 
 {% if ci.iter_object_definitions().len() > 0 %}
+
+// Interface implemented by anything that can contain an object reference.
+//
+// Such types expose a `destroy()` method that must be called to cleanly
+// dispose of the contained objects. Failure to call this method may result
+// in memory leaks.
+//
+// The easiest way to ensure this method is called is to use the `.use`
+// helper method to execute a block and destroy the object at the end.
+interface Disposable {
+    fun destroy()
+}
+
+inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
+    try {
+        block(this)
+    } finally {
+        try {
+            // N.B. our implementation is on the nullable type `Disposable?`.
+            this?.destroy()
+        } catch (e: Throwable) {
+            // swallow
+        }
+    }
+
 // The base class for all UniFFI Object types.
 //
-// This class provides core operations for working with the integer handle that
-// maps to the live Rust struct on the other side of the FFI.
+// This class provides core operations for working with the Rust `Arc<T>` pointer to
+// the live Rust struct on the other side of the FFI.
 //
 // There's some subtlety here, because we have to be careful not to operate on a Rust
 // struct after it has been dropped, and because we must expose a public API for freeing
 // the Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
 //
-//   * Each `FFIObject` instance has an opaque integer "handle" that is a reference
-//     to the underlying Rust struct. Method calls need to read this handle from the
-//     object's state and pass it in to the Rust FFI.
+//   * Each `FFIObject` instance holds an opaque pointer to the underlying Rust struct.
+//     Method calls need to read this pointer from the object's state and pass it in to
+//     the Rust FFI.
 //
-//   * When an `FFIObject` is no longer needed, its handle should be passed to a
+//   * When an `FFIObject` is no longer needed, its pointer should be passed to a
 //     special destructor function provided by the Rust FFI, which will drop the
 //     underlying Rust struct.
 //
@@ -32,13 +57,13 @@
 //     the destructor has been called, and must never call the destructor more than once.
 //     Doing so may trigger memory unsafety.
 //
-// If we try to implement this with mutual exclusion on access to the handle, there is the
+// If we try to implement this with mutual exclusion on access to the pointer, there is the
 // possibility of a race between a method call and a concurrent call to `destroy`:
 //
-//    * Thread A starts a method call, reads the value of the handle, but is interrupted
-//      before it can pass the handle over the FFI to Rust.
+//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
+//      before it can pass the pointer over the FFI to Rust.
 //    * Thread B calls `destroy` and frees the underlying Rust struct.
-//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
 //      a use-after-free.
 //
 // One possible solution would be to use a `ReadWriteLock`, with each method call taking
@@ -84,28 +109,33 @@
 // [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
 //
 abstract class FFIObject(
-    protected val handle: Long
-) {
+    protected val pointer: Pointer
+): Disposable, AutoCloseable {
 
     val wasDestroyed = AtomicBoolean(false)
     val callCounter = AtomicLong(1)
 
-    open protected fun freeHandle() {
+    open protected fun freeRustArcPtr() {
         // To be overridden in subclasses.
     }
 
-    open fun destroy() {
+    override fun destroy() {
         // Only allow a single call to this method.
         // TODO: maybe we should log a warning if called more than once?
         if (this.wasDestroyed.compareAndSet(false, true)) {
             // This decrement always matches the initial count of 1 given at creation time.
             if (this.callCounter.decrementAndGet() == 0L) {
-                this.freeHandle()
+                this.freeRustArcPtr()
             }
         }
     }
 
-    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
         // Check and increment the call counter, to keep the object alive.
         // This needs a compare-and-set retry loop in case of concurrent updates.
         do {
@@ -117,28 +147,17 @@ abstract class FFIObject(
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
         } while (! this.callCounter.compareAndSet(c, c + 1L))
-        // Now we can safely do the method call without the handle being freed concurrently.
+        // Now we can safely do the method call without the pointer being freed concurrently.
         try {
-            return block(handle)
+            return block(this.pointer)
         } finally {
             // This decrement aways matches the increment we performed above.
             if (this.callCounter.decrementAndGet() == 0L) {
-                this.freeHandle()
+                this.freeRustArcPtr()
             }
         }
     }
 }
-
-inline fun <T : FFIObject, R> T.use(block: (T) -> R) =
-    try {
-        block(this)
-    } finally {
-        try {
-            this.destroy()
-        } catch (e: Throwable) {
-            // swallow
-        }
-    }
 {% endif %}
 
 {% if ci.iter_callback_interface_definitions().len() > 0 %}

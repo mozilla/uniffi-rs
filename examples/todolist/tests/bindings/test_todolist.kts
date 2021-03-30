@@ -50,6 +50,34 @@ todo.addItems(listOf("bobo", "fofo"))
 assert(todo.getItems().size == 9)
 assert(todo.getItems()[7] == "bobo")
 
+assert(getDefaultList() == null)
+
+// Note that each individual object instance needs to be explicitly destroyed,
+// either by using the `.use` helper or explicitly calling its `.destroy` method.
+// Failure to do so will leak the underlying Rust object.
+TodoList().use { todo2 ->
+    setDefaultList(todo)
+    getDefaultList()!!.use { default ->
+        assert(todo.getEntries() == default.getEntries())
+        assert(todo2.getEntries() != default.getEntries())
+    }
+
+    todo2.makeDefault()
+    getDefaultList()!!.use { default ->
+        assert(todo.getEntries() != default.getEntries())
+        assert(todo2.getEntries() == default.getEntries())
+    }
+
+    todo.addItem("Test liveness after being demoted from default")
+    assert(todo.getLast() == "Test liveness after being demoted from default")
+
+    todo2.addItem("Test shared state through local vs default reference")
+    getDefaultList()!!.use { default ->
+        assert(default.getLast() == "Test shared state through local vs default reference")
+    }
+}
+
 // Ensure the kotlin version of deinit doesn't crash, and is idempotent.
 todo.destroy()
 todo.destroy()
+

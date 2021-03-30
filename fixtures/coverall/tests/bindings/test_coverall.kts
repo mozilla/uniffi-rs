@@ -6,31 +6,94 @@ import java.util.concurrent.*
 
 import uniffi.coverall.*
 
-// Test some_dict().
 // TODO: use an actual test runner.
 
-val d = createSomeDict();
-assert(d.text == "text");
-assert(d.maybeText == "maybe_text");
-assert(d.aBool);
-assert(d.maybeABool == false);
-assert(d.unsigned8 == 1.toUByte())
-assert(d.maybeUnsigned8 == 2.toUByte())
-assert(d.unsigned64 == 18446744073709551615UL)
-assert(d.maybeUnsigned64 == 0UL)
-assert(d.signed8 == 8.toByte())
-assert(d.maybeSigned8 == 0.toByte())
-assert(d.signed64 == 9223372036854775807L)
-assert(d.maybeSigned64 == 0L)
+// Test some_dict().
+// N.B. we need to `use` here to clean up the contained `Coveralls` reference.
+createSomeDict().use { d ->
+    assert(d.text == "text");
+    assert(d.maybeText == "maybe_text");
+    assert(d.aBool);
+    assert(d.maybeABool == false);
+    assert(d.unsigned8 == 1.toUByte())
+    assert(d.maybeUnsigned8 == 2.toUByte())
+    assert(d.unsigned64 == 18446744073709551615UL)
+    assert(d.maybeUnsigned64 == 0UL)
+    assert(d.signed8 == 8.toByte())
+    assert(d.maybeSigned8 == 0.toByte())
+    assert(d.signed64 == 9223372036854775807L)
+    assert(d.maybeSigned64 == 0L)
 
-// floats should be "close enough".
-fun Float.almostEquals(other: Float) = Math.abs(this - other) < 0.000001
-fun Double.almostEquals(other: Double) = Math.abs(this - other) < 0.000001
+    // floats should be "close enough".
+    fun Float.almostEquals(other: Float) = Math.abs(this - other) < 0.000001
+    fun Double.almostEquals(other: Double) = Math.abs(this - other) < 0.000001
 
-assert(d.float32.almostEquals(1.2345F))
-assert(d.maybeFloat32!!.almostEquals(22.0F/7.0F))
-assert(d.float64.almostEquals(0.0))
-assert(d.maybeFloat64!!.almostEquals(1.0))
+    assert(d.float32.almostEquals(1.2345F))
+    assert(d.maybeFloat32!!.almostEquals(22.0F/7.0F))
+    assert(d.float64.almostEquals(0.0))
+    assert(d.maybeFloat64!!.almostEquals(1.0))
+
+    assert(d.coveralls!!.getName() == "some_dict")
+}
+
+
+// Test arcs.
+
+Coveralls("test_arcs").use { coveralls ->
+    assert(getNumAlive() == 1UL);
+    // One ref held by the foreign-language code, one created for this method call.
+    assert(coveralls.strongCount() == 2UL);
+    assert(coveralls.getOther() == null);
+    coveralls.takeOther(coveralls);
+    // Should now be a new strong ref, held by the object's reference to itself.
+    assert(coveralls.strongCount() == 3UL);
+    // But the same number of instances.
+    assert(getNumAlive() == 1UL);
+    // Careful, this makes a new Kotlin object which must be separately destroyed.
+    coveralls.getOther()!!.use { other ->
+        // It's the same Rust object.
+        assert(other.getName() == "test_arcs")
+    }
+    try {
+        coveralls.takeOtherFallible()
+        throw RuntimeException("Should have thrown a IntegerOverflow exception!")
+    } catch (e: CoverallErrorException.TooManyHoles) {
+        // It's okay!
+    }
+    try {
+        coveralls.takeOtherPanic("expected panic: with an arc!")
+        throw RuntimeException("Should have thrown a IntegerOverflow exception!")
+    } catch (e: InternalException) {
+        // No problemo!
+    }
+    coveralls.takeOther(null);
+    assert(coveralls.strongCount() == 2UL);
+}
+assert(getNumAlive() == 0UL);
+
+// Test return objects
+
+Coveralls("test_return_objects").use { coveralls ->
+    assert(getNumAlive() == 1UL)
+    assert(coveralls.strongCount() == 2UL)
+    coveralls.cloneMe().use { c2 ->
+        assert(c2.getName() == coveralls.getName())
+        assert(getNumAlive() == 2UL)
+        assert(c2.strongCount() == 2UL)
+
+        coveralls.takeOther(c2)
+        // same number alive but `c2` has an additional ref count.
+        assert(getNumAlive() == 2UL)
+        assert(coveralls.strongCount() == 2UL)
+        assert(c2.strongCount() == 3UL)
+    }
+    // Here we've dropped Kotlin's reference to `c2`, but the rust struct will not
+    // be dropped as coveralls hold an `Arc<>` to it.
+    assert(getNumAlive() == 2UL)
+}
+// Destroying `coveralls` will kill both.
+assert(getNumAlive() == 0UL);
+
 
 // This tests that the UniFFI-generated scaffolding doesn't introduce any unexpected locking.
 // We have one thread busy-wait for a some period of time, while a second thread repeatedly

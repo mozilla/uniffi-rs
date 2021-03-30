@@ -12,6 +12,22 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.11.0...HEAD).
 
+### What's New
+
+- It is now possible to use Object instances as fields in Records or Enums, to pass them as arguments,
+  and to return them from function and method calls. They should for the most part behave just like
+  a host language object, and their lifecycle is managed transparently using Rust's `Arc<T>` type.
+    - Reference cycles that include Rust objects will not be garbage collected; if you cannot avoid
+      creating reference cycles you may need to use Rust's `Weak<T>` type to help break them.
+    - In the **Kotlin** bindings, Object instances must be manually freed by calling their `destroy()`
+      method or by using their `.use` block helper method. Records or Enums that *contain* an Object
+      instance now also have a `destroy()` method and must be similarly disposed of after use.
+
+### What's Changed
+
+- Kotlin objects now implement `AutoCloseable` by default; closing an object instance is equivalent
+  to calling its `destroy()` method.
+
 ## v0.11.0 2021-06-03
 
 [All changes in v0.11.0](https://github.com/mozilla/uniffi-rs/compare/v0.10.0...v0.11.0).
@@ -27,7 +43,6 @@
   if they are not. This makes the `[Threadsafe]` annotation redundant, so it is now deprecated and
   will be removed in a future release. More details on the motivation for this change can be found
   in [ADR-0004](https://github.com/mozilla/uniffi-rs/blob/main/docs/adr/0004-only-threadsafe-interfaces.md).
-
 
 ### What's Changed
 

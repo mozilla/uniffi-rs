@@ -8,6 +8,7 @@ require 'test/unit'
 require 'coverall'
 
 class TestCoverall < Test::Unit::TestCase
+
   def test_some_dict
     d = Coverall.create_some_dict
     assert_equal(d.text, 'text')
@@ -28,6 +29,8 @@ class TestCoverall < Test::Unit::TestCase
 
     assert_equal(d.float64, 0.0)
     assert_equal(d.maybe_float64, 1.0)
+
+    assert_equal(d.coveralls.get_name(), "some_dict")
   end
 
   def test_none_dict
@@ -52,6 +55,7 @@ class TestCoverall < Test::Unit::TestCase
   end
 
   def test_constructors
+    GC.start
     assert_equal(Coverall.get_num_alive, 0)
     # must work.
     coveralls = Coverall::Coveralls.new 'c1'
@@ -77,9 +81,9 @@ class TestCoverall < Test::Unit::TestCase
     end
 
     begin
-      obejcts = 10.times.map { Coverall::Coveralls.new 'c1' }
+      objects = 10.times.map { Coverall::Coveralls.new 'c1' }
       assert_equal 12, Coverall.get_num_alive
-      obejcts = nil
+      objects = nil
       GC.start
     end
 
@@ -109,4 +113,88 @@ class TestCoverall < Test::Unit::TestCase
     # One reference is held by the handlemap, and one by the `Arc<Self>` method receiver.
     assert_equal coveralls.strong_count, 2
   end
+
+  def test_arcs
+    GC.start
+    coveralls = Coverall::Coveralls.new 'test_arcs'
+    assert_equal 1, Coverall.get_num_alive
+
+    assert_equal 2, coveralls.strong_count
+    assert_equal nil, coveralls.get_other
+
+    coveralls.take_other coveralls
+    # should now be a new strong ref.
+    assert_equal 3, coveralls.strong_count
+    # but the same number of instances.
+    assert_equal 1,  Coverall.get_num_alive
+    # and check it's the correct object.
+    assert_equal "test_arcs",  coveralls.get_other.get_name
+
+    # Using `assert_raise` here would keep a reference to `coveralls` alive
+    # by capturing it in a closure, which would interfere with the tests.
+    begin
+      coveralls.take_other_fallible
+    rescue Coverall::CoverallError::TooManyHoles
+      # OK
+    else
+      raise 'should have thrown'
+    end
+
+    begin
+      coveralls.take_other_panic "expected panic: with an arc!"
+    rescue Coverall::InternalError => err
+      assert_match /expected panic: with an arc!/, err.message
+    else
+      raise 'should have thrown'
+    end
+
+    coveralls.take_other nil
+    GC.start
+    assert_equal 2,  coveralls.strong_count
+
+    # Reference cleanup includes the cached most recent exception.
+    coveralls = nil
+    GC.start
+    assert_equal 0,  Coverall.get_num_alive
+
+  end
+
+  def test_return_objects
+    GC.start
+    coveralls = Coverall::Coveralls.new "test_return_objects"
+    assert_equal Coverall.get_num_alive, 1
+    assert_equal coveralls.strong_count, 2
+    c2 = coveralls.clone_me()
+    assert_equal c2.get_name(), coveralls.get_name()
+    assert_equal Coverall.get_num_alive(), 2
+    assert_equal c2.strong_count(), 2
+
+    coveralls.take_other(c2)
+    # same number alive but `c2` has an additional ref count.
+    assert_equal Coverall.get_num_alive(), 2
+    assert_equal coveralls.strong_count(), 2
+    assert_equal c2.strong_count(), 3
+
+    # We can drop Ruby's reference to `c2`, but the Rust struct will not
+    # be dropped as coveralls hold an `Arc<>` to it.
+    c2 = nil
+    GC.start
+    assert_equal Coverall.get_num_alive(), 2
+
+    # Dropping `coveralls` will kill both.
+    coveralls = nil
+    GC.start
+    assert_equal Coverall.get_num_alive(), 0
+  end
+
+  def test_bad_objects
+    coveralls = Coverall::Coveralls.new "test_bad_objects"
+    patch = Coverall::Patch.new Coverall::Color::RED
+    # `coveralls.take_other` wants `Coveralls` not `Patch`
+    assert_raise_message /Expected a Coveralls intance, got.*Patch/ do
+      coveralls.take_other patch
+    end
+  end
+
+
 end

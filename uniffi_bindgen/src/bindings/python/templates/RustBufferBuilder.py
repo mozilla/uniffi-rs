@@ -131,6 +131,17 @@ class RustBufferBuilder(object):
         self._pack_into(8, ">Q", seconds)
         self._pack_into(4, ">I", nanoseconds)
 
+    {% when Type::Object with (object_name) -%}
+    # The Object type {{ object_name }}.
+    # We write the pointer value directly - what could possibly go wrong?
+
+    def write{{ canonical_type_name }}(self, v):
+        if not isinstance(v, {{ object_name|class_name_py }}):
+            raise TypeError("Expected {{ object_name|class_name_py }} instance, {} found".format(v.__class__.__name__))
+        # The Rust code always expects pointers written as 8 bytes,
+        # and will fail to compile if they don't fit in that size.
+        self.writeU64(v._pointer)
+
     {% when Type::Enum with (enum_name) -%}
     {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
     # The Enum type {{ enum_name }}.

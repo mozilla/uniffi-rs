@@ -93,6 +93,7 @@ mod filters {
             FFIType::Float32 => ":float".to_string(),
             FFIType::Float64 => ":double".to_string(),
             FFIType::RustCString => ":string".to_string(),
+            FFIType::RustArcPtr => ":pointer".to_string(),
             FFIType::RustBuffer => "RustBuffer.by_value".to_string(),
             FFIType::RustError => "RustError.by_ref".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
@@ -210,7 +211,7 @@ mod filters {
             Type::String => format!("RustBuffer.allocFromString({})", nm),
             Type::Timestamp => panic!("No support for timestamps in Ruby, yet"),
             Type::Duration => panic!("No support for durations in Ruby, yet"),
-            Type::Object(_) => format!("({}._handle)", nm),
+            Type::Object(name) => format!("({}._uniffi_lower {})", class_name_rb(name)?, nm),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)
@@ -240,7 +241,7 @@ mod filters {
             Type::String => format!("{}.consumeIntoString", nm),
             Type::Timestamp => panic!("No support for timestamps in Ruby, yet"),
             Type::Duration => panic!("No support for durations in Ruby, yet"),
-            Type::Object(_) => panic!("No support for lifting objects, yet"),
+            Type::Object(name) => format!("{}._uniffi_allocate({})", class_name_rb(name)?, nm),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)

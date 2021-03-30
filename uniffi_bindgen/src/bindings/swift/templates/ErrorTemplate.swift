@@ -16,6 +16,7 @@ fileprivate enum UniffiInternalError: RustError {
     case incompleteData
     case unexpectedOptionalTag
     case unexpectedEnumCase
+    case unexpectedNullPointer
     case emptyResult
     case unknown(_ message: String)
 
@@ -25,6 +26,7 @@ fileprivate enum UniffiInternalError: RustError {
         case .incompleteData: return "The buffer still has data after lifting its containing value"
         case .unexpectedOptionalTag: return "Unexpected optional tag; should be 0 or 1"
         case .unexpectedEnumCase: return "Raw enum value doesn't match any cases"
+        case .unexpectedNullPointer: return "Raw pointer value was null"
         case .emptyResult: return "Unexpected nil returned from FFI function"
         case let .unknown(message): return "FFI function returned unknown error: \(message)"
         }

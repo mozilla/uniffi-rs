@@ -133,8 +133,8 @@ impl From<&Type> for FFIType {
             // Strings are always owned rust values.
             // We might add a separate type for borrowed strings in future.
             Type::String => FFIType::RustBuffer,
-            // Objects are passed as opaque integer handles.
-            Type::Object(_) => FFIType::UInt64,
+            // Objects are pointers to an Arc<>
+            Type::Object(_) => FFIType::RustArcPtr,
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface(_) => FFIType::UInt64,
             // Errors have their own special type.
