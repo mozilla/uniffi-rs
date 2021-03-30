@@ -99,12 +99,19 @@ impl Enum {
     pub fn name(&self) -> &str {
         &self.name
     }
+
     pub fn variants(&self) -> Vec<&Variant> {
         self.variants.iter().collect()
     }
 
     pub fn is_flat(&self) -> bool {
         self.flat
+    }
+
+    pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
+        // *sigh* at the clone here, the relationship between a ComponentInterace
+        // and its contained types could use a bit of a cleanup.
+        ci.type_contains_object_references(&Type::Enum(self.name.clone()))
     }
 }
 

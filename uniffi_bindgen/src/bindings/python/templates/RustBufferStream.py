@@ -127,6 +127,15 @@ class RustBufferStream(object):
     def read{{ canonical_type_name }}(self):
         return datetime.timedelta(seconds=self._unpack_from(8, ">Q"), microseconds=(self._unpack_from(4, ">I") / 1.0e3))
 
+    {% when Type::Object with (object_name) -%}
+    # The Object type {{ object_name }}.
+
+    def read{{ canonical_type_name }}(self):
+        # The Rust code always expects pointers written as 8 bytes,
+        # and will fail to compile if they don't fit in that size.
+        pointer = self._unpack_from(8, ">Q")
+        return {{ object_name|class_name_py }}._make_instance_(pointer)
+
     {% when Type::Enum with (enum_name) -%}
     {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
     # The Enum type {{ enum_name }}.

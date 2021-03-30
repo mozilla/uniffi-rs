@@ -15,3 +15,4 @@ The UDL file will look like:
 namespace Example {
     string hello_world();
 }
+```

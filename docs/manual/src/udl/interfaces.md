@@ -93,6 +93,104 @@ For each alternate constructor, UniFFI will expose an appropriate static-method,
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.
 
+## Managing Shared References
+
+To the foreign-language consumer, UniFFI object instances are designed to behave as much like
+regular language objects as possible. They can be freely passed as arguments or returned as values,
+like this:
+
+```idl
+interface TodoList {
+    ...
+
+    // Copy the items from another TodoList into this one.
+    void import_items(TodoList other);
+
+    // Make a copy of this TodoList as a new instance.
+    TodoList duplicate();
+};
+```
+
+To ensure that this is safe, UniFFI allocates every object instance on the heap using
+[`Arc`](https://doc.rust-lang.org/std/sync/struct.Arc.html), Rust's built-in smart pointer
+type for managing shared references at runtime.
+
+The use of `Arc` is transparent to the foreign-language code, but sometimes shows up
+in the function signatures of the underlying Rust code. For example, the Rust code implementing
+the `TodoList::duplicate` method would need to explicitly return an `Arc<TodoList>`, since UniFFI
+doesn't know whether it will be returning a new object or an existing one:
+
+```rust
+impl TodoList {
+    fn duplicate(&self) -> Arc<TodoList> {
+        Arc::new(TodoList {
+            items: RwLock::new(self.items.read().unwrap().clone())
+        })
+    }
+}
+```
+
+By default, object instances passed as function arguments will also be passed as an `Arc<T>`, so the
+Rust implementation of `TodoList::import_items` would also need to accept an `Arc<TodoList>`:
+
+```rust
+impl TodoList {
+    fn import_items(&self, other: Arc<TodoList>) {
+        self.items.write().unwrap().append(other.get_items());
+    }
+}
+```
+
+If the Rust code does not need an owned reference to the `Arc`, you can use the `[ByRef]` UDL attribute
+to signal that a function accepts a borrowed reference:
+
+```idl
+interface TodoList {
+    ...
+    //                  +-- indicate that we only need to borrow the other list
+    //                  V
+    void import_items([ByRef] TodoList other);
+    ...
+};
+```
+
+```rust
+impl TodoList {
+    //                              +-- don't need to care about the `Arc` here
+    //                              V
+    fn import_items(&self, other: &TodoList) {
+        self.items.write().unwrap().append(other.get_items());
+    }
+}
+```
+
+Conversely, if the Rust code explicitly *wants* to deal with an `Arc<T>` in the special case of
+the `self` parameter, it can signal this using the `[Self=ByArc]` UDL attribute on the method:
+
+
+```idl
+interface TodoList {
+    ...
+    // +-- indicate that we want the `Arc` containing `self`
+    // V
+    [Self=ByArc]
+    void import_items(TodoList other);
+    ...
+};
+```
+
+```rust
+impl TodoList {
+    // `Arc`s everywhere! --+-----------------+
+    //                      V                 V
+    fn import_items(self: Arc<Self>, other: Arc<TodoList>) {
+        self.items.write().unwrap().append(other.get_items());
+    }
+}
+```
+
+You can read more about the technical details in the docs on the
+[internal details of managing object references](../internals/object_references.md).
 
 ## Concurrent Access
 
@@ -132,7 +230,7 @@ impl Counter {
         Self { value: 0 }
     }
 
-    // No mutable references to self allowed in in UniFFI interfaces.
+    // No mutable references to self allowed in UniFFI interfaces.
     fn increment(&mut self) {
         self.value = self.value + 1;
     }

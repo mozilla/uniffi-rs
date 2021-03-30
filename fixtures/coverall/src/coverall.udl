@@ -22,6 +22,13 @@ dictionary SimpleDict {
     float? maybe_float32;
     double float64;
     double? maybe_float64;
+    Coveralls? coveralls;
+};
+
+[Enum]
+interface MaybeSimpleDict {
+    Yeah(SimpleDict d);
+    Nah();
 };
 
 [Error]
@@ -52,6 +59,34 @@ interface Coveralls {
     /// Calls `Arc::strong_count()` on the `Arc` containing `self`.
     [Self=ByArc]
     u64 strong_count();
+
+    /// Takes an `Arc<Self>` and stores it in `self`, dropping the existing
+    /// reference. Note you can create circular references by passing `self`.
+    void take_other(Coveralls? other);
+
+    /// Returns what was previously set via `take_other()`, or null.
+    Coveralls? get_other();
+
+    /// Same signature as `take_other` but always fails.
+    [Self=ByArc, Throws=CoverallError]
+    void take_other_fallible();
+
+    /// Same signature as `take_other` but with an extra string arg - always
+    /// panics with that message..
+    [Self=ByArc]
+    void take_other_panic(string message);
+
+    // can't name it `clone` as it conflicts with the Clone trait and ours has a different signature
+    Coveralls clone_me();
+};
+
+// All coveralls end up with a patch.
+enum Color {"Red", "Blue", "Green"};
+
+interface Patch {
+    constructor(Color color);
+
+    Color get_color();
 };
 
 interface ThreadsafeCounter {

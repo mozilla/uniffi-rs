@@ -1,7 +1,7 @@
 # Managing Object References
 
 UniFFI [interfaces](../udl/interfaces.md) represent instances of objects
-that have methods and contain shared mutable state. One of Rust's core innovations
+that have methods and contain state. One of Rust's core innovations
 is its ability to provide compile-time guarantees about working with such instances,
 including:
 
@@ -16,6 +16,8 @@ system. UniFFI itself tries to take a hands-off approach as much as possible and
 depends on the Rust compiler itself to uphold safety guarantees, without assuming
 that foreign-language callers will be "well behaved".
 
+## Concurrency
+
 UniFFI's hands-off approach means that all object instances exposed by UniFFI must be safe to
 access concurrently. In Rust terminology, they must be `Send+Sync` and must be useable
 without taking any `&mut` references.
@@ -27,18 +29,22 @@ of the component - as much as possible, UniFFI tries to stay out of your way, si
 that the object implementation is `Send+Sync` and letting the Rust compiler ensure that
 this is so.
 
-## Handle Maps
+## Lifetimes
 
-For additional typechecking safety, UniFFI indirects all object access through a
-"handle map", a mapping from opaque integer handles to object instances. This indirection
-imposes a small runtime cost but helps us guard against errors or oversights
-in the generated bindings.
+In order to allow for instances to be used as flexibly as possible from foreign-language code,
+UniFFI wraps all object instances in an `Arc` and leverages their reference-count based lifetimes,
+allowing UniFFI to largely stay out of handling lifetimes entirely for these objects.
 
-For each interface declared in the UDL, the UniFFI-generated Rust scaffolding
-will create a global handlemap that is responsible for owning all instances
-of that interface, and handing out references to them when methods are called.
-The handlemap requires that its contents be `Send+Sync`, helping enforce requirements
-around thread-safety.
+When constructing a new object, UniFFI is able to add the `Arc` automatically, because it
+knows that the return type of the Rust constructor must be a new uniquely-owned struct of
+the corresponding type.
+
+When you want to return object instances from functions or methods, or store object instances
+as fields in records, the underlying Rust code will need to work with `Arc<T>` directly, to ensure
+that the code behaves in the way that UniFFI expects.
+
+When accepting instances as arguments, the underlying Rust code can choose to accept it as an `Arc<T>`
+or as the underlying struct `T`, as there are different use-cases for each scenario.
 
 For example, given a interface definition like this:
 
@@ -50,53 +56,91 @@ interface TodoList {
 };
 ```
 
-The Rust scaffolding would define a lazyily-initialized global static like:
-
-```rust
-lazy_static! {
-    static ref UNIFFI_HANDLE_MAP_TODOLIST: ArcHandleMap<TodoList> = ArcHandleMap::new();
-}
-```
-
 On the Rust side of the generated bindings, the instance constructor will create an instance of the
-corresponding `TodoList` Rust struct, insert it into the handlemap, and return the resulting integer
-handle to the foreign language code:
+corresponding `TodoList` Rust struct, wrap it in an `Arc<>` and return the Arc's raw pointer to the
+foreign language code:
 
 ```rust
-pub extern "C" fn todolist_TodoList_new(err: &mut ExternError) -> u64 {
-    // Give ownership of the new instance to the handlemap.
-    // We will only ever operate on borrowed references to it.
-    UNIFFI_HANDLE_MAP_TODOLIST.insert_with_output(err, || TodoList::new())
-}
-```
-
-When invoking a method on the instance, the foreign-language code passes the integer handle back
-to the Rust code, which borrows a reference to the instance from the handlemap for the duration
-of the method call:
-
-```rust
-pub extern "C" fn todolist_TodoList_add_item(handle: u64, todo: RustBuffer, err: &mut ExternError) -> () {
-    let todo = <String as uniffi::ViaFfi>::try_lift(todo).unwrap()
-    // Borrow a reference to the instance so that we can call a method on it.
-    UNIFFI_HANDLE_MAP_TODOLIST.call_with_result_mut(err, handle, |obj| -> Result<(), TodoError> {
-        TodoList::add_item(obj, todo)
+pub extern "C" fn todolist_12ba_TodoList_new(
+    err: &mut uniffi::deps::ffi_support::ExternError,
+) -> *const std::os::raw::c_void /* *const TodoList */ {
+    uniffi::deps::ffi_support::call_with_output(err, || {
+        let _new = TodoList::new();
+        let _arc = std::sync::Arc::new(_new);
+        <std::sync::Arc<TodoList> as uniffi::ViaFfi>::lower(_arc)
     })
 }
 ```
 
-Finally, when the foreign-language code frees the instance, it passes the integer handle to
-a special destructor function so that the Rust code can delete it from the handlemap:
+The UniFFI runtime implements lowering for object instances using `Arc::into_raw`:
 
 ```rust
-pub extern "C" fn ffi_todolist_TodoList_object_free(handle: u64) {
-    UNIFFI_HANDLE_MAP_TODOLIST.delete_u64(handle);
+unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
+    type FfiType = *const std::os::raw::c_void;
+    fn lower(self) -> Self::FfiType {
+        std::sync::Arc::into_raw(self) as Self::FfiType
+    }
 }
 ```
 
-This indirection gives us some important safety properties:
+which does the "arc to pointer" dance for us. Note that this has "leaked" the
+`Arc<>` reference out of Rusts ownership system and given it to the foreign-language code.
+The foreign-language code must pass that pointer back into Rust in order to free it,
+or our instance will leak.
 
-* If the generated bindings incorrectly pass an invalid handle, or a handle for a different type of object,
-  then the handlemap will throw an error with high probability, providing some amount of run-time typechecking
-  for correctness of the generated bindings.
-* The handlemap can ensure we uphold Rust's requirements around unique mutable references and threadsafey,
-  by specifying that the contained type must be `Send+Sync`, and by refusing to hand out any mutable references.
+When invoking a method on the instance, the foreign-language code passes the
+raw pointer back to the Rust code, conceptually passing a "borrow" of the `Arc<>` to
+the Rust scaffolding. The Rust side turns it back into a cloned `Arc<>` which
+lives for the duration of the method call:
+
+```rust
+pub extern "C" fn todolist_12ba_TodoList_add_item(
+    ptr: *const std::os::raw::c_void,
+    todo: uniffi::RustBuffer,
+    err: &mut uniffi::deps::ffi_support::ExternError,
+) -> () {
+    uniffi::deps::ffi_support::call_with_result(err, || -> Result<_, TodoError> {
+        let _retval = TodoList::add_item(
+          &<std::sync::Arc<TodoList> as uniffi::ViaFfi>::try_lift(ptr).unwrap(),
+          <String as uniffi::ViaFfi>::try_lift(todo).unwrap())?,
+        )
+        Ok(_retval)
+    })
+}
+```
+
+The UniFFI runtime implements lifting for object instances using `Arc::from_raw`:
+
+```rust
+unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
+    type FfiType = *const std::os::raw::c_void;
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
+        let v = v as *const T;
+        // We musn't drop the `Arc<T>` that is owned by the foreign-language code.
+        let foreign_arc = std::mem::ManuallyDrop::new(unsafe { Self::from_raw(v) });
+        // Take a clone for our own use.
+        Ok(std::sync::Arc::clone(&*foreign_arc))
+    }
+```
+
+Notice that we take care to ensure the reference that is owned by the foreign-language
+code remains alive.
+
+Finally, when the foreign-language code frees the instance, it
+passes the raw pointer a special destructor function so that the Rust code can
+drop that initial reference (and if that happens to be the final reference,
+the Rust object will be dropped.)
+
+```rust
+pub extern "C" fn ffi_todolist_12ba_TodoList_object_free(ptr: *const std::os::raw::c_void) {
+    if let Err(e) = std::panic::catch_unwind(|| {
+        assert!(!ptr.is_null());
+        unsafe { std::sync::Arc::from_raw(ptr as *const TodoList) };
+    }) {
+        uniffi::deps::log::error!("ffi_todolist_12ba_TodoList_object_free panicked: {:?}", e);
+    }
+}
+```
+
+Passing instances as arguments and returning them as values works similarly, except that
+UniFFI does not automatically wrap/unwrap the containing `Arc`.

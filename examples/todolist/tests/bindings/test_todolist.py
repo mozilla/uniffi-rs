@@ -23,3 +23,22 @@ assert(todo.get_last() == "Test Ünicode hàndling without an entry can't believ
 entry2 = TodoEntry("Test Ünicode hàndling in an entry can't believe I didn't test this at first 🤣")
 todo.add_entry(entry2)
 assert(todo.get_last_entry().text == "Test Ünicode hàndling in an entry can't believe I didn't test this at first 🤣")
+
+todo2 = TodoList()
+assert(todo != todo2)
+assert(todo is not todo2)
+
+assert(get_default_list() is None)
+
+set_default_list(todo)
+assert(todo.get_items() == get_default_list().get_items())
+
+todo2.make_default()
+assert(todo2.get_items() == get_default_list().get_items())
+
+todo.add_item("Test liveness after being demoted from default")
+assert(todo.get_last() == "Test liveness after being demoted from default")
+
+todo2.add_item("Test shared state through local vs default reference")
+assert(get_default_list().get_last() == "Test shared state through local vs default reference")
+

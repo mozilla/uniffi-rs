@@ -1,4 +1,4 @@
-public struct {{ rec.name()|class_name_swift }}: Equatable, Hashable {
+public struct {{ rec.name()|class_name_swift }} {
     {%- for field in rec.fields() %}
     public var {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
     {%- endfor %}
@@ -10,7 +10,10 @@ public struct {{ rec.name()|class_name_swift }}: Equatable, Hashable {
         self.{{ field.name()|var_name_swift }} = {{ field.name()|var_name_swift }}
         {%- endfor %}
     }
+}
 
+{% if ! rec.contains_object_references(ci) %}
+extension {{ rec.name()|class_name_swift }}: Equatable, Hashable {
     public static func ==(lhs: {{ rec.name()|class_name_swift }}, rhs: {{ rec.name()|class_name_swift }}) -> Bool {
         {%- for field in rec.fields() %}
         if lhs.{{ field.name()|var_name_swift }} != rhs.{{ field.name()|var_name_swift }} {
@@ -26,6 +29,7 @@ public struct {{ rec.name()|class_name_swift }}: Equatable, Hashable {
         {%- endfor %}
     }
 }
+{% endif %}
 
 fileprivate extension {{ rec.name()|class_name_swift }} {
     static func read(from buf: Reader) throws -> {{ rec.name()|class_name_swift }} {

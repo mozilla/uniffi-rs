@@ -106,6 +106,14 @@ class RustBufferStream
     read(size).force_encoding(Encoding::UTF_8)
   end
 
+  {% when Type::Object with (object_name) -%}
+  # The Object type {{ object_name }}.
+
+  def read{{ canonical_type_name }}
+    pointer = FFI::Pointer.new unpack_from 8, 'Q>'
+    return {{ object_name|class_name_rb }}._uniffi_allocate(pointer)
+  end
+
   {% when Type::Enum with (enum_name) -%}
   {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
   # The Enum type {{ enum_name }}.

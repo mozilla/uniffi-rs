@@ -72,7 +72,8 @@ mod filters {
             FFIType::UInt64 => "ctypes.c_uint64".to_string(),
             FFIType::Float32 => "ctypes.c_float".to_string(),
             FFIType::Float64 => "ctypes.c_double".to_string(),
-            FFIType::RustCString => "ctypes.c_voidp".to_string(),
+            FFIType::RustCString => "ctypes.c_void_p".to_string(),
+            FFIType::RustArcPtr => "ctypes.c_void_p".to_string(),
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::RustError => "ctypes.POINTER(RustError)".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
@@ -174,7 +175,7 @@ mod filters {
             | Type::Float64 => nm.to_string(),
             Type::Boolean => format!("(1 if {} else 0)", nm),
             Type::String => format!("RustBuffer.allocFromString({})", nm),
-            Type::Object(_) => format!("({}._handle)", nm),
+            Type::Object(_) => format!("({}._pointer)", nm),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)
@@ -204,7 +205,7 @@ mod filters {
             Type::Float32 | Type::Float64 => format!("float({})", nm),
             Type::Boolean => format!("(True if {} else False)", nm),
             Type::String => format!("{}.consumeIntoString()", nm),
-            Type::Object(_) => panic!("No support for lifting objects, yet"),
+            Type::Object(name) => format!("{}._make_instance_({})", class_name_py(name)?, nm),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)

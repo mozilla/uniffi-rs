@@ -66,7 +66,7 @@ Calling this function from foreign language code involves the following steps:
 | `record<DOMString, T>` | `RustBuffer` struct pointing to serialized bytes |
 | `enum` and `[Enum] interface` | `RustBuffer` struct pointing to serialized bytes |
 | `dictionary` | `RustBuffer` struct pointing to serialized bytes |
-| `interface` | `uint64_t` opaque integer handle |
+| `interface` | `void*` opaque pointer to object on the heap |
 
 
 ## Serialization Format
@@ -88,7 +88,7 @@ The details of this format are internal only and may change between versions of 
 | `record<DOMString, T>` | Serialized `i32` item count followed by serialized items; each item is a serialized `string` followed by a serialized `T` |
 | `enum` and `[Enum] interface` | Serialized `i32` indicating variant, numbered in declaration order starting from 1, followed by the serialized values of the variant's fields in declaration order |
 | `dictionary` | The serialized value of each field, in declaration order |
-| `interface` | *Cannot currently be serialized* |
+| `interface` | Fixed-width 8-byte unsigned integer encoding a pointer to the object on the heap |
 
 Note that length fields in this format are serialized as *signed* integers
 despite the fact that they will always be non-negative. This is to help

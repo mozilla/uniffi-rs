@@ -4,10 +4,8 @@
 
 pub mod foreignbytes;
 pub mod foreigncallbacks;
-pub mod handle_maps;
 pub mod rustbuffer;
 
 pub use foreignbytes::*;
 pub use foreigncallbacks::*;
-pub use handle_maps::*;
 pub use rustbuffer::*;

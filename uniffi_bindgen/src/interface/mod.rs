@@ -204,8 +204,41 @@ impl<'ci> ComponentInterface {
         self.errors.iter().find(|e| e.name == name)
     }
 
+    /// Iterate over all known types in the interface.
     pub fn iter_types(&self) -> Vec<Type> {
         self.types.iter_known_types().collect()
+    }
+
+    /// Check whether the given type contains any (possibly nested) Type::Object references.
+    ///
+    /// This is important to know in language bindings that cannot integrate object types
+    /// tightly with the host GC, and hence need to perform manual destruction of objects.
+    pub fn type_contains_object_references(&self, type_: &Type) -> bool {
+        match type_ {
+            Type::Object(_) => true,
+            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => {
+                self.type_contains_object_references(t)
+            }
+            Type::Record(name) => self
+                .get_record_definition(name)
+                .map(|rec| {
+                    rec.fields()
+                        .iter()
+                        .any(|f| self.type_contains_object_references(&f.type_))
+                })
+                .unwrap_or(false),
+            Type::Enum(name) => self
+                .get_enum_definition(name)
+                .map(|e| {
+                    e.variants().iter().any(|v| {
+                        v.fields()
+                            .iter()
+                            .any(|f| self.type_contains_object_references(&f.type_))
+                    })
+                })
+                .unwrap_or(false),
+            _ => false,
+        }
     }
 
     /// Calculate a numeric checksum for this ComponentInterface.

@@ -114,6 +114,7 @@ mod filters {
             FFIType::Float32 => "Float".to_string(),
             FFIType::Float64 => "Double".to_string(),
             FFIType::RustCString => "Pointer".to_string(),
+            FFIType::RustArcPtr => "Pointer".to_string(),
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
             FFIType::RustError => "RustError".to_string(),
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),

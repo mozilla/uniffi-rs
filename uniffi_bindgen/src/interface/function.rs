@@ -61,12 +61,19 @@ impl Function {
     pub fn name(&self) -> &str {
         &self.name
     }
+
     pub fn arguments(&self) -> Vec<&Argument> {
         self.arguments.iter().collect()
     }
+
+    pub fn full_arguments(&self) -> Vec<Argument> {
+        self.arguments.to_vec()
+    }
+
     pub fn return_type(&self) -> Option<&Type> {
         self.return_type.as_ref()
     }
+
     pub fn ffi_func(&self) -> &FFIFunction {
         &self.ffi_func
     }
@@ -112,9 +119,6 @@ impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {
 impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
         let return_type = ci.resolve_return_type_expression(&self.return_type)?;
-        if let Some(Type::Object(_)) = return_type {
-            bail!("Objects cannot currently be returned from functions");
-        }
         Ok(Function {
             name: match self.identifier {
                 None => bail!("anonymous functions are not supported {:?}", self),
@@ -176,9 +180,6 @@ impl APIConverter<Argument> for weedle::argument::Argument<'_> {
 impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Argument> {
         let type_ = ci.resolve_type_expression(&self.type_)?;
-        if let Type::Object(_) = type_ {
-            bail!("Objects cannot currently be passed as arguments");
-        }
         let default = match self.default {
             None => None,
             Some(v) => Some(convert_default_value(&v.value, &type_)?),

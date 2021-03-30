@@ -14,6 +14,7 @@ name = "uniffi_todolist"
 uniffi_macros = {path = "../../uniffi_macros"}
 uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
 thiserror = "1.0"
+lazy_static = "1.4"
 
 [build-dependencies]
 uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}

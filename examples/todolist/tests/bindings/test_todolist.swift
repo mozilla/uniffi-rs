@@ -48,3 +48,22 @@ for _ in 0..<10 {
     let list = TodoList()
     try! list.addItem(todo: "todo")
 }
+
+let todo2 = TodoList()
+
+assert(getDefaultList() == nil)
+
+setDefaultList(list: todo)
+assert(todo.getItems() == getDefaultList()!.getItems())
+assert(todo2.getItems() != getDefaultList()!.getItems())
+
+todo2.makeDefault()
+assert(todo.getItems() != getDefaultList()!.getItems())
+assert(todo2.getItems() == getDefaultList()!.getItems())
+
+try! todo.addItem(todo: "Test liveness after being demoted from default")
+assert(try! todo.getLast() == "Test liveness after being demoted from default")
+
+try! todo2.addItem(todo: "Test shared state through local vs default reference")
+assert(try! getDefaultList()!.getLast() == "Test shared state through local vs default reference")
+

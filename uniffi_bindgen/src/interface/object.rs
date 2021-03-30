@@ -95,6 +95,10 @@ impl Object {
         &self.name
     }
 
+    pub fn type_(&self) -> Type {
+        Type::Object(self.name.clone())
+    }
+
     pub fn constructors(&self) -> Vec<&Constructor> {
         self.constructors.iter().collect()
     }
@@ -127,8 +131,8 @@ impl Object {
     pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
         self.ffi_func_free.name = format!("ffi_{}_{}_object_free", ci_prefix, self.name);
         self.ffi_func_free.arguments = vec![FFIArgument {
-            name: "handle".to_string(),
-            type_: FFIType::UInt64,
+            name: "ptr".to_string(),
+            type_: FFIType::RustArcPtr,
         }];
         self.ffi_func_free.return_type = None;
         for cons in self.constructors.iter_mut() {
@@ -198,7 +202,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 
 // Represents a constructor for an object type.
 //
-// In the FFI, this will be a function that returns a handle for an instance
+// In the FFI, this will be a function that returns a pointer to an instance
 // of the corresponding object type.
 #[derive(Debug, Clone)]
 pub struct Constructor {
@@ -217,6 +221,10 @@ impl Constructor {
         self.arguments.iter().collect()
     }
 
+    pub fn full_arguments(&self) -> Vec<Argument> {
+        self.arguments.to_vec()
+    }
+
     pub fn ffi_func(&self) -> &FFIFunction {
         &self.ffi_func
     }
@@ -232,7 +240,7 @@ impl Constructor {
         self.ffi_func.name.push('_');
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
-        self.ffi_func.return_type = Some(FFIType::UInt64);
+        self.ffi_func.return_type = Some(FFIType::RustArcPtr);
     }
 
     fn is_primary_constructor(&self) -> bool {
@@ -282,8 +290,8 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 
 // Represents an instance method for an object type.
 //
-// The in FFI, this will be a function whose first argument is a handle for an
-// instance of the corresponding object type.
+// The FFI will represent this as a function whose first/self argument is a
+// `FFIType::RustArcPtr` to the instance.
 #[derive(Debug, Clone)]
 pub struct Method {
     pub(super) name: String,
@@ -303,6 +311,23 @@ impl Method {
         self.arguments.iter().collect()
     }
 
+    // Methods have a special implicit first argument for the object instance,
+    // hence `arguments` and `full_arguments` are different.
+    pub fn full_arguments(&self) -> Vec<Argument> {
+        vec![Argument {
+            name: "ptr".to_string(),
+            // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
+            // is contained in the proper `TypeUniverse`, but this works for now.
+            type_: Type::Object(self.object_name.clone()),
+            by_ref: !self.attributes.get_self_by_arc(),
+            optional: false,
+            default: None,
+        }]
+        .into_iter()
+        .chain(self.arguments.iter().cloned())
+        .collect()
+    }
+
     pub fn return_type(&self) -> Option<&Type> {
         self.return_type.as_ref()
     }
@@ -311,24 +336,12 @@ impl Method {
         &self.ffi_func
     }
 
-    pub fn first_argument(&self) -> Argument {
-        Argument {
-            name: "handle".to_string(),
-            // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
-            // is contained in the proper `TypeUniverse`, but this works for now.
-            type_: Type::Object(self.object_name.clone()),
-            by_ref: false,
-            optional: false,
-            default: None,
-        }
-    }
-
     pub fn throws(&self) -> Option<&str> {
         self.attributes.get_throws_err()
     }
 
     pub fn takes_self_by_arc(&self) -> bool {
-        self.attributes.get_by_arc()
+        self.attributes.get_self_by_arc()
     }
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
@@ -337,11 +350,7 @@ impl Method {
         self.ffi_func.name.push_str(obj_prefix);
         self.ffi_func.name.push('_');
         self.ffi_func.name.push_str(&self.name);
-        self.ffi_func.arguments = vec![self.first_argument()]
-            .iter()
-            .chain(self.arguments.iter())
-            .map(Into::into)
-            .collect();
+        self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
         Ok(())
     }
@@ -372,9 +381,6 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             bail!("method modifiers are not supported")
         }
         let return_type = ci.resolve_return_type_expression(&self.return_type)?;
-        if let Some(Type::Object(_)) = return_type {
-            bail!("Objects cannot currently be returned from functions");
-        }
         Ok(Method {
             name: match self.identifier {
                 None => bail!("anonymous methods are not supported {:?}", self),

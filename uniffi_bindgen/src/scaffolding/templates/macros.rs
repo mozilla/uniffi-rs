@@ -6,14 +6,8 @@
 {{ func.name() }}({% call _arg_list_rs_call(func) -%})
 {%- endmacro -%}
 
-{%- macro to_rs_call_with_prefix(prefix, func) -%}
-    {{ func.name() }}(
-    {{- prefix }}{% if func.arguments().len() > 0 %}, {% call _arg_list_rs_call(func) -%}{% endif -%}
-)
-{%- endmacro -%}
-
 {%- macro _arg_list_rs_call(func) %}
-    {%- for arg in func.arguments() %}
+    {%- for arg in func.full_arguments() %}
         {%- if arg.by_ref() %}&{% endif %}
         {{- arg.name()|lift_rs(arg.type_()) }}
         {%- if !loop.last %}, {% endif %}
@@ -44,31 +38,37 @@
 
 {% macro ret(func) %}{% match func.return_type() %}{% when Some with (return_type) %}{{ "_retval"|lower_rs(return_type) }}{% else %}_retval{% endmatch %}{% endmacro %}
 
+{% macro construct(obj, cons) %}
+    {{- obj.name() }}::{% call to_rs_call(cons) -%}
+{% endmacro %}
+
 {% macro to_rs_constructor_call(obj, cons) %}
 {% match cons.throws() %}
 {% when Some with (e) %}
-UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_result(err, || -> Result<{{obj.name()}}, {{e}}> {
-    let _retval = {{ obj.name() }}::{% call to_rs_call(cons) %}?;
-    Ok(_retval)
-})
+    uniffi::deps::ffi_support::call_with_result(err, || -> Result<_, {{ e }}> {
+        let _new = {% call construct(obj, cons) %}?;
+        let _arc = std::sync::Arc::new(_new);
+        Ok({{ "_arc"|lower_rs(obj.type_()) }})
+    })
 {% else %}
-UNIFFI_HANDLE_MAP_{{ obj.name()|upper }}.insert_with_output(err, || {
-    {{ obj.name() }}::{% call to_rs_call(cons) %}
-})
+    uniffi::deps::ffi_support::call_with_output(err, || {
+        let _new = {% call construct(obj, cons) %};
+        let _arc = std::sync::Arc::new(_new);
+        {{ "_arc"|lower_rs(obj.type_()) }}
+    })
 {% endmatch %}
 {% endmacro %}
 
 {% macro to_rs_method_call(obj, meth) -%}
-{% let this_handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) -%}
 {% match meth.throws() -%}
 {% when Some with (e) -%}
-{{ this_handle_map }}.call_{% if meth.takes_self_by_arc() %}by_arc_{% endif %}with_result(err, {{ meth.first_argument().name() }}, |obj| -> Result<{% call return_type_func(meth) %}, {{e}}> {
-    let _retval = {{ obj.name() }}::{%- call to_rs_call_with_prefix("obj", meth) -%}?;
+uniffi::deps::ffi_support::call_with_result(err, || -> Result<{% call return_type_func(meth) %}, {{e}}> {
+    let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %}?;
     Ok({% call ret(meth) %})
 })
-{% else -%}
-{{ this_handle_map }}.call_{% if meth.takes_self_by_arc() %}by_arc_{% endif %}with_output(err, {{ meth.first_argument().name() }}, |obj| {
-    let _retval = {{ obj.name() }}::{%- call to_rs_call_with_prefix("obj", meth) -%};
+{% else %}
+uniffi::deps::ffi_support::call_with_output(err, || {
+    let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %};
     {% call ret(meth) %}
 })
 {% endmatch -%}

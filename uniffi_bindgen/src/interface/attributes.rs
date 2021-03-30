@@ -330,7 +330,7 @@ impl MethodAttributes {
         })
     }
 
-    pub(super) fn get_by_arc(&self) -> bool {
+    pub(super) fn get_self_by_arc(&self) -> bool {
         self.0
             .iter()
             .any(|attr| matches!(attr, Attribute::SelfType(SelfType::ByArc)))
@@ -525,23 +525,23 @@ mod test {
     fn test_method_attributes() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Throws=Error]").unwrap();
         let attrs = MethodAttributes::try_from(&node).unwrap();
-        assert!(!attrs.get_by_arc());
+        assert!(!attrs.get_self_by_arc());
         assert!(matches!(attrs.get_throws_err(), Some("Error")));
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = MethodAttributes::try_from(&node).unwrap();
-        assert!(!attrs.get_by_arc());
+        assert!(!attrs.get_self_by_arc());
         assert!(attrs.get_throws_err().is_none());
 
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc, Throws=Error]").unwrap();
         let attrs = MethodAttributes::try_from(&node).unwrap();
-        assert!(attrs.get_by_arc());
+        assert!(attrs.get_self_by_arc());
         assert!(attrs.get_throws_err().is_some());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc]").unwrap();
         let attrs = MethodAttributes::try_from(&node).unwrap();
-        assert!(attrs.get_by_arc());
+        assert!(attrs.get_self_by_arc());
         assert!(attrs.get_throws_err().is_none());
     }
 

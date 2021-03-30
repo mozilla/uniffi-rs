@@ -166,6 +166,7 @@ mod filters {
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
             FFIType::RustCString => "const char*_Nonnull".into(),
+            FFIType::RustArcPtr => "void*_Nonnull".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::RustError => "NativeRustError".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
