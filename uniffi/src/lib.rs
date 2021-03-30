@@ -45,7 +45,6 @@ pub mod deps {
     pub use anyhow;
     pub use bytes;
     pub use ffi_support;
-    pub use lazy_static;
     pub use log;
     pub use static_assertions;
 }
@@ -473,6 +472,74 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
             map.insert(key, value);
         }
         Ok(map)
+    }
+}
+
+/// Support for passing reference-counted shared objects via the FFI.
+///
+/// To avoid dealing with complex lifetime semantics over the FFI, any data passed
+/// by reference must be encapsulated in an `Arc`, and must be safe to share
+/// across threads.
+unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
+    // Don't use a pointer to <T> as that requires a `pub <T>`
+    type FfiType = *const std::os::raw::c_void;
+
+    /// When lowering, we have an owned `Arc<T>` and we transfer that ownership
+    /// to the foreign-language code, "leaking" it out of Rust's ownership system
+    /// as a raw pointer. The foreign-language code is responsible for freeing
+    /// this via TODO calling a special destructor for `T`.
+    ///
+    /// (This works safely because we have unique ownership of `self`).
+    fn lower(self) -> Self::FfiType {
+        std::sync::Arc::into_raw(self) as Self::FfiType
+    }
+
+    /// When lifting, we receive a "borrow" of the `Arc<T>` that is owned by
+    /// the foreign-language code, and make a clone of it for our own use.
+    ///
+    /// Safety: the provided value must be a pointer previously obtained by calling
+    /// the `lower()` method of this impl.
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
+        let v = v as *const T;
+        // We musn't drop the `Arc<T>` that is owned by the foreign-language code.
+        let foreign_arc = std::mem::ManuallyDrop::new(unsafe { Self::from_raw(v) });
+        // Take a clone for our own use.
+        Ok(std::sync::Arc::clone(&*foreign_arc))
+    }
+
+    /// When writing as a field of a complex structure, make a clone and transfer ownership
+    /// of it to the foreign-language code by writing its pointer into the buffer.
+    fn write<B: BufMut>(&self, buf: &mut B) {
+        let ptr = std::sync::Arc::clone(self).lower();
+        buf.put_u64(ptr as u64); // TODO: assertions about pointer size
+    }
+
+    /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc<T>`
+    /// that is owned by the foreign-language code, and make a clone for our own use.
+    ///
+    /// Safety: the buffer must contain a pointer previously obtained by calling
+    /// the `lower()` method of this impl.
+    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 8)?;
+        Self::try_lift(buf.get_u64() as Self::FfiType)
+    }
+}
+
+// This type exists only because `IntoFfi` is not implemented for
+// `*const std::os::raw::c_void`. It seems reasonable that it should be, so
+// if we update ffi_support to do that, this can die entirely.
+pub struct UniffiVoidPtr(pub *const std::os::raw::c_void);
+
+use ffi_support::IntoFfi;
+unsafe impl IntoFfi for UniffiVoidPtr {
+    type Value = *const std::os::raw::c_void;
+    #[inline]
+    fn ffi_default() -> Self::Value {
+        std::ptr::null_mut()
+    }
+    #[inline]
+    fn into_ffi_value(self) -> Self::Value {
+        self.0
     }
 }
 

@@ -95,6 +95,10 @@ impl Object {
         &self.name
     }
 
+    pub fn type_(&self) -> Type {
+        Type::Object(self.name.clone())
+    }
+
     pub fn constructors(&self) -> Vec<&Constructor> {
         self.constructors.iter().collect()
     }
@@ -127,8 +131,8 @@ impl Object {
     pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
         self.ffi_func_free.name = format!("ffi_{}_{}_object_free", ci_prefix, self.name);
         self.ffi_func_free.arguments = vec![FFIArgument {
-            name: "handle".to_string(),
-            type_: FFIType::UInt64,
+            name: "ptr".to_string(),
+            type_: FFIType::RustArcPtr,
         }];
         self.ffi_func_free.return_type = None;
         for cons in self.constructors.iter_mut() {
@@ -198,7 +202,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 
 // Represents a constructor for an object type.
 //
-// In the FFI, this will be a function that returns a handle for an instance
+// In the FFI, this will be a function that returns a pointer to an instance
 // of the corresponding object type.
 #[derive(Debug, Clone)]
 pub struct Constructor {
@@ -232,7 +236,7 @@ impl Constructor {
         self.ffi_func.name.push('_');
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
-        self.ffi_func.return_type = Some(FFIType::UInt64);
+        self.ffi_func.return_type = Some(FFIType::RustArcPtr);
     }
 
     fn is_primary_constructor(&self) -> bool {
@@ -282,8 +286,8 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 
 // Represents an instance method for an object type.
 //
-// The in FFI, this will be a function whose first argument is a handle for an
-// instance of the corresponding object type.
+// The FFI will represent this as a function whose first/self argument is a
+// `FFIType::RustArcPtr` to the instance.
 #[derive(Debug, Clone)]
 pub struct Method {
     pub(super) name: String,
@@ -313,7 +317,7 @@ impl Method {
 
     pub fn first_argument(&self) -> Argument {
         Argument {
-            name: "handle".to_string(),
+            name: "ptr".to_string(),
             // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
             // is contained in the proper `TypeUniverse`, but this works for now.
             type_: Type::Object(self.object_name.clone()),

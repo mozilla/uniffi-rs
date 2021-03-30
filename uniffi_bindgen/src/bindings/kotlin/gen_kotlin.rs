@@ -112,6 +112,8 @@ mod filters {
             FFIType::Float32 => "Float".to_string(),
             FFIType::Float64 => "Double".to_string(),
             FFIType::RustCString => "Pointer".to_string(),
+            // XXX - make this `Pointer` (but things like Helpers.kt need upgrading in non-obvious ways. )
+            FFIType::RustArcPtr => "Long".to_string(),
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
             FFIType::RustError => "RustError".to_string(),
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),

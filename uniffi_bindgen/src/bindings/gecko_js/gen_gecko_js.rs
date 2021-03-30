@@ -332,6 +332,7 @@ mod filters {
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
             FFIType::RustCString => "const char*".into(),
+            FFIType::RustArcPtr => unimplemented!("object pointers are not implemented"),
             FFIType::RustBuffer => context.ffi_rustbuffer_type(),
             FFIType::RustError => context.ffi_rusterror_type(),
             FFIType::ForeignBytes => context.ffi_foreignbytes_type(),

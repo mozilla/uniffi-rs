@@ -73,6 +73,7 @@ mod filters {
             FFIType::Float32 => "ctypes.c_float".to_string(),
             FFIType::Float64 => "ctypes.c_double".to_string(),
             FFIType::RustCString => "ctypes.c_voidp".to_string(),
+            FFIType::RustArcPtr => "ctypes.c_voidp".to_string(),
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::RustError => "ctypes.POINTER(RustError)".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),

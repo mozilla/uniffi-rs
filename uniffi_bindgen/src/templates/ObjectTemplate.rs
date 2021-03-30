@@ -1,36 +1,36 @@
 // For each Object definition, we assume the caller has provided an appropriately-shaped `struct`
-// with an `impl` for each method on the object. We create a `ConcurrentHandleMap` for safely handing
+// with an `impl` for each method on the object. We create an `Arc` in
+// `[Threadsafe]` interfaces or `Arc<Mutex<>>` otherwise, for for "safely" handing
 // out references to these structs to foreign language code, and we provide a `pub extern "C"` function
 // corresponding to each method.
+//
+// Note that "safely" is in "scare quotes" - that's because we use functions on
+// an `Arc` that are inherently unsafe, but the code we generate is safe in
+// practice.
 //
 // If the caller's implementation of the struct does not match with the methods or types specified
 // in the UDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)
 // error message when processing this generated code.
-{% let handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) -%}
 
-uniffi::deps::lazy_static::lazy_static! {
-    {%- let handle_map_type = obj.threadsafe()|choose(
-        "uniffi::ffi::handle_maps::ArcHandleMap",
-        "uniffi::ffi::handle_maps::MutexHandleMap")
-    %}
-    #[doc(hidden)]
-    static ref {{ handle_map }}: {{ handle_map_type }}<{{ obj.name() }}>
-        = Default::default();
-}
-
-    {% let ffi_free = obj.ffi_object_free() -%}
-    #[doc(hidden)]
-    #[no_mangle]
-    pub extern "C" fn {{ ffi_free.name() }}(handle: u64) {
-        let _ = {{ handle_map }}.delete_u64(handle);
+{% let ffi_free = obj.ffi_object_free() -%}
+#[doc(hidden)]
+#[no_mangle]
+pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void) {
+    if let Err(e) = std::panic::catch_unwind(|| {
+        assert!(!ptr.is_null());
+        {#- turn it into an Arc and explicitly drop it. #}
+        drop(unsafe { std::sync::Arc::from_raw(ptr as *const {{ obj.name() }}) })
+    }) {
+        uniffi::deps::log::error!("{{ ffi_free.name() }} panicked: {:?}", e);
     }
+}
 
 {%- for cons in obj.constructors() %}
     #[allow(clippy::all)]
     #[doc(hidden)]
     #[no_mangle]
     pub extern "C" fn {{ cons.ffi_func().name() }}(
-        {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> u64 {
+        {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> *const std::os::raw::c_void /* *const {{ obj.name() }} */ {
         uniffi::deps::log::debug!("{{ cons.ffi_func().name() }}");
         // If the constructor does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
