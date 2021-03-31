@@ -23,6 +23,7 @@ Hello everyone
 
 # Swift
 
+- [Building a Swift module](./swift/module.md)
 - [Integrating with XCode](./swift/xcode.md)
 
 # Internals
