@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Prerequisites - The uniffi user guide</title>
+        <title>Building a Swift module - The uniffi user guide</title>
         
         
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html" class="active"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/module.html"><strong aria-hidden="true">4.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">5.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">6.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">7.</strong> Managing object references</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">1.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">1.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">1.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">1.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">1.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">2.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">2.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">2.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">2.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">2.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">2.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">2.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">2.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">3.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/module.html" class="active"><strong aria-hidden="true">4.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">5.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">6.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">7.</strong> Managing object references</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -159,30 +159,45 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#prerequisites" id="prerequisites">Prerequisites</a></h1>
-<h2><a class="header" href="#the-uniffi-bindgen-cli-tool" id="the-uniffi-bindgen-cli-tool">The uniffi-bindgen cli tool</a></h2>
-<p>Install the <code>uniffi-bindgen</code> binary on your system using:</p>
-<p><code>cargo install uniffi_bindgen</code></p>
-<p>You can see what it can do with <code>uniffi-bindgen --help</code>, but let's leave it aside for now.</p>
-<h2><a class="header" href="#build-your-crate-as-a-cdylib" id="build-your-crate-as-a-cdylib">Build your crate as a cdylib</a></h2>
-<p>Ensure your crate builds as a <code>cdylib</code> by adding</p>
-<pre><code class="language-toml">crate-type = [&quot;cdylib&quot;]
-name = &quot;&lt;library name&gt;&quot;
+                        <h1><a class="header" href="#compiling-a-swift-module" id="compiling-a-swift-module">Compiling a Swift module</a></h1>
+<p>Before you can import the generated Swift bindings as a module (say, to use them
+from your application, or to try them out using <code>swift</code> on the command-line) you
+first need to compile them into a Swift module.</p>
+<p>To do so, you'll need to crate a <code>.modulemap</code> file, which reassures Swift that it's
+safe to expose the underlying C FFI layer. It should look something like this,
+where <code>example</code> is the namespace as used in the <code>.udl</code> file:</p>
+<pre><code>module example {
+    header &quot;path/to/uniffi_example-Bridging-Header.h&quot;
+    export *
+}
 </code></pre>
-<p>to your crate's <code>Cargo.toml</code>.</p>
+<p>Then use <code>swiftc</code> to combine the cdylib from your Rust crate with the generated
+Swift bindings:</p>
+<pre><code>swiftc
+    -module-name example                      # Name for resulting Swift module
+    -emit-library -o libexample.dylib         # File to link with if using Swift REPL
+    -emit-module -emit-module-path ./         # Output directory for resulting module
+    -parse-as-library
+    -L ./target/debug/                        # Directory containing compiled Rust crate
+    -lexample                                 # Name of compiled Rust crate cdylib
+    -Xcc -fmodule-map-file=example.modulemap  # The modulemap file from above
+    example.swift                             # The generated bindings file
+</code></pre>
+<p>This will produce an <code>example.swiftmodule</code> file that can be loaded by
+other Swift code or used from the Swift command-line REPL.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../Getting_started.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../kotlin/gradle.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../tutorial/udl_file.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../swift/xcode.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -194,13 +209,13 @@ name = &quot;&lt;library name&gt;&quot;
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../Getting_started.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../kotlin/gradle.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../tutorial/udl_file.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../swift/xcode.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
