@@ -76,13 +76,13 @@ be justified.
 
 * All consumers (both inside Mozilla and external) will need to change their
   interfaces to support thread-safety. As an example of what this entails,
-  see [this PR](https://github.com/mozilla/uniffi-rs/pull/422) which converts
-  the `todolist` example to be threadsafe.
+  see [this commit](https://github.com/mozilla/uniffi-rs/commit/454dfff6aa560dffad980a9258853108a44d5985)
+  which converts the `todolist` example to be threadsafe.
 
 * Simple, toy applications may be more difficult to wrap - consumers will not
   be able to defer decisions about thread-safety and will instead need to
-  implement simple locking as demonstrated in [this PR](
-  https://github.com/mozilla/uniffi-rs/pull/422).
+  implement simple locking as demonstrated in [this commit](
+  https://github.com/mozilla/uniffi-rs/commit/454dfff6aa560dffad980a9258853108a44d5985).
 
 * Existing applications that are yet to consider thread-safety can not be
   wrapped until they have.
@@ -126,8 +126,8 @@ Therefore, we will commit to the following actions:
 
 * Upgrade all internal mozilla consumers as soon as possible so they do not
   issue deprecation warnings. As an example of what this entails,
-  see [this PR](https://github.com/mozilla/uniffi-rs/pull/422) which converts
-  the `todolist` example to be threadsafe.
+  see [this PR](https://github.com/mozilla/uniffi-rs/commit/454dfff6aa560dffad980a9258853108a44d5985)
+  which converts the `todolist` example to be threadsafe.
 
 * Perform the actual removal as late as possible (ie, until support for non
   threadsafe interfaces actually inhibits our ability to add new features).
