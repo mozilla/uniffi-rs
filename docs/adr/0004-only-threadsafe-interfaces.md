@@ -1,7 +1,7 @@
 # Remove support for non-threadsafe interfaces
 
 * Status: proposed
-* Deciders: mhammond, proposed: rfkelly, jhugman, dmose, travis, janerik
+* Deciders: mhammond, rfkelly, travis; proposed: jhugman, dmose, janerik
 * Date: 2021-03-31
 
 Technical Story: [Issue 419](https://github.com/mozilla/uniffi-rs/issues/419)
@@ -21,7 +21,7 @@ therefore not obvious to the casual reader.
 ## Decision Drivers
 
 * Non-threadsafe structs are considered a "foot-gun", leading to accidentally
-  introduce issues like [this Fenix bug](https://github.com/mozilla-mobile/fenix/issues/17086)
+  introduced issues like [this Fenix bug](https://github.com/mozilla-mobile/fenix/issues/17086)
   (with more details available in [this JIRA ticket](https://jira.mozilla.com/browse/SDK-157).)
 
 * Supporting such structs will hinder uniffi growing in directions that we've
@@ -111,7 +111,17 @@ Therefore, we will commit to the following actions:
   issue deprecation warnings.
 
 * Perform the actual removal as late as possible (ie, until support for non
-  threadsafe interfaces actually inhibits our ability to add new features)
+  threadsafe interfaces actually inhibits our ability to add new features).
+  Concretely, the actual removal involves:
+
+  * Making `[Threadsafe]` the default. The attribute will not be removed as
+    that would break existing Threadsafe components. At some point in the
+    future we should mark it as deprecated, leading the door open to eventual
+    removal.
+
+  * Remove support for generating the threadsafety in generated rust. This will
+    cause rust objects that don't support `Send + Sync` to fail to compile.
+
 
 ## Links
 
