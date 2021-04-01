@@ -12,6 +12,7 @@ enum TodoError {
     "TodoDoesNotExist", "EmptyTodoList", "DuplicateTodo", "EmptyString", "DeligatedError"
 };
 
+[Threadsafe]
 interface TodoList {
     constructor();
     [Throws=TodoError]
