@@ -18,10 +18,16 @@ this thread-safety. Interfaces which are not marked as thread-safe cause uniffi
 to wrap the interface in a mutex which is hidden in the generated code and
 therefore not obvious to the casual reader.
 
+The [Threadsafe] marker acts as a way for the component author to opt out of
+the overhead and blocking behaviour of this mutex, at the cost of opting in to
+managing their own locking internally. This ADR proposes that managing that
+locking internally be the only locking mechanism supported by uniffi.
+
 ## Decision Drivers
 
 * Non-threadsafe structs are considered a "foot-gun", leading to accidentally
-  introduced issues like [this Fenix bug](https://github.com/mozilla-mobile/fenix/issues/17086)
+  having method calls unexpectedly block for long periods, such as
+  [this Fenix bug](https://github.com/mozilla-mobile/fenix/issues/17086)
   (with more details available in [this JIRA ticket](https://jira.mozilla.com/browse/SDK-157).)
 
 * Supporting such structs will hinder uniffi growing in directions that we've
@@ -53,7 +59,12 @@ be justified.
 
 ### Positive Consequences
 
-* The locking in all uniffi supported applications will be clear.
+* The locking in all uniffi supported component will more easily
+  discoverable - it will be in hand-written rust code and not hidden inside
+  generated code. This is a benefit to the developers of the uniffi supported
+  component rather than to the consumers of it; while we are considering other
+  features to help communicate the lock semantics to such consumers, that is
+  beyond the scope of this ADR.
 
 * Opens the door to enhancements that would be impossible for non-threadsafe
   interfaces, and simpler to implement for threadsafe interfaces if
@@ -64,16 +75,20 @@ be justified.
 ### Negative Consequences
 
 * All consumers (both inside Mozilla and external) will need to change their
-  interfaces to support thread-safety.
+  interfaces to support thread-safety. As an example of what this entails,
+  see [this PR](https://github.com/mozilla/uniffi-rs/pull/422) which converts
+  the `todolist` example to be threadsafe.
 
-* Simple, toy applications will be more difficult to wrap - consumers will not
-  be able to defer decisions about thread-safety.
+* Simple, toy applications may be more difficult to wrap - consumers will not
+  be able to defer decisions about thread-safety and will instead need to
+  implement simple locking as demonstrated in [this PR](
+  https://github.com/mozilla/uniffi-rs/pull/422).
 
 * Existing applications that are yet to consider thread-safety can not be
   wrapped until they have.
 
-* The examples will become more complex as they will all need to implement and
-  explain how they achieve thread-safety.
+* The examples which aren't currently `Threadsafe` will become more complex
+  as they will all need to implement and explain how they achieve thread-safety.
 
 * The perception that its more difficult to wrap interfaces will lead to less
   adoption of the tool.
@@ -92,9 +107,11 @@ be justified.
 
 * Good, because it makes the implementation of desired features easier.
 * Good, because it removes a foot-gun and makes locking both explicit and
-  visible.
+  visible to the developers of the uniffi-wrapped component.
 * Bad, because it breaks existing external consumers - it also breaks a couple
-  of internal consumers, but we believe fixing them is easy and low cost.
+  of internal consumers (for example, [fxa-client](
+  https://github.com/mozilla/application-services/blob/f3f0cf6e3386bf3036b074dad3950389cbd05746/components/fxa-client/src/fxa_client.udl#L97)),
+  but we believe fixing them is easy and low cost.
 
 ## Implications
 
@@ -108,7 +125,9 @@ Therefore, we will commit to the following actions:
   to see warnings and a link to our documentation when they upgrade.
 
 * Upgrade all internal mozilla consumers as soon as possible so they do not
-  issue deprecation warnings.
+  issue deprecation warnings. As an example of what this entails,
+  see [this PR](https://github.com/mozilla/uniffi-rs/pull/422) which converts
+  the `todolist` example to be threadsafe.
 
 * Perform the actual removal as late as possible (ie, until support for non
   threadsafe interfaces actually inhibits our ability to add new features).
