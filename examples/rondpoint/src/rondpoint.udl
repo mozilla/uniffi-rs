@@ -48,6 +48,7 @@ dictionary DictionnaireNombresSignes {
     i64 gros_nombre;
 };
 
+[Threadsafe]
 interface Retourneur {
   i8 identique_i8(i8 value);
   u8 identique_u8(u8 value);
@@ -67,6 +68,7 @@ interface Retourneur {
   OptionneurDictionnaire    identique_optionneur_dictionnaire(OptionneurDictionnaire value);
 };
 
+[Threadsafe]
 interface Stringifier {
   string well_known_string(string value);
 
@@ -83,6 +85,7 @@ interface Stringifier {
   string to_string_boolean(boolean value);
 };
 
+[Threadsafe]
 interface Optionneur {
   boolean sinon_boolean(optional boolean value = false);
   string sinon_string(optional string value = "default");

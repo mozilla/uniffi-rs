@@ -13,6 +13,7 @@ dictionary Vector {
   double dy;
 };
 
+[Threadsafe]
 interface Sprite {
   constructor(Point? initial_position);
   [Name=new_relative_to] constructor(Point reference, Vector direction);
