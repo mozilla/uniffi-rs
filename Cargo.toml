@@ -11,6 +11,7 @@ members = [
   "examples/sprites",
   "examples/todolist",
   "examples/threadsafe",
+  "fixtures/coverall",
   "fixtures/regressions/enum-without-i32-helpers",
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",
