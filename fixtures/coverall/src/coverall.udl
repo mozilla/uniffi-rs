@@ -22,6 +22,7 @@ dictionary SimpleDict {
     float? maybe_float32;
     double float64;
     double? maybe_float64;
+    Coveralls? coveralls;
 };
 
 [Error]
@@ -48,15 +49,14 @@ interface Coveralls {
 
     void panic(string message);
 
-    /// *** Test functions which take `self` as an `Arc<Self>` ***
+    /// *** Test functions which take either `self` or other params as `Arc<Self>` ***
     ///
-    /// Takes an `Arc<Self>` and stores it in `self` - thus making a circular
-    /// ref.
-    [ByArc]
-    void take_other();
+    /// Takes an `Arc<Self>` and stores it in `self`, dropping the existing
+    /// reference. Note you can create circular references by passing `self`.
+    void take_other(Coveralls? other);
 
-    /// Drops any references made by `take_other()`
-    void drop_other();
+    /// Returns what was previously set via `take_other()`, or null.
+    Coveralls? get_other();
 
     /// Calls `Arc::strong_count()`
     [ByArc]
@@ -70,4 +70,17 @@ interface Coveralls {
     /// panics with that message..
     [ByArc]
     void take_other_panic(string message);
+
+    // can't name it `clone` as it conflicts with the Clone trait and ours has a different signature
+    Coveralls clone_me();
+};
+
+// All coveralls end up with a patch.
+enum Color {"Red", "Blue", "Green"};
+
+[Threadsafe]
+interface Patch {
+    constructor(Color color);
+
+    Color get_color();
 };

@@ -108,10 +108,12 @@ class RustBufferBuilder(object):
 
     {% when Type::Object with (object_name) -%}
     # The Object type {{ object_name }}.
-    # Objects cannot currently be serialized, but we can produce a helpful error.
+    # We write the pointer value directly - what could possibly go wrong?
 
-    def write{{ canonical_type_name }}(self):
-        raise InternalError("RustBufferStream.write() not implemented yet for {{ canonical_type_name }}")
+    def write{{ canonical_type_name }}(self, v):
+        if not isinstance(v, {{ object_name|class_name_py }}):
+            raise TypeError("Expected {{ object_name|class_name_py }} instance, {} found".format(v.__class__.__name__))
+        self.writeU64(v._handle) # really should stop uncondionally using u64!
 
     {% when Type::CallbackInterface with (object_name) -%}
     # The Callback Interface type {{ object_name }}.

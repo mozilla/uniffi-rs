@@ -14,17 +14,22 @@ class {{ obj.name()|class_name_py }}(object):
             self._handle
         )
 
+    # Used by alternative constructors or any methods which return this type.
+    @classmethod
+    def _make_instance_(cls, handle):
+        # Lightly yucky way to bypass the usual __init__ logic
+        # and just create a new instance with the required handle.
+        inst = cls.__new__(cls)
+        inst._handle = handle
+        return inst
+
     {% for cons in obj.alternate_constructors() -%}
     @classmethod
     def {{ cons.name()|fn_name_py }}(cls, {% call py::arg_list_decl(cons) %}):
         {%- call py::coerce_args_extra_indent(cons) %}
         # Call the (fallible) function before creating any half-baked object instances.
         handle = {% call py::to_ffi_call(cons) %}
-        # Lightly yucky way to bypass the usual __init__ logic
-        # and just create a new instance with the required handle.
-        inst = cls.__new__(cls)
-        inst._handle = handle
-        return inst
+        return cls._make_instance_(handle)
     {% endfor %}
 
     {% for meth in obj.methods() -%}

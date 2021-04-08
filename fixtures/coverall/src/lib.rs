@@ -34,6 +34,7 @@ pub struct SimpleDict {
     maybe_float32: Option<f32>,
     float64: f64,
     maybe_float64: Option<f64>,
+    coveralls: Option<Arc<Coveralls>>,
 }
 
 fn create_some_dict() -> SimpleDict {
@@ -54,6 +55,7 @@ fn create_some_dict() -> SimpleDict {
         maybe_float32: Some(22.0 / 7.0),
         float64: 0.0,
         maybe_float64: Some(1.0),
+        coveralls: Some(Arc::new(Coveralls::new("some_dict".to_string()))),
     }
 }
 
@@ -75,6 +77,7 @@ fn create_none_dict() -> SimpleDict {
         maybe_float32: None,
         float64: 0.0,
         maybe_float64: None,
+        coveralls: None,
     }
 }
 
@@ -129,12 +132,18 @@ impl Coveralls {
         panic!("{}", message);
     }
 
-    fn take_other(self: Arc<Self>) {
-        *self.other.lock().unwrap() = Some(Arc::clone(&self));
+    fn take_other(&self, other: Option<Arc<Self>>) {
+        *self.other.lock().unwrap() = match other {
+            None => None,
+            Some(arc) => Some(Arc::clone(&arc)),
+        }
     }
 
-    fn drop_other(&self) {
-        *self.other.lock().unwrap() = None;
+    fn get_other(&self) -> Option<Arc<Self>> {
+        match &*self.other.lock().unwrap() {
+            Some(other) => Some(Arc::clone(other)),
+            None => None,
+        }
     }
 
     fn strong_count(self: Arc<Self>) -> u64 {
@@ -148,6 +157,16 @@ impl Coveralls {
     fn take_other_panic(self: Arc<Self>, message: String) -> () {
         panic!("{}", message);
     }
+
+    fn clone_me(&self) -> Arc<Self> {
+        let other = self.other.lock().unwrap();
+        let new_other = Mutex::new(other.clone());
+        *NUM_ALIVE.write().unwrap() += 1;
+        Arc::new(Self {
+            name: self.name.clone(),
+            other: new_other,
+        })
+    }
 }
 
 impl Drop for Coveralls {
@@ -155,4 +174,27 @@ impl Drop for Coveralls {
         *NUM_ALIVE.write().unwrap() -= 1;
     }
 }
+
+#[derive(Debug, Clone, Copy)]
+enum Color {
+    Red,
+    Blue,
+    Green,
+}
+
+#[derive(Debug)]
+struct Patch {
+    color: Color,
+}
+
+impl Patch {
+    fn new(color: Color) -> Self {
+        Self { color }
+    }
+
+    fn get_color(&self) -> Color {
+        self.color
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/coverall.uniffi.rs"));

@@ -105,10 +105,10 @@ class RustBufferStream(object):
 
     {% when Type::Object with (object_name) -%}
     # The Object type {{ object_name }}.
-    # Objects cannot currently be serialized, but we can produce a helpful error.
 
     def read{{ canonical_type_name }}(self):
-        raise InternalError("RustBufferStream.read not implemented yet for {{ canonical_type_name }}")
+        handle = self.readU64();
+        return {{ object_name|class_name_py }}._make_instance_(handle)
 
     {% when Type::CallbackInterface with (object_name) -%}
     # The Callback Interface type {{ object_name }}.
