@@ -26,6 +26,7 @@ use anyhow::{bail, Result};
 #[derive(Debug, Clone, Hash)]
 pub(super) enum Attribute {
     ByRef,
+    ByArc,
     Enum,
     Error,
     Name(String),
@@ -53,6 +54,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
             // Matches plain named attributes like "[ByRef"].
             weedle::attribute::ExtendedAttribute::NoArgs(attr) => match (attr.0).0 {
                 "ByRef" => Ok(Attribute::ByRef),
+                "ByArc" => Ok(Attribute::ByArc),
                 "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
                 "Threadsafe" => Ok(Attribute::Threadsafe),
@@ -161,6 +163,9 @@ impl FunctionAttributes {
             _ => None,
         })
     }
+    pub(super) fn get_by_arc(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::ByArc))
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttributes {
@@ -170,6 +175,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttribut
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
+            Attribute::ByArc => Ok(()),
             _ => bail!(format!("{:?} not supported for functions or methods", attr)),
         })?;
         Ok(Self(attrs))
@@ -190,14 +196,17 @@ impl<T: TryInto<FunctionAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
 
 /// Represents UDL attributes that might appear on a function argument.
 ///
-/// This supports the `[ByRef]` attribute for arguments that should be passed
-/// by reference in the generated Rust scaffolding.
+/// This supports the `[ByRef]` and `[ByArc]` attribute for arguments that
+/// should be passed by reference in the generated Rust scaffolding.
 #[derive(Debug, Clone, Hash, Default)]
 pub(super) struct ArgumentAttributes(Vec<Attribute>);
 
 impl ArgumentAttributes {
     pub fn by_ref(&self) -> bool {
         self.0.iter().any(|attr| matches!(attr, Attribute::ByRef))
+    }
+    pub fn by_arc(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::ByArc))
     }
 }
 
@@ -206,8 +215,10 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ArgumentAttribut
     fn try_from(
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
+        // XXX - how do we ensure both `ByRef` and `ByArc` aren't specified?
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::ByRef => Ok(()),
+            Attribute::ByArc => Ok(()), // XXX - need to check somewhere it's the correct type.
             _ => bail!(format!("{:?} not supported for arguments", attr)),
         })?;
         Ok(Self(attrs))
@@ -325,6 +336,14 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttribute::parse("ByRef").unwrap();
         let attr = Attribute::try_from(&node)?;
         assert!(matches!(attr, Attribute::ByRef));
+        Ok(())
+    }
+
+    #[test]
+    fn test_byarc() -> Result<()> {
+        let (_, node) = weedle::attribute::ExtendedAttribute::parse("ByArc").unwrap();
+        let attr = Attribute::try_from(&node)?;
+        assert!(matches!(attr, Attribute::ByArc));
         Ok(())
     }
 
@@ -468,6 +487,12 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[ByRef]").unwrap();
         let attrs = ArgumentAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.by_ref(), true));
+        assert!(matches!(attrs.by_arc(), false));
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[ByArc]").unwrap();
+        let attrs = ArgumentAttributes::try_from(&node).unwrap();
+        assert!(matches!(attrs.by_ref(), false));
+        assert!(matches!(attrs.by_arc(), true));
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = ArgumentAttributes::try_from(&node).unwrap();

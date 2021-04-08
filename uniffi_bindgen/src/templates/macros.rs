@@ -9,8 +9,8 @@
 {%- macro to_rs_call_with_argname(arg_name, func, obj) -%}
     {{ func.name() }}(
     {%- if obj.threadsafe() %}
-        {# threadsafe objects assume `&self` #}
-        &{{- arg_name -}}
+        {# threadsafe objects either `&self` or `self` depending on receiver. #}
+        {% if !func.self_by_arc() %}&{% endif %}{{- arg_name -}}
     {%- else -%}
         {# non-threadsafe objects must acquire the mutex we wrapped them in, allowing a `&mut self` #}
         &mut *{{- arg_name }}.lock().unwrap()

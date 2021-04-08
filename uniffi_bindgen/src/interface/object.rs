@@ -322,6 +322,7 @@ impl Method {
             // is contained in the proper `TypeUniverse`, but this works for now.
             type_: Type::Object(self.object_name.clone()),
             by_ref: false,
+            by_arc: false,
             optional: false,
             default: None,
         }
@@ -329,6 +330,10 @@ impl Method {
 
     pub fn throws(&self) -> Option<&str> {
         self.attributes.get_throws_err()
+    }
+
+    pub fn self_by_arc(&self) -> bool {
+        self.attributes.get_by_arc()
     }
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {

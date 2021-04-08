@@ -136,6 +136,7 @@ pub struct Argument {
     pub(super) name: String,
     pub(super) type_: Type,
     pub(super) by_ref: bool,
+    pub(super) by_arc: bool,
     pub(super) optional: bool,
     pub(super) default: Option<Literal>,
 }
@@ -149,6 +150,9 @@ impl Argument {
     }
     pub fn by_ref(&self) -> bool {
         self.by_ref
+    }
+    pub fn by_arc(&self) -> bool {
+        self.by_arc
     }
     pub fn default_value(&self) -> Option<Literal> {
         self.default.clone()
@@ -184,10 +188,12 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
             Some(v) => Some(convert_default_value(&v.value, &type_)?),
         };
         let by_ref = ArgumentAttributes::try_from(self.attributes.as_ref())?.by_ref();
+        let by_arc = ArgumentAttributes::try_from(self.attributes.as_ref())?.by_arc();
         Ok(Argument {
             name: self.identifier.0.to_string(),
             type_,
             by_ref,
+            by_arc,
             optional: self.optional.is_some(),
             default,
         })
