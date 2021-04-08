@@ -377,9 +377,6 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             bail!("method modifiers are not supported")
         }
         let return_type = ci.resolve_return_type_expression(&self.return_type)?;
-        if let Some(Type::Object(_)) = return_type {
-            bail!("Objects cannot currently be returned from functions");
-        }
         Ok(Method {
             name: match self.identifier {
                 None => bail!("anonymous methods are not supported {:?}", self),
