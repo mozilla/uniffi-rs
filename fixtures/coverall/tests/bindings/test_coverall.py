@@ -6,6 +6,11 @@ import unittest
 from coverall import *
 
 class TestCoverall(unittest.TestCase):
+    # Any test not terminating with zero objects alive will cause others to
+    # fail - this helps us work out which test kept things alive.
+    def tearDown(self):
+        self.assertEqual(get_num_alive(), 0)
+
     def test_some_dict(self):
         d = create_some_dict()
         self.assertEqual(d.text, "text")
@@ -83,6 +88,27 @@ class TestCoverall(unittest.TestCase):
 
         with self.assertRaisesRegex(InternalError, "expected panic: oh no"):
             coveralls.panic("expected panic: oh no")
+
+    def test_arcs(self):
+        coveralls = Coveralls("test_arcs")
+        self.assertEqual(get_num_alive(), 1)
+        self.assertEqual(coveralls.strong_count(), 2)
+        coveralls.take_other()
+        # should now be a new strong ref.
+        self.assertEqual(coveralls.strong_count(), 3)
+        # but the same number of instances.
+        self.assertEqual(get_num_alive(), 1)
+
+        with self.assertRaises(CoverallError.TooManyHoles):
+            coveralls.take_other_fallible()
+
+        with self.assertRaisesRegex(InternalError, "expected panic: with an arc!"):
+            coveralls.take_other_panic("expected panic: with an arc!")
+
+        coveralls.drop_other()
+        self.assertEqual(coveralls.strong_count(), 2)
+        coveralls = None
+        self.assertEqual(get_num_alive(), 0)
 
 if __name__=='__main__':
     unittest.main()

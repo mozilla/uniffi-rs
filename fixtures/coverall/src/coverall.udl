@@ -47,4 +47,27 @@ interface Coveralls {
     boolean maybe_throw(boolean should_throw);
 
     void panic(string message);
+
+    /// *** Test functions which take `self` as an `Arc<Self>` ***
+    ///
+    /// Takes an `Arc<Self>` and stores it in `self` - thus making a circular
+    /// ref.
+    [ByArc]
+    void take_other();
+
+    /// Drops any references made by `take_other()`
+    void drop_other();
+
+    /// Calls `Arc::strong_count()`
+    [ByArc]
+    u64 strong_count();
+
+    /// Same signature as `take_other` but always fails.
+    [ByArc, Throws=CoverallError]
+    void take_other_fallible();
+
+    /// Same signature as `take_other` but with an extra string arg - always
+    /// panics with that message..
+    [ByArc]
+    void take_other_panic(string message);
 };
