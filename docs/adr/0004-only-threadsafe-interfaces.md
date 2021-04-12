@@ -1,8 +1,8 @@
 # Remove support for non-`Send+Sync` interfaces
 
 * Status: proposed
-* Deciders: mhammond, rfkelly, travis; proposed: jhugman, dmose, janerik
-* Date: 2021-03-31
+* Deciders: mhammond, rfkelly, travis, jhugman, dmose; proposed: janerik
+* Date: 2021-04-13
 
 Technical Story: [Issue 419](https://github.com/mozilla/uniffi-rs/issues/419)
 
@@ -12,11 +12,11 @@ Technical Story: [Issue 419](https://github.com/mozilla/uniffi-rs/issues/419)
 interfaces" - possibly leading to the impression that there is such a thing as
 non-threadsafe interfaces and confusion about exactly what the attribute means.
 
-However, the entire concept of non-threadsafe interfaces is a mismomer -
-everything wrapped by uniffi is thread-safe - the only question is who manages
-this thread-safety. Interfaces which are not marked as thread-safe cause uniffi
-to wrap the interface in a mutex which is hidden in the generated code and
-therefore not obvious to the casual reader.
+However, the entire concept of non-threadsafe interfaces is a misconception -
+the Rust compiler insists that everything wrapped by uniffi is thread-safe -
+the only question is who manages this thread-safety. Interfaces which are not
+marked as thread-safe cause uniffi to wrap the interface in a mutex which is
+hidden in the generated code and therefore not obvious to the casual reader.
 
 The [Threadsafe] marker acts as a way for the component author to opt out of
 the overhead and blocking behaviour of this mutex, at the cost of opting in to
@@ -130,8 +130,9 @@ Therefore, we will commit to the following actions:
 * Communicating both this decision and how consumers can work around it as soon
   as possible.
 
-* Noisily deprecate non-`Send+Sync` interfaces so existing consumers are likely
-  to see warnings and a link to our documentation when they upgrade.
+* Noisily deprecate non-`Send+Sync` interfaces in at least 1 release, so
+  existing consumers are likely to see warnings and a link to our documentation
+  when they upgrade.
 
 * Upgrade all internal mozilla consumers as soon as possible so they do not
   issue deprecation warnings. As an example of what this entails,
