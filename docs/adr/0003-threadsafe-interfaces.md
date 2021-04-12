@@ -1,6 +1,6 @@
 # Let consumers opt out of HandleMap locking if their interface is threadsafe
 
-* Status: proposed
+* Status: accepted
 * Deciders: rfkelly, jhugman, mhammond, dmosedale
 * Date:  2021-01-13
 
