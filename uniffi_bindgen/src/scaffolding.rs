@@ -52,6 +52,8 @@ mod filters {
             Type::Float64 => "f64".into(),
             Type::Boolean => "bool".into(),
             Type::String => "String".into(),
+            Type::Timestamp => "std::time::SystemTime".into(),
+            Type::Duration => "std::time::Duration".into(),
             Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
                 name.clone()
             }

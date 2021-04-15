@@ -9,6 +9,7 @@ members = [
   "examples/geometry",
   "examples/rondpoint",
   "examples/sprites",
+  "examples/time",
   "examples/todolist",
   "examples/threadsafe",
   "fixtures/coverall",

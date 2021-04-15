@@ -19,6 +19,7 @@ import ctypes
 import enum
 import struct
 import contextlib
+import datetime
 
 {% include "RustBufferTemplate.py" %}
 {% include "RustBufferStream.py" %}

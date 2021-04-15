@@ -138,6 +138,8 @@ mod filters {
             Type::Float64 => "Double".into(),
             Type::Boolean => "Bool".into(),
             Type::String => "String".into(),
+            Type::Timestamp => panic!("Timestamp unimplemented"),
+            Type::Duration => panic!("Duration unimplemented"),
             Type::Enum(name)
             | Type::Record(name)
             | Type::Object(name)

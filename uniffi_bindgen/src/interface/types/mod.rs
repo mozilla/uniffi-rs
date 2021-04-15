@@ -50,6 +50,8 @@ pub enum Type {
     Float64,
     Boolean,
     String,
+    Timestamp,
+    Duration,
     // Types defined in the component API, each of which has a string name.
     Object(String),
     Record(String),
@@ -93,6 +95,8 @@ impl Type {
             Type::Enum(nm) => format!("Enum{}", nm),
             Type::Record(nm) => format!("Record{}", nm),
             Type::CallbackInterface(nm) => format!("CallbackInterface{}", nm),
+            Type::Timestamp => "Timestamp".into(),
+            Type::Duration => "Duration".into(),
             // Recursive types.
             // These add a prefix to the name of the underlying type.
             // The component API definition cannot give names to recursive types, so as long as the
@@ -140,7 +144,9 @@ impl Into<FFIType> for &Type {
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
-            | Type::Map(_) => FFIType::RustBuffer,
+            | Type::Map(_)
+            | Type::Timestamp
+            | Type::Duration => FFIType::RustBuffer,
         }
     }
 }

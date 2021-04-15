@@ -106,6 +106,27 @@ class RustBufferBuilder(object):
         self._pack_into(4, ">i", len(utf8Bytes))
         self.write(utf8Bytes)
 
+    {% when Type::Timestamp -%}
+
+    def write{{ canonical_type_name }}(self, v):
+        delta = v - datetime.datetime.fromtimestamp(0)
+        seconds = int(delta.total_seconds())
+        nanoseconds = int(delta.microseconds * 1.0e3)
+        if seconds < 0:
+            raise ValueError("Invalid timestamp, must be greater than UNIX EPOCH")
+        self._pack_into(8, ">Q", seconds)
+        self._pack_into(4, ">I", nanoseconds)
+
+    {% when Type::Duration -%}
+
+    def write{{ canonical_type_name }}(self, v):
+        seconds = int(v.total_seconds())
+        nanoseconds = int(v.microseconds * 1.0e3)
+        if seconds < 0:
+            raise ValueError("Invalid duration, must be non-negative")
+        self._pack_into(8, ">Q", seconds)
+        self._pack_into(4, ">I", nanoseconds)
+
     {% when Type::Object with (object_name) -%}
     # The Object type {{ object_name }}.
     # Objects cannot currently be serialized, but we can produce a helpful error.

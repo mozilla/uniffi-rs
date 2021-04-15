@@ -78,6 +78,30 @@ class RustBuffer(ctypes.Structure):
         with self.consumeWithStream() as stream:
             return stream.read(stream.remaining()).decode("utf-8")
 
+    {% when Type::Timestamp -%}
+
+    @staticmethod
+    def allocFrom{{ canonical_type_name }}(v):
+        with RustBuffer.allocWithBuilder() as builder:
+            builder.write{{ canonical_type_name }}(v)
+            return builder.finalize()
+
+    def consumeInto{{ canonical_type_name }}(self):
+        with self.consumeWithStream() as stream:
+            return stream.read{{ canonical_type_name }}()
+
+    {% when Type::Duration -%}
+
+    @staticmethod
+    def allocFrom{{ canonical_type_name }}(v):
+        with RustBuffer.allocWithBuilder() as builder:
+            builder.write{{ canonical_type_name }}(v)
+            return builder.finalize()
+
+    def consumeInto{{ canonical_type_name }}(self):
+        with self.consumeWithStream() as stream:
+            return stream.read{{ canonical_type_name }}()
+
     {% when Type::Record with (record_name) -%}
     {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
     # The Record type {{ record_name }}.
