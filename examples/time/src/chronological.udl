@@ -1,0 +1,17 @@
+[Error]
+enum ChronologicalError {
+  "TimeOverflow",
+  "TimeDiffError",
+};
+
+namespace chronological {
+  [Throws=ChronologicalError]
+  timestamp add(timestamp a, duration b);
+
+  [Throws=ChronologicalError]
+  duration diff(timestamp a, timestamp b);
+
+  timestamp now();
+
+  boolean equal(timestamp a, timestamp b);
+};

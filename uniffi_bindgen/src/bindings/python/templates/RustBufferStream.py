@@ -103,6 +103,26 @@ class RustBufferStream(object):
         utf8Bytes = self.read(size)
         return utf8Bytes.decode("utf-8")
 
+
+    {% when Type::Timestamp -%}
+    # The Timestamp type.
+    # There is a loss of precision when converting from Rust timestamps
+    # which are accurate to the nanosecond,to Python datetimes which have
+    # a variable precision due to the use of float as representation.
+
+    def read{{ canonical_type_name }}(self):
+        timestamp = self._unpack_from(8, ">Q") + (self._unpack_from(4, ">I") / 1.0e9)
+        return datetime.datetime.fromtimestamp(timestamp, tz=None)
+
+    {% when Type::Duration -%}
+    # The Duration type.
+    # There is a loss of precision when converting from Rust durations
+    # which are accurate to the nanosecond,to Python durations which have
+    # are only accurate to the microsecond.
+
+    def read{{ canonical_type_name }}(self):
+        return datetime.timedelta(seconds=self._unpack_from(8, ">Q"), microseconds=(self._unpack_from(4, ">I") / 1.0e3))
+
     {% when Type::Object with (object_name) -%}
     # The Object type {{ object_name }}.
     # Objects cannot currently be serialized, but we can produce a helpful error.

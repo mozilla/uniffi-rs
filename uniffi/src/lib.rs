@@ -30,7 +30,11 @@
 use anyhow::{bail, Result};
 use bytes::buf::{Buf, BufMut};
 use paste::paste;
-use std::{collections::HashMap, convert::TryFrom};
+use std::{
+    collections::HashMap,
+    convert::TryFrom,
+    time::{Duration, SystemTime},
+};
 
 pub mod ffi;
 pub use ffi::*;
@@ -351,6 +355,59 @@ unsafe impl ViaFfi for String {
         let res = String::from_utf8(bytes.to_vec())?;
         buf.advance(len);
         Ok(res)
+    }
+}
+
+/// Support for passing timestamp values via the FFI.
+///
+/// Timestamps prior to the UNIX EPOCH will cause a panic.
+/// Timestamps values are currently always passed by serializing to a buffer.
+unsafe impl ViaFfi for SystemTime {
+    type FfiType = RustBuffer;
+
+    fn lower(self) -> Self::FfiType {
+        lower_into_buffer(self)
+    }
+
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
+        try_lift_from_buffer(v)
+    }
+
+    fn write<B: BufMut>(&self, buf: &mut B) {
+        let duration = self
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .expect("SystemTime before UNIX EPOCH!");
+        duration.write(buf);
+    }
+
+    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+        let duration = Duration::try_read(buf)?;
+        Ok(SystemTime::UNIX_EPOCH + duration)
+    }
+}
+
+/// Support for passing duration values via the FFI.
+///
+/// Duration values are currently always passed by serializing to a buffer.
+unsafe impl ViaFfi for Duration {
+    type FfiType = RustBuffer;
+
+    fn lower(self) -> Self::FfiType {
+        lower_into_buffer(self)
+    }
+
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
+        try_lift_from_buffer(v)
+    }
+
+    fn write<B: BufMut>(&self, buf: &mut B) {
+        buf.put_u64(self.as_secs());
+        buf.put_u32(self.subsec_nanos());
+    }
+
+    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+        check_remaining(buf, 12)?;
+        Ok(Duration::new(buf.get_u64(), buf.get_u32()))
     }
 }
 

@@ -181,6 +181,8 @@ pub(in super::super) fn resolve_builtin_type(name: &str) -> Option<Type> {
         "i64" => Some(Type::Int64),
         "f32" => Some(Type::Float32),
         "f64" => Some(Type::Float64),
+        "timestamp" => Some(Type::Timestamp),
+        "duration" => Some(Type::Duration),
         _ => None,
     }
 }

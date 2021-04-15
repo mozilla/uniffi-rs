@@ -282,6 +282,70 @@ internal fun String.write(buf: RustBufferBuilder) {
     buf.put(byteArr)
 }
 
+{% when Type::Timestamp -%}
+{% let type_name = typ|type_kt %}
+
+internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ type_name }} {
+    return liftFromRustBuffer(rbuf) { buf ->
+        read{{ canonical_type_name }}(buf)
+    }
+}
+
+internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ type_name }} {
+    val seconds = buf.getLong()
+    val nanoseconds = buf.getInt().toLong()
+    if (seconds < 0) {
+        throw java.time.DateTimeException("Instant exceeds minimum or maximum instant supported by uniffi")
+    }
+    if (nanoseconds < 0) {
+        throw java.time.DateTimeException("Instant nanoseconds exceed minimum or maximum supported by uniffi")
+    }
+    return {{ type_name }}.ofEpochSecond(seconds, nanoseconds)
+}
+
+internal fun lower{{ canonical_type_name }}(v: {{ type_name }}): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(v) { v, buf ->
+        write{{ canonical_type_name }}(v, buf)
+    }
+}
+
+internal fun write{{ canonical_type_name }}(v: {{ type_name }}, buf: RustBufferBuilder) {
+    if (v.epochSecond < 0) {
+        throw IllegalArgumentException("Invalid timestamp, must be greater than UNIX EPOCH")
+    }
+
+    if (v.nano < 0) {
+        throw IllegalArgumentException("Invalid timestamp, nano value must be non-negative")
+    }
+
+    buf.putLong(v.epochSecond)
+    buf.putInt(v.nano)
+}
+
+{% when Type::Duration -%}
+{% let type_name = typ|type_kt %}
+
+internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ type_name }} {
+    return liftFromRustBuffer(rbuf) { buf ->
+        read{{ canonical_type_name }}(buf)
+    }
+}
+
+internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ type_name }} {
+    return {{ type_name }}.ofSeconds(buf.getLong(), buf.getInt().toLong())
+}
+
+internal fun lower{{ canonical_type_name }}(v: {{ type_name }}): RustBuffer.ByValue {
+    return lowerIntoRustBuffer(v) { v, buf ->
+        write{{ canonical_type_name }}(v, buf)
+    }
+}
+
+internal fun write{{ canonical_type_name }}(v: {{ type_name }}, buf: RustBufferBuilder) {
+    buf.putLong(v.seconds)
+    buf.putInt(v.nano)
+}
+
 {% when Type::Optional with (inner_type) -%}
 {% let inner_type_name = inner_type|type_kt %}
 

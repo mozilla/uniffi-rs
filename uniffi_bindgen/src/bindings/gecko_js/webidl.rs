@@ -111,6 +111,8 @@ impl From<Type> for WebIDLType {
                 // https://github.com/mozilla/uniffi-rs/issues/295.
                 panic!("[TODO: From<Type>({:?})]", type_)
             }
+            Type::Timestamp => panic!("Timestamp unimplemented"),
+            Type::Duration => panic!("Duration unimplemented"),
             Type::CallbackInterface(_) => panic!("Callback interfaces unimplemented"),
             Type::Optional(inner) => match *inner {
                 Type::Record(name) => {
