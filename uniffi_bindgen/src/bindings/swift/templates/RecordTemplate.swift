@@ -27,7 +27,7 @@ public struct {{ rec.name()|class_name_swift }}: Equatable, Hashable {
     }
 }
 
-fileprivate extension {{ rec.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
+fileprivate extension {{ rec.name()|class_name_swift }} {
     static func read(from buf: Reader) throws -> {{ rec.name()|class_name_swift }} {
         return try {{ rec.name()|class_name_swift }}(
             {%- for field in rec.fields() %}
@@ -42,3 +42,5 @@ fileprivate extension {{ rec.name()|class_name_swift }}: ViaFfiUsingByteBuffer, 
         {%- endfor %}
     }
 }
+
+extension {{ rec.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {}
