@@ -1,9 +1,10 @@
 # Remove support for non-`Send+Sync` interfaces
 
-* Status: proposed
-* Deciders: mhammond, rfkelly, travis, jhugman, dmose; proposed: janerik
-* Date: 2021-04-13
+* Status: accepted
+* Deciders: mhammond, rfkelly, travis, jhugman, dmose
+* Date: 2021-04-19
 
+Discussion and approval: [PR 421](https://github.com/mozilla/uniffi-rs/pull/421)
 Technical Story: [Issue 419](https://github.com/mozilla/uniffi-rs/issues/419)
 
 ## Context and Problem Statement
