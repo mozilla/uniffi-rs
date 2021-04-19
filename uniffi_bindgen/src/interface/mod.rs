@@ -105,9 +105,18 @@ impl<'ci> ComponentInterface {
     pub fn from_webidl(idl: &str) -> Result<Self> {
         let mut ci = Self::default();
         ci.uniffi_version = env!("CARGO_PKG_VERSION").to_string();
-        // There's some lifetime thing with the errors returned from weedle::parse
+        // There's some lifetime thing with the errors returned from weedle::Definitions::parse
         // that my own lifetime is too short to worry about figuring out; unwrap and move on.
-        let defns = weedle::parse(idl.trim()).unwrap();
+
+        // Note we use `weedle::Definitions::parse` instead of `weedle::parse` so
+        // on parse errors we can see how far weedle got, which helps locate the problem.
+        use weedle::Parse; // this trait must be in scope for parse to work.
+        let (remaining, defns) = weedle::Definitions::parse(idl.trim()).unwrap();
+        if !remaining.is_empty() {
+            println!("Error parsing the IDL. Text remaining to be parsed is:");
+            println!("{}", remaining);
+            bail!("parse error");
+        }
         // We process the WebIDL definitions in two passes.
         // First, go through and look for all the named types.
         ci.types.add_type_definitions_from(defns.as_slice())?;
