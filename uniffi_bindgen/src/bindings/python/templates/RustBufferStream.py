@@ -108,7 +108,7 @@ class RustBufferStream(object):
 
     def read{{ canonical_type_name }}(self):
         handle = self.readU64();
-        return {{ object_name|class_name_py }}._make_instance_(handle)
+        return {{ object_name|class_name_py }}._get_or_make_instance_(handle)
 
     {% when Type::CallbackInterface with (object_name) -%}
     # The Callback Interface type {{ object_name }}.

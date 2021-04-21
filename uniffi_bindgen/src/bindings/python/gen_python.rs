@@ -199,7 +199,7 @@ mod filters {
             Type::Float32 | Type::Float64 => format!("float({})", nm),
             Type::Boolean => format!("(True if {} else False)", nm),
             Type::String => format!("{}.consumeIntoString()", nm),
-            Type::Object(classname) => format!("{}._make_instance_({})", classname, nm),
+            Type::Object(classname) => format!("{}._get_or_make_instance_({})", classname, nm),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)

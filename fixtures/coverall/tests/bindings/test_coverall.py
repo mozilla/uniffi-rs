@@ -103,6 +103,8 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual(get_num_alive(), 1)
         # and check it's the correct object.
         self.assertEqual(coveralls.get_other().get_name(), "test_arcs")
+        # even better - it should be the same Python object
+        self.assertTrue(coveralls.get_other() is coveralls)
 
         with self.assertRaises(CoverallError.TooManyHoles):
             coveralls.take_other_fallible()
@@ -129,6 +131,9 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual(get_num_alive(), 2)
         self.assertEqual(coveralls.strong_count(), 2)
         self.assertEqual(c2.strong_count(), 3)
+
+        # and get_other() should return the exact same instance.
+        self.assertTrue(coveralls.get_other() is c2)
 
         # We can drop Python's reference to `c2`, but the rust struct will not
         # be dropped as coveralls hold an `Arc<>` to it.

@@ -19,6 +19,7 @@ import ctypes
 import enum
 import struct
 import contextlib
+from weakref import WeakValueDictionary
 
 {% include "RustBufferTemplate.py" %}
 {% include "RustBufferStream.py" %}
