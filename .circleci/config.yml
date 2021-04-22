@@ -18,7 +18,8 @@ orbs:
 jobs:
   Check Rust formatting:
     docker:
-      - image: circleci/rust:latest
+      # Our policy for updating this rust version is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
+      - image: circleci/rust:1.47.0
     resource_class: small
     steps:
       - checkout
@@ -27,12 +28,14 @@ jobs:
       - run: cargo fmt -- --check
   Lint Rust with clippy:
     docker:
-      - image: circleci/rust:latest
+      # Our policy for updating this rust version is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
+      - image: circleci/rust:1.47.0
     resource_class: small
     steps:
       - checkout
       - run: rustup component add clippy
       - run: cargo clippy --version
+      # todo: add ` -- -D warnings` below (which implies fixing the fallout)
       - run: cargo clippy --all --all-targets
   Rust and Foreign Language tests:
     docker:

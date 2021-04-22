@@ -385,7 +385,7 @@ impl FieldExt for Field {
             // in WebIDL.
             return Some(Literal::EmptyMap);
         }
-        return None;
+        None
     }
 }
 

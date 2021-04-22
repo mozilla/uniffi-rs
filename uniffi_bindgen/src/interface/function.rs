@@ -156,7 +156,7 @@ impl Argument {
 }
 
 impl Into<FFIArgument> for &Argument {
-    fn into(self: Self) -> FFIArgument {
+    fn into(self) -> FFIArgument {
         FFIArgument {
             name: self.name.clone(),
             type_: (&self.type_).into(),
