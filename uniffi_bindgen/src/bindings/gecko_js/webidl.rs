@@ -80,10 +80,9 @@ impl WebIDLType {
 
     pub fn is_optional_record(&self) -> bool {
         match self {
-            WebIDLType::OptionalWithDefaultValue(inner) => match inner.as_ref() {
-                WebIDLType::Flat(Type::Record(_)) => true,
-                _ => false,
-            },
+            WebIDLType::OptionalWithDefaultValue(inner) => {
+                matches!(inner.as_ref(), WebIDLType::Flat(Type::Record(_)))
+            }
             _ => false,
         }
     }
@@ -373,10 +372,7 @@ impl FieldExt for Field {
     }
 
     fn required(&self) -> bool {
-        match self.type_() {
-            Type::Optional(_) => false,
-            _ => true,
-        }
+        !matches!(self.type_(), Type::Optional(_))
     }
 
     fn webidl_default_value(&self) -> Option<Literal> {

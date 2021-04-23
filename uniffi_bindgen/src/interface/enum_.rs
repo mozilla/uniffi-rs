@@ -176,7 +176,7 @@ impl Variant {
     }
 
     pub fn has_fields(&self) -> bool {
-        self.fields.len() > 0
+        !self.fields.is_empty()
     }
 }
 
@@ -255,7 +255,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_duplicate_variants() -> Result<()> {
+    fn test_duplicate_variants() {
         const UDL: &str = r#"
             namespace test{};
             // Weird, but currently allowed!
@@ -268,11 +268,10 @@ mod test {
             ci.get_enum_definition("Testing").unwrap().variants().len(),
             3
         );
-        Ok(())
     }
 
     #[test]
-    fn test_associated_data() -> Result<()> {
+    fn test_associated_data() {
         const UDL: &str = r##"
             namespace test {
                 void takes_an_enum(TestEnum e);
@@ -394,7 +393,5 @@ mod test {
             fret.ffi_func().return_type(),
             Some(FFIType::RustBuffer)
         ));
-
-        Ok(())
     }
 }

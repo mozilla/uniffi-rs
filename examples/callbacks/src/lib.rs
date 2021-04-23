@@ -57,6 +57,12 @@ impl RustGetters {
     }
 }
 
+impl Default for RustGetters {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 // Use Send if we want to store the callback in an exposed object.
 trait StoredForeignStringifier: Send + std::fmt::Debug {
     fn from_simple_type(&self, value: i32) -> String;

@@ -387,7 +387,7 @@ mod test {
     }
 
     #[test]
-    fn test_unsupported() -> Result<()> {
+    fn test_unsupported() {
         let (_, node) =
             weedle::attribute::ExtendedAttribute::parse("UnsupportedAttribute").unwrap();
         let err = Attribute::try_from(&node).unwrap_err();
@@ -403,20 +403,17 @@ mod test {
             err.to_string(),
             "Attribute identity Identifier not supported: \"Unsupported\""
         );
-
-        Ok(())
     }
 
     #[test]
-    fn test_other_attributes_not_supported_for_enums() -> Result<()> {
+    fn test_other_attributes_not_supported_for_enums() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Error, ByRef]").unwrap();
         let err = EnumAttributes::try_from(&node).unwrap_err();
         assert_eq!(err.to_string(), "ByRef not supported for enums");
-        Ok(())
     }
 
     #[test]
-    fn test_throws_attribute() -> Result<()> {
+    fn test_throws_attribute() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Throws=Error]").unwrap();
         let attrs = FunctionAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.get_throws_err(), Some("Error")));
@@ -424,12 +421,10 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = FunctionAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.get_throws_err(), None));
-
-        Ok(())
     }
 
     #[test]
-    fn test_other_attributes_not_supported_for_functions() -> Result<()> {
+    fn test_other_attributes_not_supported_for_functions() {
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, ByRef]").unwrap();
         let err = FunctionAttributes::try_from(&node).unwrap_err();
@@ -437,11 +432,10 @@ mod test {
             err.to_string(),
             "ByRef not supported for functions or methods"
         );
-        Ok(())
     }
 
     #[test]
-    fn test_constructor_attributes() -> Result<()> {
+    fn test_constructor_attributes() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Throws=Error]").unwrap();
         let attrs = ConstructorAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.get_throws_err(), Some("Error")));
@@ -459,21 +453,18 @@ mod test {
         let attrs = ConstructorAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.get_throws_err(), Some("Error")));
         assert!(matches!(attrs.get_name(), Some("MyFactory")));
-
-        Ok(())
     }
 
     #[test]
-    fn test_other_attributes_not_supported_for_constructors() -> Result<()> {
+    fn test_other_attributes_not_supported_for_constructors() {
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, ByRef]").unwrap();
         let err = ConstructorAttributes::try_from(&node).unwrap_err();
         assert_eq!(err.to_string(), "ByRef not supported for constructors");
-        Ok(())
     }
 
     #[test]
-    fn test_byref_attribute() -> Result<()> {
+    fn test_byref_attribute() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[ByRef]").unwrap();
         let attrs = ArgumentAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.by_ref(), true));
@@ -481,12 +472,10 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = ArgumentAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.by_ref(), false));
-
-        Ok(())
     }
 
     #[test]
-    fn test_other_attributes_not_supported_for_arguments() -> Result<()> {
+    fn test_other_attributes_not_supported_for_arguments() {
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, ByRef]").unwrap();
         let err = ArgumentAttributes::try_from(&node).unwrap_err();
@@ -494,11 +483,10 @@ mod test {
             err.to_string(),
             "Throws(\"Error\") not supported for arguments"
         );
-        Ok(())
     }
 
     #[test]
-    fn test_threadsafe_attribute() -> Result<()> {
+    fn test_threadsafe_attribute() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Threadsafe]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.threadsafe(), true));
@@ -506,12 +494,10 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.threadsafe(), false));
-
-        Ok(())
     }
 
     #[test]
-    fn test_enum_attribute() -> Result<()> {
+    fn test_enum_attribute() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Enum]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.contains_enum_attr(), true));
@@ -531,12 +517,10 @@ mod test {
             err.to_string(),
             "conflicting attributes on interface definition"
         );
-
-        Ok(())
     }
 
     #[test]
-    fn test_other_attributes_not_supported_for_interfaces() -> Result<()> {
+    fn test_other_attributes_not_supported_for_interfaces() {
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Threadsafe, Error]").unwrap();
         let err = InterfaceAttributes::try_from(&node).unwrap_err();
@@ -544,6 +528,5 @@ mod test {
             err.to_string(),
             "Error not supported for interface definition"
         );
-        Ok(())
     }
 }

@@ -161,7 +161,7 @@ mod test {
     }
 
     #[test]
-    fn test_error_on_unresolved_typedef() -> Result<()> {
+    fn test_error_on_unresolved_typedef() {
         const UDL: &str = r#"
             // Sorry, no forward declarations yet...
             typedef TestRecord Alias;
@@ -174,6 +174,5 @@ mod test {
         let mut types = TypeUniverse::default();
         let err = types.add_type_definitions_from(idl.as_ref()).unwrap_err();
         assert_eq!(err.to_string(), "unknown type reference: TestRecord");
-        Ok(())
     }
 }

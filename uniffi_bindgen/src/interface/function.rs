@@ -77,7 +77,7 @@ impl Function {
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
         self.ffi_func.name.push_str(ci_prefix);
-        self.ffi_func.name.push_str("_");
+        self.ffi_func.name.push('_');
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(|arg| arg.into()).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(|rt| rt.into());

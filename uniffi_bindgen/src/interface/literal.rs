@@ -171,7 +171,7 @@ mod test {
         Ok(())
     }
     #[test]
-    fn test_error_on_type_mismatch() -> Result<()> {
+    fn test_error_on_type_mismatch() {
         assert_eq!(
             parse_and_convert("0", Type::Boolean)
                 .unwrap_err()
@@ -182,6 +182,5 @@ mod test {
             .unwrap_err()
             .to_string()
             .starts_with("No support for"));
-        Ok(())
     }
 }

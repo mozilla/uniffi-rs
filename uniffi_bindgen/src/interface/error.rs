@@ -83,7 +83,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_duplicate_variants() -> Result<()> {
+    fn test_duplicate_variants() {
         const UDL: &str = r#"
             namespace test{};
             // Weird, but currently allowed!
@@ -97,6 +97,5 @@ mod test {
             ci.get_error_definition("Testing").unwrap().values().len(),
             3
         );
-        Ok(())
     }
 }

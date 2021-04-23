@@ -74,14 +74,13 @@ impl CallbackInterface {
         &self.ffi_init_callback
     }
 
-    pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
+    pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) {
         self.ffi_init_callback.name = format!("ffi_{}_{}_init_callback", ci_prefix, self.name);
         self.ffi_init_callback.arguments = vec![FFIArgument {
             name: "callback_stub".to_string(),
             type_: FFIType::ForeignCallback,
         }];
         self.ffi_init_callback.return_type = None;
-        Ok(())
     }
 }
 
@@ -129,7 +128,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_empty_interface() -> Result<()> {
+    fn test_empty_interface() {
         const UDL: &str = r#"
             namespace test{};
             // Weird, but allowed.
@@ -144,11 +143,10 @@ mod test {
                 .len(),
             0
         );
-        Ok(())
     }
 
     #[test]
-    fn test_multiple_interfaces() -> Result<()> {
+    fn test_multiple_interfaces() {
         const UDL: &str = r#"
             namespace test{};
             callback interface One {
@@ -170,6 +168,5 @@ mod test {
         assert_eq!(callbacks_two.methods().len(), 2);
         assert_eq!(callbacks_two.methods()[0].name(), "two");
         assert_eq!(callbacks_two.methods()[1].name(), "too");
-        Ok(())
     }
 }

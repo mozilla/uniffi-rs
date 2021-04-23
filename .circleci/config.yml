@@ -35,8 +35,7 @@ jobs:
       - checkout
       - run: rustup component add clippy
       - run: cargo clippy --version
-      # todo: add ` -- -D warnings` below (which implies fixing the fallout)
-      - run: cargo clippy --all --all-targets
+      - run: cargo clippy --all --all-targets -- -D warnings
   Rust and Foreign Language tests:
     docker:
       - image: rfkelly/uniffi-ci:latest

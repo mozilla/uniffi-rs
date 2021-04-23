@@ -134,7 +134,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_multiple_record_types() -> Result<()> {
+    fn test_multiple_record_types() {
         const UDL: &str = r#"
             namespace test{};
             dictionary Empty {};
@@ -183,12 +183,10 @@ mod test {
         assert_eq!(record.fields()[2].type_().canonical_name(), "bool");
         assert_eq!(record.fields()[2].required, true);
         assert!(record.fields()[2].default_value().is_none());
-
-        Ok(())
     }
 
     #[test]
-    fn test_that_all_field_types_become_known() -> Result<()> {
+    fn test_that_all_field_types_become_known() {
         const UDL: &str = r#"
             namespace test{};
             dictionary Testing {
@@ -204,27 +202,18 @@ mod test {
         assert_eq!(record.fields()[1].name(), "value");
 
         assert_eq!(ci.iter_types().len(), 4);
+        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u32"));
         assert!(ci
             .iter_types()
             .iter()
-            .find(|t| t.canonical_name() == "u32")
-            .is_some());
+            .any(|t| t.canonical_name() == "string"));
         assert!(ci
             .iter_types()
             .iter()
-            .find(|t| t.canonical_name() == "string")
-            .is_some());
+            .any(|t| t.canonical_name() == "Optionalstring"));
         assert!(ci
             .iter_types()
             .iter()
-            .find(|t| t.canonical_name() == "Optionalstring")
-            .is_some());
-        assert!(ci
-            .iter_types()
-            .iter()
-            .find(|t| t.canonical_name() == "RecordTesting")
-            .is_some());
-
-        Ok(())
+            .any(|t| t.canonical_name() == "RecordTesting"));
     }
 }

@@ -61,6 +61,7 @@ static_assertions::const_assert!(PACKAGE_VERSION.as_bytes().len() < 10);
 /// The result of this check may be used to ensure that generated Rust scaffolding is
 /// using a compatible version of the uniffi runtime crate. It's a `const fn` so that it
 /// can be used to perform such a check at compile time.
+#[allow(clippy::len_zero)]
 pub const fn check_compatible_version(bindgen_version: &'static str) -> bool {
     // While UniFFI is still under heavy development, we require that
     // the runtime support crate be precisely the same version as the

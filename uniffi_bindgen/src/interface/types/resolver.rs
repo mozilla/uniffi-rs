@@ -212,7 +212,7 @@ mod test {
     }
 
     #[test]
-    fn test_resolving_optional_type_adds_inner_type() -> Result<()> {
+    fn test_resolving_optional_type_adds_inner_type() {
         let mut types = TypeUniverse::default();
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("u32?").unwrap();
@@ -221,17 +221,14 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 2);
         assert!(types
             .iter_known_types()
-            .find(|t| t.canonical_name() == "u32")
-            .is_some());
+            .any(|t| t.canonical_name() == "u32"));
         assert!(types
             .iter_known_types()
-            .find(|t| t.canonical_name() == "Optionalu32")
-            .is_some());
-        Ok(())
+            .any(|t| t.canonical_name() == "Optionalu32"));
     }
 
     #[test]
-    fn test_resolving_sequence_type_adds_inner_type() -> Result<()> {
+    fn test_resolving_sequence_type_adds_inner_type() {
         let mut types = TypeUniverse::default();
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("sequence<string>").unwrap();
@@ -240,17 +237,14 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 2);
         assert!(types
             .iter_known_types()
-            .find(|t| t.canonical_name() == "Sequencestring")
-            .is_some());
+            .any(|t| t.canonical_name() == "Sequencestring"));
         assert!(types
             .iter_known_types()
-            .find(|t| t.canonical_name() == "string")
-            .is_some());
-        Ok(())
+            .any(|t| t.canonical_name() == "string"));
     }
 
     #[test]
-    fn test_resolving_map_type_adds_string_and_inner_type() -> Result<()> {
+    fn test_resolving_map_type_adds_string_and_inner_type() {
         let mut types = TypeUniverse::default();
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("record<DOMString, float>").unwrap();
@@ -259,17 +253,13 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 3);
         assert!(types
             .iter_known_types()
-            .find(|t| t.canonical_name() == "Mapf32")
-            .is_some());
+            .any(|t| t.canonical_name() == "Mapf32"));
         assert!(types
             .iter_known_types()
-            .find(|t| t.canonical_name() == "string")
-            .is_some());
+            .any(|t| t.canonical_name() == "string"));
         assert!(types
             .iter_known_types()
-            .find(|t| t.canonical_name() == "f32")
-            .is_some());
-        Ok(())
+            .any(|t| t.canonical_name() == "f32"));
     }
 
     #[test]
