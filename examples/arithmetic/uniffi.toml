@@ -5,5 +5,8 @@ cdylib_name = "arithmetical"
 [bindings.python]
 cdylib_name = "arithmetical"
 
+[bindings.ruby]
+cdylib_name = "arithmetical"
+
 [bindings.swift]
 cdylib_name = "arithmetical"

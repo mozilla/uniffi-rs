@@ -14,6 +14,11 @@
 
 ### What's New
 
+- A new **Ruby** codegen backend has been added. You can now call `uniffi-bindgen -l ruby` to
+  generate a Ruby module that wraps a UniFFI Rust component. Thanks to @saks for contributing
+  this backend!
+    - When running `cargo test` locally, you will need a recent version of Ruby and
+      the `ffi` gem in order to successfully execute the Ruby backend tests.
 - Threadsafe Object methods can now use `self: Arc<Self>` as the method receiver in the underlying
   Rust code, in addition to the default `self: &Self`. To do so, annotate the method with
   `[Self=ByArc]` in the `.udl` file and update the corresponding Rust method signature to match.
