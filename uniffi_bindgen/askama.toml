@@ -1,6 +1,6 @@
 [general]
 # Directories to search for templates, relative to the crate root.
-dirs = [ "src/templates", "src/bindings/kotlin/templates", "src/bindings/python/templates", "src/bindings/swift/templates", "src/bindings/gecko_js/templates" ]
+dirs = [ "src/templates", "src/bindings/kotlin/templates", "src/bindings/python/templates", "src/bindings/swift/templates", "src/bindings/gecko_js/templates", "src/bindings/ruby/templates" ]
 
 [[syntax]]
 name = "kt"
@@ -25,3 +25,6 @@ name = "xpidl"
 
 [[syntax]]
 name = "cpp"
+
+[[syntax]]
+name = "rb"

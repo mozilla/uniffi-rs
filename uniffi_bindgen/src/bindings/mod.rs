@@ -18,6 +18,7 @@ use crate::MergeWith;
 pub mod gecko_js;
 pub mod kotlin;
 pub mod python;
+pub mod ruby;
 pub mod swift;
 
 /// Enumeration of all foreign language targets currently supported by this crate.
@@ -31,6 +32,7 @@ pub enum TargetLanguage {
     Kotlin,
     Swift,
     Python,
+    Ruby,
     GeckoJs,
 }
 
@@ -41,6 +43,7 @@ impl TryFrom<&str> for TargetLanguage {
             "kotlin" | "kt" | "kts" => TargetLanguage::Kotlin,
             "swift" => TargetLanguage::Swift,
             "python" | "py" => TargetLanguage::Python,
+            "ruby" | "rb" => TargetLanguage::Ruby,
             "gecko_js" => TargetLanguage::GeckoJs,
             _ => bail!("Unknown or unsupported target language: \"{}\"", value),
         })
@@ -73,6 +76,8 @@ pub struct Config {
     #[serde(default)]
     python: python::Config,
     #[serde(default)]
+    ruby: ruby::Config,
+    #[serde(default)]
     gecko_js: gecko_js::Config,
 }
 
@@ -82,6 +87,7 @@ impl From<&ComponentInterface> for Config {
             kotlin: ci.into(),
             swift: ci.into(),
             python: ci.into(),
+            ruby: ci.into(),
             gecko_js: ci.into(),
         }
     }
@@ -93,6 +99,7 @@ impl MergeWith for Config {
             kotlin: self.kotlin.merge_with(&other.kotlin),
             swift: self.swift.merge_with(&other.swift),
             python: self.python.merge_with(&other.python),
+            ruby: self.ruby.merge_with(&other.ruby),
             gecko_js: self.gecko_js.merge_with(&other.gecko_js),
         }
     }
@@ -121,6 +128,9 @@ where
         TargetLanguage::Python => {
             python::write_bindings(&config.python, &ci, out_dir, try_format_code, is_testing)?
         }
+        TargetLanguage::Ruby => {
+            ruby::write_bindings(&config.ruby, &ci, out_dir, try_format_code, is_testing)?
+        }
         TargetLanguage::GeckoJs => {
             gecko_js::write_bindings(&config.gecko_js, &ci, out_dir, try_format_code, is_testing)?
         }
@@ -143,6 +153,7 @@ where
         TargetLanguage::Kotlin => kotlin::compile_bindings(&config.kotlin, &ci, out_dir)?,
         TargetLanguage::Swift => swift::compile_bindings(&config.swift, &ci, out_dir)?,
         TargetLanguage::Python => (),
+        TargetLanguage::Ruby => (),
         TargetLanguage::GeckoJs => (),
     }
     Ok(())
@@ -160,6 +171,7 @@ where
         TargetLanguage::Kotlin => kotlin::run_script(out_dir, script_file)?,
         TargetLanguage::Swift => swift::run_script(out_dir, script_file)?,
         TargetLanguage::Python => python::run_script(out_dir, script_file)?,
+        TargetLanguage::Ruby => ruby::run_script(out_dir, script_file)?,
         TargetLanguage::GeckoJs => bail!("Can't run Gecko code standalone"),
     }
     Ok(())
