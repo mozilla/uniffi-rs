@@ -292,4 +292,32 @@ mod test {
         assert_eq!(err.to_string(), "no support for union types yet");
         Ok(())
     }
+
+    #[test]
+    fn test_type_set_is_well_ordered() -> Result<()> {
+        // The set (universe) of types should have a well-defined order. When
+        // the data structure does not guarantee the order of its elements, such as
+        // HashSet, then the resulting generated source code is likely not
+        // deterministic, and the compiled binary file may not be reproducible. We
+        // avoid this issue by using an implementation that defines the order of its
+        // elements. This test verifies that the elements are sorted as expected.
+        let mut types = TypeUniverse::default();
+        types.add_type_definition("TestRecord", Type::Record("TestRecord".into()))?;
+        assert_eq!(types.iter_known_types().count(), 1);
+        types.add_type_definition("TestRecord2", Type::Record("TestRecord2".into()))?;
+        assert_eq!(types.iter_known_types().count(), 2);
+        types.add_type_definition("TestInt64", Type::Int64)?;
+        types.add_type_definition("TestInt8", Type::Int8)?;
+        types.add_type_definition("TestUInt8", Type::UInt8)?;
+        types.add_type_definition("TestBoolean", Type::Boolean)?;
+        assert_eq!(types.iter_known_types().count(), 6);
+        let mut iter = types.iter_known_types();
+        assert_eq!(Some(Type::UInt8), iter.next());
+        assert_eq!(Some(Type::Int8), iter.next());
+        assert_eq!(Some(Type::Int64), iter.next());
+        assert_eq!(Some(Type::Boolean), iter.next());
+        assert_eq!(Some(Type::Record("TestRecord".into())), iter.next());
+        assert_eq!(Some(Type::Record("TestRecord2".into())), iter.next());
+        Ok(())
+    }
 }
