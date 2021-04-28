@@ -225,6 +225,57 @@ extension Bool: ViaFfi {
     }
 }
 
+extension Date: ViaFfiUsingByteBuffer, ViaFfi {
+    fileprivate static func read(from buf: Reader) throws -> Self {
+        let seconds: UInt64 = try buf.readInt()
+        let microseconds: UInt32 = try buf.readInt()
+        let delta = Double(seconds) + (Double(microseconds) / 1.0e9)
+        return Date.init(timeIntervalSince1970: delta)
+    }
+
+    fileprivate func write(into buf: Writer) {
+        let delta = self.timeIntervalSince1970
+        if (delta < 0) {
+            fatalError("Invalid timestamp, must be greater than UNIX EPOCH")
+        }
+        let seconds = UInt64(delta)
+        let microseconds = UInt32((delta - Double(seconds)) * 1.0e9)
+        buf.writeInt(seconds)
+        buf.writeInt(microseconds)
+    }
+}
+
+extension TimeInterval {
+    fileprivate static func liftTimeInterval(_ buf: RustBuffer) throws -> Self {
+      let reader = Reader(data: Data(rustBuffer: buf))
+      let value = try Self.readTimeInterval(from: reader)
+      if reader.hasRemaining() {
+          throw UniffiInternalError.incompleteData
+      }
+      buf.deallocate()
+      return value
+    }
+
+    fileprivate func lowerTimeInterval() -> RustBuffer {
+      let writer = Writer()
+      self.writeTimeInterval(into: writer)
+      return RustBuffer(bytes: writer.bytes)
+    }
+
+    fileprivate static func readTimeInterval(from buf: Reader) throws -> Self {
+        let seconds: UInt64 = try buf.readInt()
+        let microseconds: UInt32 = try buf.readInt()
+        return Double(seconds) + (Double(microseconds) / 1.0e9)
+    }
+
+    fileprivate func writeTimeInterval(into buf: Writer) {
+        let seconds = UInt64(self)
+        let microseconds = UInt32((self - Double(seconds)) * 1.0e9)
+        buf.writeInt(seconds)
+        buf.writeInt(microseconds)
+    }
+}
+
 extension UInt8: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> UInt8 {
         return try self.lift(buf.readInt())
