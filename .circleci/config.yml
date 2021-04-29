@@ -19,6 +19,7 @@ jobs:
   Check Rust formatting:
     docker:
       # Our policy for updating this rust version is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
+      # See also rust-toolchain.toml in the root of this repo, which is used to ensure the local version of rust matches.
       - image: circleci/rust:1.47.0
     resource_class: small
     steps:
@@ -29,6 +30,7 @@ jobs:
   Lint Rust with clippy:
     docker:
       # Our policy for updating this rust version is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
+      # See also rust-toolchain.toml in the root of this repo, which is used to ensure the local version of rust matches.
       - image: circleci/rust:1.47.0
     resource_class: small
     steps:

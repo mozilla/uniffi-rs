@@ -1,0 +1,13 @@
+# See https://rust-lang.github.io/rustup/overrides.html for details on how this file works
+# and how you can override the choices made herein.
+[toolchain]
+channel = "1.47.0"
+targets = [
+    "aarch64-linux-android",
+    "armv7-linux-androideabi",
+    "i686-linux-android",
+    "x86_64-linux-android",
+    "aarch64-apple-ios",
+    "x86_64-apple-ios"
+]
+components = ["clippy", "rustfmt"]
