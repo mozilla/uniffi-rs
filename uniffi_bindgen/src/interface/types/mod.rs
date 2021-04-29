@@ -21,7 +21,7 @@
 //! about how these API-level types map into the lower-level types of the FFI layer as represented
 //! by the [`ffi::FFIType`] enum, but that's a detail that is invisible to end users.
 
-use std::{collections::hash_map::Entry, collections::HashMap, collections::HashSet};
+use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
 
 use anyhow::{bail, Result};
 
@@ -35,7 +35,7 @@ pub(super) use resolver::{resolve_builtin_type, TypeResolver};
 /// Represents all the different high-level types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
 /// of their internal structure apart from what type of thing they are (record, enum, etc).
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum Type {
     // Primitive types.
     UInt8,
@@ -159,8 +159,8 @@ impl Into<FFIType> for &Type {
 pub(crate) struct TypeUniverse {
     // Named type definitions (including aliases).
     type_definitions: HashMap<String, Type>,
-    // All the types in the universe, by canonical type name.
-    all_known_types: HashSet<Type>,
+    // All the types in the universe, by canonical type name, in a well-defined order.
+    all_known_types: BTreeSet<Type>,
 }
 
 impl TypeUniverse {
