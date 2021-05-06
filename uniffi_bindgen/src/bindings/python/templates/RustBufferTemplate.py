@@ -78,6 +78,19 @@ class RustBuffer(ctypes.Structure):
         with self.consumeWithStream() as stream:
             return stream.read(stream.remaining()).decode("utf-8")
 
+    {% when Type::JSONValue -%}
+    # The JSONValue type.
+    @staticmethod
+    def allocFromJsonValue(value):
+        import json
+        json_string = json.dumps(value)
+        return allocFromString(json_string)
+
+    def consumeIntoJsonValue(self):
+        import json
+        json_string = self.consumeIntoString()
+        return json.loads(json_string)
+
     {% when Type::Record with (record_name) -%}
     {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
     # The Record type {{ record_name }}.

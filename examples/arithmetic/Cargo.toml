@@ -8,7 +8,7 @@ publish = false
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
-name = "arithmetical"
+name = "arithmetical"   
 
 [dependencies]
 uniffi_macros = {path = "../../uniffi_macros"}

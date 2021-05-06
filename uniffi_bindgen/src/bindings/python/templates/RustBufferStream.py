@@ -103,6 +103,13 @@ class RustBufferStream(object):
         utf8Bytes = self.read(size)
         return utf8Bytes.decode("utf-8")
 
+    {% when Type::JSONValue -%}
+
+    def readJsonValue(self):
+        import json
+        json_string = self.readString()
+        return json.loads(json_string)
+
     {% when Type::Object with (object_name) -%}
     # The Object type {{ object_name }}.
     # Objects cannot currently be serialized, but we can produce a helpful error.

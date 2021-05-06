@@ -138,6 +138,7 @@ mod filters {
             Type::Float64 => "Double".into(),
             Type::Boolean => "Bool".into(),
             Type::String => "String".into(),
+            Type::JSONValue => "Dictionary<String, Any>".into(),
             Type::Enum(name)
             | Type::Record(name)
             | Type::Object(name)
@@ -220,15 +221,25 @@ mod filters {
     /// Lower a Swift type into an FFI type.
     ///
     /// This is used to pass arguments over the FFI, from Swift to Rust.
-    pub fn lower_swift(name: &dyn fmt::Display, _type_: &Type) -> Result<String, askama::Error> {
-        Ok(format!("{}.lower()", var_name_swift(name)?))
+    pub fn lower_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        Ok(
+            match type_ {
+                Type::JSONValue => format!("JSONValue.lower({})", var_name_swift(name)?),
+                _ => format!("{}.lower()", var_name_swift(name)?),
+            }
+        )
     }
 
     /// Lift a Swift type from an FFI type.
     ///
     /// This is used to receive values over the FFI, from Rust to Swift.
     pub fn lift_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        Ok(format!("{}.lift({})", type_swift(type_)?, name))
+        Ok(
+            match type_ {
+                Type::JSONValue => format!("JSONValue.lift({})", var_name_swift(name)?),
+                _ => format!("{}.lift({})", type_swift(type_)?, name),
+            }
+        )
     }
 
     /// Read a Swift type from a byte buffer.
@@ -236,7 +247,12 @@ mod filters {
     /// This is used to receive values over the FFI, when they're part of a complex type
     /// that is passed by serializing into bytes.
     pub fn read_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        Ok(format!("{}.read(from: {})", type_swift(type_)?, name))
+        Ok(
+            match type_ {
+                Type::JSONValue => format!("JSONValue.read(from: {})", var_name_swift(name)?),
+                _ => format!("{}.read(from: {})", type_swift(type_)?, name),
+            }
+        )
     }
 
     pub fn enum_variant_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {

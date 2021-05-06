@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use serde_json::Value;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -176,6 +177,9 @@ impl Stringifier {
         value.to_string()
     }
     fn to_string_boolean(&self, value: bool) -> String {
+        value.to_string()
+    }
+    fn to_string_json_value(&self, value: serde_json::Value) -> String {
         value.to_string()
     }
     fn well_known_string(&self, value: String) -> String {

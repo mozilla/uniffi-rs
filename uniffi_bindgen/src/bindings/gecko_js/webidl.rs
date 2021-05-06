@@ -112,6 +112,7 @@ impl From<Type> for WebIDLType {
                 panic!("[TODO: From<Type>({:?})]", type_)
             }
             Type::CallbackInterface(_) => panic!("Callback interfaces unimplemented"),
+            Type::JSONValue => panic!("Untyped JSON values unimplemented"),
             Type::Optional(inner) => match *inner {
                 Type::Record(name) => {
                     WebIDLType::OptionalWithDefaultValue(Box::new(Type::Record(name).into()))

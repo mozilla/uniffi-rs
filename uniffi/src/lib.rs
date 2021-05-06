@@ -354,6 +354,36 @@ unsafe impl ViaFfi for String {
     }
 }
 
+unsafe impl ViaFfi for serde_json::Value {
+    type FfiType = RustBuffer;
+
+    fn lower(self) -> Self::FfiType {
+        match serde_json::to_string(&self) {
+            Ok(string) => string.lower(),
+            _ => panic!("JSON can't be serialized"),
+        }
+    }
+
+    // The argument here *must* be a uniquely-owned `RustBuffer` previously obtained
+    // from `lower` above, and hence must be the bytes of a valid rust string.
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
+        let json_string = String::try_lift(v)?;
+        Ok(serde_json::from_str(&json_string)?)
+    }
+
+    fn write<B: BufMut>(&self, buf: &mut B) {
+        match serde_json::to_string(&self) {
+            Ok(json_string) => json_string.write(buf),
+            _ => panic!("Unable to serialize JSON"),
+        };
+    }
+
+    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+        let json_string = String::try_read(buf)?;
+        Ok(serde_json::from_str(&json_string)?)
+    }
+}
+
 /// Support for passing optional values via the FFI.
 ///
 /// Optional values are currently always passed by serializing to a buffer.

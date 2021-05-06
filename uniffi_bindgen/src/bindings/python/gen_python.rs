@@ -141,7 +141,7 @@ mod filters {
             | Type::UInt64 => format!("int({})", nm), // TODO: check max/min value
             Type::Float32 | Type::Float64 => format!("float({})", nm),
             Type::Boolean => format!("bool({})", nm),
-            Type::String | Type::Object(_) | Type::Enum(_) | Type::Error(_) | Type::Record(_) => {
+            Type::String | Type::Object(_) | Type::Enum(_) | Type::Error(_) | Type::Record(_) | Type::JSONValue => {
                 nm.to_string()
             }
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
@@ -177,7 +177,8 @@ mod filters {
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
-            | Type::Map(_) => format!(
+            | Type::Map(_) 
+            | Type::JSONValue => format!(
                 "RustBuffer.allocFrom{}({})",
                 class_name_py(&type_.canonical_name())?,
                 nm
@@ -200,12 +201,13 @@ mod filters {
             Type::String => format!("{}.consumeIntoString()", nm),
             Type::Object(_) => panic!("No support for lifting objects, yet"),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
-            Type::Error(_) => panic!("No support for lowering errors, yet"),
+            Type::Error(_) => panic!("No support for lifting errors, yet"),
             Type::Enum(_)
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
-            | Type::Map(_) => format!(
+            | Type::Map(_) 
+            | Type::JSONValue => format!(
                 "{}.consumeInto{}()",
                 nm,
                 class_name_py(&type_.canonical_name())?

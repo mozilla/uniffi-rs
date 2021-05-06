@@ -282,6 +282,29 @@ internal fun String.write(buf: RustBufferBuilder) {
     buf.put(byteArr)
 }
 
+{% when Type::JSONValue -%}
+{% let inner_type_name = "JSONObject" %}
+
+internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ inner_type_name }}? {
+    val string = String.lift(rbuf)
+    return JSONObject(string)
+}
+
+internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ inner_type_name }} {
+    val string = String.read(buf)
+    return JSONObject(string)
+}
+
+internal fun lower{{ canonical_type_name }}(v: {{ inner_type_name }}?): RustBuffer.ByValue {
+    val string = v.toString()
+    return string.lower()
+}
+
+internal fun write{{ canonical_type_name }}(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
+    val string = v.toString()
+    return string.write(buf)
+}
+
 {% when Type::Optional with (inner_type) -%}
 {% let inner_type_name = inner_type|type_kt %}
 

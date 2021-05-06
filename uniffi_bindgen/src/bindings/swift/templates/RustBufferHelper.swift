@@ -204,6 +204,46 @@ extension String: ViaFfi {
     }
 }
 
+fileprivate enum JSONValue {
+    fileprivate typealias JSONObject = Dictionary<String, Any>
+    fileprivate typealias FfiType = RustBuffer
+    
+    fileprivate static func lift(_ v: FfiType) throws -> JSONObject {
+        let jsonString = try String.lift(v)
+        return try JSONValue.from(string: jsonString)
+    }
+
+    fileprivate static func read(from buf: Reader) throws -> JSONObject {
+        let jsonString = try String.read(from: buf)
+        return try JSONValue.from(string: jsonString)
+    }
+
+    fileprivate static func from(string: String) throws -> JSONObject {
+        if let data = string.data(using: .utf8),
+            let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                return json
+            }
+        throw UniffiInternalError.corruptData
+    }
+
+    fileprivate static func lower(_ jsonObject: JSONObject) -> FfiType {
+        let jsonString = JSONValue.intoString(jsonObject)
+        return jsonString.lower()
+    }
+
+    fileprivate static func write(_ jsonObject: JSONObject, into buf: Writer) {
+        let jsonString = JSONValue.intoString(jsonObject)
+        return jsonString.write(into: buf)
+    }
+
+    fileprivate static func intoString(_ jsonObject: JSONObject) -> String {
+        if let data = try? JSONSerialization.data(withJSONObject: self, options: []),
+            let string = String(data: data, encoding: .utf8) {
+            return string
+        }
+        return "{}"
+    }
+}
 
 extension Bool: ViaFfi {
     fileprivate typealias FfiType = Int8

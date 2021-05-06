@@ -88,6 +88,7 @@ mod filters {
             // These types need conversion, and special handling for lifting/lowering.
             Type::Boolean => "Boolean".to_string(),
             Type::String => "String".to_string(),
+            Type::JSONValue => "JSONObject".to_string(),
             Type::Enum(name)
             | Type::Record(name)
             | Type::Object(name)
@@ -194,7 +195,7 @@ mod filters {
                 class_name_kt(&type_.canonical_name())?,
                 nm,
             ),
-            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) | Type::JSONValue => {
                 format!("lower{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }
             _ => format!("{}.lower()", nm),
@@ -218,7 +219,7 @@ mod filters {
                 nm,
                 target,
             ),
-            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => format!(
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) | Type::JSONValue => format!(
                 "write{}({}, {})",
                 class_name_kt(&type_.canonical_name())?,
                 nm,
@@ -240,7 +241,7 @@ mod filters {
                 class_name_kt(&type_.canonical_name())?,
                 nm,
             ),
-            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) | Type::JSONValue => {
                 format!("lift{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }
             _ => format!("{}.lift({})", type_kt(type_)?, nm),
@@ -259,7 +260,7 @@ mod filters {
                 class_name_kt(&type_.canonical_name())?,
                 nm,
             ),
-            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => {
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) | Type::JSONValue => {
                 format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm,)
             }
             _ => format!("{}.read({})", type_kt(type_)?, nm),

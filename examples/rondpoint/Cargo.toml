@@ -13,6 +13,7 @@ name = "uniffi_rondpoint"
 [dependencies]
 uniffi_macros = {path = "../../uniffi_macros"}
 uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
+serde_json = "1.0.64"
 
 [build-dependencies]
 uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}
