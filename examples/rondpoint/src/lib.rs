@@ -121,6 +121,9 @@ impl Retourneur {
     fn identique_string(&self, value: String) -> String {
         value
     }
+    fn identique_json_value(&self, value: Value) -> Value {
+        value
+    }
     fn identique_nombres_signes(
         &self,
         value: DictionnaireNombresSignes,
@@ -179,7 +182,7 @@ impl Stringifier {
     fn to_string_boolean(&self, value: bool) -> String {
         value.to_string()
     }
-    fn to_string_json_value(&self, value: serde_json::Value) -> String {
+    fn to_string_json_value(&self, value: Value) -> String {
         value.to_string()
     }
     fn well_known_string(&self, value: String) -> String {

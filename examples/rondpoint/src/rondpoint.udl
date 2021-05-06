@@ -61,6 +61,7 @@ interface Retourneur {
   double identique_double(double value);
   boolean identique_boolean(boolean value);
   string identique_string(string value);
+  JSONValue identique_json_value(JSONValue value);
 
   DictionnaireNombresSignes identique_nombres_signes(DictionnaireNombresSignes value);
   DictionnaireNombres       identique_nombres(DictionnaireNombres value);

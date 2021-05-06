@@ -236,7 +236,7 @@ mod filters {
     pub fn lift_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(
             match type_ {
-                Type::JSONValue => format!("JSONValue.lift({})", var_name_swift(name)?),
+                Type::JSONValue => format!("JSONValue.lift({})", name),
                 _ => format!("{}.lift({})", type_swift(type_)?, name),
             }
         )
