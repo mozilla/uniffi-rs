@@ -1,39 +1,37 @@
 # frozen_string_literal: true
 
+require 'test/unit'
 require 'rondpoint'
 
+include Test::Unit::Assertions
 include Rondpoint
-
-def assert(condition, msg = '')
-  raise "Assertion failed!#{msg ? " #{msg}" : ''}" unless condition
-end
 
 dico = Dictionnaire.new Enumeration::DEUX, true, 0, 123_456_789
 
-assert dico == Rondpoint.copie_dictionnaire(dico)
+assert_equal dico, Rondpoint.copie_dictionnaire(dico)
 
-assert Rondpoint.copie_enumeration(Enumeration::DEUX) == Enumeration::DEUX
+assert_equal Rondpoint.copie_enumeration(Enumeration::DEUX), Enumeration::DEUX
 
-assert Rondpoint.copie_enumerations([
-                                      Enumeration::UN,
-                                      Enumeration::DEUX
-                                    ]) == [Enumeration::UN, Enumeration::DEUX]
+assert_equal Rondpoint.copie_enumerations([
+                                            Enumeration::UN,
+                                            Enumeration::DEUX
+                                          ]), [Enumeration::UN, Enumeration::DEUX]
 
-assert Rondpoint.copie_carte({
-                               '0' => EnumerationAvecDonnees::ZERO.new,
-                               '1' => EnumerationAvecDonnees::UN.new(1),
-                               '2' => EnumerationAvecDonnees::DEUX.new(2, 'deux')
-                             }) == {
-                               '0' => EnumerationAvecDonnees::ZERO.new,
-                               '1' => EnumerationAvecDonnees::UN.new(1),
-                               '2' => EnumerationAvecDonnees::DEUX.new(2, 'deux')
-                             }
+assert_equal Rondpoint.copie_carte({
+                                     '0' => EnumerationAvecDonnees::ZERO.new,
+                                     '1' => EnumerationAvecDonnees::UN.new(1),
+                                     '2' => EnumerationAvecDonnees::DEUX.new(2, 'deux')
+                                   }), {
+                                     '0' => EnumerationAvecDonnees::ZERO.new,
+                                     '1' => EnumerationAvecDonnees::UN.new(1),
+                                     '2' => EnumerationAvecDonnees::DEUX.new(2, 'deux')
+                                   }
 
-assert Rondpoint.switcheroo(false) == true
+assert Rondpoint.switcheroo(false)
 
-assert EnumerationAvecDonnees::ZERO.new != EnumerationAvecDonnees::UN.new(1)
-assert EnumerationAvecDonnees::UN.new(1) == EnumerationAvecDonnees::UN.new(1)
-assert EnumerationAvecDonnees::UN.new(1) != EnumerationAvecDonnees::UN.new(2)
+assert_not_equal EnumerationAvecDonnees::ZERO.new, EnumerationAvecDonnees::UN.new(1)
+assert_equal EnumerationAvecDonnees::UN.new(1), EnumerationAvecDonnees::UN.new(1)
+assert_not_equal EnumerationAvecDonnees::UN.new(1), EnumerationAvecDonnees::UN.new(2)
 
 # Test the roundtrip across the FFI.
 # This shows that the values we send come back in exactly the same state as we sent them.
@@ -43,12 +41,9 @@ RT = Retourneur.new
 
 def affirm_aller_retour(vals, fn_name)
   vals.each do |v|
-    id_v = RT.public_send(fn_name, v)
-    begin
-      assert id_v == v, "Round-trip failure: #{v} => #{id_v}"
-    rescue StandardError => e
-      require 'pry'; binding.pry
-    end
+    id_v = RT.public_send fn_name, v
+
+    assert_equal id_v, v, "Round-trip failure: #{v} => #{id_v}"
   end
 end
 
@@ -119,13 +114,14 @@ ST = Stringifier.new
 def affirm_enchaine(vals, fn_name)
   vals.each do |v|
     str_v = ST.public_send fn_name, v
-    assert v.to_s == str_v, "String compare error #{v} => #{str_v}"
+
+    assert_equal v.to_s, str_v, "String compare error #{v} => #{str_v}"
   end
 end
 
 # Test the efficacy of the string transport from rust. If this fails, but everything else
 # works, then things are very weird.
-assert ST.well_known_string('ruby') == 'uniffi 💚 ruby!'
+assert_equal ST.well_known_string('ruby'), 'uniffi 💚 ruby!'
 
 # Booleans
 affirm_enchaine([true, false], :to_string_boolean)

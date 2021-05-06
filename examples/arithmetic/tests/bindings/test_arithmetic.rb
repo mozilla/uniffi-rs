@@ -1,40 +1,27 @@
 # frozen_string_literal: true
 
+require 'test/unit'
 require 'arithmetic'
 
-def assert(condition)
-  raise 'Assertion failed!' unless condition
-end
+include Test::Unit::Assertions
 
-begin
+assert_raise Arithmetic::ArithmeticError::IntegerOverflow do
   Arithmetic.add 18_446_744_073_709_551_615, 1
-
-  raise 'Should have thrown a IntegerOverflow exception!'
-rescue Arithmetic::ArithmeticError::IntegerOverflow
-  # It's okay!
 end
 
-assert Arithmetic.add(2, 4) == 6
-assert Arithmetic.add(4, 8) == 12
+assert_equal Arithmetic.add(2, 4), 6
+assert_equal Arithmetic.add(4, 8), 12
 
-begin
+assert_raise Arithmetic::ArithmeticError::IntegerOverflow do
   Arithmetic.sub 0, 1
-
-  raise 'Should have thrown a IntegerOverflow exception!'
-rescue Arithmetic::ArithmeticError::IntegerOverflow
-  # It's okay!
 end
 
-assert Arithmetic.sub(4, 2) == 2
-assert Arithmetic.sub(8, 4) == 4
-assert Arithmetic.div(8, 4) == 2
+assert_equal Arithmetic.sub(4, 2), 2
+assert_equal Arithmetic.sub(8, 4), 4
+assert_equal Arithmetic.div(8, 4), 2
 
-begin
+assert_raise Arithmetic::InternalError do
   Arithmetic.div 8, 0
-
-  raise 'Should have thrown a IntegerOverflow exception!'
-rescue Arithmetic::InternalError
-  # It's okay!
 end
 
 assert Arithmetic.equal(2, 2)
