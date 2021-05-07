@@ -103,8 +103,10 @@ pub struct ComponentInterface {
 impl<'ci> ComponentInterface {
     /// Parse a `ComponentInterface` from a string containing a WebIDL definition.
     pub fn from_webidl(idl: &str) -> Result<Self> {
-        let mut ci = Self::default();
-        ci.uniffi_version = env!("CARGO_PKG_VERSION").to_string();
+        let mut ci = Self {
+            uniffi_version: env!("CARGO_PKG_VERSION").to_string(),
+            ..Default::default()
+        };
         // There's some lifetime thing with the errors returned from weedle::Definitions::parse
         // that my own lifetime is too short to worry about figuring out; unwrap and move on.
 
@@ -415,17 +417,15 @@ impl<'ci> ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.
-    fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
+    fn add_enum_definition(&mut self, defn: Enum) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.enums.push(defn);
-        Ok(())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed record definition to the `ComponentInterface`.
-    fn add_record_definition(&mut self, defn: Record) -> Result<()> {
+    fn add_record_definition(&mut self, defn: Record) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.records.push(defn);
-        Ok(())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
@@ -443,24 +443,21 @@ impl<'ci> ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
-    fn add_object_definition(&mut self, defn: Object) -> Result<()> {
+    fn add_object_definition(&mut self, defn: Object) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.objects.push(defn);
-        Ok(())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
-    fn add_callback_interface_definition(&mut self, defn: CallbackInterface) -> Result<()> {
+    fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.callback_interfaces.push(defn);
-        Ok(())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed error definition to the `ComponentInterface`.
-    fn add_error_definition(&mut self, defn: Error) -> Result<()> {
+    fn add_error_definition(&mut self, defn: Error) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.errors.push(defn);
-        Ok(())
     }
 
     /// Perform global consistency checks on the declared interface.
@@ -499,7 +496,7 @@ impl<'ci> ComponentInterface {
             obj.derive_ffi_funcs(&ci_prefix)?;
         }
         for callback in self.callback_interfaces.iter_mut() {
-            callback.derive_ffi_funcs(&ci_prefix)?;
+            callback.derive_ffi_funcs(&ci_prefix);
         }
         Ok(())
     }
@@ -556,38 +553,39 @@ impl<T: APIBuilder> APIBuilder for Vec<T> {
 impl APIBuilder for weedle::Definition<'_> {
     fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
         match self {
-            weedle::Definition::Namespace(d) => d.process(ci),
+            weedle::Definition::Namespace(d) => d.process(ci)?,
             weedle::Definition::Enum(d) => {
                 // We check if the enum represents an error...
                 let attrs = attributes::EnumAttributes::try_from(d.attributes.as_ref())?;
                 if attrs.contains_error_attr() {
                     let err = d.convert(ci)?;
-                    ci.add_error_definition(err)
+                    ci.add_error_definition(err);
                 } else {
                     let e = d.convert(ci)?;
-                    ci.add_enum_definition(e)
+                    ci.add_enum_definition(e);
                 }
             }
             weedle::Definition::Dictionary(d) => {
                 let rec = d.convert(ci)?;
-                ci.add_record_definition(rec)
+                ci.add_record_definition(rec);
             }
             weedle::Definition::Interface(d) => {
                 let attrs = attributes::InterfaceAttributes::try_from(d.attributes.as_ref())?;
                 if attrs.contains_enum_attr() {
                     let e = d.convert(ci)?;
-                    ci.add_enum_definition(e)
+                    ci.add_enum_definition(e);
                 } else {
                     let obj = d.convert(ci)?;
-                    ci.add_object_definition(obj)
+                    ci.add_object_definition(obj);
                 }
             }
             weedle::Definition::CallbackInterface(d) => {
                 let obj = d.convert(ci)?;
-                ci.add_callback_interface_definition(obj)
+                ci.add_callback_interface_definition(obj);
             }
             _ => bail!("don't know how to deal with {:?}", self),
         }
+        Ok(())
     }
 }
 

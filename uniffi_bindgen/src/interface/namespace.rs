@@ -93,17 +93,16 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_empty_namespace() -> Result<()> {
+    fn test_empty_namespace() {
         const UDL: &str = r#"
             namespace foobar{};
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
         assert_eq!(ci.namespace(), "foobar");
-        Ok(())
     }
 
     #[test]
-    fn test_namespace_with_functions() -> Result<()> {
+    fn test_namespace_with_functions() {
         const UDL: &str = r#"
             namespace foobar{
                 boolean hello();
@@ -116,11 +115,10 @@ mod test {
         assert!(ci.get_function_definition("hello").is_some());
         assert!(ci.get_function_definition("world").is_some());
         assert!(ci.get_function_definition("potato").is_none());
-        Ok(())
     }
 
     #[test]
-    fn test_rejects_duplicate_namespaces() -> Result<()> {
+    fn test_rejects_duplicate_namespaces() {
         const UDL: &str = r#"
             namespace foobar{
                 boolean hello();
@@ -130,6 +128,5 @@ mod test {
         "#;
         let err = ComponentInterface::from_webidl(UDL).unwrap_err();
         assert_eq!(err.to_string(), "duplicate namespace definition");
-        Ok(())
     }
 }

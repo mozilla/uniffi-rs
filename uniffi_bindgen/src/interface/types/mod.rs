@@ -111,7 +111,7 @@ impl Type {
 /// Note that the conversion is one-way - given an FFIType, it is not in general possible to
 /// tell what the corresponding Type is that it's being used to represent.
 impl Into<FFIType> for &Type {
-    fn into(self: Self) -> FFIType {
+    fn into(self) -> FFIType {
         match self {
             // Types that are the same map to themselves, naturally.
             Type::UInt8 => FFIType::UInt8,

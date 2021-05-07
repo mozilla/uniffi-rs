@@ -132,7 +132,7 @@ impl Object {
         }];
         self.ffi_func_free.return_type = None;
         for cons in self.constructors.iter_mut() {
-            cons.derive_ffi_func(ci_prefix, &self.name)?
+            cons.derive_ffi_func(ci_prefix, &self.name)
         }
         for meth in self.methods.iter_mut() {
             meth.derive_ffi_func(ci_prefix, &self.name)?
@@ -225,15 +225,14 @@ impl Constructor {
         self.attributes.get_throws_err()
     }
 
-    fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
+    fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) {
         self.ffi_func.name.push_str(ci_prefix);
-        self.ffi_func.name.push_str("_");
+        self.ffi_func.name.push('_');
         self.ffi_func.name.push_str(obj_prefix);
-        self.ffi_func.name.push_str("_");
+        self.ffi_func.name.push('_');
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
         self.ffi_func.return_type = Some(FFIType::UInt64);
-        Ok(())
     }
 
     fn is_primary_constructor(&self) -> bool {
@@ -330,9 +329,9 @@ impl Method {
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
         self.ffi_func.name.push_str(ci_prefix);
-        self.ffi_func.name.push_str("_");
+        self.ffi_func.name.push('_');
         self.ffi_func.name.push_str(obj_prefix);
-        self.ffi_func.name.push_str("_");
+        self.ffi_func.name.push('_');
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = vec![self.first_argument()]
             .iter()
@@ -398,7 +397,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_that_all_argument_and_return_types_become_known() -> Result<()> {
+    fn test_that_all_argument_and_return_types_become_known() {
         const UDL: &str = r#"
             namespace test{};
             interface Testing {
@@ -411,42 +410,28 @@ mod test {
         ci.get_object_definition("Testing").unwrap();
 
         assert_eq!(ci.iter_types().len(), 6);
+        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u16"));
+        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u32"));
         assert!(ci
             .iter_types()
             .iter()
-            .find(|t| t.canonical_name() == "u16")
-            .is_some());
+            .any(|t| t.canonical_name() == "Sequenceu32"));
         assert!(ci
             .iter_types()
             .iter()
-            .find(|t| t.canonical_name() == "u32")
-            .is_some());
+            .any(|t| t.canonical_name() == "string"));
         assert!(ci
             .iter_types()
             .iter()
-            .find(|t| t.canonical_name() == "Sequenceu32")
-            .is_some());
+            .any(|t| t.canonical_name() == "Optionalstring"));
         assert!(ci
             .iter_types()
             .iter()
-            .find(|t| t.canonical_name() == "string")
-            .is_some());
-        assert!(ci
-            .iter_types()
-            .iter()
-            .find(|t| t.canonical_name() == "Optionalstring")
-            .is_some());
-        assert!(ci
-            .iter_types()
-            .iter()
-            .find(|t| t.canonical_name() == "ObjectTesting")
-            .is_some());
-
-        Ok(())
+            .any(|t| t.canonical_name() == "ObjectTesting"));
     }
 
     #[test]
-    fn test_alternate_constructors() -> Result<()> {
+    fn test_alternate_constructors() {
         const UDL: &str = r#"
             namespace test{};
             interface Testing {
@@ -472,12 +457,10 @@ mod test {
         assert_eq!(cons.name(), "new_with_u32");
         assert_eq!(cons.arguments.len(), 1);
         assert_eq!(cons.ffi_func.arguments.len(), 1);
-
-        Ok(())
     }
 
     #[test]
-    fn test_the_name_new_identifies_the_primary_constructor() -> Result<()> {
+    fn test_the_name_new_identifies_the_primary_constructor() {
         const UDL: &str = r#"
             namespace test{};
             interface Testing {
@@ -503,8 +486,6 @@ mod test {
         assert_eq!(cons.name(), "newish");
         assert_eq!(cons.arguments.len(), 0);
         assert_eq!(cons.ffi_func.arguments.len(), 0);
-
-        Ok(())
     }
 
     #[test]
