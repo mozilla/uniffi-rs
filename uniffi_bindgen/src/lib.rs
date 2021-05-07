@@ -117,22 +117,26 @@ use scaffolding::RustScaffolding;
 // Generate the infrastructural Rust code for implementing the UDL interface,
 // such as the `extern "C"` function definitions and record data types.
 pub fn generate_component_scaffolding<P: AsRef<Path>>(
-    udl_file: P,
+    interface_file: P,
     config_file_override: Option<P>,
     out_dir_override: Option<P>,
     format_code: bool,
 ) -> Result<()> {
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let udl_file = udl_file.as_ref();
-    let component = parse_udl(&udl_file)?;
-    let _config = get_config(&component, udl_file, config_file_override);
-    let mut filename = Path::new(&udl_file)
+    let interface_file = interface_file.as_ref();
+    let component = if matches!(interface_file.extension(), Some(ext) if ext == "rs") {
+        parse_rust(&interface_file)?
+    } else {
+        parse_udl(&interface_file)?
+    };
+    let _config = get_config(&component, interface_file, config_file_override);
+    let mut filename = Path::new(&interface_file)
         .file_stem()
         .ok_or_else(|| anyhow!("not a file"))?
         .to_os_string();
     filename.push(".uniffi.rs");
-    let mut out_dir = get_out_dir(&udl_file, out_dir_override)?;
+    let mut out_dir = get_out_dir(&interface_file, out_dir_override)?;
     out_dir.push(filename);
     let mut f =
         File::create(&out_dir).map_err(|e| anyhow!("Failed to create output file: {:?}", e))?;
@@ -144,10 +148,69 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     Ok(())
 }
 
+// Automagically generate a `.udl` file from a specially-formated `.rs` source file.
+pub fn generate_udl_from_rs<P: AsRef<Path>>(rs_file: P) -> Result<()> {
+    let rs_file = rs_file.as_ref();
+    println!("Let's make some magic!");
+    let component = parse_rust(&rs_file)?;
+    let config = get_config(&component, rs_file, None)?;
+    let out_dir = get_out_dir(&rs_file, None)?;
+    bindings::write_bindings(
+        &config.bindings,
+        &component,
+        &out_dir,
+        TargetLanguage::UDL,
+        false,
+        false,
+    )?;
+    println!("Done \\o/");
+    Ok(())
+}
+
+// If the crate for which we are generating bindings for depends on
+// a `uniffi` runtime version that doesn't agree with our own version,
+// the developer of that said crate will be in a world of pain.
+fn ensure_versions_compatibility(
+    interface_file: &Path,
+    manifest_path_override: Option<&Path>,
+) -> Result<()> {
+    let mut metadata_cmd = cargo_metadata::MetadataCommand::new();
+    // If --manifest-path is not provided, we run cargo `metadata` in the .udl dir.
+    match manifest_path_override {
+        Some(p) => {
+            metadata_cmd.manifest_path(p);
+        }
+        None => {
+            metadata_cmd.current_dir(guess_crate_root(interface_file)?);
+        }
+    };
+    let metadata = metadata_cmd
+        .exec()
+        .map_err(|e| anyhow!("Failed to run cargo metadata: {:?}", e))?;
+    let uniffi_runtime_deps: Vec<cargo_metadata::Package> = metadata
+        .packages
+        .into_iter()
+        .filter(|p| p.name == "uniffi")
+        .collect();
+    if uniffi_runtime_deps.is_empty() {
+        bail!("It looks like the crate doesn't depend on the `uniffi` runtime. Please add `uniffi` as a dependency.");
+    }
+    if uniffi_runtime_deps.len() > 1 {
+        bail!("It looks like the workspace depends on multiple versions of `uniffi`. Please rectify the problem and try again.");
+    }
+    // XXX: Because we're still < 1.0.0, we compare the entire version string.
+    // Once we ship v1, we should compare only the MAJOR component.
+    let uniffi_runtime_version = uniffi_runtime_deps[0].version.to_string();
+    if uniffi_runtime_version != BINDGEN_VERSION {
+        bail!("The `uniffi` dependency version ({}) is different than `uniffi-bindgen` own version ({}). Please rectify the problem and try again.", uniffi_runtime_version, BINDGEN_VERSION);
+    }
+    Ok(())
+}
+
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
 pub fn generate_bindings<P: AsRef<Path>>(
-    udl_file: P,
+    interface_file: P,
     config_file_override: Option<P>,
     target_languages: Vec<&str>,
     out_dir_override: Option<P>,
@@ -155,11 +218,16 @@ pub fn generate_bindings<P: AsRef<Path>>(
 ) -> Result<()> {
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
-    let udl_file = udl_file.as_ref();
+    let interface_file = interface_file.as_ref();
 
-    let component = parse_udl(&udl_file)?;
-    let config = get_config(&component, udl_file, config_file_override)?;
-    let out_dir = get_out_dir(&udl_file, out_dir_override)?;
+    let component = if matches!(interface_file.extension(), Some(ext) if ext == "rs") {
+        parse_rust(&interface_file)?
+    } else {
+        parse_udl(&interface_file)?
+    };
+
+    let config = get_config(&component, interface_file, config_file_override)?;
+    let out_dir = get_out_dir(&interface_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
             &config.bindings,
@@ -177,16 +245,23 @@ pub fn generate_bindings<P: AsRef<Path>>(
 // Note that the cdylib we're testing against must be built already.
 pub fn run_tests<P: AsRef<Path>>(
     cdylib_dir: P,
-    udl_file: P,
+    interface_file: P,
     test_scripts: Vec<&str>,
     config_file_override: Option<P>,
 ) -> Result<()> {
     let cdylib_dir = cdylib_dir.as_ref();
-    let udl_file = udl_file.as_ref();
+    let interface_file = interface_file.as_ref();
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+    println!("RUNNING TESTS {:?}", interface_file);
 
-    let component = parse_udl(&udl_file)?;
-    let config = get_config(&component, udl_file, config_file_override)?;
+    let component = if matches!(interface_file.extension(), Some(ext) if ext == "rs") {
+        println!("FROM RUST");
+        parse_rust(&interface_file)?
+    } else {
+        println!("FROM UDL");
+        parse_udl(&interface_file)?
+    };
+    let config = get_config(&component, interface_file, config_file_override)?;
 
     // Group the test scripts by language first.
     let mut language_tests: HashMap<TargetLanguage, Vec<String>> = HashMap::new();
@@ -278,6 +353,12 @@ fn parse_udl(udl_file: &Path) -> Result<ComponentInterface> {
         slurp_file(udl_file).map_err(|_| anyhow!("Failed to read UDL from {:?}", &udl_file))?;
     udl.parse::<interface::ComponentInterface>()
         .map_err(|e| anyhow!("Failed to parse UDL: {}", e))
+}
+
+fn parse_rust(rs_file: &Path) -> Result<ComponentInterface> {
+    let rs = slurp_file(rs_file).map_err(|_| anyhow!("Failed to read Rust from {:?}", &rs_file))?;
+    interface::ComponentInterface::from_rust(&rs)
+        .map_err(|e| anyhow!("Failed to parse interface definition: {}", e))
 }
 
 fn slurp_file(file_name: &Path) -> Result<String> {
@@ -392,6 +473,11 @@ pub fn run_main() -> Result<()> {
                 .arg(clap::Arg::with_name("udl_file").required(true)),
         )
         .subcommand(
+            clap::SubCommand::with_name("automagic")
+                .about("Do some magic ;-)")
+                .arg(clap::Arg::with_name("rs_file").required(true)),
+        )
+        .subcommand(
             clap::SubCommand::with_name("test")
             .about("Run test scripts against foreign language bindings")
             .arg(clap::Arg::with_name("cdylib_dir").required(true).help("Path to the directory containing the cdylib the scripts will be testing against."))
@@ -418,6 +504,9 @@ pub fn run_main() -> Result<()> {
             m.value_of_os("config"),
             m.value_of_os("out_dir"),
             !m.is_present("no_format"),
+        )?,
+        ("automagic", Some(m)) => crate::generate_udl_from_rs(
+            m.value_of_os("rs_file").unwrap(), // Required
         )?,
         ("test", Some(m)) => crate::run_tests(
             m.value_of_os("cdylib_dir").unwrap(),           // Required

@@ -1,50 +1,33 @@
 # Rust scaffolding
 
-## Rust scaffolding code
+To expose the `add` method for use by foreign-language bindings, your crate will also
+need to contain various bits of helper code that we call the *Rust scaffolding*.
+Luckily this can all be generated automatically by UniFFI!
 
-Now we generate some Rust helper code to make the `add` method available to foreign-language bindings.  
-
-First, add `uniffi` to your crate dependencies: it is the runtime support code that powers uniffi's serialization of data types across languages:
+First, add `uniffi` and `uniffi_macros` to your crate dependencies:
 
 ```toml
 [dependencies]
-uniffi = "0.5"
+uniffi = "0.7"
+uniffi_macros = "0.7"
 ```
 
 Important note: the `uniffi` version must be the same as the `uniffi-bindgen` command-line tool installed on your system.
 
-Then let's add `uniffi_build` to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C-compatible FFI layer.
-
-```toml
-[build-dependencies]
-uniffi_build = "0.5"
-```
-
-Then create a `build.rs` file next to `Cargo.toml` that will use `uniffi_build`:
+Next, use the `declare_interface` macro on the interface module you defined
+in the previous step:
 
 ```rust
-fn main() {
-    uniffi_build::generate_scaffolding("./src/math.udl").unwrap();
-}
+#[uniffi_macros::declare_interface]
+mod math {
+  pub fn add(a: u32, b: u32) -> u32 {
+    a + b
+  }
+};
 ```
 
-**Note:** This is the equivalent of calling (and does it under the hood) `uniffi-bindgen scaffolding src/math.udl --out-dir <OUT_DIR>`.
-
-Lastly, we include the generated scaffolding code in our `lib.rs`. If you've used the default build
-settings then this can be done using a handy macro:
-
-```rust
-uniffi_macros::include_scaffolding!("math");
-```
-
-If you have generated the scaffolding in a custom location, use the standard `!include` macro
-to include the generated file by name, like this:
-
-
-```rust
-include!(concat!(env!("OUT_DIR"), "/math.uniffi.rs"));
-```
-
-**Note:** The file name is always `<namespace>.uniffi.rs`.
+Finally, `cargo build` your crate to check that things are working correctly.
+If you have used unsupported syntax in your interface definition module then UniFFI
+will produce an error during the build.
 
 Great! `add` is ready to see the outside world!

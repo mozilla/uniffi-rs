@@ -1,0 +1,7 @@
+{{ err.docs()|docstring(0) }}
+[Error]
+enum {{ err.name() }} {
+  {%- for value in err.values() %}
+  "{{ value }}",
+  {%- endfor %}
+};

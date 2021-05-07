@@ -1,0 +1,7 @@
+{{ func.docs()|docstring(2) }}
+  {%- match func.throws() -%}
+  {%- when Some with (err) %}
+  [Throws={{ err }}]
+  {%- when None -%}
+  {%- endmatch %}
+  {{ func.return_type()|return_type_udl }} {{ func.name() }}({%- call udl::arg_list_decl(func) -%});

@@ -163,6 +163,7 @@ impl ForeignCallbackInternals {
         }
     }
 
+    #[allow(deprecated)] // Deliberately using deprecated `compare_and_swap` for compat with Rust 1.43
     pub fn set_callback(&self, callback: ForeignCallback) {
         let as_usize = callback as usize;
         let old_ptr = self.callback_ptr.compare_exchange(

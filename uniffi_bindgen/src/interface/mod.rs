@@ -74,6 +74,7 @@ mod object;
 pub use object::{Constructor, Method, Object};
 mod record;
 pub use record::{Field, Record};
+mod synner;
 
 pub mod ffi;
 pub use ffi::{FFIArgument, FFIFunction, FFIType};
@@ -98,6 +99,7 @@ pub struct ComponentInterface {
     objects: Vec<Object>,
     callback_interfaces: Vec<CallbackInterface>,
     errors: Vec<Error>,
+    docs: Vec<String>,
 }
 
 impl<'ci> ComponentInterface {
@@ -124,6 +126,86 @@ impl<'ci> ComponentInterface {
         ci.types.add_type_definitions_from(defns.as_slice())?;
         // With those names resolved, we can build a complete representation of the API.
         APIBuilder::process(&defns, &mut ci)?;
+        ci.check_consistency()?;
+        // Now that the high-level API is settled, we can derive the low-level FFI.
+        ci.derive_ffi_funcs()?;
+        Ok(ci)
+    }
+
+    /// Parse a `ComponentInterface` from a string containing a Rust source file.
+    pub fn from_rust(rs: &str) -> Result<Self> {
+        let mut ci = Self::default();
+        ci.uniffi_version = env!("CARGO_PKG_VERSION").to_string();
+        // There's some lifetime thing with the errors returned from parsing
+        // that my own lifetime is too short to worry about figuring out; unwrap and move on.
+        let file_src = syn::parse_file(rs).expect("Failed to parse Rust code");
+        // First, let's see what sort of style of file we're dealing with.
+        // It might be `include_scaffolding!` or it might be `#[declare_interface]`.
+        enum Style<'a> {
+            None,
+            Include,
+            Declare(&'a syn::ItemMod),
+        };
+        let mut defn_style = Style::None;
+        for item in &file_src.items {
+            match item {
+                syn::Item::Macro(m) => {
+                    if let Ok((mod_name, macro_name)) = synner::name_pair_from_path(&m.mac.path) {
+                        match (mod_name.as_str(), macro_name.as_str()) {
+                            ("uniffi_macros", "include_scaffolding") => {
+                                defn_style = Style::Include;
+                                break;
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                syn::Item::Mod(m) => {
+                    // TODO: check that it's got the `declare_interface` macro applied.
+                    // Otherwise it might be some unrelated module!
+                    if m.content.is_some() {
+                        defn_style = Style::Declare(m);
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+        match defn_style {
+            Style::None => bail!("This file doesn't seem to contain an interface definition"),
+            Style::Include => {
+                // The whole file is the interface definition.
+                ci.types.add_type_definitions_from(&file_src)?;
+                APIBuilder::process(&file_src, &mut ci)?;
+            }
+            Style::Declare(m) => {
+                // The contained module the interface definition.
+                ci.types.add_type_definitions_from(&m)?;
+                APIBuilder::process(&m, &mut ci)?;
+            }
+        }
+        ci.check_consistency()?;
+        // Now that the high-level API is settled, we can derive the low-level FFI.
+        ci.derive_ffi_funcs()?;
+        Ok(ci)
+    }
+
+    /// Parse a `ComponentInterface` from a string containing a Rust source file.
+    pub fn from_rust_module(rsmod: &syn::ItemMod) -> Result<Self> {
+        let mut ci = Self::default();
+        ci.uniffi_version = env!("CARGO_PKG_VERSION").to_string();
+        // We process the WebIDL definitions in two passes.
+        // First, go through and look for all the named types.
+        for item in &rsmod.content.as_ref().unwrap().1 {
+            ci.types.add_type_definitions_from(&item)?;
+        }
+        // With those names resolved, we can build a complete representation of the API.
+        for item in &rsmod.content.as_ref().unwrap().1 {
+            APIBuilder::process(&item, &mut ci)?;
+        }
+        ci.add_namespace_definition(Namespace {
+            name: rsmod.ident.to_string(),
+        })?;
         ci.check_consistency()?;
         // Now that the high-level API is settled, we can derive the low-level FFI.
         ci.derive_ffi_funcs()?;
@@ -206,6 +288,10 @@ impl<'ci> ComponentInterface {
 
     pub fn iter_types(&self) -> Vec<Type> {
         self.types.iter_known_types().collect()
+    }
+
+    pub fn docs(&self) -> Vec<&str> {
+        self.docs.iter().map(|s| s.as_str()).collect()
     }
 
     /// Calculate a numeric checksum for this ComponentInterface.
@@ -448,6 +534,21 @@ impl<'ci> ComponentInterface {
         self.objects.push(defn);
     }
 
+    /// Called by `APIBuilder` to add additional methods to an `Object`.
+    fn with_object_definition_mut(
+        &mut self,
+        name: &str,
+        callback: impl FnOnce(&mut Object) -> (),
+    ) -> Result<()> {
+        let mut defn = self
+            .objects
+            .iter_mut()
+            .find(|o| o.name == name)
+            .ok_or_else(|| anyhow::anyhow!("no object named {}", name))?;
+        callback(&mut defn);
+        Ok(())
+    }
+
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
     fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
@@ -502,14 +603,6 @@ impl<'ci> ComponentInterface {
     }
 }
 
-/// Convenience implementation for parsing a `ComponentInterface` from a string.
-impl FromStr for ComponentInterface {
-    type Err = anyhow::Error;
-    fn from_str(s: &str) -> Result<Self> {
-        ComponentInterface::from_webidl(s)
-    }
-}
-
 /// `ComponentInterface` structs can be hashed, but this is mostly a convenient way to
 /// produce a checksum of their contents. They're not really intended to live in a hashtable.
 impl Hash for ComponentInterface {
@@ -527,12 +620,20 @@ impl Hash for ComponentInterface {
     }
 }
 
+/// Convenience implementation for parsing a `ComponentInterface` from a string.
+impl FromStr for ComponentInterface {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self> {
+        ComponentInterface::from_webidl(s)
+    }
+}
+
 /// Trait to help build a `ComponentInterface` from WedIDL syntax nodes.
 ///
 /// This trait does structural matching on the various weedle AST nodes and
 /// uses them to build up the records, enums, objects etc in the provided
 /// `ComponentInterface`.
-trait APIBuilder {
+pub trait APIBuilder {
     fn process(&self, ci: &mut ComponentInterface) -> Result<()>;
 }
 
@@ -586,6 +687,106 @@ impl APIBuilder for weedle::Definition<'_> {
             _ => bail!("don't know how to deal with {:?}", self),
         }
         Ok(())
+    }
+}
+
+impl APIBuilder for syn::File {
+    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
+        let attrs = synner::Attributes::try_from(&self.attrs)?;
+        ci.docs.extend(attrs.docs);
+        for item in &self.items {
+            item.process(ci)?
+        }
+        Ok(())
+    }
+}
+
+impl APIBuilder for &syn::ItemMod {
+    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
+        let attrs = synner::Attributes::try_from(&self.attrs)?;
+        ci.docs.extend(attrs.docs);
+        ci.add_namespace_definition(Namespace {
+            name: self.ident.to_string(),
+        })?;
+        match &self.content {
+            None => bail!("UniFFI interfaces must be inline modules"),
+            Some((_, items)) => {
+                for item in items {
+                    item.process(ci)?
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
+impl APIBuilder for &syn::Item {
+    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
+        match self {
+            syn::Item::Enum(e) => e.process(ci),
+            syn::Item::Impl(i) => i.process(ci),
+            syn::Item::Macro(m) => m.process(ci),
+            syn::Item::Struct(s) => s.process(ci),
+            syn::Item::Fn(f) => {
+                let func = f.convert(ci)?;
+                ci.add_function_definition(func)
+            }
+            // These types are allowed in the Rust code, but only have non-visible effects.
+            // The type-finding pass will have checked for visible effects and errored out.
+            syn::Item::Use(_) | syn::Item::Mod(_) | syn::Item::Type(_) => Ok(()),
+            // Anything else is unsupported. In theory the type-finding pass should
+            // have already caught these and errored out.
+            _ => bail!(
+                "Rust item {:?} not supported (but should have been caught earlier..?)",
+                self
+            ),
+        }
+    }
+}
+
+impl APIBuilder for &syn::ItemEnum {
+    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
+        // Thanks to typefinding, we should already know whether it's
+        // an `Error` or a `Enum`.
+        let name = self.ident.to_string();
+        let type_ = ci
+            .types
+            .get_type_definition(name.as_str())
+            .ok_or_else(|| anyhow::anyhow!("Unknown type: {:?}", name))?;
+        match type_ {
+            Type::Enum(_) => {
+                let e = self.convert(ci)?;
+                ci.add_enum_definition(e)
+            }
+            Type::Error(_) => {
+                let err = self.convert(ci)?;
+                ci.add_error_definition(err)
+            }
+            _ => bail!("Unexpected type for {}: {:?}", name, type_),
+        }
+    }
+}
+
+impl APIBuilder for &syn::ItemStruct {
+    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
+        // Thanks to typefinding, we should already know whether it's
+        // an `Object` or a `Record`.
+        let name = self.ident.to_string();
+        let type_ = ci
+            .types
+            .get_type_definition(name.as_str())
+            .ok_or_else(|| anyhow::anyhow!("Unknown type: {:?}", name))?;
+        match type_ {
+            Type::Object(_) => {
+                let obj = self.convert(ci)?;
+                ci.add_object_definition(obj)
+            }
+            Type::Record(_) => {
+                let rec = self.convert(ci)?;
+                ci.add_record_definition(rec)
+            }
+            _ => bail!("Unexpected type for {}: {:?}", name, type_),
+        }
     }
 }
 

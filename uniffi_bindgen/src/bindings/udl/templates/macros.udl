@@ -1,0 +1,13 @@
+{%- macro arg_list_decl(func) -%}
+    {%- for arg in func.arguments() -%}
+        {% if arg.by_ref() %}[ByRef] {% endif %}{{- arg.type_()|type_udl }} {{ arg.name() }}
+        {%- if !loop.last %}, {% endif -%}
+    {%- endfor -%}
+{%- endmacro -%}
+
+{%- macro field_list_decl(variant) -%}
+    {%- for field in variant.fields() -%}
+        {{- field.type_()|type_udl }} {{ field.name() }}
+        {%- if !loop.last %}, {% endif -%}
+    {%- endfor -%}
+{%- endmacro -%}

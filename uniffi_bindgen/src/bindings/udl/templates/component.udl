@@ -1,0 +1,25 @@
+{% import "macros.udl" as udl %}
+
+{{ ci.docs()|docstring(0) }}
+
+namespace {{ ci.namespace() }} {
+    {% for func in ci.iter_function_definitions() %}
+    {% include "TopLevelFunctionTemplate.udl" %}
+    {% endfor %}
+};
+
+{% for err in ci.iter_error_definitions() %}
+{% include "ErrorTemplate.udl" %}
+{%- endfor %}
+
+{% for obj in ci.iter_object_definitions() %}
+{% include "ObjectTemplate.udl" %}
+{%- endfor %}
+
+{%- for rec in ci.iter_record_definitions() %}
+{% include "RecordTemplate.udl" %}
+{%- endfor %}
+
+{% for e in ci.iter_enum_definitions() %}
+{% include "EnumTemplate.udl" %}
+{%- endfor %}

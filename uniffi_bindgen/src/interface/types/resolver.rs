@@ -164,13 +164,72 @@ impl TypeResolver for weedle::types::DoubleType {
     }
 }
 
+impl TypeResolver for &syn::Type {
+    fn resolve_type_expression(&self, types: &mut TypeUniverse) -> Result<Type> {
+        match self {
+            syn::Type::Path(p) => {
+                let (name, args) = super::super::synner::name_and_args_from_path(&p.path)?;
+                match name.as_str() {
+                    "Option" => {
+                        if args.len() != 1 {
+                            bail!("Option<> can only take one argument")
+                        }
+                        let inner = types.resolve_type_expression(args[0])?;
+                        types.add_known_type(Type::Optional(Box::new(inner)))
+                    }
+                    "Vec" => {
+                        if args.len() != 1 {
+                            bail!("Vec<> can only take one argument")
+                        }
+                        let inner = types.resolve_type_expression(args[0])?;
+                        types.add_known_type(Type::Sequence(Box::new(inner)))
+                    }
+                    "HashMap" => {
+                        if args.len() != 2 {
+                            bail!("HashMap<> can only take two arguments")
+                        }
+                        if !matches!(types.resolve_type_expression(args[0])?, Type::String) {
+                            bail!("HashMap<> must have string keys")
+                        }
+                        let inner = types.resolve_type_expression(args[1])?;
+                        types.add_known_type(Type::Map(Box::new(inner)))
+                    }
+                    _ => {
+                        if !args.is_empty() {
+                            bail!("Can't use type {} with generic parameters", name)
+                        }
+                        match resolve_builtin_type(name.as_str()) {
+                            Some(type_) => types.add_known_type(type_),
+                            None => match types.get_type_definition(name.as_str()) {
+                                Some(type_) => types.add_known_type(type_),
+                                None => bail!("unknown type reference: {}", name),
+                            },
+                        }
+                    }
+                }
+            }
+            syn::Type::Reference(r) => {
+                // XXX TODO: careful! we don't want to accept references in return position.
+                // Note sure how that will play out just yet...
+                types.resolve_type_expression(&*r.elem)
+            }
+            syn::Type::Slice(s) => {
+                let inner = types.resolve_type_expression(&*s.elem)?;
+                types.add_known_type(Type::Sequence(Box::new(inner)))
+            }
+            _ => bail!("No support for type {:?}", self),
+        }
+    }
+}
+
 /// Resolve built-in API types by name.
 ///
 /// Given an identifier from the UDL, this will return `Some(Type)` if it names one of the
 /// built-in primitive types or `None` if it names something else.
 pub(in super::super) fn resolve_builtin_type(name: &str) -> Option<Type> {
     match name {
-        "string" => Some(Type::String),
+        "string" | "String" | "str" => Some(Type::String),
+        "bool" => Some(Type::Boolean),
         "u8" => Some(Type::UInt8),
         "i8" => Some(Type::Int8),
         "u16" => Some(Type::UInt16),

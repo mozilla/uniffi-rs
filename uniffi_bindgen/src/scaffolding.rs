@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::Result;
-use askama::Template;
+pub use askama::Template;
 
 use super::interface::*;
 

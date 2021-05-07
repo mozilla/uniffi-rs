@@ -1,0 +1,7 @@
+{{ rec.docs()|docstring(0) }}
+dictionary {{ rec.name() }} {
+  {%- for field in rec.fields() %}{% if field.docs().len() > 0 %}
+{{ field.docs()|docstring(2) }}
+  {% endif %}{{ field.type_()|type_udl }} {{ field.name() }};
+  {%- endfor %}
+};

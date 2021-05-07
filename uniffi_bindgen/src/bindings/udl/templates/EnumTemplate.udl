@@ -1,0 +1,17 @@
+{{ e.docs()|docstring(0) }}
+{%- if e.is_flat() %}
+enum {{ e.name() }} {
+  {%- for variant in e.variants() %}{% if variant.docs().len() > 0 %}
+{{ variant.docs()|docstring(2) }}
+  {% endif %}"{{ variant.name() }}",
+  {%- endfor %}
+};
+{%- else %}
+[Enum]
+interface {{ e.name() }} {
+  {%- for variant in e.variants() %}{% if variant.docs().len() > 0 %}
+{{ variant.docs()|docstring(2) }}
+  {% endif %}{{ variant.name() }}({% call udl::field_list_decl(variant) %});
+  {%- endfor %}
+};
+{% endif %}

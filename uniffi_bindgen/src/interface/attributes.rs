@@ -153,6 +153,10 @@ impl<T: TryInto<EnumAttributes, Error = anyhow::Error>> TryFrom<Option<T>> for E
 pub(super) struct FunctionAttributes(Vec<Attribute>);
 
 impl FunctionAttributes {
+    pub(super) fn new(attrs: Vec<Attribute>) -> Self {
+        Self(attrs)
+    }
+
     pub(super) fn get_throws_err(&self) -> Option<&str> {
         self.0.iter().find_map(|attr| match attr {
             // This will hopefully return a helpful compilation error
@@ -285,6 +289,9 @@ pub(super) type MethodAttributes = FunctionAttributes;
 pub(super) struct ConstructorAttributes(Vec<Attribute>);
 
 impl ConstructorAttributes {
+    pub(super) fn new(attrs: Vec<Attribute>) -> Self {
+        Self(attrs)
+    }
     pub(super) fn get_throws_err(&self) -> Option<&str> {
         self.0.iter().find_map(|attr| match attr {
             // This will hopefully return a helpful compilation error

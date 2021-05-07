@@ -1,0 +1,23 @@
+{{ obj.docs()|docstring(0) }}
+interface {{ obj.name() }} {
+  {%- for cons in obj.constructors() %}
+{{ cons.docs()|docstring(2) }}
+  {%- match cons.throws() -%}
+  {%- when Some with (err) %}
+  [Throws={{ err }}{% if cons.is_primary_constructor() %}{% else %},Name={{ cons.name() }}{% endif %}]
+  {% when None -%}
+  {%- if cons.is_primary_constructor() %}{% else %}[Name={{ cons.name() }}]{% endif %}
+  {%- endmatch %}
+  constructor({%- call udl::arg_list_decl(cons) -%});
+  {% endfor %}
+
+  {%- for meth in obj.methods() %}
+{{ meth.docs()|docstring(2) }}
+  {%- match meth.throws() -%}
+  {%- when Some with (err) %}
+  [Throws={{ err }}]
+  {%- when None -%}
+  {%- endmatch %}
+  {{ meth.return_type()|return_type_udl }} {{ meth.name() }}({%- call udl::arg_list_decl(meth) -%});
+  {% endfor %}
+};

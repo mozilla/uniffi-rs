@@ -19,6 +19,7 @@ pub mod gecko_js;
 pub mod kotlin;
 pub mod python;
 pub mod swift;
+pub mod udl;
 
 /// Enumeration of all foreign language targets currently supported by this crate.
 ///
@@ -32,6 +33,7 @@ pub enum TargetLanguage {
     Swift,
     Python,
     GeckoJs,
+    UDL,
 }
 
 impl TryFrom<&str> for TargetLanguage {
@@ -124,6 +126,7 @@ where
         TargetLanguage::GeckoJs => {
             gecko_js::write_bindings(&config.gecko_js, &ci, out_dir, try_format_code, is_testing)?
         }
+        TargetLanguage::UDL => udl::write_bindings(&ci, out_dir)?,
     }
     Ok(())
 }
@@ -144,6 +147,7 @@ where
         TargetLanguage::Swift => swift::compile_bindings(&config.swift, &ci, out_dir)?,
         TargetLanguage::Python => (),
         TargetLanguage::GeckoJs => (),
+        TargetLanguage::UDL => (),
     }
     Ok(())
 }
@@ -161,6 +165,7 @@ where
         TargetLanguage::Swift => swift::run_script(out_dir, script_file)?,
         TargetLanguage::Python => python::run_script(out_dir, script_file)?,
         TargetLanguage::GeckoJs => bail!("Can't run Gecko code standalone"),
+        TargetLanguage::UDL => bail!("No tests for UDL"),
     }
     Ok(())
 }
