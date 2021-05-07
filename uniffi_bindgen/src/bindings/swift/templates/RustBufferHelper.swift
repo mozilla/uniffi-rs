@@ -204,47 +204,6 @@ extension String: ViaFfi {
     }
 }
 
-fileprivate enum JSONObject {
-    fileprivate typealias SwiftType = [String: Any]
-    fileprivate typealias FfiType = RustBuffer
-    
-    fileprivate static func lift(_ v: FfiType) throws -> SwiftType {
-        let jsonString = try String.lift(v)
-        return try JSONObject.from(string: jsonString)
-    }
-
-    fileprivate static func read(from buf: Reader) throws -> SwiftType {
-        let jsonString = try String.read(from: buf)
-        return try JSONObject.from(string: jsonString)
-    }
-
-    fileprivate static func from(string: String) throws -> SwiftType {
-        if let data = string.data(using: .utf8),
-            let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                return json
-            }
-        throw UniffiInternalError.corruptData
-    }
-
-    fileprivate static func lower(_ jsonObject: SwiftType) -> FfiType {
-        let jsonString = JSONObject.stringify(jsonObject)
-        return jsonString.lower()
-    }
-
-    fileprivate static func write(_ jsonObject: SwiftType, into buf: Writer) {
-        let jsonString = JSONObject.stringify(jsonObject)
-        return jsonString.write(into: buf)
-    }
-
-    fileprivate static func stringify(_ jsonObject: SwiftType) -> String {
-        if let data = try? JSONSerialization.data(withJSONObject: jsonObject, options: []),
-            let string = String(data: data, encoding: .utf8) {
-            return string
-        }
-        return "{}"
-    }
-}
-
 extension Bool: ViaFfi {
     fileprivate typealias FfiType = Int8
 
@@ -422,5 +381,56 @@ extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == S
             key.write(into: buf)
             value.write(into: buf)
         }
+    }
+}
+
+extension Dictionary where Key == String, Value == Any {
+    fileprivate static func read(from buf: Reader) throws -> Self {
+        return try JSONObject.read(from: buf)
+    }
+
+    fileprivate func write(into buf: Writer) {
+        return JSONObject.write(self, into: buf)
+    }
+}
+
+fileprivate enum JSONObject {
+    fileprivate typealias SwiftType = [String: Any]
+    fileprivate typealias FfiType = RustBuffer
+    
+    fileprivate static func lift(_ v: FfiType) throws -> SwiftType {
+        let jsonString = try String.lift(v)
+        return try JSONObject.from(string: jsonString)
+    }
+
+    fileprivate static func read(from buf: Reader) throws -> SwiftType {
+        let jsonString = try String.read(from: buf)
+        return try JSONObject.from(string: jsonString)
+    }
+
+    fileprivate static func from(string: String) throws -> SwiftType {
+        if let data = string.data(using: .utf8),
+            let json = try JSONSerialization.jsonObject(with: data, options: []) as? SwiftType {
+                return json
+            }
+        throw UniffiInternalError.corruptData
+    }
+
+    fileprivate static func lower(_ jsonObject: SwiftType) -> FfiType {
+        let jsonString = JSONObject.stringify(jsonObject)
+        return jsonString.lower()
+    }
+
+    fileprivate static func write(_ jsonObject: SwiftType, into buf: Writer) {
+        let jsonString = JSONObject.stringify(jsonObject)
+        return jsonString.write(into: buf)
+    }
+
+    fileprivate static func stringify(_ jsonObject: SwiftType) -> String {
+        if let data = try? JSONSerialization.data(withJSONObject: jsonObject, options: []),
+            let string = String(data: data, encoding: .utf8) {
+            return string
+        }
+        return "{}"
     }
 }

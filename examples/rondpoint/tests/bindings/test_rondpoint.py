@@ -88,6 +88,11 @@ affirmAllerRetour(
   rt.identique_json_object,
 )
 
+affirmAllerRetour(
+  map(lambda d: DictionnaireAvecJson(d), [{}, {'a': [1, 2, 3]}, {'a': None, 'b': True}]),
+  rt.identique_dictionnaire_avec_json,
+)
+
 # Test one way across the FFI.
 #
 # We send one representation of a value to lib.rs, and it transforms it into another, a string.

@@ -13,16 +13,20 @@ public struct {{ rec.name()|class_name_swift }}: Equatable, Hashable {
 
     public static func ==(lhs: {{ rec.name()|class_name_swift }}, rhs: {{ rec.name()|class_name_swift }}) -> Bool {
         {%- for field in rec.fields() %}
+        {%- if field.type_() != Type::JSONObject %}
         if lhs.{{ field.name()|var_name_swift }} != rhs.{{ field.name()|var_name_swift }} {
             return false
         }
+        {% endif %}
         {%- endfor %}
         return true
     }
 
     public func hash(into hasher: inout Hasher) {
         {%- for field in rec.fields() %}
+        {%- if field.type_() != Type::JSONObject %}
         hasher.combine({{ field.name()|var_name_swift }})
+        {% endif -%}
         {%- endfor %}
     }
 }

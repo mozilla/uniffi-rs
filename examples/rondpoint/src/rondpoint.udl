@@ -48,6 +48,10 @@ dictionary DictionnaireNombresSignes {
     i64 gros_nombre;
 };
 
+dictionary DictionnaireAvecJSON {
+  JSONObject value;
+};
+
 interface Retourneur {
   i8 identique_i8(i8 value);
   u8 identique_u8(u8 value);
@@ -62,6 +66,7 @@ interface Retourneur {
   boolean identique_boolean(boolean value);
   string identique_string(string value);
   JSONObject identique_json_object(JSONObject value);
+  DictionnaireAvecJSON identique_dictionnaire_avec_json(DictionnaireAvecJSON value);
 
   DictionnaireNombresSignes identique_nombres_signes(DictionnaireNombresSignes value);
   DictionnaireNombres       identique_nombres(DictionnaireNombres value);

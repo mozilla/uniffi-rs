@@ -76,6 +76,10 @@ fn switcheroo(b: bool) -> bool {
     !b
 }
 
+struct DictionnaireAvecJSON {
+    value: Value,
+}
+
 // Test that values can traverse both ways across the FFI.
 // Even if roundtripping works, it's possible we have
 // symmetrical errors that cancel each other out.
@@ -122,6 +126,12 @@ impl Retourneur {
         value
     }
     fn identique_json_object(&self, value: Value) -> Value {
+        value
+    }
+    fn identique_dictionnaire_avec_json(
+        &self,
+        value: DictionnaireAvecJSON,
+    ) -> DictionnaireAvecJSON {
         value
     }
     fn identique_nombres_signes(

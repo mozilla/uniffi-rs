@@ -62,6 +62,9 @@ let rt = Retourneur()
 [["a": [1,2,3]], ["a": true]]
     .affirmAllerRetour(rt.identiqueJsonObject) { a, b in toString(a) == toString(b) }
 
+[["a": [1,2,3]], ["a": true]].map { json in DictionnaireAvecJson(value: json) }
+    .affirmAllerRetour(rt.identiqueDictionnaireAvecJson) { a, b in toString(a.value) == toString(b.value) }
+
 func toString(_ jsonObject: [String: Any]) -> String {
     if let data = try? JSONSerialization.data(withJSONObject: jsonObject, options: []),
         let string = String(data: data, encoding: .utf8) {

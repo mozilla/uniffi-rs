@@ -80,6 +80,8 @@ listOf(0, 1).map { DictionnaireNombres(it.toUByte(), it.toUShort(), it.toUInt(),
 listOf("{}", "{\"a\":true}", "{\"a\":[1,2,3]}").map { JSONObject(it) }
     .affirmAllerRetour(rt::identiqueJsonObject) { a, b -> a.toString() == b.toString() }
 
+listOf("{}", "{\"a\":true}", "{\"a\":[1,2,3]}").map { DictionnaireAvecJson(JSONObject(it)) }
+    .affirmAllerRetour(rt::identiqueDictionnaireAvecJson) { a, b -> a.value.toString() == b.value.toString() }
 rt.destroy()
 
 // Test one way across the FFI.
