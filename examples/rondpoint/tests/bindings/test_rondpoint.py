@@ -82,6 +82,12 @@ affirmAllerRetour(
   rt.identique_string
 )
 
+# JSON
+affirmAllerRetour(
+  [{}, {'a': [1, 2, 3]}, {'a': None, 'b': True}],
+  rt.identique_json_value,
+)
+
 # Test one way across the FFI.
 #
 # We send one representation of a value to lib.rs, and it transforms it into another, a string.
@@ -99,8 +105,9 @@ st = Stringifier()
 
 def affirmEnchaine(vals, toString, rustyStringify=lambda v: str(v).lower()):
     for v in vals:
-        str_v = toString(v)
-        assert rustyStringify(v) == str_v, f"String compare error {v} => {str_v}"
+        obs = toString(v)
+        exp = rustyStringify(v)
+        assert obs == exp, f"String compare error {exp} => {obs}"
 
 # Test the efficacy of the string transport from rust. If this fails, but everything else
 # works, then things are very weird.
@@ -143,4 +150,15 @@ affirmEnchaine(
   [0.0, 0.5, 0.25, 1.0, 1.0 / 3],
   st.to_string_double,
   rustyFloatToStr,
+)
+
+import json
+def rustyJsonToStr(v):
+    """Stringify an dictionary in the same way rust has"""
+    return json.dumps(v, separators=(',', ':'))
+
+affirmEnchaine(
+  [{}, {'a': [1, 2, 3]}, {'a': None, 'b': True}],
+  st.to_string_json_value,
+  rustyJsonToStr,
 )

@@ -110,7 +110,7 @@ class RustBufferBuilder(object):
 
     def writeJsonValue(self, v):
         import json
-        json_string = json.dumps(v)
+        json_string = json.dumps(v, separators=(',', ':'))
         self.writeString(json_string)
 
     {% when Type::Object with (object_name) -%}

@@ -83,8 +83,8 @@ class RustBuffer(ctypes.Structure):
     @staticmethod
     def allocFromJsonValue(value):
         import json
-        json_string = json.dumps(value)
-        return allocFromString(json_string)
+        json_string = json.dumps(value, separators=(',', ':'))
+        return RustBuffer.allocFromString(json_string)
 
     def consumeIntoJsonValue(self):
         import json
