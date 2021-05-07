@@ -205,7 +205,7 @@ extension String: ViaFfi {
 }
 
 fileprivate enum JSONValue {
-    fileprivate typealias JSONObject = Dictionary<String, Any>
+    fileprivate typealias JSONObject = [String: Any]
     fileprivate typealias FfiType = RustBuffer
     
     fileprivate static func lift(_ v: FfiType) throws -> JSONObject {
@@ -227,17 +227,17 @@ fileprivate enum JSONValue {
     }
 
     fileprivate static func lower(_ jsonObject: JSONObject) -> FfiType {
-        let jsonString = JSONValue.intoString(jsonObject)
+        let jsonString = JSONValue.stringify(jsonObject)
         return jsonString.lower()
     }
 
     fileprivate static func write(_ jsonObject: JSONObject, into buf: Writer) {
-        let jsonString = JSONValue.intoString(jsonObject)
+        let jsonString = JSONValue.stringify(jsonObject)
         return jsonString.write(into: buf)
     }
 
-    fileprivate static func intoString(_ jsonObject: JSONObject) -> String {
-        if let data = try? JSONSerialization.data(withJSONObject: self, options: []),
+    fileprivate static func stringify(_ jsonObject: JSONObject) -> String {
+        if let data = try? JSONSerialization.data(withJSONObject: jsonObject, options: []),
             let string = String(data: data, encoding: .utf8) {
             return string
         }
