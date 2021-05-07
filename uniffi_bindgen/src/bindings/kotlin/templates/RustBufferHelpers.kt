@@ -282,7 +282,7 @@ internal fun String.write(buf: RustBufferBuilder) {
     buf.put(byteArr)
 }
 
-{% when Type::JSONValue -%}
+{% when Type::JSONObject -%}
 {% let inner_type_name = "JSONObject" %}
 
 internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ inner_type_name }} {

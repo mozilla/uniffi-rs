@@ -61,7 +61,7 @@ interface Retourneur {
   double identique_double(double value);
   boolean identique_boolean(boolean value);
   string identique_string(string value);
-  JSONValue identique_json_value(JSONValue value);
+  JSONObject identique_json_object(JSONObject value);
 
   DictionnaireNombresSignes identique_nombres_signes(DictionnaireNombresSignes value);
   DictionnaireNombres       identique_nombres(DictionnaireNombres value);
@@ -82,7 +82,7 @@ interface Stringifier {
   string to_string_float(float value);
   string to_string_double(double value);
   string to_string_boolean(boolean value);
-  string to_string_json_value(JSONValue value);
+  string to_string_json_object(JSONObject value);
 };
 
 interface Optionneur {

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
-{%- if ci.uses_type(Type::JSONValue) %}
+{%- if ci.uses_type(Type::JSONObject) %}
 import org.json.JSONObject
 {%- endif %}
 

@@ -103,9 +103,9 @@ class RustBufferStream(object):
         utf8Bytes = self.read(size)
         return utf8Bytes.decode("utf-8")
 
-    {% when Type::JSONValue -%}
+    {% when Type::JSONObject -%}
 
-    def readJsonValue(self):
+    def readJsonObject(self):
         import json
         json_string = self.readString()
         return json.loads(json_string)

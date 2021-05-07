@@ -204,21 +204,21 @@ extension String: ViaFfi {
     }
 }
 
-fileprivate enum JSONValue {
-    fileprivate typealias JSONObject = [String: Any]
+fileprivate enum JSONObject {
+    fileprivate typealias SwiftType = [String: Any]
     fileprivate typealias FfiType = RustBuffer
     
-    fileprivate static func lift(_ v: FfiType) throws -> JSONObject {
+    fileprivate static func lift(_ v: FfiType) throws -> SwiftType {
         let jsonString = try String.lift(v)
-        return try JSONValue.from(string: jsonString)
+        return try JSONObject.from(string: jsonString)
     }
 
-    fileprivate static func read(from buf: Reader) throws -> JSONObject {
+    fileprivate static func read(from buf: Reader) throws -> SwiftType {
         let jsonString = try String.read(from: buf)
-        return try JSONValue.from(string: jsonString)
+        return try JSONObject.from(string: jsonString)
     }
 
-    fileprivate static func from(string: String) throws -> JSONObject {
+    fileprivate static func from(string: String) throws -> SwiftType {
         if let data = string.data(using: .utf8),
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                 return json
@@ -226,17 +226,17 @@ fileprivate enum JSONValue {
         throw UniffiInternalError.corruptData
     }
 
-    fileprivate static func lower(_ jsonObject: JSONObject) -> FfiType {
-        let jsonString = JSONValue.stringify(jsonObject)
+    fileprivate static func lower(_ jsonObject: SwiftType) -> FfiType {
+        let jsonString = JSONObject.stringify(jsonObject)
         return jsonString.lower()
     }
 
-    fileprivate static func write(_ jsonObject: JSONObject, into buf: Writer) {
-        let jsonString = JSONValue.stringify(jsonObject)
+    fileprivate static func write(_ jsonObject: SwiftType, into buf: Writer) {
+        let jsonString = JSONObject.stringify(jsonObject)
         return jsonString.write(into: buf)
     }
 
-    fileprivate static func stringify(_ jsonObject: JSONObject) -> String {
+    fileprivate static func stringify(_ jsonObject: SwiftType) -> String {
         if let data = try? JSONSerialization.data(withJSONObject: jsonObject, options: []),
             let string = String(data: data, encoding: .utf8) {
             return string

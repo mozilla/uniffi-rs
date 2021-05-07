@@ -13,7 +13,7 @@ The following built-in types can be passed as arguments/returned by Rust methods
 | `Option<T>`          | `T?`                   |                                   |
 | `Vec<T>`             | `sequence<T>`          |                                   |
 | `HashMap<String, T>` | `record<DOMString, T>` | Only string keys are supported    |
-| `serde_json::Value`  | `JSONValue`            | Top level object is a JSON Object |
+| `serde_json::Value`  | `JSONObject`           | Top level object is a JSON Object |
 | `()`                 | `void`                 | Empty return                      |
 | `Result<T, E>`       | N/A                    | See [Errors](./errors.md) section |
 

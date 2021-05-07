@@ -50,7 +50,7 @@ pub enum Type {
     Float64,
     Boolean,
     String,
-    JSONValue,
+    JSONObject,
     // Types defined in the component API, each of which has a string name.
     Object(String),
     Record(String),
@@ -85,7 +85,7 @@ impl Type {
             Type::Float64 => "f64".into(),
             Type::String => "string".into(),
             Type::Boolean => "bool".into(),
-            Type::JSONValue => "JSONValue".into(),
+            Type::JSONObject => "JSONObject".into(),
             // API defined types.
             // Note that these all get unique names, and the parser ensures that the names do not
             // conflict with a builtin type. We add a prefix to the name to guard against pathological
@@ -132,7 +132,7 @@ impl Into<FFIType> for &Type {
             // We might add a separate type for borrowed strings in future.
             Type::String => FFIType::RustBuffer,
             // We'll serialize JSON via a RustBuffer.
-            Type::JSONValue => FFIType::RustBuffer,
+            Type::JSONObject => FFIType::RustBuffer,
             // Objects are passed as opaque integer handles.
             Type::Object(_) => FFIType::UInt64,
             // Callback interfaces are passed as opaque integer handles.

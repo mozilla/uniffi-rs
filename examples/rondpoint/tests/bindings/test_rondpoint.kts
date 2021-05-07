@@ -78,7 +78,7 @@ listOf(0, 1).map { DictionnaireNombres(it.toUByte(), it.toUShort(), it.toUInt(),
 
 // Must be a JSON object, not an array or bare type.
 listOf("{}", "{\"a\":true}", "{\"a\":[1,2,3]}").map { JSONObject(it) }
-    .affirmAllerRetour(rt::identiqueJsonValue) { a, b -> a.toString() == b.toString() }
+    .affirmAllerRetour(rt::identiqueJsonObject) { a, b -> a.toString() == b.toString() }
 
 rt.destroy()
 
@@ -140,7 +140,7 @@ listOf(0.0F, 1.0F, -1.0F, Float.MIN_VALUE, Float.MAX_VALUE).affirmEnchaine(st::t
 // MIN_VALUE is 4.9E-324. Accuracy and formatting get weird at small sizes.
 listOf(0.0, 1.0, -1.0, Double.MIN_VALUE, Double.MAX_VALUE).affirmEnchaine(st::toStringDouble)  { s, n -> s.toDouble() == n }
 
-listOf("{\"a\": true}", "{\"a\": [1, 2, 3]}").map { JSONObject(it) }.affirmEnchaine(st::toStringJsonValue)
+listOf("{\"a\": true}", "{\"a\": [1, 2, 3]}").map { JSONObject(it) }.affirmEnchaine(st::toStringJsonObject)
 
 st.destroy()
 

@@ -138,7 +138,7 @@ mod filters {
             Type::Float64 => "Double".into(),
             Type::Boolean => "Bool".into(),
             Type::String => "String".into(),
-            Type::JSONValue => "Dictionary<String, Any>".into(),
+            Type::JSONObject => "Dictionary<String, Any>".into(),
             Type::Enum(name)
             | Type::Record(name)
             | Type::Object(name)
@@ -224,7 +224,7 @@ mod filters {
     pub fn lower_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(
             match type_ {
-                Type::JSONValue => format!("JSONValue.lower({})", var_name_swift(name)?),
+                Type::JSONObject => format!("JSONObject.lower({})", var_name_swift(name)?),
                 _ => format!("{}.lower()", var_name_swift(name)?),
             }
         )
@@ -236,7 +236,7 @@ mod filters {
     pub fn lift_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(
             match type_ {
-                Type::JSONValue => format!("JSONValue.lift({})", name),
+                Type::JSONObject => format!("JSONObject.lift({})", name),
                 _ => format!("{}.lift({})", type_swift(type_)?, name),
             }
         )
@@ -249,7 +249,7 @@ mod filters {
     pub fn read_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         Ok(
             match type_ {
-                Type::JSONValue => format!("JSONValue.read(from: {})", var_name_swift(name)?),
+                Type::JSONObject => format!("JSONObject.read(from: {})", var_name_swift(name)?),
                 _ => format!("{}.read(from: {})", type_swift(type_)?, name),
             }
         )

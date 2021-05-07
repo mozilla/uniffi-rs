@@ -60,7 +60,7 @@ let rt = Retourneur()
     .affirmAllerRetour(rt.identiqueString)
 
 [["a": [1,2,3]], ["a": true]]
-    .affirmAllerRetour(rt.identiqueJsonValue) { a, b in toString(a) == toString(b) }
+    .affirmAllerRetour(rt.identiqueJsonObject) { a, b in toString(a) == toString(b) }
 
 func toString(_ jsonObject: [String: Any]) -> String {
     if let data = try? JSONSerialization.data(withJSONObject: jsonObject, options: []),
@@ -115,7 +115,7 @@ assert("uniffi 💚 swift!" == wellKnown, "wellKnownString 'uniffi 💚 swift!' 
 // Doubles
 [.zero, 1, -1, .leastNonzeroMagnitude, .greatestFiniteMagnitude].affirmEnchaine(st.toStringDouble) { Double.init($0) == $1 }
 
-[["a": [1,2,3]], ["a": true]].affirmEnchaine(st.toStringJsonValue) { $0 == toString($1) }
+[["a": [1,2,3]], ["a": true]].affirmEnchaine(st.toStringJsonObject) { $0 == toString($1) }
 
 // Some extension functions for testing the results of roundtripping and stringifying
 extension Array where Element: Equatable {
