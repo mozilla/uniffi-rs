@@ -354,36 +354,6 @@ unsafe impl ViaFfi for String {
     }
 }
 
-unsafe impl ViaFfi for serde_json::Value {
-    type FfiType = RustBuffer;
-
-    fn lower(self) -> Self::FfiType {
-        match serde_json::to_string(&self) {
-            Ok(string) => string.lower(),
-            _ => panic!("JSON can't be serialized"),
-        }
-    }
-
-    // The argument here *must* be a uniquely-owned `RustBuffer` previously obtained
-    // from `lower` above, and hence must be the bytes of a valid rust string.
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
-        let json_string = String::try_lift(v)?;
-        Ok(serde_json::from_str(&json_string)?)
-    }
-
-    fn write<B: BufMut>(&self, buf: &mut B) {
-        match serde_json::to_string(&self) {
-            Ok(json_string) => json_string.write(buf),
-            _ => panic!("Unable to serialize JSON"),
-        };
-    }
-
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
-        let json_string = String::try_read(buf)?;
-        Ok(serde_json::from_str(&json_string)?)
-    }
-}
-
 /// Support for passing optional values via the FFI.
 ///
 /// Optional values are currently always passed by serializing to a buffer.
@@ -503,6 +473,63 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
             map.insert(key, value);
         }
         Ok(map)
+    }
+}
+
+use serde_json::Value;
+
+/// Support for passing JSON objects.
+///
+/// For correctness and speed of implementation, objects are serialized into a String.
+/// This can definitely be improved in efficiency, however high-quality JSON parsers and
+/// stringifiers are available on both sides of the FFI.
+///
+/// Only top-level objects are supported: i.e. the value must be a `Value::Object`.
+/// If the Rust side tries to pass back a `JSONArray` or a scalar, and the foreign language side
+/// is expecting a dictionary shaped value, it would be a failure.
+///
+/// In this implementation, the value is wrapped in an object with the error message as the key.
+unsafe impl ViaFfi for Value {
+    type FfiType = RustBuffer;
+
+    fn lower(self) -> Self::FfiType {
+        match to_supported_string(&self) {
+            Ok(string) => string.lower(),
+            Err(_) => panic!("Unserializable JSON"),
+        }
+    }
+
+    // The argument here *must* be a uniquely-owned `RustBuffer` previously obtained
+    // from `lower` above, and hence must be the bytes of a valid rust string.
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
+        let json_string = String::try_lift(v)?;
+        Ok(serde_json::from_str(&json_string)?)
+    }
+
+    fn write<B: BufMut>(&self, buf: &mut B) {
+        match to_supported_string(&self) {
+            Ok(json_string) => json_string.write(buf),
+            Err(_) => panic!("Unserializable JSON"),
+        };
+    }
+
+    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+        let json_string = String::try_read(buf)?;
+        Ok(serde_json::from_str(&json_string)?)
+    }
+}
+
+fn to_supported_string(value: &Value) -> Result<String> {
+    match value {
+        Value::Object(_) => Ok(serde_json::to_string(value)?),
+        _ => {
+            // We can either cause a panic! when unsupported/unsanitized JSON is
+            // accidently given to us, or we can wrap it up as an object with an error message
+            // as a key. Neither is ideal, but this should cause failure down stream quick enough
+            // for the developer to catch it.
+            let scalar = serde_json::to_string(value)?;
+            Ok(format!("{{\"Only top level objects supported by Uniffi\":{}}}", scalar))
+        }
     }
 }
 
