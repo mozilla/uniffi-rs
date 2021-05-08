@@ -3,7 +3,19 @@ class {{ obj.name()|class_name_rb }}
   {%- when Some with (cons) %}
   def initialize({% call rb::arg_list_decl(cons) -%})
     {%- call rb::coerce_args_extra_indent(cons) %}
-    @handle = {% call rb::to_ffi_call(cons) %}
+    handle = {% call rb::to_ffi_call(cons) %}
+    ObjectSpace.define_finalizer(self, self.class.define_finalizer_by_handle(handle))
+    @handle = handle
+  end
+
+  def {{ obj.name()|class_name_rb }}.define_finalizer_by_handle(handle)
+    Proc.new do |_id|
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error(
+        InternalError,
+        :{{ obj.ffi_object_free().name() }},
+        handle
+      )
+    end
   end
   {%- when None %}
   {%- endmatch %}
