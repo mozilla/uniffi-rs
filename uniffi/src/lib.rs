@@ -494,7 +494,9 @@ unsafe impl ViaFfi for Value {
     type FfiType = RustBuffer;
 
     fn lower(self) -> Self::FfiType {
-        to_supported_string(&self).map(String::lower).expect("Unserializable JSON")
+        to_supported_string(&self)
+            .map(String::lower)
+            .expect("Unserializable JSON")
     }
 
     fn try_lift(v: Self::FfiType) -> Result<Self> {
@@ -503,7 +505,9 @@ unsafe impl ViaFfi for Value {
     }
 
     fn write<B: BufMut>(&self, buf: &mut B) {
-        to_supported_string(&self).map(|s| s.write(buf)).expect("Unserializable JSON")
+        to_supported_string(&self)
+            .map(|s| s.write(buf))
+            .expect("Unserializable JSON")
     }
 
     fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
