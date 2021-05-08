@@ -23,12 +23,11 @@ class TestCoverall < Test::Unit::TestCase
     assert_equal(d.signed64, 9_223_372_036_854_775_807)
     assert_equal(d.maybe_signed64, 0)
 
-    # floats should be "close enough" - although it's mildly surprising that
-    # we need to specify `places=6` whereas the default is 7.
-    assert_in_delta(d.float32, 1.2345, places = 6)
-    assert_in_delta(d.maybe_float32, 22.0 / 7.0, places = 6)
-    assert_in_delta(d.float64, 0.0)
-    assert_in_delta(d.maybe_float64, 1.0)
+    assert_in_delta(d.float32, 1.2345)
+    assert_in_delta(d.maybe_float32, 22.0 / 7.0)
+
+    assert_equal(d.float64, 0.0)
+    assert_equal(d.maybe_float64, 1.0)
   end
 
   def test_none_dict
@@ -46,9 +45,9 @@ class TestCoverall < Test::Unit::TestCase
     assert_equal(d.signed64, 9_223_372_036_854_775_807)
     assert_nil(d.maybe_signed64)
 
-    assert_in_delta(d.float32, 1.2345, places = 6)
+    assert_in_delta(d.float32, 1.2345)
     assert_nil(d.maybe_float32)
-    assert_in_delta(d.float64, 0.0)
+    assert_equal(d.float64, 0.0)
     assert_nil(d.maybe_float64)
   end
 

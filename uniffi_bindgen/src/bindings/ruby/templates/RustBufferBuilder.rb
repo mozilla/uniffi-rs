@@ -82,7 +82,7 @@ class RustBufferBuilder
   {% when Type::Float32 -%}
 
   def write_F32(v)
-    pack_into(4, 'f', v)
+    pack_into(4, 'g', v)
   end
 
   {% when Type::Float64 -%}

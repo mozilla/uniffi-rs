@@ -76,7 +76,7 @@ class RustBufferStream
   {% when Type::Float32 -%}
 
   def readF32
-    unpack_from 4, 'f'
+    unpack_from 4, 'g'
   end
 
   {% when Type::Float64 -%}
