@@ -141,9 +141,12 @@ mod filters {
             | Type::UInt64 => format!("int({})", nm), // TODO: check max/min value
             Type::Float32 | Type::Float64 => format!("float({})", nm),
             Type::Boolean => format!("bool({})", nm),
-            Type::String | Type::Object(_) | Type::Enum(_) | Type::Error(_) | Type::Record(_) | Type::JSONObject => {
-                nm.to_string()
-            }
+            Type::String
+            | Type::Object(_)
+            | Type::Enum(_)
+            | Type::Error(_)
+            | Type::Record(_)
+            | Type::JSONObject => nm.to_string(),
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
             Type::Optional(t) => format!("(None if {} is None else {})", nm, coerce_py(nm, t)?),
             Type::Sequence(t) => format!("list({} for x in {})", coerce_py(&"x", t)?, nm),
@@ -177,7 +180,7 @@ mod filters {
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
-            | Type::Map(_) 
+            | Type::Map(_)
             | Type::JSONObject => format!(
                 "RustBuffer.allocFrom{}({})",
                 class_name_py(&type_.canonical_name())?,
@@ -206,7 +209,7 @@ mod filters {
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
-            | Type::Map(_) 
+            | Type::Map(_)
             | Type::JSONObject => format!(
                 "{}.consumeInto{}()",
                 nm,

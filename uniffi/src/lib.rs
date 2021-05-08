@@ -528,7 +528,10 @@ fn to_supported_string(value: &Value) -> Result<String> {
             // as a key. Neither is ideal, but this should cause failure down stream quick enough
             // for the developer to catch it.
             let scalar = serde_json::to_string(value)?;
-            Ok(format!("{{\"Only top level objects supported by Uniffi\":{}}}", scalar))
+            Ok(format!(
+                "{{\"Only top level objects supported by Uniffi\":{}}}",
+                scalar
+            ))
         }
     }
 }
