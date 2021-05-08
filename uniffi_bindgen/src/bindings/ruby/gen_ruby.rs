@@ -23,7 +23,7 @@ fn is_reserved_word(word: &str) -> bool {
 
 // Some config options for it the caller wants to customize the generated ruby.
 // Note that this can only be used to control details of the ruby *that do not affect the underlying component*,
-// sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+// since the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     cdylib_name: Option<String>,
@@ -165,9 +165,7 @@ mod filters {
             Type::Float32 | Type::Float64 => format!("{}.to_f", nm),
             Type::Boolean => format!("{} ? true : false", nm),
             Type::Object(_) | Type::Enum(_) | Type::Error(_) | Type::Record(_) => nm.to_string(),
-            Type::String => {
-                format!("{}.to_s", nm)
-            }
+            Type::String => format!("{}.to_s", nm),
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
             Type::Optional(t) => format!("({} ? {} : nil)", nm, coerce_rb(nm, t)?),
             Type::Sequence(t) => {
