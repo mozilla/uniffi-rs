@@ -22,7 +22,7 @@ cargo_metadata = "0.11"
 paste = "1.0"
 uniffi_bindgen = { path = "../uniffi_bindgen", optional = true, version = "= 0.8.0"}
 static_assertions = "1.1.0"
-serde_json = { optional = true, version = "1.0.64" }
+serde_json = { optional = true, version = "1" }
 
 [features]
 default = []
