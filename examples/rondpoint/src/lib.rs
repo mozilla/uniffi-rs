@@ -125,7 +125,7 @@ impl Retourneur {
     fn identique_string(&self, value: String) -> String {
         value
     }
-    fn identique_json_object(&self, value: Value) -> Value {
+    fn identique_json(&self, value: Value) -> Value {
         value
     }
     fn identique_dictionnaire_avec_json(
@@ -192,7 +192,7 @@ impl Stringifier {
     fn to_string_boolean(&self, value: bool) -> String {
         value.to_string()
     }
-    fn to_string_json_object(&self, value: Value) -> String {
+    fn to_string_json(&self, value: Value) -> String {
         value.to_string()
     }
     fn well_known_string(&self, value: String) -> String {

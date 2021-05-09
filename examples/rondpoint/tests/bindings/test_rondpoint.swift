@@ -60,7 +60,7 @@ let rt = Retourneur()
     .affirmAllerRetour(rt.identiqueString)
 
 [["a": [1,2,3]], ["a": true]]
-    .affirmAllerRetour(rt.identiqueJsonObject) { a, b in toString(a) == toString(b) }
+    .affirmAllerRetour(rt.identiqueJson) { a, b in toString(a) == toString(b) }
 
 [["a": [1,2,3]], ["a": true]].map { json in DictionnaireAvecJson(value: json) }
     .affirmAllerRetour(rt.identiqueDictionnaireAvecJson) { a, b in toString(a.value) == toString(b.value) }
@@ -118,7 +118,7 @@ assert("uniffi 💚 swift!" == wellKnown, "wellKnownString 'uniffi 💚 swift!' 
 // Doubles
 [.zero, 1, -1, .leastNonzeroMagnitude, .greatestFiniteMagnitude].affirmEnchaine(st.toStringDouble) { Double.init($0) == $1 }
 
-[["a": [1,2,3]], ["a": true]].affirmEnchaine(st.toStringJsonObject) { $0 == toString($1) }
+[["a": [1,2,3]], ["a": true]].affirmEnchaine(st.toStringJson) { $0 == toString($1) }
 
 // Some extension functions for testing the results of roundtripping and stringifying
 extension Array where Element: Equatable {
