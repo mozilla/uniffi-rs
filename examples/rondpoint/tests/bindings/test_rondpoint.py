@@ -85,7 +85,7 @@ affirmAllerRetour(
 # JSON
 affirmAllerRetour(
   [{}, {'a': [1, 2, 3]}, {'a': None, 'b': True}],
-  rt.identique_json,
+  rt.identique_json_object,
 )
 
 affirmAllerRetour(
@@ -164,6 +164,6 @@ def rustyJsonToStr(v):
 
 affirmEnchaine(
   [{}, {'a': [1, 2, 3]}, {'a': None, 'b': True}],
-  st.to_string_json,
+  st.to_string_json_object,
   rustyJsonToStr,
 )
