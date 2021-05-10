@@ -52,7 +52,7 @@ mod filters {
             Type::Float64 => "f64".into(),
             Type::Boolean => "bool".into(),
             Type::String => "String".into(),
-            Type::JSONObject => "serde_json::Value".into(),
+            Type::JSONObject => "serde_json::Map<String, serde_json::Value>".into(),
             Type::Enum(name) | Type::Record(name) | Type::Object(name) | Type::Error(name) => {
                 name.clone()
             }

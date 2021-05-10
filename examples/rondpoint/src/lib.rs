@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use serde_json::Value;
+use serde_json::{Map, Value};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -77,7 +77,7 @@ fn switcheroo(b: bool) -> bool {
 }
 
 struct DictionnaireAvecJSON {
-    value: Value,
+    value: Map<String, Value>,
 }
 
 // Test that values can traverse both ways across the FFI.
@@ -125,7 +125,7 @@ impl Retourneur {
     fn identique_string(&self, value: String) -> String {
         value
     }
-    fn identique_json(&self, value: Value) -> Value {
+    fn identique_json(&self, value: Map<String, Value>) -> Map<String, Value> {
         value
     }
     fn identique_dictionnaire_avec_json(
@@ -192,8 +192,8 @@ impl Stringifier {
     fn to_string_boolean(&self, value: bool) -> String {
         value.to_string()
     }
-    fn to_string_json(&self, value: Value) -> String {
-        value.to_string()
+    fn to_string_json(&self, value: Map<String, Value>) -> String {
+        Value::Object(value).to_string()
     }
     fn well_known_string(&self, value: String) -> String {
         format!("uniffi 💚 {}!", value)

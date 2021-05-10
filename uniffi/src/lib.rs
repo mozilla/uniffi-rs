@@ -477,7 +477,7 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
 }
 
 #[cfg(feature = "serde_json")]
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 /// Support for passing JSON objects.
 ///
@@ -490,7 +490,7 @@ use serde_json::Value;
 /// is expecting a dictionary shaped value, it would be a failure.
 ///
 #[cfg(feature = "serde_json")]
-unsafe impl ViaFfi for Value {
+unsafe impl ViaFfi for Map<String, Value> {
     type FfiType = RustBuffer;
 
     fn lower(self) -> Self::FfiType {
@@ -517,17 +517,8 @@ unsafe impl ViaFfi for Value {
 }
 
 #[cfg(feature = "serde_json")]
-fn to_supported_string(value: &Value) -> Result<String> {
-    match value {
-        Value::Object(_) => Ok(serde_json::to_string(value)?),
-        _ => {
-            // Currently we don't support JSONArrays or scalar values
-            // at the top level. We'd like to catch this at compile time,
-            // but because serde can load everything into a single enum,
-            // we have to rely on runtime checking.
-            panic!("Only serde_json::Value::Object values can be passed across the FFI");
-        }
-    }
+fn to_supported_string(value: &Map<String, Value>) -> Result<String> {
+    Ok(serde_json::to_string(value)?)
 }
 
 #[cfg(test)]
