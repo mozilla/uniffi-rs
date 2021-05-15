@@ -254,9 +254,7 @@ mod filters {
             | Type::Sequence(_)
             | Type::Map(_)
             | Type::Timestamp
-            | Type::Duration => {
-                format!("lift{}({})", class_name_kt(&type_.canonical_name())?, nm,)
-            }
+            | Type::Duration => format!("lift{}({})", class_name_kt(&type_.canonical_name())?, nm),
             _ => format!("{}.lift({})", type_kt(type_)?, nm),
         })
     }
@@ -277,9 +275,7 @@ mod filters {
             | Type::Sequence(_)
             | Type::Map(_)
             | Type::Timestamp
-            | Type::Duration => {
-                format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm,)
-            }
+            | Type::Duration => format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm),
             _ => format!("{}.read({})", type_kt(type_)?, nm),
         })
     }
