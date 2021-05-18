@@ -111,8 +111,12 @@ class RustBufferStream(object):
     # a variable precision due to the use of float as representation.
 
     def read{{ canonical_type_name }}(self):
-        timestamp = self._unpack_from(8, ">Q") + (self._unpack_from(4, ">I") / 1.0e9)
-        return datetime.datetime.fromtimestamp(timestamp, tz=None)
+        seconds = self._unpack_from(8, ">q")
+        microseconds = self._unpack_from(4, ">I") / 1000
+        if seconds >= 0:
+            return datetime.datetime.fromtimestamp(0, tz=None) + datetime.timedelta(seconds=seconds, microseconds=microseconds)
+        else:
+            return datetime.datetime.fromtimestamp(0, tz=None) - datetime.timedelta(seconds=-seconds, microseconds=microseconds)
 
     {% when Type::Duration -%}
     # The Duration type.

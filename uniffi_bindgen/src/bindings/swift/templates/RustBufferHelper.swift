@@ -227,20 +227,30 @@ extension Bool: ViaFfi {
 
 extension Date: ViaFfiUsingByteBuffer, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Self {
-        let seconds: UInt64 = try buf.readInt()
+        let seconds: Int64 = try buf.readInt()
         let microseconds: UInt32 = try buf.readInt()
-        let delta = Double(seconds) + (Double(microseconds) / 1.0e9)
-        return Date.init(timeIntervalSince1970: delta)
+        if seconds >= 0 {
+            let delta = Double(seconds) + (Double(microseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
+        } else {
+            let delta = Double(-seconds) + (Double(microseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: -delta)
+        }
     }
 
     fileprivate func write(into buf: Writer) {
-        let delta = self.timeIntervalSince1970
-        if (delta < 0) {
-            fatalError("Invalid timestamp, must be greater than UNIX EPOCH")
+        var delta = self.timeIntervalSince1970
+        var sign: Int64 = 1
+        if delta < 0 {
+            sign = -1
+            delta = -delta
         }
-        let seconds = UInt64(delta)
+        if delta.rounded(.down) > Double(Int64.max) {
+            fatalError("Timestamp overflow, exceeds max bounds supported by Uniffi")
+        }
+        let seconds = Int64(delta)
         let microseconds = UInt32((delta - Double(seconds)) * 1.0e9)
-        buf.writeInt(seconds)
+        buf.writeInt(sign * seconds)
         buf.writeInt(microseconds)
     }
 }
@@ -269,6 +279,14 @@ extension TimeInterval {
     }
 
     fileprivate func writeDuration(into buf: Writer) {
+        if self.rounded(.down) > Double(Int64.max) {
+            fatalError("Duration overflow, exceeds max bounds supported by Uniffi")
+        }
+
+        if self < 0 {
+            fatalError("Invalid duration, must be non-negative")
+        }
+
         let seconds = UInt64(self)
         let microseconds = UInt32((self - Double(seconds)) * 1.0e9)
         buf.writeInt(seconds)

@@ -360,7 +360,6 @@ unsafe impl ViaFfi for String {
 
 /// Support for passing timestamp values via the FFI.
 ///
-/// Timestamps prior to the UNIX EPOCH will cause a panic.
 /// Timestamps values are currently always passed by serializing to a buffer.
 unsafe impl ViaFfi for SystemTime {
     type FfiType = RustBuffer;
@@ -374,15 +373,33 @@ unsafe impl ViaFfi for SystemTime {
     }
 
     fn write<B: BufMut>(&self, buf: &mut B) {
-        let duration = self
+        let mut sign = 1;
+        let epoch_offset = self
             .duration_since(SystemTime::UNIX_EPOCH)
-            .expect("SystemTime before UNIX EPOCH!");
-        duration.write(buf);
+            .unwrap_or_else(|error| {
+                sign = -1;
+                error.duration()
+            });
+        // This panic should never happen as SystemTime typically stores seconds as i64
+        let seconds = sign
+            * i64::try_from(epoch_offset.as_secs())
+                .expect("SystemTime overflow, seconds greater than i64::MAX");
+
+        buf.put_i64(seconds);
+        buf.put_u32(epoch_offset.subsec_nanos());
     }
 
     fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
-        let duration = Duration::try_read(buf)?;
-        Ok(SystemTime::UNIX_EPOCH + duration)
+        check_remaining(buf, 12)?;
+        let seconds = buf.get_i64();
+        let nanos = buf.get_u32();
+        let epoch_offset = Duration::new(seconds.wrapping_abs() as u64, nanos);
+
+        if seconds >= 0 {
+            Ok(SystemTime::UNIX_EPOCH + epoch_offset)
+        } else {
+            Ok(SystemTime::UNIX_EPOCH - epoch_offset)
+        }
     }
 }
 
@@ -535,9 +552,28 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
 
 #[cfg(test)]
 mod test {
+    use super::*;
+
     #[test]
     fn trybuild_ui_tests() {
         let t = trybuild::TestCases::new();
         t.compile_fail("tests/ui/*.rs");
+    }
+
+    #[test]
+    fn timestamp_roundtrip_post_epoch() {
+        let expected = SystemTime::UNIX_EPOCH + Duration::new(100, 100);
+        let result = SystemTime::try_lift(expected.lower()).expect("Failed to lift!");
+        assert_eq!(expected, result)
+    }
+
+    #[test]
+    fn timestamp_roundtrip_pre_epoch() {
+        let expected = SystemTime::UNIX_EPOCH - Duration::new(100, 100);
+        let result = SystemTime::try_lift(expected.lower()).expect("Failed to lift!");
+        assert_eq!(
+            expected, result,
+            "Expected results after lowering and lifting to be equal"
+        )
     }
 }

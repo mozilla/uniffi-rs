@@ -293,14 +293,16 @@ internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ type_na
 
 internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ type_name }} {
     val seconds = buf.getLong()
+    // Type mismatch (should be u32) but we check for overflow/underflow below
     val nanoseconds = buf.getInt().toLong()
-    if (seconds < 0) {
-        throw java.time.DateTimeException("Instant exceeds minimum or maximum instant supported by uniffi")
-    }
     if (nanoseconds < 0) {
         throw java.time.DateTimeException("Instant nanoseconds exceed minimum or maximum supported by uniffi")
     }
-    return {{ type_name }}.ofEpochSecond(seconds, nanoseconds)
+    if (seconds >= 0) {
+        return {{ type_name }}.EPOCH.plus(java.time.Duration.ofSeconds(seconds, nanoseconds))
+    } else {
+        return {{ type_name }}.EPOCH.minus(java.time.Duration.ofSeconds(-seconds, nanoseconds))
+    }
 }
 
 internal fun lower{{ canonical_type_name }}(v: {{ type_name }}): RustBuffer.ByValue {
@@ -310,16 +312,23 @@ internal fun lower{{ canonical_type_name }}(v: {{ type_name }}): RustBuffer.ByVa
 }
 
 internal fun write{{ canonical_type_name }}(v: {{ type_name }}, buf: RustBufferBuilder) {
-    if (v.epochSecond < 0) {
-        throw IllegalArgumentException("Invalid timestamp, must be greater than UNIX EPOCH")
+    var epoch_offset = java.time.Duration.between({{ type_name }}.EPOCH, v)
+
+    var sign = 1
+    if (epoch_offset.isNegative()) {
+        sign = -1
+        epoch_offset = epoch_offset.negated()
     }
 
-    if (v.nano < 0) {
+    if (epoch_offset.nano < 0) {
+        // Java docs provide guarantee that nano will always be positive, so this should be impossible
+        // See: https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html
         throw IllegalArgumentException("Invalid timestamp, nano value must be non-negative")
     }
 
-    buf.putLong(v.epochSecond)
-    buf.putInt(v.nano)
+    buf.putLong(sign * epoch_offset.seconds)
+    // Type mismatch (should be u32) but since values will always be between 0 and 999,999,999 it should be OK
+    buf.putInt(epoch_offset.nano)
 }
 
 {% when Type::Duration -%}
@@ -332,7 +341,17 @@ internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ type_na
 }
 
 internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ type_name }} {
-    return {{ type_name }}.ofSeconds(buf.getLong(), buf.getInt().toLong())
+    // Type mismatch (should be u64) but we check for overflow/underflow below
+    val seconds = buf.getLong()
+    // Type mismatch (should be u32) but we check for overflow/underflow below
+    val nanoseconds = buf.getInt().toLong()
+    if (seconds < 0) {
+        throw java.time.DateTimeException("Duration exceeds minimum or maximum value supported by uniffi")
+    }
+    if (nanoseconds < 0) {
+        throw java.time.DateTimeException("Duration nanoseconds exceed minimum or maximum supported by uniffi")
+    }
+    return {{ type_name }}.ofSeconds(seconds, nanoseconds)
 }
 
 internal fun lower{{ canonical_type_name }}(v: {{ type_name }}): RustBuffer.ByValue {
@@ -342,7 +361,20 @@ internal fun lower{{ canonical_type_name }}(v: {{ type_name }}): RustBuffer.ByVa
 }
 
 internal fun write{{ canonical_type_name }}(v: {{ type_name }}, buf: RustBufferBuilder) {
+    if (v.seconds < 0) {
+        // Rust does not support negative Durations
+        throw IllegalArgumentException("Invalid duration, must be non-negative")
+    }
+
+    if (v.nano < 0) {
+        // Java docs provide guarantee that nano will always be positive, so this should be impossible
+        // See: https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html
+        throw IllegalArgumentException("Invalid duration, nano value must be non-negative")
+    }
+
+    // Type mismatch (should be u64) but since Rust doesn't support negative durations we should be OK
     buf.putLong(v.seconds)
+    // Type mismatch (should be u32) but since values will always be between 0 and 999,999,999 it should be OK
     buf.putInt(v.nano)
 }
 
