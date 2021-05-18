@@ -109,19 +109,23 @@ class RustBufferBuilder(object):
     {% when Type::Timestamp -%}
 
     def write{{ canonical_type_name }}(self, v):
-        delta = v - datetime.datetime.fromtimestamp(0)
-        seconds = int(delta.total_seconds())
-        nanoseconds = int(delta.microseconds * 1.0e3)
-        if seconds < 0:
-            raise ValueError("Invalid timestamp, must be greater than UNIX EPOCH")
-        self._pack_into(8, ">Q", seconds)
+        if v >= datetime.datetime.fromtimestamp(0):
+            sign = 1
+            delta = v - datetime.datetime.fromtimestamp(0)
+        else:
+            sign = -1
+            delta = datetime.datetime.fromtimestamp(0) - v
+
+        seconds = delta.seconds + delta.days * 24 * 3600
+        nanoseconds = delta.microseconds * 1000
+        self._pack_into(8, ">q", sign * seconds)
         self._pack_into(4, ">I", nanoseconds)
 
     {% when Type::Duration -%}
 
     def write{{ canonical_type_name }}(self, v):
-        seconds = int(v.total_seconds())
-        nanoseconds = int(v.microseconds * 1.0e3)
+        seconds = v.seconds + v.days * 24 * 3600
+        nanoseconds = v.microseconds * 1000
         if seconds < 0:
             raise ValueError("Invalid duration, must be non-negative")
         self._pack_into(8, ">Q", seconds)

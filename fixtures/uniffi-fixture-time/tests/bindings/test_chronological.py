@@ -8,19 +8,14 @@ assert add(datetime.fromtimestamp(100.000001), timedelta(seconds=1, microseconds
 # Test passing timestamp while returning duration
 assert diff(datetime.fromtimestamp(101.000002), datetime.fromtimestamp(100.000001)) == timedelta(seconds=1, microseconds=1)
 
+# Test pre-epoch timestamps
+assert add(datetime.fromisoformat('1955-11-05T00:06:00.283001'), timedelta(seconds=1, microseconds=1)) == datetime.fromisoformat('1955-11-05T00:06:01.283002')
+
 # Test exceptions are propagated
 try:
     diff(datetime.fromtimestamp(100), datetime.fromtimestamp(101))
     assert(not("Should have thrown a TimeDiffError exception!"))
 except ChronologicalError.TimeDiffError:
-    # It's okay!
-    pass
-
-# Test unix epoch lower bound
-try:
-    diff(datetime.fromtimestamp(-1), datetime.fromtimestamp(101))
-    assert(not("Should have thrown a ValueError exception!"))
-except ValueError:
     # It's okay!
     pass
 
@@ -31,7 +26,7 @@ assert add(datetime(MAXYEAR, 12, 31, 23, 59, 59, 0), timedelta(seconds=0)) == da
 try:
     add(datetime(MAXYEAR, 12, 31, 23, 59, 59, 0), timedelta(seconds=1))
     assert(not("Should have thrown a ValueError exception!"))
-except ValueError:
+except OverflowError:
     # It's okay!
     pass
 

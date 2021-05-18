@@ -11,19 +11,15 @@ assert(add(Instant.ofEpochSecond(100, 100), Duration.ofSeconds(1, 1))
 assert(diff(Instant.ofEpochSecond(101, 101), Instant.ofEpochSecond(100, 100))
         .equals(Duration.ofSeconds(1, 1)))
 
+// Test pre-epoch timestamps
+assert(add(Instant.parse("1955-11-05T00:06:00.283000001Z"), Duration.ofSeconds(1, 1))
+        .equals(Instant.parse("1955-11-05T00:06:01.283000002Z")))
+
 // Test exceptions are propagated
 try {
         diff(Instant.ofEpochSecond(100), Instant.ofEpochSecond(101))
         throw RuntimeException("Should have thrown a TimeDiffError exception!")
 } catch (e: ChronologicalErrorException) {
-        // It's okay!
-}
-
-// Test unix epoch lower bound
-try {
-        diff(Instant.ofEpochSecond(-1), Instant.ofEpochSecond(101))
-        throw RuntimeException("Should have thrown a IllegalArgumentException exception!")
-} catch (e: IllegalArgumentException) {
         // It's okay!
 }
 
