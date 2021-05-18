@@ -66,7 +66,9 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
     let mut jar_file = PathBuf::from(out_dir);
     jar_file.push(format!("{}.jar", ci.namespace()));
     let status = Command::new("kotlinc")
-        .arg("-Xopt-in=kotlin.ExperimentalUnsignedTypes")
+        // Our generated bindings should not produce any warnings; fail tests if they do.
+        .arg("-Werror")
+        // Reflect $CLASSPATH from the environment, to help find `jna.jar`.
         .arg("-classpath")
         .arg(env::var("CLASSPATH").unwrap_or_else(|_| "".to_string()))
         .arg(&kt_file)
@@ -105,9 +107,13 @@ pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
     let mut cmd = Command::new("kotlinc");
     // Make sure it can load the .jar and its dependencies.
     cmd.arg("-classpath").arg(classpath);
+    // Code that wants to use an API with unsigned types, must opt in to this experimental Kotlin feature.
+    // Specify it here in order to not have to worry about that when writing tests.
     cmd.arg("-Xopt-in=kotlin.ExperimentalUnsignedTypes");
     // Enable runtime assertions, for easy testing etc.
     cmd.arg("-J-ea");
+    // Our test scripts should not produce any warnings.
+    cmd.arg("-Werror");
     cmd.arg("-script").arg(script_file);
     let status = cmd
         .spawn()
