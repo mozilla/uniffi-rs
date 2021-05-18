@@ -246,9 +246,9 @@ extension Date: ViaFfiUsingByteBuffer, ViaFfi {
 }
 
 extension TimeInterval {
-    fileprivate static func liftTimeInterval(_ buf: RustBuffer) throws -> Self {
+    fileprivate static func liftDuration(_ buf: RustBuffer) throws -> Self {
       let reader = Reader(data: Data(rustBuffer: buf))
-      let value = try Self.readTimeInterval(from: reader)
+      let value = try Self.readDuration(from: reader)
       if reader.hasRemaining() {
           throw UniffiInternalError.incompleteData
       }
@@ -256,19 +256,19 @@ extension TimeInterval {
       return value
     }
 
-    fileprivate func lowerTimeInterval() -> RustBuffer {
+    fileprivate func lowerDuration() -> RustBuffer {
       let writer = Writer()
-      self.writeTimeInterval(into: writer)
+      self.writeDuration(into: writer)
       return RustBuffer(bytes: writer.bytes)
     }
 
-    fileprivate static func readTimeInterval(from buf: Reader) throws -> Self {
+    fileprivate static func readDuration(from buf: Reader) throws -> Self {
         let seconds: UInt64 = try buf.readInt()
         let microseconds: UInt32 = try buf.readInt()
         return Double(seconds) + (Double(microseconds) / 1.0e9)
     }
 
-    fileprivate func writeTimeInterval(into buf: Writer) {
+    fileprivate func writeDuration(into buf: Writer) {
         let seconds = UInt64(self)
         let microseconds = UInt32((self - Double(seconds)) * 1.0e9)
         buf.writeInt(seconds)

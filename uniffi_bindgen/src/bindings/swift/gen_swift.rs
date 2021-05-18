@@ -227,7 +227,7 @@ mod filters {
             Type::Duration => Ok(format!(
                 "{}.lower{}()",
                 var_name_swift(name)?,
-                type_swift(type_)?
+                type_.canonical_name()
             )),
             _ => Ok(format!("{}.lower()", var_name_swift(name)?)),
         }
@@ -241,7 +241,7 @@ mod filters {
             Type::Duration => Ok(format!(
                 "{}.lift{}({})",
                 type_swift(type_)?,
-                type_swift(type_)?,
+                type_.canonical_name(),
                 name
             )),
             _ => Ok(format!("{}.lift({})", type_swift(type_)?, name)),
@@ -257,7 +257,7 @@ mod filters {
             Type::Duration => Ok(format!(
                 "{}.read{}(from: {})",
                 type_swift(type_)?,
-                type_swift(type_)?,
+                type_.canonical_name(),
                 name
             )),
             _ => Ok(format!("{}.read(from: {})", type_swift(type_)?, name)),
