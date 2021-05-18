@@ -1,4 +1,4 @@
-import org.mozilla.uniffi.example.chronological.*;
+import uniffi.chronological.*;
 import java.time.Duration
 import java.time.Instant
 import java.time.DateTimeException

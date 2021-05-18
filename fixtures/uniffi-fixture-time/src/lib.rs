@@ -32,4 +32,4 @@ fn equal(a: SystemTime, b: SystemTime) -> bool {
 
 type Result<T, E = ChronologicalError> = std::result::Result<T, E>;
 
-uniffi_macros::include_scaffolding!("chronological");
+include!(concat!(env!("OUT_DIR"), "/chronological.uniffi.rs"));
