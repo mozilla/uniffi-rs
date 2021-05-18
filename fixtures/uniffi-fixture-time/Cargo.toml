@@ -1,5 +1,5 @@
 [package]
-name = "uniffi-example-time"
+name = "uniffi-fixture-time"
 edition = "2018"
 version = "0.8.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
@@ -7,8 +7,8 @@ license = "MPL-2.0"
 publish = false
 
 [lib]
-crate-type = ["staticlib", "cdylib", "lib"]
-name = "chronological"
+crate-type = ["staticlib", "cdylib"]
+name = "uniffi_chronological"
 
 [dependencies]
 uniffi_macros = {path = "../../uniffi_macros"}

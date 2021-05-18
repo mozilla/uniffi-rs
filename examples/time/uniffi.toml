@@ -1,9 +1,0 @@
-[bindings.kotlin]
-package_name = "org.mozilla.uniffi.example.chronological"
-cdylib_name = "chronological"
-
-[bindings.python]
-cdylib_name = "chronological"
-
-[bindings.swift]
-cdylib_name = "chronological"
