@@ -476,6 +476,51 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
     }
 }
 
+#[cfg(feature = "serde_json")]
+use serde_json::{Map, Value};
+
+/// Support for passing JSON objects.
+///
+/// For correctness and speed of implementation, objects are serialized into a String.
+/// This can definitely be improved in efficiency, however high-quality JSON parsers and
+/// stringifiers are available on both sides of the FFI.
+///
+/// Only top-level objects are supported: i.e. the value must be a `Value::Object`.
+/// If the Rust side tries to pass back a `JSONArray` or a scalar, and the foreign language side
+/// is expecting a dictionary shaped value, it would be a failure.
+///
+#[cfg(feature = "serde_json")]
+unsafe impl ViaFfi for Map<String, Value> {
+    type FfiType = RustBuffer;
+
+    fn lower(self) -> Self::FfiType {
+        to_supported_string(&self)
+            .map(String::lower)
+            .expect("Unserializable JSON")
+    }
+
+    fn try_lift(v: Self::FfiType) -> Result<Self> {
+        let json_string = String::try_lift(v)?;
+        Ok(serde_json::from_str(&json_string)?)
+    }
+
+    fn write<B: BufMut>(&self, buf: &mut B) {
+        to_supported_string(&self)
+            .map(|s| s.write(buf))
+            .expect("Unserializable JSON")
+    }
+
+    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+        let json_string = String::try_read(buf)?;
+        Ok(serde_json::from_str(&json_string)?)
+    }
+}
+
+#[cfg(feature = "serde_json")]
+fn to_supported_string(value: &Map<String, Value>) -> Result<String> {
+    Ok(serde_json::to_string(value)?)
+}
+
 #[cfg(test)]
 mod test {
     #[test]

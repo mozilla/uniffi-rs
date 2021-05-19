@@ -61,12 +61,13 @@ RUN mkdir -p /tmp/setup-kotlin \
     && cd ../ \
     && rm -rf ./setup-kotlin
 
-RUN mkdir -p /tmp/setup-jna \
-    && cd /tmp/setup-jna \
+RUN mkdir -p /tmp/setup-kotlin-env \
+    && cd /tmp/setup-kotlin-env \
     && curl -o jna.jar https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.6.0/jna-5.6.0.jar \
+    && curl -o json.jar https://repo1.maven.org/maven2/org/json/json/20190722/json-20190722.jar \
     # XXX TODO: should check a sha256sum or something here...
-    && sudo mv jna.jar /opt \
-    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar\"" >> /home/circleci/.bashrc \
-    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar\"" >> /home/circleci/.profile \
+    && sudo mv *.jar /opt \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar:/opt/json.jar\"" >> /home/circleci/.bashrc \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar:/opt/json.jar\"" >> /home/circleci/.profile \
     && cd ../ \
-    && rm -rf ./setup-jna
+    && rm -rf ./setup-kotlin-env

@@ -62,7 +62,7 @@ class RustBuffer(ctypes.Structure):
     # of python's free-for-all type system.
 
     {%- for typ in ci.iter_types() -%}
-    {%- let canonical_type_name = typ.canonical_name() -%}
+    {%- let canonical_type_name = typ.canonical_name()|class_name_py -%}
     {%- match typ -%}
 
     {% when Type::String -%}
@@ -77,6 +77,20 @@ class RustBuffer(ctypes.Structure):
     def consumeIntoString(self):
         with self.consumeWithStream() as stream:
             return stream.read(stream.remaining()).decode("utf-8")
+
+    {% when Type::JSONObject -%}
+    # The JSONObject type.
+
+    @staticmethod
+    def allocFromJsonObject(value):
+        import json
+        json_string = json.dumps(value, separators=(',', ':'))
+        return RustBuffer.allocFromString(json_string)
+
+    def consumeIntoJsonObject(self):
+        import json
+        json_string = self.consumeIntoString()
+        return json.loads(json_string)
 
     {% when Type::Record with (record_name) -%}
     {%- let rec = ci.get_record_definition(record_name).unwrap() -%}

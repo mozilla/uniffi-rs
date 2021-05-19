@@ -106,6 +106,13 @@ class RustBufferBuilder(object):
         self._pack_into(4, ">i", len(utf8Bytes))
         self.write(utf8Bytes)
 
+    {% when Type::JSONObject -%}
+
+    def writeJsonObject(self, v):
+        import json
+        json_string = json.dumps(v, separators=(',', ':'))
+        self.writeString(json_string)
+
     {% when Type::Object with (object_name) -%}
     # The Object type {{ object_name }}.
     # Objects cannot currently be serialized, but we can produce a helpful error.

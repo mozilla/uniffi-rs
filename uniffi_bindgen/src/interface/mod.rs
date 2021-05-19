@@ -208,6 +208,10 @@ impl<'ci> ComponentInterface {
         self.types.iter_known_types().collect()
     }
 
+    pub fn uses_type(&self, type_: &Type) -> bool {
+        self.types.iter_known_types().any(|t| &t == type_)
+    }
+
     /// Calculate a numeric checksum for this ComponentInterface.
     ///
     /// The checksum can be used to guard against accidentally using foreign-language bindings

@@ -17,6 +17,7 @@ fileprivate enum UniffiInternalError: RustError {
     case unexpectedOptionalTag
     case unexpectedEnumCase
     case emptyResult
+    case corruptData
     case unknown(_ message: String)
 
     public var errorDescription: String? {
@@ -26,6 +27,7 @@ fileprivate enum UniffiInternalError: RustError {
         case .unexpectedOptionalTag: return "Unexpected optional tag; should be 0 or 1"
         case .unexpectedEnumCase: return "Raw enum value doesn't match any cases"
         case .emptyResult: return "Unexpected nil returned from FFI function"
+        case .corruptData: return "The low level data format was corrupted"
         case let .unknown(message): return "FFI function returned unknown error: \(message)"
         }
     }

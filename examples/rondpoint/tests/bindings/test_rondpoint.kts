@@ -1,4 +1,5 @@
 import uniffi.rondpoint.*
+import org.json.JSONObject
 
 val dico = Dictionnaire(Enumeration.DEUX, true, 0u, 123456789u)
 val copyDico = copieDictionnaire(dico)
@@ -33,9 +34,10 @@ assert(switcheroo(false))
 //      lowering from rust and lifting into kotlin.
 val rt = Retourneur()
 
-fun <T> List<T>.affirmAllerRetour(fn: (T) -> T) {
+fun <T> List<T>.affirmAllerRetour(fn: (T) -> T, equals: (a: T, b: T) -> Boolean = { a, b -> a == b }) {
     this.forEach { v ->
-        assert(fn.invoke(v) == v) { "$fn($v)" }
+        val obs = fn.invoke(v)
+        assert(equals(v, obs)) { "$fn: $v == $obs" }
     }
 }
 
@@ -74,7 +76,12 @@ listOf(-1, 0, 1).map { DictionnaireNombresSignes(it.toByte(), it.toShort(), it.t
 listOf(0, 1).map { DictionnaireNombres(it.toUByte(), it.toUShort(), it.toUInt(), it.toULong()) }
     .affirmAllerRetour(rt::identiqueNombres)
 
+// Must be a JSON object, not an array or bare type.
+listOf("{}", "{\"a\":true}", "{\"a\":[1,2,3]}").map { JSONObject(it) }
+    .affirmAllerRetour(rt::identiqueJsonObject) { a, b -> a.toString() == b.toString() }
 
+listOf("{}", "{\"a\":true}", "{\"a\":[1,2,3]}").map { DictionnaireAvecJson(JSONObject(it)) }
+    .affirmAllerRetour(rt::identiqueDictionnaireAvecJson) { a, b -> a.value.toString() == b.value.toString() }
 rt.destroy()
 
 // Test one way across the FFI.
@@ -134,6 +141,8 @@ listOf(0.0F, 1.0F, -1.0F, Float.MIN_VALUE, Float.MAX_VALUE).affirmEnchaine(st::t
 // Doubles
 // MIN_VALUE is 4.9E-324. Accuracy and formatting get weird at small sizes.
 listOf(0.0, 1.0, -1.0, Double.MIN_VALUE, Double.MAX_VALUE).affirmEnchaine(st::toStringDouble)  { s, n -> s.toDouble() == n }
+
+listOf("{\"a\": true}", "{\"a\": [1, 2, 3]}").map { JSONObject(it) }.affirmEnchaine(st::toStringJsonObject)
 
 st.destroy()
 

@@ -1,3 +1,4 @@
+import Foundation
 import rondpoint
 
 let dico = Dictionnaire(un: .deux, deux: false, petitNombre: 0, grosNombre: 123456789)
@@ -58,6 +59,20 @@ let rt = Retourneur()
 ["", "abc", "null\0byte", "été", "ښي لاس ته لوستلو لوستل", "😻emoji 👨‍👧‍👦multi-emoji, 🇨🇭a flag, a canal, panama"]
     .affirmAllerRetour(rt.identiqueString)
 
+[["a": [1,2,3]], ["a": true]]
+    .affirmAllerRetour(rt.identiqueJsonObject) { a, b in toString(a) == toString(b) }
+
+[["a": [1,2,3]], ["a": true]].map { json in DictionnaireAvecJson(value: json) }
+    .affirmAllerRetour(rt.identiqueDictionnaireAvecJson) { a, b in toString(a.value) == toString(b.value) }
+
+func toString(_ jsonObject: [String: Any]) -> String {
+    if let data = try? JSONSerialization.data(withJSONObject: jsonObject, options: []),
+        let string = String(data: data, encoding: .utf8) {
+        return string
+    }
+    return "{}"
+}
+
 // Test one way across the FFI.
 //
 // We send one representation of a value to lib.rs, and it transforms it into another, a string.
@@ -103,6 +118,8 @@ assert("uniffi 💚 swift!" == wellKnown, "wellKnownString 'uniffi 💚 swift!' 
 // Doubles
 [.zero, 1, -1, .leastNonzeroMagnitude, .greatestFiniteMagnitude].affirmEnchaine(st.toStringDouble) { Double.init($0) == $1 }
 
+[["a": [1,2,3]], ["a": true]].affirmEnchaine(st.toStringJsonObject) { $0 == toString($1) }
+
 // Some extension functions for testing the results of roundtripping and stringifying
 extension Array where Element: Equatable {
     static func defaultEquals(_ observed: String, expected: Element) -> Bool {
@@ -119,7 +136,24 @@ extension Array where Element: Equatable {
 
     func affirmAllerRetour(_ fn: (Element) -> Element) {
         self.forEach { v in
-            assert(fn(v) == v, "identique_\(type(of:v))(\(v))")
+            let obs = fn(v)
+            assert(obs == v, "identique_\(type(of:v)): observed=\(obs), expected=\(v)")
+        }
+    }
+}
+
+extension Array {
+    func affirmAllerRetour(_ fn: (Element) -> Element, equals: (Element, Element) -> Bool) {
+        self.forEach { v in
+            let obs = fn(v)
+            assert(equals(obs, v), "identique_\(type(of:v)): observed=\(obs), expected=\(v)")
+        }
+    }
+
+    func affirmEnchaine(_ fn: (Element) -> String, equals: (String, Element) -> Bool) {
+        self.forEach { v in
+            let obs = fn(v)
+            assert(equals(obs, v), "toString_\(type(of:v))(\(v)): observed=\(obs), expected=\(v)")
         }
     }
 }
