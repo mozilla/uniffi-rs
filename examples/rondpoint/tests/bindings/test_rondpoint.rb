@@ -58,7 +58,7 @@ MAX_I64 = 2**31 - 1
 
 # Ruby floats are always doubles, so won't round-trip through f32 correctly.
 # This truncates them appropriately.
-F32_ONE_THIRD = 1.0 / 3
+F32_ONE_THIRD = [1.0 / 3].pack('f').unpack('f')[0]
 
 # Booleans
 affirm_aller_retour([true, false], :identique_boolean)
@@ -80,8 +80,7 @@ affirm_aller_retour([MIN_I64, -1, 0, 1, MAX_I64], :identique_i64)
 affirm_aller_retour([0x0000000000000000, 0x1234567890ABCDEF, 0xFFFFFFFFFFFFFFFF], :identique_u64)
 
 # Floats
-# TODO: make F32_ONE_THIRD work as well
-affirm_aller_retour([0.0, 0.5, 0.25, 1.0], :identique_float)
+affirm_aller_retour([0.0, 0.5, 0.25, 1.0, F32_ONE_THIRD], :identique_float)
 
 # Doubles
 affirm_aller_retour(
