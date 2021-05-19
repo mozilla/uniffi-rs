@@ -6,9 +6,10 @@ This is a little experiment in building cross-platform components in Rust, based
 we've learned in the [mozilla/application-services](https://github.com/mozilla/application-services)
 project.
 
-It's currently at the "basic prototype" stage - the core idea seems to work, but there are a lot of
-missing details and it needs a lot of polish. We're currently focussed on making it useable for a
-real shipping component.
+It's currently at the "minimally useful" stage - the core idea works and is being used in
+a number of shipping products. However, there are still a lot of missing details and it needs a lot of polish.
+We're currently focussed on removing some of the paper-cuts we feel in these shipping products, but believe
+this tool has a bright future for many FFI requirements.
 
 If this sounds interesting to you, please dive in! You can:
 
@@ -65,11 +66,31 @@ be right for you. You can read a little more about the considerations and trade-
 that lead to the current approach in our [Architecture Decision Records](./docs/adr/README.md),
 starting with [this motivational document](./docs/adr/0000-whats-the-big-idea.md).
 
-## Status
+### Thread Safety
 
-This is all very experimental and incomplete, but we do have some basic examples working, implementing
-functions and datatypes in Rust and manipulating them from Kotlin, Swift, and Python.
-Take a look in the [`./examples/`](./examples/) directory to see them in action.
+It is your responsibility to ensure the structs you expose via uniffi are
+all `Send+Sync` - this will be enforced by the Rust compiler and in the future,
+uniffi will make no attempt to help you with this.
+
+However, early versions of this crate automatically wrapped rust structs in a
+mutex, thus implicitly making the interfaces thread-safe and safe to be called
+over the FFI by any thread. However, in practice we found this to be a
+mis-feature, so version 0.7 first introduced the ability for the component
+author to opt-out of this implicit wrapping and take care of thread-safety
+themselves by adding a `[Threadsafe]` attribute to the interface.
+
+We've recently taken this further; as of version 0.8.0, interfaces not marked
+as `[Threadsafe]` will issue a deprecation warning, and support for this will
+be removed entirely at some (reasonably soon) point in the future.
+
+If you are seeing these deprecation warnings, you should upgrade your component
+as soon as possible. For an example of what kind of effort is required to make
+your interfaces thread-safe, you might like to see [this
+commit](https://github.com/mozilla/uniffi-rs/commit/454dfff6aa560dffad980a9258853108a44d5985)
+where we made one the examples thread-safe.
+
+See also [adr-0004](https://github.com/mozilla/uniffi-rs/blob/main/docs/adr/0004-only-threadsafe-interfaces.md)
+which outlines the reasoning behind this decision.
 
 ### Component Interface
 
@@ -95,13 +116,13 @@ Things that are implemented so far:
 * Stand-alone functions.
 * Simple stateful objects with callable methods.
 * Basic error reporting.
+* Callbacks (although with limitations)
 
 Things that are not implemented yet:
 
 * Union types.
 * Efficient access to binary data (like Rust's `Vec<u8>`).
 * Passing object references to functions or methods.
-* Callbacks
 
 Things that are unlikely to ever be implemented (but I guess you never know..!)
 

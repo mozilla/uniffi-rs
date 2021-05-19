@@ -8,6 +8,22 @@
 // error message when processing this generated code.
 {% let handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) -%}
 
+
+{% if !obj.threadsafe() %}
+// We want to mark this as `deprecated` - long story short, the only way to
+// sanely do this using `#[deprecated(..)]` is to generate a function with that
+// attribute, then generate call to that function in the object constructors.
+#[deprecated(
+    since = "0.8.0",
+    note = "Non thread-safe objects are deprecated - you should upgrade \
+            `{{ obj.name() }}` to be threadsafe, then add the `[ThreadSafe]` \
+            annotation. \
+            See https://github.com/mozilla/uniffi-rs/#thread-safety for more details"
+)]
+#[allow(non_snake_case)]
+fn uniffi_note_nonthreadsafe_deprecation_{{ obj.name() }}() {}
+{% endif %}
+
 uniffi::deps::lazy_static::lazy_static! {
     {%- let handle_map_type = obj.threadsafe()|choose(
         "uniffi::ffi::handle_maps::ArcHandleMap",
@@ -32,6 +48,10 @@ uniffi::deps::lazy_static::lazy_static! {
     pub extern "C" fn {{ cons.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> u64 {
         uniffi::deps::log::debug!("{{ cons.ffi_func().name() }}");
+        {% if !obj.threadsafe() %}
+        uniffi_note_nonthreadsafe_deprecation_{{ obj.name() }}();
+        {% endif %}
+
         // If the constructor does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
         {% call rs::to_rs_constructor_call(obj, cons) %}
