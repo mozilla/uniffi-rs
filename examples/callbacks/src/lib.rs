@@ -63,8 +63,9 @@ impl Default for RustGetters {
     }
 }
 
-// Use Send if we want to store the callback in an exposed object.
-trait StoredForeignStringifier: Send + std::fmt::Debug {
+// Use `Send+Send` because we want to store the callback in an exposed
+// `Send+Sync` object.
+trait StoredForeignStringifier: Send + Sync + std::fmt::Debug {
     fn from_simple_type(&self, value: i32) -> String;
     fn from_complex_type(&self, values: Option<Vec<Option<f64>>>) -> String;
 }

@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::sync::RwLock;
+
 // A point in two-dimensional space.
 #[derive(Debug, Clone)]
 pub struct Point {
@@ -27,34 +29,39 @@ pub fn translate(p: &Point, v: Vector) -> Point {
 
 // An entity in our imaginary world, which occupies a position in space
 // and which can move about over time.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Sprite {
-    current_position: Point,
+    // All interfaces must be threadsafe, meaning `Send+Sync`, and our naive
+    // `Point` struct isn't - so we wrap it in a `RwLock` to make it so.
+    current_position: RwLock<Point>,
 }
 
 impl Sprite {
     fn new(initial_position: Option<Point>) -> Sprite {
         Sprite {
-            current_position: initial_position.unwrap_or_else(|| Point { x: 0.0, y: 0.0 }),
+            current_position: RwLock::new(
+                initial_position.unwrap_or_else(|| Point { x: 0.0, y: 0.0 }),
+            ),
         }
     }
 
     fn new_relative_to(reference: Point, direction: Vector) -> Sprite {
         Sprite {
-            current_position: translate(&reference, direction),
+            current_position: RwLock::new(translate(&reference, direction)),
         }
     }
 
     fn get_position(&self) -> Point {
-        self.current_position.clone()
+        self.current_position.read().unwrap().clone()
     }
 
-    fn move_to(&mut self, position: Point) {
-        self.current_position = position;
+    fn move_to(&self, position: Point) {
+        *self.current_position.write().unwrap() = position;
     }
 
-    fn move_by(&mut self, direction: Vector) {
-        self.current_position = translate(&self.current_position, direction)
+    fn move_by(&self, direction: Vector) {
+        let mut current_position = self.current_position.write().unwrap();
+        *current_position = translate(&*current_position, direction)
     }
 }
 
