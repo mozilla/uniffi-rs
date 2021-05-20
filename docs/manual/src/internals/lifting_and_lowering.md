@@ -1,10 +1,10 @@
 # Lifting, Lowering and Serialization
 
-Uniffi is able to transfer rich data types back-and-forth between the Rust
+UniFFI is able to transfer rich data types back-and-forth between the Rust
 code and the foreign-language code via a process we refer to as "lowering"
 and "lifting".
 
-Recall that uniffi interoperates between different languages by defining
+Recall that UniFFI interoperates between different languages by defining
 a C-style FFI layer which operates in terms of primitive data types and
 plain functions. To transfer data from one side of this layer to the other,
 the sending side "***lowers***" the data from a language-specific data type
@@ -30,13 +30,13 @@ namespace example {
 Calling this function from foreign language code involves the following steps:
 
 1. The user-provided calling code invokes the `add_to_list` function that is exposed by the
-   uniffi-generated foreign language bindings, passing `item` as an appropriate language-native
+   UniFFI-generated foreign language bindings, passing `item` as an appropriate language-native
    integer.
 2. The foreign language bindings ***lower*** each argument to a function call into
    something that can be passed over the C-style FFI. Since the `item` argument is a plain integer,
    it is lowered by casting to an `int32_t`.
 3. The foreign language bindings pass the lowered arguments to a C FFI function named
-   like `example_XYZ_add_to_list` that is exposed by the uniffi-generated Rust scaffolding.
+   like `example_XYZ_add_to_list` that is exposed by the UniFFI-generated Rust scaffolding.
 4. The Rust scaffolding ***lifts*** each argument received over the FFI into a native
    Rust type. Since `item` is a plain integer it is lifted by casting to a Rust `i32`.
 5. The Rust scaffolding passes the lifted arguments to the user-provided Rust code for
@@ -69,9 +69,9 @@ Calling this function from foreign language code involves the following steps:
 
 ## Serialization Format
 
-When serializing complex data types into a byte buffer, uniffi uses an
+When serializing complex data types into a byte buffer, UniFFI uses an
 ad-hoc fixed-width format which is designed mainly for simplicity.
-The details of this format are internal only and may change between versions of uniffi.
+The details of this format are internal only and may change between versions of UniFFI.
 
 | UDL Type | Representation in serialized bytes |
 |----------|-----------------------------|

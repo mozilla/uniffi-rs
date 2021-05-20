@@ -4,7 +4,7 @@
 
 Now we generate some Rust helper code to make the `add` method available to foreign-language bindings.  
 
-First, add `uniffi` to your crate dependencies: it is the runtime support code that powers uniffi's serialization of data types across languages:
+First, add `uniffi` to your crate dependencies; this is the runtime support code that powers UniFFI's serialization of data types across languages:
 
 ```toml
 [dependencies]
@@ -37,7 +37,7 @@ settings then this can be done using a handy macro:
 uniffi_macros::include_scaffolding!("math");
 ```
 
-If you have generated the scaffolding in a custom location, use the standard `!include` macro
+If you have generated the scaffolding in a custom location, use the standard `include!` macro
 to include the generated file by name, like this:
 
 

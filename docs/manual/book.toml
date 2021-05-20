@@ -1,6 +1,6 @@
 [book]
-authors = ["Edouard Oger"]
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 language = "en"
 multilingual = false
 src = "src"
-title = "The uniffi user guide"
+title = "The UniFFI user guide"

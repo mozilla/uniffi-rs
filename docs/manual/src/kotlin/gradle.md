@@ -4,7 +4,7 @@ It is possible to generate Kotlin bindings at compile time for Kotlin Android pr
 
 ```groovy
 android.libraryVariants.all { variant ->
-    def t = tasks.register("generate${variant.name.capitalize()}UniffiBindings", Exec) {
+    def t = tasks.register("generate${variant.name.capitalize()}UniFFIBindings", Exec) {
         workingDir "${project.projectDir}"
         // Runs the bindings generation, note that you must have uniffi-bindgen installed and in your PATH environment variable
         commandLine 'uniffi-bindgen', 'generate', '<PATH TO .udl FILE>', '--language', 'kotlin', '--out-dir', "${buildDir}/generated/source/uniffi/${variant.name}/java"

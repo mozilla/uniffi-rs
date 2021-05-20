@@ -9,4 +9,4 @@ fn add(a: u32, b: u32) -> u32 {
 ```
 
 And top brass would like you to expose this *business-critical* operation to Kotlin and Swift.  
-**Don't panic!** We will show you how do that using uniffi.
+**Don't panic!** We will show you how do that using UniFFI.

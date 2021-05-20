@@ -20,4 +20,4 @@ then check out `src/math.swift`
 
 Note that these commands could be integrated as part of your gradle/XCode build process.
 
-This is it, you have an MVP integration of uniffi in your project.
+This is it, you have an MVP integration of UniFFI in your project.
