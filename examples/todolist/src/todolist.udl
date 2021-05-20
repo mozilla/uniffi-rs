@@ -1,4 +1,7 @@
 namespace todolist {
+    TodoList? get_default_list();
+    undefined set_default_list(TodoList list);
+
     [Throws=TodoError]
     TodoEntry create_entry_with(string todo);
 };
@@ -31,4 +34,6 @@ interface TodoList {
     string get_first();
     [Throws=TodoError]
     void clear_item(string todo);
+    [ByArc]
+    undefined make_default();
 };
