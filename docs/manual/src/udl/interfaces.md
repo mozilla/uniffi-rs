@@ -2,7 +2,7 @@
 
 Interfaces are represented in the Rust world as a struct with an `impl` block containing methods. In the Kotlin or Swift world, it's a class.
 
-Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a [Dictionary](./structs.md).
+Because Objects are passed by reference and Dictionaries by value, in the UniFFI world it is impossible to be both an Object and a [Dictionary](./structs.md).
 
 The following Rust code:
 
@@ -42,7 +42,7 @@ By convention, the `constructor()` calls the Rust's `new()` method.
 
 Conceptually, these `interface` objects are live Rust objects that have a proxy on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being call in Rust.
 
-`uniffi` will generate these proxies of live objects with an interface or protocol.
+UniFFI will generate these proxies of live objects with an interface or protocol.
 
 e.g. in Kotlin.
 
@@ -97,14 +97,14 @@ Rust struct.
 
 ## Concurrent Access
 
-Since interfaces represent mutable data, uniffi has to take extra care
+Since interfaces represent mutable data, UniFFI has to take extra care
 to uphold Rust's safety guarantees around shared and mutable references.
 The foreign-language code may attempt to operate on an interface instance
 from multiple threads, and it's important that this not violate Rust's
 assumption that there is at most a single mutable reference to a struct
 at any point in time.
 
-By default, uniffi enforces this using runtime locking. Each interface instance
+By default, UniFFI enforces this using runtime locking. Each interface instance
 has an associated lock which is transparently acquired at the beginning of each
 call to a method of that instance, and released once the method returns. This
 approach is simple and safe, but it means that all method calls on an instance
@@ -121,11 +121,11 @@ interface Counter {
 };
 ```
 
-The uniffi-generated code will allow concurrent method calls on threadsafe interfaces
+The UniFFI-generated code will allow concurrent method calls on threadsafe interfaces
 without any locking.
 
 For this to be safe, the underlying Rust struct must adhere to certain restrictions, and
-uniffi's generated Rust scaffolding will emit compile-time errors if it does not.
+UniFFI's generated Rust scaffolding will emit compile-time errors if it does not.
 
 The Rust struct must not expose any methods that take `&mut self`. The following implementation
 of the `Counter` interface will fail to compile because it relies on mutable references:

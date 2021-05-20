@@ -1,4 +1,4 @@
-# uniffi - a multi-language bindings generator for rust
+# UniFFI - a multi-language bindings generator for rust
 
 - [User manual](https://mozilla.github.io/uniffi-rs/)
 
@@ -44,7 +44,7 @@ That kind of tooling is not available to shipping applications today, but that d
 mean we can't take a small step in that general direction while the Rust and Wasm ecosystem
 continues to evolve.
 
-Using `uniffi`, you can:
+Using UniFFI, you can:
 
 * Implement your software component as a `cdylib` crate in Rust; let's say the code is in `./src/lib.rs`.
 * Specify the desired component API using an *Interface Definition Language* (specifically, a variant of WebIDL) in a separate file like `./src/lib.udl`.
@@ -100,7 +100,7 @@ an abstract description of your component's API using a variant of [WebIDL](http
 This turns out to be a bit of an awkward fit, but good enough for a first version.
 In the future we may be able to generate the Interface Definition from annotations on the Rust code
 (in the style of `wasm_bindgen` or perhaps the [`cxx` crate](https://github.com/dtolnay/cxx))
-rather than from a separate UDL (Uniffi Definition Language) file.
+rather than from a separate UDL (UniFFI Definition Language) file.
 
 The code for defining a component interface lives in [./uniffi_bindgen/src/interface/mod.rs](./uniffi_bindgen/src/interface/mod.rs)
 and is currently the best source of truth for syntax and semantics of the UDL.

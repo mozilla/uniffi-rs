@@ -1,7 +1,5 @@
 # Summary
 
-Hello everyone
-
 [Overview](./Overview.md)
 - [Tutorial](./Getting_started.md)
   - [Prerequisites](./tutorial/Prerequisites.md)

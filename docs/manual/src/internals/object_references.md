@@ -1,6 +1,6 @@
 # Managing Object References
 
-Uniffi [interfaces](../udl/interfaces.md) represent instances of objects
+UniFFI [interfaces](../udl/interfaces.md) represent instances of objects
 that have methods and contain shared mutable state. One of Rust's core innovations
 is its ability to provide compile-time guarantees about working with such instances,
 including:
@@ -10,7 +10,7 @@ including:
   active at any point in the program.
 * Guarding against data races.
 
-Uniffi aims to maintain these guarantees even when the Rust code is being invoked
+UniFFI aims to maintain these guarantees even when the Rust code is being invoked
 from a foreign language, at the cost of turning them into run-time checks rather
 than compile-time guarantees.
 
@@ -22,7 +22,7 @@ a mapping from opaque integer handles to object instances. This indirection
 imposes a small runtime cost but helps us guard against errors or oversights
 in the generated bindings.
 
-For each interface declared in the UDL, the uniffi-generated Rust scaffolding
+For each interface declared in the UDL, the UniFFI-generated Rust scaffolding
 will create a global handlemap that is responsible for owning all instances
 of that interface, and handing out references to them when methods are called.
 
@@ -90,12 +90,12 @@ This indirection gives us some important safety properties:
 
 ## Managing Concurrency
 
-By default, uniffi uses the [ffi_support::ConcurrentHandleMap](https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html) struct as the handlemap for each declared instance. This class
+By default, UniFFI uses the [ffi_support::ConcurrentHandleMap](https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html) struct as the handlemap for each declared instance. This class
 wraps each instance with a `Mutex`, which serializes access to the instance and upholds Rust's guarantees
 against shared mutable access.  This approach is simple and safe, but it means that all method calls
 on an instance are run in a strictly sequential fashion, limiting concurrency.
 
-For instances that are explicited tagged with the `[Threadsafe]` attribute, uniffi instead uses
+For instances that are explicited tagged with the `[Threadsafe]` attribute, UniFFI instead uses
 a custom `ArcHandleMap` struct. This replaces the run-time `Mutex` with compile-time assertions
 about the safety of the underlying Rust struct. Specifically:
 
