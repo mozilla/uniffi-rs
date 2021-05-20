@@ -2,11 +2,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
 #[derive(Debug, Clone)]
 pub struct TodoEntry {
     text: String,
+}
+
+lazy_static::lazy_static! {
+    // There is a single "default" TodoList that can be shared
+    // by all consumers of this component.
+    static ref DEFAULT_LIST: RwLock<Option<Arc<TodoList>>> = RwLock::new(None);
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -23,6 +29,22 @@ enum TodoError {
     DeligatedError(#[from] std::io::Error),
 }
 
+/// Get a reference to the global default TodoList, if set.
+///
+fn get_default_list() -> Option<Arc<TodoList>> {
+   DEFAULT_LIST.read().unwrap().clone()
+}
+
+/// Set the global default TodoList.
+///
+/// This will silently drop any previously set value.
+///
+fn set_default_list(list: Arc<TodoList>) {
+    *DEFAULT_LIST.write().unwrap() = Some(list);
+}
+
+/// Create a new TodoEntry from the given string.
+///
 fn create_entry_with<S: Into<String>>(item: S) -> Result<TodoEntry> {
     let text = item.into();
     if text == "" {
@@ -118,6 +140,10 @@ impl TodoList {
             .ok_or(TodoError::TodoDoesNotExist)?;
         items.remove(idx);
         Ok(())
+    }
+
+    fn make_default(self: Arc<Self>) {
+        set_default_list(self);
     }
 }
 
