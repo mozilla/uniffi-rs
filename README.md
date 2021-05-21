@@ -79,7 +79,7 @@ mis-feature, so version 0.7 first introduced the ability for the component
 author to opt-out of this implicit wrapping and take care of thread-safety
 themselves by adding a `[Threadsafe]` attribute to the interface.
 
-We've recently taken this further; as of version 0.8.0, interfaces not marked
+We've recently taken this further; as of version 0.9.0, interfaces not marked
 as `[Threadsafe]` will issue a deprecation warning, and support for this will
 be removed entirely at some (reasonably soon) point in the future.
 
