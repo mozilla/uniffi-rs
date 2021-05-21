@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Interfaces/Objects - The uniffi user guide</title>
+        <title>Interfaces/Objects - The UniFFI user guide</title>
         
         
 
@@ -125,7 +125,7 @@
                         
                     </div>
 
-                    <h1 class="menu-title">The uniffi user guide</h1>
+                    <h1 class="menu-title">The UniFFI user guide</h1>
 
                     <div class="right-buttons">
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
@@ -161,7 +161,7 @@
                     <main>
                         <h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
 <p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.</p>
-<p>Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="./structs.html">Dictionary</a>.</p>
+<p>Because Objects are passed by reference and Dictionaries by value, in the UniFFI world it is impossible to be both an Object and a <a href="./structs.html">Dictionary</a>.</p>
 <p>The following Rust code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -196,7 +196,7 @@ impl TodoList {
 </code></pre>
 <p>By convention, the <code>constructor()</code> calls the Rust's <code>new()</code> method.</p>
 <p>Conceptually, these <code>interface</code> objects are live Rust objects that have a proxy on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being call in Rust.</p>
-<p><code>uniffi</code> will generate these proxies of live objects with an interface or protocol.</p>
+<p>UniFFI will generate these proxies of live objects with an interface or protocol.</p>
 <p>e.g. in Kotlin.</p>
 <pre><code class="language-kotlin">interface TodoListInterface {
     fun addItem(todo: String)
@@ -236,13 +236,13 @@ must be given an explicit name, provided in the UDL with the <code>[Name]</code>
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.</p>
 <h2><a class="header" href="#concurrent-access" id="concurrent-access">Concurrent Access</a></h2>
-<p>Since interfaces represent mutable data, uniffi has to take extra care
+<p>Since interfaces represent mutable data, UniFFI has to take extra care
 to uphold Rust's safety guarantees around shared and mutable references.
 The foreign-language code may attempt to operate on an interface instance
 from multiple threads, and it's important that this not violate Rust's
 assumption that there is at most a single mutable reference to a struct
 at any point in time.</p>
-<p>By default, uniffi enforces this using runtime locking. Each interface instance
+<p>By default, UniFFI enforces this using runtime locking. Each interface instance
 has an associated lock which is transparently acquired at the beginning of each
 call to a method of that instance, and released once the method returns. This
 approach is simple and safe, but it means that all method calls on an instance
@@ -255,10 +255,10 @@ interface Counter {
     u64 get();
 };
 </code></pre>
-<p>The uniffi-generated code will allow concurrent method calls on threadsafe interfaces
+<p>The UniFFI-generated code will allow concurrent method calls on threadsafe interfaces
 without any locking.</p>
 <p>For this to be safe, the underlying Rust struct must adhere to certain restrictions, and
-uniffi's generated Rust scaffolding will emit compile-time errors if it does not.</p>
+UniFFI's generated Rust scaffolding will emit compile-time errors if it does not.</p>
 <p>The Rust struct must not expose any methods that take <code>&amp;mut self</code>. The following implementation
 of the <code>Counter</code> interface will fail to compile because it relies on mutable references:</p>
 <pre><pre class="playground"><code class="language-rust">

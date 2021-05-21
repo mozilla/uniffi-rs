@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Throwing errors - The uniffi user guide</title>
+        <title>Throwing errors - The UniFFI user guide</title>
         
         
 
@@ -125,7 +125,7 @@
                         
                     </div>
 
-                    <h1 class="menu-title">The uniffi user guide</h1>
+                    <h1 class="menu-title">The UniFFI user guide</h1>
 
                     <div class="right-buttons">
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
@@ -161,7 +161,7 @@
                     <main>
                         <h1><a class="header" href="#throwing-errors" id="throwing-errors">Throwing errors</a></h1>
 <p>It is often the case that a function does not return <code>T</code> in Rust but <code>Result&lt;T, E&gt;</code> to reflect that it is fallible.<br />
-For uniffi to expose this error, your error type (<code>E</code>) must be an <code>enum</code> and implement <code>std::error::Error</code> (<a href="https://crates.io/crates/thiserror">thiserror</a> works!).</p>
+For UniFFI to expose this error, your error type (<code>E</code>) must be an <code>enum</code> and implement <code>std::error::Error</code> (<a href="https://crates.io/crates/thiserror">thiserror</a> works!).</p>
 <p>Here's how you would write a Rust failible function and how you'd expose it in UDL:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Generating the Rust scaffolding code - The uniffi user guide</title>
+        <title>Generating the Rust scaffolding code - The UniFFI user guide</title>
         
         
 
@@ -125,7 +125,7 @@
                         
                     </div>
 
-                    <h1 class="menu-title">The uniffi user guide</h1>
+                    <h1 class="menu-title">The UniFFI user guide</h1>
 
                     <div class="right-buttons">
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
@@ -162,7 +162,7 @@
                         <h1><a class="header" href="#rust-scaffolding" id="rust-scaffolding">Rust scaffolding</a></h1>
 <h2><a class="header" href="#rust-scaffolding-code" id="rust-scaffolding-code">Rust scaffolding code</a></h2>
 <p>Now we generate some Rust helper code to make the <code>add</code> method available to foreign-language bindings.</p>
-<p>First, add <code>uniffi</code> to your crate dependencies: it is the runtime support code that powers uniffi's serialization of data types across languages:</p>
+<p>First, add <code>uniffi</code> to your crate dependencies; this is the runtime support code that powers UniFFI's serialization of data types across languages:</p>
 <pre><code class="language-toml">[dependencies]
 uniffi = &quot;0.8&quot;
 </code></pre>
@@ -185,7 +185,7 @@ settings then this can be done using a handy macro:</p>
 </span>uniffi_macros::include_scaffolding!(&quot;math&quot;);
 <span class="boring">}
 </span></code></pre></pre>
-<p>If you have generated the scaffolding in a custom location, use the standard <code>!include</code> macro
+<p>If you have generated the scaffolding in a custom location, use the standard <code>include!</code> macro
 to include the generated file by name, like this:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]

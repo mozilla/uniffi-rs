@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Overview - The uniffi user guide</title>
+        <title>Overview - The UniFFI user guide</title>
         
         
 
@@ -125,7 +125,7 @@
                         
                     </div>
 
-                    <h1 class="menu-title">The uniffi user guide</h1>
+                    <h1 class="menu-title">The UniFFI user guide</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -159,20 +159,20 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#uniffi" id="uniffi">uniffi</a></h1>
-<p>Uniffi is a tool that automatically generates foreign-language bindings targeting Rust libraries.<br />
+                        <h1><a class="header" href="#uniffi" id="uniffi">UniFFI</a></h1>
+<p>UniFFI is a tool that automatically generates foreign-language bindings targeting Rust libraries.<br />
 It fits in the practice of consolidating business logic in a single Rust library while targeting multiple platforms, making it simpler to develop and maintain a cross-platform codebase.<br />
 Note that this tool will not help you ship a Rust library to these platforms, but simply not have to write bindings code by hand <a href="https://i.kym-cdn.com/photos/images/newsfeed/000/572/078/d6d.jpg">[0]</a>.</p>
 <h2><a class="header" href="#design" id="design">Design</a></h2>
-<p>uniffi requires to write an Interface Definition Language (based on <a href="https://heycam.github.io/webidl/">WebIDL</a>) file describing the methods and data structures available to the targeted languages.<br />
-This .udl (Uniffi Definition Language) file, whose definitions must match with the exposed Rust code, is then used to generate Rust <em>scaffolding</em> code and foreign-languages <em>bindings</em>. This process can take place either during the build process or be manually initiated by the developer.</p>
+<p>UniFFI requires to write an Interface Definition Language (based on <a href="https://heycam.github.io/webidl/">WebIDL</a>) file describing the methods and data structures available to the targeted languages.<br />
+This .udl (UniFFI Definition Language) file, whose definitions must match with the exposed Rust code, is then used to generate Rust <em>scaffolding</em> code and foreign-languages <em>bindings</em>. This process can take place either during the build process or be manually initiated by the developer.</p>
 <p><img src="./uniffi_diagram.png" alt="uniffi diagram" /></p>
 <h2><a class="header" href="#supported-languages" id="supported-languages">Supported languages</a></h2>
 <ul>
 <li>Kotlin</li>
 <li>Swift</li>
 <li>Python</li>
-<li><a href="https://en.wikipedia.org/wiki/Gecko_(software)">Gecko</a> C++</li>
+<li><a href="https://en.wikipedia.org/wiki/Gecko_(software)">Gecko</a> C++ (Work in Progress)</li>
 </ul>
 
                     </main>

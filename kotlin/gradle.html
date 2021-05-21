@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Integrating with Gradle - The uniffi user guide</title>
+        <title>Integrating with Gradle - The UniFFI user guide</title>
         
         
 
@@ -125,7 +125,7 @@
                         
                     </div>
 
-                    <h1 class="menu-title">The uniffi user guide</h1>
+                    <h1 class="menu-title">The UniFFI user guide</h1>
 
                     <div class="right-buttons">
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
@@ -162,7 +162,7 @@
                         <h1><a class="header" href="#integrating-with-gradle" id="integrating-with-gradle">Integrating with Gradle</a></h1>
 <p>It is possible to generate Kotlin bindings at compile time for Kotlin Android projects. We'd like to make a gradle plugin for that, but until then you can add to your <code>build.gradle</code> the following:</p>
 <pre><code class="language-groovy">android.libraryVariants.all { variant -&gt;
-    def t = tasks.register(&quot;generate${variant.name.capitalize()}UniffiBindings&quot;, Exec) {
+    def t = tasks.register(&quot;generate${variant.name.capitalize()}UniFFIBindings&quot;, Exec) {
         workingDir &quot;${project.projectDir}&quot;
         // Runs the bindings generation, note that you must have uniffi-bindgen installed and in your PATH environment variable
         commandLine 'uniffi-bindgen', 'generate', '&lt;PATH TO .udl FILE&gt;', '--language', 'kotlin', '--out-dir', &quot;${buildDir}/generated/source/uniffi/${variant.name}/java&quot;

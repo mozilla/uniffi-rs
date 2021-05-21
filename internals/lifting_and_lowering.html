@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Lifting, Lowering, and Serialization - The uniffi user guide</title>
+        <title>Lifting, Lowering, and Serialization - The UniFFI user guide</title>
         
         
 
@@ -125,7 +125,7 @@
                         
                     </div>
 
-                    <h1 class="menu-title">The uniffi user guide</h1>
+                    <h1 class="menu-title">The UniFFI user guide</h1>
 
                     <div class="right-buttons">
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
@@ -160,10 +160,10 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#lifting-lowering-and-serialization" id="lifting-lowering-and-serialization">Lifting, Lowering and Serialization</a></h1>
-<p>Uniffi is able to transfer rich data types back-and-forth between the Rust
+<p>UniFFI is able to transfer rich data types back-and-forth between the Rust
 code and the foreign-language code via a process we refer to as &quot;lowering&quot;
 and &quot;lifting&quot;.</p>
-<p>Recall that uniffi interoperates between different languages by defining
+<p>Recall that UniFFI interoperates between different languages by defining
 a C-style FFI layer which operates in terms of primitive data types and
 plain functions. To transfer data from one side of this layer to the other,
 the sending side &quot;<em><strong>lowers</strong></em>&quot; the data from a language-specific data type
@@ -184,13 +184,13 @@ behind this choice).</p>
 <p>Calling this function from foreign language code involves the following steps:</p>
 <ol>
 <li>The user-provided calling code invokes the <code>add_to_list</code> function that is exposed by the
-uniffi-generated foreign language bindings, passing <code>item</code> as an appropriate language-native
+UniFFI-generated foreign language bindings, passing <code>item</code> as an appropriate language-native
 integer.</li>
 <li>The foreign language bindings <em><strong>lower</strong></em> each argument to a function call into
 something that can be passed over the C-style FFI. Since the <code>item</code> argument is a plain integer,
 it is lowered by casting to an <code>int32_t</code>.</li>
 <li>The foreign language bindings pass the lowered arguments to a C FFI function named
-like <code>example_XYZ_add_to_list</code> that is exposed by the uniffi-generated Rust scaffolding.</li>
+like <code>example_XYZ_add_to_list</code> that is exposed by the UniFFI-generated Rust scaffolding.</li>
 <li>The Rust scaffolding <em><strong>lifts</strong></em> each argument received over the FFI into a native
 Rust type. Since <code>item</code> is a plain integer it is lifted by casting to a Rust <code>i32</code>.</li>
 <li>The Rust scaffolding passes the lifted arguments to the user-provided Rust code for
@@ -219,9 +219,9 @@ from the returned byte buffer into a language-native list of integers.</li>
 <tr><td><code>interface</code></td><td><code>uint64_t</code> opaque integer handle</td></tr>
 </tbody></table>
 <h2><a class="header" href="#serialization-format" id="serialization-format">Serialization Format</a></h2>
-<p>When serializing complex data types into a byte buffer, uniffi uses an
+<p>When serializing complex data types into a byte buffer, UniFFI uses an
 ad-hoc fixed-width format which is designed mainly for simplicity.
-The details of this format are internal only and may change between versions of uniffi.</p>
+The details of this format are internal only and may change between versions of UniFFI.</p>
 <table><thead><tr><th>UDL Type</th><th>Representation in serialized bytes</th></tr></thead><tbody>
 <tr><td><code>i8</code>/<code>i16</code>/<code>i32</code>/<code>i64</code></td><td>Fixed-width 1/2/4/8-byte signed integer, big-endian</td></tr>
 <tr><td><code>u8</code>/<code>u16</code>/<code>u32</code>/<code>u64</code></td><td>Fixed-width 1/2/4/8-byte unsigned integer, big-endian</td></tr>

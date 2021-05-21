@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>The uniffi user guide</title>
+        <title>The UniFFI user guide</title>
         
         <meta name="robots" content="noindex" />
         
@@ -127,7 +127,7 @@
                         
                     </div>
 
-                    <h1 class="menu-title">The uniffi user guide</h1>
+                    <h1 class="menu-title">The UniFFI user guide</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -161,20 +161,20 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#uniffi" id="uniffi">uniffi</a></h1>
-<p>Uniffi is a tool that automatically generates foreign-language bindings targeting Rust libraries.<br />
+                        <h1><a class="header" href="#uniffi" id="uniffi">UniFFI</a></h1>
+<p>UniFFI is a tool that automatically generates foreign-language bindings targeting Rust libraries.<br />
 It fits in the practice of consolidating business logic in a single Rust library while targeting multiple platforms, making it simpler to develop and maintain a cross-platform codebase.<br />
 Note that this tool will not help you ship a Rust library to these platforms, but simply not have to write bindings code by hand <a href="https://i.kym-cdn.com/photos/images/newsfeed/000/572/078/d6d.jpg">[0]</a>.</p>
 <h2><a class="header" href="#design" id="design">Design</a></h2>
-<p>uniffi requires to write an Interface Definition Language (based on <a href="https://heycam.github.io/webidl/">WebIDL</a>) file describing the methods and data structures available to the targeted languages.<br />
-This .udl (Uniffi Definition Language) file, whose definitions must match with the exposed Rust code, is then used to generate Rust <em>scaffolding</em> code and foreign-languages <em>bindings</em>. This process can take place either during the build process or be manually initiated by the developer.</p>
+<p>UniFFI requires to write an Interface Definition Language (based on <a href="https://heycam.github.io/webidl/">WebIDL</a>) file describing the methods and data structures available to the targeted languages.<br />
+This .udl (UniFFI Definition Language) file, whose definitions must match with the exposed Rust code, is then used to generate Rust <em>scaffolding</em> code and foreign-languages <em>bindings</em>. This process can take place either during the build process or be manually initiated by the developer.</p>
 <p><img src="./uniffi_diagram.png" alt="uniffi diagram" /></p>
 <h2><a class="header" href="#supported-languages" id="supported-languages">Supported languages</a></h2>
 <ul>
 <li>Kotlin</li>
 <li>Swift</li>
 <li>Python</li>
-<li><a href="https://en.wikipedia.org/wiki/Gecko_(software)">Gecko</a> C++</li>
+<li><a href="https://en.wikipedia.org/wiki/Gecko_(software)">Gecko</a> C++ (Work in Progress)</li>
 </ul>
 <h1><a class="header" href="#getting-started" id="getting-started">Getting started</a></h1>
 <p>Say your company has a simple <code>math</code> crate with the following <code>lib.rs</code>:</p>
@@ -187,7 +187,7 @@ This .udl (Uniffi Definition Language) file, whose definitions must match with t
 <span class="boring">}
 </span></code></pre></pre>
 <p>And top brass would like you to expose this <em>business-critical</em> operation to Kotlin and Swift.<br />
-<strong>Don't panic!</strong> We will show you how do that using uniffi.</p>
+<strong>Don't panic!</strong> We will show you how do that using UniFFI.</p>
 <h1><a class="header" href="#prerequisites" id="prerequisites">Prerequisites</a></h1>
 <h2><a class="header" href="#the-uniffi-bindgen-cli-tool" id="the-uniffi-bindgen-cli-tool">The uniffi-bindgen cli tool</a></h2>
 <p>Install the <code>uniffi-bindgen</code> binary on your system using:</p>
@@ -216,7 +216,7 @@ Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code
 <h1><a class="header" href="#rust-scaffolding" id="rust-scaffolding">Rust scaffolding</a></h1>
 <h2><a class="header" href="#rust-scaffolding-code" id="rust-scaffolding-code">Rust scaffolding code</a></h2>
 <p>Now we generate some Rust helper code to make the <code>add</code> method available to foreign-language bindings.</p>
-<p>First, add <code>uniffi</code> to your crate dependencies: it is the runtime support code that powers uniffi's serialization of data types across languages:</p>
+<p>First, add <code>uniffi</code> to your crate dependencies; this is the runtime support code that powers UniFFI's serialization of data types across languages:</p>
 <pre><code class="language-toml">[dependencies]
 uniffi = &quot;0.8&quot;
 </code></pre>
@@ -239,7 +239,7 @@ settings then this can be done using a handy macro:</p>
 </span>uniffi_macros::include_scaffolding!(&quot;math&quot;);
 <span class="boring">}
 </span></code></pre></pre>
-<p>If you have generated the scaffolding in a custom location, use the standard <code>!include</code> macro
+<p>If you have generated the scaffolding in a custom location, use the standard <code>include!</code> macro
 to include the generated file by name, like this:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -312,7 +312,7 @@ under the <code>uniffi</code> root.</p>
 </code></pre>
 <p>then check out <code>src/math.swift</code></p>
 <p>Note that these commands could be integrated as part of your gradle/XCode build process.</p>
-<p>This is it, you have an MVP integration of uniffi in your project.</p>
+<p>This is it, you have an MVP integration of UniFFI in your project.</p>
 <h1><a class="header" href="#the-udl-file-1" id="the-udl-file-1">The UDL file</a></h1>
 <p>This file defines which functions, methods and types are exposed to the foreign-language bindings.</p>
 <pre><code class="language-udl">namespace sprites {
@@ -440,7 +440,7 @@ For example, if the crate's <code>lib.rs</code> file contains:</p>
 </code></pre>
 <h1><a class="header" href="#throwing-errors" id="throwing-errors">Throwing errors</a></h1>
 <p>It is often the case that a function does not return <code>T</code> in Rust but <code>Result&lt;T, E&gt;</code> to reflect that it is fallible.<br />
-For uniffi to expose this error, your error type (<code>E</code>) must be an <code>enum</code> and implement <code>std::error::Error</code> (<a href="https://crates.io/crates/thiserror">thiserror</a> works!).</p>
+For UniFFI to expose this error, your error type (<code>E</code>) must be an <code>enum</code> and implement <code>std::error::Error</code> (<a href="https://crates.io/crates/thiserror">thiserror</a> works!).</p>
 <p>Here's how you would write a Rust failible function and how you'd expose it in UDL:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -471,7 +471,7 @@ namespace arithmetic {
 <p>On the other side (Kotlin, Swift etc.), a proper exception will be thrown if <code>Result::is_err()</code> is <code>true</code>.</p>
 <h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
 <p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.</p>
-<p>Because Objects are passed by reference and Dictionaries by value, in the uniffi world it is impossible to be both an Object and a <a href="udl/./structs.html">Dictionary</a>.</p>
+<p>Because Objects are passed by reference and Dictionaries by value, in the UniFFI world it is impossible to be both an Object and a <a href="udl/./structs.html">Dictionary</a>.</p>
 <p>The following Rust code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -506,7 +506,7 @@ impl TodoList {
 </code></pre>
 <p>By convention, the <code>constructor()</code> calls the Rust's <code>new()</code> method.</p>
 <p>Conceptually, these <code>interface</code> objects are live Rust objects that have a proxy on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being call in Rust.</p>
-<p><code>uniffi</code> will generate these proxies of live objects with an interface or protocol.</p>
+<p>UniFFI will generate these proxies of live objects with an interface or protocol.</p>
 <p>e.g. in Kotlin.</p>
 <pre><code class="language-kotlin">interface TodoListInterface {
     fun addItem(todo: String)
@@ -546,13 +546,13 @@ must be given an explicit name, provided in the UDL with the <code>[Name]</code>
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.</p>
 <h2><a class="header" href="#concurrent-access" id="concurrent-access">Concurrent Access</a></h2>
-<p>Since interfaces represent mutable data, uniffi has to take extra care
+<p>Since interfaces represent mutable data, UniFFI has to take extra care
 to uphold Rust's safety guarantees around shared and mutable references.
 The foreign-language code may attempt to operate on an interface instance
 from multiple threads, and it's important that this not violate Rust's
 assumption that there is at most a single mutable reference to a struct
 at any point in time.</p>
-<p>By default, uniffi enforces this using runtime locking. Each interface instance
+<p>By default, UniFFI enforces this using runtime locking. Each interface instance
 has an associated lock which is transparently acquired at the beginning of each
 call to a method of that instance, and released once the method returns. This
 approach is simple and safe, but it means that all method calls on an instance
@@ -565,10 +565,10 @@ interface Counter {
     u64 get();
 };
 </code></pre>
-<p>The uniffi-generated code will allow concurrent method calls on threadsafe interfaces
+<p>The UniFFI-generated code will allow concurrent method calls on threadsafe interfaces
 without any locking.</p>
 <p>For this to be safe, the underlying Rust struct must adhere to certain restrictions, and
-uniffi's generated Rust scaffolding will emit compile-time errors if it does not.</p>
+UniFFI's generated Rust scaffolding will emit compile-time errors if it does not.</p>
 <p>The Rust struct must not expose any methods that take <code>&amp;mut self</code>. The following implementation
 of the <code>Counter</code> interface will fail to compile because it relies on mutable references:</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -651,7 +651,7 @@ impl Counter {
 <h1><a class="header" href="#integrating-with-gradle" id="integrating-with-gradle">Integrating with Gradle</a></h1>
 <p>It is possible to generate Kotlin bindings at compile time for Kotlin Android projects. We'd like to make a gradle plugin for that, but until then you can add to your <code>build.gradle</code> the following:</p>
 <pre><code class="language-groovy">android.libraryVariants.all { variant -&gt;
-    def t = tasks.register(&quot;generate${variant.name.capitalize()}UniffiBindings&quot;, Exec) {
+    def t = tasks.register(&quot;generate${variant.name.capitalize()}UniFFIBindings&quot;, Exec) {
         workingDir &quot;${project.projectDir}&quot;
         // Runs the bindings generation, note that you must have uniffi-bindgen installed and in your PATH environment variable
         commandLine 'uniffi-bindgen', 'generate', '&lt;PATH TO .udl FILE&gt;', '--language', 'kotlin', '--out-dir', &quot;${buildDir}/generated/source/uniffi/${variant.name}/java&quot;
@@ -750,10 +750,10 @@ generated header file as a <strong>Public</strong> header in the &quot;Headers&q
 of your project (which is why it's useful to generate this file somewhere in
 your source tree, rather than in a temporary build directory).</p>
 <h1><a class="header" href="#lifting-lowering-and-serialization" id="lifting-lowering-and-serialization">Lifting, Lowering and Serialization</a></h1>
-<p>Uniffi is able to transfer rich data types back-and-forth between the Rust
+<p>UniFFI is able to transfer rich data types back-and-forth between the Rust
 code and the foreign-language code via a process we refer to as &quot;lowering&quot;
 and &quot;lifting&quot;.</p>
-<p>Recall that uniffi interoperates between different languages by defining
+<p>Recall that UniFFI interoperates between different languages by defining
 a C-style FFI layer which operates in terms of primitive data types and
 plain functions. To transfer data from one side of this layer to the other,
 the sending side &quot;<em><strong>lowers</strong></em>&quot; the data from a language-specific data type
@@ -774,13 +774,13 @@ behind this choice).</p>
 <p>Calling this function from foreign language code involves the following steps:</p>
 <ol>
 <li>The user-provided calling code invokes the <code>add_to_list</code> function that is exposed by the
-uniffi-generated foreign language bindings, passing <code>item</code> as an appropriate language-native
+UniFFI-generated foreign language bindings, passing <code>item</code> as an appropriate language-native
 integer.</li>
 <li>The foreign language bindings <em><strong>lower</strong></em> each argument to a function call into
 something that can be passed over the C-style FFI. Since the <code>item</code> argument is a plain integer,
 it is lowered by casting to an <code>int32_t</code>.</li>
 <li>The foreign language bindings pass the lowered arguments to a C FFI function named
-like <code>example_XYZ_add_to_list</code> that is exposed by the uniffi-generated Rust scaffolding.</li>
+like <code>example_XYZ_add_to_list</code> that is exposed by the UniFFI-generated Rust scaffolding.</li>
 <li>The Rust scaffolding <em><strong>lifts</strong></em> each argument received over the FFI into a native
 Rust type. Since <code>item</code> is a plain integer it is lifted by casting to a Rust <code>i32</code>.</li>
 <li>The Rust scaffolding passes the lifted arguments to the user-provided Rust code for
@@ -809,9 +809,9 @@ from the returned byte buffer into a language-native list of integers.</li>
 <tr><td><code>interface</code></td><td><code>uint64_t</code> opaque integer handle</td></tr>
 </tbody></table>
 <h2><a class="header" href="#serialization-format" id="serialization-format">Serialization Format</a></h2>
-<p>When serializing complex data types into a byte buffer, uniffi uses an
+<p>When serializing complex data types into a byte buffer, UniFFI uses an
 ad-hoc fixed-width format which is designed mainly for simplicity.
-The details of this format are internal only and may change between versions of uniffi.</p>
+The details of this format are internal only and may change between versions of UniFFI.</p>
 <table><thead><tr><th>UDL Type</th><th>Representation in serialized bytes</th></tr></thead><tbody>
 <tr><td><code>i8</code>/<code>i16</code>/<code>i32</code>/<code>i64</code></td><td>Fixed-width 1/2/4/8-byte signed integer, big-endian</td></tr>
 <tr><td><code>u8</code>/<code>u16</code>/<code>u32</code>/<code>u64</code></td><td>Fixed-width 1/2/4/8-byte unsigned integer, big-endian</td></tr>
@@ -831,7 +831,7 @@ despite the fact that they will always be non-negative. This is to help
 ease compatibility with JVM-based languages since the JVM uses signed 32-bit
 integers for its size fields internally.</p>
 <h1><a class="header" href="#managing-object-references" id="managing-object-references">Managing Object References</a></h1>
-<p>Uniffi <a href="internals/../udl/interfaces.html">interfaces</a> represent instances of objects
+<p>UniFFI <a href="internals/../udl/interfaces.html">interfaces</a> represent instances of objects
 that have methods and contain shared mutable state. One of Rust's core innovations
 is its ability to provide compile-time guarantees about working with such instances,
 including:</p>
@@ -841,7 +841,7 @@ including:</p>
 active at any point in the program.</li>
 <li>Guarding against data races.</li>
 </ul>
-<p>Uniffi aims to maintain these guarantees even when the Rust code is being invoked
+<p>UniFFI aims to maintain these guarantees even when the Rust code is being invoked
 from a foreign language, at the cost of turning them into run-time checks rather
 than compile-time guarantees.</p>
 <h2><a class="header" href="#handle-maps" id="handle-maps">Handle Maps</a></h2>
@@ -850,7 +850,7 @@ than compile-time guarantees.</p>
 a mapping from opaque integer handles to object instances. This indirection
 imposes a small runtime cost but helps us guard against errors or oversights
 in the generated bindings.</p>
-<p>For each interface declared in the UDL, the uniffi-generated Rust scaffolding
+<p>For each interface declared in the UDL, the UniFFI-generated Rust scaffolding
 will create a global handlemap that is responsible for owning all instances
 of that interface, and handing out references to them when methods are called.</p>
 <p>For example, given a interface definition like this:</p>
@@ -917,11 +917,11 @@ using a combination of compile-time checks and runtime locking depending on the 
 Rust struct that implements the interface.</li>
 </ul>
 <h2><a class="header" href="#managing-concurrency" id="managing-concurrency">Managing Concurrency</a></h2>
-<p>By default, uniffi uses the <a href="https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html">ffi_support::ConcurrentHandleMap</a> struct as the handlemap for each declared instance. This class
+<p>By default, UniFFI uses the <a href="https://docs.rs/ffi-support/0.4.0/ffi_support/handle_map/struct.ConcurrentHandleMap.html">ffi_support::ConcurrentHandleMap</a> struct as the handlemap for each declared instance. This class
 wraps each instance with a <code>Mutex</code>, which serializes access to the instance and upholds Rust's guarantees
 against shared mutable access.  This approach is simple and safe, but it means that all method calls
 on an instance are run in a strictly sequential fashion, limiting concurrency.</p>
-<p>For instances that are explicited tagged with the <code>[Threadsafe]</code> attribute, uniffi instead uses
+<p>For instances that are explicited tagged with the <code>[Threadsafe]</code> attribute, UniFFI instead uses
 a custom <code>ArcHandleMap</code> struct. This replaces the run-time <code>Mutex</code> with compile-time assertions
 about the safety of the underlying Rust struct. Specifically:</p>
 <ul>
