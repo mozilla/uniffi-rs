@@ -77,7 +77,7 @@ pub struct Object {
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     pub(super) ffi_func_free: FFIFunction,
-    pub(super) threadsafe: bool,
+    pub(super) uses_deprecated_threadsafe_attribute: bool,
 }
 
 impl Object {
@@ -87,7 +87,7 @@ impl Object {
             constructors: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
-            threadsafe: false,
+            uses_deprecated_threadsafe_attribute: false,
         }
     }
 
@@ -120,8 +120,8 @@ impl Object {
         &self.ffi_func_free
     }
 
-    pub fn threadsafe(&self) -> bool {
-        self.threadsafe
+    pub fn uses_deprecated_threadsafe_attribute(&self) -> bool {
+        self.uses_deprecated_threadsafe_attribute
     }
 
     pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
@@ -165,7 +165,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
             Some(attrs) => InterfaceAttributes::try_from(attrs)?,
             None => Default::default(),
         };
-        object.threadsafe = attributes.threadsafe();
+        object.uses_deprecated_threadsafe_attribute = attributes.threadsafe();
         // Convert each member into a constructor or method, guarding against duplicate names.
         let mut member_names = HashSet::new();
         for member in &self.members.body {

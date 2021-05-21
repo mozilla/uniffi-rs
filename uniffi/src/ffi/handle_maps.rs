@@ -10,14 +10,10 @@ use std::sync::{Arc, RwLock};
 /// for objects that are able to look after their own locking, and need to be called
 /// from multiple foreign language threads at the same time.
 ///
-/// In contrast, the `ConcurrentHandleMap` is aliased as `MutexHandleMap` to show the difference:
-/// objects with `mut` methods can be used, but the objects can only be accessed from one thread
-/// at a time.
+/// This is in contrast to the `ConcurrentHandleMap` struct from `ffi-support`, which
+/// allows objects with `mut` methods but which only lets the objects be accessed from one
+/// thread at a time.
 ///
-/// The `Threadsafe` annotation is used to choose which handle map `uniffi` uses.
-///
-/// This module also provides the `UniffiMethodCall` trait, which allows generated scaffolding
-/// to switch almost seemlessly.
 // Some care is taken to protect that handlemap itself being read and written concurrently, and
 // that the lock is held for the least amount of time; however, if it is ever poisoned, it will
 // panic on both read and write.
@@ -114,9 +110,6 @@ impl<T: Sync + Send> ArcHandleMap<T> {
 
     /// Call `callback` with a non-mutable reference to the item from the map,
     /// after acquiring the necessary locks.
-    ///
-    /// This takes the map's `read` lock for as long as needed to clone the inner `Arc`.
-    /// This is so the lock isn't held while the callback is in use.
     ///
     /// This takes the map's `read` lock for as long as needed to clone the inner `Arc`.
     /// This is so the lock isn't held while the callback is in use.
@@ -285,132 +278,6 @@ impl<T: Sync + Send> Default for ArcHandleMap<T> {
     #[inline]
     fn default() -> Self {
         Self::new()
-    }
-}
-
-/// Make a type alias to contrast the two handle map implementations.
-pub type MutexHandleMap<T> = ffi_support::ConcurrentHandleMap<T>;
-
-/// A trait to help the code generation a bit tidier.
-///
-/// We'll implement it only for the `MutexHandleMap` which asks for `FnOnce(&mut T)`
-/// callbacks, but we'll give `ArcHandleMap` very similar looking methods, that
-/// accept `FnOnce(&T)` callbacks.
-///
-/// When generating the code in the `to_rs_method_call` macro in `macros.rs`, the code will be lexically
-/// identical.
-pub trait UniffiMethodCall<T> {
-    fn method_call_with_result<R, E, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(&mut T) -> Result<R, E>,
-        ExternError: From<E>,
-        R: IntoFfi;
-
-    fn method_call_with_output<R, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(&mut T) -> R,
-        R: IntoFfi;
-}
-
-impl<T> UniffiMethodCall<T> for MutexHandleMap<T> {
-    fn method_call_with_result<R, E, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(&mut T) -> Result<R, E>,
-        ExternError: From<E>,
-        R: IntoFfi,
-    {
-        self.call_with_result_mut(out_error, h, callback)
-    }
-
-    fn method_call_with_output<R, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(&mut T) -> R,
-        R: IntoFfi,
-    {
-        self.call_with_output_mut(out_error, h, callback)
-    }
-
-    // Note that `method_call_by_arc_with_result` and `method_call_by_arc_with_output`
-    // are deliberately missing from this interface. They should never be used in
-    // conjunction with `MutexHandleMap`, and we want any accidental attempt to do so
-    // to be a hard compile-time error.
-}
-
-/// The faux implementation of `UniffiMethodCall` which differs from the real one
-/// by not requiring `mut` references to `T`.
-impl<T: Sync + Send> ArcHandleMap<T> {
-    pub fn method_call_with_result<R, E, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(&T) -> Result<R, E>,
-        ExternError: From<E>,
-        R: IntoFfi,
-    {
-        self.call_with_result(out_error, h, callback)
-    }
-
-    pub fn method_call_with_output<R, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(&T) -> R,
-        R: IntoFfi,
-    {
-        self.call_with_output(out_error, h, callback)
-    }
-
-    pub fn method_call_by_arc_with_result<R, E, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> Result<R, E>,
-        ExternError: From<E>,
-        R: IntoFfi,
-    {
-        self.call_by_arc_with_result(out_error, h, callback)
-    }
-
-    pub fn method_call_by_arc_with_output<R, F>(
-        &self,
-        out_error: &mut ExternError,
-        h: u64,
-        callback: F,
-    ) -> R::Value
-    where
-        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> R,
-        R: IntoFfi,
-    {
-        self.call_by_arc_with_output(out_error, h, callback)
     }
 }
 

@@ -35,11 +35,9 @@ fn create_entry_with<S: Into<String>>(item: S) -> Result<TodoEntry> {
 
 type Result<T, E = TodoError> = std::result::Result<T, E>;
 
-// A simple Todolist. Our .udl defines us as "Threadsafe", meaning it's up to
-// us to ensure we are `Send + Sync` - in practice that means none of our
-// functions can take `&mut self` and all elements in the struct must also be
-// `Send + Sync` - so we wrap our `Vec` in a RwLock (a Mutex would also work,
-// but a RwLock is more appropriate for this use-case, so we use it)
+// A simple Todolist.
+// UniFFI requires all objects to be `Send + Sync`, so we wrap our `Vec` in a RwLock
+// (a Mutex would also work, but a RwLock is more appropriate for this use-case, so we use it).
 #[derive(Debug)]
 pub struct TodoList {
     items: RwLock<Vec<String>>,

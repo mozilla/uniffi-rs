@@ -8,22 +8,22 @@ The following Rust code:
 
 ```rust
 struct TodoList {
-    items: Vec<String>
+    items: RwLock<Vec<String>>
 }
 
 impl TodoList {
     fn new() -> Self {
         TodoList {
-            items: Vec::new()
+            items: RwLock::<Vec::new())
         }
     }
 
     fn add_item(&mut self, todo: String) {
-        self.items.push(todo);
+        self.items.write().unwrap().push(todo);
     }
 
     fn get_items(&self) -> Vec<String> {
-        self.items.clone()
+        self.items.read().unwrap().clone()
     }
 }
 ```
@@ -40,11 +40,9 @@ interface TodoList {
 
 By convention, the `constructor()` calls the Rust's `new()` method.
 
-Conceptually, these `interface` objects are live Rust objects that have a proxy on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being call in Rust.
+Conceptually, these `interface` objects are live Rust structs that have a proxy object on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being called in Rust.
 
-UniFFI will generate these proxies of live objects with an interface or protocol.
-
-e.g. in Kotlin.
+UniFFI will generate these proxies with an interface or protocol to help with testing in the foreign-language code. For example in Kotlin, the `TodoList` would generate:
 
 ```kotlin
 interface TodoListInterface {
@@ -57,9 +55,7 @@ class TodoList : TodoListInterface {
 }
 ```
 
-When working with these objects, it may be helpful to always pass the interface or protocol, but construct the concrete implementation.
-
-e.g. in Swift
+When working with these objects, it may be helpful to always pass the interface or protocol, but construct the concrete implementation. For example in Swift:
 
 ```swift
 let todoList = TodoList()
@@ -73,6 +69,9 @@ func display(list: TodoListProtocol) {
     }
 }
 ```
+
+Following this pattern will make it easier for you to provide mock implementation of the Rust-based objects
+for testing.
 
 ## Alternate Named Constructors
 
@@ -104,25 +103,18 @@ from multiple threads, and it's important that this not violate Rust's
 assumption that there is at most a single mutable reference to a struct
 at any point in time.
 
-By default, UniFFI enforces this using runtime locking. Each interface instance
-has an associated lock which is transparently acquired at the beginning of each
-call to a method of that instance, and released once the method returns. This
-approach is simple and safe, but it means that all method calls on an instance
-are run in a strictly sequential fashion, limiting concurrency.
-
-You can opt out of this protection by marking the interface as threadsafe:
+UniFFI enforces this by requiring that the Rust implementation of an interface
+be `Sync+Send`, and you will get a compile-time error if your implementation
+does not satisfy this requirement. For example, consider a small "counter"
+object declared like so:
 
 ```idl
-[Threadsafe]
 interface Counter {
     constructor();
     void increment();
     u64 get();
 };
 ```
-
-The UniFFI-generated code will allow concurrent method calls on threadsafe interfaces
-without any locking.
 
 For this to be safe, the underlying Rust struct must adhere to certain restrictions, and
 UniFFI's generated Rust scaffolding will emit compile-time errors if it does not.
@@ -140,7 +132,7 @@ impl Counter {
         Self { value: 0 }
     }
 
-    // No mutable references to self allowed in [Threadsafe] interfaces.
+    // No mutable references to self allowed in in UniFFI interfaces.
     fn increment(&mut self) {
         self.value = self.value + 1;
     }
@@ -154,7 +146,7 @@ impl Counter {
 Implementations can instead use Rust's "interior mutability" pattern. However, they
 must do so in a way that is both `Sync` and `Send`, since the foreign-language code
 may operate on the instance from multiple threads. The following implementation of the
-`Counter` interface will fail to compile because `RefCell` is not `Send`:
+`Counter` interface will fail to compile because `RefCell` is not `Sync`:
 
 ```rust
 struct Counter {

@@ -37,10 +37,7 @@ jobs:
       - checkout
       - run: rustup component add clippy
       - run: cargo clippy --version
-        # allow deprecated because we intentionally emit deprecation warnings
-        # for our non-threadsafe examples. Finer grained control would be
-        # ideal.
-      - run: cargo clippy --all --all-targets -- -D warnings -A deprecated
+      - run: cargo clippy --all --all-targets -- -D warnings
   Rust and Foreign Language tests:
     docker:
       - image: rfkelly/uniffi-ci:latest
@@ -52,10 +49,7 @@ jobs:
           command: rustc --version
       - run:
           name: "Set RUSTFLAGS to fail the build if there are warnings"
-          # allow deprecated because we intentionally emit deprecation warnings
-          # for our non-threadsafe examples. Finer grained control would be
-          # ideal.
-          command: echo 'export RUSTFLAGS="-D warnings -A deprecated"' >> $BASH_ENV
+          command: echo 'export RUSTFLAGS="-D warnings"' >> $BASH_ENV
       - checkout
       - run: cargo test
   Deploy website:

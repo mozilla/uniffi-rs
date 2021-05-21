@@ -1,6 +1,5 @@
 namespace callbacks {};
 
-[Threadsafe]
 interface Telephone {
   void call(boolean domestic, OnCallAnswered call_responder);
 };
@@ -22,7 +21,6 @@ callback interface ForeignGetters {
 
 /// These objects are implemented in Rust, and call out to `ForeignGetters`
 /// to get the value.
-[Threadsafe]
 interface RustGetters {
   boolean get_bool(ForeignGetters callback, boolean v, boolean arg2);
   string get_string(ForeignGetters callback, string v, boolean arg2);
@@ -44,7 +42,6 @@ callback interface StoredForeignStringifier {
 
 /// Rust object that uses the StoredForeignStringifier to produce string representations
 /// of passed arguments.
-[Threadsafe]
 interface RustStringifier {
   constructor(StoredForeignStringifier callback);
   string from_simple_type(i32 value);
