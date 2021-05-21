@@ -12,6 +12,13 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.10.0...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+
+- All interface implementations must now be `Sync + Send`, and Rust will give a compile-time error
+  if they are not. This makes the `[Threadsafe]` annotation redundant, so it is now deprecated and
+  will be removed in a future release. More details on the motivation for this change can be found
+  in [ADR-0004](https://github.com/mozilla/uniffi-rs/blob/main/docs/adr/0004-only-threadsafe-interfaces.md).
+
 ## v0.10.0 (_2021-05-26_)
 
 [All changes in v0.10.0](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...v0.10.0).

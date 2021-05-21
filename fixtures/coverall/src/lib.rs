@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::{Arc, RwLock};
 
 lazy_static::lazy_static! {
@@ -133,4 +134,37 @@ impl Drop for Coveralls {
         *NUM_ALIVE.write().unwrap() -= 1;
     }
 }
+
+// This is a small implementation of a counter that allows waiting on one thread,
+// and counting on another thread. We use it to test that the UniFFI generated scaffolding
+// doesn't introduce unexpected locking behaviour between threads.
+struct ThreadsafeCounter {
+    is_busy: AtomicBool,
+    count: AtomicI32,
+}
+
+impl ThreadsafeCounter {
+    fn new() -> Self {
+        Self {
+            is_busy: AtomicBool::new(false),
+            count: AtomicI32::new(0),
+        }
+    }
+
+    fn busy_wait(&self, ms: i32) {
+        self.is_busy.store(true, Ordering::SeqCst);
+        // Pretend to do some work in a blocking fashion.
+        std::thread::sleep(std::time::Duration::from_millis(ms as u64));
+        self.is_busy.store(false, Ordering::SeqCst);
+    }
+
+    fn increment_if_busy(&self) -> i32 {
+        if self.is_busy.load(Ordering::SeqCst) {
+            self.count.fetch_add(1, Ordering::SeqCst) + 1
+        } else {
+            self.count.load(Ordering::SeqCst)
+        }
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/coverall.uniffi.rs"));

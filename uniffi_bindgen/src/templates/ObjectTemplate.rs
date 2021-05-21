@@ -9,28 +9,23 @@
 {% let handle_map = format!("UNIFFI_HANDLE_MAP_{}", obj.name().to_uppercase()) -%}
 
 
-{% if !obj.threadsafe() %}
+{% if obj.uses_deprecated_threadsafe_attribute() %}
 // We want to mark this as `deprecated` - long story short, the only way to
 // sanely do this using `#[deprecated(..)]` is to generate a function with that
 // attribute, then generate call to that function in the object constructors.
 #[deprecated(
-    since = "0.8.0",
-    note = "Non thread-safe objects are deprecated - you should upgrade \
-            `{{ obj.name() }}` to be threadsafe, then add the `[ThreadSafe]` \
-            annotation. \
+    since = "0.11.0",
+    note = "The `[Threadsafe]` attribute on interfaces is now the default and its use is deprecated - you should upgrade \
+            `{{ obj.name() }}` to remove the `[ThreadSafe]` attribute. \
             See https://github.com/mozilla/uniffi-rs/#thread-safety for more details"
 )]
 #[allow(non_snake_case)]
-fn uniffi_note_nonthreadsafe_deprecation_{{ obj.name() }}() {}
+fn uniffi_note_threadsafe_deprecation_{{ obj.name() }}() {}
 {% endif %}
 
 uniffi::deps::lazy_static::lazy_static! {
-    {%- let handle_map_type = obj.threadsafe()|choose(
-        "uniffi::ffi::handle_maps::ArcHandleMap",
-        "uniffi::ffi::handle_maps::MutexHandleMap")
-    %}
     #[doc(hidden)]
-    static ref {{ handle_map }}: {{ handle_map_type }}<{{ obj.name() }}>
+    static ref {{ handle_map }}: uniffi::ffi::handle_maps::ArcHandleMap<{{ obj.name() }}>
         = Default::default();
 }
 
@@ -48,8 +43,8 @@ uniffi::deps::lazy_static::lazy_static! {
     pub extern "C" fn {{ cons.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> u64 {
         uniffi::deps::log::debug!("{{ cons.ffi_func().name() }}");
-        {% if !obj.threadsafe() %}
-        uniffi_note_nonthreadsafe_deprecation_{{ obj.name() }}();
+        {% if obj.uses_deprecated_threadsafe_attribute() %}
+        uniffi_note_threadsafe_deprecation_{{ obj.name() }}();
         {% endif %}
 
         // If the constructor does not have the same signature as declared in the UDL, then

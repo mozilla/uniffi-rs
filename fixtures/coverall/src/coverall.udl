@@ -29,7 +29,6 @@ enum CoverallError {
     "TooManyHoles"
 };
 
-[Threadsafe]
 interface Coveralls {
     constructor(string name);
 
@@ -53,4 +52,9 @@ interface Coveralls {
     /// Calls `Arc::strong_count()` on the `Arc` containing `self`.
     [Self=ByArc]
     u64 strong_count();
+};
+
+interface ThreadsafeCounter {
+  void busy_wait(i32 ms);
+  i32 increment_if_busy();
 };

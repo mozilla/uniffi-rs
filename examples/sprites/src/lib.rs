@@ -31,8 +31,8 @@ pub fn translate(p: &Point, v: Vector) -> Point {
 // and which can move about over time.
 #[derive(Debug)]
 pub struct Sprite {
-    // All interfaces must be threadsafe, meaning `Send+Sync`, and our naive
-    // `Point` struct isn't - so we wrap it in a `RwLock` to make it so.
+    // All interfaces must be `Send+Sync`, and our naive `Point` struct
+    // isn't, so we wrap it in a `RwLock` to make it so.
     current_position: RwLock<Point>,
 }
 
