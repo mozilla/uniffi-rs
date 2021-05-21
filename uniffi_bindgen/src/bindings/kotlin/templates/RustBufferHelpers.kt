@@ -307,7 +307,7 @@ internal fun lower{{ canonical_type_name }}(v: {{ inner_type_name }}?): RustBuff
 }
 
 internal fun write{{ canonical_type_name }}(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
-    if (v === null) {
+    if (v == null) {
         buf.putByte(0)
     } else {
         buf.putByte(1)
