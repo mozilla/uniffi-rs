@@ -347,7 +347,7 @@ unsafe impl ViaFfi for String {
         check_remaining(buf, 4)?;
         let len = usize::try_from(buf.get_i32())?;
         check_remaining(buf, len)?;
-        let bytes = &buf.bytes()[..len];
+        let bytes = &buf.chunk()[..len];
         let res = String::from_utf8(bytes.to_vec())?;
         buf.advance(len);
         Ok(res)
