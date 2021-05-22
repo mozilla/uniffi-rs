@@ -120,17 +120,12 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
     let cdylib_files: Vec<_> = cdylib
         .filenames
         .iter()
-        .filter(|nm| {
-            matches!(
-                nm.extension().unwrap_or_default().to_str(),
-                Some(std::env::consts::DLL_EXTENSION)
-            )
-        })
+        .filter(|nm| matches!(nm.extension(), Some(std::env::consts::DLL_EXTENSION)))
         .collect();
     if cdylib_files.len() != 1 {
         bail!("Failed to build exactly one cdylib file, it must not be a uniffi component");
     }
-    let cdylib_file = cdylib_files[0].to_string_lossy().into_owned();
+    let cdylib_file = cdylib_files[0].to_string();
     // Cache the result for subsequent tests.
     compiled_components.insert(pkg_dir.to_string(), cdylib_file.clone());
     Ok(cdylib_file)
