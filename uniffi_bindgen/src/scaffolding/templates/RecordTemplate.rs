@@ -16,7 +16,7 @@ unsafe impl uniffi::ViaFfi for {{ rec.name() }} {
         uniffi::try_lift_from_buffer(v)
     }
 
-    fn write<B: uniffi::deps::bytes::BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
         // If the provided struct doesn't match the fields declared in the UDL, then
         // the generated code here will fail to compile with somewhat helpful error.
         {%- for field in rec.fields() %}
@@ -24,11 +24,11 @@ unsafe impl uniffi::ViaFfi for {{ rec.name() }} {
         {%- endfor %}
     }
 
-    fn try_read<B: uniffi::deps::bytes::Buf>(buf: &mut B) -> uniffi::deps::anyhow::Result<Self> {
-      Ok(Self {
-        {%- for field in rec.fields() %}
-            {{ field.name() }}: <{{ field.type_()|type_rs }} as uniffi::ViaFfi>::try_read(buf)?,
-        {%- endfor %}
-      })
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
+        Ok(Self {
+            {%- for field in rec.fields() %}
+                {{ field.name() }}: <{{ field.type_()|type_rs }} as uniffi::ViaFfi>::try_read(buf)?,
+            {%- endfor %}
+        })
     }
 }

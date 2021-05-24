@@ -99,7 +99,8 @@ unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
         self.handle
     }
 
-    fn write<B: uniffi::deps::bytes::BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
+        use uniffi::deps::bytes::BufMut;
         buf.put_u64(self.handle);
     }
 
@@ -107,7 +108,8 @@ unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
         Ok(Self { handle: v })
     }
 
-    fn try_read<B: uniffi::deps::bytes::Buf>(buf: &mut B) -> uniffi::deps::anyhow::Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
+        use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 8)?;
         <Self as uniffi::ViaFfi>::try_lift(buf.get_u64())
     }
