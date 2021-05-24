@@ -19,6 +19,13 @@
   will be removed in a future release. More details on the motivation for this change can be found
   in [ADR-0004](https://github.com/mozilla/uniffi-rs/blob/main/docs/adr/0004-only-threadsafe-interfaces.md).
 
+
+### What's Changed
+
+- Kotlin objects can now safely have their `destroy()` method or `.use` block execute concurrently
+  with other method calls. It's recommended that you *not* do this, but if you accidentally do so,
+  it will now work correctly rather than triggering a panic in the underlying Rust code.
+
 ## v0.10.0 (_2021-05-26_)
 
 [All changes in v0.10.0](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...v0.10.0).

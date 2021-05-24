@@ -10,7 +10,7 @@ public interface {{ obj.name()|class_name_kt }}Interface {
 
 class {{ obj.name()|class_name_kt }}(
     handle: Long
-) : FFIObject(AtomicLong(handle)), {{ obj.name()|class_name_kt }}Interface {
+) : FFIObject(handle), {{ obj.name()|class_name_kt }}Interface {
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
@@ -27,16 +27,9 @@ class {{ obj.name()|class_name_kt }}(
      * 
      * Clients **must** call this method once done with the object, or cause a memory leak.
      */
-    override fun destroy() {
-        try {
-            callWithHandle {
-                super.destroy() // poison the handle so no-one else can use it before we tell rust.
-                rustCall(InternalError.ByReference()) { err ->
-                    _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(it, err)
-                }
-            }
-        } catch (e: IllegalStateException) {
-            // The user called this more than once. Better than less than once.
+    override protected fun freeHandle() {
+        rustCall(InternalError.ByReference()) { err ->
+            _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(this.handle, err)
         }
     }
 
