@@ -29,6 +29,7 @@ pub(super) enum Attribute {
     Enum,
     Error,
     Name(String),
+    SelfType(SelfType),
     Threadsafe,
     Throws(String),
 }
@@ -63,6 +64,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 match identity.lhs_identifier.0 {
                     "Name" => Ok(Attribute::Name(name_from_id_or_string(&identity.rhs))),
                     "Throws" => Ok(Attribute::Throws(name_from_id_or_string(&identity.rhs))),
+                    "Self" => Ok(Attribute::SelfType(SelfType::try_from(&identity.rhs)?)),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
@@ -170,7 +172,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttribut
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
-            _ => bail!(format!("{:?} not supported for functions or methods", attr)),
+            _ => bail!(format!("{:?} not supported for functions", attr)),
         })?;
         Ok(Self(attrs))
     }
@@ -272,15 +274,10 @@ impl<T: TryInto<InterfaceAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
     }
 }
 
-// There may be some divergence between Methods and Functions at some point,
-// but not yet.
-pub(super) type MethodAttributes = FunctionAttributes;
-
-// Constructors can have a `Name` attribute, so need their own implementation.
-/// Represents UDL attributes that might appear on a function.
+/// Represents UDL attributes that might appear on a constructor.
 ///
-/// This supports the `[Throws=ErrorName]` attribute for functions that
-/// can produce an error.
+/// This supports the `[Throws=ErrorName]` attribute for constructors that can produce
+/// an error, and the `[Name=MethodName]` for non-default constructors.
 #[derive(Debug, Clone, Hash, Default)]
 pub(super) struct ConstructorAttributes(Vec<Attribute>);
 
@@ -293,6 +290,7 @@ impl ConstructorAttributes {
             _ => None,
         })
     }
+
     pub(super) fn get_name(&self) -> Option<&str> {
         self.0.iter().find_map(|attr| match attr {
             Attribute::Name(inner) => Some(inner.as_ref()),
@@ -312,6 +310,79 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttri
             _ => bail!(format!("{:?} not supported for constructors", attr)),
         })?;
         Ok(Self(attrs))
+    }
+}
+
+/// Represents UDL attributes that might appear on a method.
+///
+/// This supports the `[Throws=ErrorName]` attribute for methods that can produce
+/// an error, and the `[Self=ByArc]` attribute for methods that take `Arc<Self>` as receiver.
+#[derive(Debug, Clone, Hash, Default)]
+pub(super) struct MethodAttributes(Vec<Attribute>);
+
+impl MethodAttributes {
+    pub(super) fn get_throws_err(&self) -> Option<&str> {
+        self.0.iter().find_map(|attr| match attr {
+            // This will hopefully return a helpful compilation error
+            // if the error is not defined.
+            Attribute::Throws(inner) => Some(inner.as_ref()),
+            _ => None,
+        })
+    }
+
+    pub(super) fn get_by_arc(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::SelfType(SelfType::ByArc)))
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for MethodAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::SelfType(_) => Ok(()),
+            Attribute::Throws(_) => Ok(()),
+            _ => bail!(format!("{:?} not supported for methods", attr)),
+        })?;
+        Ok(Self(attrs))
+    }
+}
+
+impl<T: TryInto<MethodAttributes, Error = anyhow::Error>> TryFrom<Option<T>> for MethodAttributes {
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
+    }
+}
+
+/// Represents the different possible types of method call receiver.
+///
+/// Actually we only support one of these right now, `[Self=ByArc]`.
+/// We might add more in future, e.g. a `[Self=ByRef]` if there are cases
+/// where we need to force the receiver to be taken by reference.
+#[derive(Debug, Clone, Hash)]
+pub(super) enum SelfType {
+    ByArc, // Method receiver is `Arc<Self>`.
+}
+
+impl TryFrom<&weedle::attribute::IdentifierOrString<'_>> for SelfType {
+    type Error = anyhow::Error;
+    fn try_from(nm: &weedle::attribute::IdentifierOrString<'_>) -> Result<Self, Self::Error> {
+        Ok(match nm {
+            weedle::attribute::IdentifierOrString::Identifier(identifier) => match identifier.0 {
+                "ByArc" => SelfType::ByArc,
+                _ => bail!("Unsupported Self Type: {:?}", identifier.0),
+            },
+            weedle::attribute::IdentifierOrString::String(_) => {
+                bail!("Unsupported Self Type: {:?}", nm)
+            }
+        })
     }
 }
 
@@ -359,6 +430,17 @@ mod test {
             "ExtendedAttributeNoArgs not supported: \"Name\""
         );
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_selftype() -> Result<()> {
+        let (_, node) = weedle::attribute::ExtendedAttribute::parse("Self=ByArc").unwrap();
+        let attr = Attribute::try_from(&node)?;
+        assert!(matches!(attr, Attribute::SelfType(SelfType::ByArc)));
+        let (_, node) = weedle::attribute::ExtendedAttribute::parse("Self=ByMistake").unwrap();
+        let err = Attribute::try_from(&node).unwrap_err();
+        assert_eq!(err.to_string(), "Unsupported Self Type: \"ByMistake\"");
         Ok(())
     }
 
@@ -428,10 +510,39 @@ mod test {
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, ByRef]").unwrap();
         let err = FunctionAttributes::try_from(&node).unwrap_err();
+        assert_eq!(err.to_string(), "ByRef not supported for functions");
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, Self=ByArc]").unwrap();
+        let err = FunctionAttributes::try_from(&node).unwrap_err();
         assert_eq!(
             err.to_string(),
-            "ByRef not supported for functions or methods"
+            "SelfType(ByArc) not supported for functions"
         );
+    }
+
+    #[test]
+    fn test_method_attributes() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Throws=Error]").unwrap();
+        let attrs = MethodAttributes::try_from(&node).unwrap();
+        assert!(!attrs.get_by_arc());
+        assert!(matches!(attrs.get_throws_err(), Some("Error")));
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
+        let attrs = MethodAttributes::try_from(&node).unwrap();
+        assert!(!attrs.get_by_arc());
+        assert!(attrs.get_throws_err().is_none());
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc, Throws=Error]").unwrap();
+        let attrs = MethodAttributes::try_from(&node).unwrap();
+        assert!(attrs.get_by_arc());
+        assert!(attrs.get_throws_err().is_some());
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc]").unwrap();
+        let attrs = MethodAttributes::try_from(&node).unwrap();
+        assert!(attrs.get_by_arc());
+        assert!(attrs.get_throws_err().is_none());
     }
 
     #[test]
@@ -461,6 +572,14 @@ mod test {
             weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, ByRef]").unwrap();
         let err = ConstructorAttributes::try_from(&node).unwrap_err();
         assert_eq!(err.to_string(), "ByRef not supported for constructors");
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, Self=ByArc]").unwrap();
+        let err = ConstructorAttributes::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "SelfType(ByArc) not supported for constructors"
+        );
     }
 
     #[test]

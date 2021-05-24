@@ -47,4 +47,10 @@ interface Coveralls {
     boolean maybe_throw(boolean should_throw);
 
     void panic(string message);
+
+    // *** Test functions which take either `self` or other params as `Arc<Self>` ***
+
+    /// Calls `Arc::strong_count()` on the `Arc` containing `self`.
+    [Self=ByArc]
+    u64 strong_count();
 };

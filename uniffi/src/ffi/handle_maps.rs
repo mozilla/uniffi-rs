@@ -152,6 +152,42 @@ impl<T: Sync + Send> ArcHandleMap<T> {
 
     /// Helper that performs both a [`call_with_result`] and [`get`](ArcHandleMap::get).
     ///
+    /// The callback is called with a clone of the inner `Arc`, returning a `Result`.
+    ///
+    /// This takes the map's `read` lock for as long as needed to clone the inner `Arc`.
+    /// This is so the lock isn't held while the callback is in use.
+    ///
+    /// This is the most general of the `call_` helper methods; all other call helpers
+    /// can be implemented in terms of this one.
+    pub fn call_by_arc_with_result<R, E, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> Result<R, E>,
+        ExternError: From<E>,
+        R: IntoFfi,
+    {
+        use ffi_support::call_with_result;
+        call_with_result(out_error, || -> Result<_, ExternError> {
+            // We can't reuse `get` here because it would require E:
+            // From<HandleError>, which is inconvenient...
+            let h = Handle::from_u64(h)?;
+            let obj_arc = {
+                let map = self.map.read().unwrap();
+                let obj = map.get(h)?;
+                Arc::clone(&obj)
+            };
+            Ok(callback(obj_arc)?)
+        })
+    }
+
+    /// Helper that performs both a [`call_with_result`] and [`get`](ArcHandleMap::get).
+    ///
+    /// The callback is called with a reference to the contained struct, returning a `Result`.
+    ///
     /// This takes the map's `read` lock for as long as needed to clone the inner `Arc`.
     /// This is so the lock isn't held while the callback is in use.
     pub fn call_with_result<R, E, F>(
@@ -165,21 +201,33 @@ impl<T: Sync + Send> ArcHandleMap<T> {
         ExternError: From<E>,
         R: IntoFfi,
     {
-        use ffi_support::call_with_result;
-        call_with_result(out_error, || -> Result<_, ExternError> {
-            // We can't reuse `get` here because it would require E:
-            // From<HandleError>, which is inconvenient...
-            let h = Handle::from_u64(h)?;
-            let obj = {
-                let map = self.map.read().unwrap();
-                let obj = map.get(h)?;
-                Arc::clone(&obj)
-            };
-            Ok(callback(&*obj)?)
+        self.call_by_arc_with_result(out_error, h, |obj_arc: Arc<T>| -> Result<_, E> {
+            let obj = &*obj_arc;
+            callback(obj)
         })
     }
 
     /// Helper that performs both a [`call_with_output`] and [`get`](ArcHandleMap::get).
+    ///
+    /// The callback is called with a clone of the inner `Arc`, returning a value.
+    pub fn call_by_arc_with_output<R, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> R,
+        R: IntoFfi,
+    {
+        self.call_by_arc_with_result(out_error, h, |obj_arc: Arc<T>| -> Result<_, HandleError> {
+            Ok(callback(obj_arc))
+        })
+    }
+
+    /// Helper that performs both a [`call_with_output`] and [`get`](ArcHandleMap::get).
+    ///
+    /// The callback is called with a reference to the contained struct, returning a value.
     pub fn call_with_output<R, F>(
         &self,
         out_error: &mut ExternError,
@@ -190,8 +238,8 @@ impl<T: Sync + Send> ArcHandleMap<T> {
         F: std::panic::UnwindSafe + FnOnce(&T) -> R,
         R: IntoFfi,
     {
-        self.call_with_result(out_error, h, |r| -> Result<_, HandleError> {
-            Ok(callback(r))
+        self.call_with_result(out_error, h, |obj| -> Result<_, HandleError> {
+            Ok(callback(obj))
         })
     }
 
@@ -301,6 +349,11 @@ impl<T> UniffiMethodCall<T> for MutexHandleMap<T> {
     {
         self.call_with_output_mut(out_error, h, callback)
     }
+
+    // Note that `method_call_by_arc_with_result` and `method_call_by_arc_with_output`
+    // are deliberately missing from this interface. They should never be used in
+    // conjunction with `MutexHandleMap`, and we want any accidental attempt to do so
+    // to be a hard compile-time error.
 }
 
 /// The faux implementation of `UniffiMethodCall` which differs from the real one
@@ -331,6 +384,33 @@ impl<T: Sync + Send> ArcHandleMap<T> {
         R: IntoFfi,
     {
         self.call_with_output(out_error, h, callback)
+    }
+
+    pub fn method_call_by_arc_with_result<R, E, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> Result<R, E>,
+        ExternError: From<E>,
+        R: IntoFfi,
+    {
+        self.call_by_arc_with_result(out_error, h, callback)
+    }
+
+    pub fn method_call_by_arc_with_output<R, F>(
+        &self,
+        out_error: &mut ExternError,
+        h: u64,
+        callback: F,
+    ) -> R::Value
+    where
+        F: std::panic::UnwindSafe + FnOnce(Arc<T>) -> R,
+        R: IntoFfi,
+    {
+        self.call_by_arc_with_output(out_error, h, callback)
     }
 }
 

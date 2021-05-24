@@ -327,6 +327,10 @@ impl Method {
         self.attributes.get_throws_err()
     }
 
+    pub fn takes_self_by_arc(&self) -> bool {
+        self.attributes.get_by_arc()
+    }
+
     pub fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
         self.ffi_func.name.push_str(ci_prefix);
         self.ffi_func.name.push('_');

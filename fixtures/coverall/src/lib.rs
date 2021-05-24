@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
 lazy_static::lazy_static! {
     static ref NUM_ALIVE: RwLock<u64> = {
@@ -121,6 +121,10 @@ impl Coveralls {
 
     fn panic(&self, message: String) {
         panic!("{}", message);
+    }
+
+    fn strong_count(self: Arc<Self>) -> u64 {
+        Arc::strong_count(&self) as u64
     }
 }
 
