@@ -84,5 +84,10 @@ class TestCoverall(unittest.TestCase):
         with self.assertRaisesRegex(InternalError, "expected panic: oh no"):
             coveralls.panic("expected panic: oh no")
 
+    def test_self_by_arc(self):
+        coveralls = Coveralls("test_self_by_arc")
+        # One reference is held by the handlemap, and one by the `Arc<Self>` method receiver.
+        self.assertEqual(coveralls.strong_count(), 2)
+
 if __name__=='__main__':
     unittest.main()

@@ -65,12 +65,12 @@ use uniffi::UniffiMethodCall;
 {%- endif -%}
 {% match meth.throws() -%}
 {% when Some with (e) -%}
-{{ this_handle_map }}.method_call_with_result(err, {{ meth.first_argument().name() }}, |obj| -> Result<{% call return_type_func(meth) %}, {{e}}> {
+{{ this_handle_map }}.method_call_{% if meth.takes_self_by_arc() %}by_arc_{% endif %}with_result(err, {{ meth.first_argument().name() }}, |obj| -> Result<{% call return_type_func(meth) %}, {{e}}> {
     let _retval = {{ obj.name() }}::{%- call to_rs_call_with_prefix("obj", meth) -%}?;
     Ok({% call ret(meth) %})
 })
 {% else -%}
-{{ this_handle_map }}.method_call_with_output(err, {{ meth.first_argument().name() }}, |obj| {
+{{ this_handle_map }}.method_call_{% if meth.takes_self_by_arc() %}by_arc_{% endif %}with_output(err, {{ meth.first_argument().name() }}, |obj| {
     let _retval = {{ obj.name() }}::{%- call to_rs_call_with_prefix("obj", meth) -%};
     {% call ret(meth) %}
 })
