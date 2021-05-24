@@ -179,7 +179,7 @@ pub unsafe trait ViaFfi: Sized {
     /// This trait method can be used for sending data from rust to the foreign language code,
     /// in cases where we're not able to use a special-purpose FFI type and must fall back to
     /// sending serialized bytes.
-    fn write<B: BufMut>(&self, buf: &mut B);
+    fn write(&self, buf: &mut Vec<u8>);
 
     /// Read a rust value from a buffer, received over the FFI in serialized form.
     ///
@@ -189,7 +189,11 @@ pub unsafe trait ViaFfi: Sized {
     ///
     /// Since we cannot statically guarantee that the foreign-language code will send valid
     /// serialized bytes for the target type, this method is fallible.
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self>;
+    ///
+    /// Note the slightly unusual type here - we want a mutable reference to a slice of bytes,
+    /// because we want to be able to advance the start of the slice after reading an item
+    /// from it (but will not mutate the actual contents of the slice).
+    fn try_read(buf: &mut &[u8]) -> Result<Self>;
 }
 
 /// A helper function to lower a type by serializing it into a buffer.
@@ -223,7 +227,7 @@ pub fn try_lift_from_buffer<T: ViaFfi>(buf: RustBuffer) -> Result<T> {
 /// Rust won't actually let us read past the end of a buffer, but the `Buf` trait does not support
 /// returning an explicit error in this case, and will instead panic. This is a look-before-you-leap
 /// helper function to instead return an explicit error, to help with debugging.
-pub fn check_remaining<B: Buf>(buf: &B, num_bytes: usize) -> Result<()> {
+pub fn check_remaining(buf: &[u8], num_bytes: usize) -> Result<()> {
     if buf.remaining() < num_bytes {
         bail!(format!(
             "not enough bytes remaining in buffer ({} < {})",
@@ -254,11 +258,11 @@ macro_rules! impl_via_ffi_for_num_primitive {
                             Ok(v)
                         }
 
-                        fn write<B: BufMut>(&self, buf: &mut B) {
+                        fn write(&self, buf: &mut Vec<u8>) {
                             buf.[<put_ $T>](*self);
                         }
 
-                        fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+                        fn try_read(buf: &mut &[u8]) -> Result<Self> {
                             check_remaining(buf, std::mem::size_of::<$T>())?;
                             Ok(buf.[<get_ $T>]())
                         }
@@ -295,11 +299,11 @@ unsafe impl ViaFfi for bool {
         })
     }
 
-    fn write<B: BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
         buf.put_i8(ViaFfi::lower(*self));
     }
 
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
         check_remaining(buf, 1)?;
         ViaFfi::try_lift(buf.get_i8())
     }
@@ -338,7 +342,7 @@ unsafe impl ViaFfi for String {
         Ok(unsafe { String::from_utf8_unchecked(v) })
     }
 
-    fn write<B: BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
         // N.B. `len()` gives us the length in bytes, not in chars or graphemes.
         // TODO: it would be nice not to panic here.
         let len = i32::try_from(self.len()).unwrap();
@@ -346,10 +350,13 @@ unsafe impl ViaFfi for String {
         buf.put(self.as_bytes());
     }
 
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
         check_remaining(buf, 4)?;
         let len = usize::try_from(buf.get_i32())?;
         check_remaining(buf, len)?;
+        // N.B: In the general case `Buf::chunk()` may return partial data.
+        // But in the specific case of `<&[u8] as Buf>` it returns the full slice,
+        // so there is no risk of having less than `len` bytes available here.
         let bytes = &buf.chunk()[..len];
         let res = String::from_utf8(bytes.to_vec())?;
         buf.advance(len);
@@ -382,7 +389,7 @@ unsafe impl ViaFfi for SystemTime {
         try_lift_from_buffer(v)
     }
 
-    fn write<B: BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
         let mut sign = 1;
         let epoch_offset = self
             .duration_since(SystemTime::UNIX_EPOCH)
@@ -399,7 +406,7 @@ unsafe impl ViaFfi for SystemTime {
         buf.put_u32(epoch_offset.subsec_nanos());
     }
 
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
         check_remaining(buf, 12)?;
         let seconds = buf.get_i64();
         let nanos = buf.get_u32();
@@ -432,12 +439,12 @@ unsafe impl ViaFfi for Duration {
         try_lift_from_buffer(v)
     }
 
-    fn write<B: BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
         buf.put_u64(self.as_secs());
         buf.put_u32(self.subsec_nanos());
     }
 
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
         check_remaining(buf, 12)?;
         Ok(Duration::new(buf.get_u64(), buf.get_u32()))
     }
@@ -463,7 +470,7 @@ unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
         try_lift_from_buffer(v)
     }
 
-    fn write<B: BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
         match self {
             None => buf.put_i8(0),
             Some(v) => {
@@ -473,7 +480,7 @@ unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
         }
     }
 
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
         check_remaining(buf, 1)?;
         Ok(match buf.get_i8() {
             0 => None,
@@ -503,7 +510,7 @@ unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
         try_lift_from_buffer(v)
     }
 
-    fn write<B: BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
         let len = i32::try_from(self.len()).unwrap();
         buf.put_i32(len); // We limit arrays to i32::MAX items
@@ -512,7 +519,7 @@ unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
         }
     }
 
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
         check_remaining(buf, 4)?;
         let len = usize::try_from(buf.get_i32())?;
         let mut vec = Vec::with_capacity(len);
@@ -542,7 +549,7 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
         try_lift_from_buffer(v)
     }
 
-    fn write<B: BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
         let len = i32::try_from(self.len()).unwrap();
         buf.put_i32(len); // We limit HashMaps to i32::MAX entries
@@ -552,7 +559,7 @@ unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
         }
     }
 
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
         check_remaining(buf, 4)?;
         let len = usize::try_from(buf.get_i32())?;
         let mut map = HashMap::with_capacity(len);
@@ -608,7 +615,7 @@ unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
     /// Safety: when freeing the resulting pointer, the foreign-language code must
     /// call the destructor function specific to the type `T`. Calling the destructor
     /// function for other types may lead to undefined behaviour.
-    fn write<B: BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
         static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
         let ptr = std::sync::Arc::clone(self).lower();
         buf.put_u64(ptr as u64);
@@ -619,7 +626,7 @@ unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
     ///
     /// Safety: the buffer must contain a pointer previously obtained by calling
     /// the `lower()` or `write()` method of this impl.
-    fn try_read<B: Buf>(buf: &mut B) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
         static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
         check_remaining(buf, 8)?;
         Self::try_lift(buf.get_u64() as Self::FfiType)

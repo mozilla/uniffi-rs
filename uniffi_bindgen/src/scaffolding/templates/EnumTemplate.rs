@@ -15,7 +15,8 @@ unsafe impl uniffi::ViaFfi for {{ e.name() }} {
         uniffi::try_lift_from_buffer(v)
     }
 
-    fn write<B: uniffi::deps::bytes::BufMut>(&self, buf: &mut B) {
+    fn write(&self, buf: &mut Vec<u8>) {
+        use uniffi::deps::bytes::BufMut;
         match self {
             {%- for variant in e.variants() %}
             {{ e.name() }}::{{ variant.name() }} { {% for field in variant.fields() %}{{ field.name() }}, {%- endfor %} } => {
@@ -28,7 +29,8 @@ unsafe impl uniffi::ViaFfi for {{ e.name() }} {
         };
     }
 
-    fn try_read<B: uniffi::deps::bytes::Buf>(buf: &mut B) -> uniffi::deps::anyhow::Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
+        use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 4)?;
         Ok(match buf.get_i32() {
             {%- for variant in e.variants() %}
