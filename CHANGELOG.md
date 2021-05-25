@@ -1,0 +1,47 @@
+<!-- The sections in this file are intended to be managed automatically by `cargo release` -->
+<!-- See https://github.com/sunng87/cargo-release/blob/master/docs/faq.md#maintaining-changelog for details -->
+<!-- Unfortunately that doesn't currently work in a workspace, so for now we update it by hand: -->
+<!--   * Replace `[[UnreleasedVersion]]` with `vX.Y.Z` -->
+<!--   * Replace `[[ReleaseDate]]` with `YYYY-MM-DD` -->
+<!--   * Replace `...HEAD` with `...vX.Y.Z` -->
+<!--   * Insert a fresh copy of the templated bits under the `next-header` comment  -->
+
+<!-- next-header -->
+
+## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
+
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).
+
+### What's New
+
+- Threadsafe Object methods can now use `self: Arc<Self>` as the method receiver in the underlying
+  Rust code, in addition to the default `self: &Self`. To do so, annotate the method with
+  `[Self=ByArc]` in the `.udl` file and update the corresponding Rust method signature to match.
+  This will not change the generated foreign-language bindings in any way but may be useful for
+  more explicit management of Object references in the Rust code.
+
+### What's Changed
+
+- **Kotlin:** Fixed buggy codegen for optional primitive types like `i32?`; on earlier versions
+  this would generate invalid Kotlin code which would fail to compile.
+
+## v0.9.0 (_2021-05-21_)
+
+[All changes in v0.9.0](https://github.com/mozilla/uniffi-rs/compare/v0.8.0...v0.9.0).
+
+### ⚠️ Breaking Changes ⚠️
+
+- Support for non-`[Threadsafe]` interfaces has been deprecated. A future release will require that
+  all interface implementations be `Sync + Send`, making the `[Threadsafe]` annotation redundant.
+
+### What's Changed
+
+- Errors when parsing a `.udl` file are now marginally more useful (they're still not great, but they're better).
+- Generated code should now be deterministic between runs with the same input file and version of UniFFI.
+  Previously, the generated code could depend on the iteration order of an internal hash table.
+- **Swift:** Generated Swift Enums now conform to `Hashable` by default.
+- **Swift:** There are now additional docs on how to consume the generated Swift bindings via XCode.
+
+## Previous releases.
+
+We did not maintain a changelog for previous releases.
