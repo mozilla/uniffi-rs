@@ -102,4 +102,11 @@ class TestCoverall < Test::Unit::TestCase
       coveralls.panic 'expected panic: oh no'
     end
   end
+
+  def test_self_by_arc
+    coveralls = Coverall::Coveralls.new 'test_self_by_arc'
+
+    # One reference is held by the handlemap, and one by the `Arc<Self>` method receiver.
+    assert_equal coveralls.strong_count, 2
+  end
 end
