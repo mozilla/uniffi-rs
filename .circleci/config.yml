@@ -57,12 +57,6 @@ jobs:
           # ideal.
           command: echo 'export RUSTFLAGS="-D warnings -A deprecated"' >> $BASH_ENV
       - checkout
-      - run:
-          name: "Install ruby"
-          command: |
-            sudo apt update
-            sudo apt install -y ruby ruby-dev
-            sudo gem install ffi --no-ri
       - run: cargo test
   Deploy website:
     docker:
