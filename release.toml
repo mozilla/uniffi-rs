@@ -7,3 +7,13 @@ consolidate-commits = true
 # So we have to tag manually for now.
 disable-tag = true
 disable-push = true
+disable-publish = true
+
+# This is how we'd *like* to manage the sections in CHANGELOG.md, but it doesn't
+# currently work that way when doing a consolidated commit in a workspace.
+#pre-release-replacements = [
+#  {file="CHANGELOG.md", search="\\[\\[UnreleasedVersion\\]\\]", replace="v{{version}}", exactly=2},
+#  {file="CHANGELOG.md", search="\\[\\[ReleaseDate\\]\\]", replace="{{date}}", exactly=1},
+#  {file="CHANGELOG.md", search="\\.\\.\\.HEAD)", replace="...{{tag_name}})", exactly=1},
+#  {file="CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n\n## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)\n\n[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).", exactly=1},
+#]
