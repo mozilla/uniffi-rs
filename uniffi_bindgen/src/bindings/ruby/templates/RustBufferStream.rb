@@ -116,7 +116,7 @@ class RustBufferStream
 
   {% when Type::CallbackInterface with (object_name) -%}
   # The Callback Interface type {{ object_name }}.
-  # Objects cannot currently be serialized, but we can produce a helpful error.
+  # Callback Interfaces cannot currently be serialized, but we can produce a helpful error.
 
   def read{{ canonical_type_name }}
     raise InternalError, 'RustBufferStream.read not implemented yet for {{ canonical_type_name }}'
