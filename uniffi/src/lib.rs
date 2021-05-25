@@ -361,6 +361,17 @@ unsafe impl ViaFfi for String {
 /// Support for passing timestamp values via the FFI.
 ///
 /// Timestamps values are currently always passed by serializing to a buffer.
+///
+/// Timestamps are represented on the buffer by an i64 that indicates the
+/// direction and the magnitude in seconds of the offset from epoch, and a
+/// u32 that indicates the nanosecond portion of the offset magnitude. The
+/// nanosecond portion is expected to be between 0 and 999,999,999.
+///
+/// To build an epoch offset the absolute value of the seconds portion of the
+/// offset should be combined with the nanosecond portion. This is because
+/// the sign of the seconds portion represents the direction of the offset
+/// overall. The sign of the seconds portion can then be used to determine
+/// if the total offset should be added to or subtracted from the unix epoch.
 unsafe impl ViaFfi for SystemTime {
     type FfiType = RustBuffer;
 
@@ -406,6 +417,11 @@ unsafe impl ViaFfi for SystemTime {
 /// Support for passing duration values via the FFI.
 ///
 /// Duration values are currently always passed by serializing to a buffer.
+///
+/// Durations are represented on the buffer by a u64 that indicates the
+/// magnitude in seconds, and a u32 that indicates the nanosecond portion
+/// of the magnitude. The nanosecond portion is expected to be between 0
+/// and 999,999,999.
 unsafe impl ViaFfi for Duration {
     type FfiType = RustBuffer;
 
