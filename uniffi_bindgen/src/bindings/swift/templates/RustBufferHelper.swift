@@ -228,13 +228,13 @@ extension Bool: ViaFfi {
 extension Date: ViaFfiUsingByteBuffer, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Self {
         let seconds: Int64 = try buf.readInt()
-        let microseconds: UInt32 = try buf.readInt()
+        let nanoseconds: UInt32 = try buf.readInt()
         if seconds >= 0 {
-            let delta = Double(seconds) + (Double(microseconds) / 1.0e9)
+            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
             return Date.init(timeIntervalSince1970: delta)
         } else {
-            let delta = Double(-seconds) + (Double(microseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: -delta)
+            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
+            return Date.init(timeIntervalSince1970: delta)
         }
     }
 
@@ -242,6 +242,9 @@ extension Date: ViaFfiUsingByteBuffer, ViaFfi {
         var delta = self.timeIntervalSince1970
         var sign: Int64 = 1
         if delta < 0 {
+            // The nanoseconds portion of the epoch offset must always be
+            // positive, to simplify the calculation we will use the absolute
+            // value of the offset.
             sign = -1
             delta = -delta
         }
@@ -249,9 +252,9 @@ extension Date: ViaFfiUsingByteBuffer, ViaFfi {
             fatalError("Timestamp overflow, exceeds max bounds supported by Uniffi")
         }
         let seconds = Int64(delta)
-        let microseconds = UInt32((delta - Double(seconds)) * 1.0e9)
+        let nanoseconds = UInt32((delta - Double(seconds)) * 1.0e9)
         buf.writeInt(sign * seconds)
-        buf.writeInt(microseconds)
+        buf.writeInt(nanoseconds)
     }
 }
 
@@ -274,8 +277,8 @@ extension TimeInterval {
 
     fileprivate static func readDuration(from buf: Reader) throws -> Self {
         let seconds: UInt64 = try buf.readInt()
-        let microseconds: UInt32 = try buf.readInt()
-        return Double(seconds) + (Double(microseconds) / 1.0e9)
+        let nanoseconds: UInt32 = try buf.readInt()
+        return Double(seconds) + (Double(nanoseconds) / 1.0e9)
     }
 
     fileprivate func writeDuration(into buf: Writer) {
@@ -288,9 +291,9 @@ extension TimeInterval {
         }
 
         let seconds = UInt64(self)
-        let microseconds = UInt32((self - Double(seconds)) * 1.0e9)
+        let nanoseconds = UInt32((self - Double(seconds)) * 1.0e9)
         buf.writeInt(seconds)
-        buf.writeInt(microseconds)
+        buf.writeInt(nanoseconds)
     }
 }
 
