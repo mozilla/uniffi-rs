@@ -22,6 +22,8 @@ RUN sudo apt-get update -qq \
         libcurl4 \
         openjdk-11-jdk-headless \
         python3 \
+        ruby \
+        ruby-dev \
         git \
         curl \
         unzip \
@@ -70,3 +72,5 @@ RUN mkdir -p /tmp/setup-jna \
     && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar\"" >> /home/circleci/.profile \
     && cd ../ \
     && rm -rf ./setup-jna
+
+RUN sudo gem install ffi --no-ri
