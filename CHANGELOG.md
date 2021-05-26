@@ -8,9 +8,13 @@
 
 <!-- next-header -->
 
-## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
+## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.10.0...HEAD).
+
+## v0.10.0 (_2021-05-26_)
+
+[All changes in v0.10.0](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...v0.10.0).
 
 ### ⚠️ Breaking Changes ⚠️
 
