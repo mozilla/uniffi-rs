@@ -12,6 +12,15 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+
+- Two new built-in datatypes have been added: the `timestamp` type for representing moments in
+  time, and the `duration` type for representing a difference between two timestamps. These
+  mirror the `std::time::{SystemTime, Duration}` types from Rust. Thanks to @npars for
+  contributing this feature!
+    - This is a breaking change as it may conflict with user-declared `timestamp` or
+      `duration` types in existing `.udl` files.
+
 ### What's New
 
 - A new **Ruby** codegen backend has been added. You can now call `uniffi-bindgen -l ruby` to
@@ -24,10 +33,6 @@
   `[Self=ByArc]` in the `.udl` file and update the corresponding Rust method signature to match.
   This will not change the generated foreign-language bindings in any way but may be useful for
   more explicit management of Object references in the Rust code.
-- Two new built-in datatypes have been added: the `timestamp` type for representing moments in
-  time, and the `duration` type for representing a difference between two timestamps. These
-  semantically mirror the Rust types `std::time::{SystemTime, Duration}`. Thanks to @npars
-  for contributing this feature!
 
 ### What's Changed
 
