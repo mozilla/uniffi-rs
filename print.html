@@ -356,6 +356,8 @@ interface Sprite {
 <tr><td><code>f32</code></td><td><code>float</code></td><td></td></tr>
 <tr><td><code>f64</code></td><td><code>double</code></td><td></td></tr>
 <tr><td><code>String</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>SystemTime</code></td><td><code>timestamp</code></td><td>Precision may be lost when converting to Python and Swift types</td></tr>
+<tr><td><code>Duration  </code></td><td><code>duration</code></td><td>Precision may be lost when converting to Python and Swift types</td></tr>
 <tr><td><code>&amp;T</code></td><td><code>[ByRef] T</code></td><td>This works for <code>&amp;str</code> and <code>&amp;[T]</code></td></tr>
 <tr><td><code>Option&lt;T&gt;</code></td><td><code>T?</code></td><td></td></tr>
 <tr><td><code>Vec&lt;T&gt;</code></td><td><code>sequence&lt;T&gt;</code></td><td></td></tr>
@@ -801,6 +803,8 @@ from the returned byte buffer into a language-native list of integers.</li>
 <tr><td><code>f64</code>/<code>double</code></td><td><code>double</code></td></tr>
 <tr><td><code>boolean</code></td><td><code>int8_t</code>, either <code>0</code> or <code>1</code></td></tr>
 <tr><td><code>string</code></td><td><code>RustBuffer</code> struct pointing to utf8 bytes</td></tr>
+<tr><td><code>timestamp</code></td><td><code>RustBuffer</code> struct pointing to a i64 representing seconds and a u32 representing nanoseconds</td></tr>
+<tr><td><code>duration</code></td><td><code>RustBuffer</code> struct pointing to a u64 representing seconds and a u32 representing nanoseconds</td></tr>
 <tr><td><code>T?</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>sequence&lt;T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>record&lt;DOMString, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
