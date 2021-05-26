@@ -38,6 +38,11 @@ try {
 val kotlinBefore = Instant.now()
 val rustNow = now()
 val kotlinAfter = Instant.now()
-
 assert(kotlinBefore.isBefore(rustNow) || kotlinBefore.equals(rustNow))
-assert(kotlinAfter.isAfter(rustNow) || kotlinAfter.equals(rustNow))
+assert(
+        kotlinAfter.isAfter(rustNow) ||
+        kotlinAfter.equals(rustNow) ||
+        // Unfortunately the JVM clock may be lower resolution than the Rust clock,
+        // so we might observe time advance in Rust but not in Kotlin.
+        kotlinAfter.equals(kotlinBefore)
+)
