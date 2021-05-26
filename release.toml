@@ -7,7 +7,6 @@ consolidate-commits = true
 # So we have to tag manually for now.
 disable-tag = true
 disable-push = true
-disable-publish = true
 
 # This is how we'd *like* to manage the sections in CHANGELOG.md, but it doesn't
 # currently work that way when doing a consolidated commit in a workspace.
