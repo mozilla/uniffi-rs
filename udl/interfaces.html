@@ -167,22 +167,22 @@
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct TodoList {
-    items: Vec&lt;String&gt;
+    items: RwLock&lt;Vec&lt;String&gt;&gt;
 }
 
 impl TodoList {
     fn new() -&gt; Self {
         TodoList {
-            items: Vec::new()
+            items: RwLock::&lt;Vec::new())
         }
     }
 
     fn add_item(&amp;mut self, todo: String) {
-        self.items.push(todo);
+        self.items.write().unwrap().push(todo);
     }
 
     fn get_items(&amp;self) -&gt; Vec&lt;String&gt; {
-        self.items.clone()
+        self.items.read().unwrap().clone()
     }
 }
 <span class="boring">}
@@ -195,9 +195,8 @@ impl TodoList {
 };
 </code></pre>
 <p>By convention, the <code>constructor()</code> calls the Rust's <code>new()</code> method.</p>
-<p>Conceptually, these <code>interface</code> objects are live Rust objects that have a proxy on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being call in Rust.</p>
-<p>UniFFI will generate these proxies of live objects with an interface or protocol.</p>
-<p>e.g. in Kotlin.</p>
+<p>Conceptually, these <code>interface</code> objects are live Rust structs that have a proxy object on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being called in Rust.</p>
+<p>UniFFI will generate these proxies with an interface or protocol to help with testing in the foreign-language code. For example in Kotlin, the <code>TodoList</code> would generate:</p>
 <pre><code class="language-kotlin">interface TodoListInterface {
     fun addItem(todo: String)
     fun getItems(): List&lt;String&gt;
@@ -207,8 +206,7 @@ class TodoList : TodoListInterface {
    // implementations to call the Rust code.
 }
 </code></pre>
-<p>When working with these objects, it may be helpful to always pass the interface or protocol, but construct the concrete implementation.</p>
-<p>e.g. in Swift</p>
+<p>When working with these objects, it may be helpful to always pass the interface or protocol, but construct the concrete implementation. For example in Swift:</p>
 <pre><code class="language-swift">let todoList = TodoList()
 todoList.addItem(todo: &quot;Write documentation&quot;)
 display(list: todoList)
@@ -220,6 +218,8 @@ func display(list: TodoListProtocol) {
     }
 }
 </code></pre>
+<p>Following this pattern will make it easier for you to provide mock implementation of the Rust-based objects
+for testing.</p>
 <h2><a class="header" href="#alternate-named-constructors" id="alternate-named-constructors">Alternate Named Constructors</a></h2>
 <p>In addition to the default constructor connected to the <code>::new()</code> method, you can specify
 alternate named constructors to create object instances in different ways. Each such constructor
@@ -242,21 +242,16 @@ The foreign-language code may attempt to operate on an interface instance
 from multiple threads, and it's important that this not violate Rust's
 assumption that there is at most a single mutable reference to a struct
 at any point in time.</p>
-<p>By default, UniFFI enforces this using runtime locking. Each interface instance
-has an associated lock which is transparently acquired at the beginning of each
-call to a method of that instance, and released once the method returns. This
-approach is simple and safe, but it means that all method calls on an instance
-are run in a strictly sequential fashion, limiting concurrency.</p>
-<p>You can opt out of this protection by marking the interface as threadsafe:</p>
-<pre><code class="language-idl">[Threadsafe]
-interface Counter {
+<p>UniFFI enforces this by requiring that the Rust implementation of an interface
+be <code>Sync+Send</code>, and you will get a compile-time error if your implementation
+does not satisfy this requirement. For example, consider a small &quot;counter&quot;
+object declared like so:</p>
+<pre><code class="language-idl">interface Counter {
     constructor();
     void increment();
     u64 get();
 };
 </code></pre>
-<p>The UniFFI-generated code will allow concurrent method calls on threadsafe interfaces
-without any locking.</p>
 <p>For this to be safe, the underlying Rust struct must adhere to certain restrictions, and
 UniFFI's generated Rust scaffolding will emit compile-time errors if it does not.</p>
 <p>The Rust struct must not expose any methods that take <code>&amp;mut self</code>. The following implementation
@@ -273,7 +268,7 @@ impl Counter {
         Self { value: 0 }
     }
 
-    // No mutable references to self allowed in [Threadsafe] interfaces.
+    // No mutable references to self allowed in in UniFFI interfaces.
     fn increment(&amp;mut self) {
         self.value = self.value + 1;
     }
@@ -287,7 +282,7 @@ impl Counter {
 <p>Implementations can instead use Rust's &quot;interior mutability&quot; pattern. However, they
 must do so in a way that is both <code>Sync</code> and <code>Send</code>, since the foreign-language code
 may operate on the instance from multiple threads. The following implementation of the
-<code>Counter</code> interface will fail to compile because <code>RefCell</code> is not <code>Send</code>:</p>
+<code>Counter</code> interface will fail to compile because <code>RefCell</code> is not <code>Sync</code>:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
