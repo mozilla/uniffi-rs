@@ -25,7 +25,7 @@ the use of `HandleMap`s makes it difficult to support:
 
 * Passing object instances as arguments ([#40](https://github.com/mozilla/uniffi-rs/issues/40)).
   Getting objects out of a `HandleMap` involves a closure, so accepting multiple
-  object-typed arguments would involve code-generating nesture closures.
+  object-typed arguments would involve code-generating nested closures.
 * Returning object instances from functions ([#197](https://github.com/mozilla/uniffi-rs/issues/197)).
   Does the returned object already exist in the handlemap? If so, what is its handle?
   How will we manage the lifetime of multiple references to the object?
