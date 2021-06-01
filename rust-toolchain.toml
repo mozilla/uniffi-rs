@@ -1,7 +1,7 @@
 # See https://rust-lang.github.io/rustup/overrides.html for details on how this file works
 # and how you can override the choices made herein.
 [toolchain]
-channel = "1.47.0"
+channel = "1.52.1"
 targets = [
     "aarch64-linux-android",
     "armv7-linux-androideabi",
