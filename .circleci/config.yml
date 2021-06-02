@@ -75,10 +75,10 @@ jobs:
       - run:
           name: "Print the Rust version, to help with debugging"
           command: rustc --version
-      # some tests fail on MSR:
+      # some tests fail on earlier rust versions and we want to ignore them:
       # * trybuild_ui_tests - error message had a comma inserted! Can probably
       #   be re-enabled after the next rust version bump.
-      - run: cargo test --skip trybuild_ui_tests
+      - run: cargo test -- --skip trybuild_ui_tests
   Deploy website:
     docker:
       - image: circleci/node:latest
