@@ -20,7 +20,7 @@ commands:
       - run: rustup default 1.52.1
   prepare-rust-min-version:
     steps:
-      - run rustup default 1.47.0
+      - run: rustup default 1.47.0
 
 orbs:
   gh-pages: sugarshin/gh-pages@0.0.6
