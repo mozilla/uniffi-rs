@@ -25,7 +25,7 @@ enum TodoError {
 
 fn create_entry_with<S: Into<String>>(item: S) -> Result<TodoEntry> {
     let text = item.into();
-    if text == "" {
+    if text.is_empty() {
         return Err(TodoError::EmptyString(
             "Cannot add empty string as entry".to_string(),
         ));
@@ -52,7 +52,7 @@ impl TodoList {
 
     fn add_item<S: Into<String>>(&self, item: S) -> Result<()> {
         let item = item.into();
-        if item == "" {
+        if item.is_empty() {
             return Err(TodoError::EmptyString(
                 "Cannot add empty string as item".to_string(),
             ));

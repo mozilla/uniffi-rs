@@ -1,56 +1,58 @@
 # Rust Versions
 
-Like almost all Rust projects, the entire point of the uniffi project is that
-it be used by external projects. If uniffi always uses Rust features available
+Like almost all Rust projects, the entire point of the UniFFI project is that
+it be used by external projects. If UniFFI always uses Rust features available
 in only the very latest Rust version, this will cause problems for projects
 which aren't always able to be on that latest version.
 
-This is particularly important while uniffi is new and young - it's not always
-possible for our policy to be something like "defer updating uniffi until your
-project is on the same version of rust", because there's a good chance these
-projects *need* the latest version of uniffi for it to be a useful solution.
-
-Given uniffi is currently developed and maintained by Mozilla staff, it should
-be no surprise that the elephant in the room is mozilla-central (aka, the
-main Firefox repository). While at time of writing uniffi is not used by
+Given UniFFI is currently developed and maintained by Mozilla staff, it should
+be no surprise that an important consideration is mozilla-central (aka, the
+main Firefox repository). While at time of writing UniFFI is not used by
 mozilla-central, this policy is unashamedly focused on ensuring it will be
-able to in the short term.
+able to.
 
-## Mozilla-central rust policies.
+## Mozilla-central Rust policies.
 
 It should also come as no surprise that the Rust policy for mozilla-central
 is somewhat flexible. There is an official [Rust Update Policy Document
-](https://wiki.mozilla.org/Rust_Update_Policy_for_Firefox]) but at time of writing
-is nearly 12 months out of date. There is a [meta bug to track rust version updates
-](https://bugzilla.mozilla.org/show_bug.cgi?id=1504858) but that doesn't define a
-policy, just tracks things as they happen.
+](https://firefox-source-docs.mozilla.org/writing-rust-code/update-policy.html])
+but everything in the future is documented as "estimated".
 
-Ultimately though, mozilla-central defines a [minimum rust version
-](https://searchfox.org/mozilla-central/search?q=MINIMUM_RUST_VERSION) from which
-we assume Firefox can be built.
+Ultimately though, that page defines 2 Rust versions - "Uses" and "Requires",
+and our policy revolves around these.
 
-# Uniffi rust version policy
+# UniFFI Rust version policy
 
-Our official rust version policy is:
+Our official Rust version policy is:
 
-**uniffi should have all tests passing, and have clippy emit no warnings, with
-the current minimum Rust version supported by mozilla-central.**
+* UniFFI will ship using, have all tests passing, and have clippy emit no
+  warnings, with the same version mozilla-central currently "uses".
+
+* UniFFI must be capable of building (although not necessarily with all tests
+  passing nor without clippy errors or other warnings) with the same version
+  mozilla-central currently "requires".
+
+* This policy only applies to the "major" and "minor" versions - a different
+  patch level is still considered compliant with this policy.
 
 ## Implications of this
 
 All CI for this project will try and pin itself to this same version. At
 time of writing, this means that [our circle CI integration
-](https://github.com/mozilla/uniffi-rs/blob/main/.circleci/config.yml) will pin
-itself to this same version.
+](https://github.com/mozilla/uniffi-rs/blob/main/.circleci/config.yml) and
+[rust-toolchain configuration](https://github.com/mozilla/uniffi-rs/blob/main/rust-toolchain.toml)
+will specify the version (and where possible, the CI configuration file will
+avoid duplicating the information in `rust-toolchain.toml`)
 
-As the minimum version changes, we will bump this version. While newer versions
-of Rust can be expected to work correctly with our existing code, it's likely
-that clippy will complain in various ways with the new version. Thus, a PR
-to bump the minimum version is likely to also require a PR to make changes
-which keep clippy happy.
+We should maintain CI to ensure we still build with the "Requires" version.
+
+As versions inside mozilla-central change, we will bump the UniFI versions
+accordingly. While newer versions of Rust can be expected to work correctly
+with our existing code, it's likely that clippy will complain in various ways
+with the new version. Thus, a PR to bump the minimum version is likely to also
+require a PR to make changes which keep clippy happy.
 
 In the interests of avoiding redundant information which will inevitably
-become stale, [our circle CI integration
-](https://github.com/mozilla/uniffi-rs/blob/main/.circleci/config.yml) configuration
+become stale, the circleci and rust-toolchain configuration links above
 should be considered the canonical source of truth for the currently supported
-official rust version.
+official Rust version.
