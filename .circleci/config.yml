@@ -64,7 +64,7 @@ jobs:
           name: "Set RUSTFLAGS to fail the build if there are warnings"
           command: echo 'export RUSTFLAGS="-D warnings"' >> $BASH_ENV
       - run: cargo test
-  Rust and Foreign Language tests - min. supported rust:
+  Rust and Foreign Language tests - min supported rust:
     docker:
       - image: rfkelly/uniffi-ci:latest
     resource_class: large
@@ -102,7 +102,7 @@ workflows:
   run-tests:
     jobs:
       - Rust and Foreign Language tests
-      - Rust and Foreign Language tests - min. supported rust
+      - Rust and Foreign Language tests - min supported rust
   deploy-website:
     jobs:
       - Deploy website:
