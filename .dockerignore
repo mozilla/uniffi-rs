@@ -1,0 +1,4 @@
+# Our docker build doesn't need anything but `rust-toolchain.toml`.
+# This excludes everything, then includes just that one file..
+*
+!rust-toolchain.toml

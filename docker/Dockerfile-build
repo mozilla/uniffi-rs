@@ -37,7 +37,10 @@ RUN sudo apt-get update -qq \
     && sudo apt-get clean
 
 # This should automatically install the version specified in rust-toolchain.toml
+ADD rust-toolchain.toml rust-toolchain.toml
+RUN rustup self update
 RUN rustup update
+RUN rustup show
 
 RUN mkdir -p /tmp/setup-swift \
     && cd /tmp/setup-swift \
