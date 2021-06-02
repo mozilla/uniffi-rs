@@ -39,9 +39,7 @@ pub struct Sprite {
 impl Sprite {
     fn new(initial_position: Option<Point>) -> Sprite {
         Sprite {
-            current_position: RwLock::new(
-                initial_position.unwrap_or(Point { x: 0.0, y: 0.0 }),
-            ),
+            current_position: RwLock::new(initial_position.unwrap_or(Point { x: 0.0, y: 0.0 })),
         }
     }
 
