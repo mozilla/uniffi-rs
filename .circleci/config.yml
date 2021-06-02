@@ -36,7 +36,7 @@ jobs:
       - prepare-rust-target-version
       - run: rustup component add rustfmt
       - run: rustfmt --version
-      - run: cargo +$RUST_TARGET_VERSION fmt -- --check
+      - run: cargo fmt -- --check
   Lint Rust with clippy:
     docker:
       - image: rfkelly/uniffi-ci:latest
