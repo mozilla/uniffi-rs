@@ -17,10 +17,12 @@ commands:
   # See also rust-toolchain.toml in the root of this repo, which is used to ensure the local version of rust matches.
   prepare-rust-target-version:
     steps:
-      - run: rustup default 1.52.1
+      # So long as this is executed after the checkout it will use the version specified in rust-toolchain.yaml
+      - run: rustup update
   prepare-rust-min-version:
     steps:
-      - run: rustup default 1.47.0
+      - run: rustup override set 1.47.0
+      - run: rustup update
 
 orbs:
   gh-pages: sugarshin/gh-pages@0.0.6
@@ -53,6 +55,7 @@ jobs:
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
+      - checkout
       - prepare-rust-target-version
       - run:
           name: "Print the Rust version, to help with debugging"
@@ -60,7 +63,6 @@ jobs:
       - run:
           name: "Set RUSTFLAGS to fail the build if there are warnings"
           command: echo 'export RUSTFLAGS="-D warnings"' >> $BASH_ENV
-      - checkout
       - run: cargo test
   Rust and Foreign Language tests - MSR:
     docker:
@@ -68,11 +70,11 @@ jobs:
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
+      - checkout
       - prepare-rust-min-version
       - run:
           name: "Print the Rust version, to help with debugging"
           command: rustc --version
-      - checkout
       - run: cargo test
   Deploy website:
     docker:

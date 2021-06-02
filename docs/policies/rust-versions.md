@@ -41,7 +41,8 @@ All CI for this project will try and pin itself to this same version. At
 time of writing, this means that [our circle CI integration
 ](https://github.com/mozilla/uniffi-rs/blob/main/.circleci/config.yml) and
 [rust-toolchain configuration](https://github.com/mozilla/uniffi-rs/blob/main/rust-toolchain.toml)
-will specify the version.
+will specify the version (and where possible, the CI configuration file will
+avoid duplicating the information in `rust-toolchain.toml`)
 
 We should maintain CI to ensure we still build with the "Requires" version.
 
