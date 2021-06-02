@@ -64,10 +64,9 @@ pub(super) fn convert_default_value(
             radix
         };
 
-        // Using `strip_prefix` would be better here, but that's not available in the version
-        // of Rust that is currently used in mozilla-central. Using `trim_start_matches` will
-        // *repeatedly* strip the given prefix, but that's fine because legit literals can't
-        // contain multiple instances of it anyway.
+        // Clippy seems to think we should be using `strip_prefix` here, but
+        // it seems confused as to what this is actually doing.
+        #[allow(clippy::manual_strip)]
         let string = if string.starts_with('-') {
             ("-".to_string() + string[1..].trim_start_matches("0x")).to_lowercase()
         } else {

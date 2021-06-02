@@ -40,7 +40,7 @@ impl Sprite {
     fn new(initial_position: Option<Point>) -> Sprite {
         Sprite {
             current_position: RwLock::new(
-                initial_position.unwrap_or_else(|| Point { x: 0.0, y: 0.0 }),
+                initial_position.unwrap_or(Point { x: 0.0, y: 0.0 }),
             ),
         }
     }
