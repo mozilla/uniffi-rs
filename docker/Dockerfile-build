@@ -36,10 +36,8 @@ RUN sudo apt-get update -qq \
         python3-pip \
     && sudo apt-get clean
 
-RUN rustup update \
-    # This specific version of Rust is required for compatibility with mozilla-central
-    && rustup install 1.47.0 \
-    && rustup default 1.47.0
+# This should automatically install the version specified in rust-toolchain.toml
+RUN rustup update
 
 RUN mkdir -p /tmp/setup-swift \
     && cd /tmp/setup-swift \
