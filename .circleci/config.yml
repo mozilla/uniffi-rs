@@ -13,6 +13,15 @@ commands:
             curl -sfSL --retry 5 --retry-delay 10 https://github.com/rust-lang-nursery/mdBook/releases/download/v0.4.2/mdbook-v0.4.2-x86_64-unknown-linux-gnu.tar.gz | tar xz
             echo 'export PATH="$HOME/.bin:$PATH"' >> $BASH_ENV
             popd
+  # Our policy for updating these rust versions is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
+  # See also rust-toolchain.toml in the root of this repo, which is used to ensure the local version of rust matches.
+  prepare-rust-target-version:
+    steps:
+      - run: rustup default 1.52.1
+  prepare-rust-min-version:
+    steps:
+      - run rustup default 1.47.0
+
 orbs:
   gh-pages: sugarshin/gh-pages@0.0.6
 jobs:
@@ -20,21 +29,21 @@ jobs:
     docker:
       # Our policy for updating this rust version is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
       # See also rust-toolchain.toml in the root of this repo, which is used to ensure the local version of rust matches.
-      - image: circleci/rust:1.52.1
+      - image: rfkelly/uniffi-ci:latest
     resource_class: small
     steps:
       - checkout
+      - prepare-rust-target-version
       - run: rustup component add rustfmt
       - run: rustfmt --version
-      - run: cargo fmt -- --check
+      - run: cargo +$RUST_TARGET_VERSION fmt -- --check
   Lint Rust with clippy:
     docker:
-      # Our policy for updating this rust version is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
-      # See also rust-toolchain.toml in the root of this repo, which is used to ensure the local version of rust matches.
-      - image: circleci/rust:1.52.1
+      - image: rfkelly/uniffi-ci:latest
     resource_class: small
     steps:
       - checkout
+      - prepare-rust-target-version
       - run: rustup component add clippy
       - run: cargo clippy --version
       - run: cargo clippy --all --all-targets -- -D warnings
@@ -44,12 +53,25 @@ jobs:
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
+      - prepare-rust-target-version
       - run:
           name: "Print the Rust version, to help with debugging"
           command: rustc --version
       - run:
           name: "Set RUSTFLAGS to fail the build if there are warnings"
           command: echo 'export RUSTFLAGS="-D warnings"' >> $BASH_ENV
+      - checkout
+      - run: cargo test
+  Rust and Foreign Language tests - MSR:
+    docker:
+      - image: rfkelly/uniffi-ci:latest
+    resource_class: large
+    steps:
+      - run: cat ~/.profile >> $BASH_ENV
+      - prepare-rust-min-version
+      - run:
+          name: "Print the Rust version, to help with debugging"
+          command: rustc --version
       - checkout
       - run: cargo test
   Deploy website:
@@ -75,6 +97,7 @@ workflows:
   run-tests:
     jobs:
       - Rust and Foreign Language tests
+      - Rust and Foreign Language tests - MSR
   deploy-website:
     jobs:
       - Deploy website:
