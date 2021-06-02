@@ -64,7 +64,7 @@ jobs:
           name: "Set RUSTFLAGS to fail the build if there are warnings"
           command: echo 'export RUSTFLAGS="-D warnings"' >> $BASH_ENV
       - run: cargo test
-  Rust and Foreign Language tests - MSR:
+  Rust and Foreign Language tests - min. supported rust:
     docker:
       - image: rfkelly/uniffi-ci:latest
     resource_class: large
@@ -75,7 +75,10 @@ jobs:
       - run:
           name: "Print the Rust version, to help with debugging"
           command: rustc --version
-      - run: cargo test
+      # some tests fail on MSR:
+      # * trybuild_ui_tests - error message had a comma inserted! Can probably
+      #   be re-enabled after the next rust version bump.
+      - run: cargo test --skip trybuild_ui_tests
   Deploy website:
     docker:
       - image: circleci/node:latest
@@ -99,7 +102,7 @@ workflows:
   run-tests:
     jobs:
       - Rust and Foreign Language tests
-      - Rust and Foreign Language tests - MSR
+      - Rust and Foreign Language tests - min. supported rust
   deploy-website:
     jobs:
       - Deploy website:
