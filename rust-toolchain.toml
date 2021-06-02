@@ -1,5 +1,9 @@
 # See https://rust-lang.github.io/rustup/overrides.html for details on how this file works
 # and how you can override the choices made herein.
+# See also:
+# * ./docs/policies/rust-versions.md for our policy on what version is specified here.
+# * ./.circleci/config.yml which also specifies the rust versions used in CI.
+
 [toolchain]
 channel = "1.52.1"
 targets = [
@@ -9,6 +13,8 @@ targets = [
     "x86_64-linux-android",
     "aarch64-apple-ios",
     "x86_64-apple-ios",
-    "x86_64-linux-gnu"
+    # If `rustup show` isn't showing the version specified above, it seems your
+    # target might be missing - which are those below.
+    "x86_64-linux-gnu", # needed for WSL.
 ]
 components = ["clippy", "rustfmt"]
