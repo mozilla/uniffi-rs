@@ -46,7 +46,7 @@ avoid duplicating the information in `rust-toolchain.toml`)
 
 We should maintain CI to ensure we still build with the "Requires" version.
 
-As versions inside mozilla-central changes, we will bump our versions
+As versions inside mozilla-central change, we will bump the UniFI versions
 accordingly. While newer versions of Rust can be expected to work correctly
 with our existing code, it's likely that clippy will complain in various ways
 with the new version. Thus, a PR to bump the minimum version is likely to also

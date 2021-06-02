@@ -13,12 +13,13 @@ commands:
             curl -sfSL --retry 5 --retry-delay 10 https://github.com/rust-lang-nursery/mdBook/releases/download/v0.4.2/mdbook-v0.4.2-x86_64-unknown-linux-gnu.tar.gz | tar xz
             echo 'export PATH="$HOME/.bin:$PATH"' >> $BASH_ENV
             popd
-  # Our policy for updating these rust versions is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
-  # See also rust-toolchain.toml in the root of this repo, which is used to ensure the local version of rust matches.
+  # Our policy for updating rust versions is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
+  # See also rust-toolchain.toml in the root of this repo, which is used to specify our official target version.
   prepare-rust-target-version:
     steps:
       # So long as this is executed after the checkout it will use the version specified in rust-toolchain.yaml
       - run: rustup update
+  # Our minimum supported rust version is specified here.
   prepare-rust-min-version:
     steps:
       - run: rustup override set 1.47.0
