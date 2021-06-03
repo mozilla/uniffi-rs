@@ -12,6 +12,11 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.10.0...HEAD).
 
+### What's Changed
+ - Swift structs and Kotlin data classes generated from `dictionary` are now mutable by default:
+  - **Swift** now uses `var` instead of `let`
+  - **Kotlin** now uses `var` instead of `val`
+
 ### ⚠️ Breaking Changes ⚠️
 
 - All interface implementations must now be `Sync + Send`, and Rust will give a compile-time error
