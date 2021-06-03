@@ -1,6 +1,6 @@
 public struct {{ rec.name()|class_name_swift }}: Equatable, Hashable {
     {%- for field in rec.fields() %}
-    public let {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
+    public var {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
     {%- endfor %}
 
     // Default memberwise initializers are never public by default, so we
