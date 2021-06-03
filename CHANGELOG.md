@@ -10,7 +10,11 @@
 
 ## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.10.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.11.0...HEAD).
+
+## v0.11.0 2021-06-03
+
+[All changes in v0.11.0](https://github.com/mozilla/uniffi-rs/compare/v0.10.0...v0.11.0).
 
 ### What's Changed
  - Swift structs and Kotlin data classes generated from `dictionary` are now mutable by default:
