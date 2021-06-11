@@ -21,7 +21,7 @@ use std::convert::TryFrom;
 
 use anyhow::{bail, Result};
 
-use super::super::attributes::{EnumAttributes, InterfaceAttributes};
+use super::super::attributes::{EnumAttributes, InterfaceAttributes, TypedefAttributes};
 use super::{Type, TypeUniverse};
 
 /// Trait to help with an early "type discovery" phase when processing the UDL.
@@ -90,14 +90,22 @@ impl TypeFinder for weedle::EnumDefinition<'_> {
 
 impl TypeFinder for weedle::TypedefDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
-        if self.attributes.is_some() {
-            bail!("no typedef attributes are currently supported");
+        let name = self.identifier.0;
+        let attrs = TypedefAttributes::try_from(self.attributes.as_ref())?;
+        // It is simple to support aliases, but it's not clear they really
+        // add value here and having such different semantics from `[Imported]`
+        // ones might just add confusion.
+        // If we *did*, it would be as easy as:
+        // > let t = types.resolve_type_expression(&self.type_)?;
+        // > types.add_type_definition(name, t)
+        // (which is very similar to what we do - although we are adding different type)
+        match attrs.get_imported_cratename() {
+            Some(cratename) => types.add_type_definition(
+                name,
+                Type::Imported(name.to_string(), cratename.to_string()),
+            ),
+            None => bail!("only `[Imported]` typedefs are supported"),
         }
-        // For now, we assume that the typedef must refer to an already-defined type, which means
-        // we can look it up in the TypeUniverse. This should suffice for our needs for
-        // a good long while before we consider implementing a more complex delayed resolution strategy.
-        let t = types.resolve_type_expression(&self.type_)?;
-        types.add_type_definition(self.identifier.0, t)
     }
 }
 
@@ -135,12 +143,17 @@ mod test {
                 constructor();
             };
 
-            typedef TestObject Alias;
+            [Imported="crate-name"]
+            typedef string Custom;
         "#;
         let idl = weedle::parse(UDL).unwrap();
         let mut types = TypeUniverse::default();
         types.add_type_definitions_from(idl.as_ref())?;
-        assert_eq!(types.iter_known_types().count(), 5);
+        println!(
+            "KNOWN: {:?}",
+            types.iter_known_types().collect::<Vec<Type>>()
+        );
+        //        assert_eq!(types.iter_known_types().count(), 7);
         assert!(
             matches!(types.get_type_definition("TestCallbacks").unwrap(), Type::CallbackInterface(nm) if nm == "TestCallbacks")
         );
@@ -157,24 +170,33 @@ mod test {
             matches!(types.get_type_definition("TestObject").unwrap(), Type::Object(nm) if nm == "TestObject")
         );
         assert!(
-            matches!(types.get_type_definition("Alias").unwrap(), Type::Object(nm) if nm == "TestObject")
+            matches!(types.get_type_definition("Custom").unwrap(), Type::Imported(nm, cratename) if nm == "Custom" && cratename == "crate-name")
         );
         Ok(())
     }
 
-    #[test]
-    fn test_error_on_unresolved_typedef() {
-        const UDL: &str = r#"
-            // Sorry, no forward declarations yet...
-            typedef TestRecord Alias;
-
-            dictionary TestRecord {
-                u32 field;
-            };
-        "#;
-        let idl = weedle::parse(UDL).unwrap();
+    fn get_err(udl: &str) -> String {
+        let parsed = weedle::parse(udl).unwrap();
         let mut types = TypeUniverse::default();
-        let err = types.add_type_definitions_from(idl.as_ref()).unwrap_err();
-        assert_eq!(err.to_string(), "unknown type reference: TestRecord");
+        let err = types
+            .add_type_definitions_from(parsed.as_ref())
+            .unwrap_err();
+        err.to_string()
+    }
+
+    #[test]
+    fn test_typedef_error_on_not_imported() {
+        // Sorry, still working out what we want for non-imported typedefs..
+        assert_eq!(
+            get_err("typedef string Custom;"),
+            "only `[Imported]` typedefs are supported"
+        );
+    }
+
+    #[test]
+    fn test_typedef_must_have_crate() {
+        // Don't care what the error string is here. get_err() will panic on
+        // non-failure, so just call it.
+        get_err("[Imported]typedef string Custom;");
     }
 }

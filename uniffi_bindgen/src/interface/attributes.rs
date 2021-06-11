@@ -32,6 +32,8 @@ pub(super) enum Attribute {
     SelfType(SelfType),
     Threadsafe, // N.B. the `[Threadsafe]` attribute is deprecated and will be removed
     Throws(String),
+    // These are for imported types and need more thought! Data is (crate_name)
+    Imported(String),
 }
 
 impl Attribute {
@@ -65,6 +67,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                     "Name" => Ok(Attribute::Name(name_from_id_or_string(&identity.rhs))),
                     "Throws" => Ok(Attribute::Throws(name_from_id_or_string(&identity.rhs))),
                     "Self" => Ok(Attribute::SelfType(SelfType::try_from(&identity.rhs)?)),
+                    "Imported" => Ok(Attribute::Imported(name_from_id_or_string(&identity.rhs))),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
@@ -388,6 +391,47 @@ impl TryFrom<&weedle::attribute::IdentifierOrString<'_>> for SelfType {
                 bail!("Unsupported Self Type: {:?}", nm)
             }
         })
+    }
+}
+
+/// Represents UDL attributes that might appear on a typedef
+///
+/// This supports the `[Imported]` attribute for types which are implemented
+/// externally.
+#[derive(Debug, Clone, Hash, Default)]
+pub(super) struct TypedefAttributes(Vec<Attribute>);
+
+impl TypedefAttributes {
+    pub(super) fn get_imported_cratename(&self) -> Option<&str> {
+        self.0.iter().find_map(|attr| match attr {
+            Attribute::Imported(cratename) => Some(cratename.as_ref()),
+            _ => None,
+        })
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for TypedefAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::Imported(_) => Ok(()),
+            _ => bail!(format!("{:?} not supported for typedefs", attr)),
+        })?;
+        Ok(Self(attrs))
+    }
+}
+
+impl<T: TryInto<TypedefAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
+    for TypedefAttributes
+{
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
     }
 }
 

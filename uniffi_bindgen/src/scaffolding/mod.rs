@@ -42,7 +42,9 @@ mod filters {
             Type::String => "String".into(),
             Type::Timestamp => "std::time::SystemTime".into(),
             Type::Duration => "std::time::Duration".into(),
-            Type::Enum(name) | Type::Record(name) | Type::Error(name) => name.clone(),
+            Type::Enum(name) | Type::Record(name) | Type::Error(name) | Type::Imported(name, _) => {
+                name.clone()
+            }
             Type::Object(name) => format!("std::sync::Arc<{}>", name),
             Type::CallbackInterface(name) => format!("Box<dyn {}>", name),
             Type::Optional(t) => format!("Option<{}>", type_rs(t)?),

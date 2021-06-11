@@ -440,7 +440,7 @@ pub fn run_main() -> Result<()> {
             crate::run_tests(
                 m.value_of_os("cdylib_dir").unwrap(), // Required
                 &[&m.value_of_os("udl_file").unwrap().to_string_lossy()], // Required
-                m.values_of("test_scripts").unwrap().collect(),           // Required
+                m.values_of("test_scripts").unwrap().collect(), // Required
                 m.value_of_os("config"),
             )?
         }

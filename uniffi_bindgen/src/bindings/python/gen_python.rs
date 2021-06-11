@@ -142,6 +142,7 @@ mod filters {
             Type::Boolean => format!("bool({})", nm),
             Type::String
             | Type::Object(_)
+            | Type::Imported(..)
             | Type::Enum(_)
             | Type::Error(_)
             | Type::Record(_)
@@ -174,6 +175,7 @@ mod filters {
             Type::Boolean => format!("(1 if {} else 0)", nm),
             Type::String => format!("RustBuffer.allocFromString({})", nm),
             Type::Object(_) => format!("({}._pointer)", nm),
+            Type::Imported(..) => panic!("No support for lowering imported types yet"),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)
@@ -206,6 +208,7 @@ mod filters {
             Type::Object(name) => format!("{}._make_instance_({})", class_name_py(name)?, nm),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
+            Type::Imported(..) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)
             | Type::Record(_)
             | Type::Optional(_)
