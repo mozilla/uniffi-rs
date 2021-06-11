@@ -156,6 +156,8 @@ mod filters {
                 coerce_py(&"v", t)?,
                 nm
             ),
+            Type::Wrapped { .. } => panic!("No support for Wrapped types yet"),
+            Type::External { .. } => panic!("should not be necessary to coerce External types"),
         })
     }
 
@@ -187,6 +189,8 @@ mod filters {
                 class_name_py(&type_.canonical_name())?,
                 nm
             ),
+            Type::Wrapped { .. } => panic!("No support for Wrapped types yet"),
+            Type::External { .. } => panic!("should not be necessary to lower External types"),
         })
     }
 
@@ -217,6 +221,8 @@ mod filters {
                 nm,
                 class_name_py(&type_.canonical_name())?
             ),
+            Type::Wrapped { .. } => panic!("No support for Wrapped types yet"),
+            Type::External { .. } => panic!("should not be necessary to lift External types"),
         })
     }
 }
