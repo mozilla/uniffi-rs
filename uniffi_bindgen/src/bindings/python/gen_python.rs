@@ -10,12 +10,23 @@ use serde::{Deserialize, Serialize};
 use crate::interface::*;
 use crate::MergeWith;
 
-// Some config options for it the caller wants to customize the generated python.
+// Support for custom helpers for external types.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ExternalTypeConfig {
+    // Something we'll execute before attempting to use the helpers
+    pub setup: String,
+    // The names of Python functions that lift/lower to/from the already lifted/lower primitive.
+    pub lift_from_primitive: String,
+    pub lower_to_primitive: String,
+}
+
+// Some config options for if the caller wants to customize the generated python.
 // Note that this can only be used to control details of the python *that do not affect the underlying component*,
-// sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+// since the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     cdylib_name: Option<String>,
+    external_types: std::collections::HashMap<String, ExternalTypeConfig>,
 }
 
 impl Config {
@@ -26,20 +37,27 @@ impl Config {
             "uniffi".into()
         }
     }
+    pub fn find_external_type(&self, name: &str) -> Option<ExternalTypeConfig> {
+        self.external_types.get(name).map(|c| c.clone())
+    }
 }
 
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
+            ..Default::default()
         }
     }
 }
 
 impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
+        // merging doesn't make sense for external_types?
+        assert!(other.external_types.is_empty());
         Config {
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
+            external_types: self.external_types.clone(),
         }
     }
 }
@@ -142,6 +160,7 @@ mod filters {
             Type::Boolean => format!("bool({})", nm),
             Type::String
             | Type::Object(_)
+            | Type::ExternalType(..)
             | Type::Enum(_)
             | Type::Error(_)
             | Type::Record(_)
@@ -174,6 +193,7 @@ mod filters {
             Type::Boolean => format!("(1 if {} else 0)", nm),
             Type::String => format!("RustBuffer.allocFromString({})", nm),
             Type::Object(_) => format!("({}._pointer)", nm),
+            Type::ExternalType(_, primitive) => return lower_py(nm, &primitive),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)
@@ -190,7 +210,11 @@ mod filters {
         })
     }
 
-    pub fn lift_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_py(
+        nm: &dyn fmt::Display,
+        type_: &Type,
+        config: &Config,
+    ) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -204,6 +228,21 @@ mod filters {
             Type::Boolean => format!("(True if {} else False)", nm),
             Type::String => format!("{}.consumeIntoString()", nm),
             Type::Object(name) => format!("{}._make_instance_({})", class_name_py(name)?, nm),
+            Type::ExternalType(ext_name, primitive) => {
+                let prim_lift = format!(
+                    "{}.consumeInto{}()",
+                    nm,
+                    class_name_py(&primitive.canonical_name())?
+                );
+                match config.find_external_type(ext_name) {
+                    // A custom type - we lift via the primitive.
+                    Some(ext_config) => {
+                        format!("{}({})", ext_config.lift_from_primitive, prim_lift)
+                    }
+                    // We are using the primitive type directly
+                    None => prim_lift,
+                }
+            }
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)

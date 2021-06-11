@@ -1,0 +1,23 @@
+
+[External]
+typedef string Guid;
+
+[External]
+typedef string JSONObject;
+
+dictionary ExtTypes {
+    Guid guid;
+    sequence<Guid> guids;
+    JSONObject json;
+    sequence<JSONObject> jsons;
+    // should get all other recursive types.
+};
+
+namespace external_types {
+    string get_string(optional string? val);
+    Guid get_guid(optional Guid? val);
+
+    JSONObject? get_json_object(optional JSONObject? val);
+
+    ExtTypes get_ext_types(optional ExtTypes? vals);
+};

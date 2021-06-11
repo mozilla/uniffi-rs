@@ -32,6 +32,7 @@ pub(super) enum Attribute {
     SelfType(SelfType),
     Threadsafe, // N.B. the `[Threadsafe]` attribute is deprecated and will be removed
     Throws(String),
+    External,
 }
 
 impl Attribute {
@@ -57,6 +58,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
                 "Threadsafe" => Ok(Attribute::Threadsafe),
+                "External" => Ok(Attribute::External),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -388,6 +390,46 @@ impl TryFrom<&weedle::attribute::IdentifierOrString<'_>> for SelfType {
                 bail!("Unsupported Self Type: {:?}", nm)
             }
         })
+    }
+}
+
+/// Represents UDL attributes that might appear on a typedef
+///
+/// This supports the `[External]` attribute for types which are implemented
+/// externally.
+#[derive(Debug, Clone, Hash, Default)]
+pub(super) struct TypedefAttributes(Vec<Attribute>);
+
+impl TypedefAttributes {
+    pub fn is_external(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::External))
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for TypedefAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::External => Ok(()),
+            _ => bail!(format!("{:?} not supported for typedefs", attr)),
+        })?;
+        Ok(Self(attrs))
+    }
+}
+
+impl<T: TryInto<TypedefAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
+    for TypedefAttributes
+{
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
     }
 }
 

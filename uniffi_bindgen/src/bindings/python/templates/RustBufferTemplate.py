@@ -62,7 +62,7 @@ class RustBuffer(ctypes.Structure):
     # of python's free-for-all type system.
 
     {%- for typ in ci.iter_types() -%}
-    {%- let canonical_type_name = typ.canonical_name() -%}
+    {%- let canonical_type_name = typ.canonical_name()|class_name_py -%}
     {%- match typ -%}
 
     {% when Type::String -%}

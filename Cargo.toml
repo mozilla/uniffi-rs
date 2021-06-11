@@ -11,6 +11,7 @@ members = [
   "examples/sprites",
   "examples/todolist",
   "fixtures/coverall",
+  "fixtures/external-types",
   "fixtures/regressions/enum-without-i32-helpers",
   "fixtures/regressions/kotlin-experimental-unsigned-types",
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",

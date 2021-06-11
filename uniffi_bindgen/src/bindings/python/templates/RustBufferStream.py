@@ -242,6 +242,18 @@ class RustBufferStream(object):
             count -= 1
         return items
 
+    {% when Type::ExternalType with (name, primitive_type) %}
+    # The External type {{ name }} is implemented via {{ primitive_type.canonical_name() }}
+    {% match config.find_external_type(name) -%}
+    {%- when Some with (ext) -%}
+    # An external type: {{ name }}.
+    def read{{ canonical_type_name }}(self):
+        return {{ ext.lift_from_primitive }}(self.read{{ primitive_type.canonical_name()|class_name_py }}())
+    {%- when None -%}
+    def read{{ canonical_type_name }}(self):
+        return self.read{{ primitive_type.canonical_name()|class_name_py }}()
+    {%- endmatch -%}
+
     {%- else -%}
     # This type cannot currently be serialized, but we can produce a helpful error.
     def read{{ canonical_type_name }}(self):

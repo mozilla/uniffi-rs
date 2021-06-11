@@ -164,6 +164,7 @@ mod filters {
             Type::Float32 | Type::Float64 => format!("{}.to_f", nm),
             Type::Boolean => format!("{} ? true : false", nm),
             Type::Object(_) | Type::Enum(_) | Type::Error(_) | Type::Record(_) => nm.to_string(),
+            Type::ExternalType(_, primitive) => return coerce_rb(nm, &primitive),
             Type::String => format!("{}.to_s", nm),
             Type::Timestamp => panic!("No support for timestamps in Ruby, yet"),
             Type::Duration => panic!("No support for durations in Ruby, yet"),
@@ -210,6 +211,7 @@ mod filters {
             Type::Timestamp => panic!("No support for timestamps in Ruby, yet"),
             Type::Duration => panic!("No support for durations in Ruby, yet"),
             Type::Object(name) => format!("({}._uniffi_lower {})", class_name_rb(name)?, nm),
+            Type::ExternalType(_, primitive) => return lower_rb(nm, &primitive),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)
@@ -240,6 +242,7 @@ mod filters {
             Type::Timestamp => panic!("No support for timestamps in Ruby, yet"),
             Type::Duration => panic!("No support for durations in Ruby, yet"),
             Type::Object(name) => format!("{}._uniffi_allocate({})", class_name_rb(name)?, nm),
+            Type::ExternalType(..) => panic!("No support for lifting, yet"),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)

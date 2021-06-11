@@ -21,6 +21,19 @@ import struct
 import contextlib
 import datetime
 
+{# Setup our external types #}
+{%- for typ in ci.iter_types() -%}
+{%- match typ -%}
+{%- when Type::ExternalType with (name, primitive_type) -%}
+{%- match config.find_external_type(name) -%}
+{%- when Some with (ext) %}
+{{ ext.setup }} # for {{ name }}
+{%- when None -%}
+{%- endmatch -%}
+{%- else -%}
+{%- endmatch -%}
+{%- endfor %}
+
 {% include "RustBufferTemplate.py" %}
 {% include "RustBufferStream.py" %}
 {% include "RustBufferBuilder.py" %}

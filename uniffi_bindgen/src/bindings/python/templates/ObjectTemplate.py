@@ -38,7 +38,7 @@ class {{ obj.name()|class_name_py }}(object):
     def {{ meth.name()|fn_name_py }}(self, {% call py::arg_list_decl(meth) %}):
         {%- call py::coerce_args_extra_indent(meth) %}
         _retval = {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
-        return {{ "_retval"|lift_py(return_type) }}
+        return {{ "_retval"|lift_py(return_type, config) }}
 
     {%- when None -%}
     def {{ meth.name()|fn_name_py }}(self, {% call py::arg_list_decl(meth) %}):

@@ -195,6 +195,20 @@ class RustBufferBuilder(object):
             self.writeString(k)
             self.write{{ inner_type.canonical_name()|class_name_py }}(v)
 
+    {% when Type::ExternalType with (name, primitive_type) -%}
+
+    # The external type {{ name }} is implemented as a {{ primitive_type.canonical_name() }}
+    {% match config.find_external_type(name) -%}
+    {%- when Some with (ext) -%}
+    # An external type: {{ name }}.
+    def write{{ canonical_type_name }}(self, value):
+        self.write{{ primitive_type.canonical_name()|class_name_py }}({{ ext.lower_to_primitive }}(value))
+
+    {%- when None -%}
+    def write{{ canonical_type_name }}(self, value):
+        self.write{{ primitive_type.canonical_name()|class_name_py }}(value)
+    {%- endmatch -%}
+
     {%- else -%}
     # This type cannot currently be serialized, but we can produce a helpful error.
 

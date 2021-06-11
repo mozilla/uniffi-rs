@@ -62,6 +62,9 @@ pub enum Type {
     Optional(Box<Type>),
     Sequence(Box<Type>),
     Map(/* String, */ Box<Type>),
+    // Types external to uniffi and converted via traits, setup via typedefs.
+    // Tuple of name and the type it is serialized as.
+    ExternalType(String, Box<Type>),
 }
 
 impl Type {
@@ -105,6 +108,8 @@ impl Type {
             Type::Optional(t) => format!("Optional{}", t.canonical_name()),
             Type::Sequence(t) => format!("Sequence{}", t.canonical_name()),
             Type::Map(t) => format!("Map{}", t.canonical_name()),
+            // A type that exists externally.
+            Type::ExternalType(nm, _) => format!("ExternalType{}", nm),
         }
     }
 }
@@ -146,6 +151,8 @@ impl From<&Type> for FFIType {
             | Type::Map(_)
             | Type::Timestamp
             | Type::Duration => FFIType::RustBuffer,
+            // The external type carries the primitive type that's used over the ffi.
+            Type::ExternalType(_, primitive) => FFIType::from(&**primitive),
         }
     }
 }
