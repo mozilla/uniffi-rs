@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Tutorial - The UniFFI user guide</title>
+        <title>Motivation - The UniFFI user guide</title>
         
         
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="Getting_started.html" class="active"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="kotlin/gradle.html"><strong aria-hidden="true">4.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="swift/module.html"><strong aria-hidden="true">5.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="swift/xcode.html"><strong aria-hidden="true">6.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="internals/lifting_and_lowering.html"><strong aria-hidden="true">7.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="internals/object_references.html"><strong aria-hidden="true">8.</strong> Managing object references</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="Motivation.html" class="active"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="kotlin/gradle.html"><strong aria-hidden="true">4.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="swift/module.html"><strong aria-hidden="true">5.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="swift/xcode.html"><strong aria-hidden="true">6.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="internals/lifting_and_lowering.html"><strong aria-hidden="true">7.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="internals/object_references.html"><strong aria-hidden="true">8.</strong> Managing object references</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -159,31 +159,57 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#getting-started" id="getting-started">Getting started</a></h1>
-<p>Say your company has a simple <code>math</code> crate with the following <code>lib.rs</code>:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>fn add(a: u32, b: u32) -&gt; u32 {
-    a + b
-}
-<span class="boring">}
-</span></code></pre></pre>
-<p>And top brass would like you to expose this <em>business-critical</em> operation to Kotlin and Swift.<br />
-<strong>Don't panic!</strong> We will show you how do that using UniFFI.</p>
+                        <h2><a class="header" href="#what" id="what">What?</a></h2>
+<p>We're interested in building re-useable components for sync- and storage-related browser
+functionality - things like <a href="https://github.com/mozilla/application-services/tree/main/components/logins">storing and syncing passwords</a>,
+<a href="https://github.com/mozilla/application-services/tree/main/components/places">working with bookmarks</a> and
+<a href="https://github.com/mozilla/application-services/tree/main/components/fxa-client">signing in to your Firefox Account</a>.</p>
+<p>We want to write the code for these components once, in Rust. We want to easily re-use these components from
+all the different languages and on all the different platforms for which we build browsers, which currently
+includes JavaScript for PCs, Kotlin for Android, and Swift for iOS.</p>
+<p>And of course, we want to do this in a way that's convenient, maintainable, and difficult to mess up.</p>
+<h2><a class="header" href="#how" id="how">How?</a></h2>
+<p>In an aspirational world, we could get this kind of easy cross-language interop for
+free using <a href="https://rustwasm.github.io/docs/wasm-bindgen/">wasm_bindgen</a> and
+<a href="https://hacks.mozilla.org/2019/08/webassembly-interface-types/">webassembly interface types</a> -
+imagine writing an API in Rust, annotating it with some <code>#[wasm_bindgen]</code> macros,
+compiling it into a webassembly bundle, and being able to import and use that bundle
+from any target language, complete with a rich high-level API!</p>
+<p>That kind of tooling is not available to shipping applications today, but that doesn't
+mean we can't take a small step in that general direction while the Rust and Wasm ecosystem
+continues to evolve.</p>
+<p>Using UniFFI, you can:</p>
+<ul>
+<li>Implement your software component as a <code>cdylib</code> crate in Rust; let's say the code is in <code>./src/lib.rs</code>.</li>
+<li>Specify the desired component API using an <em>Interface Definition Language</em> (specifically, a variant of WebIDL) in a separate file like <code>./src/lib.udl</code>.</li>
+<li>Run <code>uniffi-bindgen scaffolding ./src/lib.udl</code> to generate a bunch of boilerplate rust code that exposes this API as a C-compatible FFI layer,
+and include it as part of your crate.</li>
+<li><code>cargo build</code> your crate as normal to produce a shared library.</li>
+<li>Run <code>uniffi-bindgen generate ./src/lib.udl -l kotlin</code> to generate a Kotlin library that can load your shared library
+and expose it to Kotlin code using your nice high-level component API!
+<ul>
+<li>Or <code>-l swift</code> or <code>-l python</code> to produce bindings for other languages.</li>
+</ul>
+</li>
+</ul>
+<h2><a class="header" href="#why" id="why">Why?</a></h2>
+<p>There are plenty of potential ways to solve this problem, and the one that's right for us might not
+be right for you. You can read a little more about the considerations and trade-offs
+that lead to the current approach in our <a href="https://github.com/mozilla/uniffi-rs/tree/main/docs/adr/README.md">Architecture Decision Records</a>,
+starting with <a href="https://github.com/mozilla/uniffi-rs/tree/main/docs/adr/0000-whats-the-big-idea.md">this motivational document</a>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="Motivation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="Overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="tutorial/Prerequisites.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="Getting_started.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -195,13 +221,13 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="Motivation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="Overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="tutorial/Prerequisites.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="Getting_started.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
