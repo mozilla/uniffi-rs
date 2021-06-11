@@ -32,6 +32,8 @@ pub(super) enum Attribute {
     SelfType(SelfType),
     Threadsafe, // N.B. the `[Threadsafe]` attribute is deprecated and will be removed
     Throws(String),
+    ExternalUniffi(String), // `[ExternalUniffi="crate_name"]` - uniffi generated in `crate_name`
+    ExternalWrapping,       // something hand-written wrapping a primitive type
 }
 
 impl Attribute {
@@ -57,6 +59,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
                 "Threadsafe" => Ok(Attribute::Threadsafe),
+                "ExternalWrapping" => Ok(Attribute::ExternalWrapping),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -65,6 +68,9 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                     "Name" => Ok(Attribute::Name(name_from_id_or_string(&identity.rhs))),
                     "Throws" => Ok(Attribute::Throws(name_from_id_or_string(&identity.rhs))),
                     "Self" => Ok(Attribute::SelfType(SelfType::try_from(&identity.rhs)?)),
+                    "ExternalUniffi" => Ok(Attribute::ExternalUniffi(name_from_id_or_string(
+                        &identity.rhs,
+                    ))),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
@@ -391,6 +397,53 @@ impl TryFrom<&weedle::attribute::IdentifierOrString<'_>> for SelfType {
     }
 }
 
+/// Represents UDL attributes that might appear on a typedef
+///
+/// This supports the `[ExternalUniffi="crate_name"]` and `[ExternalWrapping]` attributes for types
+/// which are implemented externally.
+#[derive(Debug, Clone, Hash, Default)]
+pub(super) struct TypedefAttributes(Vec<Attribute>);
+
+impl TypedefAttributes {
+    pub(super) fn get_external_uniffi_crate_name(&self) -> Option<&str> {
+        self.0.iter().find_map(|attr| match attr {
+            Attribute::ExternalUniffi(cratename) => Some(cratename.as_ref()),
+            _ => None,
+        })
+    }
+
+    pub(super) fn is_wrapping(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::ExternalWrapping))
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for TypedefAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::ExternalWrapping | Attribute::ExternalUniffi { .. } => Ok(()),
+            _ => bail!(format!("{:?} not supported for typedefs", attr)),
+        })?;
+        Ok(Self(attrs))
+    }
+}
+
+impl<T: TryInto<TypedefAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
+    for TypedefAttributes
+{
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -652,5 +705,46 @@ mod test {
             err.to_string(),
             "ByRef not supported for interface definition"
         );
+    }
+
+    #[test]
+    fn test_typedef_attribute() {
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[ExternalWrapping]").unwrap();
+        let attrs = TypedefAttributes::try_from(&node).unwrap();
+        assert!(attrs.is_wrapping());
+        assert_eq!(attrs.get_external_uniffi_crate_name(), None);
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[ExternalUniffi=crate_name]").unwrap();
+        let attrs = TypedefAttributes::try_from(&node).unwrap();
+        assert!(!attrs.is_wrapping());
+        assert_eq!(attrs.get_external_uniffi_crate_name(), Some("crate_name"));
+    }
+
+    #[test]
+    fn test_typedef_attributes_malformed() {
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[ExternalWrapping=foo]").unwrap();
+        let err = TypedefAttributes::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "Attribute identity Identifier not supported: \"ExternalWrapping\""
+        );
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[ExternalUniffi]").unwrap();
+        let err = TypedefAttributes::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "ExtendedAttributeNoArgs not supported: \"ExternalUniffi\""
+        );
+    }
+
+    #[test]
+    fn test_other_attributes_not_supported_for_typedef() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[ByRef]").unwrap();
+        let err = TypedefAttributes::try_from(&node).unwrap_err();
+        assert_eq!(err.to_string(), "ByRef not supported for typedefs");
     }
 }

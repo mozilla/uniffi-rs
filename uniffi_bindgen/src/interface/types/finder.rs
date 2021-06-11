@@ -21,8 +21,8 @@ use std::convert::TryFrom;
 
 use anyhow::{bail, Result};
 
-use super::super::attributes::{EnumAttributes, InterfaceAttributes};
-use super::{Type, TypeUniverse};
+use super::super::attributes::{EnumAttributes, InterfaceAttributes, TypedefAttributes};
+use super::{ExternalTypeKind, Type, TypeUniverse};
 
 /// Trait to help with an early "type discovery" phase when processing the UDL.
 ///
@@ -90,14 +90,48 @@ impl TypeFinder for weedle::EnumDefinition<'_> {
 
 impl TypeFinder for weedle::TypedefDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
-        if self.attributes.is_some() {
-            bail!("no typedef attributes are currently supported");
+        let name = self.identifier.0;
+        let attrs = TypedefAttributes::try_from(self.attributes.as_ref())?;
+        // It is simple to support aliases, but it's not clear they really
+        // add value here and having such different semantics from `[Imported]`
+        // ones might just add confusion.
+        // If we *did*, it would be as easy as:
+        // > let t = types.resolve_type_expression(&self.type_)?;
+        // > types.add_type_definition(name, t)
+        if attrs.is_wrapping() {
+            // external hand-written type.
+            let t = types.resolve_type_expression(&self.type_)?;
+            match t {
+                // slight tension with `Type` being the "primitive" - `FfiType` is
+                // closer, but awkward in other ways. There's no good reason to insist on strings
+                // but our experimental implementations might assume so in the short term.
+                Type::String => types.add_type_definition(
+                    name,
+                    Type::External {
+                        name: name.to_string(),
+                        kind: ExternalTypeKind::Wrapping {
+                            primitive: Box::new(t),
+                        },
+                    },
+                ),
+                _ => bail!("only external aliases to strings are supported"),
+            }
+        } else {
+            match attrs.get_external_uniffi_crate_name() {
+                // Note we don't resolve `self._type` - ideally we'd check it is the string
+                // `extern`, but that seems trickier than it looks!
+                Some(crate_name) => {
+                    let type_ = Type::External {
+                        name: name.to_string(),
+                        kind: ExternalTypeKind::Uniffi {
+                            crate_name: crate_name.to_string(),
+                        },
+                    };
+                    types.add_type_definition(name, type_)
+                }
+                None => bail!("only `[ExternalUniffi=crate_name]` or `[ExternalWrapping]` typedefs are supported"),
+            }
         }
-        // For now, we assume that the typedef must refer to an already-defined type, which means
-        // we can look it up in the TypeUniverse. This should suffice for our needs for
-        // a good long while before we consider implementing a more complex delayed resolution strategy.
-        let t = types.resolve_type_expression(&self.type_)?;
-        types.add_type_definition(self.identifier.0, t)
     }
 }
 
@@ -135,12 +169,17 @@ mod test {
                 constructor();
             };
 
-            typedef TestObject Alias;
+            [ExternalUniffi="crate-name"]
+            typedef extern ExternalUniffi;
+
+            [ExternalWrapping]
+            typedef string ExternalWrapping;
+
         "#;
         let idl = weedle::parse(UDL).unwrap();
         let mut types = TypeUniverse::default();
         types.add_type_definitions_from(idl.as_ref())?;
-        assert_eq!(types.iter_known_types().count(), 5);
+        assert_eq!(types.iter_known_types().count(), 8);
         assert!(
             matches!(types.get_type_definition("TestCallbacks").unwrap(), Type::CallbackInterface(nm) if nm == "TestCallbacks")
         );
@@ -157,24 +196,58 @@ mod test {
             matches!(types.get_type_definition("TestObject").unwrap(), Type::Object(nm) if nm == "TestObject")
         );
         assert!(
-            matches!(types.get_type_definition("Alias").unwrap(), Type::Object(nm) if nm == "TestObject")
+            matches!(types.get_type_definition("ExternalUniffi").unwrap(), Type::External { name, kind: ExternalTypeKind::Uniffi { crate_name } }
+                                                                           if name == "ExternalUniffi" && crate_name == "crate-name")
         );
+        assert!(
+            matches!(types.get_type_definition("ExternalWrapping").unwrap(), Type::External { name, kind: ExternalTypeKind::Wrapping { primitive }}
+                                                                             if name == "ExternalWrapping" && primitive == Box::new(Type::String))
+        );
+        // Our `typedef string External` has caused `String` to also be known.
+        assert!(types.all_known_types.contains(&Type::String));
+
         Ok(())
     }
 
-    #[test]
-    fn test_error_on_unresolved_typedef() {
-        const UDL: &str = r#"
-            // Sorry, no forward declarations yet...
-            typedef TestRecord Alias;
-
-            dictionary TestRecord {
-                u32 field;
-            };
-        "#;
-        let idl = weedle::parse(UDL).unwrap();
+    fn get_err(udl: &str) -> String {
+        let parsed = weedle::parse(udl).unwrap();
         let mut types = TypeUniverse::default();
-        let err = types.add_type_definitions_from(idl.as_ref()).unwrap_err();
-        assert_eq!(err.to_string(), "unknown type reference: TestRecord");
+        let err = types
+            .add_type_definitions_from(parsed.as_ref())
+            .unwrap_err();
+        err.to_string()
+    }
+
+    #[test]
+    fn test_typedef_error_on_no_attr() {
+        // Sorry, still working out what we want for non-imported typedefs..
+        assert_eq!(
+            get_err("typedef string Custom;"),
+            "only `[ExternalUniffi=crate_name]` or `[ExternalWrapping]` typedefs are supported"
+        );
+    }
+
+    #[test]
+    fn test_typedef_uniffi_must_have_crate() {
+        assert_eq!(
+            get_err("[ExternalUniffi]typedef extern Custom;"),
+            "ExtendedAttributeNoArgs not supported: \"ExternalUniffi\""
+        );
+    }
+
+    #[test]
+    fn test_typedef_wrapped_takes_no_value() {
+        assert_eq!(
+            get_err("[ExternalWrapped=something]typedef string Custom;"),
+            "Attribute identity Identifier not supported: \"ExternalWrapped\""
+        );
+    }
+
+    #[test]
+    fn test_typedef_extern_unknown_type() {
+        assert_eq!(
+            get_err("[ExternalWrapping]typedef UnknownType Custom;"),
+            "unknown type reference: UnknownType"
+        );
     }
 }

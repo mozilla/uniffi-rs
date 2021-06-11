@@ -62,6 +62,10 @@ pub enum Type {
     Optional(Box<Type>),
     Sequence(Box<Type>),
     Map(/* String, */ Box<Type>),
+    External {
+        name: String,
+        kind: ExternalTypeKind,
+    },
 }
 
 impl Type {
@@ -105,6 +109,8 @@ impl Type {
             Type::Optional(t) => format!("Optional{}", t.canonical_name()),
             Type::Sequence(t) => format!("Sequence{}", t.canonical_name()),
             Type::Map(t) => format!("Map{}", t.canonical_name()),
+            // A type that exists externally.
+            Type::External { name, .. } => format!("External{}", name),
         }
     }
 }
@@ -146,8 +152,18 @@ impl From<&Type> for FFIType {
             | Type::Map(_)
             | Type::Timestamp
             | Type::Duration => FFIType::RustBuffer,
+            Type::External { .. } => FFIType::RustBuffer,
         }
     }
+}
+
+// The "kind" of external type.
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+pub enum ExternalTypeKind {
+    // A type defined by UniFFI from a different crate that this crate `use`s
+    Uniffi { crate_name: String },
+    // A manually hand-written type that wraps the specified primitive.
+    Wrapping { primitive: Box<Type> },
 }
 
 /// The set of all possible types used in a particular component interface.
