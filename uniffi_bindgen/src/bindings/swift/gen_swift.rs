@@ -190,6 +190,7 @@ mod filters {
             Type::Optional(type_) => format!("{}?", type_swift(type_)?),
             Type::Sequence(type_) => format!("[{}]", type_swift(type_)?),
             Type::Map(type_) => format!("[String:{}]", type_swift(type_)?),
+            Type::Custom { .. } => panic!("no support for external types in swift, yet"),
         })
     }
 

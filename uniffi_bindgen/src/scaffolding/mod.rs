@@ -46,6 +46,7 @@ mod filters {
             Type::Optional(t) => format!("Option<{}>", type_rs(t)?),
             Type::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
             Type::Map(t) => format!("std::collections::HashMap<String, {}>", type_rs(t)?),
+            Type::Custom { primitive, .. } => type_rs(primitive)?
         })
     }
 
@@ -94,6 +95,8 @@ mod filters {
             Type::Optional(inner) => format!("Option<{}>", ffi_converter_name(inner)?),
             Type::Sequence(inner) => format!("Vec<{}>", ffi_converter_name(inner)?),
             Type::Map(inner) => format!("HashMap<String, {}>", ffi_converter_name(inner)?),
+            // Custom manually specifies it's ffi_converter
+            Type::Custom { ffi_converter_name, .. } => ffi_converter_name.clone(),
             // Primitive types / strings are implemented by their rust type
             Type::Int8 => "i8".into(),
             Type::UInt8 => "u8".into(),

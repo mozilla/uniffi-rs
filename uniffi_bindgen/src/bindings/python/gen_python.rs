@@ -156,6 +156,7 @@ mod filters {
                 coerce_py(&"v", t)?,
                 nm
             ),
+            Type::Custom { .. } => panic!("No support for coercing external types yet"),
         })
     }
 
@@ -187,6 +188,7 @@ mod filters {
                 class_name_py(&type_.canonical_name())?,
                 nm
             ),
+            Type::Custom { .. } => panic!("No support for lowering external types yet"),
         })
     }
 
@@ -217,6 +219,7 @@ mod filters {
                 nm,
                 class_name_py(&type_.canonical_name())?
             ),
+            Type::Custom { .. } => panic!("No support for lowering external types, yet"),
         })
     }
 }

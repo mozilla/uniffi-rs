@@ -648,6 +648,8 @@ impl APIBuilder for weedle::Definition<'_> {
                 let obj = d.convert(ci)?;
                 ci.add_callback_interface_definition(obj);
             }
+            // everything needed for typedefs is done in finder.rs.
+            weedle::Definition::Typedef(_) => {}
             _ => bail!("don't know how to deal with {:?}", self),
         }
         Ok(())

@@ -62,6 +62,12 @@ pub enum Type {
     Optional(Box<Type>),
     Sequence(Box<Type>),
     Map(/* String, */ Box<Type>),
+    Custom {
+      name: String,
+      ffi_converter_name: String,
+      primitive: Box<Type>,
+      bindings_kind: CustomTypeBindingsKind,
+    },
 }
 
 impl Type {
@@ -105,6 +111,8 @@ impl Type {
             Type::Optional(t) => format!("Optional{}", t.canonical_name()),
             Type::Sequence(t) => format!("Sequence{}", t.canonical_name()),
             Type::Map(t) => format!("Map{}", t.canonical_name()),
+            // A type that exists externally.
+            Type::Custom { name, .. } => format!("Custom{}", name),
         }
     }
 }
@@ -146,8 +154,18 @@ impl From<&Type> for FFIType {
             | Type::Map(_)
             | Type::Timestamp
             | Type::Duration => FFIType::RustBuffer,
+            Type::Custom { primitive, .. } => FFIType::from(primitive.as_ref()),
         }
     }
+}
+
+// The "kind" of external type.
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+pub enum CustomTypeBindingsKind {
+    // Treat this like a primitive type on the bindings side
+    Primitive(Box<Type>),
+    // Bindings are defined in a separate UDL file
+    ImportedFromOtherCrate { crate_name: String },
 }
 
 /// The set of all possible types used in a particular component interface.
