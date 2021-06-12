@@ -187,7 +187,7 @@ class RustBufferBuilder(object):
     {%- else -%}
     # This type cannot currently be serialized, but we can produce a helpful error.
 
-    def write{{ canonical_type_name }}(self):
+    def write{{ canonical_type_name }}(self, value):
         raise InternalError("RustBufferStream.write() not implemented yet for {{ canonical_type_name }}")
 
     {%- endmatch -%}

@@ -171,7 +171,7 @@ class RustBufferBuilder
 
   {%- else -%}
   # This type is not yet supported in the Ruby backend.
-  def write_{{ canonical_type_name }}
+  def write_{{ canonical_type_name }}(v)
     raise InternalError('RustBufferStream.write() not implemented yet for {{ canonical_type_name }}')
   end
 
