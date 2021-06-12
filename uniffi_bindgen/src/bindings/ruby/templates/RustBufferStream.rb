@@ -106,46 +106,6 @@ class RustBufferStream
     read(size).force_encoding(Encoding::UTF_8)
   end
 
-  {% when Type::Timestamp -%}
-  # The Timestamp type.
-  # These are not yet supported in the Ruby backend.
-
-  def read{{ canonical_type_name }}
-    raise InternalError, 'RustBufferStream.read not implemented yet for {{ canonical_type_name }}'
-  end
-
-  {% when Type::Duration -%}
-  # The Duration type.
-  # These are not yet supported in the Ruby backend.
-
-  def read{{ canonical_type_name }}
-    raise InternalError, 'RustBufferStream.read not implemented yet for {{ canonical_type_name }}'
-  end
-
-  {% when Type::Object with (object_name) -%}
-  # The Object type {{ object_name }}.
-  # Objects cannot currently be serialized, but we can produce a helpful error.
-
-  def read{{ canonical_type_name }}
-    raise InternalError, 'RustBufferStream.read not implemented yet for {{ canonical_type_name }}'
-  end
-
-  {% when Type::CallbackInterface with (object_name) -%}
-  # The Callback Interface type {{ object_name }}.
-  # Callback Interfaces cannot currently be serialized, but we can produce a helpful error.
-
-  def read{{ canonical_type_name }}
-    raise InternalError, 'RustBufferStream.read not implemented yet for {{ canonical_type_name }}'
-  end
-
-  {% when Type::Error with (error_name) -%}
-  # The Error type {{ error_name }}.
-  # Errors cannot currently be serialized, but we can produce a helpful error.
-
-  def read{{ canonical_type_name }}
-    raise InternalError, 'RustBufferStream.read not implemented yet for {{ canonical_type_name }}'
-  end
-
   {% when Type::Enum with (enum_name) -%}
   {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
   # The Enum type {{ enum_name }}.
@@ -237,6 +197,12 @@ class RustBufferStream
 
     items
   end
+  {%- else -%}
+  # This type is not yet supported in the Ruby backend.
+  def read{{ canonical_type_name }}
+    raise InternalError, 'RustBufferStream.read not implemented yet for {{ canonical_type_name }}'
+  end
+
   {%- endmatch -%}
   {%- endfor %}
 

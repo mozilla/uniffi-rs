@@ -494,8 +494,8 @@ internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}
 {% when Type::CallbackInterface with (interface_name) -%}
 {# Helpers for Callback Interface types are defined inline with the CallbackInterface class #}
 
-{% when Type::Error with (error_name) -%}
-{# Error types cannot be lifted, lowered or serialized (yet) #}
+{% else %}
+{# This type cannot be lifted, lowered or serialized (yet) #}
 
 {% endmatch %}
 {% endfor %}
