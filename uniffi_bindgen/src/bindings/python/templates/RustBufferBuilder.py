@@ -131,27 +131,6 @@ class RustBufferBuilder(object):
         self._pack_into(8, ">Q", seconds)
         self._pack_into(4, ">I", nanoseconds)
 
-    {% when Type::Object with (object_name) -%}
-    # The Object type {{ object_name }}.
-    # Objects cannot currently be serialized, but we can produce a helpful error.
-
-    def write{{ canonical_type_name }}(self):
-        raise InternalError("RustBufferStream.write() not implemented yet for {{ canonical_type_name }}")
-
-    {% when Type::CallbackInterface with (object_name) -%}
-    # The Callback Interface type {{ object_name }}.
-    # Objects cannot currently be serialized, but we can produce a helpful error.
-
-    def write{{ canonical_type_name }}(self):
-        raise InternalError("RustBufferStream.write() not implemented yet for {{ canonical_type_name }}")
-
-    {% when Type::Error with (error_name) -%}
-    # The Error type {{ error_name }}.
-    # Errors cannot currently be serialized, but we can produce a helpful error.
-
-    def write{{ canonical_type_name }}(self):
-        raise InternalError("RustBufferStream.write() not implemented yet for {{ canonical_type_name }}")
-
     {% when Type::Enum with (enum_name) -%}
     {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
     # The Enum type {{ enum_name }}.
@@ -204,6 +183,12 @@ class RustBufferBuilder(object):
         for (k, v) in items.items():
             self.writeString(k)
             self.write{{ inner_type.canonical_name()|class_name_py }}(v)
+
+    {%- else -%}
+    # This type cannot currently be serialized, but we can produce a helpful error.
+
+    def write{{ canonical_type_name }}(self):
+        raise InternalError("RustBufferStream.write() not implemented yet for {{ canonical_type_name }}")
 
     {%- endmatch -%}
     {%- endfor %}
