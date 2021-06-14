@@ -10,7 +10,11 @@
 
 ## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.11.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.12.0...HEAD).
+
+## v0.12.0 (2021-06-14)
+
+[All changes in v0.12.0](https://github.com/mozilla/uniffi-rs/compare/v0.11.0...v0.12.0).
 
 ### What's New
 
@@ -28,14 +32,9 @@
 - Kotlin objects now implement `AutoCloseable` by default; closing an object instance is equivalent
   to calling its `destroy()` method.
 
-## v0.11.0 2021-06-03
+## v0.11.0 (2021-06-03)
 
 [All changes in v0.11.0](https://github.com/mozilla/uniffi-rs/compare/v0.10.0...v0.11.0).
-
-### What's Changed
- - Swift structs and Kotlin data classes generated from `dictionary` are now mutable by default:
-  - **Swift** now uses `var` instead of `let`
-  - **Kotlin** now uses `var` instead of `val`
 
 ### ⚠️ Breaking Changes ⚠️
 
@@ -46,6 +45,9 @@
 
 ### What's Changed
 
+- Swift structs and Kotlin data classes generated from `dictionary` are now mutable by default:
+  - **Swift** now uses `var` instead of `let`
+  - **Kotlin** now uses `var` instead of `val`
 - Kotlin objects can now safely have their `destroy()` method or `.use` block execute concurrently
   with other method calls. It's recommended that you *not* do this, but if you accidentally do so,
   it will now work correctly rather than triggering a panic in the underlying Rust code.
