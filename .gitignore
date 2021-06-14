@@ -5,3 +5,4 @@ target
 *.jar
 .vscode
 xcuserdata
+docs/manual/src/internals/api

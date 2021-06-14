@@ -60,7 +60,7 @@
 //!
 //! First you will need to install `uniffi-bindgen` on your system using `cargo install uniffi_bindgen`.
 //! Then add to your crate `uniffi_build` under `[build-dependencies]`.
-//! Finally, add a `build.rs` script to your crate and have it call [uniffi_build::generate_scaffolding](uniffi_build::generate_scaffolding)
+//! Finally, add a `build.rs` script to your crate and have it call `uniffi_build::generate_scaffolding`
 //! to process your `.udl` file. This will generate some Rust code to be included in the top-level source
 //! code of your crate. If your UDL file is named `example.udl`, then your build script would call:
 //!

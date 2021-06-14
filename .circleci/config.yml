@@ -24,6 +24,13 @@ commands:
     steps:
       - run: rustup override set 1.47.0
       - run: rustup update
+  build-api-docs:
+    steps:
+      - run:
+          name: Build API Docs
+          command: cargo doc --no-deps --document-private-items -p uniffi_bindgen -p uniffi -p uniffi_build -p uniffi_macros
+          environment:
+            RUSTDOCFLAGS: -Dwarnings -Arustdoc::private-intra-doc-links
 
 orbs:
   gh-pages: sugarshin/gh-pages@0.0.6
@@ -50,6 +57,14 @@ jobs:
       - run: rustup component add clippy
       - run: cargo clippy --version
       - run: cargo clippy --all --all-targets -- -D warnings
+  Lint Rust Docs:
+    docker:
+      - image: rfkelly/uniffi-ci:latest
+    resource_class: small
+    steps:
+      - checkout
+      - prepare-rust-target-version
+      - build-api-docs
   Rust and Foreign Language tests:
     docker:
       - image: rfkelly/uniffi-ci:latest
@@ -87,6 +102,8 @@ jobs:
     steps:
       - install-mdbook
       - checkout
+      - build-api-docs
+      - run: cp -r ./target/doc ./docs/manual/src/internals/api
       - run: mdbook build docs/manual
       - gh-pages/deploy:
           build-dir: docs/manual/book
@@ -100,6 +117,9 @@ workflows:
   clippy:
     jobs:
       - Lint Rust with clippy
+  docs:
+    jobs:
+      - Lint Rust Docs
   run-tests:
     jobs:
       - Rust and Foreign Language tests

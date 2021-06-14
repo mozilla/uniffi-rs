@@ -71,7 +71,7 @@ Other directories of interest include:
 - **[`./uniffi_bindgen`](../uniffi_bindgen):** This is the source for the `uniffi-bindgen` executable and is where
   most of the logic for the UniFFI tool lives. Its contents include:
     - **[`./uniffi_bindgen/src/interface/`](../uniffi_bindgen/src/interface):** The logic for parsing `.udl` files
-      into an in-memory representation called `ComponentInterface`, from which we ca generate code for different languages.
+      into an in-memory representation called `ComponentInterface`, from which we can generate code for different languages.
     - **[`./uniffi_bindgen/src/scaffolding`](../uniffi_bindgen/src/scaffolding):** This module turns a `ComponentInterface`
       into *Rust scaffolding*, the code that wraps the user-provided Rust code and exposes it via a C-compatible FFI layer.
     - **[`./uniffi_bindgen/src/bindings/`](../uniffi_bindgen/src/bindings):** This module turns a `ComponentInterface` into
