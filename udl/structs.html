@@ -160,7 +160,10 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#structsdictionaries" id="structsdictionaries">Structs/Dictionaries</a></h1>
-<p>Dictionaries can be compared to POJOs in the Java world: just a data structure holding some data.</p>
+<p>Dictionaries are how UniFFI represents structured data.
+They consist of one of more named <em>fields</em>, each of which holds a value of a particular type.
+Think of them like a Rust struct without any methods.</p>
+<p>A Rust struct like this:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -171,15 +174,48 @@
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>can be converted in UDL to:</p>
+<p>Can be exposed via UniFFI using UDL like this:</p>
 <pre><code class="language-idl">dictionary TodoEntry {
     boolean done;
     u64 due_date;
     string text;
 };
-
 </code></pre>
-<p>Dictionaries can contain each other and every other data type available, except objects.</p>
+<p>The fields in a dictionary can be of almost any type, including objects or other dictionaries.
+The current limitations are:</p>
+<ul>
+<li>They cannot recursively contain another instance of the <em>same</em> dictionary type.</li>
+<li>They cannot contain references to callback interfaces.</li>
+</ul>
+<h2><a class="header" href="#fields-holding-object-references" id="fields-holding-object-references">Fields holding Object References</a></h2>
+<p>If a dictionary contains a field whose type is an <a href="./interfaces.html">interface</a>, then that
+field will hold a <em>reference</em> to an underlying instance of a Rust struct. The Rust code for
+working with such fields must store them as an <code>Arc</code> in order to help properly manage the
+lifetime of the instance. So if the UDL interface looked like this:</p>
+<pre><code class="language-idl">interface User {
+    // Some sort of &quot;user&quot; object that can own todo items
+};
+
+dictionary TodoEntry {
+    User owner;
+    string text;
+}
+</code></pre>
+<p>Then the corresponding Rust code would need to look like this:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct TodoEntry {
+    owner: std::sync::Arc&lt;User&gt;,
+    text: String,
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Depending on the languge, the foreign-language bindings may also need to be aware of
+these embedded references. For example in Kotlin, each Object instance must be explicitly
+destroyed to avoid leaking the underlying memory, and this also applies to Objects stored
+in record fields.</p>
+<p>You can read more about managing object references in the section on <a href="./interfaces.html">interfaces</a>.</p>
 
                     </main>
 

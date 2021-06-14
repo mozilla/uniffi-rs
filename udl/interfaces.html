@@ -235,6 +235,98 @@ must be given an explicit name, provided in the UDL with the <code>[Name]</code>
 <p>For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.</p>
+<h2><a class="header" href="#managing-shared-references" id="managing-shared-references">Managing Shared References</a></h2>
+<p>To the foreign-language consumer, UniFFI object instances are designed to behave as much like
+regular language objects as possible. They can be freely passed as arguments or returned as values,
+like this:</p>
+<pre><code class="language-idl">interface TodoList {
+    ...
+
+    // Copy the items from another TodoList into this one.
+    void import_items(TodoList other);
+
+    // Make a copy of this TodoList as a new instance.
+    TodoList duplicate();
+};
+</code></pre>
+<p>To ensure that this is safe, UniFFI allocates every object instance on the heap using
+<a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a>, Rust's built-in smart pointer
+type for managing shared references at runtime.</p>
+<p>The use of <code>Arc</code> is transparent to the foreign-language code, but sometimes shows up
+in the function signatures of the underlying Rust code. For example, the Rust code implementing
+the <code>TodoList::duplicate</code> method would need to explicitly return an <code>Arc&lt;TodoList&gt;</code>, since UniFFI
+doesn't know whether it will be returning a new object or an existing one:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl TodoList {
+    fn duplicate(&amp;self) -&gt; Arc&lt;TodoList&gt; {
+        Arc::new(TodoList {
+            items: RwLock::new(self.items.read().unwrap().clone())
+        })
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>By default, object instances passed as function arguments will also be passed as an <code>Arc&lt;T&gt;</code>, so the
+Rust implementation of <code>TodoList::import_items</code> would also need to accept an <code>Arc&lt;TodoList&gt;</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl TodoList {
+    fn import_items(&amp;self, other: Arc&lt;TodoList&gt;) {
+        self.items.write().unwrap().append(other.get_items());
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>If the Rust code does not need an owned reference to the <code>Arc</code>, you can use the <code>[ByRef]</code> UDL attribute
+to signal that a function accepts a borrowed reference:</p>
+<pre><code class="language-idl">interface TodoList {
+    ...
+    //                  +-- indicate that we only need to borrow the other list
+    //                  V
+    void import_items([ByRef] TodoList other);
+    ...
+};
+</code></pre>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl TodoList {
+    //                              +-- don't need to care about the `Arc` here
+    //                              V
+    fn import_items(&amp;self, other: &amp;TodoList) {
+        self.items.write().unwrap().append(other.get_items());
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Conversely, if the Rust code explicitly <em>wants</em> to deal with an <code>Arc&lt;T&gt;</code> in the special case of
+the <code>self</code> parameter, it can signal this using the <code>[Self=ByArc]</code> UDL attribute on the method:</p>
+<pre><code class="language-idl">interface TodoList {
+    ...
+    // +-- indicate that we want the `Arc` containing `self`
+    // V
+    [Self=ByArc]
+    void import_items(TodoList other);
+    ...
+};
+</code></pre>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl TodoList {
+    // `Arc`s everywhere! --+-----------------+
+    //                      V                 V
+    fn import_items(self: Arc&lt;Self&gt;, other: Arc&lt;TodoList&gt;) {
+        self.items.write().unwrap().append(other.get_items());
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>You can read more about the technical details in the docs on the
+<a href="../internals/object_references.html">internal details of managing object references</a>.</p>
 <h2><a class="header" href="#concurrent-access" id="concurrent-access">Concurrent Access</a></h2>
 <p>Since interfaces represent mutable data, UniFFI has to take extra care
 to uphold Rust's safety guarantees around shared and mutable references.
@@ -268,7 +360,7 @@ impl Counter {
         Self { value: 0 }
     }
 
-    // No mutable references to self allowed in in UniFFI interfaces.
+    // No mutable references to self allowed in UniFFI interfaces.
     fn increment(&amp;mut self) {
         self.value = self.value + 1;
     }

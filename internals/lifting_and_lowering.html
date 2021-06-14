@@ -218,7 +218,7 @@ from the returned byte buffer into a language-native list of integers.</li>
 <tr><td><code>record&lt;DOMString, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>enum</code> and <code>[Enum] interface</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>dictionary</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
-<tr><td><code>interface</code></td><td><code>uint64_t</code> opaque integer handle</td></tr>
+<tr><td><code>interface</code></td><td><code>void*</code> opaque pointer to object on the heap</td></tr>
 </tbody></table>
 <h2><a class="header" href="#serialization-format" id="serialization-format">Serialization Format</a></h2>
 <p>When serializing complex data types into a byte buffer, UniFFI uses an
@@ -236,7 +236,7 @@ The details of this format are internal only and may change between versions of 
 <tr><td><code>record&lt;DOMString, T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td></tr>
 <tr><td><code>enum</code> and <code>[Enum] interface</code></td><td>Serialized <code>i32</code> indicating variant, numbered in declaration order starting from 1, followed by the serialized values of the variant's fields in declaration order</td></tr>
 <tr><td><code>dictionary</code></td><td>The serialized value of each field, in declaration order</td></tr>
-<tr><td><code>interface</code></td><td><em>Cannot currently be serialized</em></td></tr>
+<tr><td><code>interface</code></td><td>Fixed-width 8-byte unsigned integer encoding a pointer to the object on the heap</td></tr>
 </tbody></table>
 <p>Note that length fields in this format are serialized as <em>signed</em> integers
 despite the fact that they will always be non-negative. This is to help

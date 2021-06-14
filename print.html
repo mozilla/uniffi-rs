@@ -442,7 +442,10 @@ interface IpAddr {
 </code></pre>
 <p>Only enums with named fields are supported by this syntax.</p>
 <h1><a class="header" href="#structsdictionaries" id="structsdictionaries">Structs/Dictionaries</a></h1>
-<p>Dictionaries can be compared to POJOs in the Java world: just a data structure holding some data.</p>
+<p>Dictionaries are how UniFFI represents structured data.
+They consist of one of more named <em>fields</em>, each of which holds a value of a particular type.
+Think of them like a Rust struct without any methods.</p>
+<p>A Rust struct like this:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -453,15 +456,48 @@ interface IpAddr {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>can be converted in UDL to:</p>
+<p>Can be exposed via UniFFI using UDL like this:</p>
 <pre><code class="language-idl">dictionary TodoEntry {
     boolean done;
     u64 due_date;
     string text;
 };
-
 </code></pre>
-<p>Dictionaries can contain each other and every other data type available, except objects.</p>
+<p>The fields in a dictionary can be of almost any type, including objects or other dictionaries.
+The current limitations are:</p>
+<ul>
+<li>They cannot recursively contain another instance of the <em>same</em> dictionary type.</li>
+<li>They cannot contain references to callback interfaces.</li>
+</ul>
+<h2><a class="header" href="#fields-holding-object-references" id="fields-holding-object-references">Fields holding Object References</a></h2>
+<p>If a dictionary contains a field whose type is an <a href="udl/./interfaces.html">interface</a>, then that
+field will hold a <em>reference</em> to an underlying instance of a Rust struct. The Rust code for
+working with such fields must store them as an <code>Arc</code> in order to help properly manage the
+lifetime of the instance. So if the UDL interface looked like this:</p>
+<pre><code class="language-idl">interface User {
+    // Some sort of &quot;user&quot; object that can own todo items
+};
+
+dictionary TodoEntry {
+    User owner;
+    string text;
+}
+</code></pre>
+<p>Then the corresponding Rust code would need to look like this:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct TodoEntry {
+    owner: std::sync::Arc&lt;User&gt;,
+    text: String,
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Depending on the languge, the foreign-language bindings may also need to be aware of
+these embedded references. For example in Kotlin, each Object instance must be explicitly
+destroyed to avoid leaking the underlying memory, and this also applies to Objects stored
+in record fields.</p>
+<p>You can read more about managing object references in the section on <a href="udl/./interfaces.html">interfaces</a>.</p>
 <h1><a class="header" href="#functions" id="functions">Functions</a></h1>
 <p>All top-level <em>functions</em> get exposed through the UDL's <code>namespace</code> block.
 For example, if the crate's <code>lib.rs</code> file contains:</p>
@@ -585,6 +621,98 @@ must be given an explicit name, provided in the UDL with the <code>[Name]</code>
 <p>For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.</p>
+<h2><a class="header" href="#managing-shared-references" id="managing-shared-references">Managing Shared References</a></h2>
+<p>To the foreign-language consumer, UniFFI object instances are designed to behave as much like
+regular language objects as possible. They can be freely passed as arguments or returned as values,
+like this:</p>
+<pre><code class="language-idl">interface TodoList {
+    ...
+
+    // Copy the items from another TodoList into this one.
+    void import_items(TodoList other);
+
+    // Make a copy of this TodoList as a new instance.
+    TodoList duplicate();
+};
+</code></pre>
+<p>To ensure that this is safe, UniFFI allocates every object instance on the heap using
+<a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a>, Rust's built-in smart pointer
+type for managing shared references at runtime.</p>
+<p>The use of <code>Arc</code> is transparent to the foreign-language code, but sometimes shows up
+in the function signatures of the underlying Rust code. For example, the Rust code implementing
+the <code>TodoList::duplicate</code> method would need to explicitly return an <code>Arc&lt;TodoList&gt;</code>, since UniFFI
+doesn't know whether it will be returning a new object or an existing one:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl TodoList {
+    fn duplicate(&amp;self) -&gt; Arc&lt;TodoList&gt; {
+        Arc::new(TodoList {
+            items: RwLock::new(self.items.read().unwrap().clone())
+        })
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>By default, object instances passed as function arguments will also be passed as an <code>Arc&lt;T&gt;</code>, so the
+Rust implementation of <code>TodoList::import_items</code> would also need to accept an <code>Arc&lt;TodoList&gt;</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl TodoList {
+    fn import_items(&amp;self, other: Arc&lt;TodoList&gt;) {
+        self.items.write().unwrap().append(other.get_items());
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>If the Rust code does not need an owned reference to the <code>Arc</code>, you can use the <code>[ByRef]</code> UDL attribute
+to signal that a function accepts a borrowed reference:</p>
+<pre><code class="language-idl">interface TodoList {
+    ...
+    //                  +-- indicate that we only need to borrow the other list
+    //                  V
+    void import_items([ByRef] TodoList other);
+    ...
+};
+</code></pre>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl TodoList {
+    //                              +-- don't need to care about the `Arc` here
+    //                              V
+    fn import_items(&amp;self, other: &amp;TodoList) {
+        self.items.write().unwrap().append(other.get_items());
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Conversely, if the Rust code explicitly <em>wants</em> to deal with an <code>Arc&lt;T&gt;</code> in the special case of
+the <code>self</code> parameter, it can signal this using the <code>[Self=ByArc]</code> UDL attribute on the method:</p>
+<pre><code class="language-idl">interface TodoList {
+    ...
+    // +-- indicate that we want the `Arc` containing `self`
+    // V
+    [Self=ByArc]
+    void import_items(TodoList other);
+    ...
+};
+</code></pre>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl TodoList {
+    // `Arc`s everywhere! --+-----------------+
+    //                      V                 V
+    fn import_items(self: Arc&lt;Self&gt;, other: Arc&lt;TodoList&gt;) {
+        self.items.write().unwrap().append(other.get_items());
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>You can read more about the technical details in the docs on the
+<a href="udl/../internals/object_references.html">internal details of managing object references</a>.</p>
 <h2><a class="header" href="#concurrent-access" id="concurrent-access">Concurrent Access</a></h2>
 <p>Since interfaces represent mutable data, UniFFI has to take extra care
 to uphold Rust's safety guarantees around shared and mutable references.
@@ -618,7 +746,7 @@ impl Counter {
         Self { value: 0 }
     }
 
-    // No mutable references to self allowed in in UniFFI interfaces.
+    // No mutable references to self allowed in UniFFI interfaces.
     fn increment(&amp;mut self) {
         self.value = self.value + 1;
     }
@@ -843,7 +971,7 @@ from the returned byte buffer into a language-native list of integers.</li>
 <tr><td><code>record&lt;DOMString, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>enum</code> and <code>[Enum] interface</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>dictionary</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
-<tr><td><code>interface</code></td><td><code>uint64_t</code> opaque integer handle</td></tr>
+<tr><td><code>interface</code></td><td><code>void*</code> opaque pointer to object on the heap</td></tr>
 </tbody></table>
 <h2><a class="header" href="#serialization-format" id="serialization-format">Serialization Format</a></h2>
 <p>When serializing complex data types into a byte buffer, UniFFI uses an
@@ -861,7 +989,7 @@ The details of this format are internal only and may change between versions of 
 <tr><td><code>record&lt;DOMString, T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td></tr>
 <tr><td><code>enum</code> and <code>[Enum] interface</code></td><td>Serialized <code>i32</code> indicating variant, numbered in declaration order starting from 1, followed by the serialized values of the variant's fields in declaration order</td></tr>
 <tr><td><code>dictionary</code></td><td>The serialized value of each field, in declaration order</td></tr>
-<tr><td><code>interface</code></td><td><em>Cannot currently be serialized</em></td></tr>
+<tr><td><code>interface</code></td><td>Fixed-width 8-byte unsigned integer encoding a pointer to the object on the heap</td></tr>
 </tbody></table>
 <p>Note that length fields in this format are serialized as <em>signed</em> integers
 despite the fact that they will always be non-negative. This is to help
@@ -869,7 +997,7 @@ ease compatibility with JVM-based languages since the JVM uses signed 32-bit
 integers for its size fields internally.</p>
 <h1><a class="header" href="#managing-object-references" id="managing-object-references">Managing Object References</a></h1>
 <p>UniFFI <a href="internals/../udl/interfaces.html">interfaces</a> represent instances of objects
-that have methods and contain shared mutable state. One of Rust's core innovations
+that have methods and contain state. One of Rust's core innovations
 is its ability to provide compile-time guarantees about working with such instances,
 including:</p>
 <ul>
@@ -883,6 +1011,7 @@ from foreign languages on any thread, outside of the control of Rust's ownership
 system. UniFFI itself tries to take a hands-off approach as much as possible and
 depends on the Rust compiler itself to uphold safety guarantees, without assuming
 that foreign-language callers will be &quot;well behaved&quot;.</p>
+<h2><a class="header" href="#concurrency" id="concurrency">Concurrency</a></h2>
 <p>UniFFI's hands-off approach means that all object instances exposed by UniFFI must be safe to
 access concurrently. In Rust terminology, they must be <code>Send+Sync</code> and must be useable
 without taking any <code>&amp;mut</code> references.</p>
@@ -892,16 +1021,18 @@ the types from <code>std::atomic</code>. The precise details are completely up t
 of the component - as much as possible, UniFFI tries to stay out of your way, simply requiring
 that the object implementation is <code>Send+Sync</code> and letting the Rust compiler ensure that
 this is so.</p>
-<h2><a class="header" href="#handle-maps" id="handle-maps">Handle Maps</a></h2>
-<p>For additional typechecking safety, UniFFI indirects all object access through a
-&quot;handle map&quot;, a mapping from opaque integer handles to object instances. This indirection
-imposes a small runtime cost but helps us guard against errors or oversights
-in the generated bindings.</p>
-<p>For each interface declared in the UDL, the UniFFI-generated Rust scaffolding
-will create a global handlemap that is responsible for owning all instances
-of that interface, and handing out references to them when methods are called.
-The handlemap requires that its contents be <code>Send+Sync</code>, helping enforce requirements
-around thread-safety.</p>
+<h2><a class="header" href="#lifetimes" id="lifetimes">Lifetimes</a></h2>
+<p>In order to allow for instances to be used as flexibly as possible from foreign-language code,
+UniFFI wraps all object instances in an <code>Arc</code> and leverages their reference-count based lifetimes,
+allowing UniFFI to largely stay out of handling lifetimes entirely for these objects.</p>
+<p>When constructing a new object, UniFFI is able to add the <code>Arc</code> automatically, because it
+knows that the return type of the Rust constructor must be a new uniquely-owned struct of
+the corresponding type.</p>
+<p>When you want to return object instances from functions or methods, or store object instances
+as fields in records, the underlying Rust code will need to work with <code>Arc&lt;T&gt;</code> directly, to ensure
+that the code behaves in the way that UniFFI expects.</p>
+<p>When accepting instances as arguments, the underlying Rust code can choose to accept it as an <code>Arc&lt;T&gt;</code>
+or as the underlying struct <code>T</code>, as there are different use-cases for each scenario.</p>
 <p>For example, given a interface definition like this:</p>
 <pre><code class="language-idl">interface TodoList {
     constructor();
@@ -909,61 +1040,97 @@ around thread-safety.</p>
     sequence&lt;string&gt; get_items();
 };
 </code></pre>
-<p>The Rust scaffolding would define a lazyily-initialized global static like:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>lazy_static! {
-    static ref UNIFFI_HANDLE_MAP_TODOLIST: ArcHandleMap&lt;TodoList&gt; = ArcHandleMap::new();
-}
-<span class="boring">}
-</span></code></pre></pre>
 <p>On the Rust side of the generated bindings, the instance constructor will create an instance of the
-corresponding <code>TodoList</code> Rust struct, insert it into the handlemap, and return the resulting integer
-handle to the foreign language code:</p>
+corresponding <code>TodoList</code> Rust struct, wrap it in an <code>Arc&lt;&gt;</code> and return the Arc's raw pointer to the
+foreign language code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub extern &quot;C&quot; fn todolist_TodoList_new(err: &amp;mut ExternError) -&gt; u64 {
-    // Give ownership of the new instance to the handlemap.
-    // We will only ever operate on borrowed references to it.
-    UNIFFI_HANDLE_MAP_TODOLIST.insert_with_output(err, || TodoList::new())
-}
-<span class="boring">}
-</span></code></pre></pre>
-<p>When invoking a method on the instance, the foreign-language code passes the integer handle back
-to the Rust code, which borrows a reference to the instance from the handlemap for the duration
-of the method call:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub extern &quot;C&quot; fn todolist_TodoList_add_item(handle: u64, todo: RustBuffer, err: &amp;mut ExternError) -&gt; () {
-    let todo = &lt;String as uniffi::ViaFfi&gt;::try_lift(todo).unwrap()
-    // Borrow a reference to the instance so that we can call a method on it.
-    UNIFFI_HANDLE_MAP_TODOLIST.call_with_result_mut(err, handle, |obj| -&gt; Result&lt;(), TodoError&gt; {
-        TodoList::add_item(obj, todo)
+</span>pub extern &quot;C&quot; fn todolist_12ba_TodoList_new(
+    err: &amp;mut uniffi::deps::ffi_support::ExternError,
+) -&gt; *const std::os::raw::c_void /* *const TodoList */ {
+    uniffi::deps::ffi_support::call_with_output(err, || {
+        let _new = TodoList::new();
+        let _arc = std::sync::Arc::new(_new);
+        &lt;std::sync::Arc&lt;TodoList&gt; as uniffi::ViaFfi&gt;::lower(_arc)
     })
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Finally, when the foreign-language code frees the instance, it passes the integer handle to
-a special destructor function so that the Rust code can delete it from the handlemap:</p>
+<p>The UniFFI runtime implements lowering for object instances using <code>Arc::into_raw</code>:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub extern &quot;C&quot; fn ffi_todolist_TodoList_object_free(handle: u64) {
-    UNIFFI_HANDLE_MAP_TODOLIST.delete_u64(handle);
+</span>unsafe impl&lt;T: Sync + Send&gt; ViaFfi for std::sync::Arc&lt;T&gt; {
+    type FfiType = *const std::os::raw::c_void;
+    fn lower(self) -&gt; Self::FfiType {
+        std::sync::Arc::into_raw(self) as Self::FfiType
+    }
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>This indirection gives us some important safety properties:</p>
-<ul>
-<li>If the generated bindings incorrectly pass an invalid handle, or a handle for a different type of object,
-then the handlemap will throw an error with high probability, providing some amount of run-time typechecking
-for correctness of the generated bindings.</li>
-<li>The handlemap can ensure we uphold Rust's requirements around unique mutable references and threadsafey,
-by specifying that the contained type must be <code>Send+Sync</code>, and by refusing to hand out any mutable references.</li>
-</ul>
+<p>which does the &quot;arc to pointer&quot; dance for us. Note that this has &quot;leaked&quot; the
+<code>Arc&lt;&gt;</code> reference out of Rusts ownership system and given it to the foreign-language code.
+The foreign-language code must pass that pointer back into Rust in order to free it,
+or our instance will leak.</p>
+<p>When invoking a method on the instance, the foreign-language code passes the
+raw pointer back to the Rust code, conceptually passing a &quot;borrow&quot; of the <code>Arc&lt;&gt;</code> to
+the Rust scaffolding. The Rust side turns it back into a cloned <code>Arc&lt;&gt;</code> which
+lives for the duration of the method call:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub extern &quot;C&quot; fn todolist_12ba_TodoList_add_item(
+    ptr: *const std::os::raw::c_void,
+    todo: uniffi::RustBuffer,
+    err: &amp;mut uniffi::deps::ffi_support::ExternError,
+) -&gt; () {
+    uniffi::deps::ffi_support::call_with_result(err, || -&gt; Result&lt;_, TodoError&gt; {
+        let _retval = TodoList::add_item(
+          &amp;&lt;std::sync::Arc&lt;TodoList&gt; as uniffi::ViaFfi&gt;::try_lift(ptr).unwrap(),
+          &lt;String as uniffi::ViaFfi&gt;::try_lift(todo).unwrap())?,
+        )
+        Ok(_retval)
+    })
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The UniFFI runtime implements lifting for object instances using <code>Arc::from_raw</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>unsafe impl&lt;T: Sync + Send&gt; ViaFfi for std::sync::Arc&lt;T&gt; {
+    type FfiType = *const std::os::raw::c_void;
+    fn try_lift(v: Self::FfiType) -&gt; Result&lt;Self&gt; {
+        let v = v as *const T;
+        // We musn't drop the `Arc&lt;T&gt;` that is owned by the foreign-language code.
+        let foreign_arc = std::mem::ManuallyDrop::new(unsafe { Self::from_raw(v) });
+        // Take a clone for our own use.
+        Ok(std::sync::Arc::clone(&amp;*foreign_arc))
+    }
+<span class="boring">}
+</span></code></pre></pre>
+<p>Notice that we take care to ensure the reference that is owned by the foreign-language
+code remains alive.</p>
+<p>Finally, when the foreign-language code frees the instance, it
+passes the raw pointer a special destructor function so that the Rust code can
+drop that initial reference (and if that happens to be the final reference,
+the Rust object will be dropped.)</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub extern &quot;C&quot; fn ffi_todolist_12ba_TodoList_object_free(ptr: *const std::os::raw::c_void) {
+    if let Err(e) = std::panic::catch_unwind(|| {
+        assert!(!ptr.is_null());
+        unsafe { std::sync::Arc::from_raw(ptr as *const TodoList) };
+    }) {
+        uniffi::deps::log::error!(&quot;ffi_todolist_12ba_TodoList_object_free panicked: {:?}&quot;, e);
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Passing instances as arguments and returning them as values works similarly, except that
+UniFFI does not automatically wrap/unwrap the containing <code>Arc</code>.</p>
 
                     </main>
 
