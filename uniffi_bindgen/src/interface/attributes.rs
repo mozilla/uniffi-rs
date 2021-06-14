@@ -18,7 +18,7 @@ use std::convert::{TryFrom, TryInto};
 
 use anyhow::{bail, Result};
 
-/// Represents an attribute parsed from UDL, like [ByRef] or [Throws].
+/// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.
 ///
 /// This is a convenience enum for parsing UDL attributes and erroring out if we encounter
 /// any unsupported ones. These don't convert directly into parts of a `ComponentInterface`, but

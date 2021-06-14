@@ -7,7 +7,7 @@
 //! This module provides the [`TypeResolver`] trait, an abstraction for walking
 //! the parse tree of a weedle type expression and using a [`TypeUniverse`] to
 //! convert it into a concrete type definition (so it assumes that you're already
-//! used a [`TypeFinder`] to populate the universe).
+//! used a [`TypeFinder`](super::TypeFinder) to populate the universe).
 //!
 //! Perhaps most importantly, it knows how to error out if the UDL tries to reference
 //! an undefined or invalid type.

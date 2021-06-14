@@ -19,7 +19,7 @@
 //!
 //! As a developer working on UniFFI itself, you're likely to spend a fair bit of time thinking
 //! about how these API-level types map into the lower-level types of the FFI layer as represented
-//! by the [`ffi::FFIType`] enum, but that's a detail that is invisible to end users.
+//! by the [`ffi::FFIType`](super::ffi::FFIType) enum, but that's a detail that is invisible to end users.
 
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
 

@@ -11,14 +11,14 @@
 //! The key concept here is the [`ViaFfi`] trait, which must be implemented for any type that can
 //! be passed across the FFI, and which determines:
 //!
-//!  * How to [represent](ViaFfi::Value) values of that type in the low-level C-style type
+//!  * How to [represent](ViaFfi::FfiType) values of that type in the low-level C-style type
 //!    system of the FFI layer.
 //!  * How to ["lower"](ViaFfi::lower) rust values of that type into an appropriate low-level
 //!    FFI value.
-//!  * How to ["lift"](ViaFfi::lift) low-level FFI values back into rust values of that type.
+//!  * How to ["lift"](ViaFfi::try_lift) low-level FFI values back into rust values of that type.
 //!  * How to [write](ViaFfi::write) rust values of that type into a buffer, for cases
 //!    where they are part of a compound data structure that is serialized for transfer.
-//!  * How to [read](ViaFfi::read) rust values of that type from buffer, for cases
+//!  * How to [read](ViaFfi::try_read) rust values of that type from buffer, for cases
 //!    where they are received as part of a compound data structure that was serialized for transfer.
 //!
 //! This logic encapsulates the rust-side handling of data transfer. Each foreign-language binding
