@@ -29,6 +29,8 @@ do {
     assert(d.maybeABool == false);
     assert(d.unsigned8 == 1)
     assert(d.maybeUnsigned8 == 2)
+    assert(d.unsigned16 == 3)
+    assert(d.maybeUnsigned16 == 4)
     assert(d.unsigned64 == 18446744073709551615)
     assert(d.maybeUnsigned64 == 0)
     assert(d.signed8 == 8)

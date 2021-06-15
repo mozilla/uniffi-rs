@@ -12,6 +12,8 @@ dictionary SimpleDict {
     boolean? maybe_a_bool;
     u8 unsigned8;
     u8? maybe_unsigned8;
+    u16 unsigned16;
+    u16? maybe_unsigned16;
     u64 unsigned64;
     u64? maybe_unsigned64;
     i8 signed8;
