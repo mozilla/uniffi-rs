@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["lift_rs",""],["lower_rs",""],["read_rs","Get a Rust expression for writing a value into a byte buffer."],["type_ffi",""],["type_rs",""],["write_rs","Get a Rust expression for writing a value into a byte buffer."]]});

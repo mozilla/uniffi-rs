@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["filters","Filters for our Askama templates above. These output C (for the bridging header) and Swift (for the actual library) declarations."]],"struct":[["BridgingHeader",""],["Config",""],["ModuleMap",""],["SwiftWrapper",""]]});

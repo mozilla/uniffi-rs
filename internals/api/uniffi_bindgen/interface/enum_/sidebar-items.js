@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Enum","Represents an enum with named variants, each of which may have named and typed fields."],["Variant","Represents an individual variant in an Enum."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["FFIType","Represents the restricted set of low-level types that can be used to construct the C-style FFI layer between a rust component and its foreign language bindings."]],"struct":[["FFIArgument","Represents an argument to an FFI function."],["FFIFunction","Represents an “extern C”-style function that will be part of the FFI."]]});

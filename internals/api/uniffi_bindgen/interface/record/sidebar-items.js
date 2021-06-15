@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Field",""],["Record","Represents a “data class” style object, for passing around complex values."]]});

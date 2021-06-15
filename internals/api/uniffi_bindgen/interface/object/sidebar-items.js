@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Constructor",""],["Method",""],["Object","An “object” is an opaque type that can be instantiated and passed around by reference, have methods called on it, and so on - basically your classic Object Oriented Programming type of deal, except without elaborate inheritence hierarchies."]]});

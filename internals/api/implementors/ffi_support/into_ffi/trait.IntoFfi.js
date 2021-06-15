@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["uniffi"] = [{"text":"impl IntoFfi for <a class=\"struct\" href=\"uniffi/ffi/rustbuffer/struct.RustBuffer.html\" title=\"struct uniffi::ffi::rustbuffer::RustBuffer\">RustBuffer</a>","synthetic":false,"types":["uniffi::ffi::rustbuffer::RustBuffer"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

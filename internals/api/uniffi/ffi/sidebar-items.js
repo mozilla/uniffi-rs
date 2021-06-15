@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["foreignbytes",""],["foreigncallbacks","Callback interfaces are traits specified in UDL which can be implemented by foreign languages."],["rustbuffer",""]]});

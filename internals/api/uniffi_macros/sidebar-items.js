@@ -1,0 +1,1 @@
+initSidebarItems({"macro":[["build_foreign_language_testcases","A macro to build testcases for a component’s generated bindings."],["include_scaffolding","A helper macro to include generated component scaffolding."]],"struct":[["FilePaths","Newtype to simplifying parsing a list of file paths from macro input."]]});

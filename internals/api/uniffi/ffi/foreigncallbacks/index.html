@@ -1,0 +1,106 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Callback interfaces are traits specified in UDL which can be implemented by foreign languages."><meta name="keywords" content="rust, rustlang, rust-lang, foreigncallbacks"><title>uniffi::ffi::foreigncallbacks - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../uniffi/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a><p class="location">Module foreigncallbacks</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#constants">Constants</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class="location"><a href="../../index.html">uniffi</a>::<wbr><a href="../index.html">ffi</a></p><div id="sidebar-vars" data-name="foreigncallbacks" data-ty="mod" data-relpath="../"></div><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Module <a href="../../index.html">uniffi</a>::<wbr><a href="../index.html">ffi</a>::<wbr><a class="mod" href="">foreigncallbacks</a></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../../../src/uniffi/ffi/foreigncallbacks.rs.html#5-191" title="goto source code">[src]</a></span></h1><div class="docblock"><p>Callback interfaces are traits specified in UDL which can be implemented by foreign languages.</p>
+<h1 id="using-callback-interfaces" class="section-header"><a href="#using-callback-interfaces">Using callback interfaces</a></h1>
+<ol>
+<li>Define a Rust trait.</li>
+</ol>
+<p>This toy example defines a way of Rust accessing a key-value store exposed
+by the host operating system (e.g. the key chain).</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">trait</span> <span class="ident">Keychain</span>: <span class="ident">Send</span> {
+  <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>;
+  <span class="kw">fn</span> <span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">String</span>, <span class="ident">value</span>: <span class="ident">String</span>);
+}</pre></div>
+<ol start="2">
+<li>Define a callback interface in the UDL</li>
+</ol>
+<pre><code class="language-idl">callback interface Keychain {
+    string? get(string key);
+    void put(string key, string data);
+};
+</code></pre>
+<ol start="3">
+<li>And allow it to be passed into Rust.</li>
+</ol>
+<p>Here, we define a constructor to pass the keychain to rust, and then another method
+which may use it.</p>
+<p>In UDL:</p>
+<pre><code class="language-idl">object Authenticator {
+    constructor(Keychain keychain);
+    void login();
+}
+</code></pre>
+<p>In Rust:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">struct</span> <span class="ident">Authenticator</span> {
+  <span class="ident">keychain</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Keychain</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">Authenticator</span> {
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">keychain</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Keychain</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="self">Self</span> { <span class="ident">keychain</span> }
+  }
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">login</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+    <span class="kw">let</span> <span class="ident">username</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">keychain</span>.<span class="ident">get</span>(<span class="string">&quot;username&quot;</span>.<span class="ident">into</span>());
+    <span class="kw">let</span> <span class="ident">password</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">keychain</span>.<span class="ident">get</span>(<span class="string">&quot;password&quot;</span>.<span class="ident">into</span>());
+  }
+}</pre></div>
+<ol start="4">
+<li>Create an foreign language implementation of the callback interface.</li>
+</ol>
+<p>In this example, here’s a Kotlin implementation.</p>
+<pre><code class="language-kotlin">class AndroidKeychain: Keychain {
+    override fun get(key: String): String? {
+        // … elide the implementation.
+        return value
+    }
+    override fun put(key: String) {
+        // … elide the implementation.
+    }
+}
+</code></pre>
+<ol start="5">
+<li>Pass the implementation to Rust.</li>
+</ol>
+<p>Again, in Kotlin</p>
+<pre><code class="language-kotlin">val authenticator = Authenticator(AndroidKeychain())
+authenticator.login()
+</code></pre>
+<h1 id="how-it-works" class="section-header"><a href="#how-it-works">How it works.</a></h1><h2 id="high-level" class="section-header"><a href="#high-level">High level</a></h2>
+<p>Uniffi generates a protocol or interface in client code in the foreign language must implement.</p>
+<p>For each callback interface, a <code>CallbackInternals</code> (on the Foreign Language side) and <code>ForeignCallbackInternals</code>
+(on Rust side) manages the process through a <code>ForeignCallback</code>. There is one <code>ForeignCallback</code> per callback interface.</p>
+<p>Passing a callback interface implementation from foreign language (e.g. <code>AndroidKeychain</code>) into Rust causes the
+<code>KeychainCallbackInternals</code> to store the instance in a handlemap.</p>
+<p>The object handle is passed over to Rust, and used to instantiate a struct <code>KeychainProxy</code> which implements
+the trait. This proxy implementation is generate by Uniffi. The <code>KeychainProxy</code> object is then passed to
+client code as <code>Box&lt;dyn Keychain&gt;</code>.</p>
+<p>Methods on <code>KeychainProxy</code> objects (e.g. <code>self.keychain.get(&quot;username&quot;.into())</code>) encode the arguments into a <code>RustBuffer</code>.
+Using the <code>ForeignCallback</code>, it calls the <code>CallbackInternals</code> object on the foreign language side using the
+object handle, and the method selector.</p>
+<p>The <code>CallbackInternals</code> object unpacks the arguments from the passed buffer, gets the object out from the handlemap,
+and calls the actual implementation of the method.</p>
+<p>If there’s a return value, it is packed up in to another <code>RustBuffer</code> and used as the return value for
+<code>ForeignCallback</code>. The caller of <code>ForeignCallback</code>, the <code>KeychainProxy</code> unpacks the returned buffer into the correct
+type and then returns to client code.</p>
+</div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<table><tr class="module-item"><td><a class="struct" href="struct.ForeignCallbackInternals.html" title="uniffi::ffi::foreigncallbacks::ForeignCallbackInternals struct">ForeignCallbackInternals</a></td><td class="docblock-short"><p>Struct to hold a foreign callback.</p>
+</td></tr></table><h2 id="constants" class="section-header"><a href="#constants">Constants</a></h2>
+<table><tr class="module-item"><td><a class="constant" href="constant.EMPTY_PTR.html" title="uniffi::ffi::foreigncallbacks::EMPTY_PTR constant">EMPTY_PTR</a></td><td class="docblock-short"></td></tr><tr class="module-item"><td><a class="constant" href="constant.IDX_CALLBACK_FREE.html" title="uniffi::ffi::foreigncallbacks::IDX_CALLBACK_FREE constant">IDX_CALLBACK_FREE</a></td><td class="docblock-short"><p>The method index used by the Drop trait to communicate to the foreign language side that Rust has finished with it,
+and it can be deleted from the handle map.</p>
+</td></tr><tr class="module-item"><td><a class="constant" href="constant.STATIC_ASSERT_USIZE_EQ_FUNC_SIZE.html" title="uniffi::ffi::foreigncallbacks::STATIC_ASSERT_USIZE_EQ_FUNC_SIZE constant">STATIC_ASSERT_USIZE_EQ_FUNC_SIZE</a></td><td class="docblock-short"></td></tr><tr class="module-item"><td><a class="constant" href="constant.STATIC_ASSERT_USIZE_EQ_OPT_FUNC_SIZE.html" title="uniffi::ffi::foreigncallbacks::STATIC_ASSERT_USIZE_EQ_OPT_FUNC_SIZE constant">STATIC_ASSERT_USIZE_EQ_OPT_FUNC_SIZE</a></td><td class="docblock-short"></td></tr></table><h2 id="types" class="section-header"><a href="#types">Type Definitions</a></h2>
+<table><tr class="module-item"><td><a class="type" href="type.ForeignCallback.html" title="uniffi::ffi::foreigncallbacks::ForeignCallback type">ForeignCallback</a></td><td class="docblock-short"><p>ForeignCallback is the Rust representation of a foreign language function.
+It is the basis for all callbacks interfaces. It is registered exactly once per callback interface,
+at library start up time.
+Calling this method is only done by generated objects which mirror callback interfaces objects in the foreign language.
+The <code>handle</code> is the key into a handle map on the other side of the FFI used to look up the foreign language object
+that implements the callback interface/trait.
+The <code>method</code> selector specifies the method that will be called on the object, by looking it up in a list of methods from
+the IDL. The index is 1 indexed. Note that the list of methods is generated by at uniffi from the IDL and used in all
+bindings: so we can rely on the method list being stable within the same run of uniffi.</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi" data-search-js="../../../search-index.js"></div>
+    <script src="../../../main.js"></script></body></html>
