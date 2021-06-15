@@ -28,7 +28,9 @@ commands:
     steps:
       - run:
           name: Build API Docs
-          command: cargo doc --no-deps --document-private-items -p uniffi_bindgen -p uniffi -p uniffi_build -p uniffi_macros
+          # The `--lib` here is important; without it `cargo doc` will sometimes choose to document the `uniffi_bindgen` library
+          # and othertimes choose to document the `uniffi_bindgen` binary, which is much less useful.
+          command: cargo doc --no-deps --document-private-items --lib -p uniffi_bindgen -p uniffi -p uniffi_build -p uniffi_macros
           environment:
             RUSTDOCFLAGS: -Dwarnings -Arustdoc::private-intra-doc-links
 
@@ -97,13 +99,14 @@ jobs:
       - run: cargo test -- --skip trybuild_ui_tests
   Deploy website:
     docker:
-      - image: circleci/node:latest
+      - image: rfkelly/uniffi-ci:latest
     resource_class: small
     steps:
-      - install-mdbook
       - checkout
+      - prepare-rust-target-version
       - build-api-docs
       - run: cp -r ./target/doc ./docs/manual/src/internals/api
+      - install-mdbook
       - run: mdbook build docs/manual
       - gh-pages/deploy:
           build-dir: docs/manual/book
