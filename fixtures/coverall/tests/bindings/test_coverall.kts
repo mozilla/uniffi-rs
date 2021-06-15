@@ -17,6 +17,8 @@ createSomeDict().use { d ->
     assert(d.maybeABool == false);
     assert(d.unsigned8 == 1.toUByte())
     assert(d.maybeUnsigned8 == 2.toUByte())
+    assert(d.unsigned16 == 3.toUShort())
+    assert(d.maybeUnsigned16 == 4.toUShort())
     assert(d.unsigned64 == 18446744073709551615UL)
     assert(d.maybeUnsigned64 == 0UL)
     assert(d.signed8 == 8.toByte())

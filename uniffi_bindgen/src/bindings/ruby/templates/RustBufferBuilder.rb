@@ -52,7 +52,7 @@ class RustBufferBuilder
   {% when Type::UInt16 -%}
 
   def write_U16(v)
-    pack_into(1, 'S>', v)
+    pack_into(2, 'S>', v)
   end
 
   {% when Type::Int32 -%}

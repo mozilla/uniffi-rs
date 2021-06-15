@@ -12,6 +12,10 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.12.0...HEAD).
 
+### What's Changed
+
+- Both python and ruby backends now handle U16 correctly.
+
 ## v0.12.0 (2021-06-14)
 
 [All changes in v0.12.0](https://github.com/mozilla/uniffi-rs/compare/v0.11.0...v0.12.0).
