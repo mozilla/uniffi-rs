@@ -46,7 +46,7 @@ class RustBufferStream
   {% when Type::UInt16 -%}
 
   def readU16
-    unpack_from 1, 'S>'
+    unpack_from 2, 'S>'
   end
 
   {% when Type::Int32 -%}
