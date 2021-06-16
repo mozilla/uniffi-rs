@@ -125,6 +125,10 @@ impl Coveralls {
         }
     }
 
+    fn fallible_panic(&self, message: String) -> Result<()> {
+        panic!("{}", message);
+    }
+
     fn get_name(&self) -> String {
         self.name.clone()
     }

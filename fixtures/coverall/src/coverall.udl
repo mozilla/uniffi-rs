@@ -56,6 +56,9 @@ interface Coveralls {
 
     void panic(string message);
 
+    [Throws=CoverallError]
+    void fallible_panic(string message);
+
     // *** Test functions which take either `self` or other params as `Arc<Self>` ***
 
     /// Calls `Arc::strong_count()` on the `Arc` containing `self`.
