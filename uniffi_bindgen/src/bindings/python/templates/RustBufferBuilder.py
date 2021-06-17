@@ -109,12 +109,12 @@ class RustBufferBuilder(object):
     {% when Type::Timestamp -%}
 
     def write{{ canonical_type_name }}(self, v):
-        if v >= datetime.datetime.fromtimestamp(0):
+        if v >= datetime.datetime.fromtimestamp(0, datetime.timezone.utc):
             sign = 1
-            delta = v - datetime.datetime.fromtimestamp(0)
+            delta = v - datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
         else:
             sign = -1
-            delta = datetime.datetime.fromtimestamp(0) - v
+            delta = datetime.datetime.fromtimestamp(0, datetime.timezone.utc) - v
 
         seconds = delta.seconds + delta.days * 24 * 3600
         nanoseconds = delta.microseconds * 1000

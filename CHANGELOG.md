@@ -18,6 +18,7 @@
 ### What's Changed
 
 - Both python and ruby backends now handle U16 correctly.
+- Python timestamps will now be in UTC and timezone-aware rather than naive.
 
 ## v0.12.0 (2021-06-14)
 
