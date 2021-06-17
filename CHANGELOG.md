@@ -12,6 +12,9 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.12.0...HEAD).
 
+- Kotlin exceptions names will now replace a trailing "Error" with "Exception"
+  rather than appending the string (FooException instead of FooErrorException)
+
 ### What's Changed
 
 - Both python and ruby backends now handle U16 correctly.

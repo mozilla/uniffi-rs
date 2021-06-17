@@ -6,7 +6,7 @@ assert(add(4u, 8u) == 12uL)
 try {
     sub(0u, 2u)
     throw RuntimeException("Should have thrown a IntegerOverflow exception!")
-} catch (e: ArithmeticErrorException) {
+} catch (e: ArithmeticException) {
     // It's okay!
 }
 

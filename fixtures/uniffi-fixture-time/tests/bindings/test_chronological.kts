@@ -19,7 +19,7 @@ assert(add(Instant.parse("1955-11-05T00:06:00.283000001Z"), Duration.ofSeconds(1
 try {
         diff(Instant.ofEpochSecond(100), Instant.ofEpochSecond(101))
         throw RuntimeException("Should have thrown a TimeDiffError exception!")
-} catch (e: ChronologicalErrorException) {
+} catch (e: ChronologicalException) {
         // It's okay!
 }
 
