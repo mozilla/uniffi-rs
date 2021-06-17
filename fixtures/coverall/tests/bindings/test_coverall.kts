@@ -68,6 +68,13 @@ Coveralls("test_arcs").use { coveralls ->
     } catch (e: InternalException) {
         // No problemo!
     }
+
+    try {
+        coveralls.falliblePanic("Expected panic in a fallible function!")
+        throw RuntimeException("Should have thrown an InternalException")
+    } catch (e: InternalException) {
+        // No problemo!
+    }
     coveralls.takeOther(null);
     assert(coveralls.strongCount() == 2UL);
 }

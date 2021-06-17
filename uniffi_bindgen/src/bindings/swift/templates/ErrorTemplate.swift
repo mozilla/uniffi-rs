@@ -83,12 +83,16 @@ public enum {{e.name()}}: RustError {
         switch rustError.code {
             case 0:
                 return nil
+            case -1:
+            // TODO: Return a Uniffi defined error here
+            // to indicate a panic
+                fatalError("Panic detected!")
             {% for value in e.values() %}
             case {{loop.index}}:
                 return .{{value}}(message: String(cString: message!))
             {% endfor %}
             default:
-                return nil
+                fatalError("Invalid error")
         }
     }
 }

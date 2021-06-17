@@ -113,7 +113,8 @@ internal open class {{e.name()}} : RustError() {
             {% for value in e.values() -%}
             {{loop.index}} -> return {{e.name()}}Exception.{{value}}(message) as E
             {% endfor -%}
-            else -> throw RuntimeException("Invalid error received: $code, $message")
+            -1 -> return InternalException(message) as E
+            else -> throw RuntimeException("invalid error code passed across the FFI")
         }
     }
 }

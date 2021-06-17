@@ -66,6 +66,11 @@ do {
     }
     // TODO: kinda hard to test this, as it triggers a fatal error.
     // coveralls!.takeOtherPanic(message: "expected panic: with an arc!")
+    // do {
+    //     try coveralls.falliblePanic(message: "Expected Panic!!")
+    // } catch CoverallError.TooManyHoles {
+    //     fatalError("Should have paniced!")
+    // }
     coveralls.takeOther(other: nil);
     assert(coveralls.strongCount() == 2);
 }
