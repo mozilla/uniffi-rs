@@ -280,4 +280,20 @@ mod filters {
             _ => format!("{}.read({})", type_kt(type_)?, nm),
         })
     }
+
+    /// Generate a Kotlin exception name
+    ///
+    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
+    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
+    /// and is distinguished from an "Exception".
+    pub fn exception_name_kt(error: &Error) -> Result<String, askama::Error> {
+        match error.name().strip_suffix("Error") {
+            None => Ok(error.name().to_owned()),
+            Some(stripped) => {
+                let mut kt_exc_name = stripped.to_owned();
+                kt_exc_name.push_str("Exception");
+                Ok(kt_exc_name)
+            }
+        }
+    }
 }

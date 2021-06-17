@@ -59,7 +59,7 @@ Coveralls("test_arcs").use { coveralls ->
     try {
         coveralls.takeOtherFallible()
         throw RuntimeException("Should have thrown a IntegerOverflow exception!")
-    } catch (e: CoverallErrorException.TooManyHoles) {
+    } catch (e: CoverallException.TooManyHoles) {
         // It's okay!
     }
     try {

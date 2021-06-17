@@ -111,7 +111,7 @@ internal open class {{e.name()}} : RustError() {
         val message = this.consumeErrorMessage()
         when (code) {
             {% for value in e.values() -%}
-            {{loop.index}} -> return {{e.name()}}Exception.{{value}}(message) as E
+            {{loop.index}} -> return {{e|exception_name_kt}}.{{value}}(message) as E
             {% endfor -%}
             -1 -> return InternalException(message) as E
             else -> throw RuntimeException("invalid error code passed across the FFI")
@@ -119,9 +119,9 @@ internal open class {{e.name()}} : RustError() {
     }
 }
 
-open class {{e.name()}}Exception(message: String) : Exception(message) {
+open class {{e|exception_name_kt}}(message: String) : Exception(message) {
     {% for value in e.values() -%}
-    class {{value}}(msg: String) : {{e.name()}}Exception(msg)
+    class {{value}}(msg: String) : {{e|exception_name_kt}}(msg)
     {% endfor %}
 }
 
