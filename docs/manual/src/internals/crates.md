@@ -21,3 +21,6 @@ The code for UniFFI is organized into the following crates:
   of a UniFFI component, in order to automatically generate the Rust scaffolding as part of its build process.
 - **[`./uniffi_macros`](./api/uniffi_macros/index.html):** This contains some helper macros that UniFFI components can use to
   simplify loading the generated scaffolding, and executing foreign-language tests.
+- **[`./examples`](https://github.com/mozilla/uniffi-rs/tree/main/examples):**
+  This contains code examples that you can use to explore the code generation
+  process.

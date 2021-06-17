@@ -41,7 +41,7 @@ If you want to try them out, you will need:
 * The [Swift command-line tools](https://swift.org/download/), particularly `swift`, `swiftc` and
   the `Foundation` package.
 * The [Ruby FFI](https://github.com/ffi/ffi#installation)
-  * `gem install ffi`
+  * `gem install ffi test-unit`
 
 We publish a [docker image](https://hub.docker.com/r/rfkelly/uniffi-ci) that has all of this dependencies
 pre-installed, if you want to get up and running quickly.
@@ -53,10 +53,10 @@ With that in place, try the following:
 * Run `cargo test`.  This will run each of the foreign-language testcases against the compiled Rust code,
   confirming whether everything is working as intended.
 * Explore the build process in more detail:
-  * Run `cargo run -p uniffi_bindgen scaffolding ./src/<namespace>.udl`.
+  * Run `cargo run -p uniffi_bindgen -- scaffolding ./src/<namespace>.udl`.
     This will generate the Rust scaffolding code which exposes a C FFI for the component.
     You can view the generatd code in `./src/<namespace>.uniffi.rs`.
-  * Run `cargo run -p uniffi_bindgen generate --language kotlin ./src/arithmetic.udl`.
+  * Run `cargo run -p uniffi_bindgen -- generate --language kotlin ./src/<namespace>.udl`.
     This will generate the foreign-language bindings for Kotlin, which load the compiled Rust code
     and use the C FFI generated above to interact with it.
     You can view the generated code in `./src/uniffi/<namespace>/<namespace>.kt`.
