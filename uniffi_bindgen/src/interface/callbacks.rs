@@ -45,6 +45,7 @@ use super::{APIConverter, ComponentInterface};
 #[derive(Debug, Clone)]
 pub struct CallbackInterface {
     pub(super) name: String,
+    pub(super) type_: Type,
     pub(super) methods: Vec<Method>,
     pub(super) ffi_init_callback: FFIFunction,
 }
@@ -52,7 +53,8 @@ pub struct CallbackInterface {
 impl CallbackInterface {
     fn new(name: String) -> CallbackInterface {
         CallbackInterface {
-            name,
+            name: name.clone(),
+            type_: Type::CallbackInterface(name),
             methods: Default::default(),
             ffi_init_callback: Default::default(),
         }
@@ -62,8 +64,8 @@ impl CallbackInterface {
         &self.name
     }
 
-    pub fn type_(&self) -> Type {
-        Type::CallbackInterface(self.name.clone())
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
 
     pub fn methods(&self) -> Vec<&Method> {

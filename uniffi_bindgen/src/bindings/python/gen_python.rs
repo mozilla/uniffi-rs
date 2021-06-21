@@ -58,7 +58,6 @@ impl<'a> PythonWrapper<'a> {
 
 mod filters {
     use super::*;
-    use std::fmt;
 
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -114,23 +113,25 @@ mod filters {
         })
     }
 
-    pub fn class_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_camel_case())
+    pub fn class_name_py<T: AsRef<str>>(nm: T) -> Result<String, askama::Error> {
+        // Using `T: Into<String>` would be neater here, but Askama likes to add
+        // several layers of references, and they make the `Into` mapping not work.
+        Ok(nm.as_ref().to_string().to_camel_case())
     }
 
-    pub fn fn_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn fn_name_py(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_snake_case())
     }
 
-    pub fn var_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn var_name_py(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_snake_case())
     }
 
-    pub fn enum_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn enum_name_py(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
-    pub fn coerce_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn coerce_py(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -151,17 +152,17 @@ mod filters {
             | Type::Duration => nm.to_string(),
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
             Type::Optional(t) => format!("(None if {} is None else {})", nm, coerce_py(nm, t)?),
-            Type::Sequence(t) => format!("list({} for x in {})", coerce_py(&"x", t)?, nm),
+            Type::Sequence(t) => format!("list({} for x in {})", coerce_py("x", t)?, nm),
             Type::Map(t) => format!(
                 "dict(({},{}) for (k, v) in {}.items())",
-                coerce_py(&"k", &Type::String)?,
-                coerce_py(&"v", t)?,
+                coerce_py("k", &Type::String)?,
+                coerce_py("v", t)?,
                 nm
             ),
         })
     }
 
-    pub fn lower_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lower_py(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -192,7 +193,7 @@ mod filters {
         })
     }
 
-    pub fn lift_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_py(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8

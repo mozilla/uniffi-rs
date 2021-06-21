@@ -10,7 +10,6 @@ import {{ config.module_name() }}
 {% include "RustBufferHelper.swift" %}
 
 // Public interface members begin here.
-
 {% for e in ci.iter_enum_definitions() %}
 {% include "EnumTemplate.swift" %}
 {%- endfor -%}

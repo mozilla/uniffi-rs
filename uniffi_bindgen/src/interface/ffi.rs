@@ -95,8 +95,8 @@ impl FFIArgument {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn type_(&self) -> FFIType {
-        self.type_.clone()
+    pub fn type_(&self) -> &FFIType {
+        &self.type_
     }
 }
 

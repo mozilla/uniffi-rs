@@ -18,7 +18,8 @@ path = "src/main.rs"
 cargo_metadata = "0.13"
 weedle = "0.12"
 anyhow = "1"
-askama = { version = "0.10", default-features = false, features = ["config"] }
+askama = { git = "https://github.com/djc/askama", branch = "main", features = ["config"] }
+#askama = { version = "0.10", default-features = false, features = ["config"] }
 heck = "0.3"
 clap = { version = "2", default-features = false }
 serde = "1"

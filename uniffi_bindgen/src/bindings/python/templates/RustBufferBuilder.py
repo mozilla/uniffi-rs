@@ -40,7 +40,7 @@ class RustBufferBuilder(object):
     # these implementation details from consumers, in the face of python's free-for-all
     # type system.
 
-    {%- for typ in ci.iter_types() -%}
+    {% for typ in ci.iter_types() -%}
     {%- let canonical_type_name = typ.canonical_name()|class_name_py -%}
     {%- match typ -%}
 

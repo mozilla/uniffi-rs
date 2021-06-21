@@ -36,35 +36,35 @@ use crate::interface::{Argument, Constructor, FFIType, Field, Function, Literal,
 /// WebIDL types correspond to UniFFI interface types, but carry additional
 /// information for compound types.
 #[derive(Debug)]
-pub enum WebIDLType {
+pub enum WebIDLType<'a> {
     /// Flat (non-recursive) types include integers, floats, Booleans, strings,
     /// enums, objects (called "interfaces" in WebIDL), and records
     /// ("dictionaries"). These don't have special semantics, so we just wrap
     /// the underlying UniFFI type.
-    Flat(Type),
+    Flat(&'a Type),
 
     /// `Nullable` and `Optional` both correspond to UniFFI optional types.
     /// Semantically, "nullable" means "must be passed as an argument or a
     /// dictionary member, but can be `null`". "Optional" means the argument
     /// or member can be omitted entirely, or set to `undefined`.
-    Nullable(Box<WebIDLType>),
-    Optional(Box<WebIDLType>),
+    Nullable(Box<WebIDLType<'a>>),
+    Optional(Box<WebIDLType<'a>>),
 
     /// Optionals with a default value are a grab bag of special cases in Gecko.
     /// In the generated C++ bindings, the type of an optional with a default
     /// value is `T`, not `Optional<T>`. However, it must be serialized as if
     /// it's an `Optional<T>`, since that's what the Rust side of the FFI
     /// expects.
-    OptionalWithDefaultValue(Box<WebIDLType>),
+    OptionalWithDefaultValue(Box<WebIDLType<'a>>),
 
     /// Sequences are the same as their UniFFI counterparts.
-    Sequence(Box<WebIDLType>),
+    Sequence(Box<WebIDLType<'a>>),
 
     /// Maps correspond to WebIDL records.
-    Map(Box<WebIDLType>),
+    Map(Box<WebIDLType<'a>>),
 }
 
-impl WebIDLType {
+impl<'a> WebIDLType<'a> {
     /// Returns `true` if the WebIDL type is returned via an out parameter in
     /// the C++ implementation; `false` if by value.
     pub fn needs_out_param(&self) -> bool {
@@ -88,8 +88,8 @@ impl WebIDLType {
     }
 }
 
-impl From<Type> for WebIDLType {
-    fn from(type_: Type) -> WebIDLType {
+impl<'a> From<&'a Type> for WebIDLType<'a> {
+    fn from(type_: &'a Type) -> WebIDLType<'a> {
         match type_ {
             inner @ Type::UInt8
             | inner @ Type::Int8
@@ -114,22 +114,22 @@ impl From<Type> for WebIDLType {
             Type::Timestamp => panic!("Timestamp unimplemented"),
             Type::Duration => panic!("Duration unimplemented"),
             Type::CallbackInterface(_) => panic!("Callback interfaces unimplemented"),
-            Type::Optional(inner) => match *inner {
-                Type::Record(name) => {
-                    WebIDLType::OptionalWithDefaultValue(Box::new(Type::Record(name).into()))
+            Type::Optional(inner) => match &**inner {
+                Type::Record(_) => {
+                    WebIDLType::OptionalWithDefaultValue(Box::new((&**inner).into()))
                 }
                 inner => WebIDLType::Nullable(Box::new(inner.into())),
             },
-            Type::Sequence(inner) => WebIDLType::Sequence(Box::new((*inner).into())),
-            Type::Map(inner) => WebIDLType::Map(Box::new((*inner).into())),
+            Type::Sequence(inner) => WebIDLType::Sequence(Box::new((&**inner).into())),
+            Type::Map(inner) => WebIDLType::Map(Box::new((&**inner).into())),
         }
     }
 }
 
-impl From<&WebIDLType> for FFIType {
-    fn from(type_: &WebIDLType) -> FFIType {
+impl<'a> From<&WebIDLType<'a>> for FFIType {
+    fn from(type_: &WebIDLType<'a>) -> FFIType {
         match type_ {
-            WebIDLType::Flat(inner) => inner.into(),
+            WebIDLType::Flat(inner) => (*inner).into(),
             WebIDLType::Optional(_)
             | WebIDLType::OptionalWithDefaultValue(_)
             | WebIDLType::Nullable(_)
@@ -142,7 +142,7 @@ impl From<&WebIDLType> for FFIType {
 /// Extensions to support WebIDL namespace methods.
 pub trait FunctionExt {
     /// Returns the WebIDL return type of this function.
-    fn webidl_return_type(&self) -> Option<WebIDLType>;
+    fn webidl_return_type(&self) -> Option<WebIDLType<'_>>;
 
     /// Returns a list of arguments to declare for this function in the C++
     /// implementation, including any extras and out parameters.
@@ -150,11 +150,11 @@ pub trait FunctionExt {
 
     /// Returns the C++ return type of this function, or `None` if the function
     /// doesn't return a value, or returns it via an out parameter.
-    fn cpp_return_type(&self) -> Option<WebIDLType>;
+    fn cpp_return_type(&self) -> Option<WebIDLType<'_>>;
 
     /// Indicates how this function returns its result, either by value or via
     /// an out parameter.
-    fn cpp_return_by(&self) -> ReturnBy;
+    fn cpp_return_by(&self) -> ReturnBy<'_>;
 
     /// Indicates how this function throws errors, either by an `ErrorResult`
     /// parameter, or by a fatal assertion.
@@ -162,8 +162,8 @@ pub trait FunctionExt {
 }
 
 impl FunctionExt for Function {
-    fn webidl_return_type(&self) -> Option<WebIDLType> {
-        self.return_type().cloned().map(WebIDLType::from)
+    fn webidl_return_type(&self) -> Option<WebIDLType<'_>> {
+        self.return_type().map(WebIDLType::from)
     }
 
     fn cpp_arguments(&self) -> Vec<CPPArgument<'_>> {
@@ -187,12 +187,12 @@ impl FunctionExt for Function {
         result
     }
 
-    fn cpp_return_type(&self) -> Option<WebIDLType> {
+    fn cpp_return_type(&self) -> Option<WebIDLType<'_>> {
         self.webidl_return_type()
             .filter(|type_| !type_.needs_out_param())
     }
 
-    fn cpp_return_by(&self) -> ReturnBy {
+    fn cpp_return_by(&self) -> ReturnBy<'_> {
         self.webidl_return_type()
             .map(ReturnBy::from_return_type)
             .unwrap_or(ReturnBy::Void)
@@ -247,7 +247,7 @@ impl ConstructorExt for Constructor {
 /// Extensions to support WebIDL interface methods.
 pub trait MethodExt {
     /// Returns the WebIDL return type of this method.
-    fn webidl_return_type(&self) -> Option<WebIDLType>;
+    fn webidl_return_type(&self) -> Option<WebIDLType<'_>>;
 
     /// Returns a list of arguments to declare for this method in the C++
     /// implementation, including any extras and out parameters.
@@ -255,11 +255,11 @@ pub trait MethodExt {
 
     /// Returns the C++ return type of this function, or `None` if the method
     /// doesn't return a value, or returns it via an out parameter.
-    fn cpp_return_type(&self) -> Option<WebIDLType>;
+    fn cpp_return_type(&self) -> Option<WebIDLType<'_>>;
 
     /// Indicates how this function returns its result, either by value or via
     /// an out parameter.
-    fn cpp_return_by(&self) -> ReturnBy;
+    fn cpp_return_by(&self) -> ReturnBy<'_>;
 
     /// Indicates how this method throws errors, either by an `ErrorResult`
     /// parameter, or by a fatal assertion.
@@ -267,8 +267,8 @@ pub trait MethodExt {
 }
 
 impl MethodExt for Method {
-    fn webidl_return_type(&self) -> Option<WebIDLType> {
-        self.return_type().cloned().map(WebIDLType::from)
+    fn webidl_return_type(&self) -> Option<WebIDLType<'_>> {
+        self.return_type().map(WebIDLType::from)
     }
 
     fn cpp_arguments(&self) -> Vec<CPPArgument<'_>> {
@@ -290,12 +290,12 @@ impl MethodExt for Method {
         result
     }
 
-    fn cpp_return_type(&self) -> Option<WebIDLType> {
+    fn cpp_return_type(&self) -> Option<WebIDLType<'_>> {
         self.webidl_return_type()
             .filter(|type_| !type_.needs_out_param())
     }
 
-    fn cpp_return_by(&self) -> ReturnBy {
+    fn cpp_return_by(&self) -> ReturnBy<'_> {
         self.webidl_return_type()
             .map(ReturnBy::from_return_type)
             .unwrap_or(ReturnBy::Void)
@@ -314,7 +314,7 @@ impl MethodExt for Method {
 /// method arguments.
 pub trait ArgumentExt {
     /// Returns the argument type.
-    fn webidl_type(&self) -> WebIDLType;
+    fn webidl_type(&self) -> WebIDLType<'_>;
 
     /// Indicates if the argument should have an `optional` keyword. `true`
     /// for nullable dictionaries and arguments that declare a default value
@@ -326,7 +326,7 @@ pub trait ArgumentExt {
 }
 
 impl ArgumentExt for Argument {
-    fn webidl_type(&self) -> WebIDLType {
+    fn webidl_type(&self) -> WebIDLType<'_> {
         self.type_().into()
     }
 
@@ -353,7 +353,7 @@ impl ArgumentExt for Argument {
 /// Extensions to support WebIDL dictionary members.
 pub trait FieldExt {
     /// Returns the member type.
-    fn webidl_type(&self) -> WebIDLType;
+    fn webidl_type(&self) -> WebIDLType<'_>;
 
     /// Indicates if the member should have a `required` keyword. In UDL, all
     /// dictionary members are required by default; in WebIDL, they're optional.
@@ -366,9 +366,9 @@ pub trait FieldExt {
 }
 
 impl FieldExt for Field {
-    fn webidl_type(&self) -> WebIDLType {
+    fn webidl_type(&self) -> WebIDLType<'_> {
         match self.type_() {
-            Type::Optional(inner) => WebIDLType::Optional(Box::new((*inner).into())),
+            Type::Optional(inner) => WebIDLType::Optional(Box::new((&**inner).into())),
             type_ => type_.into(),
         }
     }
@@ -388,20 +388,20 @@ impl FieldExt for Field {
 }
 
 /// Describes how a function returns its result.
-pub enum ReturnBy {
+pub enum ReturnBy<'a> {
     /// The function returns its result in an out parameter with the given
     /// name and type.
-    OutParam(&'static str, WebIDLType),
+    OutParam(&'static str, WebIDLType<'a>),
 
     /// The function returns its result by value.
-    Value(WebIDLType),
+    Value(WebIDLType<'a>),
 
     /// The function doesn't declare a return type.
     Void,
 }
 
-impl ReturnBy {
-    fn from_return_type(type_: WebIDLType) -> Self {
+impl<'a> ReturnBy<'a> {
+    fn from_return_type(type_: WebIDLType<'a>) -> Self {
         if type_.needs_out_param() {
             ReturnBy::OutParam("aRetVal", type_)
         } else {
@@ -433,7 +433,7 @@ pub enum CPPArgument<'a> {
     In(&'a Argument),
 
     /// The argument is an out parameter used to return results by reference.
-    Out(WebIDLType),
+    Out(WebIDLType<'a>),
 }
 
 impl<'a> CPPArgument<'a> {

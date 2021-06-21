@@ -74,6 +74,7 @@ use super::{APIConverter, ComponentInterface};
 #[derive(Debug, Clone)]
 pub struct Object {
     pub(super) name: String,
+    pub(super) type_: Type,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     pub(super) ffi_func_free: FFIFunction,
@@ -83,7 +84,8 @@ pub struct Object {
 impl Object {
     fn new(name: String) -> Object {
         Object {
-            name,
+            name: name.clone(),
+            type_: Type::Object(name),
             constructors: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
@@ -95,8 +97,8 @@ impl Object {
         &self.name
     }
 
-    pub fn type_(&self) -> Type {
-        Type::Object(self.name.clone())
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {

@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::borrow::Borrow;
 use std::borrow::Cow;
 
 use anyhow::Result;
@@ -262,7 +263,7 @@ mod filters {
     ///   In WebIDL, arguments with default values must have the `optional`
     ///   keyword.
     pub fn type_webidl(
-        type_: &WebIDLType,
+        type_: &WebIDLType<'_>,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -342,7 +343,7 @@ mod filters {
 
     /// Declares a C++ type.
     pub fn type_cpp(
-        type_: &WebIDLType,
+        type_: &WebIDLType<'_>,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -384,7 +385,7 @@ mod filters {
     }
 
     fn in_arg_type_cpp(
-        type_: &WebIDLType,
+        type_: &WebIDLType<'_>,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -418,7 +419,7 @@ mod filters {
                 match arg.webidl_type() {
                     WebIDLType::Flat(Type::String) => "const nsAString&".into(),
                     WebIDLType::Flat(Type::Object(name)) => {
-                        format!("{}&", class_name_cpp(&name, context)?)
+                        format!("{}&", class_name_cpp(name, context)?)
                     }
                     WebIDLType::Nullable(inner) => match inner.as_ref() {
                         WebIDLType::Flat(Type::String) => "const nsAString&".into(),
@@ -454,7 +455,7 @@ mod filters {
 
     /// Declares a C++ return type.
     pub fn ret_type_cpp(
-        type_: &WebIDLType,
+        type_: &WebIDLType<'_>,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -475,7 +476,7 @@ mod filters {
     /// declares a return type must return some value of that type, even if it
     /// throws a DOM exception via the `ErrorResult`.
     pub fn dummy_ret_value_cpp(
-        return_type: &WebIDLType,
+        return_type: &WebIDLType<'_>,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
         Ok(match return_type {
@@ -510,7 +511,7 @@ mod filters {
     /// Generates an expression for lowering a C++ type into a C type when
     /// calling an FFI function.
     pub fn lower_cpp(
-        type_: &WebIDLType,
+        type_: &WebIDLType<'_>,
         from: &str,
         context: &Context<'_, '_>,
     ) -> Result<String, askama::Error> {
@@ -538,7 +539,7 @@ mod filters {
     /// Generates an expression for lifting a C return type from the FFI into a
     /// C++ out parameter.
     pub fn lift_cpp(
-        type_: &WebIDLType,
+        type_: &WebIDLType<'_>,
         from: &str,
         into: &str,
         context: &Context<'_, '_>,
