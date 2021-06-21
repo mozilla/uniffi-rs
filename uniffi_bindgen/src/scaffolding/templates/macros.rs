@@ -34,6 +34,8 @@
     {%- endif %}
 {%- endmacro -%}
 
+{% macro return_signature(func) %}{% match func.ffi_func().return_type() %}{% when Some with (return_type) %} -> {% call return_type_func(func) %}{%- else -%}{%- endmatch -%}{%- endmacro -%}
+
 {% macro return_type_func(func) %}{% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi }}{%- else -%}(){%- endmatch -%}{%- endmacro -%}
 
 {% macro ret(func) %}{% match func.return_type() %}{% when Some with (return_type) %}{{ "_retval"|lower_rs(return_type) }}{% else %}_retval{% endmatch %}{% endmacro %}
@@ -68,8 +70,13 @@ uniffi::deps::ffi_support::call_with_result(err, || -> Result<{% call return_typ
 })
 {% else %}
 uniffi::deps::ffi_support::call_with_output(err, || {
-    let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %};
-    {% call ret(meth) %}
+    {% match meth.return_type() -%}
+    {% when Some with (return_type) -%}
+    let retval = {{ obj.name() }}::{% call to_rs_call(meth) %};
+    {{"retval"|lower_rs(return_type)}}
+    {% else -%}
+    {{ obj.name() }}::{% call to_rs_call(meth) %}
+    {% endmatch -%}
 })
 {% endmatch -%}
 {% endmacro -%}
@@ -83,8 +90,13 @@ uniffi::deps::ffi_support::call_with_result(err, || -> Result<{% call return_typ
 })
 {% else %}
 uniffi::deps::ffi_support::call_with_output(err, || {
-    let _retval = {% call to_rs_call(func) %};
-    {% call ret(func) %}
+    {% match func.return_type() -%}
+    {% when Some with (return_type) -%}
+    let retval = {% call to_rs_call(func) %};
+    {{"retval"|lower_rs(return_type)}}
+    {% else -%}
+    {% call to_rs_call(func) %}
+    {% endmatch -%}
 })
 {% endmatch %}
 {% endmacro %}

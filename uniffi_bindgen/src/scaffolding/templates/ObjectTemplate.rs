@@ -40,7 +40,6 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void) {
 }
 
 {%- for cons in obj.constructors() %}
-    #[allow(clippy::all)]
     #[doc(hidden)]
     #[no_mangle]
     pub extern "C" fn {{ cons.ffi_func().name() }}(
@@ -57,12 +56,11 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void) {
 {%- endfor %}
 
 {%- for meth in obj.methods() %}
-    #[allow(clippy::all)]
     #[doc(hidden)]
     #[no_mangle]
     pub extern "C" fn {{ meth.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(meth.ffi_func()) %}
-    ) -> {% call rs::return_type_func(meth) %} {
+    ) {% call rs::return_signature(meth) %} {
         uniffi::deps::log::debug!("{{ meth.ffi_func().name() }}");
         // If the method does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
