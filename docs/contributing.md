@@ -47,7 +47,8 @@ recommend installing the language dependencies on your local machine. In order t
 test suite you will need:
 
 * Kotlin:
-  * `kotlinc`, the [Kotlin command-line compiler](https://kotlinlang.org/docs/command-line.html)
+  * `kotlinc`, the [Kotlin command-line compiler](https://kotlinlang.org/docs/command-line.html).
+  * `ktlint`, the [Kotlin linter used to format the generated bindings](https://ktlint.github.io/).
   * The [Java Native Access](https://github.com/java-native-access/jna#download) JAR downloaded and its path
     added to your `$CLASSPATH` environment variable.
 * Swift:
