@@ -126,7 +126,11 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let udl_file = udl_file.as_ref();
     let component = parse_udl(udl_file)?;
-    let _config = get_config(&component, udl_file, config_file_override);
+    let _config = get_config(
+        &component,
+        guess_crate_root(udl_file)?,
+        config_file_override,
+    );
     let mut filename = Path::new(&udl_file)
         .file_stem()
         .ok_or_else(|| anyhow!("not a file"))?
@@ -158,8 +162,12 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let udl_file = udl_file.as_ref();
 
     let component = parse_udl(udl_file)?;
-    let config = get_config(&component, udl_file, config_file_override)?;
-    let out_dir = get_out_dir(udl_file, out_dir_override)?;
+    let config = get_config(
+        &component,
+        guess_crate_root(udl_file)?,
+        config_file_override,
+    )?;
+    let out_dir = get_out_dir(&udl_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
             &config.bindings,
@@ -176,19 +184,30 @@ pub fn generate_bindings<P: AsRef<Path>>(
 // Note that the cdylib we're testing against must be built already.
 pub fn run_tests<P: AsRef<Path>>(
     cdylib_dir: P,
-    udl_file: P,
+    udl_files: &[&str],
     test_scripts: Vec<&str>,
     config_file_override: Option<P>,
 ) -> Result<()> {
-    let cdylib_dir = cdylib_dir.as_ref();
-    let udl_file = udl_file.as_ref();
-    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+    // XXX - this is just for tests, but "real" apps will have a similar
+    // tension - having the config "owned" by the sub-crates doesn't seem right
+    // (eg, the top-level "namespace" should be owned by the embedding crate)
+    // but being owned by that top-level embedding crate doesn't quite work
+    // either (sub-crates do need different "module" names inside the top-level
+    // namespace.)
+    // Further complicating things is: who does the foreign generation? Here,
+    // for tests, the "embedding" crate generates for all sub-crates, but
+    // that's not how it works for "real" apps. Maybe it should?
 
-    let component = parse_udl(udl_file)?;
-    let config = get_config(&component, udl_file, config_file_override)?;
+    // Anyway - for now - if more than 1 .udl file, you can't specify a config_file_override,
+    // because it's not clear how it should "override" the regular crate configs...
+    assert!(udl_files.len() == 1 || config_file_override.is_none());
+
+    let cdylib_dir = cdylib_dir.as_ref();
+    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
     // Group the test scripts by language first.
     let mut language_tests: HashMap<TargetLanguage, Vec<String>> = HashMap::new();
+
     for test_script in test_scripts {
         let lang: TargetLanguage = PathBuf::from(test_script)
             .extension()
@@ -201,8 +220,13 @@ pub fn run_tests<P: AsRef<Path>>(
     }
 
     for (lang, test_scripts) in language_tests {
-        bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
-        bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
+        for udl_file in udl_files {
+            let crate_root = guess_crate_root(Path::new(udl_file))?;
+            let component = parse_udl(Path::new(udl_file))?;
+            let config = get_config(&component, crate_root, config_file_override)?;
+            bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
+            bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
+        }
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;
         }
@@ -229,20 +253,14 @@ fn guess_crate_root(udl_file: &Path) -> Result<&Path> {
 
 fn get_config(
     component: &ComponentInterface,
-    udl_file: &Path,
+    crate_root: &Path,
     config_file_override: Option<&Path>,
 ) -> Result<Config> {
     let default_config: Config = component.into();
 
     let config_file: Option<PathBuf> = match config_file_override {
         Some(cfg) => Some(PathBuf::from(cfg)),
-        None => {
-            let crate_root = guess_crate_root(udl_file)?.join("uniffi.toml");
-            match crate_root.canonicalize() {
-                Ok(f) => Some(f),
-                Err(_) => None,
-            }
-        }
+        None => crate_root.join("uniffi.toml").canonicalize().ok(),
     };
 
     match config_file {
@@ -418,12 +436,14 @@ pub fn run_main() -> Result<()> {
             m.value_of_os("out_dir"),
             !m.is_present("no_format"),
         )?,
-        ("test", Some(m)) => crate::run_tests(
-            m.value_of_os("cdylib_dir").unwrap(),           // Required
-            m.value_of_os("udl_file").unwrap(),             // Required
-            m.values_of("test_scripts").unwrap().collect(), // Required
-            m.value_of_os("config"),
-        )?,
+        ("test", Some(m)) => {
+            crate::run_tests(
+                m.value_of_os("cdylib_dir").unwrap(), // Required
+                &[&m.value_of_os("udl_file").unwrap().to_string_lossy()], // Required
+                m.values_of("test_scripts").unwrap().collect(),           // Required
+                m.value_of_os("config"),
+            )?
+        }
         _ => bail!("No command specified; try `--help` for some help."),
     }
     Ok(())
