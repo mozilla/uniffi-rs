@@ -5,17 +5,7 @@
 // compiler will complain with a type error.
 #}
 #[doc(hidden)]
-unsafe impl uniffi::ViaFfi for {{ rec.name() }} {
-    type FfiType = uniffi::RustBuffer;
-
-    fn lower(self) -> Self::FfiType {
-        uniffi::lower_into_buffer(self)
-    }
-
-    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self> {
-        uniffi::try_lift_from_buffer(v)
-    }
-
+impl uniffi::RustBufferViaFfi for {{ rec.name() }} {
     fn write(&self, buf: &mut Vec<u8>) {
         // If the provided struct doesn't match the fields declared in the UDL, then
         // the generated code here will fail to compile with somewhat helpful error.

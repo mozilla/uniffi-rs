@@ -1,4 +1,4 @@
-<!-- The sections in this file are intended to be managed automatically by `cargo release` -->
+  <!-- The sections in this file are intended to be managed automatically by `cargo release` -->
 <!-- See https://github.com/sunng87/cargo-release/blob/master/docs/faq.md#maintaining-changelog for details -->
 <!-- Unfortunately that doesn't currently work in a workspace, so for now we update it by hand: -->
 <!--   * Replace `[[UnreleasedVersion]]` with `vX.Y.Z` -->
@@ -19,6 +19,10 @@
 
 - Both python and ruby backends now handle U16 correctly.
 - Python timestamps will now be in UTC and timezone-aware rather than naive.
+- Replaced `lower_into_buffer()` and `try_lift_from_buffer()` with the
+  `RustBufferViaFfi` trait.  If you use those functions in your custom ViaFfi
+  implementation then you'll need to update the code.  Check out the `Option<>`
+  implementation in uniffi/src/lib.rs for an example.
 
 ## v0.12.0 (2021-06-14)
 
