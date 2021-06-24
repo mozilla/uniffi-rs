@@ -196,32 +196,6 @@ pub unsafe trait ViaFfi: Sized {
     fn try_read(buf: &mut &[u8]) -> Result<Self>;
 }
 
-/// A helper function to lower a type by serializing it into a buffer.
-///
-/// For complex types were it's too fiddly or too unsafe to convert them into a special-purpose
-/// C-compatible value, you can use this helper function to implement `lower()` in terms of `write()`
-/// and pass the value as a serialized buffer of bytes.
-pub fn lower_into_buffer<T: ViaFfi>(value: T) -> RustBuffer {
-    let mut buf = Vec::new();
-    ViaFfi::write(&value, &mut buf);
-    RustBuffer::from_vec(buf)
-}
-
-/// A helper function to lift a type by deserializing it from a buffer.
-///
-/// For complex types were it's too fiddly or too unsafe to convert them into a special-purpose
-/// C-compatible value, you can use this helper function to implement `lift()` in terms of `read()`
-/// and receive the value as a serialzied byte buffer.
-pub fn try_lift_from_buffer<T: ViaFfi>(buf: RustBuffer) -> Result<T> {
-    let vec = buf.destroy_into_vec();
-    let mut buf = vec.as_slice();
-    let value = <T as ViaFfi>::try_read(&mut buf)?;
-    if buf.remaining() != 0 {
-        bail!("junk data left in buffer after lifting")
-    }
-    Ok(value)
-}
-
 /// A helper function to ensure we don't read past the end of a buffer.
 ///
 /// Rust won't actually let us read past the end of a buffer, but the `Buf` trait does not support
@@ -364,6 +338,44 @@ unsafe impl ViaFfi for String {
     }
 }
 
+/// A helper trait to implement lowering/lifting using a `RustBuffer`
+///
+/// For complex types where it's too fiddly or too unsafe to convert them into a special-purpose
+/// C-compatible value, you can use this trait to implement `lower()` in terms of `write()` and
+/// `lift` in terms of `read()`.
+pub trait RustBufferViaFfi: Sized {
+    fn write(&self, buf: &mut Vec<u8>);
+    fn try_read(buf: &mut &[u8]) -> Result<Self>;
+}
+
+unsafe impl<T: RustBufferViaFfi> ViaFfi for T {
+    type FfiType = RustBuffer;
+
+    fn lower(self) -> RustBuffer {
+        let mut buf = Vec::new();
+        RustBufferViaFfi::write(&self, &mut buf);
+        RustBuffer::from_vec(buf)
+    }
+
+    fn try_lift(v: RustBuffer) -> Result<Self> {
+        let vec = v.destroy_into_vec();
+        let mut buf = vec.as_slice();
+        let value = RustBufferViaFfi::try_read(&mut buf)?;
+        if buf.remaining() != 0 {
+            bail!("junk data left in buffer after lifting")
+        }
+        Ok(value)
+    }
+
+    fn write(&self, buf: &mut Vec<u8>) {
+        RustBufferViaFfi::write(self, buf)
+    }
+
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+        RustBufferViaFfi::try_read(buf)
+    }
+}
+
 /// Support for passing timestamp values via the FFI.
 ///
 /// Timestamps values are currently always passed by serializing to a buffer.
@@ -378,17 +390,7 @@ unsafe impl ViaFfi for String {
 /// the sign of the seconds portion represents the direction of the offset
 /// overall. The sign of the seconds portion can then be used to determine
 /// if the total offset should be added to or subtracted from the unix epoch.
-unsafe impl ViaFfi for SystemTime {
-    type FfiType = RustBuffer;
-
-    fn lower(self) -> Self::FfiType {
-        lower_into_buffer(self)
-    }
-
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
-        try_lift_from_buffer(v)
-    }
-
+impl RustBufferViaFfi for SystemTime {
     fn write(&self, buf: &mut Vec<u8>) {
         let mut sign = 1;
         let epoch_offset = self
@@ -428,17 +430,7 @@ unsafe impl ViaFfi for SystemTime {
 /// magnitude in seconds, and a u32 that indicates the nanosecond portion
 /// of the magnitude. The nanosecond portion is expected to be between 0
 /// and 999,999,999.
-unsafe impl ViaFfi for Duration {
-    type FfiType = RustBuffer;
-
-    fn lower(self) -> Self::FfiType {
-        lower_into_buffer(self)
-    }
-
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
-        try_lift_from_buffer(v)
-    }
-
+impl RustBufferViaFfi for Duration {
     fn write(&self, buf: &mut Vec<u8>) {
         buf.put_u64(self.as_secs());
         buf.put_u32(self.subsec_nanos());
@@ -459,17 +451,7 @@ unsafe impl ViaFfi for Duration {
 /// In future we could do the same optimization as rust uses internally, where the
 /// `None` option is represented as a null pointer and the `Some` as a valid pointer,
 /// but that seems more fiddly and less safe in the short term, so it can wait.
-unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
-    type FfiType = RustBuffer;
-
-    fn lower(self) -> Self::FfiType {
-        lower_into_buffer(self)
-    }
-
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
-        try_lift_from_buffer(v)
-    }
-
+impl<T: ViaFfi> RustBufferViaFfi for Option<T> {
     fn write(&self, buf: &mut Vec<u8>) {
         match self {
             None => buf.put_i8(0),
@@ -499,17 +481,7 @@ unsafe impl<T: ViaFfi> ViaFfi for Option<T> {
 /// Ideally we would pass `Vec<u8>` directly as a `RustBuffer` rather
 /// than serializing, and perhaps even pass other vector types using a
 /// similar struct. But that's for future work.
-unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
-    type FfiType = RustBuffer;
-
-    fn lower(self) -> Self::FfiType {
-        lower_into_buffer(self)
-    }
-
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
-        try_lift_from_buffer(v)
-    }
-
+impl<T: ViaFfi> RustBufferViaFfi for Vec<T> {
     fn write(&self, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
         let len = i32::try_from(self.len()).unwrap();
@@ -538,17 +510,7 @@ unsafe impl<T: ViaFfi> ViaFfi for Vec<T> {
 /// We write a `i32` entries count followed by each entry (string
 /// key followed by the value) in turn.
 /// (It's a signed type due to limits of the JVM).
-unsafe impl<V: ViaFfi> ViaFfi for HashMap<String, V> {
-    type FfiType = RustBuffer;
-
-    fn lower(self) -> Self::FfiType {
-        lower_into_buffer(self)
-    }
-
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
-        try_lift_from_buffer(v)
-    }
-
+impl<V: ViaFfi> RustBufferViaFfi for HashMap<String, V> {
     fn write(&self, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
         let len = i32::try_from(self.len()).unwrap();
