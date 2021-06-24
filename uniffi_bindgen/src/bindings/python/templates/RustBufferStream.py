@@ -113,10 +113,13 @@ class RustBufferStream(object):
     def read{{ canonical_type_name }}(self):
         seconds = self._unpack_from(8, ">q")
         microseconds = self._unpack_from(4, ">I") / 1000
+        # Use fromtimestamp(0) then add the seconds using a timedelta.  This
+        # ensures that we get OverflowError rather than ValueError when
+        # seconds is too large.
         if seconds >= 0:
-            return datetime.datetime.fromtimestamp(0, tz=None) + datetime.timedelta(seconds=seconds, microseconds=microseconds)
+            return datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc) + datetime.timedelta(seconds=seconds, microseconds=microseconds)
         else:
-            return datetime.datetime.fromtimestamp(0, tz=None) - datetime.timedelta(seconds=-seconds, microseconds=microseconds)
+            return datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc) - datetime.timedelta(seconds=-seconds, microseconds=microseconds)
 
     {% when Type::Duration -%}
     # The Duration type.
