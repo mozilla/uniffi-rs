@@ -37,7 +37,7 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
     let test_functions = paths.test_scripts
         .iter()
         .map(|file_path| {
-            let test_file_pathbuf: PathBuf = [&pkg_dir, &file_path].iter().collect();
+            let test_file_pathbuf: PathBuf = [&pkg_dir, file_path].iter().collect();
             let test_file_path = test_file_pathbuf.to_string_lossy();
             let test_file_name = test_file_pathbuf
                 .file_name()

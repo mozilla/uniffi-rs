@@ -395,7 +395,7 @@ mod filters {
                 _ => format!("Nullable<{}>", in_arg_type_cpp(inner, context)?),
             },
             WebIDLType::Sequence(inner) => {
-                format!("Sequence<{}>", in_arg_type_cpp(&inner, context)?)
+                format!("Sequence<{}>", in_arg_type_cpp(inner, context)?)
             }
             _ => type_cpp(type_, context)?,
         })
@@ -423,7 +423,7 @@ mod filters {
                     WebIDLType::Nullable(inner) => match inner.as_ref() {
                         WebIDLType::Flat(Type::String) => "const nsAString&".into(),
                         WebIDLType::Flat(Type::Object(name)) => {
-                            format!("{}*", class_name_cpp(&name, context)?)
+                            format!("{}*", class_name_cpp(name, context)?)
                         }
                         _ => format!("const {}&", in_arg_type_cpp(&arg.webidl_type(), context)?),
                     },

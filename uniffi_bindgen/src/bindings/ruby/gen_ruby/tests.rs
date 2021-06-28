@@ -35,7 +35,7 @@ fn cdylib_path() {
     };
 
     assert_eq!("", config.cdylib_path());
-    assert_eq!(false, config.custom_cdylib_path());
+    assert!(!config.custom_cdylib_path());
 
     let config = Config {
         cdylib_name: None,
@@ -43,5 +43,5 @@ fn cdylib_path() {
     };
 
     assert_eq!("/foo/bar", config.cdylib_path());
-    assert_eq!(true, config.custom_cdylib_path());
+    assert!(config.custom_cdylib_path());
 }

@@ -107,7 +107,7 @@ where
         .collect::<Result<Vec<_>, _>>()?;
 
     for attr in attrs.iter() {
-        validator(&attr)?;
+        validator(attr)?;
     }
 
     Ok(attrs)
