@@ -1,7 +1,7 @@
 // A handful of classes and functions to support the generated data structures.
 // This would be a good candidate for isolating in its own ffi-support lib.
 
-{% if ci.iter_object_definitions().len() > 0 %}
+{% if ci.has_object_definitions() %}
 
 // Interface implemented by anything that can contain an object reference.
 //
@@ -160,7 +160,7 @@ abstract class FFIObject(
 }
 {% endif %}
 
-{% if ci.iter_callback_interface_definitions().len() > 0 %}
+{% if ci.has_callback_interface_definitions() %}
 internal typealias Handle = Long
 internal class ConcurrentHandleMap<T>(
     private val leftMap: MutableMap<Handle, T> = mutableMapOf(),

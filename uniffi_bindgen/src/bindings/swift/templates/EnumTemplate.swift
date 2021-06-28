@@ -3,7 +3,7 @@
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum {{ e.name()|class_name_swift }} {
     {% for variant in e.variants() %}
-    case {{ variant.name()|enum_variant_swift }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
+    case {{ variant.name()|enum_variant_swift }}{% if variant.has_fields() %}({% call swift::field_list_decl(variant) %}){% endif -%}
     {% endfor %}
 }
 

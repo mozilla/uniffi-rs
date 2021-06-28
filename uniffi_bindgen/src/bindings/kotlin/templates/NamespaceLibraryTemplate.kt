@@ -20,10 +20,9 @@ internal interface _UniFFILib : Library {
     companion object {
         internal val INSTANCE: _UniFFILib by lazy { 
             loadIndirect<_UniFFILib>(componentName = "{{ ci.namespace() }}")
-            {% let callback_interfaces = ci.iter_callback_interface_definitions() %}
-            {%- if !callback_interfaces.is_empty() -%}
+            {%- if ci.has_callback_interface_definitions() -%}
             .also { lib: _UniFFILib ->
-                {% for cb in callback_interfaces -%}
+                {% for cb in ci.iter_callback_interface_definitions() -%}
                 CallbackInterface{{ cb.name()|class_name_kt }}Internals.register(lib)
                 {% endfor -%}
             }

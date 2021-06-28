@@ -36,7 +36,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
     private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue): RustBuffer.ByValue =
         try {
         {#- Unpacking args from the RustBuffer #}
-            {%- if meth.arguments().len() != 0 -%}
+            {%- if meth.has_arguments() -%}
             {#- Calling the concrete callback object #}
             val buf = args.asByteBuffer() ?: throw InternalError("No ByteBuffer in RustBuffer; this is a Uniffi bug")
             kotlinCallbackInterface.{{ meth.name()|fn_name_kt }}(

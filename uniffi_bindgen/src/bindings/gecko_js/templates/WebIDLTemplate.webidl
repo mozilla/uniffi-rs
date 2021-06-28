@@ -25,8 +25,8 @@ enum {{ e.name()|class_name_webidl(context)  }} {
 };
 {% endfor %}
 
+{%- if ci.has_function_definitions() %}
 {%- let functions = ci.iter_function_definitions() %}
-{%- if !functions.is_empty() %}
 [ChromeOnly, Exposed=Window]
 namespace {{ context.namespace()|class_name_webidl(context) }} {
   {% for func in functions %}

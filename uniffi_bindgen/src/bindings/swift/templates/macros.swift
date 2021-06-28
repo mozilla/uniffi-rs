@@ -13,7 +13,7 @@
     UniffiInternalError.unknown("rustCall")
     {% endmatch %}
 ) { err in
-    {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
+    {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.has_arguments() %},{% endif %}err)
 }
 {%- endmacro -%}
 
@@ -27,7 +27,7 @@
     {%- endmatch %}
 ) { err in
     {{ func.ffi_func().name() }}(
-        {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err
+        {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.has_arguments() %},{% endif %}err
     )
 }
 {%- endmacro %}
@@ -85,11 +85,9 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.type_()|type_ffi }} {{ arg.name() -}}
-        {% if loop.last %}{% else %},{% endif %}
+        {{- arg.type_()|type_ffi }} {{ arg.name() -}},
     {%- endfor %}
-    {% if func.arguments().len() > 0 %},{% endif %}NativeRustError *_Nonnull out_err
-
+    NativeRustError *_Nonnull out_err
 {%- endmacro -%}
 
 {%- macro throws(func) %}

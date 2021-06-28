@@ -20,14 +20,14 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name() }}: {{ arg.type_()|type_ffi -}}{% if loop.last %}{% else %},{% endif %}
+        {{- arg.name() }}: {{ arg.type_()|type_ffi -}},
     {%- endfor %}
-    {% if func.arguments().len() > 0 %},{% endif %} err: &mut uniffi::deps::ffi_support::ExternError,
+    err: &mut uniffi::deps::ffi_support::ExternError,
 {%- endmacro -%}
 
 {%- macro arg_list_decl_with_prefix(prefix, meth) %}
     {{- prefix -}}
-    {%- if meth.arguments().len() > 0 %}, {# whitespace #}
+    {%- if meth.has_arguments() %}, {# whitespace #}
         {%- for arg in meth.arguments() %}
             {{- arg.name() }}: {{ arg.type_()|type_rs -}}{% if loop.last %}{% else %},{% endif %}
         {%- endfor %}

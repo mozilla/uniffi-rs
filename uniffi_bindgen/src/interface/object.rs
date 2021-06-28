@@ -38,10 +38,12 @@
 //! # "##)?;
 //! let obj = ci.get_object_definition("Example").unwrap();
 //! assert_eq!(obj.name(), "Example");
-//! assert_eq!(obj.constructors().len(), 1);
-//! assert_eq!(obj.constructors()[0].arguments()[0].name(), "name");
-//! assert_eq!(obj.methods().len(),1 );
-//! assert_eq!(obj.methods()[0].name(), "my_name");
+//! let constructors: Vec<_> = obj.constructors().collect();
+//! assert_eq!(constructors.len(), 1);
+//! assert_eq!(constructors[0].arguments().next().unwrap().name(), "name");
+//! let methods: Vec<_> = obj.methods().collect();
+//! assert_eq!(methods.len(),1 );
+//! assert_eq!(methods[0].name(), "my_name");
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
@@ -101,8 +103,8 @@ impl Object {
         &self.type_
     }
 
-    pub fn constructors(&self) -> Vec<&Constructor> {
-        self.constructors.iter().collect()
+    pub fn constructors(&self) -> impl Iterator<Item = &Constructor> + '_ {
+        self.constructors.iter()
     }
 
     pub fn primary_constructor(&self) -> Option<&Constructor> {
@@ -111,15 +113,14 @@ impl Object {
             .find(|cons| cons.is_primary_constructor())
     }
 
-    pub fn alternate_constructors(&self) -> Vec<&Constructor> {
+    pub fn alternate_constructors(&self) -> impl Iterator<Item = &Constructor> + '_ {
         self.constructors
             .iter()
             .filter(|cons| !cons.is_primary_constructor())
-            .collect()
     }
 
-    pub fn methods(&self) -> Vec<&Method> {
-        self.methods.iter().collect()
+    pub fn methods(&self) -> impl Iterator<Item = &Method> + '_ {
+        self.methods.iter()
     }
 
     pub fn ffi_object_free(&self) -> &FFIFunction {
@@ -219,12 +220,16 @@ impl Constructor {
         &self.name
     }
 
-    pub fn arguments(&self) -> Vec<&Argument> {
-        self.arguments.iter().collect()
+    pub fn arguments(&self) -> impl Iterator<Item = &Argument> + '_ {
+        self.arguments.iter()
     }
 
-    pub fn full_arguments(&self) -> Vec<Argument> {
-        self.arguments.to_vec()
+    pub fn full_arguments(&self) -> impl Iterator<Item = Argument> + '_ {
+        self.arguments.iter().cloned()
+    }
+
+    pub fn has_arguments(&self) -> bool {
+        !self.arguments.is_empty()
     }
 
     pub fn ffi_func(&self) -> &FFIFunction {
@@ -309,13 +314,17 @@ impl Method {
         &self.name
     }
 
-    pub fn arguments(&self) -> Vec<&Argument> {
-        self.arguments.iter().collect()
+    pub fn arguments(&self) -> impl Iterator<Item = &Argument> + '_ {
+        self.arguments.iter()
+    }
+
+    pub fn has_arguments(&self) -> bool {
+        !self.arguments.is_empty()
     }
 
     // Methods have a special implicit first argument for the object instance,
     // hence `arguments` and `full_arguments` are different.
-    pub fn full_arguments(&self) -> Vec<Argument> {
+    pub fn full_arguments(&self) -> impl Iterator<Item = Argument> + '_ {
         vec![Argument {
             name: "ptr".to_string(),
             // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
@@ -327,7 +336,6 @@ impl Method {
         }]
         .into_iter()
         .chain(self.arguments.iter().cloned())
-        .collect()
     }
 
     pub fn return_type(&self) -> Option<&Type> {
@@ -352,7 +360,10 @@ impl Method {
         self.ffi_func.name.push_str(obj_prefix);
         self.ffi_func.name.push('_');
         self.ffi_func.name.push_str(&self.name);
-        self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
+        self.ffi_func.arguments = self
+            .full_arguments()
+            .map(|a| FFIArgument::from(&a))
+            .collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
         Ok(())
     }
@@ -418,27 +429,19 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_object_definitions().len(), 1);
+        assert_eq!(ci.iter_object_definitions().count(), 1);
         ci.get_object_definition("Testing").unwrap();
 
-        assert_eq!(ci.iter_types().len(), 6);
-        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u16"));
-        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u32"));
+        assert_eq!(ci.iter_types().count(), 6);
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "u16"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "u32"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "Sequenceu32"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "string"));
         assert!(ci
             .iter_types()
-            .iter()
-            .any(|t| t.canonical_name() == "Sequenceu32"));
-        assert!(ci
-            .iter_types()
-            .iter()
-            .any(|t| t.canonical_name() == "string"));
-        assert!(ci
-            .iter_types()
-            .iter()
             .any(|t| t.canonical_name() == "Optionalstring"));
         assert!(ci
             .iter_types()
-            .iter()
             .any(|t| t.canonical_name() == "ObjectTesting"));
     }
 
@@ -453,19 +456,19 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_object_definitions().len(), 1);
+        assert_eq!(ci.iter_object_definitions().count(), 1);
 
         let obj = ci.get_object_definition("Testing").unwrap();
         assert!(obj.primary_constructor().is_some());
-        assert_eq!(obj.alternate_constructors().len(), 1);
-        assert_eq!(obj.methods().len(), 0);
+        assert_eq!(obj.alternate_constructors().count(), 1);
+        assert_eq!(obj.methods().count(), 0);
 
         let cons = obj.primary_constructor().unwrap();
         assert_eq!(cons.name(), "new");
         assert_eq!(cons.arguments.len(), 0);
         assert_eq!(cons.ffi_func.arguments.len(), 0);
 
-        let cons = obj.alternate_constructors()[0];
+        let cons = obj.alternate_constructors().next().unwrap();
         assert_eq!(cons.name(), "new_with_u32");
         assert_eq!(cons.arguments.len(), 1);
         assert_eq!(cons.ffi_func.arguments.len(), 1);
@@ -483,18 +486,18 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_object_definitions().len(), 1);
+        assert_eq!(ci.iter_object_definitions().count(), 1);
 
         let obj = ci.get_object_definition("Testing").unwrap();
         assert!(obj.primary_constructor().is_some());
-        assert_eq!(obj.alternate_constructors().len(), 1);
-        assert_eq!(obj.methods().len(), 0);
+        assert_eq!(obj.alternate_constructors().count(), 1);
+        assert_eq!(obj.methods().count(), 0);
 
         let cons = obj.primary_constructor().unwrap();
         assert_eq!(cons.name(), "new");
         assert_eq!(cons.arguments.len(), 1);
 
-        let cons = obj.alternate_constructors()[0];
+        let cons = obj.alternate_constructors().next().unwrap();
         assert_eq!(cons.name(), "newish");
         assert_eq!(cons.arguments.len(), 0);
         assert_eq!(cons.ffi_func.arguments.len(), 0);

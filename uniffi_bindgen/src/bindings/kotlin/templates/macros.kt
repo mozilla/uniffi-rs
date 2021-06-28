@@ -13,7 +13,7 @@ rustCall(
     InternalError.ByReference()
     {%- endmatch %}
 ) { err ->
-    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
+    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.has_arguments() %},{% endif %}err)
 }
 {%- endmacro -%}
 
@@ -27,7 +27,7 @@ rustCall(
     {%- endmatch %}
 ) { err ->
     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
-        {{- prefix }}, {% call _arg_list_ffi_call(func) %}{% if func.arguments().len() > 0 %}, {% endif %}err)
+        {{- prefix }}, {% call _arg_list_ffi_call(func) %}{% if func.has_arguments() %}, {% endif %}err)
 }
 {%- endmacro %}
 
@@ -67,8 +67,7 @@ rustCall(
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name() }}: {{ arg.type_()|type_ffi -}}
-        {%- if loop.last %}{% else %},{% endif %}
+        {{- arg.name() }}: {{ arg.type_()|type_ffi -}},
     {%- endfor %}
-    {% if func.arguments().len() > 0 %},{% endif %} uniffi_out_err: Structure.ByReference
+    uniffi_out_err: Structure.ByReference
 {%- endmacro -%}

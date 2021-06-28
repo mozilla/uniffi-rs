@@ -39,8 +39,9 @@
 //! # "##)?;
 //! let record = ci.get_record_definition("Example").unwrap();
 //! assert_eq!(record.name(), "Example");
-//! assert_eq!(record.fields()[0].name(), "name");
-//! assert_eq!(record.fields()[1].name(), "value");
+//! let fields: Vec<_> = record.fields().collect();
+//! assert_eq!(fields[0].name(), "name");
+//! assert_eq!(fields[1].name(), "value");
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
@@ -66,8 +67,8 @@ impl Record {
         &self.name
     }
 
-    pub fn fields(&self) -> Vec<&Field> {
-        self.fields.iter().collect()
+    pub fn fields(&self) -> impl Iterator<Item = &Field> + '_ {
+        self.fields.iter()
     }
 
     pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
@@ -155,41 +156,40 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_record_definitions().len(), 3);
+        assert_eq!(ci.iter_record_definitions().count(), 3);
 
         let record = ci.get_record_definition("Empty").unwrap();
         assert_eq!(record.name(), "Empty");
-        assert_eq!(record.fields().len(), 0);
+        assert_eq!(record.fields().count(), 0);
 
         let record = ci.get_record_definition("Simple").unwrap();
         assert_eq!(record.name(), "Simple");
-        assert_eq!(record.fields().len(), 1);
-        assert_eq!(record.fields()[0].name(), "field");
-        assert_eq!(record.fields()[0].type_().canonical_name(), "u32");
-        assert!(!record.fields()[0].required);
-        assert!(record.fields()[0].default_value().is_none());
+        let fields: Vec<_> = record.fields().collect();
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].name(), "field");
+        assert_eq!(fields[0].type_().canonical_name(), "u32");
+        assert!(!fields[0].required);
+        assert!(fields[0].default_value().is_none());
 
         let record = ci.get_record_definition("Complex").unwrap();
         assert_eq!(record.name(), "Complex");
-        assert_eq!(record.fields().len(), 3);
-        assert_eq!(record.fields()[0].name(), "key");
-        assert_eq!(
-            record.fields()[0].type_().canonical_name(),
-            "Optionalstring"
-        );
-        assert!(!record.fields()[0].required);
-        assert!(record.fields()[0].default_value().is_none());
-        assert_eq!(record.fields()[1].name(), "value");
-        assert_eq!(record.fields()[1].type_().canonical_name(), "u32");
-        assert!(!record.fields()[1].required);
+        let fields: Vec<_> = record.fields().collect();
+        assert_eq!(fields.len(), 3);
+        assert_eq!(fields[0].name(), "key");
+        assert_eq!(fields[0].type_().canonical_name(), "Optionalstring");
+        assert!(!fields[0].required);
+        assert!(fields[0].default_value().is_none());
+        assert_eq!(fields[1].name(), "value");
+        assert_eq!(fields[1].type_().canonical_name(), "u32");
+        assert!(!fields[1].required);
         assert!(matches!(
-            record.fields()[1].default_value(),
+            fields[1].default_value(),
             Some(Literal::UInt(0, Radix::Decimal, Type::UInt32))
         ));
-        assert_eq!(record.fields()[2].name(), "spin");
-        assert_eq!(record.fields()[2].type_().canonical_name(), "bool");
-        assert!(record.fields()[2].required);
-        assert!(record.fields()[2].default_value().is_none());
+        assert_eq!(fields[2].name(), "spin");
+        assert_eq!(fields[2].type_().canonical_name(), "bool");
+        assert!(fields[2].required);
+        assert!(fields[2].default_value().is_none());
     }
 
     #[test]
@@ -202,25 +202,21 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_record_definitions().len(), 1);
+        assert_eq!(ci.iter_record_definitions().count(), 1);
         let record = ci.get_record_definition("Testing").unwrap();
-        assert_eq!(record.fields().len(), 2);
-        assert_eq!(record.fields()[0].name(), "maybe_name");
-        assert_eq!(record.fields()[1].name(), "value");
+        let fields: Vec<_> = record.fields().collect();
+        assert_eq!(fields.len(), 2);
+        assert_eq!(fields[0].name(), "maybe_name");
+        assert_eq!(fields[1].name(), "value");
 
-        assert_eq!(ci.iter_types().len(), 4);
-        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u32"));
+        assert_eq!(ci.iter_types().count(), 4);
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "u32"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "string"));
         assert!(ci
             .iter_types()
-            .iter()
-            .any(|t| t.canonical_name() == "string"));
-        assert!(ci
-            .iter_types()
-            .iter()
             .any(|t| t.canonical_name() == "Optionalstring"));
         assert!(ci
             .iter_types()
-            .iter()
             .any(|t| t.canonical_name() == "RecordTesting"));
     }
 }

@@ -30,9 +30,10 @@
 //! # "##)?;
 //! let e = ci.get_enum_definition("Example").unwrap();
 //! assert_eq!(e.name(), "Example");
-//! assert_eq!(e.variants().len(), 2);
-//! assert_eq!(e.variants()[0].name(), "one");
-//! assert_eq!(e.variants()[1].name(), "two");
+//! let variants: Vec<_> = e.variants().collect();
+//! assert_eq!(variants.len(), 2);
+//! assert_eq!(variants[0].name(), "one");
+//! assert_eq!(variants[1].name(), "two");
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
@@ -67,12 +68,14 @@
 //! # "##)?;
 //! let e = ci.get_enum_definition("ExampleWithData").unwrap();
 //! assert_eq!(e.name(), "ExampleWithData");
-//! assert_eq!(e.variants().len(), 3);
-//! assert_eq!(e.variants()[0].name(), "Zero");
-//! assert_eq!(e.variants()[0].fields().len(), 0);
-//! assert_eq!(e.variants()[1].name(), "One");
-//! assert_eq!(e.variants()[1].fields().len(), 1);
-//! assert_eq!(e.variants()[1].fields()[0].name(), "first");
+//! let variants: Vec<_> = e.variants().collect();
+//! assert_eq!(variants.len(), 3);
+//! assert_eq!(variants[0].name(), "Zero");
+//! assert_eq!(variants[0].fields().count(), 0);
+//! assert_eq!(variants[1].name(), "One");
+//! let fields: Vec<_> = variants[1].fields().collect();
+//! assert_eq!(fields.len(), 1);
+//! assert_eq!(fields[0].name(), "first");
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
@@ -100,8 +103,8 @@ impl Enum {
         &self.name
     }
 
-    pub fn variants(&self) -> Vec<&Variant> {
-        self.variants.iter().collect()
+    pub fn variants(&self) -> impl Iterator<Item = &Variant> {
+        self.variants.iter()
     }
 
     pub fn is_flat(&self) -> bool {
@@ -178,8 +181,8 @@ impl Variant {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn fields(&self) -> Vec<&Field> {
-        self.fields.iter().collect()
+    pub fn fields(&self) -> impl Iterator<Item = &Field> {
+        self.fields.iter()
     }
 
     pub fn has_fields(&self) -> bool {
@@ -270,9 +273,12 @@ mod test {
             enum Testing { "one", "two", "one" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_enum_definitions().len(), 1);
+        assert_eq!(ci.iter_enum_definitions().count(), 1);
         assert_eq!(
-            ci.get_enum_definition("Testing").unwrap().variants().len(),
+            ci.get_enum_definition("Testing")
+                .unwrap()
+                .variants()
+                .count(),
             3
         );
     }
@@ -303,79 +309,72 @@ mod test {
             };
         "##;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_enum_definitions().len(), 3);
-        assert_eq!(ci.iter_function_definitions().len(), 4);
+        assert_eq!(ci.iter_enum_definitions().count(), 3);
+        assert_eq!(ci.iter_function_definitions().count(), 4);
 
         // The "flat" enum with no associated data.
         let e = ci.get_enum_definition("TestEnum").unwrap();
         assert!(e.is_flat());
-        assert_eq!(e.variants().len(), 2);
+        assert_eq!(e.variants().count(), 2);
         assert_eq!(
-            e.variants().iter().map(|v| v.name()).collect::<Vec<_>>(),
+            e.variants().map(|v| v.name()).collect::<Vec<_>>(),
             vec!["one", "two"]
         );
-        assert_eq!(e.variants()[0].fields().len(), 0);
-        assert_eq!(e.variants()[1].fields().len(), 0);
+        let variants: Vec<_> = e.variants().collect();
+        assert_eq!(variants[0].fields().count(), 0);
+        assert_eq!(variants[1].fields().count(), 0);
 
         // The enum with associated data.
         let ed = ci.get_enum_definition("TestEnumWithData").unwrap();
         assert!(!ed.is_flat());
-        assert_eq!(ed.variants().len(), 3);
+        assert_eq!(ed.variants().count(), 3);
         assert_eq!(
-            ed.variants().iter().map(|v| v.name()).collect::<Vec<_>>(),
+            ed.variants().map(|v| v.name()).collect::<Vec<_>>(),
             vec!["Zero", "One", "Two"]
         );
-        assert_eq!(ed.variants()[0].fields().len(), 0);
+        let variants: Vec<_> = ed.variants().collect();
+        assert_eq!(variants[0].fields().count(), 0);
         assert_eq!(
-            ed.variants()[1]
-                .fields()
-                .iter()
-                .map(|f| f.name())
-                .collect::<Vec<_>>(),
+            variants[1].fields().map(|f| f.name()).collect::<Vec<_>>(),
             vec!["first"]
         );
         assert_eq!(
-            ed.variants()[1]
-                .fields()
-                .iter()
-                .map(|f| f.type_())
-                .collect::<Vec<_>>(),
+            variants[1].fields().map(|f| f.type_()).collect::<Vec<_>>(),
             vec![&Type::UInt32]
         );
         assert_eq!(
-            ed.variants()[2]
-                .fields()
-                .iter()
-                .map(|f| f.name())
-                .collect::<Vec<_>>(),
+            variants[2].fields().map(|f| f.name()).collect::<Vec<_>>(),
             vec!["first", "second"]
         );
         assert_eq!(
-            ed.variants()[2]
-                .fields()
-                .iter()
-                .map(|f| f.type_())
-                .collect::<Vec<_>>(),
+            variants[2].fields().map(|f| f.type_()).collect::<Vec<_>>(),
             vec![&Type::UInt32, &Type::String]
         );
 
         // The enum declared via interface, but with no associated data.
         let ewd = ci.get_enum_definition("TestEnumWithoutData").unwrap();
         assert!(!ewd.is_flat());
-        assert_eq!(ewd.variants().len(), 2);
+        assert_eq!(ewd.variants().count(), 2);
         assert_eq!(
-            ewd.variants().iter().map(|v| v.name()).collect::<Vec<_>>(),
+            ewd.variants().map(|v| v.name()).collect::<Vec<_>>(),
             vec!["One", "Two"]
         );
-        assert_eq!(ewd.variants()[0].fields().len(), 0);
-        assert_eq!(ewd.variants()[1].fields().len(), 0);
+        let variants: Vec<_> = ewd.variants().collect();
+        assert_eq!(variants[0].fields().count(), 0);
+        assert_eq!(variants[1].fields().count(), 0);
 
         // Flat enums pass over the FFI as bytebuffers.
         // (It might be nice to optimize these to pass as plain integers, but that's
         // difficult atop the current factoring of `ComponentInterface` and friends).
         let farg = ci.get_function_definition("takes_an_enum").unwrap();
-        assert_eq!(farg.arguments()[0].type_(), &Type::Enum("TestEnum".into()));
-        assert_eq!(farg.ffi_func().arguments()[0].type_(), &FFIType::RustBuffer);
+        assert_eq!(
+            farg.arguments().next().unwrap().type_(),
+            &Type::Enum("TestEnum".into())
+        );
+        assert_eq!(
+            farg.ffi_func().arguments().next().unwrap().type_(),
+            &FFIType::RustBuffer
+        );
         let fret = ci.get_function_definition("returns_an_enum").unwrap();
         assert!(matches!(fret.return_type(), Some(Type::Enum(nm)) if nm == "TestEnum"));
         assert!(matches!(
@@ -388,10 +387,13 @@ mod test {
             .get_function_definition("takes_an_enum_with_data")
             .unwrap();
         assert_eq!(
-            farg.arguments()[0].type_(),
+            farg.arguments().next().unwrap().type_(),
             &Type::Enum("TestEnumWithData".into())
         );
-        assert_eq!(farg.ffi_func().arguments()[0].type_(), &FFIType::RustBuffer);
+        assert_eq!(
+            farg.ffi_func().arguments().next().unwrap().type_(),
+            &FFIType::RustBuffer
+        );
         let fret = ci
             .get_function_definition("returns_an_enum_with_data")
             .unwrap();

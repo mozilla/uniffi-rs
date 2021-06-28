@@ -32,9 +32,10 @@
 //! # "##)?;
 //! let err = ci.get_error_definition("Example").unwrap();
 //! assert_eq!(err.name(), "Example");
-//! assert_eq!(err.values().len(), 2);
-//! assert_eq!(err.values()[0], "one");
-//! assert_eq!(err.values()[1], "two");
+//! let values: Vec<_> = err.values().collect();
+//! assert_eq!(values.len(), 2);
+//! assert_eq!(values[0], "one");
+//! assert_eq!(values[1], "two");
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
@@ -58,8 +59,8 @@ impl Error {
         &self.name
     }
 
-    pub fn values(&self) -> Vec<&str> {
-        self.values.iter().map(|v| v.as_str()).collect()
+    pub fn values(&self) -> impl Iterator<Item = &str> {
+        self.values.iter().map(|v| v.as_str())
     }
 }
 
@@ -92,9 +93,9 @@ mod test {
             enum Testing { "one", "two", "one" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_error_definitions().len(), 1);
+        assert_eq!(ci.iter_error_definitions().count(), 1);
         assert_eq!(
-            ci.get_error_definition("Testing").unwrap().values().len(),
+            ci.get_error_definition("Testing").unwrap().values().count(),
             3
         );
     }

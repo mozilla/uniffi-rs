@@ -32,9 +32,8 @@ void
 {%- endmatch %}
 {{ func.name() }}(
     {%- for arg in func.arguments() %}
-    {{ arg.type_()|type_ffi(context) }} {{ arg.name() -}}{%- if loop.last -%}{%- else -%},{%- endif -%}
+    {{ arg.type_()|type_ffi(context) }} {{ arg.name() -}},
     {%- endfor %}
-    {%- if func.arguments().len() > 0 %},{% endif %}
     {{ context.ffi_rusterror_type() }}* uniffi_out_err
 );
 

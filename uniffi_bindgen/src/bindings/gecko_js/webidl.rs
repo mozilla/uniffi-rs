@@ -168,11 +168,11 @@ impl FunctionExt for Function {
 
     fn cpp_arguments(&self) -> Vec<CPPArgument<'_>> {
         let args = self.arguments();
-        let mut result = Vec::with_capacity(args.len() + 3);
+        let mut result = Vec::with_capacity(args.size_hint().1.unwrap_or_default() + 3);
         // All static methods take a `GlobalObject`.
         result.push(CPPArgument::GlobalObject);
         // ...Then the declared WebIDL arguments...
-        result.extend(args.into_iter().map(|arg| CPPArgument::In(arg)));
+        result.extend(args.map(|arg| CPPArgument::In(arg)));
         // ...Then the out param, depending on the return type.
         if let Some(type_) = self
             .webidl_return_type()
@@ -221,10 +221,10 @@ pub trait ConstructorExt {
 impl ConstructorExt for Constructor {
     fn cpp_arguments(&self) -> Vec<CPPArgument<'_>> {
         let args = self.arguments();
-        let mut result = Vec::with_capacity(args.len() + 2);
+        let mut result = Vec::with_capacity(args.size_hint().1.unwrap_or_default() + 2);
         // First the `GlobalObject`, just like for static methods...
         result.push(CPPArgument::GlobalObject);
-        result.extend(args.into_iter().map(|arg| CPPArgument::In(arg)));
+        result.extend(args.map(|arg| CPPArgument::In(arg)));
         // Constructors never take out params, since they must return an
         // instance of the object.
         if self.throws().is_some() {
@@ -273,9 +273,9 @@ impl MethodExt for Method {
 
     fn cpp_arguments(&self) -> Vec<CPPArgument<'_>> {
         let args = self.arguments();
-        let mut result = Vec::with_capacity(args.len() + 2);
+        let mut result = Vec::with_capacity(args.size_hint().1.unwrap_or_default() + 2);
         // Methods don't take a `GlobalObject` as their first argument.
-        result.extend(args.into_iter().map(|arg| CPPArgument::In(arg)));
+        result.extend(args.map(|arg| CPPArgument::In(arg)));
         if let Some(type_) = self
             .webidl_return_type()
             .filter(|type_| type_.needs_out_param())

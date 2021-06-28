@@ -54,7 +54,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
         uniffi::deps::log::debug!("{{ cbi.name() }}.{{ meth.name() }}");
 
     {#- Packing args into a RustBuffer #}
-        {% if meth.arguments().len() == 0 -%}
+        {% if ! meth.has_arguments() -%}
         let args_buf = Vec::new();
         {% else -%}
         let mut args_buf = Vec::new();

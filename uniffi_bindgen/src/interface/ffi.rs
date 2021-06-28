@@ -74,8 +74,8 @@ impl FFIFunction {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn arguments(&self) -> Vec<&FFIArgument> {
-        self.arguments.iter().collect()
+    pub fn arguments(&self) -> impl Iterator<Item = &FFIArgument> + '_ {
+        self.arguments.iter()
     }
     pub fn return_type(&self) -> Option<&FFIType> {
         self.return_type.as_ref()

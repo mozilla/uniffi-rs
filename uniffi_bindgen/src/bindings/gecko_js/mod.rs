@@ -93,7 +93,7 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Vec
 
     // Top-level functions go in one namespace, which needs its own header and
     // source file.
-    let functions = ci.iter_function_definitions();
+    let functions = ci.iter_function_definitions().collect::<Vec<_>>();
     if !functions.is_empty() {
         let header = NamespaceHeader::new(context, functions.as_slice())
             .render()

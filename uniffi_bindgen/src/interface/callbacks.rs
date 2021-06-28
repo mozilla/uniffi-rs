@@ -29,7 +29,7 @@
 //! # "##)?;
 //! let callback = ci.get_callback_interface_definition("Example").unwrap();
 //! assert_eq!(callback.name(), "Example");
-//! assert_eq!(callback.methods()[0].name(), "hello");
+//! assert_eq!(callback.methods().next().unwrap().name(), "hello");
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
@@ -68,8 +68,8 @@ impl CallbackInterface {
         &self.type_
     }
 
-    pub fn methods(&self) -> Vec<&Method> {
-        self.methods.iter().collect()
+    pub fn methods(&self) -> impl Iterator<Item = &Method> + '_ {
+        self.methods.iter()
     }
 
     pub fn ffi_init_callback(&self) -> &FFIFunction {
@@ -137,12 +137,12 @@ mod test {
             callback interface Testing {};
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_callback_interface_definitions().len(), 1);
+        assert_eq!(ci.iter_callback_interface_definitions().count(), 1);
         assert_eq!(
             ci.get_callback_interface_definition("Testing")
                 .unwrap()
                 .methods()
-                .len(),
+                .count(),
             0
         );
     }
@@ -160,15 +160,17 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_callback_interface_definitions().len(), 2);
+        assert_eq!(ci.iter_callback_interface_definitions().count(), 2);
 
         let callbacks_one = ci.get_callback_interface_definition("One").unwrap();
-        assert_eq!(callbacks_one.methods().len(), 1);
-        assert_eq!(callbacks_one.methods()[0].name(), "one");
+        let methods: Vec<_> = callbacks_one.methods().collect();
+        assert_eq!(methods.len(), 1);
+        assert_eq!(methods[0].name(), "one");
 
         let callbacks_two = ci.get_callback_interface_definition("Two").unwrap();
-        assert_eq!(callbacks_two.methods().len(), 2);
-        assert_eq!(callbacks_two.methods()[0].name(), "two");
-        assert_eq!(callbacks_two.methods()[1].name(), "too");
+        let methods: Vec<_> = callbacks_two.methods().collect();
+        assert_eq!(methods.len(), 2);
+        assert_eq!(methods[0].name(), "two");
+        assert_eq!(methods[1].name(), "too");
     }
 }

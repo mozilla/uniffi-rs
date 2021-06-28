@@ -139,8 +139,13 @@ impl ComponentInterface {
     }
 
     /// List the definitions for every Enum type in the interface.
-    pub fn iter_enum_definitions(&self) -> Vec<Enum> {
-        self.enums.to_vec()
+    pub fn iter_enum_definitions(&self) -> impl Iterator<Item = Enum> + '_ {
+        self.enums.iter().cloned()
+    }
+
+    /// Check if there are any Enum types in the interface.
+    pub fn has_enum_definitions(&self) -> bool {
+        !self.enums.is_empty()
     }
 
     /// Get an Enum definition by name, or None if no such Enum is defined.
@@ -150,8 +155,13 @@ impl ComponentInterface {
     }
 
     /// List the definitions for every Record type in the interface.
-    pub fn iter_record_definitions(&self) -> Vec<Record> {
-        self.records.to_vec()
+    pub fn iter_record_definitions(&self) -> impl Iterator<Item = Record> + '_ {
+        self.records.iter().cloned()
+    }
+
+    /// Check if there are any Record types in the interface.
+    pub fn has_record_definitions(&self) -> bool {
+        !self.records.is_empty()
     }
 
     /// Get a Record definition by name, or None if no such Record is defined.
@@ -161,8 +171,13 @@ impl ComponentInterface {
     }
 
     /// List the definitions for every Function in the interface.
-    pub fn iter_function_definitions(&self) -> Vec<Function> {
-        self.functions.to_vec()
+    pub fn iter_function_definitions(&self) -> impl Iterator<Item = Function> + '_ {
+        self.functions.iter().cloned()
+    }
+
+    /// Check if there are any Functions in the interface.
+    pub fn has_function_definitions(&self) -> bool {
+        !self.functions.is_empty()
     }
 
     /// Get a Function definition by name, or None if no such Function is defined.
@@ -172,8 +187,13 @@ impl ComponentInterface {
     }
 
     /// List the definitions for every Object type in the interface.
-    pub fn iter_object_definitions(&self) -> Vec<Object> {
-        self.objects.to_vec()
+    pub fn iter_object_definitions(&self) -> impl Iterator<Item = Object> + '_ {
+        self.objects.iter().cloned()
+    }
+
+    /// Check if there are any Object types in the interface.
+    pub fn has_object_definitions(&self) -> bool {
+        !self.objects.is_empty()
     }
 
     /// Get an Object definition by name, or None if no such Object is defined.
@@ -183,8 +203,15 @@ impl ComponentInterface {
     }
 
     /// List the definitions for every Callback Interface type in the interface.
-    pub fn iter_callback_interface_definitions(&self) -> Vec<CallbackInterface> {
-        self.callback_interfaces.to_vec()
+    pub fn iter_callback_interface_definitions(
+        &self,
+    ) -> impl Iterator<Item = CallbackInterface> + '_ {
+        self.callback_interfaces.iter().cloned()
+    }
+
+    /// Check if there are any Callback Interface types in the interface.
+    pub fn has_callback_interface_definitions(&self) -> bool {
+        !self.callback_interfaces.is_empty()
     }
 
     /// Get a Callback interface definition by name, or None if no such interface is defined.
@@ -194,8 +221,13 @@ impl ComponentInterface {
     }
 
     /// List the definitions for every Error type in the interface.
-    pub fn iter_error_definitions(&self) -> Vec<Error> {
-        self.errors.to_vec()
+    pub fn iter_error_definitions(&self) -> impl Iterator<Item = Error> + '_ {
+        self.errors.iter().cloned()
+    }
+
+    /// Check if there are any Error types in the interface.
+    pub fn has_error_definitions(&self) -> bool {
+        !self.errors.is_empty()
     }
 
     /// Get an Error definition by name, or None if no such Error is defined.
@@ -205,8 +237,8 @@ impl ComponentInterface {
     }
 
     /// Iterate over all known types in the interface.
-    pub fn iter_types(&self) -> Vec<Type> {
-        self.types.iter_known_types().collect()
+    pub fn iter_types(&self) -> impl Iterator<Item = Type> + '_ {
+        self.types.iter_known_types()
     }
 
     /// Check whether the given type contains any (possibly nested) Type::Object references.
@@ -223,16 +255,14 @@ impl ComponentInterface {
                 .get_record_definition(name)
                 .map(|rec| {
                     rec.fields()
-                        .iter()
                         .any(|f| self.type_contains_object_references(&f.type_))
                 })
                 .unwrap_or(false),
             Type::Enum(name) => self
                 .get_enum_definition(name)
                 .map(|e| {
-                    e.variants().iter().any(|v| {
+                    e.variants().any(|v| {
                         v.fields()
-                            .iter()
                             .any(|f| self.type_contains_object_references(&f.type_))
                     })
                 })
@@ -373,7 +403,7 @@ impl ComponentInterface {
     ///
     /// The set of FFI functions is derived automatically from the set of higher-level types
     /// along with the builtin FFI helper functions.
-    pub fn iter_ffi_function_definitions(&self) -> Vec<FFIFunction> {
+    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> + '_ {
         self.objects
             .iter()
             .map(|obj| {
@@ -397,10 +427,8 @@ impl ComponentInterface {
                     self.ffi_rustbuffer_reserve(),
                     self.ffi_string_free(),
                 ]
-                .iter()
-                .cloned(),
+                .into_iter(),
             )
-            .collect()
     }
 
     //

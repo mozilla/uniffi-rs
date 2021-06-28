@@ -28,7 +28,7 @@
 //! let func = ci.get_function_definition("hello").unwrap();
 //! assert_eq!(func.name(), "hello");
 //! assert!(matches!(func.return_type(), Some(Type::String)));
-//! assert_eq!(func.arguments().len(), 0);
+//! assert_eq!(func.arguments().count(), 0);
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 use std::convert::TryFrom;
@@ -62,12 +62,16 @@ impl Function {
         &self.name
     }
 
-    pub fn arguments(&self) -> Vec<&Argument> {
-        self.arguments.iter().collect()
+    pub fn arguments(&self) -> impl Iterator<Item = &Argument> + '_ {
+        self.arguments.iter()
     }
 
-    pub fn full_arguments(&self) -> Vec<Argument> {
-        self.arguments.to_vec()
+    pub fn full_arguments(&self) -> impl Iterator<Item = Argument> + '_ {
+        self.arguments.iter().cloned()
+    }
+
+    pub fn has_arguments(&self) -> bool {
+        !self.arguments.is_empty()
     }
 
     pub fn return_type(&self) -> Option<&Type> {
@@ -220,7 +224,7 @@ mod test {
         assert_eq!(func1.name(), "minimal");
         assert!(func1.return_type().is_none());
         assert!(func1.throws().is_none());
-        assert_eq!(func1.arguments().len(), 0);
+        assert_eq!(func1.arguments().count(), 0);
 
         let func2 = ci.get_function_definition("rich").unwrap();
         assert_eq!(func2.name(), "rich");
@@ -229,14 +233,12 @@ mod test {
             "SequenceOptionalstring"
         );
         assert!(matches!(func2.throws(), Some("TestError")));
-        assert_eq!(func2.arguments().len(), 2);
-        assert_eq!(func2.arguments()[0].name(), "arg1");
-        assert_eq!(func2.arguments()[0].type_().canonical_name(), "u32");
-        assert_eq!(func2.arguments()[1].name(), "arg2");
-        assert_eq!(
-            func2.arguments()[1].type_().canonical_name(),
-            "RecordTestDict"
-        );
+        let arguments: Vec<_> = func2.arguments().collect();
+        assert_eq!(arguments.len(), 2);
+        assert_eq!(arguments[0].name(), "arg1");
+        assert_eq!(arguments[0].type_().canonical_name(), "u32");
+        assert_eq!(arguments[1].name(), "arg2");
+        assert_eq!(arguments[1].type_().canonical_name(), "RecordTestDict");
         Ok(())
     }
 }
