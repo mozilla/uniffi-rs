@@ -30,7 +30,7 @@ pub fn write_bindings(
     let mut rb_file = PathBuf::from(out_dir);
     rb_file.push(format!("{}.rb", ci.namespace()));
     let mut f = File::create(&rb_file).context("Failed to create .rb file for bindings")?;
-    write!(f, "{}", generate_ruby_bindings(config, &ci)?)?;
+    write!(f, "{}", generate_ruby_bindings(config, ci)?)?;
 
     if try_format_code {
         if let Err(e) = Command::new("rubocop")
@@ -53,7 +53,7 @@ pub fn write_bindings(
 
 pub fn generate_ruby_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
     use askama::Template;
-    RubyWrapper::new(config.clone(), &ci)
+    RubyWrapper::new(config.clone(), ci)
         .render()
         .map_err(|_| anyhow::anyhow!("failed to render ruby bindings"))
 }

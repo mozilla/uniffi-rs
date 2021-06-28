@@ -166,7 +166,7 @@ mod test {
         assert_eq!(record.fields().len(), 1);
         assert_eq!(record.fields()[0].name(), "field");
         assert_eq!(record.fields()[0].type_().canonical_name(), "u32");
-        assert_eq!(record.fields()[0].required, false);
+        assert!(!record.fields()[0].required);
         assert!(record.fields()[0].default_value().is_none());
 
         let record = ci.get_record_definition("Complex").unwrap();
@@ -177,18 +177,18 @@ mod test {
             record.fields()[0].type_().canonical_name(),
             "Optionalstring"
         );
-        assert_eq!(record.fields()[0].required, false);
+        assert!(!record.fields()[0].required);
         assert!(record.fields()[0].default_value().is_none());
         assert_eq!(record.fields()[1].name(), "value");
         assert_eq!(record.fields()[1].type_().canonical_name(), "u32");
-        assert_eq!(record.fields()[1].required, false);
+        assert!(!record.fields()[1].required);
         assert!(matches!(
             record.fields()[1].default_value(),
             Some(Literal::UInt(0, Radix::Decimal, Type::UInt32))
         ));
         assert_eq!(record.fields()[2].name(), "spin");
         assert_eq!(record.fields()[2].type_().canonical_name(), "bool");
-        assert_eq!(record.fields()[2].required, true);
+        assert!(record.fields()[2].required);
         assert!(record.fields()[2].default_value().is_none());
     }
 

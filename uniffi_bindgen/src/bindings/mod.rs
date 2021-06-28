@@ -120,19 +120,19 @@ where
     let out_dir = out_dir.as_ref();
     match language {
         TargetLanguage::Kotlin => {
-            kotlin::write_bindings(&config.kotlin, &ci, out_dir, try_format_code, is_testing)?
+            kotlin::write_bindings(&config.kotlin, ci, out_dir, try_format_code, is_testing)?
         }
         TargetLanguage::Swift => {
-            swift::write_bindings(&config.swift, &ci, out_dir, try_format_code, is_testing)?
+            swift::write_bindings(&config.swift, ci, out_dir, try_format_code, is_testing)?
         }
         TargetLanguage::Python => {
-            python::write_bindings(&config.python, &ci, out_dir, try_format_code, is_testing)?
+            python::write_bindings(&config.python, ci, out_dir, try_format_code, is_testing)?
         }
         TargetLanguage::Ruby => {
-            ruby::write_bindings(&config.ruby, &ci, out_dir, try_format_code, is_testing)?
+            ruby::write_bindings(&config.ruby, ci, out_dir, try_format_code, is_testing)?
         }
         TargetLanguage::GeckoJs => {
-            gecko_js::write_bindings(&config.gecko_js, &ci, out_dir, try_format_code, is_testing)?
+            gecko_js::write_bindings(&config.gecko_js, ci, out_dir, try_format_code, is_testing)?
         }
     }
     Ok(())
@@ -150,8 +150,8 @@ where
 {
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Kotlin => kotlin::compile_bindings(&config.kotlin, &ci, out_dir)?,
-        TargetLanguage::Swift => swift::compile_bindings(&config.swift, &ci, out_dir)?,
+        TargetLanguage::Kotlin => kotlin::compile_bindings(&config.kotlin, ci, out_dir)?,
+        TargetLanguage::Swift => swift::compile_bindings(&config.swift, ci, out_dir)?,
         TargetLanguage::Python => (),
         TargetLanguage::Ruby => (),
         TargetLanguage::GeckoJs => (),

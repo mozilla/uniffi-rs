@@ -125,14 +125,14 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let udl_file = udl_file.as_ref();
-    let component = parse_udl(&udl_file)?;
+    let component = parse_udl(udl_file)?;
     let _config = get_config(&component, udl_file, config_file_override);
     let mut filename = Path::new(&udl_file)
         .file_stem()
         .ok_or_else(|| anyhow!("not a file"))?
         .to_os_string();
     filename.push(".uniffi.rs");
-    let mut out_dir = get_out_dir(&udl_file, out_dir_override)?;
+    let mut out_dir = get_out_dir(udl_file, out_dir_override)?;
     out_dir.push(filename);
     let mut f =
         File::create(&out_dir).map_err(|e| anyhow!("Failed to create output file: {:?}", e))?;
@@ -157,9 +157,9 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
     let udl_file = udl_file.as_ref();
 
-    let component = parse_udl(&udl_file)?;
+    let component = parse_udl(udl_file)?;
     let config = get_config(&component, udl_file, config_file_override)?;
-    let out_dir = get_out_dir(&udl_file, out_dir_override)?;
+    let out_dir = get_out_dir(udl_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
             &config.bindings,
@@ -185,7 +185,7 @@ pub fn run_tests<P: AsRef<Path>>(
     let udl_file = udl_file.as_ref();
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
-    let component = parse_udl(&udl_file)?;
+    let component = parse_udl(udl_file)?;
     let config = get_config(&component, udl_file, config_file_override)?;
 
     // Group the test scripts by language first.
@@ -339,7 +339,7 @@ pub fn run_main() -> Result<()> {
                         .short("-l")
                         .multiple(true)
                         .number_of_values(1)
-                        .possible_values(&POSSIBLE_LANGUAGES)
+                        .possible_values(POSSIBLE_LANGUAGES)
                         .help("Foreign language(s) for which to build bindings"),
                 )
                 .arg(

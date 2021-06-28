@@ -24,11 +24,11 @@ pub fn write_bindings(
     try_format_code: bool,
     _is_testing: bool,
 ) -> Result<()> {
-    let mut kt_file = full_bindings_path(&config, out_dir)?;
+    let mut kt_file = full_bindings_path(config, out_dir)?;
     std::fs::create_dir_all(&kt_file)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
     let mut f = File::create(&kt_file).context("Failed to create .kt file for bindings")?;
-    write!(f, "{}", generate_bindings(config, &ci)?)?;
+    write!(f, "{}", generate_bindings(config, ci)?)?;
     if try_format_code {
         if let Err(e) = Command::new("ktlint")
             .arg("-F")
@@ -53,7 +53,7 @@ fn full_bindings_path(config: &Config, out_dir: &Path) -> Result<PathBuf> {
 // Generate kotlin bindings for the given ComponentInterface, as a string.
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
     use askama::Template;
-    KotlinWrapper::new(config.clone(), &ci)
+    KotlinWrapper::new(config.clone(), ci)
         .render()
         .map_err(|_| anyhow::anyhow!("failed to render kotlin bindings"))
 }

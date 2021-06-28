@@ -38,7 +38,7 @@ pub fn write_bindings(
     let mut source_file = out_path.clone();
     source_file.push(format!("{}.swift", ci.namespace()));
 
-    let Bindings { header, library } = generate_bindings(config, &ci, is_testing)?;
+    let Bindings { header, library } = generate_bindings(config, ci, is_testing)?;
 
     let header_filename = config.header_filename();
     let mut header_file = out_path.clone();
@@ -59,7 +59,7 @@ pub fn write_bindings(
         write!(
             m,
             "{}",
-            generate_module_map(config, &ci, &Path::new(&header_filename))?
+            generate_module_map(config, ci, Path::new(&header_filename))?
         )?;
     }
 
@@ -86,10 +86,10 @@ pub fn generate_bindings(
     is_testing: bool,
 ) -> Result<Bindings> {
     use askama::Template;
-    let header = BridgingHeader::new(config, &ci)
+    let header = BridgingHeader::new(config, ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
-    let library = SwiftWrapper::new(&config, &ci, is_testing)
+    let library = SwiftWrapper::new(config, ci, is_testing)
         .render()
         .map_err(|_| anyhow!("failed to render Swift library"))?;
     Ok(Bindings { header, library })
@@ -101,7 +101,7 @@ fn generate_module_map(
     header_path: &Path,
 ) -> Result<String> {
     use askama::Template;
-    let module_map = ModuleMap::new(&config, &ci, header_path)
+    let module_map = ModuleMap::new(config, ci, header_path)
         .render()
         .map_err(|_| anyhow!("failed to render Swift module map"))?;
     Ok(module_map)
