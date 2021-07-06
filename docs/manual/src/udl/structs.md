@@ -63,3 +63,72 @@ destroyed to avoid leaking the underlying memory, and this also applies to Objec
 in record fields.
 
 You can read more about managing object references in the section on [interfaces](./interfaces.md).
+
+## Default values for fields
+
+Fields can be specified with a default value:
+
+```idl
+dictionary TodoEntry {
+    boolean done = false;
+    string text;
+};
+```
+
+The corresponding generated Kotlin code would be equivalent to:
+
+```kotlin
+data class TodoEntry (
+    var done: Boolean = false,
+    var text: String
+)  {
+    // ...
+}
+```
+
+This works for Swift and Python targets too.
+If not set otherwise the default value for a field is passed to the Rust constructor.
+
+## Optional fields and default values
+
+Fields can be made optional using a `T?` type.
+
+```idl
+dictionary TodoEntry {
+    boolean done;
+    string? text;
+};
+```
+
+The corresponding generated Kotlin code would be equivalent to:
+
+```kotlin
+data class TodoEntry (
+    var done: Boolean,
+    var text: String?
+)  {
+    // ...
+}
+```
+
+Optional fields can also be set to a default `null` value:
+
+```idl
+dictionary TodoEntry {
+    boolean done;
+    string? text = null;
+};
+```
+
+The corresponding generated Kotlin code would be equivalent to:
+
+```kotlin
+data class TodoEntry (
+    var done: Boolean,
+    var text: String? = null
+)  {
+    // ...
+}
+```
+
+This works for Swift and Python targets too.
