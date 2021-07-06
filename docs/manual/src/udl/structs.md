@@ -57,7 +57,7 @@ struct TodoEntry {
 }
 ```
 
-Depending on the languge, the foreign-language bindings may also need to be aware of
+Depending on the language, the foreign-language bindings may also need to be aware of
 these embedded references. For example in Kotlin, each Object instance must be explicitly
 destroyed to avoid leaking the underlying memory, and this also applies to Objects stored
 in record fields.
