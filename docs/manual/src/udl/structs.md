@@ -6,7 +6,7 @@ Think of them like a Rust struct without any methods.
 
 A Rust struct like this:
 
-```rust
+```rust,no_run
 struct TodoEntry {
     done: bool,
     due_date: u64,
@@ -50,7 +50,7 @@ dictionary TodoEntry {
 
 Then the corresponding Rust code would need to look like this:
 
-```rust
+```rust,no_run
 struct TodoEntry {
     owner: std::sync::Arc<User>,
     text: String,
@@ -87,7 +87,7 @@ data class TodoEntry (
 ```
 
 This works for Swift and Python targets too.
-If not set otherwise the default value for a field is passed to the Rust constructor.
+If not set otherwise the default value for a field is used when constructing the Rust struct.
 
 ## Optional fields and default values
 
@@ -98,6 +98,15 @@ dictionary TodoEntry {
     boolean done;
     string? text;
 };
+```
+
+The corresponding Rust struct would need to look like this:
+
+```rust,no_run
+struct TodoEntry {
+    done: bool,
+    text: Option<String>,
+}
 ```
 
 The corresponding generated Kotlin code would be equivalent to:
