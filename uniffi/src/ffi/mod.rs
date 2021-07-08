@@ -5,7 +5,9 @@
 pub mod foreignbytes;
 pub mod foreigncallbacks;
 pub mod rustbuffer;
+pub mod rustcalls;
 
 pub use foreignbytes::*;
 pub use foreigncallbacks::*;
 pub use rustbuffer::*;
+pub use rustcalls::*;
