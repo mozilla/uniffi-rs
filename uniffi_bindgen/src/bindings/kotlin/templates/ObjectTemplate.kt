@@ -45,6 +45,8 @@ class {{ obj.name()|class_name_kt }}(
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
+
+    {% if ci.contains_unsigned_type(return_type) %}@ExperimentalUnsignedTypes{% endif %}
     override fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_protocol(meth) %}): {{ return_type|type_kt }} =
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}

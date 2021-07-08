@@ -241,6 +241,40 @@ impl<'ci> ComponentInterface {
         }
     }
 
+    /// Identify if we are using an unsigned type in kotlin
+    ///
+    /// In Kotlin, unsigned types are expiremental and will cause a warning if used without annotations
+    /// This should be removed when kotlin version
+    ///  > v1.5 https://kotlinlang.org/docs/whatsnew15.html#stable-unsigned-integer-types
+    pub fn contains_unsigned_type(&self, type_: &Type) -> bool {
+        match type_ {
+            Type::UInt8 => true,
+            Type::UInt16 => true,
+            Type::UInt32 => true,
+            Type::UInt64 => true,
+            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => self.contains_unsigned_type(t),
+            Type::Record(name) => self
+                .get_record_definition(name)
+                .map(|rec| {
+                    rec.fields()
+                        .iter()
+                        .any(|f| self.contains_unsigned_type(&f.type_))
+                })
+                .unwrap_or(false),
+            Type::Enum(name) => self
+                .get_enum_definition(name)
+                .map(|e| {
+                    e.variants().iter().any(|v| {
+                        v.fields()
+                            .iter()
+                            .any(|f| self.contains_unsigned_type(&f.type_))
+                    })
+                })
+                .unwrap_or(false),
+            _ => false,
+        }
+    }
+
     /// Calculate a numeric checksum for this ComponentInterface.
     ///
     /// The checksum can be used to guard against accidentally using foreign-language bindings

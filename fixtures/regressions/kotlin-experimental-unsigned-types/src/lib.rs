@@ -12,6 +12,9 @@ pub fn accepts_and_returns_unsigned(a: u8, b: u16, c: u32, d: u64) -> u64 {
 
 pub struct DirectlyUsesU8 {
     member: u8,
+    member_two: u16,
+    member_three: u32,
+    member_four: u64,
     other: String,
 }
 

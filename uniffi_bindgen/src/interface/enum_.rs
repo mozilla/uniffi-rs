@@ -113,6 +113,10 @@ impl Enum {
         // and its contained types could use a bit of a cleanup.
         ci.type_contains_object_references(&Type::Enum(self.name.clone()))
     }
+
+    pub fn contains_unsigned_type(&self, ci: &ComponentInterface) -> bool {
+        ci.contains_unsigned_type(&Type::Enum(self.name.clone()))
+    }
 }
 
 // Note that we have two `APIConverter` impls here - one for the `enum` case

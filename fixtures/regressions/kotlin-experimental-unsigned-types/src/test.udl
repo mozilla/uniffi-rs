@@ -10,6 +10,10 @@ namespace regression_test_kt_unsigned_types {
 
 dictionary DirectlyUsesU8 {
   u8 member;
+  u16 member_two;
+  u32 member_three;
+  u64 member_four;
+
   string other;
 };
 
