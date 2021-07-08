@@ -41,7 +41,7 @@ If you want to try them out, you will need:
 * The [Swift command-line tools](https://swift.org/download/), particularly `swift`, `swiftc` and
   the `Foundation` package.
 * The [Ruby FFI](https://github.com/ffi/ffi#installation)
-  * `gem install ffi test-unit`
+  * `gem install ffi test-unit rubocop`
 
 We publish a [docker image](https://hub.docker.com/r/rfkelly/uniffi-ci) that has all of this dependencies
 pre-installed, if you want to get up and running quickly.
