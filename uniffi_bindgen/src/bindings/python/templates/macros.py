@@ -5,12 +5,11 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-rust_call_with_error(
     {%- match func.throws() -%}
     {%- when Some with (e) -%}
-    {{ e|class_name_py }},
+rust_call_with_error({{ e|class_name_py }},
     {%- else -%}
-    InternalError,
+rust_call(
     {%- endmatch -%}
     _UniFFILib.{{ func.ffi_func().name() }},
     {%- call _arg_list_ffi_call(func) -%}
@@ -18,12 +17,12 @@ rust_call_with_error(
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
-rust_call_with_error(
     {%- match func.throws() -%}
     {%- when Some with (e) -%}
+rust_call_with_error(
     {{ e|class_name_py }},
     {%- else -%}
-    InternalError,
+rust_call(
     {%- endmatch -%}
     _UniFFILib.{{ func.ffi_func().name() }},
     {{- prefix }},
@@ -62,7 +61,7 @@ rust_call_with_error(
     {%- for arg in func.arguments() %}
     {{ arg.type_()|type_ffi }},
     {%- endfor %}
-    ctypes.POINTER(RustError),
+    ctypes.POINTER(RustCallStatus),
 {% endmacro -%}
 
 {%- macro coerce_args(func) %}

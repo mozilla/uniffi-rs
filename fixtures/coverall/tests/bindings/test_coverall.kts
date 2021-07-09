@@ -58,13 +58,13 @@ Coveralls("test_arcs").use { coveralls ->
     }
     try {
         coveralls.takeOtherFallible()
-        throw RuntimeException("Should have thrown a IntegerOverflow exception!")
+        throw RuntimeException("Should have thrown an IntegerOverflow exception!")
     } catch (e: CoverallException.TooManyHoles) {
         // It's okay!
     }
     try {
         coveralls.takeOtherPanic("expected panic: with an arc!")
-        throw RuntimeException("Should have thrown a IntegerOverflow exception!")
+        throw RuntimeException("Should have thrown an InternalException!")
     } catch (e: InternalException) {
         // No problemo!
     }
@@ -103,6 +103,48 @@ Coveralls("test_return_objects").use { coveralls ->
 // Destroying `coveralls` will kill both.
 assert(getNumAlive() == 0UL);
 
+Coveralls("test_simple_errors").use { coveralls ->
+    try {
+        coveralls.maybeThrow(true)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: CoverallException.TooManyHoles) {
+        // Expected result
+    }
+
+    try {
+        coveralls.panic("oops")
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: InternalException) {
+        // Expected result
+        assert(e.message == "oops")
+    }
+}
+
+Coveralls("test_complex_errors").use { coveralls ->
+    assert(coveralls.maybeThrowComplex(0) == true)
+
+    try {
+        coveralls.maybeThrowComplex(1)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: ComplexException.OsException) {
+        assert(e.code == 10.toShort())
+        assert(e.extendedCode == 20.toShort())
+    }
+
+    try {
+        coveralls.maybeThrowComplex(2)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: ComplexException.PermissionDenied) {
+        assert(e.reason == "Forbidden")
+    }
+
+    try {
+        coveralls.maybeThrowComplex(3)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: InternalException) {
+        // Expected result
+    }
+}
 
 // This tests that the UniFFI-generated scaffolding doesn't introduce any unexpected locking.
 // We have one thread busy-wait for a some period of time, while a second thread repeatedly

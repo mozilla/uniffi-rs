@@ -113,10 +113,8 @@ mod filters {
             FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
             FFIType::Float32 => "Float".to_string(),
             FFIType::Float64 => "Double".to_string(),
-            FFIType::RustCString => "Pointer".to_string(),
             FFIType::RustArcPtr => "Pointer".to_string(),
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
-            FFIType::RustError => "RustError".to_string(),
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FFIType::ForeignCallback => "ForeignCallback".to_string(),
         })
@@ -183,6 +181,23 @@ mod filters {
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
     pub fn enum_variant_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_shouty_snake_case())
+    }
+
+    /// Get the idiomatic Kotlin rendering of an exception name
+    ///
+    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
+    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
+    /// and is distinguished from an "Exception".
+    pub fn exception_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        let name = nm.to_string();
+        match name.strip_suffix("Error") {
+            None => Ok(name),
+            Some(stripped) => {
+                let mut kt_exc_name = stripped.to_owned();
+                kt_exc_name.push_str("Exception");
+                Ok(kt_exc_name)
+            }
+        }
     }
 
     /// Get a Kotlin expression for lowering a value into something we can pass over the FFI.
@@ -279,21 +294,5 @@ mod filters {
             | Type::Duration => format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm),
             _ => format!("{}.read({})", type_kt(type_)?, nm),
         })
-    }
-
-    /// Generate a Kotlin exception name
-    ///
-    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
-    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
-    /// and is distinguished from an "Exception".
-    pub fn exception_name_kt(error: &Error) -> Result<String, askama::Error> {
-        match error.name().strip_suffix("Error") {
-            None => Ok(error.name().to_owned()),
-            Some(stripped) => {
-                let mut kt_exc_name = stripped.to_owned();
-                kt_exc_name.push_str("Exception");
-                Ok(kt_exc_name)
-            }
-        }
     }
 }

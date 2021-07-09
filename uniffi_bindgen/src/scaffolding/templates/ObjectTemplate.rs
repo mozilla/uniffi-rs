@@ -27,16 +27,12 @@ fn uniffi_note_threadsafe_deprecation_{{ obj.name() }}() {}
 {% let ffi_free = obj.ffi_object_free() -%}
 #[doc(hidden)]
 #[no_mangle]
-pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void) {
-    // We mustn't panic across the FFI, but also can't report it anywhere.
-    // The best we can do it catch, warn and ignore.
-    if let Err(e) = std::panic::catch_unwind(|| {
+pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_status: &mut uniffi::RustCallStatus) {
+    uniffi::call_with_output(call_status, || {
         assert!(!ptr.is_null());
         {#- turn it into an Arc and explicitly drop it. #}
         drop(unsafe { std::sync::Arc::from_raw(ptr as *const {{ obj.name() }}) })
-    }) {
-        uniffi::deps::log::error!("{{ ffi_free.name() }} panicked: {:?}", e);
-    }
+    })
 }
 
 {%- for cons in obj.constructors() %}

@@ -20,9 +20,9 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name() }}: {{ arg.type_()|type_ffi -}}{% if loop.last %}{% else %},{% endif %}
+        {{- arg.name() }}: {{ arg.type_()|type_ffi -}},
     {%- endfor %}
-    {% if func.arguments().len() > 0 %},{% endif %} err: &mut uniffi::deps::ffi_support::ExternError,
+    call_status: &mut uniffi::RustCallStatus
 {%- endmacro -%}
 
 {%- macro arg_list_decl_with_prefix(prefix, meth) %}
@@ -47,13 +47,13 @@
 {% macro to_rs_constructor_call(obj, cons) %}
 {% match cons.throws() %}
 {% when Some with (e) %}
-    uniffi::deps::ffi_support::call_with_result(err, || -> Result<_, {{ e }}> {
+    uniffi::call_with_result(call_status, || -> Result<_, {{ e }}> {
         let _new = {% call construct(obj, cons) %}?;
         let _arc = std::sync::Arc::new(_new);
         Ok({{ "_arc"|lower_rs(obj.type_()) }})
     })
 {% else %}
-    uniffi::deps::ffi_support::call_with_output(err, || {
+    uniffi::call_with_output(call_status, || {
         let _new = {% call construct(obj, cons) %};
         let _arc = std::sync::Arc::new(_new);
         {{ "_arc"|lower_rs(obj.type_()) }}
@@ -64,12 +64,12 @@
 {% macro to_rs_method_call(obj, meth) -%}
 {% match meth.throws() -%}
 {% when Some with (e) -%}
-uniffi::deps::ffi_support::call_with_result(err, || -> Result<{% call return_type_func(meth) %}, {{e}}> {
+uniffi::call_with_result(call_status, || -> Result<{% call return_type_func(meth) %}, {{e}}> {
     let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %}?;
     Ok({% call ret(meth) %})
 })
 {% else %}
-uniffi::deps::ffi_support::call_with_output(err, || {
+uniffi::call_with_output(call_status, || {
     {% match meth.return_type() -%}
     {% when Some with (return_type) -%}
     let retval = {{ obj.name() }}::{% call to_rs_call(meth) %};
@@ -84,12 +84,12 @@ uniffi::deps::ffi_support::call_with_output(err, || {
 {% macro to_rs_function_call(func) %}
 {% match func.throws() %}
 {% when Some with (e) %}
-uniffi::deps::ffi_support::call_with_result(err, || -> Result<{% call return_type_func(func) %}, {{e}}> {
+uniffi::call_with_result(call_status, || -> Result<{% call return_type_func(func) %}, {{e}}> {
     let _retval = {% call to_rs_call(func) %}?;
     Ok({% call ret(func) %})
 })
 {% else %}
-uniffi::deps::ffi_support::call_with_output(err, || {
+uniffi::call_with_output(call_status, || {
     {% match func.return_type() -%}
     {% when Some with (return_type) -%}
     let retval = {% call to_rs_call(func) %};

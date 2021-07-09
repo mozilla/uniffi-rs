@@ -163,6 +163,35 @@ class RustBufferStream(object):
         raise InternalError("Unexpected variant tag for {{ canonical_type_name }}")
         {%- endif %}
 
+    {% when Type::Error with (error_name) -%}
+    {%- let e = ci.get_error_definition(error_name).unwrap().wrapped_enum() %}
+
+    # The Error type {{ error_name }}
+
+    # Top-level read method
+    def read{{ canonical_type_name }}(self):
+        variant = self._unpack_from(4, ">i")
+        try:
+            read_variant_method = getattr(self, 'read{{canonical_type_name}}{}'.format(variant))
+        except AttributeError:
+            raise InternalError("Unexpected variant value for error {{ canonical_type_name }} ({})".format(variant))
+        return read_variant_method()
+
+    # Read methods for each individual variants
+    {%- for variant in e.variants() %}
+
+    def read{{ canonical_type_name }}{{ loop.index }}(self):
+        {%- if variant.has_fields() %}
+        return {{ error_name|class_name_py }}.{{ variant.name()|class_name_py }}(
+            {%- for field in variant.fields() %}
+            self.read{{ field.type_().canonical_name()|class_name_py }}(),
+            {%- endfor %}
+        )
+        {%- else %}
+        return {{ error_name|class_name_py }}.{{ variant.name()|class_name_py }}()
+        {%- endif %}
+    {%- endfor %}
+
     {% when Type::Record with (record_name) -%}
     {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
     # The Record type {{ record_name }}.

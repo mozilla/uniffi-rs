@@ -6,15 +6,15 @@ class RustBuffer < FFI::Struct
          :padding,  :int64
 
   def self.alloc(size)
-    return {{ ci.namespace()|class_name_rb }}.rust_call_with_error(InternalError, :{{ ci.ffi_rustbuffer_alloc().name() }}, size)
+    return {{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_alloc().name() }}, size)
   end
 
   def self.reserve(rbuf, additional)
-    return {{ ci.namespace()|class_name_rb }}.rust_call_with_error(InternalError, :{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
+    return {{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
   end
 
   def free
-    {{ ci.namespace()|class_name_rb }}.rust_call_with_error(InternalError, :{{ ci.ffi_rustbuffer_free().name() }}, self)
+    {{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_free().name() }}, self)
   end
 
   def capacity
@@ -190,3 +190,5 @@ module UniFFILib
     end
   end
 end
+
+private_constant :UniFFILib

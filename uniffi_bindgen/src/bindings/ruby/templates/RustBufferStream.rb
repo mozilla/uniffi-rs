@@ -146,6 +146,40 @@ class RustBufferStream
     {%- endif %}
   end
 
+  {% when Type::Error with (error_name) -%}
+  {%- let e = ci.get_error_definition(error_name).unwrap().wrapped_enum() %}
+
+  # The Error type {{ error_name }}
+
+  def read{{ canonical_type_name }}
+    variant = unpack_from 4, 'l>'
+    {% if e.is_flat() -%}
+    {%- for variant in e.variants() %}
+    if variant == {{ loop.index }}
+      return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}
+    end
+    {%- endfor %}
+
+    raise InternalError, 'Unexpected variant tag for {{ canonical_type_name }}'
+    {%- else -%}
+    {%- for variant in e.variants() %}
+    if variant == {{ loop.index }}
+        {%- if variant.has_fields() %}
+        return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}.new(
+            {%- for field in variant.fields() %}
+            read{{ field.type_().canonical_name()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            {%- endfor %}
+        )
+        {%- else %}
+        return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}.new
+        {%- endif %}
+    end
+    {%- endfor %}
+
+    raise InternalError, 'Unexpected variant tag for {{ canonical_type_name }}'
+    {%- endif %}
+  end
+
   {% when Type::Record with (record_name) -%}
   {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
   # The Record type {{ record_name }}.
@@ -227,3 +261,5 @@ class RustBufferStream
     value[0]
   end
 end
+
+private_constant :RustBufferStream

@@ -5,12 +5,11 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-{{ ci.namespace()|class_name_rb }}.rust_call_with_error(
     {%- match func.throws() -%}
     {%- when Some with (e) -%}
-    {{ e|class_name_rb }},
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ e|class_name_rb }},
     {%- else -%}
-    InternalError,
+      {{ ci.namespace()|class_name_rb }}.rust_call(
     {%- endmatch -%}
     :{{ func.ffi_func().name() }},
     {%- call _arg_list_ffi_call(func) -%}
@@ -18,12 +17,11 @@
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
-{{ ci.namespace()|class_name_rb }}.rust_call_with_error(
     {%- match func.throws() -%}
     {%- when Some with (e) -%}
-    {{ e|class_name_rb }},
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ e|class_name_rb }},
     {%- else -%}
-    InternalError,
+      {{ ci.namespace()|class_name_rb }}.rust_call(
     {%- endmatch -%}
     :{{ func.ffi_func().name() }},
     {{- prefix }},
@@ -59,7 +57,7 @@
 // Note unfiltered name but type_ffi filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}
-    [{%- for arg in func.arguments() -%}{{ arg.type_()|type_ffi }}, {% endfor -%} RustError.by_ref]
+    [{%- for arg in func.arguments() -%}{{ arg.type_()|type_ffi }}, {% endfor -%} RustCallStatus.by_ref]
 {%- endmacro -%}
 
 {%- macro coerce_args(func) %}

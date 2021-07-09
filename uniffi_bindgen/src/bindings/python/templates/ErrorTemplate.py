@@ -1,49 +1,91 @@
-class RustError(ctypes.Structure):
+class InternalError(Exception):
+    pass
+
+class RustCallStatus(ctypes.Structure):
     _fields_ = [
-        ("code", ctypes.c_int32),
-        ("message", ctypes.c_void_p),
+        ("code", ctypes.c_int8),
+        ("error_buf", RustBuffer),
     ]
 
-    def free(self):
-        rust_call_with_error(InternalError, _UniFFILib.{{ ci.ffi_string_free().name() }}, self.message)
+    # These match the values from the uniffi::rustcalls module
+    CALL_SUCCESS = 0
+    CALL_ERROR = 1
+    CALL_PANIC = 2
 
     def __str__(self):
-        return "RustError(code={}, message={})".format(
-            self.code,
-            str(ctypes.cast(self.message, ctypes.c_char_p).value, "utf-8"),
-        )
+        if self.code == RustCallStatus.CALL_SUCCESS:
+            return "RustCallStatus(CALL_SUCCESS)"
+        elif self.code == RustCallStatus.CALL_ERROR:
+            return "RustCallStatus(CALL_ERROR)"
+        elif self.code == RustCallStatus.CALL_PANIC:
+            return "RustCallStatus(CALL_SUCCESS)"
+        else:
+            return "RustCallStatus(<invalid code>)"
+{%- for e in ci.iter_error_definitions() %}
 
-class InternalError(Exception):
-    @staticmethod
-    def raise_err(code, message):
-        raise InternalError(message)
-
-{% for e in ci.iter_error_definitions() %}
 class {{ e.name()|class_name_py }}:
-    {%- for value in e.values() %}
-    class {{ value|class_name_py }}(Exception):
-        pass
-    {%- endfor %}
+    # Each variant is a nested class of the error itself.
+    {%- for variant in e.variants() %}
 
-    @staticmethod
-    def raise_err(code, message):
-        {%- for value in e.values() %}
-        if code == {{ loop.index }}:
-            raise {{ e.name()|class_name_py }}.{{ value|class_name_py }}(message)
-        {% endfor %}
-        raise Exception("Unknown error code")
-{% endfor %}
+    class {{ variant.name()|class_name_py }}(Exception):
+        def __init__(self{% for field in variant.fields() %}, {{ field.name()|var_name_py }}{% endfor %}):
+            {%- if variant.has_fields() %}
+            {%- for field in variant.fields() %}
+            self.{{ field.name()|var_name_py }} = {{ field.name()|var_name_py }}
+            {%- endfor %}
+            {% else %}
+            pass
+            {%- endif %}
+
+        def __str__(self):
+            return "{{ e.name()|class_name_py }}.{{ variant.name()|class_name_py }}({% for field in variant.fields() %}{{ field.name() }}={}{% if !loop.last %},{% endif %}{% endfor %})".format({% for field in variant.fields() %}self.{{ field.name() }}{% if !loop.last %},{% endif %}{% endfor %})
+    {%- endfor %}
+{%- endfor %}
+
+# Map error classes to the RustBufferStream method to read them
+_error_class_to_reader_method = {
+{%- for e in ci.iter_error_definitions() %}
+{%- let typ=ci.get_type(e.name()).unwrap() %}
+{%- let canonical_type_name = typ.canonical_name()|class_name_py %}
+    {{ e.name()|class_name_py }}: RustBufferStream.read{{ canonical_type_name }},
+{%- endfor %}
+}
+
+def consume_buffer_into_error(error_class, rust_buffer):
+    reader_method = _error_class_to_reader_method[error_class]
+    with rust_buffer.consumeWithStream() as stream:
+        return reader_method(stream)
+
+def rust_call(fn, *args):
+    # Call a rust function
+    return rust_call_with_error(None, fn, *args)
 
 def rust_call_with_error(error_class, fn, *args):
-    error = RustError()
-    error.code = 0
+    # Call a rust function and handle any errors
+    #
+    # This function is used for rust calls that return Result<> and therefore can set the CALL_ERROR status code.
+    # error_class must be set to the error class that corresponds to the result.
+    call_status = RustCallStatus(code=0, error_buf=RustBuffer(0, 0, None))
 
-    args_with_error = args + (ctypes.byref(error),)
+    args_with_error = args + (ctypes.byref(call_status),)
     result = fn(*args_with_error)
-    if error.code != 0:
-        message = str(error)
-        error.free()
-
-        error_class.raise_err(error.code, message)
-    
-    return result
+    if call_status.code == RustCallStatus.CALL_SUCCESS:
+        return result
+    elif call_status.code == RustCallStatus.CALL_ERROR:
+        if error_class is None:
+            call_status.err_buf.contents.free()
+            raise InternalError("rust_call_with_error: CALL_ERROR, but no error class set")
+        else:
+            raise consume_buffer_into_error(error_class, call_status.error_buf)
+    elif call_status.code == RustCallStatus.CALL_PANIC:
+        # When the rust code sees a panic, it tries to construct a RustBuffer
+        # with the message.  But if that code panics, then it just sends back
+        # an empty buffer.
+        if call_status.error_buf.len > 0:
+            msg = call_status.error_buf.consumeIntoString()
+        else:
+            msg = "Unkown rust panic"
+        raise InternalError(msg)
+    else:
+        raise InternalError("Invalid RustCallStatus code: {}".format(
+            call_status.code))

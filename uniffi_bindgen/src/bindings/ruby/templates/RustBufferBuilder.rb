@@ -204,3 +204,5 @@ class RustBufferBuilder
     end
   end
 end
+
+private_constant :RustBufferBuilder

@@ -24,7 +24,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
                 {{ loop.index }} -> this.{{ method_name }}(cb, args)
                 {% endfor %}
                 // This should never happen, because an out of bounds method index won't
-                // ever be used. Once we can catch errors, we should return an InternalError.
+                // ever be used. Once we can catch errors, we should return an InternalException.
                 // https://github.com/mozilla/uniffi-rs/issues/351
                 else -> RustBuffer.ByValue()
             }
@@ -38,7 +38,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
         {#- Unpacking args from the RustBuffer #}
             {%- if meth.arguments().len() != 0 -%}
             {#- Calling the concrete callback object #}
-            val buf = args.asByteBuffer() ?: throw InternalError("No ByteBuffer in RustBuffer; this is a Uniffi bug")
+            val buf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
             kotlinCallbackInterface.{{ meth.name()|fn_name_kt }}(
                     {% for arg in meth.arguments() -%}
                     {{ "buf"|read_kt(arg.type_()) }}
@@ -73,8 +73,8 @@ internal object {{ callback_internals }}: CallbackInternals<{{ type_name }}>(
     foreignCallback = {{ callback_interface_impl }}()
 ) {
     override fun register(lib: _UniFFILib) {
-        rustCall(InternalError.ByReference()) { err ->
-            lib.{{ cbi.ffi_init_callback().name() }}(this.foreignCallback, err)
+        rustCall() { status ->
+            lib.{{ cbi.ffi_init_callback().name() }}(this.foreignCallback, status)
         }
     }
 }

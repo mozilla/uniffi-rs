@@ -31,10 +31,6 @@ pub enum FFIType {
     Int64,
     Float32,
     Float64,
-    /// A `char*` pointer belonging to a rust-owned CString.
-    /// If you've got one of these, you must call the appropriate rust function to free it.
-    /// This is currently only used for error messages, and may go away in future.
-    RustCString,
     /// A `*const c_void` pointer to a rust-owned `Arc<T>`.
     /// If you've got one of these, you must call the appropriate rust function to free it.
     /// The templates will generate a unique `free` function for each T.
@@ -46,10 +42,6 @@ pub enum FFIType {
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
-    /// An error struct, containing a numberic error code and char* pointer to error string.
-    /// The string is owned by rust and allocated on the rust heap, and must be freed by
-    /// passing it to the appropriate `string_free` FFI function.
-    RustError,
     /// A pointer to a single function in to the foreign language.
     /// This function contains all the machinery to make callbacks work on the foreign language side.
     ForeignCallback,

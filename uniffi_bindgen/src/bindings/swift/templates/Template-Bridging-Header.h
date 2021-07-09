@@ -40,11 +40,10 @@ typedef struct ForeignBytes
 } ForeignBytes;
 
 // Error definitions
-// Each error has an error code enum, and a struct
-typedef struct NativeRustError {
-    int32_t code;
-    char *_Nullable message;
-} NativeRustError;
+typedef struct RustCallStatus {
+    int8_t code;
+    RustBuffer errorBuf;
+} RustCallStatus;
 
 // ⚠️ Attention: If you change this #else block (ending in `#endif // def UNIFFI_SHARED_H`) you *must* ⚠️
 // ⚠️ increment the version in all instance of UNIFFI_SHARED_HEADER_V1 in this file.                   ⚠️
