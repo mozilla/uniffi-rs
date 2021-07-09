@@ -15,8 +15,7 @@ class {{ obj.name()|class_name_rb }}
   # to the actual instance, only its underlying pointer.
   def self._uniffi_define_finalizer_by_pointer(pointer, object_id)
     Proc.new do |_id|
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error(
-        InternalError,
+      {{ ci.namespace()|class_name_rb }}.rust_call(
         :{{ obj.ffi_object_free().name() }},
         pointer
       )

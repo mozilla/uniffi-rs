@@ -28,8 +28,8 @@ class {{ obj.name()|class_name_kt }}(
      * Clients **must** call this method once done with the object, or cause a memory leak.
      */
     override protected fun freeRustArcPtr() {
-        rustCall(InternalError.ByReference()) { err ->
-            _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(this.pointer, err)
+        rustCall() { status ->
+            _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(this.pointer, status)
         }
     }
 

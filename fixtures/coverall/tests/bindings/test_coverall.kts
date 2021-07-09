@@ -58,13 +58,13 @@ Coveralls("test_arcs").use { coveralls ->
     }
     try {
         coveralls.takeOtherFallible()
-        throw RuntimeException("Should have thrown a IntegerOverflow exception!")
+        throw RuntimeException("Should have thrown an IntegerOverflow exception!")
     } catch (e: CoverallException.TooManyHoles) {
         // It's okay!
     }
     try {
         coveralls.takeOtherPanic("expected panic: with an arc!")
-        throw RuntimeException("Should have thrown a IntegerOverflow exception!")
+        throw RuntimeException("Should have thrown an InternalException!")
     } catch (e: InternalException) {
         // No problemo!
     }

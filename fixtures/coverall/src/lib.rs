@@ -17,6 +17,14 @@ enum CoverallError {
     TooManyHoles,
 }
 
+#[derive(Debug, thiserror::Error)]
+enum ComplexError {
+    #[error("OsError: {code} ({extended_code})")]
+    OsError { code: i16, extended_code: i16 },
+    #[error("PermissionDenied: {reason}")]
+    PermissionDenied { reason: String },
+}
+
 #[derive(Debug, Clone)]
 pub struct SimpleDict {
     text: String,
@@ -99,6 +107,7 @@ fn get_num_alive() -> u64 {
 }
 
 type Result<T, E = CoverallError> = std::result::Result<T, E>;
+type ComplexResult<T, E = ComplexError> = std::result::Result<T, E>;
 
 #[derive(Debug)]
 pub struct Coveralls {
@@ -142,6 +151,15 @@ impl Coveralls {
             Err(CoverallError::TooManyHoles)
         } else {
             Ok(true)
+        }
+    }
+
+    fn maybe_throw_complex(&self, input: u8) -> ComplexResult<bool> {
+        match input {
+            0 => Ok(true),
+            1 => Err(ComplexError::OsError {code: 10, extended_code: 20}),
+            2 => Err(ComplexError::PermissionDenied {reason: "Forbidden".to_owned()}),
+            _ => panic!("Invalid input"),
         }
     }
 

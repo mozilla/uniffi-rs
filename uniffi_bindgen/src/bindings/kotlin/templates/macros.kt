@@ -5,29 +5,25 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-rustCall(
     {%- match func.throws() %}
     {%- when Some with (e) %}
-    {{-e}}.ByReference()
+    rustCallWithError({{ e|exception_name_kt}})
     {%- else %}
-    InternalError.ByReference()
-    {%- endmatch %}
-) { err ->
-    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
+    rustCall()
+    {%- endmatch %} { status ->
+    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}status)
 }
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) %}
-rustCall(
     {%- match func.throws() %}
     {%- when Some with (e) %}
-    {{e}}.ByReference()
+    rustCallWithError({{ e|exception_name_kt}})
     {%- else %}
-    InternalError.ByReference()
-    {%- endmatch %}
-) { err ->
+    rustCall()
+    {%- endmatch %} { status ->
     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
-        {{- prefix }}, {% call _arg_list_ffi_call(func) %}{% if func.arguments().len() > 0 %}, {% endif %}err)
+        {{- prefix }}, {% call _arg_list_ffi_call(func) %}{% if func.arguments().len() > 0 %}, {% endif %}status)
 }
 {%- endmacro %}
 
@@ -70,5 +66,5 @@ rustCall(
         {{- arg.name() }}: {{ arg.type_()|type_ffi -}}
         {%- if loop.last %}{% else %},{% endif %}
     {%- endfor %}
-    {% if func.arguments().len() > 0 %},{% endif %} uniffi_out_err: Structure.ByReference
+    {% if func.arguments().len() > 0 %},{% endif %} uniffi_out_err: RustCallStatus
 {%- endmacro -%}

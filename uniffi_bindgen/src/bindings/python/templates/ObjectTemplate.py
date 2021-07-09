@@ -11,11 +11,7 @@ class {{ obj.name()|class_name_py }}(object):
         # In case of partial initialization of instances.
         pointer = getattr(self, "_pointer", None)
         if pointer is not None:
-            rust_call_with_error(
-                InternalError,
-                _UniFFILib.{{ obj.ffi_object_free().name() }},
-                pointer
-            )
+            rust_call(_UniFFILib.{{ obj.ffi_object_free().name() }}, pointer)
 
     # Used by alternative constructors or any methods which return this type.
     @classmethod

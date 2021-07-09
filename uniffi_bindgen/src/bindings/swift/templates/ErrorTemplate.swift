@@ -37,7 +37,7 @@ fileprivate enum UniffiInternalError: RustError {
         defer {
             if message != nil {
                 try! rustCall(UniffiInternalError.unknown("UniffiInternalError.fromConsuming")) { err in
-                    {{ ci.ffi_string_free().name() }}(message!, err)
+                    PLACEHOLDER_UNTIL_SWIFT_WORK_IS_DONE(message!, err)
                 }
             }
         }
@@ -76,7 +76,7 @@ public enum {{e.name()}}: RustError {
         defer {
             if message != nil {
                 try! rustCall(UniffiInternalError.unknown("{{e.name()}}.fromConsuming")) { err in
-                    {{ ci.ffi_string_free().name() }}(message!, err)
+                    PLACEHOLDER_UNTIL_SWIFT_WORK_IS_DONE(message!, err)
                 }
             }
         }

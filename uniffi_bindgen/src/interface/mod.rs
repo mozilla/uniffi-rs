@@ -209,6 +209,11 @@ impl<'ci> ComponentInterface {
         self.types.iter_known_types().collect()
     }
 
+    /// Get a specific type
+    pub fn get_type(&self, name: &str) -> Option<Type> {
+        self.types.get_type_definition(name)
+    }
+
     /// Check whether the given type contains any (possibly nested) Type::Object references.
     ///
     /// This is important to know in language bindings that cannot integrate object types
@@ -353,22 +358,6 @@ impl<'ci> ComponentInterface {
         }
     }
 
-    /// Builtin FFI function for freeing a string.
-    /// This is needed for foreign-language code when dealing with errors, so that it can free
-    /// the error message string.
-    /// TODO: make our error class return the message in a `RustBuffer` so we can free it using
-    /// the exisiting bytebuffer-freeing function rather than a special one.
-    pub fn ffi_string_free(&self) -> FFIFunction {
-        FFIFunction {
-            name: format!("ffi_{}_string_free", self.ffi_namespace()),
-            arguments: vec![FFIArgument {
-                name: "cstr".to_string(),
-                type_: FFIType::RustCString,
-            }],
-            return_type: None,
-        }
-    }
-
     /// List the definitions of all FFI functions in the interface.
     ///
     /// The set of FFI functions is derived automatically from the set of higher-level types
@@ -395,7 +384,6 @@ impl<'ci> ComponentInterface {
                     self.ffi_rustbuffer_from_bytes(),
                     self.ffi_rustbuffer_free(),
                     self.ffi_rustbuffer_reserve(),
-                    self.ffi_string_free(),
                 ]
                 .iter()
                 .cloned(),
@@ -607,6 +595,9 @@ impl APIBuilder for weedle::Definition<'_> {
                 if attrs.contains_enum_attr() {
                     let e = d.convert(ci)?;
                     ci.add_enum_definition(e);
+                } else if attrs.contains_error_attr() {
+                    let e = d.convert(ci)?;
+                    ci.add_error_definition(e);
                 } else {
                     let obj = d.convert(ci)?;
                     ci.add_object_definition(obj);

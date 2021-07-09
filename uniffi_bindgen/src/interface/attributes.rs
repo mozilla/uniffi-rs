@@ -237,6 +237,10 @@ impl InterfaceAttributes {
         self.0.iter().any(|attr| attr.is_enum())
     }
 
+    pub fn contains_error_attr(&self) -> bool {
+        self.0.iter().any(|attr| attr.is_error())
+    }
+
     pub fn threadsafe(&self) -> bool {
         self.0
             .iter()
@@ -251,6 +255,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Enum => Ok(()),
+            Attribute::Error => Ok(()),
             Attribute::Threadsafe => Ok(()),
             _ => bail!(format!("{:?} not supported for interface definition", attr)),
         })?;

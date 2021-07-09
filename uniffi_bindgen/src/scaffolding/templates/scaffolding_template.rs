@@ -10,10 +10,10 @@ uniffi::assert_compatible_version!("{{ uniffi_version }}"); // Please check that
 
 {% include "RustBuffer.rs" %}
 
-// We generate error mappings into ffi_support::ExternErrors
-// so that the errors can propagate through the FFI
-{% for e in ci.iter_error_definitions() %}
-{% include "ErrorTemplate.rs" %}
+// Error definitions, corresponding to `error` in the UDL.  They are implemented using enums
+{% for error in ci.iter_error_definitions() %}
+{% let e = error.wrapped_enum() %}
+{% include "EnumTemplate.rs" %}
 {% endfor %}
 
 // Enum defitions, corresponding to `enum` in UDL.

@@ -1,149 +1,95 @@
-{#-
-// Here we define error conversions from native references to Kotlin exceptions.
-// This is done by defining a RustErrorReference interface, where any implementers of the interface
-// can be converted into a native reference for an error to flow across the FFI.
-
-// A generic RustError is definied as a super class for other errors. This includes some common behaviour
-// across the errors, can also serve as an error in case the cause of the error is unknown
--#}
-
-interface RustErrorReference : Structure.ByReference {
-    fun isFailure(): Boolean
-    fun<E: Exception> intoException(): E
-    fun ensureConsumed()
-    fun getMessage(): String?
-    fun consumeErrorMessage(): String
-}
-
-@Structure.FieldOrder("code", "message")
-internal open class RustError : Structure() {
-   open class ByReference: RustError(), RustErrorReference
-
+@Structure.FieldOrder("code", "error_buf")
+internal open class RustCallStatus : Structure() {
     @JvmField var code: Int = 0
-    @JvmField var message: Pointer? = null
+    @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
 
-    /**
-     * Does this represent success?
-     */
     fun isSuccess(): Boolean {
         return code == 0
     }
 
-    /**
-     * Does this represent failure?
-     */
-    fun isFailure(): Boolean {
-        return code != 0
+    fun isError(): Boolean {
+        return code == 1
     }
 
-    @Synchronized
-    fun ensureConsumed() {
-        if (this.message != null) {
-            rustCall(InternalError.ByReference()) { err ->
-                _UniFFILib.INSTANCE.{{ ci.ffi_string_free().name() }}(this.message!!, err)
-             }
-            this.message = null
-        }
-    }
-
-    /**
-     * Get the error message or null if there is none.
-     */
-    fun getMessage(): String? {
-        return this.message?.getString(0, "utf8")
-    }
-
-    /**
-     * Get and consume the error message, or null if there is none.
-     */
-    @Synchronized
-    fun consumeErrorMessage(): String {
-        val result = this.getMessage()
-        if (this.message != null) {
-            this.ensureConsumed()
-        }
-        if (result == null) {
-            throw NullPointerException("consumeErrorMessage called with null message!")
-        }
-        return result
-    }
-
-    @Suppress("ReturnCount", "TooGenericExceptionThrown")
-    open fun<E: Exception> intoException(): E {
-        if (!isFailure()) {
-            // It's probably a bad idea to throw here! We're probably leaking something if this is
-            // ever hit! (But we shouldn't ever hit it?)
-            throw RuntimeException("[Bug] intoException called on non-failure!")
-        }
-        this.consumeErrorMessage()
-        throw RuntimeException("Generic errors are not implemented yet")
-    }
-}
-
-internal open class InternalError : RustError() {
-    class ByReference: InternalError(), RustErrorReference
-
-    @Suppress("ReturnCount", "TooGenericExceptionThrown", "UNCHECKED_CAST")
-    override fun<E: Exception> intoException(): E {
-        if (!isFailure()) {
-            // It's probably a bad idea to throw here! We're probably leaking something if this is
-            // ever hit! (But we shouldn't ever hit it?)
-            throw RuntimeException("[Bug] intoException called on non-failure!")
-        }
-        val message = this.consumeErrorMessage()
-        return InternalException(message) as E
+    fun isPanic(): Boolean {
+        return code == 2
     }
 }
 
 class InternalException(message: String) : Exception(message)
 
-{%- for e in ci.iter_error_definitions() %}
-internal open class {{e.name()}} : RustError() {
-    class ByReference: {{e.name()}}(), RustErrorReference
+// Each top-level error class has a companion object that can read the error from a rust buffer
+interface ErrorReader<E> {
+    fun read(buf: ByteBuffer): E;
+}
 
-    @Suppress("ReturnCount", "TooGenericExceptionThrown", "UNCHECKED_CAST")
-    override fun<E: Exception> intoException(): E {
-        if (!isFailure()) {
-            // It's probably a bad idea to throw here! We're probably leaking something if this is
-            // ever hit! (But we shouldn't ever hit it?)
-            throw RuntimeException("[Bug] intoException called on non-failure!")
-        }
-        val message = this.consumeErrorMessage()
-        when (code) {
-            {% for value in e.values() -%}
-            {{loop.index}} -> return {{e|exception_name_kt}}.{{value}}(message) as E
-            {% endfor -%}
-            -1 -> return InternalException(message) as E
-            else -> throw RuntimeException("invalid error code passed across the FFI")
+{%- for e in ci.iter_error_definitions() %}
+
+// Error {{ e.name() }}
+{%- let toplevel_name=e.name()|exception_name_kt %}
+open class {{ toplevel_name }}: Exception() {
+    // Each variant is a nested class
+    {% for variant in e.variants() -%}
+    {% if !variant.has_fields() -%}
+    class {{ variant.name()|class_name_kt }} : {{ toplevel_name }}()
+    {% else %}
+    class {{ variant.name()|class_name_kt }}(
+        {% for field in variant.fields() -%}
+        val {{ field.name()|var_name_kt }}: {{ field.type_()|type_kt}}{% if loop.last %}{% else %}, {% endif %}
+        {% endfor -%}
+    ) : {{ toplevel_name }}()
+    {%- endif %}
+    {% endfor %}
+
+    companion object BufferReader : ErrorReader<{{ toplevel_name }}> {
+        override fun read(buf: ByteBuffer): {{ toplevel_name }} {
+            return when(buf.getInt()) {
+                {%- for variant in e.variants() %}
+                {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|class_name_kt }}({% if variant.has_fields() %}
+                    {% for field in variant.fields() -%}
+                    {{ "buf"|read_kt(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                    {% endfor -%}
+                {%- endif -%})
+                {%- endfor %}
+                else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+            }
         }
     }
 }
-
-open class {{e|exception_name_kt}}(message: String) : Exception(message) {
-    {% for value in e.values() -%}
-    class {{value}}(msg: String) : {{e|exception_name_kt}}(msg)
-    {% endfor %}
-}
-
 {% endfor %}
 
-// Helpers for calling Rust with errors:
+// Helpers for calling Rust
 // In practice we usually need to be synchronized to call this safely, so it doesn't
 // synchronize itself
-private inline fun <U, E: RustErrorReference> nullableRustCall(callback: (E) -> U?, err: E): U? {
-    try {
-        val ret = callback(err)
-        if (err.isFailure()) {
-            throw err.intoException()
-        }
+
+// Call a rust function
+
+// Call a rust function that returns a Result<>.  Pass in the Error class companion that corresponds to the Err
+private inline fun <U, E: Exception> rustCallWithError(error_reader: ErrorReader<E>, callback: (RustCallStatus) -> U): U {
+    var status = RustCallStatus();
+    val ret = callback(status)
+    if (status.isSuccess()) {
         return ret
-    } finally {
-        // This only matters if `callback` throws (or does a non-local return, which
-        // we currently don't do)
-        err.ensureConsumed()
+    } else if (status.isError()) {
+        throw liftFromRustBuffer(status.error_buf) { buf -> error_reader.read(buf) }
+    } else if (status.isPanic()) {
+        throw InternalException("Rust Panic")
+    } else {
+        throw InternalException("Unknown rust call status: $status.code")
     }
 }
 
-private inline fun <U, E: RustErrorReference> rustCall(err: E, callback: (E) -> U?): U {
-    return nullableRustCall(callback, err)!!
+private inline fun <U> rustCall(callback: (RustCallStatus) -> U): U {
+    var status = RustCallStatus();
+    val ret = callback(status)
+    if (status.isSuccess()) {
+        return ret
+    } else if (status.isError()) {
+        RustBuffer.free(status.error_buf)
+        throw InternalException("CALL_ERROR, but no ErrorReader specified")
+    } else if (status.isPanic()) {
+        throw InternalException("Rust Panic")
+    } else {
+        throw InternalException("Unknown rust call status: $status.code")
+    }
 }

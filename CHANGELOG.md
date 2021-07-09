@@ -12,7 +12,6 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.12.0...HEAD).
 
-
 ### ⚠️ Breaking Changes ⚠️
 - Python timestamps will now be in UTC and timezone-aware rather than naive.
 - Replaced `lower_into_buffer()` and `try_lift_from_buffer()` with the
@@ -25,6 +24,7 @@
 ### What's Changed
 
 - Both python and ruby backends now handle U16 correctly.
+- Errors with nested fields are now supported.
 
 ## v0.12.0 (2021-06-14)
 

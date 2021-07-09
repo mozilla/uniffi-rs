@@ -80,10 +80,6 @@ class TestCoverall < Test::Unit::TestCase
       Coverall::Coveralls.panicing_new('expected panic: woe is me')
     end
 
-    assert_raise_message /expected panic: woe is me/ do
-      Coverall::Coveralls.panicing_new('expected panic: woe is me')
-    end
-
     begin
       objects = 10.times.map { Coverall::Coveralls.new 'c1' }
       assert_equal 12, Coverall.get_num_alive
@@ -94,9 +90,9 @@ class TestCoverall < Test::Unit::TestCase
     assert_equal 2, Coverall.get_num_alive
   end
 
-  def test_errors
-    coveralls = Coverall::Coveralls.new 'test_errors'
-    assert_equal coveralls.get_name, 'test_errors'
+  def test_simple_errors
+    coveralls = Coverall::Coveralls.new 'test_simple_errors'
+    assert_equal coveralls.get_name, 'test_simple_errors'
 
     assert_raise Coverall::CoverallError::TooManyHoles do
       coveralls.maybe_throw true
@@ -105,9 +101,31 @@ class TestCoverall < Test::Unit::TestCase
     assert_raise Coverall::InternalError, 'expected panic: oh no' do
       coveralls.panic 'expected panic: oh no'
     end
+  end
 
-    assert_raise_message /expected panic: oh no/ do
-      coveralls.panic 'expected panic: oh no'
+  def test_complex_errors
+    coveralls = Coverall::Coveralls.new 'test_complex_errors'
+    assert_equal coveralls.maybe_throw_complex(0), true
+
+    begin
+      coveralls.maybe_throw_complex(1)
+    rescue Coverall::ComplexError::OsError => err
+      assert_equal err.code, 10
+      assert_equal err.extended_code, 20
+    else
+      raise 'should have thrown'
+    end
+
+    begin
+      coveralls.maybe_throw_complex(2)
+    rescue Coverall::ComplexError::PermissionDenied => err
+      assert_equal err.reason, "Forbidden"
+    else
+      raise 'should have thrown'
+    end
+
+    assert_raise Coverall::InternalError do
+      coveralls.maybe_throw_complex(3)
     end
   end
 
@@ -147,7 +165,7 @@ class TestCoverall < Test::Unit::TestCase
     begin
       coveralls.take_other_panic "expected panic: with an arc!"
     rescue Coverall::InternalError => err
-      assert_match /expected panic: with an arc!/, err.message
+      # OK
     else
       raise 'should have thrown'
     end

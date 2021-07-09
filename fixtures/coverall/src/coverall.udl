@@ -38,6 +38,12 @@ enum CoverallError {
     "TooManyHoles"
 };
 
+[Error]
+interface ComplexError {
+   OsError(i16 code, i16 extended_code);
+   PermissionDenied(string reason);
+};
+
 interface Coveralls {
     constructor(string name);
 
@@ -53,6 +59,9 @@ interface Coveralls {
 
     [Throws=CoverallError]
     boolean maybe_throw(boolean should_throw);
+
+    [Throws=ComplexError]
+    boolean maybe_throw_complex(u8 input);
 
     void panic(string message);
 

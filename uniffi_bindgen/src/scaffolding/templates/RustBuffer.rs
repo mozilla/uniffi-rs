@@ -6,8 +6,8 @@
 /// or by passing ownership of the buffer back into Rust code.
 #[doc(hidden)]
 #[no_mangle]
-pub extern "C" fn {{ ci.ffi_rustbuffer_alloc().name() }}(size: i32, err: &mut uniffi::deps::ffi_support::ExternError) -> uniffi::RustBuffer {
-    uniffi::deps::ffi_support::call_with_output(err, || {
+pub extern "C" fn {{ ci.ffi_rustbuffer_alloc().name() }}(size: i32, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
+    uniffi::call_with_output(call_status, || {
         uniffi::RustBuffer::new_with_size(size.max(0) as usize)
     })
 }
@@ -22,8 +22,8 @@ pub extern "C" fn {{ ci.ffi_rustbuffer_alloc().name() }}(size: i32, err: &mut un
 /// make sure the `ForeignBytes` struct contains a valid pointer and length.
 #[doc(hidden)]
 #[no_mangle]
-pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes: uniffi::ForeignBytes, err: &mut uniffi::deps::ffi_support::ExternError) -> uniffi::RustBuffer {
-    uniffi::deps::ffi_support::call_with_output(err, || {
+pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes: uniffi::ForeignBytes, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
+    uniffi::call_with_output(call_status, || {
         let bytes = bytes.as_slice();
         uniffi::RustBuffer::from_vec(bytes.to_vec())
     })
@@ -37,8 +37,8 @@ pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes: unif
 /// corrupting the allocator state.
 #[doc(hidden)]
 #[no_mangle]
-pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_free().name() }}(buf: uniffi::RustBuffer, err: &mut uniffi::deps::ffi_support::ExternError) {
-    uniffi::deps::ffi_support::call_with_output(err, || {
+pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_free().name() }}(buf: uniffi::RustBuffer, call_status: &mut uniffi::RustCallStatus) {
+    uniffi::call_with_output(call_status, || {
         uniffi::RustBuffer::destroy(buf)
     })
 }
@@ -60,29 +60,12 @@ pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_free().name() }}(buf: uniffi::Rust
 /// corrupting the allocator state.
 #[doc(hidden)]
 #[no_mangle]
-pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_reserve().name() }}(buf: uniffi::RustBuffer, additional: i32, err: &mut uniffi::deps::ffi_support::ExternError) -> uniffi::RustBuffer {
-    uniffi::deps::ffi_support::call_with_output(err, || {
+pub unsafe extern "C" fn {{ ci.ffi_rustbuffer_reserve().name() }}(buf: uniffi::RustBuffer, additional: i32, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
+    uniffi::call_with_output(call_status, || {
         use std::convert::TryInto;
         let additional: usize = additional.try_into().expect("additional buffer length negative or overflowed");
         let mut v = buf.destroy_into_vec();
         v.reserve(additional);
         uniffi::RustBuffer::from_vec(v)
-    })
-}
-
-/// Free a String that had previously been passed to the foreign language code.
-///
-/// # Safety
-///
-/// In order to free the string, Rust takes ownership of a raw pointer which is an
-/// unsafe operation. The argument *must* be a uniquely-owned pointer previously
-/// obtained from a call into the rust code that returned a string.
-/// (In practice that means you got it from the `message` field of an `ExternError`,
-/// because that's currently the only place we use `char*` types in our API).
-#[doc(hidden)]
-#[no_mangle]
-pub unsafe extern "C" fn {{ ci.ffi_string_free().name() }}(cstr: *mut std::os::raw::c_char, err: &mut uniffi::deps::ffi_support::ExternError) {
-    uniffi::deps::ffi_support::call_with_output(err, || {
-        uniffi::deps::ffi_support::destroy_c_string(cstr)
     })
 }

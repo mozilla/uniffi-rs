@@ -46,6 +46,7 @@ pub enum FFIType {
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
+    // TODO-460 delete this once the swift bindings are complete
     /// An error struct, containing a numberic error code and char* pointer to error string.
     /// The string is owned by rust and allocated on the rust heap, and must be freed by
     /// passing it to the appropriate `string_free` FFI function.

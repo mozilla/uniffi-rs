@@ -10,14 +10,14 @@ class RustBuffer(ctypes.Structure):
 
     @staticmethod
     def alloc(size):
-        return rust_call_with_error(InternalError, _UniFFILib.{{ ci.ffi_rustbuffer_alloc().name() }}, size)
+        return rust_call(_UniFFILib.{{ ci.ffi_rustbuffer_alloc().name() }}, size)
 
     @staticmethod
     def reserve(rbuf, additional):
-        return rust_call_with_error(InternalError, _UniFFILib.{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
+        return rust_call(_UniFFILib.{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
 
     def free(self):
-        return rust_call_with_error(InternalError, _UniFFILib.{{ ci.ffi_rustbuffer_free().name() }}, self)
+        return rust_call(_UniFFILib.{{ ci.ffi_rustbuffer_free().name() }}, self)
 
     def __str__(self):
         return "RustBuffer(capacity={}, len={}, data={})".format(
