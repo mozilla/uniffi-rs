@@ -248,10 +248,7 @@ impl<'ci> ComponentInterface {
     ///  > v1.5 https://kotlinlang.org/docs/whatsnew15.html#stable-unsigned-integer-types
     pub fn contains_unsigned_type(&self, type_: &Type) -> bool {
         match type_ {
-            Type::UInt8 => true,
-            Type::UInt16 => true,
-            Type::UInt32 => true,
-            Type::UInt64 => true,
+            Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => true,
             Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => self.contains_unsigned_type(t),
             Type::Record(name) => self
                 .get_record_definition(name)
@@ -273,6 +270,11 @@ impl<'ci> ComponentInterface {
                 .unwrap_or(false),
             _ => false,
         }
+    }
+
+    pub fn args_contains_unsigned(&self, args: &Vec<&Argument>) -> bool {
+        args.iter()
+            .any(|&arg| self.contains_unsigned_type(&arg.type_()))
     }
 
     /// Calculate a numeric checksum for this ComponentInterface.
