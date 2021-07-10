@@ -272,7 +272,7 @@ impl<'ci> ComponentInterface {
         }
     }
 
-    pub fn args_contains_unsigned(&self, args: &Vec<&Argument>) -> bool {
+    pub fn args_contains_unsigned(&self, args: &[&Argument]) -> bool {
         args.iter()
             .any(|&arg| self.contains_unsigned_type(&arg.type_()))
     }
