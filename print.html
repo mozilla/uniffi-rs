@@ -446,7 +446,7 @@ interface IpAddr {
 They consist of one of more named <em>fields</em>, each of which holds a value of a particular type.
 Think of them like a Rust struct without any methods.</p>
 <p>A Rust struct like this:</p>
-<pre><pre class="playground"><code class="language-rust">
+<pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct TodoEntry {
@@ -484,7 +484,7 @@ dictionary TodoEntry {
 }
 </code></pre>
 <p>Then the corresponding Rust code would need to look like this:</p>
-<pre><pre class="playground"><code class="language-rust">
+<pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct TodoEntry {
@@ -493,11 +493,68 @@ dictionary TodoEntry {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Depending on the languge, the foreign-language bindings may also need to be aware of
+<p>Depending on the language, the foreign-language bindings may also need to be aware of
 these embedded references. For example in Kotlin, each Object instance must be explicitly
 destroyed to avoid leaking the underlying memory, and this also applies to Objects stored
 in record fields.</p>
 <p>You can read more about managing object references in the section on <a href="udl/./interfaces.html">interfaces</a>.</p>
+<h2><a class="header" href="#default-values-for-fields" id="default-values-for-fields">Default values for fields</a></h2>
+<p>Fields can be specified with a default value:</p>
+<pre><code class="language-idl">dictionary TodoEntry {
+    boolean done = false;
+    string text;
+};
+</code></pre>
+<p>The corresponding generated Kotlin code would be equivalent to:</p>
+<pre><code class="language-kotlin">data class TodoEntry (
+    var done: Boolean = false,
+    var text: String
+)  {
+    // ...
+}
+</code></pre>
+<p>This works for Swift and Python targets too.
+If not set otherwise the default value for a field is used when constructing the Rust struct.</p>
+<h2><a class="header" href="#optional-fields-and-default-values" id="optional-fields-and-default-values">Optional fields and default values</a></h2>
+<p>Fields can be made optional using a <code>T?</code> type.</p>
+<pre><code class="language-idl">dictionary TodoEntry {
+    boolean done;
+    string? text;
+};
+</code></pre>
+<p>The corresponding Rust struct would need to look like this:</p>
+<pre><pre class="playground"><code class="language-rust no_run">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct TodoEntry {
+    done: bool,
+    text: Option&lt;String&gt;,
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The corresponding generated Kotlin code would be equivalent to:</p>
+<pre><code class="language-kotlin">data class TodoEntry (
+    var done: Boolean,
+    var text: String?
+)  {
+    // ...
+}
+</code></pre>
+<p>Optional fields can also be set to a default <code>null</code> value:</p>
+<pre><code class="language-idl">dictionary TodoEntry {
+    boolean done;
+    string? text = null;
+};
+</code></pre>
+<p>The corresponding generated Kotlin code would be equivalent to:</p>
+<pre><code class="language-kotlin">data class TodoEntry (
+    var done: Boolean,
+    var text: String? = null
+)  {
+    // ...
+}
+</code></pre>
+<p>This works for Swift and Python targets too.</p>
 <h1><a class="header" href="#functions" id="functions">Functions</a></h1>
 <p>All top-level <em>functions</em> get exposed through the UDL's <code>namespace</code> block.
 For example, if the crate's <code>lib.rs</code> file contains:</p>
@@ -512,6 +569,29 @@ For example, if the crate's <code>lib.rs</code> file contains:</p>
 <p>The UDL file will look like:</p>
 <pre><code class="language-idl">namespace Example {
     string hello_world();
+}
+</code></pre>
+<h2><a class="header" href="#optional-arguments--default-values" id="optional-arguments--default-values">Optional arguments &amp; default values</a></h2>
+<p>Function arguments can be marked <code>optional</code> with a default value specified.</p>
+<p>In the UDL file:</p>
+<pre><code class="language-idl">namespace Example {
+    string hello_name(optional string name = &quot;world&quot;);
+}
+</code></pre>
+<p>The Rust code will take a required argument:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn hello_name(name: String) -&gt; String {
+    format!(&quot;Hello {}&quot;, name)
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The generated foreign-language bindings will use function parameters with default values.
+This works for the Kotlin, Swift and Python targets.</p>
+<p>For example the generated Kotlin code will be equivalent to:</p>
+<pre><code class="language-kotlin">fun helloName(name: String = &quot;world&quot; ): String {
+    // ...
 }
 </code></pre>
 <h1><a class="header" href="#throwing-errors" id="throwing-errors">Throwing errors</a></h1>

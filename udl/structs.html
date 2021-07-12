@@ -164,7 +164,7 @@
 They consist of one of more named <em>fields</em>, each of which holds a value of a particular type.
 Think of them like a Rust struct without any methods.</p>
 <p>A Rust struct like this:</p>
-<pre><pre class="playground"><code class="language-rust">
+<pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct TodoEntry {
@@ -202,7 +202,7 @@ dictionary TodoEntry {
 }
 </code></pre>
 <p>Then the corresponding Rust code would need to look like this:</p>
-<pre><pre class="playground"><code class="language-rust">
+<pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct TodoEntry {
@@ -211,11 +211,68 @@ dictionary TodoEntry {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Depending on the languge, the foreign-language bindings may also need to be aware of
+<p>Depending on the language, the foreign-language bindings may also need to be aware of
 these embedded references. For example in Kotlin, each Object instance must be explicitly
 destroyed to avoid leaking the underlying memory, and this also applies to Objects stored
 in record fields.</p>
 <p>You can read more about managing object references in the section on <a href="./interfaces.html">interfaces</a>.</p>
+<h2><a class="header" href="#default-values-for-fields" id="default-values-for-fields">Default values for fields</a></h2>
+<p>Fields can be specified with a default value:</p>
+<pre><code class="language-idl">dictionary TodoEntry {
+    boolean done = false;
+    string text;
+};
+</code></pre>
+<p>The corresponding generated Kotlin code would be equivalent to:</p>
+<pre><code class="language-kotlin">data class TodoEntry (
+    var done: Boolean = false,
+    var text: String
+)  {
+    // ...
+}
+</code></pre>
+<p>This works for Swift and Python targets too.
+If not set otherwise the default value for a field is used when constructing the Rust struct.</p>
+<h2><a class="header" href="#optional-fields-and-default-values" id="optional-fields-and-default-values">Optional fields and default values</a></h2>
+<p>Fields can be made optional using a <code>T?</code> type.</p>
+<pre><code class="language-idl">dictionary TodoEntry {
+    boolean done;
+    string? text;
+};
+</code></pre>
+<p>The corresponding Rust struct would need to look like this:</p>
+<pre><pre class="playground"><code class="language-rust no_run">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct TodoEntry {
+    done: bool,
+    text: Option&lt;String&gt;,
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The corresponding generated Kotlin code would be equivalent to:</p>
+<pre><code class="language-kotlin">data class TodoEntry (
+    var done: Boolean,
+    var text: String?
+)  {
+    // ...
+}
+</code></pre>
+<p>Optional fields can also be set to a default <code>null</code> value:</p>
+<pre><code class="language-idl">dictionary TodoEntry {
+    boolean done;
+    string? text = null;
+};
+</code></pre>
+<p>The corresponding generated Kotlin code would be equivalent to:</p>
+<pre><code class="language-kotlin">data class TodoEntry (
+    var done: Boolean,
+    var text: String? = null
+)  {
+    // ...
+}
+</code></pre>
+<p>This works for Swift and Python targets too.</p>
 
                     </main>
 

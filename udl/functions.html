@@ -175,6 +175,29 @@ For example, if the crate's <code>lib.rs</code> file contains:</p>
     string hello_world();
 }
 </code></pre>
+<h2><a class="header" href="#optional-arguments--default-values" id="optional-arguments--default-values">Optional arguments &amp; default values</a></h2>
+<p>Function arguments can be marked <code>optional</code> with a default value specified.</p>
+<p>In the UDL file:</p>
+<pre><code class="language-idl">namespace Example {
+    string hello_name(optional string name = &quot;world&quot;);
+}
+</code></pre>
+<p>The Rust code will take a required argument:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn hello_name(name: String) -&gt; String {
+    format!(&quot;Hello {}&quot;, name)
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The generated foreign-language bindings will use function parameters with default values.
+This works for the Kotlin, Swift and Python targets.</p>
+<p>For example the generated Kotlin code will be equivalent to:</p>
+<pre><code class="language-kotlin">fun helloName(name: String = &quot;world&quot; ): String {
+    // ...
+}
+</code></pre>
 
                     </main>
 
