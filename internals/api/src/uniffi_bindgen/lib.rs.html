@@ -583,14 +583,14 @@
     <span class="kw">let</span> <span class="ident">config_file_override</span> <span class="op">=</span> <span class="ident">config_file_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
     <span class="kw">let</span> <span class="ident">out_dir_override</span> <span class="op">=</span> <span class="ident">out_dir_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
     <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">_config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">udl_file</span>, <span class="ident">config_file_override</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>)
         .<span class="ident">file_stem</span>()
         .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">anyhow</span><span class="macro">!</span>(<span class="string">&quot;not a file&quot;</span>))<span class="question-mark">?</span>
         .<span class="ident">to_os_string</span>();
     <span class="ident">filename</span>.<span class="ident">push</span>(<span class="string">&quot;.uniffi.rs&quot;</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
     <span class="ident">out_dir</span>.<span class="ident">push</span>(<span class="ident">filename</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span>
         <span class="ident">File</span>::<span class="ident">create</span>(<span class="kw-2">&amp;</span><span class="ident">out_dir</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">anyhow</span><span class="macro">!</span>(<span class="string">&quot;Failed to create output file: {:?}&quot;</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
@@ -615,9 +615,9 @@
     <span class="kw">let</span> <span class="ident">config_file_override</span> <span class="op">=</span> <span class="ident">config_file_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
     <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
 
-    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">udl_file</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
     <span class="kw">for</span> <span class="ident">language</span> <span class="kw">in</span> <span class="ident">target_languages</span> {
         <span class="ident">bindings</span>::<span class="ident">write_bindings</span>(
             <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>,
@@ -643,7 +643,7 @@
     <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
     <span class="kw">let</span> <span class="ident">config_file_override</span> <span class="op">=</span> <span class="ident">config_file_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
 
-    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">udl_file</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
 
     <span class="comment">// Group the test scripts by language first.</span>
@@ -797,7 +797,7 @@
                         .<span class="ident">short</span>(<span class="string">&quot;-l&quot;</span>)
                         .<span class="ident">multiple</span>(<span class="bool-val">true</span>)
                         .<span class="ident">number_of_values</span>(<span class="number">1</span>)
-                        .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span><span class="ident">POSSIBLE_LANGUAGES</span>)
+                        .<span class="ident">possible_values</span>(<span class="ident">POSSIBLE_LANGUAGES</span>)
                         .<span class="ident">help</span>(<span class="string">&quot;Foreign language(s) for which to build bindings&quot;</span>),
                 )
                 .<span class="ident">arg</span>(

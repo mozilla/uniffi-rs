@@ -396,7 +396,7 @@
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;field&quot;</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;u32&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">required</span>, <span class="bool-val">false</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">required</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
 
         <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_record_definition</span>(<span class="string">&quot;Complex&quot;</span>).<span class="ident">unwrap</span>();
@@ -407,18 +407,18 @@
             <span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(),
             <span class="string">&quot;Optionalstring&quot;</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">required</span>, <span class="bool-val">false</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">required</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">name</span>(), <span class="string">&quot;value&quot;</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;u32&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">required</span>, <span class="bool-val">false</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">required</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
             <span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">default_value</span>(),
             <span class="prelude-val">Some</span>(<span class="ident">Literal</span>::<span class="ident">UInt</span>(<span class="number">0</span>, <span class="ident">Radix</span>::<span class="ident">Decimal</span>, <span class="ident">Type</span>::<span class="ident">UInt32</span>))
         ));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">name</span>(), <span class="string">&quot;spin&quot;</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;bool&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">required</span>, <span class="bool-val">true</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">required</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
     }
 

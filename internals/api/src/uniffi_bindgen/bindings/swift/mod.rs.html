@@ -234,7 +234,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">source_file</span> <span class="op">=</span> <span class="ident">out_path</span>.<span class="ident">clone</span>();
     <span class="ident">source_file</span>.<span class="ident">push</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.swift&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>()));
 
-    <span class="kw">let</span> <span class="ident">Bindings</span> { <span class="ident">header</span>, <span class="ident">library</span> } <span class="op">=</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">ci</span>, <span class="ident">is_testing</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">Bindings</span> { <span class="ident">header</span>, <span class="ident">library</span> } <span class="op">=</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>, <span class="ident">ci</span>, <span class="ident">is_testing</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">header_filename</span> <span class="op">=</span> <span class="ident">config</span>.<span class="ident">header_filename</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">header_file</span> <span class="op">=</span> <span class="ident">out_path</span>.<span class="ident">clone</span>();
@@ -255,7 +255,7 @@
         <span class="macro">write</span><span class="macro">!</span>(
             <span class="ident">m</span>,
             <span class="string">&quot;{}&quot;</span>,
-            <span class="ident">generate_module_map</span>(<span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">ci</span>, <span class="kw-2">&amp;</span><span class="ident">Path</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">header_filename</span>))<span class="question-mark">?</span>
+            <span class="ident">generate_module_map</span>(<span class="ident">config</span>, <span class="ident">ci</span>, <span class="ident">Path</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">header_filename</span>))<span class="question-mark">?</span>
         )<span class="question-mark">?</span>;
     }
 
@@ -282,10 +282,10 @@
     <span class="ident">is_testing</span>: <span class="ident">bool</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Bindings</span><span class="op">&gt;</span> {
     <span class="kw">use</span> <span class="ident">askama</span>::<span class="ident">Template</span>;
-    <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">BridgingHeader</span>::<span class="ident">new</span>(<span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">ci</span>)
+    <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">BridgingHeader</span>::<span class="ident">new</span>(<span class="ident">config</span>, <span class="ident">ci</span>)
         .<span class="ident">render</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow</span><span class="macro">!</span>(<span class="string">&quot;failed to render Swift bridging header&quot;</span>))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">library</span> <span class="op">=</span> <span class="ident">SwiftWrapper</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">ci</span>, <span class="ident">is_testing</span>)
+    <span class="kw">let</span> <span class="ident">library</span> <span class="op">=</span> <span class="ident">SwiftWrapper</span>::<span class="ident">new</span>(<span class="ident">config</span>, <span class="ident">ci</span>, <span class="ident">is_testing</span>)
         .<span class="ident">render</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow</span><span class="macro">!</span>(<span class="string">&quot;failed to render Swift library&quot;</span>))<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="ident">Bindings</span> { <span class="ident">header</span>, <span class="ident">library</span> })
@@ -297,7 +297,7 @@
     <span class="ident">header_path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">use</span> <span class="ident">askama</span>::<span class="ident">Template</span>;
-    <span class="kw">let</span> <span class="ident">module_map</span> <span class="op">=</span> <span class="ident">ModuleMap</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">ci</span>, <span class="ident">header_path</span>)
+    <span class="kw">let</span> <span class="ident">module_map</span> <span class="op">=</span> <span class="ident">ModuleMap</span>::<span class="ident">new</span>(<span class="ident">config</span>, <span class="ident">ci</span>, <span class="ident">header_path</span>)
         .<span class="ident">render</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow</span><span class="macro">!</span>(<span class="string">&quot;failed to render Swift module map&quot;</span>))<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="ident">module_map</span>)
