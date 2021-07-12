@@ -907,6 +907,24 @@ impl Counter {
 }
 </code></pre>
 <p>The generated bindings should appear in the project sources in Android Studio.</p>
+<h2><a class="header" href="#using-experimental-unsigned-types" id="using-experimental-unsigned-types">Using experimental unsigned types</a></h2>
+<p>Unsigned integers in the defined API are translated to their equivalents in the foreign language binding, e.g. <code>u32</code> becomes Kotlin's <code>UInt</code> type.
+See <a href="kotlin/../udl/builtin_types.html">Built-in types</a>.</p>
+<p>However unsigned integer types are experimental in Kotlin versions prior to 1.5.
+As such they require explicit annotations to suppress warnings.
+Uniffi is trying to add these annotations where necessary,
+but currently misses some places, see <a href="https://github.com/mozilla/uniffi-rs/pull/977">PR #977</a> for details.</p>
+<p>To suppress all warnings for experimental unsigned types add this to your project's <code>build.gradle</code> file:</p>
+<pre><code class="language-groovy">allprojects {
+   tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            freeCompilerArgs += [
+                &quot;-Xuse-experimental=kotlin.ExperimentalUnsignedTypes&quot;,
+            ]
+        }
+    }
+}
+</code></pre>
 <h1><a class="header" href="#compiling-a-swift-module" id="compiling-a-swift-module">Compiling a Swift module</a></h1>
 <p>Before you can import the generated Swift bindings as a module (say, to use them
 from your application, or to try them out using <code>swift</code> on the command-line) you
