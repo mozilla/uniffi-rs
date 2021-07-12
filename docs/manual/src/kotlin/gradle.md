@@ -18,3 +18,27 @@ android.libraryVariants.all { variant ->
 ```
 
 The generated bindings should appear in the project sources in Android Studio.
+
+## Using experimental unsigned types
+
+Unsigned integers in the defined API are translated to their equivalents in the foreign language binding, e.g. `u32` becomes Kotlin's `UInt` type.
+See [Built-in types](../udl/builtin_types.md).
+
+However unsigned integer types are experimental in Kotlin versions prior to 1.5.
+As such they require explicit annotations to suppress warnings.
+Uniffi is trying to add these annotations where necessary,
+but currently misses some places, see [PR #977](https://github.com/mozilla/uniffi-rs/pull/977) for details.
+
+To suppress all warnings for experimental unsigned types add this to your project's `build.gradle` file:
+
+```groovy
+allprojects {
+   tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            freeCompilerArgs += [
+                "-Xuse-experimental=kotlin.ExperimentalUnsignedTypes",
+            ]
+        }
+    }
+}
+```
