@@ -103,7 +103,7 @@ impl Function {
             || self
                 .arguments()
                 .iter()
-                .any(|&arg| arg.type_contains_unsigned_types(ci))
+                .any(|&arg| ci.type_contains_unsigned_types(&arg.type_()))
     }
 }
 
@@ -171,10 +171,6 @@ impl Argument {
     }
     pub fn default_value(&self) -> Option<Literal> {
         self.default.clone()
-    }
-
-    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
-        ci.type_contains_unsigned_types(&self.type_())
     }
 }
 

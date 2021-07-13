@@ -261,7 +261,7 @@ impl Constructor {
     pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
         self.arguments()
             .iter()
-            .any(|&arg| arg.type_contains_unsigned_types(ci))
+            .any(|&arg| ci.type_contains_unsigned_types(&arg.type_()))
     }
 }
 
@@ -384,7 +384,7 @@ impl Method {
             || self
                 .arguments()
                 .iter()
-                .any(|&arg| arg.type_contains_unsigned_types(ci))
+                .any(|&arg| ci.type_contains_unsigned_types(&arg.type_()))
     }
 }
 
