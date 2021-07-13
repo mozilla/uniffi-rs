@@ -121,7 +121,6 @@ impl<'config, 'ci> SwiftWrapper<'config, 'ci> {
 /// header) and Swift (for the actual library) declarations.
 mod filters {
     use super::*;
-    use std::fmt;
 
     /// Declares a Swift type in the public interface for the library.
     pub fn type_swift(type_: &Type) -> Result<String, askama::Error> {
@@ -223,7 +222,7 @@ mod filters {
     /// Lower a Swift type into an FFI type.
     ///
     /// This is used to pass arguments over the FFI, from Swift to Rust.
-    pub fn lower_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lower_swift(name: &str, type_: &Type) -> Result<String, askama::Error> {
         match type_ {
             Type::Duration => Ok(format!(
                 "{}.lower{}()",
@@ -237,7 +236,7 @@ mod filters {
     /// Lift a Swift type from an FFI type.
     ///
     /// This is used to receive values over the FFI, from Rust to Swift.
-    pub fn lift_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_swift(name: &str, type_: &Type) -> Result<String, askama::Error> {
         match type_ {
             Type::Duration => Ok(format!(
                 "{}.lift{}({})",
@@ -253,7 +252,7 @@ mod filters {
     ///
     /// This is used to receive values over the FFI, when they're part of a complex type
     /// that is passed by serializing into bytes.
-    pub fn read_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn read_swift(name: &str, type_: &Type) -> Result<String, askama::Error> {
         match type_ {
             Type::Duration => Ok(format!(
                 "{}.read{}(from: {})",
@@ -265,19 +264,19 @@ mod filters {
         }
     }
 
-    pub fn enum_variant_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn enum_variant_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 
-    pub fn class_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn class_name_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 
-    pub fn fn_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn fn_name_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 
-    pub fn var_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn var_name_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 

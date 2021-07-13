@@ -21,7 +21,7 @@ class RustBufferStream
     data
   end
 
-  {%- for typ in ci.iter_types() -%}
+  {% for typ in ci.iter_types() -%}
   {%- let canonical_type_name = typ.canonical_name()|class_name_rb -%}
   {%- match typ -%}
 

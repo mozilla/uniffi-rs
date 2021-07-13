@@ -105,8 +105,8 @@ impl Field {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn type_(&self) -> Type {
-        self.type_.clone()
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
     pub fn default_value(&self) -> Option<Literal> {
         self.default.clone()

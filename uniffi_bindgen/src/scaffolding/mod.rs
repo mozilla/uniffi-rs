@@ -24,7 +24,6 @@ impl<'a> RustScaffolding<'a> {
 
 mod filters {
     use super::*;
-    use std::fmt;
 
     pub fn type_rs(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -72,7 +71,7 @@ mod filters {
         })
     }
 
-    pub fn lower_rs(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lower_rs(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         Ok(match type_ {
@@ -84,7 +83,7 @@ mod filters {
         })
     }
 
-    pub fn lift_rs(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_rs(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         // By explicitly naming the type here, we help the rust compiler to type-check the user-provided
         // implementations of the functions that we're wrapping (and also to type-check our generated code).
         // This will panic if the bindings provide an invalid value over the FFI.
@@ -102,11 +101,7 @@ mod filters {
     }
 
     /// Get a Rust expression for writing a value into a byte buffer.
-    pub fn write_rs(
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
+    pub fn write_rs(nm: &str, target: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::CallbackInterface(type_name) => unimplemented!(
                 "uniffi::ViaFfi::write is not supported for callback interfaces ({})",
@@ -122,7 +117,7 @@ mod filters {
     }
 
     /// Get a Rust expression for writing a value into a byte buffer.
-    pub fn read_rs(target: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn read_rs(target: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::CallbackInterface(type_name) => unimplemented!(
                 "uniffi::ViaFfi::try_read is not supported for callback interfaces ({})",

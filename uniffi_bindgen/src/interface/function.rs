@@ -148,8 +148,8 @@ impl Argument {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn type_(&self) -> Type {
-        self.type_.clone()
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
     pub fn by_ref(&self) -> bool {
         self.by_ref

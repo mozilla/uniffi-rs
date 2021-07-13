@@ -69,7 +69,6 @@ impl<'a> KotlinWrapper<'a> {
 
 mod filters {
     use super::*;
-    use std::fmt;
 
     /// Get the Kotlin syntax for representing a given api-level `Type`.
     pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
@@ -166,22 +165,24 @@ mod filters {
     }
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_camel_case())
+    pub fn class_name_kt<T: AsRef<str>>(nm: T) -> Result<String, askama::Error> {
+        // Using `T: Into<String>` would be neater here, but Askama likes to add
+        // several layers of references, and they make the `Into` mapping not work.
+        Ok(nm.as_ref().to_string().to_camel_case())
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
-    pub fn fn_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn fn_name_kt(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
-    pub fn var_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn var_name_kt(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
-    pub fn enum_variant_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn enum_variant_kt(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
@@ -189,7 +190,7 @@ mod filters {
     ///
     /// Where possible, this delegates to a `lower()` method on the type itself, but special
     /// handling is required for some compound data types.
-    pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lower_kt(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
             Type::CallbackInterface(_) => format!(
@@ -212,11 +213,7 @@ mod filters {
     ///
     /// Where possible, this delegates to a `write()` method on the type itself, but special
     /// handling is required for some compound data types.
-    pub fn write_kt(
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
+    pub fn write_kt(nm: &str, target: &str, type_: &Type) -> Result<String, askama::Error> {
         let nm = var_name_kt(nm)?;
         Ok(match type_ {
             Type::CallbackInterface(_) => format!(
@@ -243,7 +240,7 @@ mod filters {
     ///
     /// Where possible, this delegates to a `lift()` method on the type itself, but special
     /// handling is required for some compound data types.
-    pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_kt(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
             Type::CallbackInterface(_) => format!(
@@ -264,7 +261,7 @@ mod filters {
     ///
     /// Where possible, this delegates to a `read()` method on the type itself, but special
     /// handling is required for some compound data types.
-    pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn read_kt(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         Ok(match type_ {
             Type::CallbackInterface(_) => format!(

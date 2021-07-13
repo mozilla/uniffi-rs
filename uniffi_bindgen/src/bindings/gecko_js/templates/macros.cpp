@@ -11,8 +11,8 @@
     {{ prefix }}
     {%- let args = func.arguments() -%}
     {%- if !args.is_empty() %},{% endif -%}
-    {%- for arg in args %}
-    {{ arg.webidl_type()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
+    {%- for arg in args.iter() %}
+    {{ arg.webidl_type().borrow()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
     {%- endfor %}
     , &err
   );
@@ -26,8 +26,8 @@
   {{ context.ffi_rusterror_type() }} {{ error }} = {0, nullptr};
   {% match func.ffi_func().return_type() %}{% when Some with (type_) %}const {{ type_|type_ffi(context) }} {{ result }} ={% else %}{% endmatch %}{{ func.ffi_func().name() }}(
     {%- let args = func.arguments() -%}
-    {%- for arg in args %}
-    {{ arg.webidl_type()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
+    {%- for arg in args.iter() %}
+    {{ arg.webidl_type().borrow()|lower_cpp(arg.name(), context) }}{%- if !loop.last %},{% endif -%}
     {%- endfor %}
     {% if !args.is_empty() %}, {% endif %}&{{ error }}
   );

@@ -100,7 +100,7 @@ pub struct ComponentInterface {
     errors: Vec<Error>,
 }
 
-impl<'ci> ComponentInterface {
+impl ComponentInterface {
     /// Parse a `ComponentInterface` from a string containing a WebIDL definition.
     pub fn from_webidl(idl: &str) -> Result<Self> {
         let mut ci = Self {
