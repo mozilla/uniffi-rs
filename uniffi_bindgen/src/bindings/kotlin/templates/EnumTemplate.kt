@@ -35,6 +35,7 @@ enum class {{ e.name()|class_name_kt }} {
 
 {% else %}
 
+{% call kt::unsigned_types_annotation(e) %}
 sealed class {{ e.name()|class_name_kt }}{% if e.contains_object_references(ci) %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
@@ -49,13 +50,10 @@ sealed class {{ e.name()|class_name_kt }}{% if e.contains_object_references(ci) 
     {% endfor %}
 
     companion object {
-
-        {% if e.contains_unsigned_type(ci) %}@ExperimentalUnsignedTypes{% endif %}
         internal fun lift(rbuf: RustBuffer.ByValue): {{ e.name()|class_name_kt }} {
             return liftFromRustBuffer(rbuf) { buf -> {{ e.name()|class_name_kt }}.read(buf) }
         }
 
-        {% if e.contains_unsigned_type(ci) %}@ExperimentalUnsignedTypes{% endif %}
         internal fun read(buf: ByteBuffer): {{ e.name()|class_name_kt }} {
             return when(buf.getInt()) {
                 {%- for variant in e.variants() %}
@@ -70,12 +68,10 @@ sealed class {{ e.name()|class_name_kt }}{% if e.contains_object_references(ci) 
         }
     }
 
-    {% if e.contains_unsigned_type(ci) %}@ExperimentalUnsignedTypes{% endif %}
     internal fun lower(): RustBuffer.ByValue {
         return lowerIntoRustBuffer(this, {v, buf -> v.write(buf)})
     }
 
-    {% if e.contains_unsigned_type(ci) %}@ExperimentalUnsignedTypes{% endif %}
     internal fun write(buf: RustBufferBuilder) {
         when(this) {
             {%- for variant in e.variants() %}

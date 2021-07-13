@@ -76,8 +76,10 @@ impl Record {
         ci.type_contains_object_references(&Type::Record(self.name.clone()))
     }
 
-    pub fn contains_unsigned_type(&self, ci: &ComponentInterface) -> bool {
-        ci.contains_unsigned_type(&Type::Record(self.name.clone()))
+    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+        self.fields()
+            .iter()
+            .any(|f| ci.type_contains_unsigned_types(&f.type_))
     }
 }
 

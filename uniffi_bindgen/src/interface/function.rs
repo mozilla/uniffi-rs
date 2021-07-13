@@ -90,6 +90,21 @@ impl Function {
         self.ffi_func.return_type = self.return_type.as_ref().map(|rt| rt.into());
         Ok(())
     }
+
+    // Intentionally exactly the same as the Method version
+    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+        let check_return_type = {
+            match self.return_type() {
+                None => false,
+                Some(t) => ci.type_contains_unsigned_types(t),
+            }
+        };
+        check_return_type
+            || self
+                .arguments()
+                .iter()
+                .any(|&arg| arg.type_contains_unsigned_types(ci))
+    }
 }
 
 impl Hash for Function {
@@ -156,6 +171,10 @@ impl Argument {
     }
     pub fn default_value(&self) -> Option<Literal> {
         self.default.clone()
+    }
+
+    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+        ci.type_contains_unsigned_types(&self.type_())
     }
 }
 

@@ -1,3 +1,4 @@
+{% call kt::unsigned_types_annotation(obj) %}
 public interface {{ obj.name()|class_name_kt }}Interface {
     {% for meth in obj.methods() -%}
     fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %})
@@ -8,6 +9,7 @@ public interface {{ obj.name()|class_name_kt }}Interface {
     {% endfor %}
 }
 
+{% call kt::unsigned_types_annotation(obj) %}
 class {{ obj.name()|class_name_kt }}(
     pointer: Pointer
 ) : FFIObject(pointer), {{ obj.name()|class_name_kt }}Interface {
@@ -45,8 +47,6 @@ class {{ obj.name()|class_name_kt }}(
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
-
-    {% if ci.contains_unsigned_type(return_type) || ci.args_contains_unsigned(meth.arguments()) %}@ExperimentalUnsignedTypes{% endif %}
     override fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_protocol(meth) %}): {{ return_type|type_kt }} =
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}

@@ -143,6 +143,17 @@ impl Object {
         }
         Ok(())
     }
+
+    // We need to check both methods and constructor
+    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+        self.methods()
+            .iter()
+            .any(|&meth| meth.type_contains_unsigned_types(&ci))
+            || self
+                .constructors()
+                .iter()
+                .any(|&constructor| constructor.type_contains_unsigned_types(&ci))
+    }
 }
 
 impl Hash for Object {
@@ -245,6 +256,12 @@ impl Constructor {
 
     fn is_primary_constructor(&self) -> bool {
         self.name == "new"
+    }
+
+    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+        self.arguments()
+            .iter()
+            .any(|&arg| arg.type_contains_unsigned_types(ci))
     }
 }
 
@@ -353,6 +370,21 @@ impl Method {
         self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
         Ok(())
+    }
+
+    // Intentionally exactly the same as the Function version
+    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+        let check_return_type = {
+            match self.return_type() {
+                None => false,
+                Some(t) => ci.type_contains_unsigned_types(t),
+            }
+        };
+        check_return_type
+            || self
+                .arguments()
+                .iter()
+                .any(|&arg| arg.type_contains_unsigned_types(ci))
     }
 }
 

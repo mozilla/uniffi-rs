@@ -241,40 +241,27 @@ impl<'ci> ComponentInterface {
         }
     }
 
-    /// Identify if we are using an unsigned type in kotlin
-    ///
-    /// In Kotlin, unsigned types are expiremental and will cause a warning if used without annotations
-    /// This should be removed when kotlin version
-    ///  > v1.5 https://kotlinlang.org/docs/whatsnew15.html#stable-unsigned-integer-types
-    pub fn contains_unsigned_type(&self, type_: &Type) -> bool {
+    /// Check whether the given type contains any (possibly nested) unsigned types
+    pub fn type_contains_unsigned_types(&self, type_: &Type) -> bool {
         match type_ {
             Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => true,
-            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => self.contains_unsigned_type(t),
+            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => {
+                self.type_contains_unsigned_types(t)
+            }
+            Type::Object(t) => self
+                .get_object_definition(t)
+                .map(|obj| obj.type_contains_unsigned_types(&self))
+                .unwrap_or(false),
             Type::Record(name) => self
                 .get_record_definition(name)
-                .map(|rec| {
-                    rec.fields()
-                        .iter()
-                        .any(|f| self.contains_unsigned_type(&f.type_))
-                })
+                .map(|rec| rec.type_contains_unsigned_types(&self))
                 .unwrap_or(false),
             Type::Enum(name) => self
                 .get_enum_definition(name)
-                .map(|e| {
-                    e.variants().iter().any(|v| {
-                        v.fields()
-                            .iter()
-                            .any(|f| self.contains_unsigned_type(&f.type_))
-                    })
-                })
+                .map(|e| e.type_contains_unsigned_types(&self))
                 .unwrap_or(false),
             _ => false,
         }
-    }
-
-    pub fn args_contains_unsigned(&self, args: &[&Argument]) -> bool {
-        args.iter()
-            .any(|&arg| self.contains_unsigned_type(&arg.type_()))
     }
 
     /// Calculate a numeric checksum for this ComponentInterface.
