@@ -405,6 +405,14 @@
 <span id="402">402</span>
 <span id="403">403</span>
 <span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -520,6 +528,14 @@
         <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterace</span>
         <span class="comment">// and its contained types could use a bit of a cleanup.</span>
         <span class="ident">ci</span>.<span class="ident">type_contains_object_references</span>(<span class="kw-2">&amp;</span><span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>()))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
+            <span class="ident">v</span>.<span class="ident">fields</span>()
+                .<span class="ident">iter</span>()
+                .<span class="ident">any</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">ci</span>.<span class="ident">type_contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">type_</span>))
+        })
     }
 }
 

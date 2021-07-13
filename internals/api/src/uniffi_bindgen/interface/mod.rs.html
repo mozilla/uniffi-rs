@@ -772,6 +772,29 @@
 <span id="769">769</span>
 <span id="770">770</span>
 <span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -1011,6 +1034,29 @@
                             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">type_contains_object_references</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">type_</span>))
                     })
                 })
+                .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+        }
+    }
+
+    <span class="doccomment">/// Check whether the given type contains any (possibly nested) unsigned types</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">match</span> <span class="ident">type_</span> {
+            <span class="ident">Type</span>::<span class="ident">UInt8</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt16</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt32</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="self">self</span>.<span class="ident">type_contains_unsigned_types</span>(<span class="ident">t</span>)
+            }
+            <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
+                .<span class="ident">get_object_definition</span>(<span class="ident">t</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">obj</span><span class="op">|</span> <span class="ident">obj</span>.<span class="ident">contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>))
+                .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
+            <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
+                .<span class="ident">get_record_definition</span>(<span class="ident">name</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">rec</span><span class="op">|</span> <span class="ident">rec</span>.<span class="ident">contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>))
+                .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
+            <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
+                .<span class="ident">get_enum_definition</span>(<span class="ident">name</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>))
                 .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         }
