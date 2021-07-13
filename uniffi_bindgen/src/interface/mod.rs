@@ -241,6 +241,29 @@ impl<'ci> ComponentInterface {
         }
     }
 
+    /// Check whether the given type contains any (possibly nested) unsigned types
+    pub fn type_contains_unsigned_types(&self, type_: &Type) -> bool {
+        match type_ {
+            Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => true,
+            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => {
+                self.type_contains_unsigned_types(t)
+            }
+            Type::Object(t) => self
+                .get_object_definition(t)
+                .map(|obj| obj.contains_unsigned_types(&self))
+                .unwrap_or(false),
+            Type::Record(name) => self
+                .get_record_definition(name)
+                .map(|rec| rec.contains_unsigned_types(&self))
+                .unwrap_or(false),
+            Type::Enum(name) => self
+                .get_enum_definition(name)
+                .map(|e| e.contains_unsigned_types(&self))
+                .unwrap_or(false),
+            _ => false,
+        }
+    }
+
     /// Calculate a numeric checksum for this ComponentInterface.
     ///
     /// The checksum can be used to guard against accidentally using foreign-language bindings

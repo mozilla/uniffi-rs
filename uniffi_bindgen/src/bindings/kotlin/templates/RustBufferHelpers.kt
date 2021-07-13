@@ -382,13 +382,14 @@ internal fun write{{ canonical_type_name }}(v: {{ type_name }}, buf: RustBufferB
 {% let inner_type_name = inner_type|type_kt %}
 
 // Helper functions for pasing values of type {{ typ|type_kt }}
-
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ inner_type_name }}? {
     return liftFromRustBuffer(rbuf) { buf ->
         read{{ canonical_type_name }}(buf)
     }
 }
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ inner_type_name }}? {
     if (buf.get().toInt() == 0) {
         return null
@@ -396,12 +397,14 @@ internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ inner_type_name 
     return {{ "buf"|read_kt(inner_type) }}
 }
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun lower{{ canonical_type_name }}(v: {{ inner_type_name }}?): RustBuffer.ByValue {
     return lowerIntoRustBuffer(v) { v, buf ->
         write{{ canonical_type_name }}(v, buf)
     }
 }
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun write{{ canonical_type_name }}(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
     if (v == null) {
         buf.putByte(0)
@@ -416,12 +419,14 @@ internal fun write{{ canonical_type_name }}(v: {{ inner_type_name }}?, buf: Rust
 
 // Helper functions for pasing values of type {{ typ|type_kt }}
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): List<{{ inner_type_name }}> {
     return liftFromRustBuffer(rbuf) { buf ->
         read{{ canonical_type_name }}(buf)
     }
 }
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun read{{ canonical_type_name }}(buf: ByteBuffer): List<{{ inner_type_name }}> {
     val len = buf.getInt()
     return List<{{ inner_type|type_kt }}>(len) {
@@ -429,12 +434,14 @@ internal fun read{{ canonical_type_name }}(buf: ByteBuffer): List<{{ inner_type_
     }
 }
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun lower{{ canonical_type_name }}(v: List<{{ inner_type_name }}>): RustBuffer.ByValue {
     return lowerIntoRustBuffer(v) { v, buf ->
         write{{ canonical_type_name }}(v, buf)
     }
 }
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun write{{ canonical_type_name }}(v: List<{{ inner_type_name }}>, buf: RustBufferBuilder) {
     buf.putInt(v.size)
     v.forEach {
@@ -447,12 +454,14 @@ internal fun write{{ canonical_type_name }}(v: List<{{ inner_type_name }}>, buf:
 
 // Helper functions for pasing values of type {{ typ|type_kt }}
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): Map<String, {{ inner_type_name }}> {
     return liftFromRustBuffer(rbuf) { buf ->
         read{{ canonical_type_name }}(buf)
     }
 }
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun read{{ canonical_type_name }}(buf: ByteBuffer): Map<String, {{ inner_type_name }}> {
     // TODO: Once Kotlin's `buildMap` API is stabilized we should use it here.
     val items : MutableMap<String, {{ inner_type_name }}> = mutableMapOf()
@@ -465,12 +474,14 @@ internal fun read{{ canonical_type_name }}(buf: ByteBuffer): Map<String, {{ inne
     return items
 }
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun lower{{ canonical_type_name }}(m: Map<String, {{ inner_type_name }}>): RustBuffer.ByValue {
     return lowerIntoRustBuffer(m) { m, buf ->
         write{{ canonical_type_name }}(m, buf)
     }
 }
 
+{% if ci.type_contains_unsigned_types(inner_type) %}@ExperimentalUnsignedTypes{% endif %}
 internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}>, buf: RustBufferBuilder) {
     buf.putInt(v.size)
     // The parens on `(k, v)` here ensure we're calling the right method,

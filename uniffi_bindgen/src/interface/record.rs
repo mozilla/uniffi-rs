@@ -75,6 +75,12 @@ impl Record {
         // and its contained types could use a bit of a cleanup.
         ci.type_contains_object_references(&Type::Record(self.name.clone()))
     }
+
+    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+        self.fields()
+            .iter()
+            .any(|f| ci.type_contains_unsigned_types(&f.type_))
+    }
 }
 
 impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {

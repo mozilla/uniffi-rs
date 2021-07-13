@@ -1,3 +1,4 @@
+{% call kt::unsigned_types_annotation(obj) %}
 public interface {{ obj.name()|class_name_kt }}Interface {
     {% for meth in obj.methods() -%}
     fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %})
@@ -8,6 +9,7 @@ public interface {{ obj.name()|class_name_kt }}Interface {
     {% endfor %}
 }
 
+{% call kt::unsigned_types_annotation(obj) %}
 class {{ obj.name()|class_name_kt }}(
     pointer: Pointer
 ) : FFIObject(pointer), {{ obj.name()|class_name_kt }}Interface {
