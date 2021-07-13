@@ -10,7 +10,7 @@ pub fn accepts_and_returns_unsigned(a: u8, b: u16, c: u32, d: u64) -> u64 {
     (a as u64) + (b as u64) + (c as u64) + d
 }
 
-pub fn accepts_unsigned_returns_void(a: u8, b: u16, c: u32, d: u64) -> () {
+pub fn accepts_unsigned_returns_void(a: u8, b: u16, c: u32, d: u64) {
     let _unused = accepts_and_returns_unsigned(a, b, c, d);
 }
 
@@ -42,7 +42,7 @@ impl InterfaceUsingUnsigned {
         Self { member: new }
     }
 
-    fn uses_unsigned_struct(&self, mut p1: RecursivelyUsesU8) -> () {
+    fn uses_unsigned_struct(&self, mut p1: RecursivelyUsesU8) {
         p1.member_two = UnsignedEnum::V1 { q1: 0 }
     }
 }
