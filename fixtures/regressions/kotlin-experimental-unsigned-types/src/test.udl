@@ -1,0 +1,36 @@
+// This API doesn't really *do* anything, it's just designed
+// to include various unsigned types in various interesting
+// positions. The test passes if we can compile the resulting
+// Kotlin bindings without any warnings.
+
+namespace regression_test_kt_unsigned_types {
+  u16 returns_u16();
+  u64 accepts_and_returns_unsigned(u8 a, u16 b, u32 c, u64 d);
+  void accepts_unsigned_returns_void(u8 a, u16 b, u32 c, u64 d);
+};
+
+[Enum]
+interface UnsignedEnum {
+  V1(u8 q1);
+  V2(string addr);
+};
+
+dictionary DirectlyUsesU8 {
+  u8 member;
+  u16 member_two;
+  u32 member_three;
+  u64 member_four;
+
+  string other;
+};
+
+dictionary RecursivelyUsesU8 {
+  DirectlyUsesU8 member;
+  UnsignedEnum member_two;
+};
+
+interface InterfaceUsingUnsigned {
+  constructor(u64 a);
+
+  void uses_unsigned_struct(RecursivelyUsesU8 p1);
+};

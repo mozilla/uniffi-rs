@@ -72,3 +72,8 @@ rustCall(
     {%- endfor %}
     {% if func.arguments().len() > 0 %},{% endif %} uniffi_out_err: Structure.ByReference
 {%- endmacro -%}
+
+// Add annotation if there are unsigned types
+{%- macro unsigned_types_annotation(member) -%}
+{% if member.contains_unsigned_types(ci) %}@ExperimentalUnsignedTypes{% endif %}
+{%- endmacro -%}

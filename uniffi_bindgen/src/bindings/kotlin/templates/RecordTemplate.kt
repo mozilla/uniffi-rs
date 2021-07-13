@@ -1,3 +1,4 @@
+{% call kt::unsigned_types_annotation(rec) %}
 data class {{ rec.name()|class_name_kt }} (
     {%- for field in rec.fields() %}
     var {{ field.name()|var_name_kt }}: {{ field.type_()|type_kt -}}
