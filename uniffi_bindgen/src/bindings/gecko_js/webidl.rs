@@ -105,6 +105,7 @@ impl From<Type> for WebIDLType {
             | inner @ Type::String
             | inner @ Type::Enum(_)
             | inner @ Type::Object(_)
+            | inner @ Type::ExternalType(..)
             | inner @ Type::Record(_) => WebIDLType::Flat(inner),
             Type::Error(_) => {
                 // TODO: We don't currently throw typed errors; see

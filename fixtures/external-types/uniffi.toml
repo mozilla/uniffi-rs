@@ -1,0 +1,7 @@
+[bindings.python]
+
+[bindings.python.external_types]
+[bindings.python.external_types.JSONObject]
+setup = "import json"
+lift_from_primitive = "json.loads"
+lower_to_primitive = "json.dumps"

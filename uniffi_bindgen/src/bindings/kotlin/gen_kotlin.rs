@@ -95,6 +95,7 @@ mod filters {
             | Type::Object(name)
             | Type::Error(name)
             | Type::CallbackInterface(name) => class_name_kt(name)?,
+            Type::ExternalType(..) => unreachable!("future me hates me"),
             Type::Optional(t) => format!("{}?", type_kt(t)?),
             Type::Sequence(t) => format!("List<{}>", type_kt(t)?),
             Type::Map(t) => format!("Map<String, {}>", type_kt(t)?),
