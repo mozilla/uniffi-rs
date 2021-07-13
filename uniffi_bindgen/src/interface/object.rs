@@ -145,14 +145,14 @@ impl Object {
     }
 
     // We need to check both methods and constructor
-    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
         self.methods()
             .iter()
-            .any(|&meth| meth.type_contains_unsigned_types(&ci))
+            .any(|&meth| meth.contains_unsigned_types(&ci))
             || self
                 .constructors()
                 .iter()
-                .any(|&constructor| constructor.type_contains_unsigned_types(&ci))
+                .any(|&constructor| constructor.contains_unsigned_types(&ci))
     }
 }
 
@@ -258,7 +258,7 @@ impl Constructor {
         self.name == "new"
     }
 
-    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
         self.arguments()
             .iter()
             .any(|&arg| ci.type_contains_unsigned_types(&arg.type_()))
@@ -373,7 +373,7 @@ impl Method {
     }
 
     // Intentionally exactly the same as the Function version
-    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
         let check_return_type = {
             match self.return_type() {
                 None => false,

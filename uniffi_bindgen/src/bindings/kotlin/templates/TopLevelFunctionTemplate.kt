@@ -9,6 +9,7 @@ fun {{ func.name()|fn_name_kt }}({%- call kt::arg_list_decl(func) -%}): {{ retur
 
 {% when None -%}
 
+{% call kt::unsigned_types_annotation(func) %}
 fun {{ func.name()|fn_name_kt }}({% call kt::arg_list_decl(func) %}) =
     {% call kt::to_ffi_call(func) %}
 {% endmatch %}

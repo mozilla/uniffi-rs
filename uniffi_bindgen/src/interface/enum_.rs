@@ -114,7 +114,7 @@ impl Enum {
         ci.type_contains_object_references(&Type::Enum(self.name.clone()))
     }
 
-    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
         self.variants().iter().any(|v| {
             v.fields()
                 .iter()

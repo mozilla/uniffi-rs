@@ -75,5 +75,5 @@ rustCall(
 
 // Add annotation if there are unsigned types
 {%- macro unsigned_types_annotation(member) -%}
-{% if member.type_contains_unsigned_types(ci) %}@ExperimentalUnsignedTypes{% endif %}
+{% if member.contains_unsigned_types(ci) %}@ExperimentalUnsignedTypes{% endif %}
 {%- endmacro -%}

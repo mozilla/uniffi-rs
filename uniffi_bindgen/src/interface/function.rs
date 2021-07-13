@@ -92,7 +92,7 @@ impl Function {
     }
 
     // Intentionally exactly the same as the Method version
-    pub fn type_contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
         let check_return_type = {
             match self.return_type() {
                 None => false,

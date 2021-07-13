@@ -250,15 +250,15 @@ impl<'ci> ComponentInterface {
             }
             Type::Object(t) => self
                 .get_object_definition(t)
-                .map(|obj| obj.type_contains_unsigned_types(&self))
+                .map(|obj| obj.contains_unsigned_types(&self))
                 .unwrap_or(false),
             Type::Record(name) => self
                 .get_record_definition(name)
-                .map(|rec| rec.type_contains_unsigned_types(&self))
+                .map(|rec| rec.contains_unsigned_types(&self))
                 .unwrap_or(false),
             Type::Enum(name) => self
                 .get_enum_definition(name)
-                .map(|e| e.type_contains_unsigned_types(&self))
+                .map(|e| e.contains_unsigned_types(&self))
                 .unwrap_or(false),
             _ => false,
         }
