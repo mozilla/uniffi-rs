@@ -795,6 +795,73 @@
 <span id="792">792</span>
 <span id="793">793</span>
 <span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -1037,6 +1104,22 @@
                 .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         }
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_optional_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">iter_types</span>()
+            .<span class="ident">iter</span>()
+            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_sequence_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">iter_types</span>()
+            .<span class="ident">iter</span>()
+            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_map_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">iter_types</span>().<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>)))
     }
 
     <span class="doccomment">/// Check whether the given type contains any (possibly nested) unsigned types</span>
@@ -1588,6 +1671,57 @@
             <span class="ident">err</span>.<span class="ident">to_string</span>(),
             <span class="string">&quot;Enum variant names must not shadow type names: \&quot;Testing\&quot;&quot;</span>
         );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_contains_optional_types</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface</span> {
+            ..<span class="ident">Default</span>::<span class="ident">default</span>()
+        };
+
+        <span class="comment">// check that `contains_optional_types` returns false when there is no Optional type in the interface</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">contains_optional_types</span>(), <span class="bool-val">false</span>);
+
+        <span class="comment">// check that `contains_optional_types` returns true when there is an Optional type in the interface</span>
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">ci</span>
+            .<span class="ident">types</span>
+            .<span class="ident">add_type_definition</span>(<span class="string">&quot;TestOptional{}&quot;</span>, <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Type</span>::<span class="ident">String</span>)))
+            .<span class="ident">is_ok</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">contains_optional_types</span>(), <span class="bool-val">true</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_contains_sequence_types</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface</span> {
+            ..<span class="ident">Default</span>::<span class="ident">default</span>()
+        };
+
+        <span class="comment">// check that `contains_sequence_types` returns false when there is no Sequence type in the interface</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">contains_sequence_types</span>(), <span class="bool-val">false</span>);
+
+        <span class="comment">// check that `contains_sequence_types` returns true when there is a Sequence type in the interface</span>
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">ci</span>
+            .<span class="ident">types</span>
+            .<span class="ident">add_type_definition</span>(<span class="string">&quot;TestSequence{}&quot;</span>, <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Type</span>::<span class="ident">UInt64</span>)))
+            .<span class="ident">is_ok</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">contains_sequence_types</span>(), <span class="bool-val">true</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_contains_map_types</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface</span> {
+            ..<span class="ident">Default</span>::<span class="ident">default</span>()
+        };
+
+        <span class="comment">// check that `contains_map_types` returns false when there is no Map type in the interface</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">contains_map_types</span>(), <span class="bool-val">false</span>);
+
+        <span class="comment">// check that `contains_map_types` returns true when there is a Map type in the interface</span>
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">ci</span>
+            .<span class="ident">types</span>
+            .<span class="ident">add_type_definition</span>(<span class="string">&quot;Map{}&quot;</span>, <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Type</span>::<span class="ident">Boolean</span>)))
+            .<span class="ident">is_ok</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">contains_map_types</span>(), <span class="bool-val">true</span>);
     }
 }
 </pre></div>
