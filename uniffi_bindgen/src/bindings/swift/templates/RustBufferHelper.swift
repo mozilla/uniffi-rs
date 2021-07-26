@@ -1,3 +1,7 @@
+// For every type used in the interface, we provide helper methods for conveniently
+// lifting and lowering that type from C-compatible data, and for reading and writing
+// values of that type in a buffer.
+
 // Helper classes/extensions that don't change.
 // Someday, this will be in a libray of its own.
 
@@ -161,7 +165,77 @@ extension ViaFfiUsingByteBuffer {
 }
 
 // Implement our protocols for the built-in types that we use.
+{% if ci.contains_optional_types() %}
+extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: Serializable {
+    fileprivate static func read(from buf: Reader) throws -> Self {
+        switch try buf.readInt() as Int8 {
+        case 0: return nil
+        case 1: return try Wrapped.read(from: buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
 
+    fileprivate func write(into buf: Writer) {
+        guard let value = self else {
+            buf.writeInt(Int8(0))
+            return
+        }
+        buf.writeInt(Int8(1))
+        value.write(into: buf)
+    }
+}
+{% endif %}
+
+{% if ci.contains_sequence_types() %}
+extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Serializable {
+    fileprivate static func read(from buf: Reader) throws -> Self {
+        let len: Int32 = try buf.readInt()
+        var seq = [Element]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            seq.append(try Element.read(from: buf))
+        }
+        return seq
+    }
+
+    fileprivate func write(into buf: Writer) {
+        let len = Int32(self.count)
+        buf.writeInt(len)
+        for item in self {
+            item.write(into: buf)
+        }
+    }
+}
+{% endif %}
+
+{% if ci.contains_map_types() %}
+extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == String, Value: Serializable {
+    fileprivate static func read(from buf: Reader) throws -> Self {
+        let len: Int32 = try buf.readInt()
+        var dict = [String: Value]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            dict[try String.read(from: buf)] = try Value.read(from: buf)
+        }
+        return dict
+    }
+
+    fileprivate func write(into buf: Writer) {
+        let len = Int32(self.count)
+        buf.writeInt(len)
+        for (key, value) in self {
+            key.write(into: buf)
+            value.write(into: buf)
+        }
+    }
+}
+{% endif %}
+
+{% for typ in ci.iter_types() %}
+{% let canonical_type_name = typ.canonical_name()|class_name_swift %}
+{%- match typ -%}
+
+{% when Type::String -%}
 extension String: ViaFfi {
     fileprivate typealias FfiType = RustBuffer
 
@@ -204,7 +278,7 @@ extension String: ViaFfi {
     }
 }
 
-
+{% when Type::Boolean -%}
 extension Bool: ViaFfi {
     fileprivate typealias FfiType = Int8
 
@@ -225,6 +299,7 @@ extension Bool: ViaFfi {
     }
 }
 
+{% when Type::Timestamp -%}
 extension Date: ViaFfiUsingByteBuffer, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Self {
         let seconds: Int64 = try buf.readInt()
@@ -258,6 +333,7 @@ extension Date: ViaFfiUsingByteBuffer, ViaFfi {
     }
 }
 
+{% when Type::Duration -%}
 extension TimeInterval {
     fileprivate static func liftDuration(_ buf: RustBuffer) throws -> Self {
       let reader = Reader(data: Data(rustBuffer: buf))
@@ -297,6 +373,7 @@ extension TimeInterval {
     }
 }
 
+{% when Type::UInt8 -%}
 extension UInt8: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> UInt8 {
         return try self.lift(buf.readInt())
@@ -307,6 +384,7 @@ extension UInt8: Primitive, ViaFfi {
     }
 }
 
+{% when Type::Int8 -%}
 extension Int8: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Int8 {
         return try self.lift(buf.readInt())
@@ -317,6 +395,7 @@ extension Int8: Primitive, ViaFfi {
     }
 }
 
+{% when Type::UInt16 -%}
 extension UInt16: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> UInt16 {
         return try self.lift(buf.readInt())
@@ -327,6 +406,7 @@ extension UInt16: Primitive, ViaFfi {
     }
 }
 
+{% when Type::Int16 -%}
 extension Int16: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Int16 {
         return try self.lift(buf.readInt())
@@ -337,6 +417,7 @@ extension Int16: Primitive, ViaFfi {
     }
 }
 
+{% when Type::UInt32 -%}
 extension UInt32: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> UInt32 {
         return try self.lift(buf.readInt())
@@ -347,6 +428,7 @@ extension UInt32: Primitive, ViaFfi {
     }
 }
 
+{% when Type::Int32 -%}
 extension Int32: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Int32 {
         return try self.lift(buf.readInt())
@@ -357,6 +439,7 @@ extension Int32: Primitive, ViaFfi {
     }
 }
 
+{% when Type::UInt64 -%}
 extension UInt64: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> UInt64 {
         return try self.lift(buf.readInt())
@@ -367,6 +450,7 @@ extension UInt64: Primitive, ViaFfi {
     }
 }
 
+{% when Type::Int64 -%}
 extension Int64: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Int64 {
         return try self.lift(buf.readInt())
@@ -377,6 +461,7 @@ extension Int64: Primitive, ViaFfi {
     }
 }
 
+{% when Type::Float32 -%}
 extension Float: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Float {
         return try self.lift(buf.readFloat())
@@ -387,6 +472,7 @@ extension Float: Primitive, ViaFfi {
     }
 }
 
+{% when Type::Float64 -%}
 extension Double: Primitive, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> Double {
         return try self.lift(buf.readDouble())
@@ -397,62 +483,8 @@ extension Double: Primitive, ViaFfi {
     }
 }
 
-extension Optional: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Wrapped: Serializable {
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        switch try buf.readInt() as Int8 {
-        case 0: return nil
-        case 1: return try Wrapped.read(from: buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
+{% else %}
+{# The methods for lifting/lowering/serializing this type are implemented inline with the type itself #}
 
-    fileprivate func write(into buf: Writer) {
-        guard let value = self else {
-            buf.writeInt(Int8(0))
-            return
-        }
-        buf.writeInt(Int8(1))
-        value.write(into: buf)
-    }
-}
-
-extension Array: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Element: Serializable {
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        let len: Int32 = try buf.readInt()
-        var seq = [Element]()
-        seq.reserveCapacity(Int(len))
-        for _ in 0..<len {
-            seq.append(try Element.read(from: buf))
-        }
-        return seq
-    }
-
-    fileprivate func write(into buf: Writer) {
-        let len = Int32(self.count)
-        buf.writeInt(len)
-        for item in self {
-            item.write(into: buf)
-        }
-    }
-}
-
-extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == String, Value: Serializable {
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        let len: Int32 = try buf.readInt()
-        var dict = [String: Value]()
-        dict.reserveCapacity(Int(len))
-        for _ in 0..<len {
-            dict[try String.read(from: buf)] = try Value.read(from: buf)
-        }
-        return dict
-    }
-
-    fileprivate func write(into buf: Writer) {
-        let len = Int32(self.count)
-        buf.writeInt(len)
-        for (key, value) in self {
-            key.write(into: buf)
-            value.write(into: buf)
-        }
-    }
-}
+{% endmatch %}
+{% endfor %}

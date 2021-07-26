@@ -241,6 +241,22 @@ impl<'ci> ComponentInterface {
         }
     }
 
+    pub fn contains_optional_types(&self) -> bool {
+        self.iter_types()
+            .iter()
+            .any(|t| matches!(t, Type::Optional(_)))
+    }
+
+    pub fn contains_sequence_types(&self) -> bool {
+        self.iter_types()
+            .iter()
+            .any(|t| matches!(t, Type::Sequence(_)))
+    }
+
+    pub fn contains_map_types(&self) -> bool {
+        self.iter_types().iter().any(|t| matches!(t, Type::Map(_)))
+    }
+
     /// Check whether the given type contains any (possibly nested) unsigned types
     pub fn type_contains_unsigned_types(&self, type_: &Type) -> bool {
         match type_ {
@@ -790,5 +806,56 @@ mod test {
             err.to_string(),
             "Enum variant names must not shadow type names: \"Testing\""
         );
+    }
+
+    #[test]
+    fn test_contains_optional_types() {
+        let mut ci = ComponentInterface {
+            ..Default::default()
+        };
+
+        // check that `contains_optional_types` returns false when there is no Optional type in the interface
+        assert_eq!(ci.contains_optional_types(), false);
+
+        // check that `contains_optional_types` returns true when there is an Optional type in the interface
+        assert!(ci
+            .types
+            .add_type_definition("TestOptional{}", Type::Optional(Box::new(Type::String)))
+            .is_ok());
+        assert_eq!(ci.contains_optional_types(), true);
+    }
+
+    #[test]
+    fn test_contains_sequence_types() {
+        let mut ci = ComponentInterface {
+            ..Default::default()
+        };
+
+        // check that `contains_sequence_types` returns false when there is no Sequence type in the interface
+        assert_eq!(ci.contains_sequence_types(), false);
+
+        // check that `contains_sequence_types` returns true when there is a Sequence type in the interface
+        assert!(ci
+            .types
+            .add_type_definition("TestSequence{}", Type::Sequence(Box::new(Type::UInt64)))
+            .is_ok());
+        assert_eq!(ci.contains_sequence_types(), true);
+    }
+
+    #[test]
+    fn test_contains_map_types() {
+        let mut ci = ComponentInterface {
+            ..Default::default()
+        };
+
+        // check that `contains_map_types` returns false when there is no Map type in the interface
+        assert_eq!(ci.contains_map_types(), false);
+
+        // check that `contains_map_types` returns true when there is a Map type in the interface
+        assert!(ci
+            .types
+            .add_type_definition("Map{}", Type::Map(Box::new(Type::Boolean)))
+            .is_ok());
+        assert_eq!(ci.contains_map_types(), true);
     }
 }
