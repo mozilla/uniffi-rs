@@ -2,9 +2,13 @@
 // Trust me, you don't want to mess with it!
 
 import Foundation
-{% if is_testing -%}
-import {{ config.module_name() }}
-{% endif -%}
+
+// Depending on the consumer's build setup, the low-level FFI code
+// might be in a separate module, or it might be compiled inline into
+// this module. This is a bit of light hackery to work with both.
+#if canImport({{ config.ffi_module_name() }})
+import {{ config.ffi_module_name() }}
+#endif
 
 {% include "RustBufferTemplate.swift" %}
 {% include "RustBufferHelper.swift" %}

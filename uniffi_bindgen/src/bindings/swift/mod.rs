@@ -2,6 +2,33 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+//! # Swift bindings backend for UniFFI
+//!
+//! This module generates Swift bindings from a [`ComponentInterface`] definition,
+//! using Swift's builtin support for loading C header files.
+//!
+//! Conceptually, the generated bindings are split into two Swift modules, one for the low-level
+//! C FFI layer and one for the higher-level Swift bindings. For a UniFFI component named "example"
+//! we generate:
+//!
+//!   * A C header file `exampleFFI.h` declaring the low-level structs and functions for calling
+//!    into Rust, along with a corresponding `exampleFFI.modulemap` to expose them to Swift.
+//!
+//!   * A Swift source file `example.swift` that imports the `exampleFFI` module and wraps it
+//!    to provide the higher-level Swift API.
+//!
+//! Most of the concepts in a [`ComponentInterface`] have an obvious counterpart in Swift,
+//! with the details documented in inline comments where appropriate.
+//!
+//! To handle lifting/lowering/serializing types across the FFI boundary, the Swift code
+//! defines a `protocol ViaFfi` that is analogous to the `uniffi::ViaFfi` Rust trait.
+//! Each type that can traverse the FFI conforms to the `ViaFfi` protocol, which specifies:
+//!
+//!  * The corresponding low-level type.
+//!  * How to lift from and lower into into that type.
+//!  * How to read from and write into a byte buffer.
+//!
+
 use anyhow::{anyhow, bail, Context, Result};
 use std::{
     ffi::OsString,
@@ -16,51 +43,52 @@ pub use gen_swift::{BridgingHeader, Config, ModuleMap, SwiftWrapper};
 
 use super::super::interface::ComponentInterface;
 
+/// The Swift bindings generated from a [`ComponentInterface`].
+///
 pub struct Bindings {
-    header: String,
+    /// The contents of the generated `.swift` file, as a string.
     library: String,
+    /// The contents of the generated `.h` file, as a string.
+    header: String,
+    /// The contents of the generated `.modulemap` file, as a string.
+    modulemap: Option<String>,
 }
 
-/// Generate uniffi component bindings for swift.
+/// Write UniFFI component bindings for Swift as files on disk.
 ///
-/// Unlike other target languages, binding to rust code from swift involves more than just
+/// Unlike other target languages, binding to Rust code from Swift involves more than just
 /// generating a `.swift` file. We also need to produce a `.h` file with the C-level API
-/// declarations, and a `.modulemap` file to tell swift how to use it.
+/// declarations, and a `.modulemap` file to tell Swift how to use it.
 pub fn write_bindings(
     config: &Config,
     ci: &ComponentInterface,
     out_dir: &Path,
     try_format_code: bool,
-    is_testing: bool,
 ) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
+    let Bindings {
+        header,
+        library,
+        modulemap,
+    } = generate_bindings(config, ci)?;
+
     let mut source_file = out_path.clone();
-    source_file.push(format!("{}.swift", ci.namespace()));
-
-    let Bindings { header, library } = generate_bindings(config, ci, is_testing)?;
-
-    let header_filename = config.header_filename();
-    let mut header_file = out_path.clone();
-    header_file.push(&header_filename);
-
-    let mut h = File::create(&header_file).context("Failed to create .h file for bindings")?;
-    write!(h, "{}", header)?;
-
+    source_file.push(format!("{}.swift", config.module_name()));
     let mut l = File::create(&source_file).context("Failed to create .swift file for bindings")?;
     write!(l, "{}", library)?;
 
-    if is_testing {
-        let mut module_map_file = out_path;
-        module_map_file.push(config.modulemap_filename());
+    let mut header_file = out_path.clone();
+    header_file.push(config.header_filename());
+    let mut h = File::create(&header_file).context("Failed to create .h file for bindings")?;
+    write!(h, "{}", header)?;
 
-        let mut m = File::create(&module_map_file)
+    if let Some(modulemap) = modulemap {
+        let mut modulemap_file = out_path;
+        modulemap_file.push(config.modulemap_filename());
+        let mut m = File::create(&modulemap_file)
             .context("Failed to create .modulemap file for bindings")?;
-        write!(
-            m,
-            "{}",
-            generate_module_map(config, ci, Path::new(&header_filename))?
-        )?;
+        write!(m, "{}", modulemap)?;
     }
 
     if try_format_code {
@@ -79,38 +107,46 @@ pub fn write_bindings(
     Ok(())
 }
 
-/// Generate Swift bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(
-    config: &Config,
-    ci: &ComponentInterface,
-    is_testing: bool,
-) -> Result<Bindings> {
+/// Generate UniFFI component bindings for Swift, as strings in memory.
+///
+pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
     use askama::Template;
     let header = BridgingHeader::new(config, ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
-    let library = SwiftWrapper::new(config, ci, is_testing)
+    let library = SwiftWrapper::new(config, ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift library"))?;
-    Ok(Bindings { header, library })
+    let modulemap = if config.generate_module_map() {
+        Some(
+            ModuleMap::new(config, ci)
+                .render()
+                .map_err(|_| anyhow!("failed to render Swift modulemap"))?,
+        )
+    } else {
+        None
+    };
+    Ok(Bindings {
+        library,
+        header,
+        modulemap,
+    })
 }
 
-fn generate_module_map(
-    config: &Config,
-    ci: &ComponentInterface,
-    header_path: &Path,
-) -> Result<String> {
-    use askama::Template;
-    let module_map = ModuleMap::new(config, ci, header_path)
-        .render()
-        .map_err(|_| anyhow!("failed to render Swift module map"))?;
-    Ok(module_map)
-}
-
-/// ...
+/// Compile UniFFI component bindings for Swift for use from the `swift` command-line.
+///
+/// This is a utility function to help with running Swift tests. While the `swift` command-line
+/// tool is able to execute Swift code from source, that code can only load other Swift modules
+/// if they have been pre-compiled into a `.dylib` and corresponding `.swiftmodule`. Since our
+/// test scripts need to be able to import the generated bindings, we have to compile them
+/// ahead of time before running the tests.
+///
 pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
 
+    if !config.generate_module_map() {
+        bail!("Cannot compile Swift bindings when `generate_module_map` is `false`")
+    }
     let mut module_map_file = out_path.clone();
     module_map_file.push(config.modulemap_filename());
 
@@ -118,10 +154,10 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
     module_map_file_option.push(module_map_file.as_os_str());
 
     let mut source_file = out_path.clone();
-    source_file.push(format!("{}.swift", ci.namespace()));
+    source_file.push(format!("{}.swift", config.module_name()));
 
     let mut dylib_file = out_path.clone();
-    dylib_file.push(format!("lib{}.dylib", ci.namespace()));
+    dylib_file.push(format!("lib{}.dylib", config.module_name()));
 
     // `-emit-library -o <path>` generates a `.dylib`, so that we can use the
     // Swift module from the REPL. Otherwise, we'll get "Couldn't lookup
@@ -154,10 +190,19 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
     Ok(())
 }
 
+/// Run a Swift script, allowing it to load modules from the given output directory.
+///
+/// This executes the given Swift script file in a way that allows it to import any other
+/// Swift modules in the given output directory. The modules must have been pre-compiled
+/// using the [`compile_bindings`] function.
+///
 pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
     let mut cmd = Command::new("swift");
 
     // Find any module maps and/or dylibs in the target directory, and tell swift to use them.
+    // Listing the directory like this is a little bit hacky - it would be nicer if we could tell
+    // Swift to load only the module(s) for the component under test, but the way we're calling
+    // this test function doesn't allow us to pass that name in to the call.
 
     cmd.arg("-I").arg(out_dir).arg("-L").arg(out_dir);
     for entry in PathBuf::from(out_dir)

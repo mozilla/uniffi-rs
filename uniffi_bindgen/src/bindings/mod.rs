@@ -112,7 +112,6 @@ pub fn write_bindings<P>(
     out_dir: P,
     language: TargetLanguage,
     try_format_code: bool,
-    is_testing: bool,
 ) -> Result<()>
 where
     P: AsRef<Path>,
@@ -120,19 +119,17 @@ where
     let out_dir = out_dir.as_ref();
     match language {
         TargetLanguage::Kotlin => {
-            kotlin::write_bindings(&config.kotlin, ci, out_dir, try_format_code, is_testing)?
+            kotlin::write_bindings(&config.kotlin, ci, out_dir, try_format_code)?
         }
         TargetLanguage::Swift => {
-            swift::write_bindings(&config.swift, ci, out_dir, try_format_code, is_testing)?
+            swift::write_bindings(&config.swift, ci, out_dir, try_format_code)?
         }
         TargetLanguage::Python => {
-            python::write_bindings(&config.python, ci, out_dir, try_format_code, is_testing)?
+            python::write_bindings(&config.python, ci, out_dir, try_format_code)?
         }
-        TargetLanguage::Ruby => {
-            ruby::write_bindings(&config.ruby, ci, out_dir, try_format_code, is_testing)?
-        }
+        TargetLanguage::Ruby => ruby::write_bindings(&config.ruby, ci, out_dir, try_format_code)?,
         TargetLanguage::GeckoJs => {
-            gecko_js::write_bindings(&config.gecko_js, ci, out_dir, try_format_code, is_testing)?
+            gecko_js::write_bindings(&config.gecko_js, ci, out_dir, try_format_code)?
         }
     }
     Ok(())

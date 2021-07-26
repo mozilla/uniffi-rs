@@ -25,7 +25,6 @@ pub fn write_bindings(
     ci: &ComponentInterface,
     out_dir: &Path,
     try_format_code: bool,
-    _is_testing: bool,
 ) -> Result<()> {
     let mut py_file = PathBuf::from(out_dir);
     py_file.push(format!("{}.py", ci.namespace()));
