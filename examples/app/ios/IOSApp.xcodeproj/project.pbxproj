@@ -16,8 +16,8 @@
 		395A8829251A062D00562F33 /* IOSAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8828251A062D00562F33 /* IOSAppTests.swift */; };
 		395A8834251A062D00562F33 /* IOSAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395A8833251A062D00562F33 /* IOSAppUITests.swift */; };
 		39ADC3DF25E98792000EE485 /* libarithmetical.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 39ADC3DE25E98792000EE485 /* libarithmetical.a */; };
-		39ADD16D25E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = 39ADD16925E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		39ADD16F25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = 39ADD16B25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		39ADD16D25E990CA000EE485 /* arithmeticFFI.h in Headers */ = {isa = PBXBuildFile; fileRef = 39ADD16925E990CA000EE485 /* arithmeticFFI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		39ADD16F25E990CA000EE485 /* todolistFFI.h in Headers */ = {isa = PBXBuildFile; fileRef = 39ADD16B25E990CA000EE485 /* todolistFFI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CEEB5A0025264123003C87D1 /* libuniffi_todolist.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */; };
 /* End PBXBuildFile section */
 
@@ -31,7 +31,7 @@
 			);
 			isEditable = 1;
 			outputFiles = (
-				"$(SRCROOT)/Generated/uniffi_$(INPUT_FILE_BASE)-Bridging-Header.h",
+				"$(SRCROOT)/Generated/$(INPUT_FILE_BASE)FFI.h",
 				"$(SRCROOT)/Generated/$(INPUT_FILE_BASE).swift",
 			);
 			script = "# Generate swift bindings for the todolist rust library.\necho \"Generating files for $INPUT_FILE_PATH\"\n\"$SRCROOT/../../../target/debug/uniffi-bindgen\" generate \"$INPUT_FILE_PATH\" --language swift --out-dir \"$SRCROOT/Generated\"\necho \"Generated files for $INPUT_FILE_BASE in $SRCROOT/Generated\"\n";
@@ -71,9 +71,9 @@
 		39ADC3DE25E98792000EE485 /* libarithmetical.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libarithmetical.a; path = ../../../target/universal/debug/libarithmetical.a; sourceTree = "<group>"; };
 		39ADD15E25E98F92000EE485 /* arithmetic.udl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = arithmetic.udl; path = ../../arithmetic/src/arithmetic.udl; sourceTree = "<group>"; };
 		39ADD16325E98FA5000EE485 /* todolist.udl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = todolist.udl; path = ../../todolist/src/todolist.udl; sourceTree = "<group>"; };
-		39ADD16925E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "uniffi_arithmetic-Bridging-Header.h"; sourceTree = "<group>"; };
+		39ADD16925E990CA000EE485 /* arithmeticFFI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arithmeticFFI.h; sourceTree = "<group>"; };
 		39ADD16A25E990CA000EE485 /* arithmetic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = arithmetic.swift; sourceTree = "<group>"; };
-		39ADD16B25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "uniffi_todolist-Bridging-Header.h"; sourceTree = "<group>"; };
+		39ADD16B25E990CA000EE485 /* todolistFFI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = todolistFFI.h; sourceTree = "<group>"; };
 		39ADD16C25E990CA000EE485 /* todolist.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = todolist.swift; sourceTree = "<group>"; };
 		39C5D6D82524F95400BDBA8A /* IOSApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IOSApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		CEEB59FF25264123003C87D1 /* libuniffi_todolist.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuniffi_todolist.a; path = ../../../target/universal/debug/libuniffi_todolist.a; sourceTree = "<group>"; };
@@ -172,9 +172,9 @@
 		39ADD16825E990CA000EE485 /* Generated */ = {
 			isa = PBXGroup;
 			children = (
-				39ADD16925E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h */,
+				39ADD16925E990CA000EE485 /* arithmeticFFI.h */,
 				39ADD16A25E990CA000EE485 /* arithmetic.swift */,
-				39ADD16B25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h */,
+				39ADD16B25E990CA000EE485 /* todolistFFI.h */,
 				39ADD16C25E990CA000EE485 /* todolist.swift */,
 			);
 			path = Generated;
@@ -196,8 +196,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				39ADD16F25E990CA000EE485 /* uniffi_todolist-Bridging-Header.h in Headers */,
-				39ADD16D25E990CA000EE485 /* uniffi_arithmetic-Bridging-Header.h in Headers */,
+				39ADD16F25E990CA000EE485 /* todolistFFI.h in Headers */,
+				39ADD16D25E990CA000EE485 /* arithmeticFFI.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

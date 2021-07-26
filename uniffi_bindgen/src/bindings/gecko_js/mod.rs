@@ -53,7 +53,6 @@ pub fn write_bindings(
     ci: &ComponentInterface,
     out_dir: &Path,
     _try_format_code: bool,
-    _is_testing: bool,
 ) -> Result<()> {
     let out_path = PathBuf::from(out_dir);
     let bindings = generate_bindings(config, ci)?;

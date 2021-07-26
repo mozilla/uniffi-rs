@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::path::Path;
-
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase};
@@ -12,28 +10,55 @@ use serde::{Deserialize, Serialize};
 use crate::interface::*;
 use crate::MergeWith;
 
-// Some config options for the caller to customize the generated Swift.
-// Note that this can only be used to control details of the Swift *that do not affect the underlying component*,
-// since the details of the underlying component are entirely determined by the `ComponentInterface`.
-
+/// Config options for the caller to customize the generated Swift.
+///
+/// Note that this can only be used to control details of the Swift *that do not affect the underlying component*,
+/// since the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    module_name: Option<String>,
     cdylib_name: Option<String>,
+    module_name: Option<String>,
+    ffi_module_name: Option<String>,
+    ffi_module_filename: Option<String>,
+    generate_module_map: Option<bool>,
 }
+
 impl Config {
+    /// The name of the Swift module containing the high-level foreign-language bindings.
     pub fn module_name(&self) -> String {
         match self.module_name.as_ref() {
             Some(name) => name.clone(),
             None => "uniffi".into(),
         }
     }
+
+    /// The name of the lower-level C module containing the FFI declarations.
+    pub fn ffi_module_name(&self) -> String {
+        match self.ffi_module_name.as_ref() {
+            Some(name) => name.clone(),
+            None => format!("{}FFI", self.module_name()),
+        }
+    }
+
+    /// The filename stem for the lower-level C module containing the FFI declarations.
+    pub fn ffi_module_filename(&self) -> String {
+        match self.ffi_module_filename.as_ref() {
+            Some(name) => name.clone(),
+            None => self.ffi_module_name(),
+        }
+    }
+
+    /// The name of the `.modulemap` file for the lower-level C module with FFI declarations.
     pub fn modulemap_filename(&self) -> String {
-        format!("{}.modulemap", self.module_name())
+        format!("{}.modulemap", self.ffi_module_filename())
     }
+
+    /// The name of the `.h` file for the lower-level C module with FFI declarations.
     pub fn header_filename(&self) -> String {
-        format!("{}-Bridging-Header.h", self.module_name())
+        format!("{}.h", self.ffi_module_filename())
     }
+
+    /// The name of the compiled Rust library containing the FFI implementation.
     pub fn cdylib_name(&self) -> String {
         if let Some(cdylib_name) = &self.cdylib_name {
             cdylib_name.clone()
@@ -41,13 +66,19 @@ impl Config {
             "uniffi".into()
         }
     }
+
+    /// Whether to generate a `.modulemap` file for the lower-level C module with FFI declarations.
+    pub fn generate_module_map(&self) -> bool {
+        self.generate_module_map.unwrap_or(true)
+    }
 }
 
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
-            module_name: Some(format!("uniffi_{}", ci.namespace())),
+            module_name: Some(ci.namespace().into()),
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
+            ..Default::default()
         }
     }
 }
@@ -56,13 +87,25 @@ impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
             module_name: self.module_name.merge_with(&other.module_name),
+            ffi_module_name: self.ffi_module_name.merge_with(&other.ffi_module_name),
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
+            ffi_module_filename: self
+                .ffi_module_filename
+                .merge_with(&other.ffi_module_filename),
+            generate_module_map: self
+                .generate_module_map
+                .merge_with(&other.generate_module_map),
         }
     }
 }
 
+/// Template for generating the `.h` file that defines the low-level C FFI.
+///
+/// This file defines only the low-level structs and functions that are exposed
+/// by the compiled Rust code. It gets wrapped into a higher-level API by the
+/// code from [`SwiftWrapper`].
 #[derive(Template)]
-#[template(syntax = "c", escape = "none", path = "Template-Bridging-Header.h")]
+#[template(syntax = "c", escape = "none", path = "BridgingHeaderTemplate.h")]
 pub struct BridgingHeader<'config, 'ci> {
     _config: &'config Config,
     ci: &'ci ComponentInterface,
@@ -77,48 +120,47 @@ impl<'config, 'ci> BridgingHeader<'config, 'ci> {
     }
 }
 
+/// Template for generating the `.modulemap` file that exposes the low-level C FFI.
+///
+/// This file defines how the low-level C FFI from [`BridgingHeader`] gets exposed
+/// as a Swift module that can be called by other Swift code. In our case, its only
+/// job is to define the *name* of the Swift module that will contain the FFI functions
+/// so that it can be imported by the higher-level code in from [`SwiftWrapper`].
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "ModuleMapTemplate.modulemap")]
-pub struct ModuleMap<'config, 'ci, 'header> {
+pub struct ModuleMap<'config, 'ci> {
     config: &'config Config,
     _ci: &'ci ComponentInterface,
-    header: &'header Path,
 }
 
-impl<'config, 'ci, 'header> ModuleMap<'config, 'ci, 'header> {
-    pub fn new(
-        config: &'config Config,
-        _ci: &'ci ComponentInterface,
-        header: &'header Path,
-    ) -> Self {
-        Self {
-            config,
-            _ci,
-            header,
-        }
+impl<'config, 'ci> ModuleMap<'config, 'ci> {
+    pub fn new(config: &'config Config, _ci: &'ci ComponentInterface) -> Self {
+        Self { config, _ci }
     }
 }
 
+/// Template for generating the `.modulemap` file that exposes the low-level C FFI.
+///
+/// This file wraps the low-level C FFI from [`BridgingHeader`] into a more ergonomic,
+/// higher-level Swift API. It's the part that knows about API-level concepts like
+/// Objects and Records and so-forth.
 #[derive(Template)]
 #[template(syntax = "swift", escape = "none", path = "wrapper.swift")]
 pub struct SwiftWrapper<'config, 'ci> {
     config: &'config Config,
     ci: &'ci ComponentInterface,
-    is_testing: bool,
 }
 
 impl<'config, 'ci> SwiftWrapper<'config, 'ci> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface, is_testing: bool) -> Self {
-        Self {
-            config,
-            ci,
-            is_testing,
-        }
+    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
+        Self { config, ci }
     }
 }
 
-/// Filters for our Askama templates above. These output C (for the bridging
-/// header) and Swift (for the actual library) declarations.
+/// Filters for our Askama templates above.
+///
+/// These output C (for the bridging header) and Swift (for the actual library) declarations,
+/// mostly for dealing with types.
 mod filters {
     use super::*;
     use std::fmt;
@@ -172,6 +214,7 @@ mod filters {
         })
     }
 
+    /// Render a literal value for Swift code.
     pub fn literal_swift(literal: &Literal) -> Result<String, askama::Error> {
         fn typed_number(type_: &Type, num_str: String) -> Result<String, askama::Error> {
             Ok(match type_ {
@@ -263,23 +306,23 @@ mod filters {
         }
     }
 
+    /// Render the idiomatic Swift casing for the name of an enum.
     pub fn enum_variant_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 
+    /// Render the idiomatic Swift casing for the name of a class.
     pub fn class_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 
+    /// Render the idiomatic Swift casing for the name of a function.
     pub fn fn_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
     }
 
+    /// Render the idiomatic Swift casing for the name of a variable.
     pub fn var_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_mixed_case())
-    }
-
-    pub fn header_path(path: &Path) -> Result<String, askama::Error> {
-        Ok(path.to_str().expect("Invalid bridging header path").into())
     }
 }

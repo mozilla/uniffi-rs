@@ -13,6 +13,17 @@
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.12.0...HEAD).
 
 ### ⚠️ Breaking Changes ⚠️
+- The Swift bindings now explicitly generate two separate Swift modules, one for
+  the high-level Swift code and one for the low-level C FFI. This change is intended
+  to simplify distribution of the bindings via Swift packages, but brings with it
+  some changes to the generated file layout.
+  - For an interface namespace "example", we now generate:
+    - A bridged C module named "exampleFFI" containing the low-level C FFI,
+      consisting of an `exampleFFI.h` file and matching `exampleFFI.modulemap`
+      file. The name can be customized using the `ffi_module_name` config option.
+    - A Swift module named "example" containing the high-level Swift bindings,
+      which imports and uses the low-level C FFI. The name can be customized using
+      the `module_name` config option.
 - Python timestamps will now be in UTC and timezone-aware rather than naive.
 - Replaced `lower_into_buffer()` and `try_lift_from_buffer()` with the
   `RustBufferViaFfi` trait.  If you use those functions in your custom ViaFfi
