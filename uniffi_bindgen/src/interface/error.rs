@@ -124,8 +124,8 @@ impl Error {
     }
 
     // For compatibility with the Enum interface
-    pub fn contains_object_references(&self, _: &ComponentInterface) -> bool {
-        false
+    pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
+        self.enum_.contains_object_references(ci)
     }
 }
 

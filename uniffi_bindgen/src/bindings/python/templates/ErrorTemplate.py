@@ -33,12 +33,21 @@ class {{ e.name()|class_name_py }}:
             {%- for field in variant.fields() %}
             self.{{ field.name()|var_name_py }} = {{ field.name()|var_name_py }}
             {%- endfor %}
-            {% else %}
+            {%- else %}
             pass
             {%- endif %}
 
         def __str__(self):
-            return "{{ e.name()|class_name_py }}.{{ variant.name()|class_name_py }}({% for field in variant.fields() %}{{ field.name() }}={}{% if !loop.last %},{% endif %}{% endfor %})".format({% for field in variant.fields() %}self.{{ field.name() }}{% if !loop.last %},{% endif %}{% endfor %})
+            {%- if variant.has_fields() %}
+            field_parts = [
+                {%- for field in variant.fields() %}
+                '{{ field.name() }}={!r}'.format(self.{{ field.name() }}),
+                {%- endfor %}
+            ]
+            return "{{ e.name()|class_name_py }}.{{ variant.name()|class_name_py }}({})".format(', '.join(field_parts))
+            {%- else %}
+            return "{{ e.name()|class_name_py }}.{{ variant.name()|class_name_py }}"
+            {%- endif %}
     {%- endfor %}
 {%- endfor %}
 
@@ -84,7 +93,7 @@ def rust_call_with_error(error_class, fn, *args):
         if call_status.error_buf.len > 0:
             msg = call_status.error_buf.consumeIntoString()
         else:
-            msg = "Unkown rust panic"
+            msg = "Unknown rust panic"
         raise InternalError(msg)
     else:
         raise InternalError("Invalid RustCallStatus code: {}".format(

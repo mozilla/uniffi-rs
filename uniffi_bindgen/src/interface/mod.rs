@@ -119,7 +119,7 @@ impl<'ci> ComponentInterface {
             println!("{}", remaining);
             bail!("parse error");
         }
-        // Unconditionally add the String type, which is used by the error handling
+        // Unconditionally add the String type, which is used by the panic handling
         let _ = ci.types.add_known_type(Type::String);
         // We process the WebIDL definitions in two passes.
         // First, go through and look for all the named types.

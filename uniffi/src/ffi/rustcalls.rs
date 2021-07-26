@@ -25,7 +25,7 @@ use std::panic;
 /// - A pointer to this object is passed to the rust FFI function.  This is an
 ///   "out parameter" which will be updated with any error that occurred during the function's
 ///   execution.
-/// - After the call, if code is `CALL_ERROR` then `error_buf` will be updated to contain
+/// - After the call, if `code` is `CALL_ERROR` then `error_buf` will be updated to contain
 ///   the serialized error object.   The consumer is responsible for freeing `error_buf`.
 ///
 /// ## Layout/fields
@@ -42,7 +42,7 @@ use std::panic;
 ///
 /// #### The `code` field.
 ///
-///  - `CALL_SUCESS` (0) for successful calls
+///  - `CALL_SUCCESS` (0) for successful calls
 ///  - `CALL_ERROR` (1) for calls that returned an `Err` value
 ///  - `CALL_PANIC` (2) for calls that panicked
 ///
@@ -58,8 +58,12 @@ pub struct RustCallStatus {
     // error_buf is MaybeUninit to avoid dropping the value that the consumer code sends in:
     //   - Consumers should send in a zeroed out RustBuffer.  In this case dropping is a no-op and
     //     avoiding the drop is a small optimization.
-    //   - If consumers pass in invalid data, then we should avoid trying to drop in.  In
+    //   - If consumers pass in invalid data, then we should avoid trying to drop it.  In
     //     particular, we don't want to try to free any data the consumer has allocated.
+    //
+    // `MaybeUninit` requires unsafe code, since we are preventing rust from dropping the value.
+    // To use this safely we need to make sure that no code paths set this twice, since that will
+    // leak the first `RustBuffer`.
 }
 
 #[allow(dead_code)]
@@ -73,7 +77,8 @@ const CALL_PANIC: i8 = 2;
 pub trait FfiError: RustBufferViaFfi {}
 
 // Generalized rust call handling function
-// callback should map errors to a RustBuffer that contains them
+// callback is responsible for making the call to the rust function.  If that function returns an
+// `Err` value, callback should serialize the error into a `RustBuffer` to be returned over the FFI.
 fn make_call<F, R>(out_status: &mut RustCallStatus, callback: F) -> R::Value
 where
     F: panic::UnwindSafe + FnOnce() -> Result<R, RustBuffer>,
@@ -96,6 +101,8 @@ where
         Ok(Err(buf)) => {
             out_status.code = CALL_ERROR;
             unsafe {
+                // Unsafe because we're setting the `MaybeUninit` value, see above for safety
+                // invariants.
                 out_status.error_buf.as_mut_ptr().write(buf);
             }
             R::ffi_default()
@@ -119,10 +126,14 @@ where
             }));
             if let Ok(buf) = message_result {
                 unsafe {
+                    // Unsafe because we're setting the `MaybeUninit` value, see above for safety
+                    // invariants.
                     out_status.error_buf.as_mut_ptr().write(buf);
                 }
             }
-            // Ignore the error case.  We've done all that we can at this point
+            // Ignore the error case.  We've done all that we can at this point.  In the bindings
+            // code, we handle this by checking if `error_buf` still has an empty `RustBuffer` and
+            // using a generic message.
             R::ffi_default()
         }
     }

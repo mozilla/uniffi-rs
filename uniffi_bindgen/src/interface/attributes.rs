@@ -642,4 +642,15 @@ mod test {
             "conflicting attributes on interface definition"
         );
     }
+
+    #[test]
+    fn test_other_attributes_not_supported_for_interfaces() {
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Threadsafe, ByRef]").unwrap();
+        let err = InterfaceAttributes::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "ByRef not supported for interface definition"
+        );
+    }
 }

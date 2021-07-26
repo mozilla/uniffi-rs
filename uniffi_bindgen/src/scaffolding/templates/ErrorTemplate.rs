@@ -1,5 +1,5 @@
 {#
-// For each enum declared in the UDL, we assume the caller has provided a corresponding
+// For each error declared in the UDL, we assume the caller has provided a corresponding
 // rust `enum`. We provide the traits for sending it across the FFI, which will fail to
 // compile if the provided struct has a different shape to the one declared in the UDL.
 #}
@@ -21,9 +21,9 @@ impl uniffi::RustBufferViaFfi for {{ e.name() }} {
 
     {% if e.is_flat() %}
     // If a variant doesn't have fields defined in the UDL, it's currently still possible that
-    // the Rust enum has fields and they're just not listed.  Let's just punt on implemented
-    // try_read() in that case, which is no issue since passing back Errors into the rust code
-    // isn't supported.
+    // the Rust enum has fields and they're just not listed.  Let's just punt on implementing
+    // try_read() to avoid that case.  It should be no issue since passing back Errors into the
+    // rust code isn't supported.
     fn try_read(_buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
         panic!("try_read not supported for fieldless errors");
     }

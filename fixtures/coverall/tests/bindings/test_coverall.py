@@ -106,10 +106,12 @@ class TestCoverall(unittest.TestCase):
             coveralls.maybe_throw_complex(1)
         self.assertEqual(cm.exception.code, 10)
         self.assertEqual(cm.exception.extended_code, 20)
+        self.assertEqual(str(cm.exception), "ComplexError.OsError(code=10, extended_code=20)")
 
         with self.assertRaises(ComplexError.PermissionDenied) as cm:
             coveralls.maybe_throw_complex(2)
         self.assertEqual(cm.exception.reason, "Forbidden")
+        self.assertEqual(str(cm.exception), "ComplexError.PermissionDenied(reason='Forbidden')")
 
         # Test panics, which should cause InternalError to be raised
         with self.assertRaises(InternalError) as cm:

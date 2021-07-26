@@ -83,7 +83,7 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
     }
 }
 
-{% if ! e.contains_object_references(ci) %}
+{% if !e.contains_object_references(ci) %}
 extension {{ e.name()|class_name_swift }}: Equatable, Hashable {}
 {% endif %}
 extension {{ e.name()|class_name_swift }}: Error { }

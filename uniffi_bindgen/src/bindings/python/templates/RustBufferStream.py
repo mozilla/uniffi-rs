@@ -172,7 +172,7 @@ class RustBufferStream(object):
     def read{{ canonical_type_name }}(self):
         variant = self._unpack_from(4, ">i")
         try:
-            read_variant_method = getattr(self, 'read{{canonical_type_name}}{}'.format(variant))
+            read_variant_method = getattr(self, 'readVariant{}Of{{canonical_type_name}}'.format(variant))
         except AttributeError:
             raise InternalError("Unexpected variant value for error {{ canonical_type_name }} ({})".format(variant))
         return read_variant_method()
@@ -180,7 +180,7 @@ class RustBufferStream(object):
     # Read methods for each individual variants
     {%- for variant in e.variants() %}
 
-    def read{{ canonical_type_name }}{{ loop.index }}(self):
+    def readVariant{{ loop.index}}Of{{ canonical_type_name }}(self):
         {%- if variant.has_fields() %}
         return {{ error_name|class_name_py }}.{{ variant.name()|class_name_py }}(
             {%- for field in variant.fields() %}

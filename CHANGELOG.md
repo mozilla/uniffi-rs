@@ -24,7 +24,7 @@
 ### What's Changed
 
 - Both python and ruby backends now handle U16 correctly.
-- Errors with nested fields are now supported.
+- Error variants can now contain named fields, similar to Enum variants
 
 ## v0.12.0 (2021-06-14)
 
