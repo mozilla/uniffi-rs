@@ -85,12 +85,8 @@ where
     R: IntoFfi,
 {
     let result = panic::catch_unwind(|| {
-        // We should call:
-        //
-        // init_panic_handling_once();
-        //
-        // This is called in ffi-support::call_with_result_impl().  The current plan is to make it
-        // `pub` in ffi-support and call it from here.
+        // Use ffi_support's panic handling hook
+        ffi_support::ensure_panic_hook_is_setup();
         callback().map(|v| v.into_ffi_value())
     });
     match result {
