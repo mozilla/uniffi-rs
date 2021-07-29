@@ -18,9 +18,9 @@ struct {{ context.ffi_foreignbytes_type() }} {
   int32_t mPadding2;
 };
 
-struct {{ context.ffi_rusterror_type() }} {
+struct {{ context.ffi_rustcallstatus_type() }} {
   int32_t mCode;
-  char* mMessage;
+  {{ context.ffi_rustbuffer_type() }} mErrorBuf;
 };
 
 {% for func in ci.iter_ffi_function_definitions() -%}
@@ -35,7 +35,7 @@ void
     {{ arg.type_()|type_ffi(context) }} {{ arg.name() -}}{%- if loop.last -%}{%- else -%},{%- endif -%}
     {%- endfor %}
     {%- if func.arguments().len() > 0 %},{% endif %}
-    {{ context.ffi_rusterror_type() }}* uniffi_out_err
+    {{ context.ffi_rustcallstatus_type() }}* uniffi_out_status
 );
 
 {% endfor -%}

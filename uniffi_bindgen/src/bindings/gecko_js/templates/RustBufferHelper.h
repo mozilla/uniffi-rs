@@ -124,9 +124,9 @@ class MOZ_STACK_CLASS Reader final {
 class MOZ_STACK_CLASS Writer final {
  public:
   Writer() {
-    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
-    mBuffer = {{ ci.ffi_rustbuffer_alloc().name() }}(0, &err);
-    if (err.mCode) {
+    {{ context.ffi_rustcallstatus_type() }} status = {0, {0, 0, nullptr, 0}};
+    mBuffer = {{ ci.ffi_rustbuffer_alloc().name() }}(0, &status);
+    if (status.mCode) {
       MOZ_ASSERT(false, "Failed to allocate empty Rust buffer");
     }
   }
@@ -248,10 +248,10 @@ class MOZ_STACK_CLASS Writer final {
     if (aBytes >= static_cast<size_t>(std::numeric_limits<int32_t>::max())) {
       NS_ABORT_OOM(aBytes);
     }
-    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
+    {{ context.ffi_rustcallstatus_type() }} status = {0, {0, 0, nullptr, 0}};
     {{ context.ffi_rustbuffer_type() }} newBuffer = {{ ci.ffi_rustbuffer_reserve().name() }}(
-      mBuffer, static_cast<int32_t>(aBytes), &err);
-    if (err.mCode) {
+      mBuffer, static_cast<int32_t>(aBytes), &status);
+    if (status.mCode) {
       NS_ABORT_OOM(aBytes);
     }
     mBuffer = newBuffer;
@@ -391,9 +391,9 @@ struct ViaFfi<nsACString, {{ context.ffi_rustbuffer_type() }}, false> {
                                  nsACString& aLifted) {
     if (aLowered.mData) {
       aLifted.Append(AsChars(Span(aLowered.mData, aLowered.mLen)));
-      {{ context.ffi_rusterror_type() }} err = {0, nullptr};
-      {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &err);
-      if (err.mCode) {
+      {{ context.ffi_rustcallstatus_type() }} status = {0, {0, 0, nullptr, 0}};
+      {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &status);
+      if (status.mCode) {
         MOZ_ASSERT(false, "Failed to lift `nsACString` from Rust buffer");
         return false;
       }
@@ -405,12 +405,12 @@ struct ViaFfi<nsACString, {{ context.ffi_rustbuffer_type() }}, false> {
     MOZ_RELEASE_ASSERT(
         aLifted.Length() <=
         static_cast<size_t>(std::numeric_limits<int32_t>::max()));
-    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
+    {{ context.ffi_rustcallstatus_type() }} status = {0, {0, 0, nullptr, 0}};
     {{ context.ffi_foreignbytes_type() }} bytes = {
         static_cast<int32_t>(aLifted.Length()),
         reinterpret_cast<const uint8_t*>(aLifted.BeginReading())};
-    {{ context.ffi_rustbuffer_type() }} lowered = {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, &err);
-    if (err.mCode) {
+    {{ context.ffi_rustbuffer_type() }} lowered = {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, &status);
+    if (status.mCode) {
       MOZ_ASSERT(false, "Failed to lower `nsACString` into Rust string");
     }
     return lowered;
@@ -450,9 +450,9 @@ struct ViaFfi<nsAString, {{ context.ffi_rustbuffer_type() }}, false> {
                                  nsAString& aLifted) {
     if (aLowered.mData) {
       CopyUTF8toUTF16(AsChars(Span(aLowered.mData, aLowered.mLen)), aLifted);
-      {{ context.ffi_rusterror_type() }} err = {0, nullptr};
-      {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &err);
-      if (err.mCode) {
+      {{ context.ffi_rustcallstatus_type() }} status = {0, {0, 0, nullptr, 0}};
+      {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &status);
+      if (status.mCode) {
         MOZ_ASSERT(false, "Failed to lift `nsAString` from Rust buffer");
         return false;
       }
@@ -467,10 +467,10 @@ struct ViaFfi<nsAString, {{ context.ffi_rustbuffer_type() }}, false> {
         maxSize.value() <=
             static_cast<size_t>(std::numeric_limits<int32_t>::max()));
 
-    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
+    {{ context.ffi_rustcallstatus_type() }} status = {0, {0, 0, nullptr, 0}};
     {{ context.ffi_rustbuffer_type() }} lowered = {{ ci.ffi_rustbuffer_alloc().name() }}(
-      static_cast<int32_t>(maxSize.value()), &err);
-    if (err.mCode) {
+      static_cast<int32_t>(maxSize.value()), &status);
+    if (status.mCode) {
       MOZ_ASSERT(false, "Failed to lower `nsAString` into Rust string");
     }
 
@@ -659,9 +659,9 @@ struct ViaFfi<T, {{ context.ffi_rustbuffer_type() }}> {
       MOZ_ASSERT(false);
       return false;
     }
-    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
-    {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &err);
-    if (err.mCode) {
+    {{ context.ffi_rustcallstatus_type() }} status = {0, {0, 0, nullptr, 0}};
+    {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &status);
+    if (status.mCode) {
       MOZ_ASSERT(false, "Failed to free Rust buffer after lifting contents");
       return false;
     }
@@ -760,9 +760,9 @@ struct ViaFfi<T, {{ context.ffi_rustbuffer_type() }}, true> {
       MOZ_ASSERT(false);
       return false;
     }
-    {{ context.ffi_rusterror_type() }} err = {0, nullptr};
-    {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &err);
-    if (err.mCode) {
+    {{ context.ffi_rustcallstatus_type() }} status = {0, {0, 0, nullptr, 0}};
+    {{ ci.ffi_rustbuffer_free().name() }}(aLowered, &status);
+    if (status.mCode) {
       MOZ_ASSERT(false, "Failed to free Rust buffer after lifting contents");
       return false;
     }

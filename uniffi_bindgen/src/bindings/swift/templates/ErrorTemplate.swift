@@ -1,24 +1,14 @@
-{#
-// In here we define conversions between a native reference to Swift errors
-// We use the RustError protocol to define the requirements. Any implementers of the protocol
-// Can be generated from a NativeRustError.
-
-#}
-
-fileprivate protocol RustError: LocalizedError {
-    static func fromConsuming(_ rustError: NativeRustError) throws -> Self?
-}
-
 // An error type for FFI errors. These errors occur at the UniFFI level, not
 // the library level.
-fileprivate enum UniffiInternalError: RustError {
+public enum UniffiInternalError: LocalizedError {
     case bufferOverflow
     case incompleteData
     case unexpectedOptionalTag
     case unexpectedEnumCase
     case unexpectedNullPointer
-    case emptyResult
-    case unknown(_ message: String)
+    case unexpectedRustCallStatusCode
+    case unexpectedRustCallError
+    case rustPanic(_ message: String)
 
     public var errorDescription: String? {
         switch self {
@@ -27,103 +17,111 @@ fileprivate enum UniffiInternalError: RustError {
         case .unexpectedOptionalTag: return "Unexpected optional tag; should be 0 or 1"
         case .unexpectedEnumCase: return "Raw enum value doesn't match any cases"
         case .unexpectedNullPointer: return "Raw pointer value was null"
-        case .emptyResult: return "Unexpected nil returned from FFI function"
-        case let .unknown(message): return "FFI function returned unknown error: \(message)"
-        }
-    }
-
-    fileprivate static func fromConsuming(_ rustError: NativeRustError) throws -> Self? {
-        let message = rustError.message
-        defer {
-            if message != nil {
-                try! rustCall(UniffiInternalError.unknown("UniffiInternalError.fromConsuming")) { err in
-                    {{ ci.ffi_string_free().name() }}(message!, err)
-                }
-            }
-        }
-        switch rustError.code {
-        case 0: return nil
-        default: return .unknown(String(cString: message!))
+        case .unexpectedRustCallStatusCode: return "Unexpected RustCallStatus code"
+        case .unexpectedRustCallError: return "CALL_ERROR but no errorClass specified"
+        case let .rustPanic(message): return message
         }
     }
 }
 
+fileprivate let CALL_SUCCESS: Int8 = 0
+fileprivate let CALL_ERROR: Int8 = 1
+fileprivate let CALL_PANIC: Int8 = 2
+
+fileprivate extension RustCallStatus {
+    init() {
+        self.init(
+            code: CALL_SUCCESS,
+            errorBuf: RustBuffer.init(
+                capacity: 0,
+                len: 0,
+                data: nil,
+                padding: 0
+            )
+        )
+    }
+}
+
+{# Define enums to handle each individual error #}
 {% for e in ci.iter_error_definitions() %}
-public enum {{e.name()}}: RustError {
-    case NoError
-    {% for value in e.values() %}
-    case {{value}}(message: String)
+public enum {{ e.name()|class_name_swift }} {
+    {% for variant in e.variants() %}
+    case {{ variant.name()|class_name_swift }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
     {% endfor %}
+}
 
-
-    /// Our implementation of the localizedError protocol
-    public var errorDescription: String? {
-        switch self {
-        {% for value in e.values() %}
-        case let .{{value}}(message):
-            return "{{e.name()}}.{{value}}: \(message)"
+extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
+    fileprivate static func read(from buf: Reader) throws -> {{ e.name()|class_name_swift }} {
+        let variant: Int32 = try buf.readInt()
+        switch variant {
+        {% for variant in e.variants() %}
+        case {{ loop.index }}: return .{{ variant.name()|class_name_swift }}{% if variant.has_fields() -%}(
+            {% for field in variant.fields() -%}
+            {{ field.name()|var_name_swift }}: try {{ "buf"|read_swift(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {% endfor -%}
+        ){% endif -%}
         {% endfor %}
-        default:
-            return nil
+        default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
-    // The name is attempting to indicate that we free message if it
-    // existed, and that it's a very bad idea to touch it after you call this
-    // function
-    fileprivate static func fromConsuming(_ rustError: NativeRustError) throws -> Self? {
-        let message = rustError.message
-        defer {
-            if message != nil {
-                try! rustCall(UniffiInternalError.unknown("{{e.name()}}.fromConsuming")) { err in
-                    {{ ci.ffi_string_free().name() }}(message!, err)
-                }
-            }
-        }
-        switch rustError.code {
-            case 0:
-                return nil
-            case -1:
-            // TODO: Return a Uniffi defined error here
-            // to indicate a panic
-                fatalError("Panic detected!")
-            {% for value in e.values() %}
-            case {{loop.index}}:
-                return .{{value}}(message: String(cString: message!))
-            {% endfor %}
-            default:
-                fatalError("Invalid error")
+    fileprivate func write(into buf: Writer) {
+        switch self {
+        {% for variant in e.variants() %}
+        {% if variant.has_fields() %}
+        case let .{{ variant.name()|class_name_swift }}({% for field in variant.fields() %}{{ field.name()|var_name_swift }}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
+            buf.writeInt(Int32({{ loop.index }}))
+            {% for field in variant.fields() -%}
+            {{ field.name()|var_name_swift }}.write(into: buf)
+            {% endfor -%}
+        {% else %}
+        case .{{ variant.name()|class_name_swift }}:
+            buf.writeInt(Int32({{ loop.index }}))
+        {% endif %}
+        {%- endfor %}
         }
     }
 }
+
+{% if !e.contains_object_references(ci) %}
+extension {{ e.name()|class_name_swift }}: Equatable, Hashable {}
+{% endif %}
+extension {{ e.name()|class_name_swift }}: Error { }
 {% endfor %}
 
-private func rustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T {
-    return try unwrap(err) { native_err in
-        return try cb(native_err)
-    }
+private func rustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) -> T) throws -> T {
+    try makeRustCall(callback, errorHandler: {
+        $0.deallocate()
+        return UniffiInternalError.unexpectedRustCallError
+    })
 }
 
-private func nullableRustCall<T, E: RustError>(_ err: E, _ cb: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T? {
-    return try tryUnwrap(err) { native_err in
-        return try cb(native_err)
-    }
+private func rustCallWithError<T, E: ViaFfiUsingByteBuffer & Error>(_ errorClass: E.Type, _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T) throws -> T {
+    try makeRustCall(callback, errorHandler: { return try E.lift($0) })
 }
 
-@discardableResult
-private func unwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T {
-    guard let result = try tryUnwrap(err, callback) else {
-        throw UniffiInternalError.emptyResult
-    }
-    return result
-}
+private func makeRustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) -> T, errorHandler: (RustBuffer) throws -> Error) throws -> T {
+    var callStatus = RustCallStatus.init()
+    let returnedVal = callback(&callStatus)
+    switch callStatus.code {
+        case CALL_SUCCESS:
+            return returnedVal
 
-@discardableResult
-private func tryUnwrap<T, E: RustError>(_ err: E, _ callback: (UnsafeMutablePointer<NativeRustError>) throws -> T?) throws -> T? {
-    var native_err = NativeRustError(code: 0, message: nil)
-    let returnedVal = try callback(&native_err)
-    if let retErr = try E.fromConsuming(native_err) {
-        throw retErr
+        case CALL_ERROR:
+            throw try errorHandler(callStatus.errorBuf)
+
+        case CALL_PANIC:
+            // When the rust code sees a panic, it tries to construct a RustBuffer
+            // with the message.  But if that code panics, then it just sends back
+            // an empty buffer.
+            if callStatus.errorBuf.len > 0 {
+                throw UniffiInternalError.rustPanic(try String.lift(callStatus.errorBuf))
+            } else {
+                callStatus.errorBuf.deallocate()
+                throw UniffiInternalError.rustPanic("Rust panic")
+            }
+
+        default:
+            throw UniffiInternalError.unexpectedRustCallStatusCode
     }
-    return returnedVal
 }

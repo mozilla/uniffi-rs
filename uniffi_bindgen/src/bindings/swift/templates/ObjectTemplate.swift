@@ -28,9 +28,7 @@ public class {{ obj.name()|class_name_swift }}: {{ obj.name() }}Protocol {
     {%- endmatch %}
 
     deinit {
-        try! rustCall(UniffiInternalError.unknown("deinit")) { err in
-            {{ obj.ffi_object_free().name() }}(pointer, err)
-        }
+        try! rustCall { {{ obj.ffi_object_free().name() }}(pointer, $0) }
     }
 
     {% for cons in obj.alternate_constructors() %}

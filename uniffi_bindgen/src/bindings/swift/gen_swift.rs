@@ -165,10 +165,8 @@ mod filters {
             FFIType::UInt64 => "uint64_t".into(),
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
-            FFIType::RustCString => "const char*_Nonnull".into(),
             FFIType::RustArcPtr => "void*_Nonnull".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
-            FFIType::RustError => "NativeRustError".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
             FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
         })

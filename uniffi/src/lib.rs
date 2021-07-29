@@ -128,7 +128,7 @@ macro_rules! assert_compatible_version {
 /// the uniffi generated FFI layer, both as standalone argument or return values, and as
 /// part of serialized compound data structures.
 ///
-/// (This trait is Like the `InfoFfi` trait from `ffi_support`, but local to this crate
+/// (This trait is like the `IntoFfi` trait from `ffi_support`, but local to this crate
 /// so that we can add some alternative implementations for different builtin types,
 /// and so that we can add support for receiving as well as returning).
 ///

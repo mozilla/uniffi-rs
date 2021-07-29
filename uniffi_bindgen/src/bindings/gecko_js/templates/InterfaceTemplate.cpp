@@ -27,9 +27,9 @@ NS_INTERFACE_MAP_END
 ) : mGlobal(aGlobal), mHandle(aHandle) {}
 
 {{ obj.name()|class_name_cpp(context) }}::~{{ obj.name()|class_name_cpp(context) }}() {
-  {{ context.ffi_rusterror_type() }} err = {0, nullptr};
-  {{ obj.ffi_object_free().name() }}(mHandle, &err);
-  MOZ_ASSERT(!err.mCode);
+  {{ context.ffi_rustcallstatus_type() }} status = {0, { 0, 0, nullptr, 0 }};
+  {{ obj.ffi_object_free().name() }}(mHandle, &status);
+  MOZ_ASSERT(!status.mCode);
 }
 
 JSObject* {{ obj.name()|class_name_cpp(context) }}::WrapObject(

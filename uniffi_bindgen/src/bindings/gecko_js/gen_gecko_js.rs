@@ -103,13 +103,13 @@ impl<'config, 'ci> Context<'config, 'ci> {
         format!("{}_ForeignBytes", self.ci.ffi_namespace())
     }
 
-    /// Returns the `RustError` type name.
+    /// Returns the `RustCallStatus` type name.
     ///
-    /// A `RustError` is a Plain Old Data struct that holds an error code and
-    /// a message string. See the docs for `ffi_rustbuffer_type` about why this
-    /// type name must be unique for each component.
-    pub fn ffi_rusterror_type(&self) -> String {
-        format!("{}_RustError", self.ci.ffi_namespace())
+    /// A `RustCallStatus` is a Plain Old Data struct that holds an call status code and
+    /// `RustBuffer`. See the docs for `ffi_rustbuffer_type` about why this type name must be
+    /// unique for each component.
+    pub fn ffi_rustcallstatus_type(&self) -> String {
+        format!("{}_RustCallStatus", self.ci.ffi_namespace())
     }
 
     /// Returns the name to use for the `detail` C++ namespace, which contains
@@ -331,10 +331,8 @@ mod filters {
             FFIType::UInt64 => "uint64_t".into(),
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
-            FFIType::RustCString => "const char*".into(),
             FFIType::RustArcPtr => unimplemented!("object pointers are not implemented"),
             FFIType::RustBuffer => context.ffi_rustbuffer_type(),
-            FFIType::RustError => context.ffi_rusterror_type(),
             FFIType::ForeignBytes => context.ffi_foreignbytes_type(),
             FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
         })

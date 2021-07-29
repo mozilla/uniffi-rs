@@ -241,9 +241,7 @@ extension String: ViaFfi {
 
     fileprivate static func lift(_ v: FfiType) throws -> Self {
         defer {
-            try! rustCall(UniffiInternalError.unknown("String.lift")) { err in
-                {{ ci.ffi_rustbuffer_free().name() }}(v, err)
-            }
+            try! rustCall { {{ ci.ffi_rustbuffer_free().name() }}(v, $0) }
         }
         if v.data == nil {
             return String()
@@ -259,9 +257,7 @@ extension String: ViaFfi {
                 // The swift string gives us a trailing null byte, we don't want it.
                 let buf = UnsafeBufferPointer(rebasing: ptr.prefix(upTo: ptr.count - 1))
                 let bytes = ForeignBytes(bufferPointer: buf)
-                return try! rustCall(UniffiInternalError.unknown("String.lower")) { err in
-                    {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, err)
-                }
+                return try! rustCall { {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, $0) }
             }
         }
     }

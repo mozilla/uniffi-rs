@@ -5,29 +5,27 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-{% call try(func) %} rustCall(
+{% call try(func) %}
     {% match func.throws() %}
     {% when Some with (e) %}
-    {{e}}.NoError
+    rustCallWithError({{ e|class_name_swift }}.self) {
     {% else %}
-    UniffiInternalError.unknown("rustCall")
+    rustCall() {
     {% endmatch %}
-) { err in
-    {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err)
+    {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}$0)
 }
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
-{% call try(func) %} rustCall(
+{% call try(func) %}
     {%- match func.throws() %}
     {%- when Some with (e) %}
-    {{e}}.NoError
+    rustCallWithError({{ e|class_name_swift }}.self) {
     {%- else %}
-    UniffiInternalError.unknown("rustCall")
-    {%- endmatch %}
-) { err in
+    rustCall() {
+    {% endmatch %}
     {{ func.ffi_func().name() }}(
-        {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}err
+        {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}$0
     )
 }
 {%- endmacro %}
@@ -85,11 +83,9 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.type_()|type_ffi }} {{ arg.name() -}}
-        {% if loop.last %}{% else %},{% endif %}
+        {{- arg.type_()|type_ffi }} {{ arg.name() -}},
     {%- endfor %}
-    {% if func.arguments().len() > 0 %},{% endif %}NativeRustError *_Nonnull out_err
-
+    RustCallStatus *_Nonnull out_status
 {%- endmacro -%}
 
 {%- macro throws(func) %}

@@ -61,6 +61,8 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
         // Some enum types are defined using an `interface` with a special attribute.
         if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_enum_attr() {
             types.add_type_definition(self.identifier.0, Type::Enum(name))
+        } else if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_error_attr() {
+            types.add_type_definition(self.identifier.0, Type::Error(name))
         } else {
             types.add_type_definition(self.identifier.0, Type::Object(name))
         }

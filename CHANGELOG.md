@@ -12,17 +12,19 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.12.0...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+- Python timestamps will now be in UTC and timezone-aware rather than naive.
+- Replaced `lower_into_buffer()` and `try_lift_from_buffer()` with the
+  `RustBufferViaFfi` trait.  If you use those functions in your custom ViaFfi
+  implementation then you'll need to update the code.  Check out the `Option<>`
+  implementation in uniffi/src/lib.rs for an example.
 - Kotlin exceptions names will now replace a trailing "Error" with "Exception"
   rather than appending the string (FooException instead of FooErrorException)
 
 ### What's Changed
 
 - Both python and ruby backends now handle U16 correctly.
-- Python timestamps will now be in UTC and timezone-aware rather than naive.
-- Replaced `lower_into_buffer()` and `try_lift_from_buffer()` with the
-  `RustBufferViaFfi` trait.  If you use those functions in your custom ViaFfi
-  implementation then you'll need to update the code.  Check out the `Option<>`
-  implementation in uniffi/src/lib.rs for an example.
+- Error variants can now contain named fields, similar to Enum variants
 
 ## v0.12.0 (2021-06-14)
 

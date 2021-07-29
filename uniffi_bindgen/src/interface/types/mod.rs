@@ -137,10 +137,9 @@ impl From<&Type> for FFIType {
             Type::Object(_) => FFIType::RustArcPtr,
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface(_) => FFIType::UInt64,
-            // Errors have their own special type.
-            Type::Error(_) => FFIType::RustError,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
             Type::Enum(_)
+            | Type::Error(_)
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
