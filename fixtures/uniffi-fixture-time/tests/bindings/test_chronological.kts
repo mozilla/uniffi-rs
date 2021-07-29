@@ -35,14 +35,13 @@ try {
 }
 
 // Test that rust timestamps behave like kotlin timestamps
+// Unfortunately the JVM clock may be lower resolution than the Rust clock.
+// Sleep for 1ms between each call, which should ensure the JVM clock ticks
+// forward.
 val kotlinBefore = Instant.now()
+Thread.sleep(10)
 val rustNow = now()
+Thread.sleep(10)
 val kotlinAfter = Instant.now()
-assert(kotlinBefore.isBefore(rustNow) || kotlinBefore.equals(rustNow))
-assert(
-        kotlinAfter.isAfter(rustNow) ||
-        kotlinAfter.equals(rustNow) ||
-        // Unfortunately the JVM clock may be lower resolution than the Rust clock,
-        // so we might observe time advance in Rust but not in Kotlin.
-        kotlinAfter.equals(kotlinBefore)
-)
+assert(kotlinBefore.isBefore(rustNow))
+assert(kotlinAfter.isAfter(rustNow))
