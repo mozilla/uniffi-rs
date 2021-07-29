@@ -190,6 +190,12 @@ namespace arithmetic {
 }
 </code></pre>
 <p>On the other side (Kotlin, Swift etc.), a proper exception will be thrown if <code>Result::is_err()</code> is <code>true</code>.</p>
+<p>If you want to expose the assocated data as fields on the exception, use this syntax:</p>
+<pre><code>[Enum]
+interface ArithmeticError {
+  IntegerOverflow(u64 a, u64 b);
+};
+</code></pre>
 
                     </main>
 

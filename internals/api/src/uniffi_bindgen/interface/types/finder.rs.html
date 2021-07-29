@@ -179,6 +179,8 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -243,6 +245,8 @@
         <span class="comment">// Some enum types are defined using an `interface` with a special attribute.</span>
         <span class="kw">if</span> <span class="ident">InterfaceAttributes</span>::<span class="ident">try_from</span>(<span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>.<span class="ident">contains_enum_attr</span>() {
             <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>, <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">name</span>))
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">InterfaceAttributes</span>::<span class="ident">try_from</span>(<span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>.<span class="ident">contains_error_attr</span>() {
+            <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>, <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">name</span>))
         } <span class="kw">else</span> {
             <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>, <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">name</span>))
         }

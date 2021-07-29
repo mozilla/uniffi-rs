@@ -616,8 +616,6 @@
 <span id="613">613</span>
 <span id="614">614</span>
 <span id="615">615</span>
-<span id="616">616</span>
-<span id="617">617</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -724,13 +722,13 @@
         <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}_ForeignBytes&quot;</span>, <span class="self">self</span>.<span class="ident">ci</span>.<span class="ident">ffi_namespace</span>())
     }
 
-    <span class="doccomment">/// Returns the `RustError` type name.</span>
+    <span class="doccomment">/// Returns the `RustCallStatus` type name.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// A `RustError` is a Plain Old Data struct that holds an error code and</span>
-    <span class="doccomment">/// a message string. See the docs for `ffi_rustbuffer_type` about why this</span>
-    <span class="doccomment">/// type name must be unique for each component.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_rusterror_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}_RustError&quot;</span>, <span class="self">self</span>.<span class="ident">ci</span>.<span class="ident">ffi_namespace</span>())
+    <span class="doccomment">/// A `RustCallStatus` is a Plain Old Data struct that holds an call status code and</span>
+    <span class="doccomment">/// `RustBuffer`. See the docs for `ffi_rustbuffer_type` about why this type name must be</span>
+    <span class="doccomment">/// unique for each component.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_rustcallstatus_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}_RustCallStatus&quot;</span>, <span class="self">self</span>.<span class="ident">ci</span>.<span class="ident">ffi_namespace</span>())
     }
 
     <span class="doccomment">/// Returns the name to use for the `detail` C++ namespace, which contains</span>
@@ -952,10 +950,8 @@
             <span class="ident">FFIType</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;uint64_t&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">FFIType</span>::<span class="ident">Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">FFIType</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">RustCString</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;const char*&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">FFIType</span>::<span class="ident">RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(<span class="string">&quot;object pointers are not implemented&quot;</span>),
             <span class="ident">FFIType</span>::<span class="ident">RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">context</span>.<span class="ident">ffi_rustbuffer_type</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">RustError</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">context</span>.<span class="ident">ffi_rusterror_type</span>(),
             <span class="ident">FFIType</span>::<span class="ident">ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">context</span>.<span class="ident">ffi_foreignbytes_type</span>(),
             <span class="ident">FFIType</span>::<span class="ident">ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
         })

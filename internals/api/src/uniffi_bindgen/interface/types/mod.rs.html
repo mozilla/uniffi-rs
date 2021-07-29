@@ -255,7 +255,6 @@
 <span id="252">252</span>
 <span id="253">253</span>
 <span id="254">254</span>
-<span id="255">255</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -396,10 +395,9 @@
             <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">FFIType</span>::<span class="ident">RustArcPtr</span>,
             <span class="comment">// Callback interfaces are passed as opaque integer handles.</span>
             <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">FFIType</span>::<span class="ident">UInt64</span>,
-            <span class="comment">// Errors have their own special type.</span>
-            <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">FFIType</span>::<span class="ident">RustError</span>,
             <span class="comment">// Other types are serialized into a bytebuffer and deserialized on the other side.</span>
             <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)

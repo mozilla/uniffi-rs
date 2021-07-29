@@ -260,8 +260,6 @@
 <span id="257">257</span>
 <span id="258">258</span>
 <span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -357,10 +355,8 @@
             <span class="ident">FFIType</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:uint64&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:float&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:double&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">RustCString</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:string&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:pointer&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer.by_value&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">RustError</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustError.by_ref&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
         })

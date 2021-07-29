@@ -625,6 +625,12 @@ namespace arithmetic {
 }
 </code></pre>
 <p>On the other side (Kotlin, Swift etc.), a proper exception will be thrown if <code>Result::is_err()</code> is <code>true</code>.</p>
+<p>If you want to expose the assocated data as fields on the exception, use this syntax:</p>
+<pre><code>[Enum]
+interface ArithmeticError {
+  IntegerOverflow(u64 a, u64 b);
+};
+</code></pre>
 <h1><a class="header" href="#interfacesobjects" id="interfacesobjects">Interfaces/Objects</a></h1>
 <p>Interfaces are represented in the Rust world as a struct with an <code>impl</code> block containing methods. In the Kotlin or Swift world, it's a class.</p>
 <p>Because Objects are passed by reference and Dictionaries by value, in the UniFFI world it is impossible to be both an Object and a <a href="udl/./structs.html">Dictionary</a>.</p>

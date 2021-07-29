@@ -299,7 +299,6 @@
 <span id="296">296</span>
 <span id="297">297</span>
 <span id="298">298</span>
-<span id="299">299</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -416,10 +415,8 @@
             <span class="ident">FFIType</span>::<span class="ident">Int64</span> <span class="op">|</span> <span class="ident">FFIType</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Long&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Float&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Double&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">RustCString</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Pointer&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Pointer&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer.ByValue&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">RustError</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustError&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignCallback&quot;</span>.<span class="ident">to_string</span>(),
         })
@@ -486,6 +483,23 @@
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of an individual enum variant.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_variant_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_shouty_snake_case</span>())
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an exception name</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.  Rust code typically uses</span>
+    <span class="doccomment">/// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error</span>
+    <span class="doccomment">/// and is distinguished from an &quot;Exception&quot;.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exception_name_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">nm</span>.<span class="ident">to_string</span>();
+        <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">strip_suffix</span>(<span class="string">&quot;Error&quot;</span>) {
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">name</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">stripped</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kt_exc_name</span> <span class="op">=</span> <span class="ident">stripped</span>.<span class="ident">to_owned</span>();
+                <span class="ident">kt_exc_name</span>.<span class="ident">push_str</span>(<span class="string">&quot;Exception&quot;</span>);
+                <span class="prelude-val">Ok</span>(<span class="ident">kt_exc_name</span>)
+            }
+        }
     }
 
     <span class="doccomment">/// Get a Kotlin expression for lowering a value into something we can pass over the FFI.</span>
@@ -582,22 +596,6 @@
             <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;read{}({})&quot;</span>, <span class="ident">class_name_kt</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>, <span class="ident">nm</span>),
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.read({})&quot;</span>, <span class="ident">type_kt</span>(<span class="ident">type_</span>)<span class="question-mark">?</span>, <span class="ident">nm</span>),
         })
-    }
-
-    <span class="doccomment">/// Generate a Kotlin exception name</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.  Rust code typically uses</span>
-    <span class="doccomment">/// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error</span>
-    <span class="doccomment">/// and is distinguished from an &quot;Exception&quot;.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exception_name_kt</span>(<span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="ident">Error</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">error</span>.<span class="ident">name</span>().<span class="ident">strip_suffix</span>(<span class="string">&quot;Error&quot;</span>) {
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">error</span>.<span class="ident">name</span>().<span class="ident">to_owned</span>()),
-            <span class="prelude-val">Some</span>(<span class="ident">stripped</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kt_exc_name</span> <span class="op">=</span> <span class="ident">stripped</span>.<span class="ident">to_owned</span>();
-                <span class="ident">kt_exc_name</span>.<span class="ident">push_str</span>(<span class="string">&quot;Exception&quot;</span>);
-                <span class="prelude-val">Ok</span>(<span class="ident">kt_exc_name</span>)
-            }
-        }
     }
 }
 </pre></div>
