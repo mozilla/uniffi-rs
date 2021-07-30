@@ -115,8 +115,8 @@ do {
     do {
         let _ = try coveralls.maybeThrowComplex(input: 3)
         fatalError("should have thrown")
-    } catch UniffiInternalError.rustPanic(let message) {
-        assert(message == "Invalid input")
+    } catch {
+        assert(String(describing: error) == "rustPanic(\"Invalid input\")")
     }
 
 }
