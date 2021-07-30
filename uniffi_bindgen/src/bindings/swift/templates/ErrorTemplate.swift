@@ -1,6 +1,6 @@
 // An error type for FFI errors. These errors occur at the UniFFI level, not
 // the library level.
-public enum UniffiInternalError: LocalizedError {
+fileprivate enum UniffiInternalError: LocalizedError {
     case bufferOverflow
     case incompleteData
     case unexpectedOptionalTag
