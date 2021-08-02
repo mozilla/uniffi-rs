@@ -323,7 +323,7 @@ impl<T: Clone> MergeWith for Option<T> {
 }
 
 pub fn run_main() -> Result<()> {
-    const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift", "gecko_js", "ruby"];
+    const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift", "ruby"];
     let matches = clap::App::new("uniffi-bindgen")
         .about("Scaffolding and bindings generator for Rust")
         .version(clap::crate_version!())

@@ -16,4 +16,4 @@ This .udl (UniFFI Definition Language) file, whose definitions must match with t
 - Kotlin
 - Swift
 - Python
-- [Gecko](https://en.wikipedia.org/wiki/Gecko_(software)) C++ (Work in Progress)
+- Ruby
