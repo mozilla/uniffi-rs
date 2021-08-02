@@ -286,12 +286,53 @@
 <span id="283">283</span>
 <span id="284">284</span>
 <span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
-
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::<span class="prelude-ty">Result</span>;
 <span class="kw">use</span> <span class="ident">askama</span>::<span class="ident">Template</span>;
@@ -301,28 +342,55 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">interface</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">MergeWith</span>;
 
-<span class="comment">// Some config options for the caller to customize the generated Swift.</span>
-<span class="comment">// Note that this can only be used to control details of the Swift *that do not affect the underlying component*,</span>
-<span class="comment">// since the details of the underlying component are entirely determined by the `ComponentInterface`.</span>
-
+<span class="doccomment">/// Config options for the caller to customize the generated Swift.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that this can only be used to control details of the Swift *that do not affect the underlying component*,</span>
+<span class="doccomment">/// since the details of the underlying component are entirely determined by the `ComponentInterface`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Config</span> {
-    <span class="ident">module_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">cdylib_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="ident">module_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="ident">ffi_module_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="ident">ffi_module_filename</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="ident">generate_module_map</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
 }
+
 <span class="kw">impl</span> <span class="ident">Config</span> {
+    <span class="doccomment">/// The name of the Swift module containing the high-level foreign-language bindings.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">module_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">module_name</span>.<span class="ident">as_ref</span>() {
             <span class="prelude-val">Some</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>.<span class="ident">clone</span>(),
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;uniffi&quot;</span>.<span class="ident">into</span>(),
         }
     }
+
+    <span class="doccomment">/// The name of the lower-level C module containing the FFI declarations.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_module_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">ffi_module_name</span>.<span class="ident">as_ref</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}FFI&quot;</span>, <span class="self">self</span>.<span class="ident">module_name</span>()),
+        }
+    }
+
+    <span class="doccomment">/// The filename stem for the lower-level C module containing the FFI declarations.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_module_filename</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">ffi_module_filename</span>.<span class="ident">as_ref</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">ffi_module_name</span>(),
+        }
+    }
+
+    <span class="doccomment">/// The name of the `.modulemap` file for the lower-level C module with FFI declarations.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">modulemap_filename</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.modulemap&quot;</span>, <span class="self">self</span>.<span class="ident">module_name</span>())
+        <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.modulemap&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_module_filename</span>())
     }
+
+    <span class="doccomment">/// The name of the `.h` file for the lower-level C module with FFI declarations.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">header_filename</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}-Bridging-Header.h&quot;</span>, <span class="self">self</span>.<span class="ident">module_name</span>())
+        <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.h&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_module_filename</span>())
     }
+
+    <span class="doccomment">/// The name of the compiled Rust library containing the FFI implementation.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cdylib_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cdylib_name</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cdylib_name</span> {
             <span class="ident">cdylib_name</span>.<span class="ident">clone</span>()
@@ -330,13 +398,19 @@
             <span class="string">&quot;uniffi&quot;</span>.<span class="ident">into</span>()
         }
     }
+
+    <span class="doccomment">/// Whether to generate a `.modulemap` file for the lower-level C module with FFI declarations.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_module_map</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">generate_module_map</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>)
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Config</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Config</span> {
-            <span class="ident">module_name</span>: <span class="prelude-val">Some</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>())),
+            <span class="ident">module_name</span>: <span class="prelude-val">Some</span>(<span class="ident">ci</span>.<span class="ident">namespace</span>().<span class="ident">into</span>()),
             <span class="ident">cdylib_name</span>: <span class="prelude-val">Some</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>())),
+            ..<span class="ident">Default</span>::<span class="ident">default</span>()
         }
     }
 }
@@ -345,13 +419,25 @@
     <span class="kw">fn</span> <span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Config</span> {
             <span class="ident">module_name</span>: <span class="self">self</span>.<span class="ident">module_name</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">module_name</span>),
+            <span class="ident">ffi_module_name</span>: <span class="self">self</span>.<span class="ident">ffi_module_name</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">ffi_module_name</span>),
             <span class="ident">cdylib_name</span>: <span class="self">self</span>.<span class="ident">cdylib_name</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">cdylib_name</span>),
+            <span class="ident">ffi_module_filename</span>: <span class="self">self</span>
+                .<span class="ident">ffi_module_filename</span>
+                .<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">ffi_module_filename</span>),
+            <span class="ident">generate_module_map</span>: <span class="self">self</span>
+                .<span class="ident">generate_module_map</span>
+                .<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">generate_module_map</span>),
         }
     }
 }
 
+<span class="doccomment">/// Template for generating the `.h` file that defines the low-level C FFI.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This file defines only the low-level structs and functions that are exposed</span>
+<span class="doccomment">/// by the compiled Rust code. It gets wrapped into a higher-level API by the</span>
+<span class="doccomment">/// code from [`SwiftWrapper`].</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
-<span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;c&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;Template-Bridging-Header.h&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;c&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;BridgingHeaderTemplate.h&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BridgingHeader</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> {
     <span class="ident">_config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>,
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>,
@@ -366,48 +452,47 @@
     }
 }
 
+<span class="doccomment">/// Template for generating the `.modulemap` file that exposes the low-level C FFI.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This file defines how the low-level C FFI from [`BridgingHeader`] gets exposed</span>
+<span class="doccomment">/// as a Swift module that can be called by other Swift code. In our case, its only</span>
+<span class="doccomment">/// job is to define the *name* of the Swift module that will contain the FFI functions</span>
+<span class="doccomment">/// so that it can be imported by the higher-level code in from [`SwiftWrapper`].</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
 <span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;c&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;ModuleMapTemplate.modulemap&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ModuleMap</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span>, <span class="lifetime">&#39;header</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ModuleMap</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> {
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>,
     <span class="ident">_ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>,
-    <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;header</span> <span class="ident">Path</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span>, <span class="lifetime">&#39;header</span><span class="op">&gt;</span> <span class="ident">ModuleMap</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span>, <span class="lifetime">&#39;header</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>,
-        <span class="ident">_ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>,
-        <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;header</span> <span class="ident">Path</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">config</span>,
-            <span class="ident">_ci</span>,
-            <span class="ident">header</span>,
-        }
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> <span class="ident">ModuleMap</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>, <span class="ident">_ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">config</span>, <span class="ident">_ci</span> }
     }
 }
 
+<span class="doccomment">/// Template for generating the `.modulemap` file that exposes the low-level C FFI.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This file wraps the low-level C FFI from [`BridgingHeader`] into a more ergonomic,</span>
+<span class="doccomment">/// higher-level Swift API. It&#39;s the part that knows about API-level concepts like</span>
+<span class="doccomment">/// Objects and Records and so-forth.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
 <span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;swift&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;wrapper.swift&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SwiftWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> {
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>,
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>,
-    <span class="ident">is_testing</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> <span class="ident">SwiftWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>, <span class="ident">is_testing</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">config</span>,
-            <span class="ident">ci</span>,
-            <span class="ident">is_testing</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">config</span>, <span class="ident">ci</span> }
     }
 }
 
-<span class="doccomment">/// Filters for our Askama templates above. These output C (for the bridging</span>
-<span class="doccomment">/// header) and Swift (for the actual library) declarations.</span>
+<span class="doccomment">/// Filters for our Askama templates above.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// These output C (for the bridging header) and Swift (for the actual library) declarations,</span>
+<span class="doccomment">/// mostly for dealing with types.</span>
 <span class="kw">mod</span> <span class="ident">filters</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
@@ -461,6 +546,7 @@
         })
     }
 
+    <span class="doccomment">/// Render a literal value for Swift code.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">literal_swift</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">fn</span> <span class="ident">typed_number</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>, <span class="ident">num_str</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
@@ -552,24 +638,24 @@
         }
     }
 
+    <span class="doccomment">/// Render the idiomatic Swift casing for the name of an enum.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_variant_swift</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>())
     }
 
+    <span class="doccomment">/// Render the idiomatic Swift casing for the name of a class.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">class_name_swift</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_camel_case</span>())
     }
 
+    <span class="doccomment">/// Render the idiomatic Swift casing for the name of a function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fn_name_swift</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>())
     }
 
+    <span class="doccomment">/// Render the idiomatic Swift casing for the name of a variable.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">var_name_swift</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>())
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">header_path</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">path</span>.<span class="ident">to_str</span>().<span class="ident">expect</span>(<span class="string">&quot;Invalid bridging header path&quot;</span>).<span class="ident">into</span>())
     }
 }
 </pre></div>

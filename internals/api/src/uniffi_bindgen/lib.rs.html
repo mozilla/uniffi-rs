@@ -454,7 +454,6 @@
 <span id="451">451</span>
 <span id="452">452</span>
 <span id="453">453</span>
-<span id="454">454</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -625,7 +624,6 @@
             <span class="kw-2">&amp;</span><span class="ident">out_dir</span>,
             <span class="ident">language</span>.<span class="ident">try_into</span>()<span class="question-mark">?</span>,
             <span class="ident">try_format_code</span>,
-            <span class="bool-val">false</span>,
         )<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
@@ -660,7 +658,7 @@
     }
 
     <span class="kw">for</span> (<span class="ident">lang</span>, <span class="ident">test_scripts</span>) <span class="kw">in</span> <span class="ident">language_tests</span> {
-        <span class="ident">bindings</span>::<span class="ident">write_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">cdylib_dir</span>, <span class="ident">lang</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+        <span class="ident">bindings</span>::<span class="ident">write_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">cdylib_dir</span>, <span class="ident">lang</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
         <span class="ident">bindings</span>::<span class="ident">compile_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">cdylib_dir</span>, <span class="ident">lang</span>)<span class="question-mark">?</span>;
         <span class="kw">for</span> <span class="ident">test_script</span> <span class="kw">in</span> <span class="ident">test_scripts</span> {
             <span class="ident">bindings</span>::<span class="ident">run_script</span>(<span class="ident">cdylib_dir</span>, <span class="kw-2">&amp;</span><span class="ident">test_script</span>, <span class="ident">lang</span>)<span class="question-mark">?</span>;
