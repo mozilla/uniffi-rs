@@ -42,3 +42,22 @@ There are plenty of potential ways to solve this problem, and the one that's rig
 be right for you. You can read a little more about the considerations and trade-offs
 that lead to the current approach in our [Architecture Decision Records](https://github.com/mozilla/uniffi-rs/tree/main/docs/adr/README.md),
 starting with [this motivational document](https://github.com/mozilla/uniffi-rs/tree/main/docs/adr/0000-whats-the-big-idea.md).
+
+## Why Not?
+
+We hope UniFFI will be useful to you! But if you're considering it for your project then
+here are some tradeoffs you should keep in mind:
+
+* UniFFI makes it easy to produce "good enough" bindings into Rust from several different target languages.
+  If you want to call Rust code from just one foreign language, there may be a language-specific
+  bindings tool that provides more features and better performance.
+* The project is evolving fast, because it's being developed concurrently with its
+  primary consumers. You should be prepared for frequent releases and non-trivial API churn
+  (but we'll use semantic versioning to signal breaking changes).
+* UniFFI doesn't provide an end-to-end packaging solution for your Rust code and its generated bindings.
+  For example, it'll help you generate Kotlin bindings to call into Rust, but it won't help you with
+  compiling the Rust code to run on Android or with packaging the bindings into an `.aar` bundle
+  (but it might be useful as a building-block for such a tool!).
+
+We also have a list of [design principles](./internals/design_principles.md) that might help
+you decide whether this project is a good fit for your needs.
