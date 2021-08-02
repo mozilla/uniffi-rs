@@ -27,7 +27,6 @@
 }
 {%- endmacro %}
 
-
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
         {{- arg.name()|lower_kt(arg.type_()) }}
@@ -42,9 +41,10 @@
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name_kt }}: {{ arg.type_()|type_kt -}}
+        {% let arg_type = arg.type_() -%}
+        {{ arg.name()|var_name_kt }}: {{ arg_type|type_kt -}}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_kt }}
+        {%- when Some with(literal) %} = {{ literal|literal_kt(arg_type) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
@@ -68,7 +68,24 @@
     uniffi_out_err: RustCallStatus
 {%- endmacro -%}
 
+{#
 // Add annotation if there are unsigned types
+// Works for MemberDeclarations that have declared a contains_unsigned_types() method.
+#}
 {%- macro unsigned_types_annotation(member) -%}
-{% if ci.item_contains_unsigned_types(member) %}@ExperimentalUnsignedTypes{% endif %}
+{% if member.contains_unsigned_types() %}@ExperimentalUnsignedTypes{% endif %}
 {%- endmacro -%}
+
+// Macro for destroying fields
+{%- macro destroy_fields(member) %}
+    Disposable.destroy(
+    {%- for field in member.fields() %}
+        this.{{ field.name()|var_name_kt }}{%- if !loop.last %}, {% endif -%}
+    {% endfor -%})
+{%- endmacro -%}
+
+{%- macro ffi_function_definition(func) %}
+fun {{ func.name() }}(
+    {%- call arg_list_ffi_decl(func) %}
+){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|type_ffi }}{% when None %}: Unit{% endmatch %}
+{% endmacro %}
