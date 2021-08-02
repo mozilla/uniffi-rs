@@ -2,13 +2,29 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::HashSet;
+use std::fmt;
+
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
+use crate::bindings::backend::CodeDeclaration;
 use crate::interface::*;
 use crate::MergeWith;
+
+use crate::bindings::backend::{CodeOracle, CodeType, TypeIdentifier};
+
+mod callback_interface;
+mod compounds;
+mod enum_;
+mod error;
+mod function;
+mod miscellany;
+mod object;
+mod primitives;
+mod record;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
@@ -60,52 +76,210 @@ impl MergeWith for Config {
 pub struct KotlinWrapper<'a> {
     config: Config,
     ci: &'a ComponentInterface,
+    oracle: KotlinCodeOracle,
 }
 impl<'a> KotlinWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
-        Self { config, ci }
+        Self {
+            config,
+            ci,
+            oracle: Default::default(),
+        }
+    }
+
+    pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
+        let ci = self.ci;
+        vec![
+            Box::new(object::KotlinObjectRuntime::new(ci)) as Box<dyn CodeDeclaration>,
+            Box::new(callback_interface::KotlinCallbackInterfaceRuntime::new(ci))
+                as Box<dyn CodeDeclaration>,
+        ]
+        .into_iter()
+        .chain(
+            ci.iter_enum_definitions().into_iter().map(|inner| {
+                Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
+            }),
+        )
+        .chain(ci.iter_function_definitions().into_iter().map(|inner| {
+            Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
+        }))
+        .chain(ci.iter_object_definitions().into_iter().map(|inner| {
+            Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn CodeDeclaration>
+        }))
+        .chain(ci.iter_record_definitions().into_iter().map(|inner| {
+            Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
+        }))
+        .chain(
+            ci.iter_error_definitions().into_iter().map(|inner| {
+                Box::new(error::KotlinError::new(inner, ci)) as Box<dyn CodeDeclaration>
+            }),
+        )
+        .chain(
+            ci.iter_callback_interface_definitions()
+                .into_iter()
+                .map(|inner| {
+                    Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci))
+                        as Box<dyn CodeDeclaration>
+                }),
+        )
+        .collect()
+    }
+
+    pub fn initialization_code(&self) -> Vec<String> {
+        let oracle = &self.oracle;
+        Vec::new()
+            .into_iter()
+            .chain(
+                self.members()
+                    .into_iter()
+                    .filter_map(|member| member.initialization_code(oracle)),
+            )
+            .collect()
+    }
+
+    pub fn declaration_code(&self) -> Vec<String> {
+        let oracle = &self.oracle;
+        Vec::new()
+            .into_iter()
+            .chain(
+                self.members()
+                    .into_iter()
+                    .filter_map(|member| member.definition_code(oracle)),
+            )
+            .chain(
+                self.ci
+                    .iter_types()
+                    .into_iter()
+                    .filter_map(|type_| oracle.find(&type_).helper_code(oracle)),
+            )
+            .collect()
+    }
+
+    pub fn imports(&self) -> Vec<String> {
+        let oracle = &self.oracle;
+        let mut imports: Vec<String> = Vec::new()
+            .into_iter()
+            .chain(
+                self.members()
+                    .into_iter()
+                    .filter_map(|member| member.import_code(oracle))
+                    .flatten(),
+            )
+            .chain(
+                self.ci
+                    .iter_types()
+                    .into_iter()
+                    .filter_map(|type_| oracle.find(&type_).import_code(oracle))
+                    .flatten(),
+            )
+            .collect::<HashSet<String>>()
+            .into_iter()
+            .collect();
+
+        imports.sort();
+        imports
     }
 }
 
-mod filters {
-    use super::*;
-    use std::fmt;
+#[derive(Default)]
+pub struct KotlinCodeOracle;
 
-    /// Get the Kotlin syntax for representing a given api-level `Type`.
-    pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            // These native Kotlin types map nicely to the FFI without conversion.
-            Type::UInt8 => "UByte".to_string(),
-            Type::UInt16 => "UShort".to_string(),
-            Type::UInt32 => "UInt".to_string(),
-            Type::UInt64 => "ULong".to_string(),
-            Type::Int8 => "Byte".to_string(),
-            Type::Int16 => "Short".to_string(),
-            Type::Int32 => "Int".to_string(),
-            Type::Int64 => "Long".to_string(),
-            Type::Float32 => "Float".to_string(),
-            Type::Float64 => "Double".to_string(),
-            // These types need conversion, and special handling for lifting/lowering.
-            Type::Boolean => "Boolean".to_string(),
-            Type::String => "String".to_string(),
-            Type::Timestamp => "java.time.Instant".to_string(),
-            Type::Duration => "java.time.Duration".to_string(),
-            Type::Enum(name)
-            | Type::Record(name)
-            | Type::Object(name)
-            | Type::Error(name)
-            | Type::CallbackInterface(name) => class_name_kt(name)?,
-            Type::Optional(t) => format!("{}?", type_kt(t)?),
-            Type::Sequence(t) => format!("List<{}>", type_kt(t)?),
-            Type::Map(t) => format!("Map<String, {}>", type_kt(t)?),
+impl KotlinCodeOracle {
+    fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
+        // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
+        // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
+
+        // Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &dyn CodeOracle
+        match type_ {
+            Type::UInt8 => Box::new(primitives::UInt8CodeType),
+            Type::Int8 => Box::new(primitives::Int8CodeType),
+            Type::UInt16 => Box::new(primitives::UInt16CodeType),
+            Type::Int16 => Box::new(primitives::Int16CodeType),
+            Type::UInt32 => Box::new(primitives::UInt32CodeType),
+            Type::Int32 => Box::new(primitives::Int32CodeType),
+            Type::UInt64 => Box::new(primitives::UInt64CodeType),
+            Type::Int64 => Box::new(primitives::Int64CodeType),
+            Type::Float32 => Box::new(primitives::Float32CodeType),
+            Type::Float64 => Box::new(primitives::Float64CodeType),
+            Type::Boolean => Box::new(primitives::BooleanCodeType),
+            Type::String => Box::new(primitives::StringCodeType),
+
+            Type::Timestamp => Box::new(miscellany::TimestampCodeType),
+            Type::Duration => Box::new(miscellany::DurationCodeType),
+
+            Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
+            Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
+            Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
+            Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
+            Type::CallbackInterface(id) => {
+                Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
+            }
+
+            Type::Optional(ref inner) => {
+                let outer = type_.clone();
+                let inner = *inner.to_owned();
+                Box::new(compounds::OptionalCodeType::new(inner, outer))
+            }
+            Type::Sequence(ref inner) => {
+                let outer = type_.clone();
+                let inner = *inner.to_owned();
+                Box::new(compounds::SequenceCodeType::new(inner, outer))
+            }
+            Type::Map(ref inner) => {
+                let outer = type_.clone();
+                let inner = *inner.to_owned();
+                Box::new(compounds::MapCodeType::new(inner, outer))
+            }
             Type::External { .. } => panic!("no support for external types yet"),
             Type::Wrapped { .. } => panic!("no support for wrapped types yet"),
-        })
+        }
+    }
+}
+
+impl CodeOracle for KotlinCodeOracle {
+    fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType> {
+        self.create_code_type(type_.clone())
     }
 
-    /// Get the Kotlin syntax for representing a given low-level `FFIType`.
-    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
-        Ok(match type_ {
+    /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
+    fn class_name(&self, nm: &dyn fmt::Display) -> String {
+        nm.to_string().to_camel_case()
+    }
+
+    /// Get the idiomatic Kotlin rendering of a function name.
+    fn fn_name(&self, nm: &dyn fmt::Display) -> String {
+        nm.to_string().to_mixed_case()
+    }
+
+    /// Get the idiomatic Kotlin rendering of a variable name.
+    fn var_name(&self, nm: &dyn fmt::Display) -> String {
+        nm.to_string().to_mixed_case()
+    }
+
+    /// Get the idiomatic Kotlin rendering of an individual enum variant.
+    fn enum_variant(&self, nm: &dyn fmt::Display) -> String {
+        nm.to_string().to_shouty_snake_case()
+    }
+
+    /// Get the idiomatic Kotlin rendering of an exception name
+    ///
+    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
+    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
+    /// and is distinguished from an "Exception".
+    fn exception_name(&self, nm: &dyn fmt::Display) -> String {
+        let name = nm.to_string();
+        match name.strip_suffix("Error") {
+            None => name,
+            Some(stripped) => {
+                let mut kt_exc_name = stripped.to_owned();
+                kt_exc_name.push_str("Exception");
+                kt_exc_name
+            }
+        }
+    }
+
+    fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
+        match ffi_type {
             // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
             // support them yet. Thus, we use the signed variants to represent both signed and unsigned
             // types from the component API.
@@ -119,70 +293,80 @@ mod filters {
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FFIType::ForeignCallback => "ForeignCallback".to_string(),
-        })
+        }
+    }
+}
+
+pub mod filters {
+    use super::*;
+    use std::fmt;
+
+    fn oracle() -> impl CodeOracle {
+        KotlinCodeOracle
     }
 
-    pub fn literal_kt(literal: &Literal) -> Result<String, askama::Error> {
-        fn typed_number(type_: &Type, num_str: String) -> Result<String, askama::Error> {
-            Ok(match type_ {
-                // Bytes, Shorts and Ints can all be inferred from the type.
-                Type::Int8 | Type::Int16 | Type::Int32 => num_str,
-                Type::Int64 => format!("{}L", num_str),
+    pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).type_label(&oracle))
+    }
 
-                Type::UInt8 | Type::UInt16 | Type::UInt32 => format!("{}u", num_str),
-                Type::UInt64 => format!("{}uL", num_str),
+    pub fn canonical_name(type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).canonical_name(&oracle))
+    }
 
-                Type::Float32 => format!("{}f", num_str),
-                Type::Float64 => num_str,
-                _ => panic!("Unexpected literal: {} is not a number", num_str),
-            })
-        }
+    pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).lower(&oracle, nm))
+    }
 
-        Ok(match literal {
-            Literal::Boolean(v) => format!("{}", v),
-            Literal::String(s) => format!("\"{}\"", s),
-            Literal::Null => "null".into(),
-            Literal::EmptySequence => "listOf()".into(),
-            Literal::EmptyMap => "mapOf".into(),
-            Literal::Enum(v, type_) => format!("{}.{}", type_kt(type_)?, enum_variant_kt(v)?),
-            Literal::Int(i, radix, type_) => typed_number(
-                type_,
-                match radix {
-                    Radix::Octal => format!("{:#x}", i),
-                    Radix::Decimal => format!("{}", i),
-                    Radix::Hexadecimal => format!("{:#x}", i),
-                },
-            )?,
-            Literal::UInt(i, radix, type_) => typed_number(
-                type_,
-                match radix {
-                    Radix::Octal => format!("{:#x}", i),
-                    Radix::Decimal => format!("{}", i),
-                    Radix::Hexadecimal => format!("{:#x}", i),
-                },
-            )?,
-            Literal::Float(string, type_) => typed_number(type_, string.clone())?,
-        })
+    pub fn write_kt(
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+        type_: &Type,
+    ) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).write(&oracle, nm, target))
+    }
+
+    pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).lift(&oracle, nm))
+    }
+
+    pub fn literal_kt(literal: &Literal, type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).literal(&oracle, literal))
+    }
+
+    pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).read(&oracle, nm))
+    }
+
+    /// Get the Kotlin syntax for representing a given low-level `FFIType`.
+    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
+        Ok(oracle().ffi_type_label(type_))
     }
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
     pub fn class_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_camel_case())
+        Ok(oracle().class_name(nm))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
     pub fn fn_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
+        Ok(oracle().fn_name(nm))
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
     pub fn var_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
+        Ok(oracle().var_name(nm))
     }
 
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
     pub fn enum_variant_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_shouty_snake_case())
+        Ok(oracle().enum_variant(nm))
     }
 
     /// Get the idiomatic Kotlin rendering of an exception name
@@ -191,110 +375,6 @@ mod filters {
     /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
     /// and is distinguished from an "Exception".
     pub fn exception_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        let name = nm.to_string();
-        match name.strip_suffix("Error") {
-            None => Ok(name),
-            Some(stripped) => {
-                let mut kt_exc_name = stripped.to_owned();
-                kt_exc_name.push_str("Exception");
-                Ok(kt_exc_name)
-            }
-        }
-    }
-
-    /// Get a Kotlin expression for lowering a value into something we can pass over the FFI.
-    ///
-    /// Where possible, this delegates to a `lower()` method on the type itself, but special
-    /// handling is required for some compound data types.
-    pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let nm = var_name_kt(nm)?;
-        Ok(match type_ {
-            Type::CallbackInterface(_) => format!(
-                "{}Internals.lower({})",
-                class_name_kt(&type_.canonical_name())?,
-                nm,
-            ),
-            Type::Optional(_)
-            | Type::Sequence(_)
-            | Type::Map(_)
-            | Type::Timestamp
-            | Type::Duration => {
-                format!("lower{}({})", class_name_kt(&type_.canonical_name())?, nm,)
-            }
-            _ => format!("{}.lower()", nm),
-        })
-    }
-
-    /// Get a Kotlin expression for writing a value into a byte buffer.
-    ///
-    /// Where possible, this delegates to a `write()` method on the type itself, but special
-    /// handling is required for some compound data types.
-    pub fn write_kt(
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
-        let nm = var_name_kt(nm)?;
-        Ok(match type_ {
-            Type::CallbackInterface(_) => format!(
-                "{}Internals.write({}, {})",
-                class_name_kt(&type_.canonical_name())?,
-                nm,
-                target,
-            ),
-            Type::Optional(_)
-            | Type::Sequence(_)
-            | Type::Map(_)
-            | Type::Timestamp
-            | Type::Duration => format!(
-                "write{}({}, {})",
-                class_name_kt(&type_.canonical_name())?,
-                nm,
-                target,
-            ),
-            _ => format!("{}.write({})", nm, target),
-        })
-    }
-
-    /// Get a Kotlin expression for lifting a value from something we received over the FFI.
-    ///
-    /// Where possible, this delegates to a `lift()` method on the type itself, but special
-    /// handling is required for some compound data types.
-    pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let nm = nm.to_string();
-        Ok(match type_ {
-            Type::CallbackInterface(_) => format!(
-                "{}Internals.lift({})",
-                class_name_kt(&type_.canonical_name())?,
-                nm,
-            ),
-            Type::Optional(_)
-            | Type::Sequence(_)
-            | Type::Map(_)
-            | Type::Timestamp
-            | Type::Duration => format!("lift{}({})", class_name_kt(&type_.canonical_name())?, nm),
-            _ => format!("{}.lift({})", type_kt(type_)?, nm),
-        })
-    }
-
-    /// Get a Kotlin expression for reading a value from a byte buffer.
-    ///
-    /// Where possible, this delegates to a `read()` method on the type itself, but special
-    /// handling is required for some compound data types.
-    pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let nm = nm.to_string();
-        Ok(match type_ {
-            Type::CallbackInterface(_) => format!(
-                "{}Internals.read({})",
-                class_name_kt(&type_.canonical_name())?,
-                nm,
-            ),
-            Type::Optional(_)
-            | Type::Sequence(_)
-            | Type::Map(_)
-            | Type::Timestamp
-            | Type::Duration => format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm),
-            _ => format!("{}.read({})", type_kt(type_)?, nm),
-        })
+        Ok(oracle().exception_name(nm))
     }
 }

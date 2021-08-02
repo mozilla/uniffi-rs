@@ -261,8 +261,17 @@ impl<'ci> ComponentInterface {
 
     /// Check whether the given item contains any (possibly nested) unsigned types
     pub fn item_contains_unsigned_types<T: IterTypes>(&self, item: &T) -> bool {
-        self.iter_types_in_item(item)
-            .any(|t| matches!(t, Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64))
+        self.iter_types_in_item(item).any(|t| {
+            matches!(
+                t,
+                Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 |
+                // XXX we can't map from Type to ci in gen_kotlin/compound/*CodeType,
+                // so we decalre all these compound types as containing unsigned types.
+                // The need for this annotation is going away soon as unsigned types
+                // stabilize in Kotlin.
+                Type::Optional(_) | Type::Sequence(_) | Type::Map(_)
+            )
+        })
     }
 
     /// Check whether the interface contains any optional types
@@ -403,32 +412,30 @@ impl<'ci> ComponentInterface {
     /// The set of FFI functions is derived automatically from the set of higher-level types
     /// along with the builtin FFI helper functions.
     pub fn iter_ffi_function_definitions(&self) -> Vec<FFIFunction> {
-        self.objects
-            .iter()
-            .map(|obj| {
-                vec![obj.ffi_object_free().clone()]
-                    .into_iter()
-                    .chain(obj.constructors.iter().map(|f| f.ffi_func.clone()))
-                    .chain(obj.methods.iter().map(|f| f.ffi_func.clone()))
-            })
-            .flatten()
+        vec![]
+            .into_iter()
+            .chain(
+                self.objects
+                    .iter()
+                    .flat_map(|obj| obj.iter_ffi_function_definitions()),
+            )
             .chain(
                 self.callback_interfaces
                     .iter()
-                    .map(|cb| cb.ffi_init_callback.clone()),
+                    .flat_map(|cb| cb.iter_ffi_function_definitions()),
             )
             .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
-            .chain(
-                vec![
-                    self.ffi_rustbuffer_alloc(),
-                    self.ffi_rustbuffer_from_bytes(),
-                    self.ffi_rustbuffer_free(),
-                    self.ffi_rustbuffer_reserve(),
-                ]
-                .iter()
-                .cloned(),
-            )
+            .chain(self.iter_rust_buffer_ffi_function_definitions())
             .collect()
+    }
+
+    pub fn iter_rust_buffer_ffi_function_definitions(&self) -> Vec<FFIFunction> {
+        vec![
+            self.ffi_rustbuffer_alloc(),
+            self.ffi_rustbuffer_from_bytes(),
+            self.ffi_rustbuffer_free(),
+            self.ffi_rustbuffer_reserve(),
+        ]
     }
 
     //

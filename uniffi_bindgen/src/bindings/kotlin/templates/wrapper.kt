@@ -23,47 +23,23 @@ import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
+{%- for imported_class in self.imports() %}
+import {{ imported_class }}
+{%- endfor %}
+
+// The Rust Buffer and 3 templated methods (alloc, free, reserve).
 {% include "RustBufferTemplate.kt" %}
-
-{% include "RustBufferHelpers.kt" %}
-
-{% include "NamespaceLibraryTemplate.kt" %}
 
 {% include "Helpers.kt" %}
 
+// Contains loading, initialization code,
+// and the FFI Function declarations in a com.sun.jna.Library.
+{% include "NamespaceLibraryTemplate.kt" %}
+
 // Public interface members begin here.
-// Public facing enums
-{% for e in ci.iter_enum_definitions() %}
-{% include "EnumTemplate.kt" %}
-{%- endfor -%}
-
-// Error definitions
-{% include "ErrorTemplate.kt" %}
-
-// Public facing records
-{%- for rec in ci.iter_record_definitions() %}
-{% include "RecordTemplate.kt" %}
-{% endfor %}
-
-// Namespace functions
-{% for func in ci.iter_function_definitions() %}
-{% include "TopLevelFunctionTemplate.kt" %}
-{% endfor %}
-
-// Objects
-{% for obj in ci.iter_object_definitions() %}
-{% include "ObjectTemplate.kt" %}
-{% endfor %}
-
-// Callback Interfaces
-{% for cbi in ci.iter_callback_interface_definitions() %}
-{% include "CallbackInterfaceTemplate.kt" %}
-{% endfor %}
+{% for code in self.declaration_code() %}
+{{ code }}
+{%- endfor %}
 
 {% import "macros.kt" as kt %}
