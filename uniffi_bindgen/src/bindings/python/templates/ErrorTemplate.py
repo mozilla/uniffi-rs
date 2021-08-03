@@ -51,12 +51,12 @@ class {{ e.name()|class_name_py }}:
     {%- endfor %}
 {%- endfor %}
 
-# Map error classes to the RustBufferStream method to read them
+# Map error classes to the RustBufferTypeBuilder method to read them
 _error_class_to_reader_method = {
 {%- for e in ci.iter_error_definitions() %}
 {%- let typ=ci.get_type(e.name()).unwrap() %}
 {%- let canonical_type_name = typ.canonical_name()|class_name_py %}
-    {{ e.name()|class_name_py }}: RustBufferStream.read{{ canonical_type_name }},
+    {{ e.name()|class_name_py }}: RustBufferTypeReader.read{{ canonical_type_name }},
 {%- endfor %}
 }
 
