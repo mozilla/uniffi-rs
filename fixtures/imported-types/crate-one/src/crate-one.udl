@@ -1,0 +1,5 @@
+namespace crate_one {};
+
+dictionary CrateOneType {
+    string sval;
+};

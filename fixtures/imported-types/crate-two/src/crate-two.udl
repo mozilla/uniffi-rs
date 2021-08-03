@@ -1,0 +1,6 @@
+namespace crate_two {};
+
+dictionary CrateTwoType {
+    i32 ival;
+};
+

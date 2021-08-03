@@ -1,0 +1,15 @@
+namespace imported_types_lib {
+    CombinedType get_combined_type(optional CombinedType? val);
+};
+
+[Imported="crate_one"]
+typedef extern CrateOneType;
+
+[Imported="crate_two"]
+typedef string CrateTwoType;
+
+
+dictionary CombinedType {
+    CrateOneType cot;
+    CrateTwoType ctt;
+};

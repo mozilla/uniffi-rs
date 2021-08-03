@@ -1,0 +1,22 @@
+[package]
+name = "imported_types_lib"
+edition = "2018"
+version = "0.11.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["staticlib", "cdylib", "lib"]
+name = "uniffi_imported_types_lib"
+
+[dependencies]
+anyhow = "1"
+bytes = "1.0"
+uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+crate_one = {path = "../crate-one"}
+crate_two = {path = "../crate-two"}
+
+[build-dependencies]
+uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
