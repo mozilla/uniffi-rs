@@ -1,9 +1,7 @@
 class RustBuffer < FFI::Struct
-  # Ref https://github.com/mozilla/uniffi-rs/issues/334 for this weird "padding" field.
   layout :capacity, :int32,
          :len,      :int32,
-         :data,     :pointer,
-         :padding,  :int64
+         :data,     :pointer
 
   def self.alloc(size)
     return {{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_alloc().name() }}, size)
@@ -173,9 +171,7 @@ end
 module UniFFILib
   class ForeignBytes < FFI::Struct
     layout :len,      :int32,
-           :data,     :pointer,
-           :padding,  :int64,
-           :padding2, :int32
+           :data,     :pointer
 
     def len
       self[:len]
