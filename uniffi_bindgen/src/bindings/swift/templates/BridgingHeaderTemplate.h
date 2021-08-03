@@ -26,17 +26,12 @@ typedef struct RustBuffer
     int32_t capacity;
     int32_t len;
     uint8_t *_Nullable data;
-    // Ref https://github.com/mozilla/uniffi-rs/issues/334 for this weird "padding" field.
-    int64_t padding;
 } RustBuffer;
 
 typedef struct ForeignBytes
 {
     int32_t len;
     const uint8_t *_Nullable data;
-    // Ref https://github.com/mozilla/uniffi-rs/issues/334 for these weird "padding" fields.
-    int64_t padding;
-    int32_t padding2;
 } ForeignBytes;
 
 // Error definitions
@@ -48,7 +43,7 @@ typedef struct RustCallStatus {
 // ⚠️ Attention: If you change this #else block (ending in `#endif // def UNIFFI_SHARED_H`) you *must* ⚠️
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V2 in this file.           ⚠️
 #endif // def UNIFFI_SHARED_H
-  
+
 {% for func in ci.iter_ffi_function_definitions() -%}
     {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|type_ffi }}{% when None %}void{% endmatch %} {{ func.name() }}(
       {% call swift::arg_list_ffi_decl(func) %}

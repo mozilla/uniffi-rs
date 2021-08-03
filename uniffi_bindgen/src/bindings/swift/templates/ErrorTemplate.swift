@@ -35,8 +35,7 @@ fileprivate extension RustCallStatus {
             errorBuf: RustBuffer.init(
                 capacity: 0,
                 len: 0,
-                data: nil,
-                padding: 0
+                data: nil
             )
         )
     }

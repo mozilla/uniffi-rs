@@ -4,8 +4,6 @@ class RustBuffer(ctypes.Structure):
         ("capacity", ctypes.c_int32),
         ("len", ctypes.c_int32),
         ("data", ctypes.POINTER(ctypes.c_char)),
-        # Ref https://github.com/mozilla/uniffi-rs/issues/334 for this weird "padding" field.
-        ("padding", ctypes.c_int64),
     ]
 
     @staticmethod
@@ -179,9 +177,6 @@ class ForeignBytes(ctypes.Structure):
     _fields_ = [
         ("len", ctypes.c_int32),
         ("data", ctypes.POINTER(ctypes.c_char)),
-        # Ref https://github.com/mozilla/uniffi-rs/issues/334 for these weird "padding" fields.
-        ("padding", ctypes.c_int64),
-        ("padding2", ctypes.c_int32),
     ]
 
     def __str__(self):

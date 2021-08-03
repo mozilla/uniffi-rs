@@ -31,10 +31,6 @@ pub struct ForeignBytes {
     len: i32,
     /// The pointer to the foreign-owned bytes.
     data: *const u8,
-    /// This forces the struct to be larger than 16 bytes, as a temporary workaround for a bug in JNA.
-    /// See https://github.com/mozilla/uniffi-rs/issues/334 for details.
-    padding: i64,
-    padding2: i32,
 }
 
 impl ForeignBytes {
@@ -47,12 +43,7 @@ impl ForeignBytes {
     ///
     /// You must ensure that the raw parts uphold the documented invariants of this class.
     pub unsafe fn from_raw_parts(data: *const u8, len: i32) -> Self {
-        Self {
-            len,
-            data,
-            padding: 0,
-            padding2: 0,
-        }
+        Self { len, data }
     }
 
     /// View the foreign bytes as a `&[u8]`.
