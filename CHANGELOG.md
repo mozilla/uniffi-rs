@@ -31,6 +31,7 @@
   implementation in uniffi/src/lib.rs for an example.
 - Kotlin exceptions names will now replace a trailing "Error" with "Exception"
   rather than appending the string (FooException instead of FooErrorException)
+- JNA 5.7 or greater is required for Kotlin consumers
 
 ### What's Changed
 

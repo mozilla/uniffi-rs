@@ -42,3 +42,18 @@ allprojects {
     }
 }
 ```
+
+## JNA dependency
+
+UniFFI relies on [JNA] for the ability to call native methods.
+JNA 5.7 or greater is required.
+
+Set the dependency in your `build.gradle`:
+
+```groovy
+dependencies {
+    implementation "net.java.dev.jna:jna:5.7.0@aar"
+}
+```
+
+[JNA]: https://github.com/java-native-access/jna
