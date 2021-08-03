@@ -83,24 +83,24 @@ class RustBuffer(ctypes.Structure):
     @staticmethod
     def allocFrom{{ canonical_type_name }}(v):
         with RustBuffer.allocWithBuilder() as builder:
-            builder.write{{ canonical_type_name }}(v)
+            RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
     def consumeInto{{ canonical_type_name }}(self):
         with self.consumeWithStream() as stream:
-            return stream.read{{ canonical_type_name }}()
+            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {% when Type::Duration -%}
 
     @staticmethod
     def allocFrom{{ canonical_type_name }}(v):
         with RustBuffer.allocWithBuilder() as builder:
-            builder.write{{ canonical_type_name }}(v)
+            RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
     def consumeInto{{ canonical_type_name }}(self):
         with self.consumeWithStream() as stream:
-            return stream.read{{ canonical_type_name }}()
+            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {% when Type::Record with (record_name) -%}
     {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
@@ -109,12 +109,12 @@ class RustBuffer(ctypes.Structure):
     @staticmethod
     def allocFrom{{ canonical_type_name }}(v):
         with RustBuffer.allocWithBuilder() as builder:
-            builder.write{{ canonical_type_name }}(v)
+            RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
     def consumeInto{{ canonical_type_name }}(self):
         with self.consumeWithStream() as stream:
-            return stream.read{{ canonical_type_name }}()
+            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {% when Type::Enum with (enum_name) -%}
     {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
@@ -123,12 +123,12 @@ class RustBuffer(ctypes.Structure):
     @staticmethod
     def allocFrom{{ canonical_type_name }}(v):
         with RustBuffer.allocWithBuilder() as builder:
-            builder.write{{ canonical_type_name }}(v)
+            RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
     def consumeInto{{ canonical_type_name }}(self):
         with self.consumeWithStream() as stream:
-            return stream.read{{ canonical_type_name }}()
+            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {% when Type::Optional with (inner_type) -%}
     # The Optional<T> type for {{ inner_type.canonical_name() }}.
@@ -136,12 +136,12 @@ class RustBuffer(ctypes.Structure):
     @staticmethod
     def allocFrom{{ canonical_type_name }}(v):
         with RustBuffer.allocWithBuilder() as builder:
-            builder.write{{ canonical_type_name }}(v)
+            RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
     def consumeInto{{ canonical_type_name }}(self):
         with self.consumeWithStream() as stream:
-            return stream.read{{ canonical_type_name }}()
+            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {% when Type::Sequence with (inner_type) -%}
     # The Sequence<T> type for {{ inner_type.canonical_name() }}.
@@ -149,12 +149,12 @@ class RustBuffer(ctypes.Structure):
     @staticmethod
     def allocFrom{{ canonical_type_name }}(v):
         with RustBuffer.allocWithBuilder() as builder:
-            builder.write{{ canonical_type_name }}(v)
+            RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
     def consumeInto{{ canonical_type_name }}(self):
         with self.consumeWithStream() as stream:
-            return stream.read{{ canonical_type_name }}()
+            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {% when Type::Map with (inner_type) -%}
     # The Map<T> type for {{ inner_type.canonical_name() }}.
@@ -162,12 +162,12 @@ class RustBuffer(ctypes.Structure):
     @staticmethod
     def allocFrom{{ canonical_type_name }}(v):
         with RustBuffer.allocWithBuilder() as builder:
-            builder.write{{ canonical_type_name }}(v)
+            RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
     def consumeInto{{ canonical_type_name }}(self):
         with self.consumeWithStream() as stream:
-            return stream.read{{ canonical_type_name }}()
+            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {%- else -%}
     {#- No code emitted for types that don't lower into a RustBuffer -#}

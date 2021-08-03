@@ -1,6 +1,6 @@
 
 class RustBufferStream(object):
-    """Helper for structured reading of values from a RustBuffer."""
+    # Helper for structured reading of bytes from a RustBuffer
 
     def __init__(self, rbuf):
         self.rbuf = rbuf
@@ -23,11 +23,14 @@ class RustBufferStream(object):
         self.offset += size
         return data
 
+class RustBufferTypeReader(object):
     # For every type used in the interface, we provide helper methods for conveniently
     # reading that type in a buffer. Putting them on this internal helper object (rather
     # than, say, as methods on the public classes) makes it easier for us to hide these
     # implementation details from consumers, in the face of python's free-for-all type
     # system.
+    # This class holds the logic for *how* to read the types from a buffer - the buffer itself is
+    # always passed in, because the actual buffer might be owned by a different crate/module.
 
     {%- for typ in ci.iter_types() -%}
     {%- let canonical_type_name = typ.canonical_name()|class_name_py -%}
@@ -35,59 +38,70 @@ class RustBufferStream(object):
 
     {% when Type::Int8 -%}
 
-    def readI8(self):
-        return self._unpack_from(1, ">b")
+    @staticmethod
+    def readI8(stream):
+        return stream._unpack_from(1, ">b")
 
     {% when Type::UInt8 -%}
 
-    def readU8(self):
-        return self._unpack_from(1, ">B")
+    @staticmethod
+    def readU8(stream):
+        return stream._unpack_from(1, ">B")
 
     {% when Type::Int16 -%}
 
-    def readI16(self):
-        return self._unpack_from(2, ">h")
+    @staticmethod
+    def readI16(stream):
+        return stream._unpack_from(2, ">h")
 
     {% when Type::UInt16 -%}
 
-    def readU16(self):
-        return self._unpack_from(2, ">H")
+    @staticmethod
+    def readU16(stream):
+        return stream._unpack_from(2, ">H")
 
     {% when Type::Int32 -%}
 
-    def readI32(self):
-        return self._unpack_from(4, ">i")
+    @staticmethod
+    def readI32(stream):
+        return stream._unpack_from(4, ">i")
 
     {% when Type::UInt32 -%}
 
-    def readU32(self):
-        return self._unpack_from(4, ">I")
+    @staticmethod
+    def readU32(stream):
+        return stream._unpack_from(4, ">I")
 
     {% when Type::Int64 -%}
 
-    def readI64(self):
-        return self._unpack_from(8, ">q")
+    @staticmethod
+    def readI64(stream):
+        return stream._unpack_from(8, ">q")
 
     {% when Type::UInt64 -%}
 
-    def readU64(self):
-        return self._unpack_from(8, ">Q")
+    @staticmethod
+    def readU64(stream):
+        return stream._unpack_from(8, ">Q")
 
     {% when Type::Float32 -%}
 
-    def readF32(self):
-        v = self._unpack_from(4, ">f")
+    @staticmethod
+    def readF32(stream):
+        v = stream._unpack_from(4, ">f")
         return v
 
     {% when Type::Float64 -%}
 
-    def readF64(self):
-        return self._unpack_from(8, ">d")
+    @staticmethod
+    def readF64(stream):
+        return stream._unpack_from(8, ">d")
 
     {% when Type::Boolean -%}
 
-    def readBool(self):
-        v = self._unpack_from(1, ">b")
+    @staticmethod
+    def readBool(stream):
+        v = stream._unpack_from(1, ">b")
         if v == 0:
             return False
         if v == 1:
@@ -96,11 +110,12 @@ class RustBufferStream(object):
 
     {% when Type::String -%}
 
-    def readString(self):
-        size = self._unpack_from(4, ">i")
+    @staticmethod
+    def readString(stream):
+        size = stream._unpack_from(4, ">i")
         if size < 0:
             raise InternalError("Unexpected negative string length")
-        utf8Bytes = self.read(size)
+        utf8Bytes = stream.read(size)
         return utf8Bytes.decode("utf-8")
 
 
@@ -110,9 +125,10 @@ class RustBufferStream(object):
     # which are accurate to the nanosecond,to Python datetimes which have
     # a variable precision due to the use of float as representation.
 
-    def read{{ canonical_type_name }}(self):
-        seconds = self._unpack_from(8, ">q")
-        microseconds = self._unpack_from(4, ">I") / 1000
+    @staticmethod
+    def read{{ canonical_type_name }}(stream):
+        seconds = stream._unpack_from(8, ">q")
+        microseconds = stream._unpack_from(4, ">I") / 1000
         # Use fromtimestamp(0) then add the seconds using a timedelta.  This
         # ensures that we get OverflowError rather than ValueError when
         # seconds is too large.
@@ -127,24 +143,27 @@ class RustBufferStream(object):
     # which are accurate to the nanosecond,to Python durations which have
     # are only accurate to the microsecond.
 
-    def read{{ canonical_type_name }}(self):
-        return datetime.timedelta(seconds=self._unpack_from(8, ">Q"), microseconds=(self._unpack_from(4, ">I") / 1.0e3))
+    @staticmethod
+    def read{{ canonical_type_name }}(stream):
+        return datetime.timedelta(seconds=stream._unpack_from(8, ">Q"), microseconds=(stream._unpack_from(4, ">I") / 1.0e3))
 
     {% when Type::Object with (object_name) -%}
     # The Object type {{ object_name }}.
 
-    def read{{ canonical_type_name }}(self):
+    @staticmethod
+    def read{{ canonical_type_name }}(stream):
         # The Rust code always expects pointers written as 8 bytes,
         # and will fail to compile if they don't fit in that size.
-        pointer = self._unpack_from(8, ">Q")
+        pointer = stream._unpack_from(8, ">Q")
         return {{ object_name|class_name_py }}._make_instance_(pointer)
 
     {% when Type::Enum with (enum_name) -%}
     {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
     # The Enum type {{ enum_name }}.
 
-    def read{{ canonical_type_name }}(self):
-        variant = self._unpack_from(4, ">i")
+    @staticmethod
+    def read{{ canonical_type_name }}(stream):
+        variant = stream._unpack_from(4, ">i")
         {% if e.is_flat() -%}
         return {{ enum_name|class_name_py }}(variant)
         {%- else -%}
@@ -153,7 +172,7 @@ class RustBufferStream(object):
             {%- if variant.has_fields() %}
             return {{ enum_name|class_name_py }}.{{ variant.name()|enum_name_py }}(
                 {%- for field in variant.fields() %}
-                self.read{{ field.type_().canonical_name()|class_name_py }}(){% if loop.last %}{% else %},{% endif %}
+                stream.read{{ field.type_().canonical_name()|class_name_py }}(){% if loop.last %}{% else %},{% endif %}
                 {%- endfor %}
             )
             {%- else %}
@@ -169,22 +188,24 @@ class RustBufferStream(object):
     # The Error type {{ error_name }}
 
     # Top-level read method
-    def read{{ canonical_type_name }}(self):
-        variant = self._unpack_from(4, ">i")
+    @classmethod
+    def read{{ canonical_type_name }}(cls, stream):
+        variant = stream._unpack_from(4, ">i")
         try:
-            read_variant_method = getattr(self, 'readVariant{}Of{{canonical_type_name}}'.format(variant))
+            read_variant_method = getattr(cls, 'readVariant{}Of{{canonical_type_name}}'.format(variant))
         except AttributeError:
             raise InternalError("Unexpected variant value for error {{ canonical_type_name }} ({})".format(variant))
-        return read_variant_method()
+        return read_variant_method(stream)
 
     # Read methods for each individual variants
     {%- for variant in e.variants() %}
 
-    def readVariant{{ loop.index}}Of{{ canonical_type_name }}(self):
+    @classmethod
+    def readVariant{{ loop.index}}Of{{ canonical_type_name }}(cls, stream):
         {%- if variant.has_fields() %}
         return {{ error_name|class_name_py }}.{{ variant.name()|class_name_py }}(
             {%- for field in variant.fields() %}
-            self.read{{ field.type_().canonical_name()|class_name_py }}(),
+            cls.read{{ field.type_().canonical_name()|class_name_py }}(stream),
             {%- endfor %}
         )
         {%- else %}
@@ -196,55 +217,60 @@ class RustBufferStream(object):
     {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
     # The Record type {{ record_name }}.
 
-    def read{{ canonical_type_name }}(self):
+    @classmethod
+    def read{{ canonical_type_name }}(cls, stream):
         return {{ rec.name()|class_name_py }}(
             {%- for field in rec.fields() %}
-            self.read{{ field.type_().canonical_name()|class_name_py }}(){% if loop.last %}{% else %},{% endif %}
+            cls.read{{ field.type_().canonical_name()|class_name_py }}(stream){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
 
     {% when Type::Optional with (inner_type) -%}
     # The Optional<T> type for {{ inner_type.canonical_name() }}.
 
-    def read{{ canonical_type_name }}(self):
-        flag = self._unpack_from(1, ">b")
+    @classmethod
+    def read{{ canonical_type_name }}(cls, stream):
+        flag = stream._unpack_from(1, ">b")
         if flag == 0:
             return None
         elif flag == 1:
-            return self.read{{ inner_type.canonical_name()|class_name_py }}()
+            return cls.read{{ inner_type.canonical_name()|class_name_py }}(stream)
         else:
             raise InternalError("Unexpected flag byte for {{ canonical_type_name }}")
 
     {% when Type::Sequence with (inner_type) -%}
     # The Sequence<T> type for {{ inner_type.canonical_name() }}.
 
-    def read{{ canonical_type_name }}(self):
-        count = self._unpack_from(4, ">i")
+    @staticmethod
+    def read{{ canonical_type_name }}(stream):
+        count = stream._unpack_from(4, ">i")
         if count < 0:
             raise InternalError("Unexpected negative sequence length")
         items = []
         while count > 0:
-            items.append(self.read{{ inner_type.canonical_name()|class_name_py }}())
+            items.append(stream.read{{ inner_type.canonical_name()|class_name_py }}())
             count -= 1
         return items
 
     {% when Type::Map with (inner_type) -%}
     # The Map<T> type for {{ inner_type.canonical_name() }}.
 
-    def read{{ canonical_type_name }}(self):
-        count = self._unpack_from(4, ">i")
+    @classmethod
+    def read{{ canonical_type_name }}(cls, stream):
+        count = stream._unpack_from(4, ">i")
         if count < 0:
             raise InternalError("Unexpected negative map size")
         items = {}
         while count > 0:
-            key = self.readString()
-            items[key] = self.read{{ inner_type.canonical_name()|class_name_py }}()
+            key = cls.readString(stream)
+            items[key] = stream.read{{ inner_type.canonical_name()|class_name_py }}()
             count -= 1
         return items
 
     {%- else -%}
     # This type cannot currently be serialized, but we can produce a helpful error.
-    def read{{ canonical_type_name }}(self):
+    @staticmethod
+    def read{{ canonical_type_name }}(stream):
         raise InternalError("RustBufferStream.read not implemented yet for {{ canonical_type_name }}")
 
     {%- endmatch -%}
