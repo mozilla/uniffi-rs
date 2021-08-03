@@ -111,7 +111,7 @@ mod filters {
                 type_name
             ),
             _ => format!(
-                "<{} as uniffi::ViaFfi>::write(&{}, {})",
+                "<{} as uniffi::ViaFfi>::write({}, {})",
                 type_rs(type_)?,
                 nm,
                 target

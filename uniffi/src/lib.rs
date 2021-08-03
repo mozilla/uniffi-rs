@@ -179,7 +179,10 @@ pub unsafe trait ViaFfi: Sized {
     /// This trait method can be used for sending data from rust to the foreign language code,
     /// in cases where we're not able to use a special-purpose FFI type and must fall back to
     /// sending serialized bytes.
-    fn write(&self, buf: &mut Vec<u8>);
+    ///
+    /// Note that this method takes an owned `self` because it's transfering ownership
+    /// to the foreign language code via the RustBuffer.
+    fn write(self, buf: &mut Vec<u8>);
 
     /// Read a rust value from a buffer, received over the FFI in serialized form.
     ///
@@ -232,8 +235,8 @@ macro_rules! impl_via_ffi_for_num_primitive {
                             Ok(v)
                         }
 
-                        fn write(&self, buf: &mut Vec<u8>) {
-                            buf.[<put_ $T>](*self);
+                        fn write(self, buf: &mut Vec<u8>) {
+                            buf.[<put_ $T>](self);
                         }
 
                         fn try_read(buf: &mut &[u8]) -> Result<Self> {
@@ -273,8 +276,8 @@ unsafe impl ViaFfi for bool {
         })
     }
 
-    fn write(&self, buf: &mut Vec<u8>) {
-        buf.put_i8(ViaFfi::lower(*self));
+    fn write(self, buf: &mut Vec<u8>) {
+        buf.put_i8(ViaFfi::lower(self));
     }
 
     fn try_read(buf: &mut &[u8]) -> Result<Self> {
@@ -316,7 +319,7 @@ unsafe impl ViaFfi for String {
         Ok(unsafe { String::from_utf8_unchecked(v) })
     }
 
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         // N.B. `len()` gives us the length in bytes, not in chars or graphemes.
         // TODO: it would be nice not to panic here.
         let len = i32::try_from(self.len()).unwrap();
@@ -344,7 +347,7 @@ unsafe impl ViaFfi for String {
 /// C-compatible value, you can use this trait to implement `lower()` in terms of `write()` and
 /// `lift` in terms of `read()`.
 pub trait RustBufferViaFfi: Sized {
-    fn write(&self, buf: &mut Vec<u8>);
+    fn write(self, buf: &mut Vec<u8>);
     fn try_read(buf: &mut &[u8]) -> Result<Self>;
 }
 
@@ -353,7 +356,7 @@ unsafe impl<T: RustBufferViaFfi> ViaFfi for T {
 
     fn lower(self) -> RustBuffer {
         let mut buf = Vec::new();
-        RustBufferViaFfi::write(&self, &mut buf);
+        RustBufferViaFfi::write(self, &mut buf);
         RustBuffer::from_vec(buf)
     }
 
@@ -367,7 +370,7 @@ unsafe impl<T: RustBufferViaFfi> ViaFfi for T {
         Ok(value)
     }
 
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         RustBufferViaFfi::write(self, buf)
     }
 
@@ -391,7 +394,7 @@ unsafe impl<T: RustBufferViaFfi> ViaFfi for T {
 /// overall. The sign of the seconds portion can then be used to determine
 /// if the total offset should be added to or subtracted from the unix epoch.
 impl RustBufferViaFfi for SystemTime {
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         let mut sign = 1;
         let epoch_offset = self
             .duration_since(SystemTime::UNIX_EPOCH)
@@ -431,7 +434,7 @@ impl RustBufferViaFfi for SystemTime {
 /// of the magnitude. The nanosecond portion is expected to be between 0
 /// and 999,999,999.
 impl RustBufferViaFfi for Duration {
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         buf.put_u64(self.as_secs());
         buf.put_u32(self.subsec_nanos());
     }
@@ -452,7 +455,7 @@ impl RustBufferViaFfi for Duration {
 /// `None` option is represented as a null pointer and the `Some` as a valid pointer,
 /// but that seems more fiddly and less safe in the short term, so it can wait.
 impl<T: ViaFfi> RustBufferViaFfi for Option<T> {
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         match self {
             None => buf.put_i8(0),
             Some(v) => {
@@ -482,11 +485,11 @@ impl<T: ViaFfi> RustBufferViaFfi for Option<T> {
 /// than serializing, and perhaps even pass other vector types using a
 /// similar struct. But that's for future work.
 impl<T: ViaFfi> RustBufferViaFfi for Vec<T> {
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
         let len = i32::try_from(self.len()).unwrap();
         buf.put_i32(len); // We limit arrays to i32::MAX items
-        for item in self.iter() {
+        for item in self.into_iter() {
             ViaFfi::write(item, buf);
         }
     }
@@ -511,11 +514,11 @@ impl<T: ViaFfi> RustBufferViaFfi for Vec<T> {
 /// key followed by the value) in turn.
 /// (It's a signed type due to limits of the JVM).
 impl<V: ViaFfi> RustBufferViaFfi for HashMap<String, V> {
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
         let len = i32::try_from(self.len()).unwrap();
         buf.put_i32(len); // We limit HashMaps to i32::MAX entries
-        for (key, value) in self.iter() {
+        for (key, value) in self.into_iter() {
             ViaFfi::write(key, buf);
             ViaFfi::write(value, buf);
         }
@@ -577,10 +580,9 @@ unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
     /// Safety: when freeing the resulting pointer, the foreign-language code must
     /// call the destructor function specific to the type `T`. Calling the destructor
     /// function for other types may lead to undefined behaviour.
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
-        let ptr = std::sync::Arc::clone(self).lower();
-        buf.put_u64(ptr as u64);
+        buf.put_u64(self.lower() as u64);
     }
 
     /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc<T>`

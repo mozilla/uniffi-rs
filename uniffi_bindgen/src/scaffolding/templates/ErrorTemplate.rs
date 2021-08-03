@@ -5,7 +5,7 @@
 #}
 #[doc(hidden)]
 impl uniffi::RustBufferViaFfi for {{ e.name() }} {
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         use uniffi::deps::bytes::BufMut;
         match self {
             {%- for variant in e.variants() %}
