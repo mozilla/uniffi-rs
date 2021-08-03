@@ -1,18 +1,19 @@
 [package]
-name = "uniffi-example-callbacks"
-edition = "2018"
+name = "callbacks"
 version = "0.12.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
-license = "MPL-2.0"
+edition = "2018"
 publish = false
 
 [lib]
-crate-type = ["cdylib", "lib"]
-name = "callbacks"
+crate-type = ["staticlib", "cdylib"]
+name = "uniffi_callbacks"
 
 [dependencies]
 uniffi_macros = {path = "../../uniffi_macros"}
 uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
+thiserror = "1.0"
+lazy_static = "1.4"
 
 [build-dependencies]
 uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}
