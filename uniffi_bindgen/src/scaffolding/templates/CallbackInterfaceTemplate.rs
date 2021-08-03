@@ -99,7 +99,7 @@ unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
         self.handle
     }
 
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         use uniffi::deps::bytes::BufMut;
         buf.put_u64(self.handle);
     }

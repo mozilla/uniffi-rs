@@ -210,7 +210,7 @@ mod test {
 
     // Use RustBufferViaFfi to simplify lifting TestError out of RustBuffer to check it
     impl RustBufferViaFfi for TestError {
-        fn write(&self, buf: &mut Vec<u8>) {
+        fn write(self, buf: &mut Vec<u8>) {
             self.0.write(buf);
         }
 
