@@ -479,7 +479,7 @@ mod test {
         assert!(ci
             .iter_types()
             .iter()
-            .any(|t| t.canonical_name() == "ObjectTesting"));
+            .any(|t| t.canonical_name() == "TypeTesting"));
     }
 
     #[test]
