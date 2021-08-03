@@ -114,6 +114,32 @@ use bindings::TargetLanguage;
 use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
+pub trait ForeignLanguageBackend: Sized {
+    fn new(config: Config) -> anyhow::Result<Self>;
+
+    fn write_bindings<P: AsRef<Path>>(&self, ci: &ComponentInterface, out_dir: P) -> anyhow::Result<()>; //TODO: replace String with something better
+
+    // TODO: Add run script here
+}
+
+pub fn generate_custom_bindings<B: ForeignLanguageBackend, P: AsRef<Path>>(
+    udl_file: P,
+    config_file_override: Option<P>,
+    out_dir_override: Option<P>,
+    _try_format_code: bool, // TODO: Deal with this
+) -> Result<()> {
+    let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
+    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+    let udl_file = udl_file.as_ref();
+
+    let component = parse_udl(udl_file)?;
+    let config = get_config(&component, udl_file, config_file_override)?;
+    let out_dir = get_out_dir(udl_file, out_dir_override)?;
+    let backend = B::new(config)?;
+    let bindings = backend.write_bindings(&component, out_dir)?;
+    Ok(())
+}
+
 // Generate the infrastructural Rust code for implementing the UDL interface,
 // such as the `extern "C"` function definitions and record data types.
 pub fn generate_component_scaffolding<P: AsRef<Path>>(
@@ -287,9 +313,9 @@ fn slurp_file(file_name: &Path) -> Result<String> {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-struct Config {
+pub struct Config {
     #[serde(default)]
-    bindings: bindings::Config,
+    pub bindings: bindings::Config,
 }
 
 impl From<&ComponentInterface> for Config {

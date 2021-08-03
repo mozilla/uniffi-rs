@@ -1,0 +1,18 @@
+[package]
+name = "uniffi_bindgen_kotlin"
+version = "0.1.0"
+authors = ["Tarik Eshaq <teshaq@mozilla.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1"
+uniffi_bindgen = {path = "../uniffi_bindgen"}
+clap = { version = "2", default-features = false }
+cargo_metadata = "0.13"
+weedle = "0.12"
+askama = { version = "0.10", default-features = false, features = ["config"] }
+heck = "0.3"
+serde = "1"
+toml = "0.5"
