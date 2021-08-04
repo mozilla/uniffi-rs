@@ -1,0 +1,3 @@
+[bindings.python]
+# This is broken - we need to use the same name as our "megazord" :(
+cdylib_name = "uniffi_imported_types_lib"

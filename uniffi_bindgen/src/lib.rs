@@ -275,6 +275,38 @@ fn get_config(
     }
 }
 
+// Given a dependent crate name, return the contents of that crate's uniffi.toml, or None if that
+// file does not exist.
+// XXX - we should consider storing our crate's metadata in a lazy static as it will not change.
+pub(crate) fn get_dependent_config(crate_name: &str) -> Result<Option<Config>> {
+    // Get our `Cargo.toml` so we can find the depdendent crate's path.
+    let mut manifest_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+    manifest_path.push("Cargo.toml");
+
+    let metadata = cargo_metadata::MetadataCommand::new()
+        .manifest_path(manifest_path)
+        .exec()
+        .unwrap();
+
+    let package = match metadata.packages.iter().find(|p| p.name == crate_name) {
+        Some(p) => p,
+        None => bail!("can't find dependent crate '{}'", crate_name),
+    };
+
+    // We got the path, let's see if it has a `uniffi.toml`
+    let mut config_path = package.manifest_path.clone();
+    config_path.set_file_name("uniffi.toml");
+
+    let contents = match slurp_file(config_path.as_path().as_ref()) {
+        Ok(c) => c,
+        Err(_) => return Ok(None), // No file existing is OK
+    };
+    let loaded_config: Config = toml::de::from_str(&contents)
+        .with_context(|| format!("Failed to generate config from file {:?}", &config_path))?;
+
+    Ok(Some(loaded_config))
+}
+
 fn get_out_dir(udl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
     Ok(match out_dir_override {
         Some(s) => {

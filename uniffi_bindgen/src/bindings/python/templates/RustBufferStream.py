@@ -270,12 +270,7 @@ class RustBufferTypeReader(object):
     {% when Type::Imported with (name, crate_name) %}
     # An external type: {{ name }}, implemented in {{ crate_name }}.
     def read{{ canonical_type_name }}(stream):
-        {# using fn_name_py is wrong, but we need a better story here anyway - crate_name
-           is not necessarily the name we need to import - uniffi.toml can customize that.
-           Ryan had an idea about indirecting via crate metadata to find the uniffi.toml from the
-           imported crate and getting it that way, but for now, we just assume the default.
-        #}
-        from {{ crate_name|fn_name_py }} import RustBufferTypeReader as ExtRustBufferTypeReader
+        from {{ crate_name|mod_name_for_crate }} import RustBufferTypeReader as ExtRustBufferTypeReader
         return ExtRustBufferTypeReader.readType{{ name|class_name_py }}(stream)
 
     {%- else -%}

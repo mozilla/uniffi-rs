@@ -232,4 +232,15 @@ mod filters {
             ),
         })
     }
+
+    // Given the name of a crate we depend on, return the Python module name uniffi will generate
+    // for it. If that's not specified in `uniffi.toml` we assume it's the same as the crate's
+    // snake-cased name.
+    pub fn mod_name_for_crate(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        let config =
+            crate::get_dependent_config(&nm.to_string()).expect("failed to find the crate");
+        Ok(config
+            .and_then(|c| c.bindings.python.module_name)
+            .unwrap_or_else(|| nm.to_string().to_snake_case()))
+    }
 }

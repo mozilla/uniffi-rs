@@ -1,0 +1,6 @@
+[bindings.python]
+# We use a custom name here for test/demo purposes.
+module_name = "crate_one_module"
+
+# This is broken - we need to use the same name as our "megazord" :(
+cdylib_name = "uniffi_imported_types_lib"
