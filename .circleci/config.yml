@@ -122,6 +122,28 @@ jobs:
           build-dir: docs/manual/book
           ssh-fingerprints: "ac:68:a3:78:ea:ee:00:05:30:e1:dc:1f:2e:2f:7c:81"
 
+  Deploy Docker:
+    docker:
+      - image: cimg/python
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run:
+          name: Build container image
+          command: |
+            docker build -t uniffi-ci:build -f docker/Dockerfile-build .
+      - run:
+          name: Push to Dockerhub
+          command: |
+            cd docker
+            if [ -n "${CIRCLE_TAG}" ]; then
+              # Strip the `docker-` prefix of the tag
+              TAG="${CIRCLE_TAG#docker-}"
+              ./deploy-dockerhub.sh "$TAG"
+              ./deploy-dockerhub.sh "latest"
+            fi
+
 workflows:
   version: 2
   check-formatting:
@@ -143,3 +165,11 @@ workflows:
           filters:
             branches:
               only: main
+  deploy-docker:
+    jobs:
+      - Deploy Docker:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^docker-v.*/
