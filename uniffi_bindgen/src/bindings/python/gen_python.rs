@@ -16,6 +16,7 @@ use crate::MergeWith;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     cdylib_name: Option<String>,
+    module_name: Option<String>,
 }
 
 impl Config {
@@ -26,12 +27,20 @@ impl Config {
             "uniffi".into()
         }
     }
+
+    pub fn module_name(&self, default: &str) -> String {
+        match &self.module_name {
+            Some(module_name) => module_name.clone(),
+            None => default.to_string(),
+        }
+    }
 }
 
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
+            module_name: Some(ci.namespace().to_string()),
         }
     }
 }
@@ -40,6 +49,7 @@ impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
+            module_name: self.module_name.merge_with(&other.module_name),
         }
     }
 }

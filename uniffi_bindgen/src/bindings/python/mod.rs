@@ -27,7 +27,7 @@ pub fn write_bindings(
     try_format_code: bool,
 ) -> Result<()> {
     let mut py_file = PathBuf::from(out_dir);
-    py_file.push(format!("{}.py", ci.namespace()));
+    py_file.push(format!("{}.py", config.module_name(ci.namespace())));
     let mut f = File::create(&py_file).context("Failed to create .py file for bindings")?;
     write!(f, "{}", generate_python_bindings(config, ci)?)?;
 
