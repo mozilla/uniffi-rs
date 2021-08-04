@@ -47,8 +47,8 @@
 {% macro to_rs_constructor_call(obj, cons) %}
 {% match cons.throws() %}
 {% when Some with (e) %}
-    uniffi::call_with_result(call_status, || -> Result<_, {{ e }}> {
-        let _new = {% call construct(obj, cons) %}?;
+    uniffi::call_with_result(call_status, || {
+        let _new = {% call construct(obj, cons) %}.map_err(<{{ e }} as uniffi::ViaFfi>::lower)?;
         let _arc = std::sync::Arc::new(_new);
         Ok({{ "_arc"|lower_rs(obj.type_()) }})
     })
@@ -64,8 +64,8 @@
 {% macro to_rs_method_call(obj, meth) -%}
 {% match meth.throws() -%}
 {% when Some with (e) -%}
-uniffi::call_with_result(call_status, || -> Result<{% call return_type_func(meth) %}, {{e}}> {
-    let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %}?;
+uniffi::call_with_result(call_status, || {
+    let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %}.map_err(<{{ e }} as uniffi::ViaFfi>::lower)?;
     Ok({% call ret(meth) %})
 })
 {% else %}
@@ -84,8 +84,8 @@ uniffi::call_with_output(call_status, || {
 {% macro to_rs_function_call(func) %}
 {% match func.throws() %}
 {% when Some with (e) %}
-uniffi::call_with_result(call_status, || -> Result<{% call return_type_func(func) %}, {{e}}> {
-    let _retval = {% call to_rs_call(func) %}?;
+uniffi::call_with_result(call_status, || {
+    let _retval = {% call to_rs_call(func) %}.map_err(<{{ e }} as uniffi::ViaFfi>::lower)?;
     Ok({% call ret(func) %})
 })
 {% else %}
