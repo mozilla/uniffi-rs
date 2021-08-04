@@ -780,7 +780,7 @@
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">POSSIBLE_LANGUAGES</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;kotlin&quot;</span>, <span class="string">&quot;python&quot;</span>, <span class="string">&quot;swift&quot;</span>, <span class="string">&quot;gecko_js&quot;</span>, <span class="string">&quot;ruby&quot;</span>];
+    <span class="kw">const</span> <span class="ident">POSSIBLE_LANGUAGES</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;kotlin&quot;</span>, <span class="string">&quot;python&quot;</span>, <span class="string">&quot;swift&quot;</span>, <span class="string">&quot;ruby&quot;</span>];
     <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">clap</span>::<span class="ident">App</span>::<span class="ident">new</span>(<span class="string">&quot;uniffi-bindgen&quot;</span>)
         .<span class="ident">about</span>(<span class="string">&quot;Scaffolding and bindings generator for Rust&quot;</span>)
         .<span class="ident">version</span>(<span class="ident">clap</span>::<span class="macro">crate_version</span><span class="macro">!</span>())

@@ -164,18 +164,6 @@
 <span id="161">161</span>
 <span id="162">162</span>
 <span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -194,7 +182,6 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">interface</span>::<span class="ident">ComponentInterface</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">MergeWith</span>;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gecko_js</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">kotlin</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">python</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">ruby</span>;
@@ -212,7 +199,6 @@
     <span class="ident">Swift</span>,
     <span class="ident">Python</span>,
     <span class="ident">Ruby</span>,
-    <span class="ident">GeckoJs</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">TargetLanguage</span> {
@@ -223,7 +209,6 @@
             <span class="string">&quot;swift&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TargetLanguage</span>::<span class="ident">Swift</span>,
             <span class="string">&quot;python&quot;</span> <span class="op">|</span> <span class="string">&quot;py&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TargetLanguage</span>::<span class="ident">Python</span>,
             <span class="string">&quot;ruby&quot;</span> <span class="op">|</span> <span class="string">&quot;rb&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TargetLanguage</span>::<span class="ident">Ruby</span>,
-            <span class="string">&quot;gecko_js&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TargetLanguage</span>::<span class="ident">GeckoJs</span>,
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Unknown or unsupported target language: \&quot;{}\&quot;&quot;</span>, <span class="ident">value</span>),
         })
     }
@@ -256,8 +241,6 @@
     <span class="ident">python</span>: <span class="ident">python</span>::<span class="ident">Config</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
     <span class="ident">ruby</span>: <span class="ident">ruby</span>::<span class="ident">Config</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="ident">gecko_js</span>: <span class="ident">gecko_js</span>::<span class="ident">Config</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Config</span> {
@@ -267,7 +250,6 @@
             <span class="ident">swift</span>: <span class="ident">ci</span>.<span class="ident">into</span>(),
             <span class="ident">python</span>: <span class="ident">ci</span>.<span class="ident">into</span>(),
             <span class="ident">ruby</span>: <span class="ident">ci</span>.<span class="ident">into</span>(),
-            <span class="ident">gecko_js</span>: <span class="ident">ci</span>.<span class="ident">into</span>(),
         }
     }
 }
@@ -279,7 +261,6 @@
             <span class="ident">swift</span>: <span class="self">self</span>.<span class="ident">swift</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">swift</span>),
             <span class="ident">python</span>: <span class="self">self</span>.<span class="ident">python</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">python</span>),
             <span class="ident">ruby</span>: <span class="self">self</span>.<span class="ident">ruby</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">ruby</span>),
-            <span class="ident">gecko_js</span>: <span class="self">self</span>.<span class="ident">gecko_js</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">gecko_js</span>),
         }
     }
 }
@@ -307,9 +288,6 @@
             <span class="ident">python</span>::<span class="ident">write_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">python</span>, <span class="ident">ci</span>, <span class="ident">out_dir</span>, <span class="ident">try_format_code</span>)<span class="question-mark">?</span>
         }
         <span class="ident">TargetLanguage</span>::<span class="ident">Ruby</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ruby</span>::<span class="ident">write_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">ruby</span>, <span class="ident">ci</span>, <span class="ident">out_dir</span>, <span class="ident">try_format_code</span>)<span class="question-mark">?</span>,
-        <span class="ident">TargetLanguage</span>::<span class="ident">GeckoJs</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">gecko_js</span>::<span class="ident">write_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">gecko_js</span>, <span class="ident">ci</span>, <span class="ident">out_dir</span>, <span class="ident">try_format_code</span>)<span class="question-mark">?</span>
-        }
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -330,7 +308,6 @@
         <span class="ident">TargetLanguage</span>::<span class="ident">Swift</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">swift</span>::<span class="ident">compile_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">swift</span>, <span class="ident">ci</span>, <span class="ident">out_dir</span>)<span class="question-mark">?</span>,
         <span class="ident">TargetLanguage</span>::<span class="ident">Python</span> <span class="op">=</span><span class="op">&gt;</span> (),
         <span class="ident">TargetLanguage</span>::<span class="ident">Ruby</span> <span class="op">=</span><span class="op">&gt;</span> (),
-        <span class="ident">TargetLanguage</span>::<span class="ident">GeckoJs</span> <span class="op">=</span><span class="op">&gt;</span> (),
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -348,7 +325,6 @@
         <span class="ident">TargetLanguage</span>::<span class="ident">Swift</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">swift</span>::<span class="ident">run_script</span>(<span class="ident">out_dir</span>, <span class="ident">script_file</span>)<span class="question-mark">?</span>,
         <span class="ident">TargetLanguage</span>::<span class="ident">Python</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">python</span>::<span class="ident">run_script</span>(<span class="ident">out_dir</span>, <span class="ident">script_file</span>)<span class="question-mark">?</span>,
         <span class="ident">TargetLanguage</span>::<span class="ident">Ruby</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ruby</span>::<span class="ident">run_script</span>(<span class="ident">out_dir</span>, <span class="ident">script_file</span>)<span class="question-mark">?</span>,
-        <span class="ident">TargetLanguage</span>::<span class="ident">GeckoJs</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Can&#39;t run Gecko code standalone&quot;</span>),
     }
     <span class="prelude-val">Ok</span>(())
 }
