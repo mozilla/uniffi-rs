@@ -1,0 +1,16 @@
+namespace external_types_lib {
+    CombinedType get_combined_type(optional CombinedType? cval);
+};
+
+dictionary CrateOneType {
+    string sval;
+};
+
+dictionary CrateTwoType {
+    i32 ival;
+};
+
+dictionary CombinedType {
+    CrateOneType cot;
+    CrateTwoType ctt;
+};
