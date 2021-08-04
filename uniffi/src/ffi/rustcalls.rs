@@ -77,8 +77,6 @@ const CALL_PANIC: i8 = 2;
 pub trait FfiError: RustBufferViaFfi {}
 
 // Generalized rust call handling function
-// callback is responsible for making the call to the rust function.  If that function returns an
-// `Err` value, callback should serialize the error into a `RustBuffer` to be returned over the FFI.
 fn make_call<F, R>(out_status: &mut RustCallStatus, callback: F) -> R::Value
 where
     F: panic::UnwindSafe + FnOnce() -> Result<R, RustBuffer>,
@@ -137,6 +135,9 @@ where
 
 /// Wrap a rust function call and return the result directly
 ///
+/// callback is responsible for making the call to the rust function.  It must convert any return
+/// value into a type that implements IntoFfi (typically handled with ViaFfi::lower()).
+///
 /// - If the function succeeds then the function's return value will be returned to the outer code
 /// - If the function panics:
 ///     - `out_status.code` will be set to `CALL_PANIC`
@@ -149,7 +150,12 @@ where
     make_call(out_status, || Ok(callback()))
 }
 
-/// Wrap a rust function call that returns a `Result<>`
+/// Wrap a rust function call that returns a `Result<_, RustBuffer>`
+///
+/// callback is responsible for making the call to the rust function.
+///   - callback must convert any return value into a type that implements IntoFfi
+///   - callback must convert any Error the into a `RustBuffer` to be returned over the FFI
+///   - (Both of these are typically handled with ViaFfi::lower())
 ///
 /// - If the function returns an `Ok` value it will be unwrapped and returned
 /// - If the function returns an `Err`:
@@ -160,13 +166,12 @@ where
 /// - If the function panics:
 ///     - `out_status.code` will be set to `CALL_PANIC`
 ///     - the return value is undefined
-pub fn call_with_result<F, R, E>(out_status: &mut RustCallStatus, callback: F) -> R::Value
+pub fn call_with_result<F, R>(out_status: &mut RustCallStatus, callback: F) -> R::Value
 where
-    F: panic::UnwindSafe + FnOnce() -> Result<R, E>,
-    E: FfiError,
+    F: panic::UnwindSafe + FnOnce() -> Result<R, RustBuffer>,
     R: IntoFfi,
 {
-    make_call(out_status, || callback().map_err(|e| e.lower()))
+    make_call(out_status, callback)
 }
 
 #[cfg(test)]
@@ -210,8 +215,10 @@ mod test {
 
     // Use RustBufferViaFfi to simplify lifting TestError out of RustBuffer to check it
     impl RustBufferViaFfi for TestError {
-        fn write(self, buf: &mut Vec<u8>) {
-            self.0.write(buf);
+        type RustType = Self;
+
+        fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
+            <String as ViaFfi>::write(obj.0, buf);
         }
 
         fn try_read(buf: &mut &[u8]) -> Result<Self> {
@@ -232,11 +239,15 @@ mod test {
     #[test]
     fn test_call_with_result() {
         let mut status = create_call_status();
-        let return_value = call_with_result(&mut status, || function_with_result(0));
+        let return_value = call_with_result(&mut status, || {
+            function_with_result(0).map_err(TestError::lower)
+        });
         assert_eq!(status.code, CALL_SUCCESS);
         assert_eq!(return_value, 100);
 
-        call_with_result(&mut status, || function_with_result(1));
+        call_with_result(&mut status, || {
+            function_with_result(1).map_err(TestError::lower)
+        });
         assert_eq!(status.code, CALL_ERROR);
         unsafe {
             assert_eq!(
@@ -246,7 +257,9 @@ mod test {
         }
 
         let mut status = create_call_status();
-        call_with_result(&mut status, || function_with_result(2));
+        call_with_result(&mut status, || {
+            function_with_result(2).map_err(TestError::lower)
+        });
         assert_eq!(status.code, CALL_PANIC);
         unsafe {
             assert_eq!(

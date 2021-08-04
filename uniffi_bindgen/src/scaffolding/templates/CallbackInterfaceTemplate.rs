@@ -82,6 +82,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
 }
 
 unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
+    type RustType = Self;
     type FfiType = u64;
     
     // Lower and write are trivially implemented, but carry lots of thread safety risks, down to
@@ -95,13 +96,13 @@ unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
     // 
     // They are implemented here for runtime use, but at scaffolding.rs will bail instead of generating
     // the code to call these methods.
-    fn lower(self) -> Self::FfiType {
-        self.handle
+    fn lower(obj: Self::RustType) -> Self::FfiType {
+        obj.handle
     }
 
-    fn write(self, buf: &mut Vec<u8>) {
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         use uniffi::deps::bytes::BufMut;
-        buf.put_u64(self.handle);
+        buf.put_u64(obj.handle);
     }
 
     fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self> {

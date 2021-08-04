@@ -8,8 +8,8 @@
 //! component scaffolding in order to transfer data back and forth across the C-style FFI layer,
 //! as well as some utilities for testing the generated bindings.
 //!
-//! The key concept here is the [`ViaFfi`] trait, which must be implemented for any type that can
-//! be passed across the FFI, and which determines:
+//! The key concept here is the [`ViaFfi`] trait, we create an implementation for each type that
+//! can be passed across the FFI.  It's responsible for:
 //!
 //!  * How to [represent](ViaFfi::FfiType) values of that type in the low-level C-style type
 //!    system of the FFI layer.
@@ -143,6 +143,14 @@ macro_rules! assert_compatible_version {
 /// implementations generated from your component UDL via the `uniffi-bindgen scaffolding` command.
 
 pub unsafe trait ViaFfi: Sized {
+    /// The type used in rust code.
+    ///
+    /// For primitive / standard types, we implement ViaFfi on the type itself and RustType=Self.
+    /// For user-defined types we create a unit struct and implement it there.  This sidesteps
+    /// Rust's orphan rules with types from external crates, since we're not implementing ViaFfi on
+    /// the external type directly.
+    type RustType;
+
     /// The low-level type used for passing values of this type over the FFI.
     ///
     /// This must be a C-compatible type (e.g. a numeric primitive, a `#[repr(C)]` struct) into
@@ -162,7 +170,7 @@ pub unsafe trait ViaFfi: Sized {
     ///
     /// Note that this method takes an owned `self`; this allows it to transfer ownership
     /// in turn to the foreign language code, e.g. by boxing the value and passing a pointer.
-    fn lower(self) -> Self::FfiType;
+    fn lower(obj: Self::RustType) -> Self::FfiType;
 
     /// Lift a rust value of the target type, from an FFI value of type Self::FfiType.
     ///
@@ -172,7 +180,7 @@ pub unsafe trait ViaFfi: Sized {
     ///
     /// Since we cannot statically guarantee that the foreign-language code will send valid
     /// values of type Self::FfiType, this method is fallible.
-    fn try_lift(v: Self::FfiType) -> Result<Self>;
+    fn try_lift(v: Self::FfiType) -> Result<Self::RustType>;
 
     /// Write a rust value into a buffer, to send over the FFI in serialized form.
     ///
@@ -182,7 +190,7 @@ pub unsafe trait ViaFfi: Sized {
     ///
     /// Note that this method takes an owned `self` because it's transfering ownership
     /// to the foreign language code via the RustBuffer.
-    fn write(self, buf: &mut Vec<u8>);
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>);
 
     /// Read a rust value from a buffer, received over the FFI in serialized form.
     ///
@@ -196,7 +204,7 @@ pub unsafe trait ViaFfi: Sized {
     /// Note the slightly unusual type here - we want a mutable reference to a slice of bytes,
     /// because we want to be able to advance the start of the slice after reading an item
     /// from it (but will not mutate the actual contents of the slice).
-    fn try_read(buf: &mut &[u8]) -> Result<Self>;
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType>;
 }
 
 /// A helper function to ensure we don't read past the end of a buffer.
@@ -225,18 +233,19 @@ macro_rules! impl_via_ffi_for_num_primitive {
             $(
                 paste! {
                     unsafe impl ViaFfi for $T {
+                        type RustType = Self;
                         type FfiType = Self;
 
-                        fn lower(self) -> Self::FfiType {
-                            self
+                        fn lower(obj: Self::RustType) -> Self::FfiType {
+                            obj
                         }
 
                         fn try_lift(v: Self::FfiType) -> Result<Self> {
                             Ok(v)
                         }
 
-                        fn write(self, buf: &mut Vec<u8>) {
-                            buf.[<put_ $T>](self);
+                        fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
+                            buf.[<put_ $T>](obj);
                         }
 
                         fn try_read(buf: &mut &[u8]) -> Result<Self> {
@@ -258,17 +267,18 @@ impl_via_ffi_for_num_primitive! {
 /// Booleans are passed as an `i8` in order to avoid problems with handling
 /// C-compatible boolean values on JVM-based languages.
 unsafe impl ViaFfi for bool {
+    type RustType = Self;
     type FfiType = i8;
 
-    fn lower(self) -> Self::FfiType {
-        if self {
+    fn lower(obj: Self::RustType) -> Self::FfiType {
+        if obj {
             1
         } else {
             0
         }
     }
 
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
+    fn try_lift(v: Self::FfiType) -> Result<Self::RustType> {
         Ok(match v {
             0 => false,
             1 => true,
@@ -276,13 +286,13 @@ unsafe impl ViaFfi for bool {
         })
     }
 
-    fn write(self, buf: &mut Vec<u8>) {
-        buf.put_i8(ViaFfi::lower(self));
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
+        buf.put_i8(<bool as ViaFfi>::lower(obj));
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
         check_remaining(buf, 1)?;
-        ViaFfi::try_lift(buf.get_i8())
+        <bool as ViaFfi>::try_lift(buf.get_i8())
     }
 }
 
@@ -298,18 +308,19 @@ unsafe impl ViaFfi for bool {
 /// followed by utf8-encoded bytes. (It's a signed integer because unsigned types are
 /// currently experimental in Kotlin).
 unsafe impl ViaFfi for String {
+    type RustType = Self;
     type FfiType = RustBuffer;
 
     // This returns a struct with a raw pointer to the underlying bytes, so it's very
     // important that it consume ownership of the String, which is relinquished to the
     // foreign language code (and can be restored by it passing the pointer back).
-    fn lower(self) -> Self::FfiType {
-        RustBuffer::from_vec(self.into_bytes())
+    fn lower(obj: Self::RustType) -> Self::FfiType {
+        RustBuffer::from_vec(obj.into_bytes())
     }
 
     // The argument here *must* be a uniquely-owned `RustBuffer` previously obtained
     // from `lower` above, and hence must be the bytes of a valid rust string.
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
+    fn try_lift(v: Self::FfiType) -> Result<Self::RustType> {
         let v = v.destroy_into_vec();
         // This turns the buffer back into a `String` without copying the data
         // and without re-checking it for validity of the utf8. If the `RustBuffer`
@@ -319,15 +330,15 @@ unsafe impl ViaFfi for String {
         Ok(unsafe { String::from_utf8_unchecked(v) })
     }
 
-    fn write(self, buf: &mut Vec<u8>) {
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         // N.B. `len()` gives us the length in bytes, not in chars or graphemes.
         // TODO: it would be nice not to panic here.
-        let len = i32::try_from(self.len()).unwrap();
+        let len = i32::try_from(obj.len()).unwrap();
         buf.put_i32(len); // We limit strings to u32::MAX bytes
-        buf.put(self.as_bytes());
+        buf.put(obj.as_bytes());
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
         check_remaining(buf, 4)?;
         let len = usize::try_from(buf.get_i32())?;
         check_remaining(buf, len)?;
@@ -347,35 +358,37 @@ unsafe impl ViaFfi for String {
 /// C-compatible value, you can use this trait to implement `lower()` in terms of `write()` and
 /// `lift` in terms of `read()`.
 pub trait RustBufferViaFfi: Sized {
-    fn write(self, buf: &mut Vec<u8>);
-    fn try_read(buf: &mut &[u8]) -> Result<Self>;
+    type RustType;
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>);
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType>;
 }
 
 unsafe impl<T: RustBufferViaFfi> ViaFfi for T {
+    type RustType = T::RustType;
     type FfiType = RustBuffer;
 
-    fn lower(self) -> RustBuffer {
+    fn lower(obj: Self::RustType) -> RustBuffer {
         let mut buf = Vec::new();
-        RustBufferViaFfi::write(self, &mut buf);
+        <T as RustBufferViaFfi>::write(obj, &mut buf);
         RustBuffer::from_vec(buf)
     }
 
-    fn try_lift(v: RustBuffer) -> Result<Self> {
+    fn try_lift(v: RustBuffer) -> Result<Self::RustType> {
         let vec = v.destroy_into_vec();
         let mut buf = vec.as_slice();
-        let value = RustBufferViaFfi::try_read(&mut buf)?;
+        let value = T::try_read(&mut buf)?;
         if buf.remaining() != 0 {
             bail!("junk data left in buffer after lifting")
         }
         Ok(value)
     }
 
-    fn write(self, buf: &mut Vec<u8>) {
-        RustBufferViaFfi::write(self, buf)
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
+        T::write(obj, buf)
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
-        RustBufferViaFfi::try_read(buf)
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
+        T::try_read(buf)
     }
 }
 
@@ -394,9 +407,11 @@ unsafe impl<T: RustBufferViaFfi> ViaFfi for T {
 /// overall. The sign of the seconds portion can then be used to determine
 /// if the total offset should be added to or subtracted from the unix epoch.
 impl RustBufferViaFfi for SystemTime {
-    fn write(self, buf: &mut Vec<u8>) {
+    type RustType = Self;
+
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         let mut sign = 1;
-        let epoch_offset = self
+        let epoch_offset = obj
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap_or_else(|error| {
                 sign = -1;
@@ -411,7 +426,7 @@ impl RustBufferViaFfi for SystemTime {
         buf.put_u32(epoch_offset.subsec_nanos());
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
         check_remaining(buf, 12)?;
         let seconds = buf.get_i64();
         let nanos = buf.get_u32();
@@ -434,12 +449,14 @@ impl RustBufferViaFfi for SystemTime {
 /// of the magnitude. The nanosecond portion is expected to be between 0
 /// and 999,999,999.
 impl RustBufferViaFfi for Duration {
-    fn write(self, buf: &mut Vec<u8>) {
-        buf.put_u64(self.as_secs());
-        buf.put_u32(self.subsec_nanos());
+    type RustType = Self;
+
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
+        buf.put_u64(obj.as_secs());
+        buf.put_u32(obj.subsec_nanos());
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
         check_remaining(buf, 12)?;
         Ok(Duration::new(buf.get_u64(), buf.get_u32()))
     }
@@ -455,17 +472,19 @@ impl RustBufferViaFfi for Duration {
 /// `None` option is represented as a null pointer and the `Some` as a valid pointer,
 /// but that seems more fiddly and less safe in the short term, so it can wait.
 impl<T: ViaFfi> RustBufferViaFfi for Option<T> {
-    fn write(self, buf: &mut Vec<u8>) {
-        match self {
+    type RustType = Option<T::RustType>;
+
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
+        match obj {
             None => buf.put_i8(0),
             Some(v) => {
                 buf.put_i8(1);
-                ViaFfi::write(v, buf);
+                <T as ViaFfi>::write(v, buf);
             }
         }
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
         check_remaining(buf, 1)?;
         Ok(match buf.get_i8() {
             0 => None,
@@ -485,16 +504,18 @@ impl<T: ViaFfi> RustBufferViaFfi for Option<T> {
 /// than serializing, and perhaps even pass other vector types using a
 /// similar struct. But that's for future work.
 impl<T: ViaFfi> RustBufferViaFfi for Vec<T> {
-    fn write(self, buf: &mut Vec<u8>) {
+    type RustType = Vec<T::RustType>;
+
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
-        let len = i32::try_from(self.len()).unwrap();
+        let len = i32::try_from(obj.len()).unwrap();
         buf.put_i32(len); // We limit arrays to i32::MAX items
-        for item in self.into_iter() {
-            ViaFfi::write(item, buf);
+        for item in obj.into_iter() {
+            <T as ViaFfi>::write(item, buf);
         }
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
         check_remaining(buf, 4)?;
         let len = usize::try_from(buf.get_i32())?;
         let mut vec = Vec::with_capacity(len);
@@ -514,17 +535,19 @@ impl<T: ViaFfi> RustBufferViaFfi for Vec<T> {
 /// key followed by the value) in turn.
 /// (It's a signed type due to limits of the JVM).
 impl<V: ViaFfi> RustBufferViaFfi for HashMap<String, V> {
-    fn write(self, buf: &mut Vec<u8>) {
+    type RustType = HashMap<String, V::RustType>;
+
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
-        let len = i32::try_from(self.len()).unwrap();
+        let len = i32::try_from(obj.len()).unwrap();
         buf.put_i32(len); // We limit HashMaps to i32::MAX entries
-        for (key, value) in self.into_iter() {
-            ViaFfi::write(key, buf);
-            ViaFfi::write(value, buf);
+        for (key, value) in obj.into_iter() {
+            <String as ViaFfi>::write(key, buf);
+            <V as ViaFfi>::write(value, buf);
         }
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
         check_remaining(buf, 4)?;
         let len = usize::try_from(buf.get_i32())?;
         let mut map = HashMap::with_capacity(len);
@@ -543,6 +566,7 @@ impl<V: ViaFfi> RustBufferViaFfi for HashMap<String, V> {
 /// by reference must be encapsulated in an `Arc`, and must be safe to share
 /// across threads.
 unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
+    type RustType = Self;
     // Don't use a pointer to <T> as that requires a `pub <T>`
     type FfiType = *const std::os::raw::c_void;
 
@@ -555,8 +579,8 @@ unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
     /// Safety: when freeing the resulting pointer, the foreign-language code must
     /// call the destructor function specific to the type `T`. Calling the destructor
     /// function for other types may lead to undefined behaviour.
-    fn lower(self) -> Self::FfiType {
-        std::sync::Arc::into_raw(self) as Self::FfiType
+    fn lower(obj: Self::RustType) -> Self::FfiType {
+        std::sync::Arc::into_raw(obj) as Self::FfiType
     }
 
     /// When lifting, we receive a "borrow" of the `Arc<T>` that is owned by
@@ -564,7 +588,7 @@ unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
     ///
     /// Safety: the provided value must be a pointer previously obtained by calling
     /// the `lower()` or `write()` method of this impl.
-    fn try_lift(v: Self::FfiType) -> Result<Self> {
+    fn try_lift(v: Self::FfiType) -> Result<Self::RustType> {
         let v = v as *const T;
         // We musn't drop the `Arc<T>` that is owned by the foreign-language code.
         let foreign_arc = std::mem::ManuallyDrop::new(unsafe { Self::from_raw(v) });
@@ -580,9 +604,9 @@ unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
     /// Safety: when freeing the resulting pointer, the foreign-language code must
     /// call the destructor function specific to the type `T`. Calling the destructor
     /// function for other types may lead to undefined behaviour.
-    fn write(self, buf: &mut Vec<u8>) {
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
-        buf.put_u64(self.lower() as u64);
+        buf.put_u64(Self::lower(obj) as u64);
     }
 
     /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc<T>`
@@ -590,7 +614,7 @@ unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
     ///
     /// Safety: the buffer must contain a pointer previously obtained by calling
     /// the `lower()` or `write()` method of this impl.
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
         static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
         check_remaining(buf, 8)?;
         Self::try_lift(buf.get_u64() as Self::FfiType)
@@ -610,14 +634,14 @@ mod test {
     #[test]
     fn timestamp_roundtrip_post_epoch() {
         let expected = SystemTime::UNIX_EPOCH + Duration::new(100, 100);
-        let result = SystemTime::try_lift(expected.lower()).expect("Failed to lift!");
+        let result = SystemTime::try_lift(SystemTime::lower(expected)).expect("Failed to lift!");
         assert_eq!(expected, result)
     }
 
     #[test]
     fn timestamp_roundtrip_pre_epoch() {
         let expected = SystemTime::UNIX_EPOCH - Duration::new(100, 100);
-        let result = SystemTime::try_lift(expected.lower()).expect("Failed to lift!");
+        let result = SystemTime::try_lift(SystemTime::lower(expected)).expect("Failed to lift!");
         assert_eq!(
             expected, result,
             "Expected results after lowering and lifting to be equal"

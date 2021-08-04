@@ -5,9 +5,11 @@
 #}
 #[doc(hidden)]
 impl uniffi::RustBufferViaFfi for {{ e.name() }} {
-    fn write(self, buf: &mut Vec<u8>) {
+    type RustType = Self;
+
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         use uniffi::deps::bytes::BufMut;
-        match self {
+        match obj {
             {%- for variant in e.variants() %}
             {{ e.name() }}::{{ variant.name() }}{% if variant.has_fields() %} { {% for field in variant.fields() %}{{ field.name() }}, {%- endfor %} }{% else %}{..}{% endif %} => {
                 buf.put_i32({{ loop.index }});
