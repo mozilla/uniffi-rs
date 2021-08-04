@@ -244,6 +244,12 @@ impl Constructor {
         self.attributes.get_throws_err()
     }
 
+    pub fn throws_type(&self) -> Option<Type> {
+        self.attributes
+            .get_throws_err()
+            .map(|name| Type::Error(name.to_owned()))
+    }
+
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) {
         self.ffi_func.name.push_str(ci_prefix);
         self.ffi_func.name.push('_');
@@ -355,6 +361,12 @@ impl Method {
 
     pub fn throws(&self) -> Option<&str> {
         self.attributes.get_throws_err()
+    }
+
+    pub fn throws_type(&self) -> Option<Type> {
+        self.attributes
+            .get_throws_err()
+            .map(|name| Type::Error(name.to_owned()))
     }
 
     pub fn takes_self_by_arc(&self) -> bool {
