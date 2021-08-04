@@ -117,8 +117,19 @@ use scaffolding::RustScaffolding;
 pub trait ForeignLanguageBackend: Sized {
     fn new(config: Config) -> anyhow::Result<Self>;
 
-    fn write_bindings<P: AsRef<Path>>(&self, ci: &ComponentInterface, out_dir: P) -> anyhow::Result<()>; //TODO: replace String with something better
+    fn write_bindings<P: AsRef<Path>>(
+        &self,
+        ci: &ComponentInterface,
+        out_dir: P,
+    ) -> anyhow::Result<()>;
 
+    fn compile_bindings<P: AsRef<Path>>(
+        &self,
+        ci: &ComponentInterface,
+        out_dir: P,
+    ) -> anyhow::Result<()>;
+
+    fn run_script<P: AsRef<Path>>(&self, out_dir: P, script_file: P) -> anyhow::Result<()>;
     // TODO: Add run script here
 }
 
@@ -136,7 +147,7 @@ pub fn generate_custom_bindings<B: ForeignLanguageBackend, P: AsRef<Path>>(
     let config = get_config(&component, udl_file, config_file_override)?;
     let out_dir = get_out_dir(udl_file, out_dir_override)?;
     let backend = B::new(config)?;
-    let bindings = backend.write_bindings(&component, out_dir)?;
+    backend.write_bindings(&component, out_dir)?;
     Ok(())
 }
 
@@ -194,6 +205,28 @@ pub fn generate_bindings<P: AsRef<Path>>(
             language.try_into()?,
             try_format_code,
         )?;
+    }
+    Ok(())
+}
+
+pub fn run_backend_tests<B: ForeignLanguageBackend, P: AsRef<Path>>(
+    cdylib_dir: P,
+    udl_file: P,
+    test_scripts: Vec<&str>,
+    config_file_override: Option<P>,
+) -> Result<()> {
+    let cdylib_dir = cdylib_dir.as_ref();
+    let udl_file = udl_file.as_ref();
+    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+
+    let component = parse_udl(udl_file)?;
+    let config = get_config(&component, udl_file, config_file_override)?;
+    let backend = B::new(config)?;
+    backend.write_bindings(&component, &cdylib_dir)?;
+    backend.compile_bindings(&component, &cdylib_dir)?;
+    for test_script in test_scripts {
+        let test_script = Path::new(test_script);
+        backend.run_script(&cdylib_dir, &test_script)?;
     }
     Ok(())
 }
