@@ -66,14 +66,18 @@ impl Record {
         &self.name
     }
 
+    pub fn type_(&self) -> Type {
+        // *sigh* at the clone here, the relationship between a ComponentInterace
+        // and its contained types could use a bit of a cleanup.
+        Type::Record(self.name.clone())
+    }
+
     pub fn fields(&self) -> Vec<&Field> {
         self.fields.iter().collect()
     }
 
     pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
-        // *sigh* at the clone here, the relationship between a ComponentInterace
-        // and its contained types could use a bit of a cleanup.
-        ci.type_contains_object_references(&Type::Record(self.name.clone()))
+        ci.type_contains_object_references(&self.type_())
     }
 
     pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {

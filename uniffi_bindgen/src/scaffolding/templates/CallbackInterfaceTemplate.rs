@@ -11,7 +11,7 @@
 //    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
 #}
 {% let trait_name = cbi.name() -%}
-{% let trait_impl = format!("{}Proxy", trait_name) -%}
+{% let trait_impl = cbi.type_().viaffi_impl_name() -%}
 {% let foreign_callback_internals = format!("foreign_callback_{}_internals", trait_name)|upper -%}
 
 // Register a foreign callback for getting across the FFI.
@@ -59,9 +59,9 @@ impl {{ trait_name }} for {{ trait_impl }} {
         {% else -%}
         let mut args_buf = Vec::new();
         {% endif -%}
-        {% for arg in meth.arguments() -%}
-            {{ arg.name()|write_rs("&mut args_buf", arg.type_()) -}};
-        {% endfor -%}
+        {%- for arg in meth.arguments() %}
+        {{ arg.type_()|as_viaffi }}::write({{ arg.name() }}, &mut args_buf);
+        {%- endfor -%}
         let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
 
     {#- Calling into foreign code. #}
@@ -73,7 +73,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
         {% when Some with (return_type) -%}
         let vec = ret_rbuf.destroy_into_vec();
         let mut ret_buf = vec.as_slice();
-        {{ "&mut ret_buf"|read_rs(return_type) }}
+        {{ return_type|as_viaffi }}::try_read(&mut ret_buf).unwrap()
         {%- else -%}
         uniffi::RustBuffer::destroy(ret_rbuf);
         {%- endmatch %}
@@ -82,7 +82,9 @@ impl {{ trait_name }} for {{ trait_impl }} {
 }
 
 unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
-    type RustType = Self;
+    // CallbackInterface instances get wrapped by Box<>, which allows the rust code to accept them
+    // as parameters using Box<dyn CallbackInterfaceTrait>
+    type RustType = Box<Self>;
     type FfiType = u64;
     
     // Lower and write are trivially implemented, but carry lots of thread safety risks, down to
@@ -105,11 +107,11 @@ unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
         buf.put_u64(obj.handle);
     }
 
-    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self> {
-        Ok(Self { handle: v })
+    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Box<Self>> {
+        Ok(Box::new(Self { handle: v }))
     }
 
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Box<Self>> {
         use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 8)?;
         <Self as uniffi::ViaFfi>::try_lift(buf.get_u64())

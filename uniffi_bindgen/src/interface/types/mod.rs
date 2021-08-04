@@ -107,6 +107,47 @@ impl Type {
             Type::Map(t) => format!("Map{}", t.canonical_name()),
         }
     }
+
+    /// Get the name of the ViaFfi implementation for this type
+    ///
+    /// - For primitives / standard types this is the type itself.
+    /// - For user-defined types, this is a unique generated name.  We then generate a unit-struct
+    pub fn viaffi_impl_name(&self) -> String {
+        match self {
+            // Timestamp/Duraration are handled by standard types
+            Type::Timestamp => "std::time::SystemTime".into(),
+            Type::Duration => "std::time::Duration".into(),
+            // Object is handled by Arc<T>
+            Type::Object(name) => format!("std::sync::Arc<{}>", name),
+            // Other user-defined types are handled by a unit-struct that we auto-generate.  This
+            // sidesteps Rust's orphan rules since we can't directly implement ViaFfi on a type
+            // from an external crate.
+            //
+            // CallbackInterface is handled by special case code on both the scaffolding and
+            // bindings side.  It's not a unit-struct, but the same name generation code works.
+            Type::Enum(_) | Type::Record(_) | Type::Error(_) | Type::CallbackInterface(_) => {
+                format!("UniffiType{}", self.canonical_name())
+            }
+            // Wrapper types are implemented by generics that wrap the viaffi implementation of the
+            // inner type.
+            Type::Optional(inner) => format!("Option<{}>", inner.viaffi_impl_name()),
+            Type::Sequence(inner) => format!("Vec<{}>", inner.viaffi_impl_name()),
+            Type::Map(inner) => format!("HashMap<String, {}>", inner.viaffi_impl_name()),
+            // Primitive types / strings are implemented by their rust type
+            Type::Int8 => "i8".into(),
+            Type::UInt8 => "u8".into(),
+            Type::Int16 => "i16".into(),
+            Type::UInt16 => "u16".into(),
+            Type::Int32 => "i32".into(),
+            Type::UInt32 => "u32".into(),
+            Type::Int64 => "i64".into(),
+            Type::UInt64 => "u64".into(),
+            Type::Float32 => "f32".into(),
+            Type::Float64 => "f64".into(),
+            Type::String => "String".into(),
+            Type::Boolean => "bool".into(),
+        }
+    }
 }
 
 /// When passing data across the FFI, each `Type` value will be lowered into a corresponding

@@ -11,8 +11,7 @@ uniffi::assert_compatible_version!("{{ uniffi_version }}"); // Please check that
 {% include "RustBuffer.rs" %}
 
 // Error definitions, corresponding to `error` in the UDL.
-{% for error in ci.iter_error_definitions() %}
-{% let e = error.wrapped_enum() %}
+{% for e in ci.iter_error_definitions() %}
 {% include "ErrorTemplate.rs" %}
 {% endfor %}
 
