@@ -294,10 +294,6 @@
 <span id="291">291</span>
 <span id="292">292</span>
 <span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -359,9 +355,6 @@
     <span class="ident">len</span>: <span class="ident">i32</span>,
     <span class="doccomment">/// The pointer to the allocated buffer of the `Vec&lt;u8&gt;`.</span>
     <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">u8</span>,
-    <span class="doccomment">/// This forces the struct to be larger than 16 bytes, as a temporary workaround for a bug in JNA.</span>
-    <span class="doccomment">/// See https://github.com/mozilla/uniffi-rs/issues/334 for details.</span>
-    <span class="ident">padding</span>: <span class="ident">i64</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">RustBuffer</span> {
@@ -386,7 +379,6 @@
             <span class="ident">capacity</span>,
             <span class="ident">len</span>,
             <span class="ident">data</span>,
-            <span class="ident">padding</span>: <span class="number">0</span>,
         }
     }
 

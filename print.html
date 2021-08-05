@@ -931,6 +931,14 @@ but currently misses some places, see <a href="https://github.com/mozilla/uniffi
     }
 }
 </code></pre>
+<h2><a class="header" href="#jna-dependency" id="jna-dependency">JNA dependency</a></h2>
+<p>UniFFI relies on <a href="https://github.com/java-native-access/jna">JNA</a> for the ability to call native methods.
+JNA 5.7 or greater is required.</p>
+<p>Set the dependency in your <code>build.gradle</code>:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;net.java.dev.jna:jna:5.7.0@aar&quot;
+}
+</code></pre>
 <h1><a class="header" href="#swift-bindings" id="swift-bindings">Swift Bindings</a></h1>
 <p>UniFFI ships with production-quality support for generating Swift bindings.
 Concepts from the UDL file map into Swift as follows:</p>

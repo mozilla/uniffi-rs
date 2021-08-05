@@ -121,15 +121,6 @@
 <span id="118">118</span>
 <span id="119">119</span>
 <span id="120">120</span>
-<span id="121">121</span>
-<span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
-<span id="125">125</span>
-<span id="126">126</span>
-<span id="127">127</span>
-<span id="128">128</span>
-<span id="129">129</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -164,10 +155,6 @@
     <span class="ident">len</span>: <span class="ident">i32</span>,
     <span class="doccomment">/// The pointer to the foreign-owned bytes.</span>
     <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>,
-    <span class="doccomment">/// This forces the struct to be larger than 16 bytes, as a temporary workaround for a bug in JNA.</span>
-    <span class="doccomment">/// See https://github.com/mozilla/uniffi-rs/issues/334 for details.</span>
-    <span class="ident">padding</span>: <span class="ident">i64</span>,
-    <span class="ident">padding2</span>: <span class="ident">i32</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ForeignBytes</span> {
@@ -180,12 +167,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// You must ensure that the raw parts uphold the documented invariants of this class.</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw_parts</span>(<span class="ident">data</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">len</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">len</span>,
-            <span class="ident">data</span>,
-            <span class="ident">padding</span>: <span class="number">0</span>,
-            <span class="ident">padding2</span>: <span class="number">0</span>,
-        }
+        <span class="self">Self</span> { <span class="ident">len</span>, <span class="ident">data</span> }
     }
 
     <span class="doccomment">/// View the foreign bytes as a `&amp;[u8]`.</span>
