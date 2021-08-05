@@ -472,7 +472,7 @@
 
     <span class="comment">// Use RustBufferViaFfi to simplify lifting TestError out of RustBuffer to check it</span>
     <span class="kw">impl</span> <span class="ident">RustBufferViaFfi</span> <span class="kw">for</span> <span class="ident">TestError</span> {
-        <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+        <span class="kw">fn</span> <span class="ident">write</span>(<span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
             <span class="self">self</span>.<span class="number">0</span>.<span class="ident">write</span>(<span class="ident">buf</span>);
         }
 
