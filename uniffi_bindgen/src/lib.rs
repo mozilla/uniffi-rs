@@ -95,6 +95,7 @@
 const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 use anyhow::{anyhow, bail, Context, Result};
+use clap::{Arg, ArgMatches, SubCommand};
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::io::prelude::*;
@@ -207,6 +208,16 @@ pub fn run_tests<P: AsRef<Path>>(
             bindings::run_script(cdylib_dir, &test_script, lang)?;
         }
     }
+    Ok(())
+}
+
+// Generate the bindings in the target languages that call the scaffolding
+// Rust code.
+pub fn run_checks(target_languages: Vec<&str>) -> Result<()> {
+    for language in target_languages {
+        println!("{} can be used in this environment", language);
+    }
+
     Ok(())
 }
 
@@ -424,9 +435,123 @@ pub fn run_main() -> Result<()> {
             m.values_of("test_scripts").unwrap().collect(), // Required
             m.value_of_os("config"),
         )?,
+        ("check", Some(m)) => {
+            println!("Are we even here!?!?");
+            crate::run_checks(m.values_of("language").unwrap().collect())?
+        }
         _ => bail!("No command specified; try `--help` for some help."),
     }
     Ok(())
+}
+
+fn gen_comands<'a>() -> ArgMatches<'a> {
+    const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift", "gecko_js", "ruby"];
+
+    let gen_subcmd = SubCommand::with_name("generate")
+        .about("Generate foreign language bindings")
+        .arg(
+            Arg::with_name("language")
+                .required(true)
+                .takes_value(true)
+                .long("--language")
+                .short("-l")
+                .multiple(true)
+                .number_of_values(1)
+                .possible_values(POSSIBLE_LANGUAGES)
+                .help("Foreign language(s) for which to build bindings"),
+        )
+        .arg(
+            Arg::with_name("out_dir")
+                .long("--out-dir")
+                .short("-o")
+                .takes_value(true)
+                .help("Directory in which to write generated files. Default is same folder as .udl file."),
+        )
+        .arg(
+            Arg::with_name("no_format")
+                .long("--no-format")
+                .help("Do not try to format the generated bindings"),
+        )
+        .arg(Arg::with_name("udl_file").required(true))
+        .arg(
+            Arg::with_name("config")
+            .long("--config-path")
+            .takes_value(true)
+            .help("Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.")
+        );
+
+    let scaff_subcmd = SubCommand::with_name("scaffolding")
+        .about("Generate Rust scaffolding code")
+        .arg(
+            Arg::with_name("out_dir")
+                .long("--out-dir")
+                .short("-o")
+                .takes_value(true)
+                .help("Directory in which to write generated files. Default is same folder as .udl file."),
+        )
+        .arg(
+            Arg::with_name("manifest")
+            .long("--manifest-path")
+            .takes_value(true)
+            .help("Path to crate's Cargo.toml. If not provided, Cargo.toml is assumed to be in the UDL's file parent folder.")
+        )
+        .arg(
+            Arg::with_name("config")
+            .long("--config-path")
+            .takes_value(true)
+            .help("Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.")
+        )
+        .arg(
+            Arg::with_name("no_format")
+                .long("--no-format")
+                .help("Do not format the generated code with rustfmt (useful for maintainers)"),
+        )
+        .arg(Arg::with_name("udl_file").required(true));
+
+    let test_subcmd = SubCommand::with_name("test")
+        .about("Run test scripts against foreign language bindings")
+        .arg(Arg::with_name("cdylib_dir").required(true).help("Path to the directory containing the cdylib the scripts will be testing against."))
+        .arg(Arg::with_name("udl_file").required(true))
+        .arg(Arg::with_name("test_scripts").required(true).multiple(true).help("Foreign language(s) test scripts to run"))
+        .arg(
+            Arg::with_name("config")
+            .long("--config-path")
+            .takes_value(true)
+            .help("Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess from the UDL's file location.")
+        );
+
+    let check_subcmd = SubCommand::with_name("check")
+        .about("Checks for project and/or environment correctness")
+        .arg(
+            Arg::with_name("language")
+                .takes_value(true)
+                .long("--language")
+                .short("-l")
+                .possible_values(POSSIBLE_LANGUAGES)
+                .help("Check if the environment is suitable for building the foreign language"),
+        );
+
+    // This is needed to be able to use `cargo uniffi <command>` as well as `cargo-uniffi <command>`
+    // since cargo will check for the binary cargo-uniffi but clap doesn't "understand" that
+    let uniffi_subcmd = SubCommand::with_name("uniffi")
+        .version(clap::crate_version!())
+        .bin_name("cargo-uniffi")
+        .about("Scaffolding and bindings generator for Rust")
+        .subcommand(gen_subcmd.clone())
+        .subcommand(scaff_subcmd.clone())
+        .subcommand(test_subcmd.clone())
+        .subcommand(check_subcmd.clone());
+
+    clap::App::new("cargo-uniffi")
+        .about("Scaffolding and bindings generator for Rust")
+        .bin_name("cargo")
+        .version(clap::crate_version!())
+        .subcommand(uniffi_subcmd.clone())
+        .subcommand(gen_subcmd.clone())
+        .subcommand(scaff_subcmd.clone())
+        .subcommand(test_subcmd.clone())
+        .subcommand(check_subcmd.clone())
+        .get_matches()
 }
 
 #[cfg(test)]

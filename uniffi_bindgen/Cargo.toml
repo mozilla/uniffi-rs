@@ -11,7 +11,7 @@ edition = "2018"
 keywords = ["ffi", "bindgen"]
 
 [[bin]]
-name = "uniffi-bindgen"
+name = "cargo-uniffi"
 path = "src/main.rs"
 
 [dependencies]
