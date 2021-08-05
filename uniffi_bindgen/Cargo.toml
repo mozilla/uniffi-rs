@@ -10,10 +10,6 @@ license = "MPL-2.0"
 edition = "2018"
 keywords = ["ffi", "bindgen"]
 
-[[bin]]
-name = "cargo-uniffi"
-path = "src/main.rs"
-
 [dependencies]
 cargo_metadata = "0.13"
 weedle = "0.12"

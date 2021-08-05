@@ -214,8 +214,50 @@ pub fn run_tests<P: AsRef<Path>>(
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
 pub fn run_checks(target_languages: Vec<&str>) -> Result<()> {
+    /* Ideally for language-specific things we'd import these commands or defer
+     ** to their version of the bindgen to keep things neat and clean
+     */
     for language in target_languages {
-        println!("{} can be used in this environment", language);
+        println!("Detecting if {} can run properly", language);
+        match language {
+            "kotlin" => {
+                Command::new("kotlinc")
+                    .arg("-version")
+                    .status()
+                    .expect("kotlinc did not run sucessfully");
+                println!("Checking if JNA is set in CLASSPATH");
+                match env::var("CLASSPATH") {
+                    Ok(s) => {
+                        if !s.contains("jna") {
+                            bail!("JNA was not found in CLASSPATH")
+                        }
+                    }
+                    Err(_) => bail!("JNA was not found in CLASSPATH"),
+                };
+            }
+            "swift" => {
+                Command::new("swiftc")
+                    .arg("-version")
+                    .status()
+                    .expect("swiftc did not run sucessfully");
+            }
+            "ruby" => {
+                let output = Command::new("gem")
+                    .arg("list")
+                    .arg("-i")
+                    .arg("ffi")
+                    .output()
+                    .expect("gem command did not execute sucessfully");
+                if String::from_utf8(output.stdout).unwrap().contains("false") {
+                    bail!("Ruby gem ffi was not installed")
+                }
+            }
+            _ => {
+                println!("{} is not currently a supported language", language)
+            }
+        }
+        println!("{} can be sucessfully used in this environment!", language);
+        println!("");
     }
 
     Ok(())
@@ -334,87 +376,9 @@ impl<T: Clone> MergeWith for Option<T> {
 }
 
 pub fn run_main() -> Result<()> {
-    const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift", "ruby"];
-    let matches = clap::App::new("uniffi-bindgen")
-        .about("Scaffolding and bindings generator for Rust")
-        .version(clap::crate_version!())
-        .subcommand(
-            clap::SubCommand::with_name("generate")
-                .about("Generate foreign language bindings")
-                .arg(
-                    clap::Arg::with_name("language")
-                        .required(true)
-                        .takes_value(true)
-                        .long("--language")
-                        .short("-l")
-                        .multiple(true)
-                        .number_of_values(1)
-                        .possible_values(POSSIBLE_LANGUAGES)
-                        .help("Foreign language(s) for which to build bindings"),
-                )
-                .arg(
-                    clap::Arg::with_name("out_dir")
-                        .long("--out-dir")
-                        .short("-o")
-                        .takes_value(true)
-                        .help("Directory in which to write generated files. Default is same folder as .udl file."),
-                )
-                .arg(
-                    clap::Arg::with_name("no_format")
-                        .long("--no-format")
-                        .help("Do not try to format the generated bindings"),
-                )
-                .arg(clap::Arg::with_name("udl_file").required(true))
-                .arg(
-                    clap::Arg::with_name("config")
-                    .long("--config-path")
-                    .takes_value(true)
-                    .help("Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.")
-                ),
-        )
-        .subcommand(
-            clap::SubCommand::with_name("scaffolding")
-                .about("Generate Rust scaffolding code")
-                .arg(
-                    clap::Arg::with_name("out_dir")
-                        .long("--out-dir")
-                        .short("-o")
-                        .takes_value(true)
-                        .help("Directory in which to write generated files. Default is same folder as .udl file."),
-                )
-                .arg(
-                    clap::Arg::with_name("manifest")
-                    .long("--manifest-path")
-                    .takes_value(true)
-                    .help("Path to crate's Cargo.toml. If not provided, Cargo.toml is assumed to be in the UDL's file parent folder.")
-                )
-                .arg(
-                    clap::Arg::with_name("config")
-                    .long("--config-path")
-                    .takes_value(true)
-                    .help("Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.")
-                )
-                .arg(
-                    clap::Arg::with_name("no_format")
-                        .long("--no-format")
-                        .help("Do not format the generated code with rustfmt (useful for maintainers)"),
-                )
-                .arg(clap::Arg::with_name("udl_file").required(true)),
-        )
-        .subcommand(
-            clap::SubCommand::with_name("test")
-            .about("Run test scripts against foreign language bindings")
-            .arg(clap::Arg::with_name("cdylib_dir").required(true).help("Path to the directory containing the cdylib the scripts will be testing against."))
-            .arg(clap::Arg::with_name("udl_file").required(true))
-            .arg(clap::Arg::with_name("test_scripts").required(true).multiple(true).help("Foreign language(s) test scripts to run"))
-            .arg(
-                clap::Arg::with_name("config")
-                .long("--config-path")
-                .takes_value(true)
-                .help("Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess from the UDL's file location.")
-            )
-        )
-        .get_matches();
+    let config = gen_comands();
+    // This is needed due to using cargo subcommands creates an extra nested level
+    let matches = config.subcommand_matches("uniffi").unwrap_or(&config);
     match matches.subcommand() {
         ("generate", Some(m)) => crate::generate_bindings(
             m.value_of_os("udl_file").unwrap(), // Required
@@ -435,10 +399,7 @@ pub fn run_main() -> Result<()> {
             m.values_of("test_scripts").unwrap().collect(), // Required
             m.value_of_os("config"),
         )?,
-        ("check", Some(m)) => {
-            println!("Are we even here!?!?");
-            crate::run_checks(m.values_of("language").unwrap().collect())?
-        }
+        ("check", Some(m)) => crate::run_checks(m.values_of("language").unwrap().collect())?,
         _ => bail!("No command specified; try `--help` for some help."),
     }
     Ok(())
@@ -525,6 +486,7 @@ fn gen_comands<'a>() -> ArgMatches<'a> {
         .arg(
             Arg::with_name("language")
                 .takes_value(true)
+                .multiple(true)
                 .long("--language")
                 .short("-l")
                 .possible_values(POSSIBLE_LANGUAGES)
