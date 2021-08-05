@@ -96,7 +96,7 @@ const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 use anyhow::{anyhow, bail, Context, Result};
 use serde::{Deserialize, Serialize};
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::io::prelude::*;
 use std::{
     collections::HashMap,
@@ -130,10 +130,9 @@ pub trait ForeignLanguageBackend: Sized {
     ) -> anyhow::Result<()>;
 
     fn run_script<P: AsRef<Path>>(&self, out_dir: P, script_file: P) -> anyhow::Result<()>;
-    // TODO: Add run script here
 }
 
-pub fn generate_custom_bindings<B: ForeignLanguageBackend, P: AsRef<Path>>(
+pub fn generate_backend_bindings<B: ForeignLanguageBackend, P: AsRef<Path>>(
     udl_file: P,
     config_file_override: Option<P>,
     out_dir_override: Option<P>,
@@ -198,11 +197,27 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let config = get_config(&component, udl_file, config_file_override)?;
     let out_dir = get_out_dir(udl_file, out_dir_override)?;
     for language in target_languages {
+        let language = TargetLanguage::try_from(language)?;
+        if let TargetLanguage::Kotlin = language {
+            let mut command = Command::new("uniffi_bindgen_kotlin");
+            let mut command = command
+            .arg(BINDGEN_VERSION)
+            .arg("generate")
+            .arg(udl_file.clone())
+            .arg("--out-dir")
+            .arg(out_dir.clone());
+            if let Some(config_path) = config_file_override {
+                command = command.arg("--config-path")
+                .arg(config_path);
+            }
+            let output = command.output()?;
+            std::io::stdout().write_all(&output.stdout)?;
+        }
         bindings::write_bindings(
             &config.bindings,
             &component,
             &out_dir,
-            language.try_into()?,
+            language,
             try_format_code,
         )?;
     }

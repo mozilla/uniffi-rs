@@ -2,18 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::ffi::OsStr;
-
 use uniffi_bindgen::{
     interface::ComponentInterface, Config as UniffiConfig, ForeignLanguageBackend,
 };
 pub mod gen_kotlin;
 pub use gen_kotlin::{Config, KotlinWrapper};
 
+const UNIFFI_VERSION: &str = "0.12.0";
+
 pub fn run_main() -> anyhow::Result<()> {
     let matches = clap::App::new("uniffi-bindgen")
         .about("Scaffolding and bindings generator for Rust")
         .version(clap::crate_version!())
+        .arg(
+            clap::Arg::with_name("uniffi_version").required(true)
+            .help("The uniffi version uniffi_bindgen_kotlin is going to run with. NOTE: The version specified here, must be the same one, uniffi_bingen_kotlin uses internally")
+        )
         .subcommand(
             clap::SubCommand::with_name("generate")
                 .about("Generate the foreign language bindings")
@@ -51,13 +55,19 @@ pub fn run_main() -> anyhow::Result<()> {
             )
         )
         .get_matches();
+    let uniffi_version = matches.value_of_os("uniffi_version").expect("`uniffi_version is a required argument"); // required!
+    if uniffi_version != UNIFFI_VERSION {
+        bail!("Invalid uniffi_version, this version of uniffi_bingen_kotlin only works with version {}, found {:?}", UNIFFI_VERSION, uniffi_version)
+    }
     match matches.subcommand() {
-        ("generate", Some(m)) => uniffi_bindgen::generate_custom_bindings::<KotlinBackend, &OsStr>(
-            m.value_of_os("udl_file").unwrap(), // Required
-            m.value_of_os("config"),
-            m.value_of_os("out_dir"),
-            !m.is_present("no_format"),
-        ),
+        ("generate", Some(m)) => {
+            uniffi_bindgen::generate_backend_bindings::<KotlinBackend, &OsStr>(
+                m.value_of_os("udl_file").unwrap(), // Required
+                m.value_of_os("config"),
+                m.value_of_os("out_dir"),
+                !m.is_present("no_format"),
+            )
+        }
         ("test", Some(m)) => uniffi_bindgen::run_backend_tests::<KotlinBackend, &OsStr>(
             m.value_of_os("cdylib_dir").unwrap(),
             m.value_of_os("udl_file").unwrap(),
@@ -164,14 +174,7 @@ impl ForeignLanguageBackend for KotlinBackend {
 }
 
 use anyhow::{bail, Context, Result};
-use std::{
-    env,
-    ffi::OsString,
-    fs::File,
-    io::Write,
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::{env, ffi::{OsStr, OsString}, fs::File, io::Write, path::{Path, PathBuf}, process::Command};
 
 fn full_bindings_path(config: &Config, out_dir: &Path) -> Result<PathBuf> {
     let package_path: PathBuf = config.package_name().split('.').collect();
