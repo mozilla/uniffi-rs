@@ -81,6 +81,7 @@ jobs:
       - run:
           name: "Set RUSTFLAGS to fail the build if there are warnings"
           command: echo 'export RUSTFLAGS="-D warnings"' >> $BASH_ENV
+      - run: cargo install --path uniffi_bindgen_kotlin #NOTE: Only for draft to get see CI passing, DO NOT MERGE THIS
       - run: cargo test
   Rust and Foreign Language tests - min supported rust:
     docker:
@@ -93,6 +94,7 @@ jobs:
       - run:
           name: "Print the Rust version, to help with debugging"
           command: rustc --version
+      - run: cargo install --path uniffi_bindgen_kotlin #NOTE: Only for draft to get see CI passing, DO NOT MERGE THIS
       # some tests fail on earlier rust versions and we want to ignore them:
       # * trybuild_ui_tests - error message had a comma inserted! Can probably
       #   be re-enabled after the next rust version bump.
