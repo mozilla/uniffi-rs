@@ -48,50 +48,60 @@ use anyhow::{bail, Result};
 
 use super::literal::{convert_default_value, Literal};
 use super::types::Type;
-use super::{APIConverter, ComponentInterface};
+use super::{APIConverter, ComponentInterface, CINode};
 
 /// Represents a "data class" style object, for passing around complex values.
 ///
 /// In the FFI these are represented as a byte buffer, which one side explicitly
 /// serializes the data into and the other serializes it out of. So I guess they're
 /// kind of like "pass by clone" values.
+#[derive(Debug)]
+pub struct Record<'a> {
+    pub(super) parent: &'a ComponentInterface,
+    pub(super) descr: &'a RecordDescr,
+}
+
 #[derive(Debug, Clone, Hash)]
-pub struct Record {
+pub struct RecordDescr {
     pub(super) name: String,
-    pub(super) fields: Vec<Field>,
+    pub(super) fields: Vec<FieldDescr>,
 }
 
-impl Record {
+impl<'a> Record<'a> {
     pub fn name(&self) -> &str {
-        &self.name
+        &self.descr.name
     }
 
-    pub fn fields(&self) -> Vec<&Field> {
-        self.fields.iter().collect()
+    pub fn fields(&self) -> Vec<Field<'_, Self>> {
+        self.descr.fields.iter().map(|f| Field { parent: self, descr: f }).collect()
     }
 
-    pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
-        // *sigh* at the clone here, the relationship between a ComponentInterace
-        // and its contained types could use a bit of a cleanup.
-        ci.type_contains_object_references(&Type::Record(self.name.clone()))
+    pub fn contains_object_references(&self) -> bool {
+        self.fields().iter()
+            .any(|f| f.contains_object_references())
     }
 
-    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
-        self.fields()
-            .iter()
-            .any(|f| ci.type_contains_unsigned_types(&f.type_))
+    pub fn contains_unsigned_types(&self, _ci: &ComponentInterface) -> bool {
+        self.descr.fields.iter()
+            .any(|f| self.ci().type_contains_unsigned_types(&f.type_))
     }
 }
 
-impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Record> {
+impl<'a> CINode for Record<'a> {
+    fn ci(&self) -> &ComponentInterface {
+        self.parent
+    }
+}
+
+impl APIConverter<RecordDescr> for weedle::DictionaryDefinition<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<RecordDescr> {
         if self.attributes.is_some() {
             bail!("dictionary attributes are not supported yet");
         }
         if self.inheritance.is_some() {
             bail!("dictionary inheritence is not supported");
         }
-        Ok(Record {
+        Ok(RecordDescr {
             name: self.identifier.0.to_string(),
             fields: self.members.body.convert(ci)?,
         })
@@ -99,28 +109,46 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
 }
 
 // Represents an individual field on a Record.
+#[derive(Debug)]
+pub struct Field<'a, Parent: CINode> {
+    pub(super) parent: &'a Parent,
+    pub(super) descr: &'a FieldDescr,
+}
+
 #[derive(Debug, Clone, Hash)]
-pub struct Field {
+pub struct FieldDescr {
     pub(super) name: String,
     pub(super) type_: Type,
     pub(super) required: bool,
     pub(super) default: Option<Literal>,
 }
 
-impl Field {
+impl<'a, Parent: CINode + 'a> Field<'a, Parent> {
     pub fn name(&self) -> &str {
-        &self.name
+        &self.descr.name
     }
     pub fn type_(&self) -> Type {
-        self.type_.clone()
+        self.descr.type_.clone()
     }
     pub fn default_value(&self) -> Option<Literal> {
-        self.default.clone()
+        self.descr.default.clone()
+    }
+    pub fn required(&self) -> bool {
+        self.descr.required
+    }
+    pub fn contains_object_references(&self) -> bool {
+        self.ci().type_contains_object_references(&self.descr.type_)
     }
 }
 
-impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
+impl<'a, Parent: CINode + 'a> CINode for Field<'a, Parent> {
+    fn ci(&self) -> &ComponentInterface {
+        self.parent.ci()
+    }
+}
+
+impl APIConverter<FieldDescr> for weedle::dictionary::DictionaryMember<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<FieldDescr> {
         if self.attributes.is_some() {
             bail!("dictionary member attributes are not supported yet");
         }
@@ -132,7 +160,7 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
             None => None,
             Some(v) => Some(convert_default_value(&v.value, &type_)?),
         };
-        Ok(Field {
+        Ok(FieldDescr {
             name: self.identifier.0.to_string(),
             type_,
             required: self.required.is_some(),
@@ -172,7 +200,7 @@ mod test {
         assert_eq!(record.fields().len(), 1);
         assert_eq!(record.fields()[0].name(), "field");
         assert_eq!(record.fields()[0].type_().canonical_name(), "u32");
-        assert!(!record.fields()[0].required);
+        assert!(!record.fields()[0].required());
         assert!(record.fields()[0].default_value().is_none());
 
         let record = ci.get_record_definition("Complex").unwrap();
@@ -183,18 +211,18 @@ mod test {
             record.fields()[0].type_().canonical_name(),
             "Optionalstring"
         );
-        assert!(!record.fields()[0].required);
+        assert!(!record.fields()[0].required());
         assert!(record.fields()[0].default_value().is_none());
         assert_eq!(record.fields()[1].name(), "value");
         assert_eq!(record.fields()[1].type_().canonical_name(), "u32");
-        assert!(!record.fields()[1].required);
+        assert!(!record.fields()[1].required());
         assert!(matches!(
             record.fields()[1].default_value(),
             Some(Literal::UInt(0, Radix::Decimal, Type::UInt32))
         ));
         assert_eq!(record.fields()[2].name(), "spin");
         assert_eq!(record.fields()[2].type_().canonical_name(), "bool");
-        assert!(record.fields()[2].required);
+        assert!(record.fields()[2].required());
         assert!(record.fields()[2].default_value().is_none());
     }
 

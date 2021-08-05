@@ -12,7 +12,7 @@ public struct {{ rec.name()|class_name_swift }} {
     }
 }
 
-{% if ! rec.contains_object_references(ci) %}
+{% if ! rec.contains_object_references() %}
 extension {{ rec.name()|class_name_swift }}: Equatable, Hashable {
     public static func ==(lhs: {{ rec.name()|class_name_swift }}, rhs: {{ rec.name()|class_name_swift }}) -> Bool {
         {%- for field in rec.fields() %}
