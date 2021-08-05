@@ -82,10 +82,8 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use anyhow::Result;
-
-use super::enum_::{Enum, Variant};
-use super::{APIConverter, ComponentInterface};
+use super::enum_::{Enum, EnumDescr, Variant};
+use super::{ComponentInterface, CINode};
 
 /// Represents an Error that might be thrown by functions/methods in the component interface.
 ///
@@ -93,51 +91,50 @@ use super::{APIConverter, ComponentInterface};
 /// they're handled in the FFI very differently. We create them in `uniffi::call_with_result()` if
 /// the wrapped function returns an `Err` value
 /// struct and assign an integer error code to each variant.
-#[derive(Debug, Clone, Hash)]
-pub struct Error {
-    pub name: String,
-    enum_: Enum,
+#[derive(Debug)]
+pub struct Error<'a> {
+    pub(super) parent: &'a ComponentInterface,
+    pub(super) descr: &'a ErrorDescr,
 }
 
-impl Error {
-    pub fn from_enum(enum_: Enum) -> Self {
-        Self {
-            name: enum_.name.clone(),
-            enum_,
+pub type ErrorDescr = EnumDescr;
+
+impl<'a> Error<'a> {
+    pub fn name(&self) -> &str {
+        &self.descr.name
+    }
+
+    pub fn wrapped_enum(&self) -> Enum<'a> {
+        Enum {
+            parent: self.parent,
+            descr: self.descr,
         }
     }
 
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn wrapped_enum(&self) -> &Enum {
-        &self.enum_
-    }
-
-    pub fn variants(&self) -> Vec<&Variant> {
-        self.enum_.variants()
+    pub fn variants(&self) -> Vec<Variant<'_, Self>> {
+        self.descr
+            .variants
+            .iter()
+            .map(|v| Variant {
+                parent: self,
+                descr: v,
+            })
+            .collect()
     }
 
     pub fn is_flat(&self) -> bool {
-        self.enum_.is_flat()
+        self.wrapped_enum().is_flat()
     }
 
     // For compatibility with the Enum interface
-    pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
-        self.enum_.contains_object_references(ci)
+    pub fn contains_object_references(&self) -> bool {
+        self.wrapped_enum().contains_object_references()
     }
 }
 
-impl APIConverter<Error> for weedle::EnumDefinition<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Error> {
-        Ok(Error::from_enum(APIConverter::<Enum>::convert(self, ci)?))
-    }
-}
-
-impl APIConverter<Error> for weedle::InterfaceDefinition<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Error> {
-        Ok(Error::from_enum(APIConverter::<Enum>::convert(self, ci)?))
+impl<'a> CINode for Error<'a> {
+    fn ci(&self) -> &ComponentInterface {
+        self.parent
     }
 }
 
@@ -196,7 +193,7 @@ mod test {
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
         assert_eq!(ci.iter_error_definitions().len(), 1);
-        let error: &Error = ci.get_error_definition("Testing").unwrap();
+        let error = ci.get_error_definition("Testing").unwrap();
         assert_eq!(
             error
                 .variants()

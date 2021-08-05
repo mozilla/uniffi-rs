@@ -78,57 +78,76 @@
 
 use anyhow::{bail, Result};
 
-use super::record::Field;
+use super::record::{Field, FieldDescr};
 use super::types::Type;
-use super::{APIConverter, ComponentInterface};
+use super::{APIConverter, ComponentInterface, CINode};
 
 /// Represents an enum with named variants, each of which may have named
 /// and typed fields.
 ///
 /// Enums are passed across the FFI by serializing to a bytebuffer, with a
 /// i32 indicating the variant followed by the serialization of each field.
+#[derive(Debug)]
+pub struct Enum<'a> {
+    pub(super) parent: &'a ComponentInterface,
+    pub(super) descr: &'a EnumDescr,
+}
+
 #[derive(Debug, Clone, Hash)]
-pub struct Enum {
+pub struct EnumDescr {
     pub(super) name: String,
-    pub(super) variants: Vec<Variant>,
+    pub(super) variants: Vec<VariantDescr>,
     // "Flat" enums do not have, and will never have, variants with associated data.
     pub(super) flat: bool,
 }
 
-impl Enum {
+impl<'a> Enum<'a> {
     pub fn name(&self) -> &str {
-        &self.name
+        &self.descr.name
     }
 
-    pub fn variants(&self) -> Vec<&Variant> {
-        self.variants.iter().collect()
+    pub fn variants(&self) -> Vec<Variant<'_, Self>> {
+        self.descr
+            .variants
+            .iter()
+            .map(|v| Variant {
+                parent: self,
+                descr: v,
+            })
+            .collect()
     }
 
     pub fn is_flat(&self) -> bool {
-        self.flat
+        self.descr.flat
     }
 
-    pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
-        // *sigh* at the clone here, the relationship between a ComponentInterace
-        // and its contained types could use a bit of a cleanup.
-        ci.type_contains_object_references(&Type::Enum(self.name.clone()))
-    }
-
-    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+    pub fn contains_object_references(&self) -> bool {
         self.variants().iter().any(|v| {
-            v.fields()
-                .iter()
-                .any(|f| ci.type_contains_unsigned_types(&f.type_))
+            v.contains_object_references()
         })
+    }
+
+    pub fn contains_unsigned_types(&self, _ci: &ComponentInterface) -> bool {
+        self.descr.variants.iter().any(|v| {
+            v.fields
+                .iter()
+                .any(|f| self.parent.type_contains_unsigned_types(&f.type_))
+        })
+    }
+}
+
+impl<'a> CINode for Enum<'a> {
+    fn ci(&self) -> &ComponentInterface {
+        self.parent
     }
 }
 
 // Note that we have two `APIConverter` impls here - one for the `enum` case
 // and one for the `[Enum] interface` case.
 
-impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
-    fn convert(&self, _ci: &mut ComponentInterface) -> Result<Enum> {
-        Ok(Enum {
+impl APIConverter<EnumDescr> for weedle::EnumDefinition<'_> {
+    fn convert(&self, _ci: &mut ComponentInterface) -> Result<EnumDescr> {
+        Ok(EnumDescr {
             name: self.identifier.0.to_string(),
             variants: self
                 .values
@@ -136,7 +155,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
                 .list
                 .iter()
                 .map::<Result<_>, _>(|v| {
-                    Ok(Variant {
+                    Ok(VariantDescr {
                         name: v.0.to_string(),
                         ..Default::default()
                     })
@@ -147,20 +166,20 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
     }
 }
 
-impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Enum> {
+impl APIConverter<EnumDescr> for weedle::InterfaceDefinition<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<EnumDescr> {
         if self.inheritance.is_some() {
             bail!("interface inheritence is not supported for enum interfaces");
         }
         // We don't need to check `self.attributes` here; if calling code has dispatched
         // to this impl then we already know there was an `[Enum]` attribute.
-        Ok(Enum {
+        Ok(EnumDescr {
             name: self.identifier.0.to_string(),
             variants: self
                 .members
                 .body
                 .iter()
-                .map::<Result<Variant>, _>(|member| match member {
+                .map::<Result<VariantDescr>, _>(|member| match member {
                     weedle::interface::InterfaceMember::Operation(t) => Ok(t.convert(ci)?),
                     _ => bail!(
                         "interface member type {:?} not supported in enum interface",
@@ -176,27 +195,42 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 /// Represents an individual variant in an Enum.
 ///
 /// Each variant has a name and zero or more fields.
+
+#[derive(Debug)]
+pub struct Variant<'a, Parent: CINode> {
+    pub(super) parent: &'a Parent,
+    pub(super) descr: &'a VariantDescr,
+}
+
 #[derive(Debug, Clone, Default, Hash)]
-pub struct Variant {
+pub struct VariantDescr {
     pub(super) name: String,
-    pub(super) fields: Vec<Field>,
+    pub(super) fields: Vec<FieldDescr>,
 }
 
-impl Variant {
+impl<'a, Parent: CINode> Variant<'a, Parent> {
     pub fn name(&self) -> &str {
-        &self.name
+        &self.descr.name
     }
-    pub fn fields(&self) -> Vec<&Field> {
-        self.fields.iter().collect()
+    pub fn fields(&self) -> Vec<Field<'_, Self>> {
+        self.descr.fields.iter().map(|f| Field { parent: self, descr: f }).collect()
     }
-
     pub fn has_fields(&self) -> bool {
-        !self.fields.is_empty()
+        !self.descr.fields.is_empty()
+    }
+    pub fn contains_object_references(&self) -> bool {
+        self.fields().iter().any(|f| f.contains_object_references())
     }
 }
 
-impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Variant> {
+impl<'a, Parent: CINode + 'a> CINode for Variant<'a, Parent> {
+    fn ci(&self) -> &ComponentInterface {
+        self.parent.ci()
+    }
+}
+
+impl APIConverter<VariantDescr> for weedle::interface::OperationInterfaceMember<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<VariantDescr> {
         if self.special.is_some() {
             bail!("special operations not supported");
         }
@@ -219,7 +253,7 @@ impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
                 _ => bail!("enum interface members must have plain identifers as names"),
             }
         };
-        Ok(Variant {
+        Ok(VariantDescr {
             name,
             fields: self
                 .args
@@ -232,8 +266,8 @@ impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
     }
 }
 
-impl APIConverter<Field> for weedle::argument::Argument<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
+impl APIConverter<FieldDescr> for weedle::argument::Argument<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<FieldDescr> {
         match self {
             weedle::argument::Argument::Single(t) => t.convert(ci),
             weedle::argument::Argument::Variadic(_) => bail!("variadic arguments not supported"),
@@ -241,8 +275,8 @@ impl APIConverter<Field> for weedle::argument::Argument<'_> {
     }
 }
 
-impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
+impl APIConverter<FieldDescr> for weedle::argument::SingleArgument<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<FieldDescr> {
         let type_ = ci.resolve_type_expression(&self.type_)?;
         if let Type::Object(_) = type_ {
             bail!("Objects cannot currently be used in enum variant data");
@@ -255,7 +289,7 @@ impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
         }
         // TODO: maybe we should use our own `Field` type here with just name and type,
         // rather than appropriating record::Field..?
-        Ok(Field {
+        Ok(FieldDescr {
             name: self.identifier.0.to_string(),
             type_,
             required: false,

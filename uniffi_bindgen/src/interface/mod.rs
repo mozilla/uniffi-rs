@@ -62,8 +62,10 @@ mod callbacks;
 pub use callbacks::CallbackInterface;
 mod enum_;
 pub use enum_::Enum;
+use enum_::EnumDescr;
 mod error;
 pub use error::Error;
+use error::ErrorDescr;
 mod function;
 pub use function::{Argument, Function};
 mod literal;
@@ -73,6 +75,7 @@ pub use namespace::Namespace;
 mod object;
 pub use object::{Constructor, Method, Object};
 mod record;
+use record::RecordDescr;
 pub use record::{Field, Record};
 
 pub mod ffi;
@@ -92,12 +95,12 @@ pub struct ComponentInterface {
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
     namespace: String,
     /// The high-level API provided by the component.
-    enums: Vec<Enum>,
-    records: Vec<Record>,
+    enums: Vec<EnumDescr>,
+    records: Vec<RecordDescr>,
     functions: Vec<Function>,
     objects: Vec<Object>,
     callback_interfaces: Vec<CallbackInterface>,
-    errors: Vec<Error>,
+    errors: Vec<ErrorDescr>,
 }
 
 impl<'ci> ComponentInterface {
@@ -141,25 +144,34 @@ impl<'ci> ComponentInterface {
     }
 
     /// List the definitions for every Enum type in the interface.
-    pub fn iter_enum_definitions(&self) -> Vec<Enum> {
-        self.enums.to_vec()
+    pub fn iter_enum_definitions(&self) -> Vec<Enum<'_>> {
+        self.enums
+            .iter()
+            .map(|e| Enum {
+                parent: self,
+                descr: e,
+            })
+            .collect()
     }
 
     /// Get an Enum definition by name, or None if no such Enum is defined.
-    pub fn get_enum_definition(&self, name: &str) -> Option<&Enum> {
+    pub fn get_enum_definition(&self, name: &str) -> Option<Enum<'_>> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.enums.iter().find(|e| e.name == name)
+        self.enums.iter().find(|e| e.name == name).map(|e| Enum {
+            parent: self,
+            descr: e,
+        })
     }
 
     /// List the definitions for every Record type in the interface.
-    pub fn iter_record_definitions(&self) -> Vec<Record> {
-        self.records.to_vec()
+    pub fn iter_record_definitions(&self) -> Vec<Record<'_>> {
+        self.records.iter().map(|r| Record { parent: self, descr: r }).collect()
     }
 
     /// Get a Record definition by name, or None if no such Record is defined.
-    pub fn get_record_definition(&self, name: &str) -> Option<&Record> {
+    pub fn get_record_definition(&self, name: &str) -> Option<Record<'_>> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.records.iter().find(|r| r.name == name)
+        self.records.iter().find(|r| r.name == name).map(|r| Record { parent: self, descr: r })
     }
 
     /// List the definitions for every Function in the interface.
@@ -196,14 +208,23 @@ impl<'ci> ComponentInterface {
     }
 
     /// List the definitions for every Error type in the interface.
-    pub fn iter_error_definitions(&self) -> Vec<Error> {
-        self.errors.to_vec()
+    pub fn iter_error_definitions(&self) -> Vec<Error<'_>> {
+        self.errors
+            .iter()
+            .map(|e| Error {
+                parent: self,
+                descr: e,
+            })
+            .collect()
     }
 
     /// Get an Error definition by name, or None if no such Error is defined.
-    pub fn get_error_definition(&self, name: &str) -> Option<&Error> {
+    pub fn get_error_definition(&self, name: &str) -> Option<Error<'_>> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.errors.iter().find(|e| e.name == name)
+        self.errors.iter().find(|e| e.name == name).map(|e| Error {
+            parent: self,
+            descr: e,
+        })
     }
 
     /// Iterate over all known types in the interface.
@@ -228,21 +249,11 @@ impl<'ci> ComponentInterface {
             }
             Type::Record(name) => self
                 .get_record_definition(name)
-                .map(|rec| {
-                    rec.fields()
-                        .iter()
-                        .any(|f| self.type_contains_object_references(&f.type_))
-                })
+                .map(|rec| rec.contains_object_references())
                 .unwrap_or(false),
             Type::Enum(name) => self
                 .get_enum_definition(name)
-                .map(|e| {
-                    e.variants().iter().any(|v| {
-                        v.fields()
-                            .iter()
-                            .any(|f| self.type_contains_object_references(&f.type_))
-                    })
-                })
+                .map(|e| e.contains_object_references())
                 .unwrap_or(false),
             _ => false,
         }
@@ -479,15 +490,15 @@ impl<'ci> ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.
-    fn add_enum_definition(&mut self, defn: Enum) {
+    fn add_enum_definition(&mut self, descr: EnumDescr) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.enums.push(defn);
+        self.enums.push(descr);
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed record definition to the `ComponentInterface`.
-    fn add_record_definition(&mut self, defn: Record) {
+    fn add_record_definition(&mut self, descr: RecordDescr) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.records.push(defn);
+        self.records.push(descr);
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
@@ -517,9 +528,9 @@ impl<'ci> ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed error definition to the `ComponentInterface`.
-    fn add_error_definition(&mut self, defn: Error) {
+    fn add_error_definition(&mut self, descr: ErrorDescr) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.errors.push(defn);
+        self.errors.push(descr);
     }
 
     /// Perform global consistency checks on the declared interface.
@@ -534,10 +545,14 @@ impl<'ci> ComponentInterface {
         // To keep codegen tractable, enum variant names must not shadow type names.
         for e in self.enums.iter() {
             for variant in e.variants.iter() {
-                if self.types.get_type_definition(variant.name()).is_some() {
+                if self
+                    .types
+                    .get_type_definition(variant.name.as_str())
+                    .is_some()
+                {
                     bail!(
                         "Enum variant names must not shadow type names: \"{}\"",
-                        variant.name()
+                        variant.name
                     )
                 }
             }
@@ -588,6 +603,21 @@ impl Hash for ComponentInterface {
         self.errors.hash(state);
     }
 }
+
+
+/// Trait for managing parent references in `ComponentInterface` members.
+///
+/// It's useful for the various members of a `ComponentInterface` to be able
+/// to have a pointer back to their containing instance, and for such references
+/// to be able to nest. This trait helps with that - any struct that will be a
+/// member of a `ComponentInterface` can impl `CINode` in order to act as a
+/// parent for other structs.
+///
+/// (I'm not sure those docs really capture what's going on here, we'll see...)
+pub trait CINode {
+    fn ci(&self) -> &ComponentInterface;
+}
+
 
 /// Trait to help build a `ComponentInterface` from WedIDL syntax nodes.
 ///
