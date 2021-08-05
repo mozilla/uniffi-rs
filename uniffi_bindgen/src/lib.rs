@@ -401,6 +401,23 @@ pub fn run_main() -> Result<()> {
                 .arg(clap::Arg::with_name("udl_file").required(true)),
         )
         .subcommand(
+            clap::SubCommand::with_name("generate-api")
+            .about("Generate Rust API code")
+            .arg(
+                clap::Arg::with_name("out_dir")
+                .long("--out-dir")
+                .short("-o")
+                .takes_value(true)
+                .help("Directory in which to write generated files. Default is same folder as .udl file."),
+            )
+            .arg(
+                clap::Arg::with_name("no_format")
+                .long("--no-format")
+                .help("Do not try to format the generated bindings"),
+            )
+            .arg(clap::Arg::with_name("udl_file").required(true))
+        )
+        .subcommand(
             clap::SubCommand::with_name("test")
             .about("Run test scripts against foreign language bindings")
             .arg(clap::Arg::with_name("cdylib_dir").required(true).help("Path to the directory containing the cdylib the scripts will be testing against."))
@@ -419,6 +436,13 @@ pub fn run_main() -> Result<()> {
             m.value_of_os("udl_file").unwrap(), // Required
             m.value_of_os("config"),
             m.values_of("language").unwrap().collect(), // Required
+            m.value_of_os("out_dir"),
+            !m.is_present("no_format"),
+        )?,
+        ("generate-api", Some(m)) => crate::generate_bindings(
+            m.value_of_os("udl_file").unwrap(), // Required
+            None,
+            vec!["rust"],
             m.value_of_os("out_dir"),
             !m.is_present("no_format"),
         )?,

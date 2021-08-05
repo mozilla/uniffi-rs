@@ -18,6 +18,7 @@ use crate::MergeWith;
 pub mod kotlin;
 pub mod python;
 pub mod ruby;
+pub mod rust;
 pub mod swift;
 
 /// Enumeration of all foreign language targets currently supported by this crate.
@@ -32,6 +33,7 @@ pub enum TargetLanguage {
     Swift,
     Python,
     Ruby,
+    Rust,
 }
 
 impl TryFrom<&str> for TargetLanguage {
@@ -42,6 +44,7 @@ impl TryFrom<&str> for TargetLanguage {
             "swift" => TargetLanguage::Swift,
             "python" | "py" => TargetLanguage::Python,
             "ruby" | "rb" => TargetLanguage::Ruby,
+            "rust" | "rs" => TargetLanguage::Rust,
             _ => bail!("Unknown or unsupported target language: \"{}\"", value),
         })
     }
@@ -74,6 +77,8 @@ pub struct Config {
     python: python::Config,
     #[serde(default)]
     ruby: ruby::Config,
+    #[serde(default)]
+    rust: rust::Config,
 }
 
 impl From<&ComponentInterface> for Config {
@@ -83,6 +88,7 @@ impl From<&ComponentInterface> for Config {
             swift: ci.into(),
             python: ci.into(),
             ruby: ci.into(),
+            rust: ci.into(),
         }
     }
 }
@@ -94,6 +100,7 @@ impl MergeWith for Config {
             swift: self.swift.merge_with(&other.swift),
             python: self.python.merge_with(&other.python),
             ruby: self.ruby.merge_with(&other.ruby),
+            rust: self.rust.merge_with(&other.rust),
         }
     }
 }
@@ -121,6 +128,7 @@ where
             python::write_bindings(&config.python, ci, out_dir, try_format_code)?
         }
         TargetLanguage::Ruby => ruby::write_bindings(&config.ruby, ci, out_dir, try_format_code)?,
+        TargetLanguage::Rust => rust::write_bindings(&config.rust, ci, out_dir, try_format_code)?,
     }
     Ok(())
 }
@@ -141,6 +149,7 @@ where
         TargetLanguage::Swift => swift::compile_bindings(&config.swift, ci, out_dir)?,
         TargetLanguage::Python => (),
         TargetLanguage::Ruby => (),
+        TargetLanguage::Rust => (),
     }
     Ok(())
 }
@@ -158,6 +167,7 @@ where
         TargetLanguage::Swift => swift::run_script(out_dir, script_file)?,
         TargetLanguage::Python => python::run_script(out_dir, script_file)?,
         TargetLanguage::Ruby => ruby::run_script(out_dir, script_file)?,
+        TargetLanguage::Rust => rust::run_script(out_dir, script_file)?,
     }
     Ok(())
 }
