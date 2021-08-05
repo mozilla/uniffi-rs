@@ -55,7 +55,9 @@ pub fn run_main() -> anyhow::Result<()> {
             )
         )
         .get_matches();
-    let uniffi_version = matches.value_of_os("uniffi_version").expect("`uniffi_version is a required argument"); // required!
+    let uniffi_version = matches
+        .value_of_os("uniffi_version")
+        .expect("`uniffi_version is a required argument"); // required!
     if uniffi_version != UNIFFI_VERSION {
         bail!("Invalid uniffi_version, this version of uniffi_bingen_kotlin only works with version {}, found {:?}", UNIFFI_VERSION, uniffi_version)
     }
@@ -174,7 +176,14 @@ impl ForeignLanguageBackend for KotlinBackend {
 }
 
 use anyhow::{bail, Context, Result};
-use std::{env, ffi::{OsStr, OsString}, fs::File, io::Write, path::{Path, PathBuf}, process::Command};
+use std::{
+    env,
+    ffi::{OsStr, OsString},
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 fn full_bindings_path(config: &Config, out_dir: &Path) -> Result<PathBuf> {
     let package_path: PathBuf = config.package_name().split('.').collect();

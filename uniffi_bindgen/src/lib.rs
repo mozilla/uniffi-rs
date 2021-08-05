@@ -201,25 +201,25 @@ pub fn generate_bindings<P: AsRef<Path>>(
         if let TargetLanguage::Kotlin = language {
             let mut command = Command::new("uniffi_bindgen_kotlin");
             let mut command = command
-            .arg(BINDGEN_VERSION)
-            .arg("generate")
-            .arg(udl_file.clone())
-            .arg("--out-dir")
-            .arg(out_dir.clone());
+                .arg(BINDGEN_VERSION)
+                .arg("generate")
+                .arg(udl_file)
+                .arg("--out-dir")
+                .arg(out_dir.clone());
             if let Some(config_path) = config_file_override {
-                command = command.arg("--config-path")
-                .arg(config_path);
+                command = command.arg("--config-path").arg(config_path);
             }
             let output = command.output()?;
             std::io::stdout().write_all(&output.stdout)?;
+        } else {
+            bindings::write_bindings(
+                &config.bindings,
+                &component,
+                &out_dir,
+                language,
+                try_format_code,
+            )?;
         }
-        bindings::write_bindings(
-            &config.bindings,
-            &component,
-            &out_dir,
-            language,
-            try_format_code,
-        )?;
     }
     Ok(())
 }
@@ -275,10 +275,25 @@ pub fn run_tests<P: AsRef<Path>>(
     }
 
     for (lang, test_scripts) in language_tests {
-        bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
-        bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
-        for test_script in test_scripts {
-            bindings::run_script(cdylib_dir, &test_script, lang)?;
+        if let TargetLanguage::Kotlin = lang {
+            let mut command = Command::new("uniffi_bindgen_kotlin");
+            let mut command = command
+                .arg(BINDGEN_VERSION)
+                .arg("test")
+                .arg(cdylib_dir)
+                .arg(udl_file)
+                .args(test_scripts.clone());
+            if let Some(config_path) = config_file_override {
+                command = command.arg("--config-path").arg(config_path);
+            }
+            let output = command.output()?;
+            std::io::stdout().write_all(&output.stdout)?;
+        } else {
+            bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
+            bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
+            for test_script in test_scripts {
+                bindings::run_script(cdylib_dir, &test_script, lang)?;
+            }
         }
     }
     Ok(())
