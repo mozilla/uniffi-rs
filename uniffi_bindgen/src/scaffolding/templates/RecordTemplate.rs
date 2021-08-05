@@ -6,11 +6,11 @@
 #}
 #[doc(hidden)]
 impl uniffi::RustBufferViaFfi for {{ rec.name() }} {
-    fn write(&self, buf: &mut Vec<u8>) {
+    fn write(self, buf: &mut Vec<u8>) {
         // If the provided struct doesn't match the fields declared in the UDL, then
         // the generated code here will fail to compile with somewhat helpful error.
         {%- for field in rec.fields() %}
-        uniffi::ViaFfi::write(&self.{{ field.name() }}, buf);
+        uniffi::ViaFfi::write(self.{{ field.name() }}, buf);
         {%- endfor %}
     }
 
