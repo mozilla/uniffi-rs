@@ -8,7 +8,7 @@ publish = false
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
-name = "arithmetical"
+name = "uniffi_arithmetic" # TODO: figure out why tests fail when this isn't called this
 
 [dependencies]
 uniffi_macros = {path = "../../uniffi_macros"}

@@ -16,3 +16,9 @@ askama = { version = "0.10", default-features = false, features = ["config"] }
 heck = "0.3"
 serde = "1"
 toml = "0.5"
+
+[dev-dependencies]
+uniffi-example-arithmetic = {path = "../examples/arithmetic"}
+coverall = {path = "../fixtures/coverall"}
+uniffi_macros = {path = "../uniffi_macros"}
+uniffi = {path = "../uniffi"}

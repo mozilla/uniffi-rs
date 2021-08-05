@@ -47,6 +47,12 @@ pub fn run_foreign_language_testcase(pkg_dir: &str, udl_file: &str, test_file: &
     Ok(())
 }
 
+pub fn run_backend_language_testcase(out_dir: &str, udl_file: &str, test_file: &str) -> Result<()> {
+    let _lock = UNIFFI_BINDGEN.lock();
+    run_uniffi_bindgen_test(out_dir, udl_file, test_file)?;
+    Ok(())
+}
+
 /// Ensure that a uniffi component crate is compiled and ready for use.
 ///
 /// This function takes the top-level directory of a uniffi component crate, ensures that the

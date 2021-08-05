@@ -4,7 +4,6 @@
 
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
-
 lazy_static::lazy_static! {
     static ref NUM_ALIVE: RwLock<u64> = {
         RwLock::new(0)

@@ -8,8 +8,7 @@
 //! we'll put some other code-annotation helper macros in here at some point.
 
 use quote::{format_ident, quote};
-use std::env;
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 use syn::{bracketed, punctuated::Punctuated, LitStr, Token};
 
 /// A macro to build testcases for a component's generated bindings.
@@ -61,10 +60,51 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
     proc_macro::TokenStream::from(test_module)
 }
 
+#[proc_macro]
+pub fn build_backend_language_testcases(paths: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let paths = syn::parse_macro_input!(paths as FilePaths2);
+
+    let out_dir = &paths.out_dir;
+    // For each file found, generate a matching testcase.
+    let udl_file = &paths.udl_file;
+    let test_functions = paths.test_scripts
+        .iter()
+        .map(|file_path| {
+            let test_file_pathbuf: PathBuf = [file_path].iter().collect();
+            let test_file_path = test_file_pathbuf.to_string_lossy();
+            let test_file_name = test_file_pathbuf
+                .file_name()
+                .expect("Test file has no name, cannot build tests for generated bindings")
+                .to_string_lossy();
+            let test_name = format_ident!(
+                "uniffi_foreign_language_testcase_{}",
+                test_file_name.replace(|c: char| !c.is_alphanumeric(), "_")
+            );
+            quote! {
+                #[test]
+                fn #test_name () -> uniffi::deps::anyhow::Result<()> {
+                    uniffi::testing::run_backend_language_testcase(#out_dir, #udl_file, #test_file_path)
+                }
+            }
+        })
+        .collect::<Vec<proc_macro2::TokenStream>>();
+    let test_module = quote! {
+        #(#test_functions)*
+    };
+    proc_macro::TokenStream::from(test_module)
+}
+
 /// Newtype to simplifying parsing a list of file paths from macro input.
 #[derive(Debug)]
 struct FilePaths {
     udl_file: String,
+    test_scripts: Vec<String>,
+}
+
+#[derive(Debug)]
+struct FilePaths2 {
+    udl_file: String,
+    out_dir: String,
     test_scripts: Vec<String>,
 }
 
@@ -80,6 +120,26 @@ impl syn::parse::Parse for FilePaths {
             .collect();
         Ok(FilePaths {
             udl_file: udl_file.value(),
+            test_scripts,
+        })
+    }
+}
+
+impl syn::parse::Parse for FilePaths2 {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let udl_file: LitStr = input.parse()?;
+        let _comma: Token![,] = input.parse()?;
+        let out_dir: LitStr = input.parse()?;
+        let _comma: Token![,] = input.parse()?;
+        let array_contents;
+        bracketed!(array_contents in input);
+        let test_scripts = Punctuated::<LitStr, Token![,]>::parse_terminated(&array_contents)?
+            .iter()
+            .map(|s| s.value())
+            .collect();
+        Ok(FilePaths2 {
+            udl_file: udl_file.value(),
+            out_dir: out_dir.value(),
             test_scripts,
         })
     }

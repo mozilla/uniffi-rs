@@ -288,6 +288,10 @@ pub fn run_tests<P: AsRef<Path>>(
             }
             let output = command.output()?;
             std::io::stdout().write_all(&output.stdout)?;
+            std::io::stderr().write_all(&output.stderr)?;
+            if !output.status.success() {
+                panic!("FAILED TEST")
+            }
         } else {
             bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
             bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
