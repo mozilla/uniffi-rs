@@ -11,7 +11,7 @@
 //    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
 #}
 {% let trait_name = cbi.name() -%}
-{% let trait_impl = cbi.type_()|ffi_converter_impl_name -%}
+{% let trait_impl = cbi.type_()|ffi_converter_name -%}
 {% let foreign_callback_internals = format!("foreign_callback_{}_internals", trait_name)|upper -%}
 
 // Register a foreign callback for getting across the FFI.
@@ -60,7 +60,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
         let mut args_buf = Vec::new();
         {% endif -%}
         {%- for arg in meth.arguments() %}
-        {{ arg.type_()|ffi_converter_impl }}::write({{ arg.name() }}, &mut args_buf);
+        {{ arg.type_()|ffi_converter }}::write({{ arg.name() }}, &mut args_buf);
         {%- endfor -%}
         let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
 
@@ -73,7 +73,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
         {% when Some with (return_type) -%}
         let vec = ret_rbuf.destroy_into_vec();
         let mut ret_buf = vec.as_slice();
-        {{ return_type|ffi_converter_impl }}::try_read(&mut ret_buf).unwrap()
+        {{ return_type|ffi_converter }}::try_read(&mut ret_buf).unwrap()
         {%- else -%}
         uniffi::RustBuffer::destroy(ret_rbuf);
         {%- endmatch %}

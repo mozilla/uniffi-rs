@@ -72,7 +72,7 @@ mod filters {
     ///
     /// - For primitives / standard types this is the type itself.
     /// - For user-defined types, this is a unique generated name.  We then generate a unit-struct
-    pub fn ffi_converter_impl_name(type_: &Type) -> askama::Result<String> {
+    pub fn ffi_converter_name(type_: &Type) -> askama::Result<String> {
         Ok(match type_ {
             // Timestamp/Duraration are handled by standard types
             Type::Timestamp => "std::time::SystemTime".into(),
@@ -91,9 +91,9 @@ mod filters {
             }
             // Wrapper types are implemented by generics that wrap the FfiConverter implementation of the
             // inner type.
-            Type::Optional(inner) => format!("Option<{}>", ffi_converter_impl_name(inner)?),
-            Type::Sequence(inner) => format!("Vec<{}>", ffi_converter_impl_name(inner)?),
-            Type::Map(inner) => format!("HashMap<String, {}>", ffi_converter_impl_name(inner)?),
+            Type::Optional(inner) => format!("Option<{}>", ffi_converter_name(inner)?),
+            Type::Sequence(inner) => format!("Vec<{}>", ffi_converter_name(inner)?),
+            Type::Map(inner) => format!("HashMap<String, {}>", ffi_converter_name(inner)?),
             // Primitive types / strings are implemented by their rust type
             Type::Int8 => "i8".into(),
             Type::UInt8 => "u8".into(),
@@ -112,11 +112,11 @@ mod filters {
 
     // Map a type to Rust code that specifies the FfiConverter implementation.
     //
-    // This outputs something like `<TheFfiConverterImplStruct as FfiConverter>`
-    pub fn ffi_converter_impl(type_: &Type) -> Result<String, askama::Error> {
+    // This outputs something like `<TheFfiConverterStruct as FfiConverter>`
+    pub fn ffi_converter(type_: &Type) -> Result<String, askama::Error> {
         Ok(format!(
             "<{} as uniffi::FfiConverter>",
-            ffi_converter_impl_name(type_)?
+            ffi_converter_name(type_)?
         ))
     }
 }

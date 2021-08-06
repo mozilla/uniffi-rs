@@ -6,10 +6,10 @@
 // We define a unit-struct to implement the trait to sidestep Rust's orphan rule (ADR-0006).
 #}
 
-struct {{ e.type_()|ffi_converter_impl_name }};
+struct {{ e.type_()|ffi_converter_name }};
 
 #[doc(hidden)]
-impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_impl_name }} {
+impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
     type RustType = {{ e.name() }};
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
@@ -19,7 +19,7 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_impl_name }} 
             {{ e.name() }}::{{ variant.name() }} { {% for field in variant.fields() %}{{ field.name() }}, {%- endfor %} } => {
                 buf.put_i32({{ loop.index }});
                 {% for field in variant.fields() -%}
-                {{ field.type_()|ffi_converter_impl }}::write({{ field.name() }}, buf);
+                {{ field.type_()|ffi_converter }}::write({{ field.name() }}, buf);
                 {%- endfor %}
             },
             {%- endfor %}
@@ -33,7 +33,7 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_impl_name }} 
             {%- for variant in e.variants() %}
             {{ loop.index }} => {{ e.name() }}::{{ variant.name() }}{% if variant.has_fields() %} {
                 {% for field in variant.fields() %}
-                {{ field.name() }}: {{ field.type_()|ffi_converter_impl }}::try_read(buf)?,
+                {{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf)?,
                 {%- endfor %}
             }{% endif %},
             {%- endfor %}
