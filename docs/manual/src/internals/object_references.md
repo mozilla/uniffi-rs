@@ -67,7 +67,7 @@ pub extern "C" fn todolist_12ba_TodoList_new(
     uniffi::deps::ffi_support::call_with_output(err, || {
         let _new = TodoList::new();
         let _arc = std::sync::Arc::new(_new);
-        <std::sync::Arc<TodoList> as uniffi::ViaFfi>::lower(_arc)
+        <std::sync::Arc<TodoList> as uniffi::FfiConverter>::lower(_arc)
     })
 }
 ```
@@ -75,7 +75,7 @@ pub extern "C" fn todolist_12ba_TodoList_new(
 The UniFFI runtime implements lowering for object instances using `Arc::into_raw`:
 
 ```rust
-unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
+unsafe impl<T: Sync + Send> FfiConverter for std::sync::Arc<T> {
     type FfiType = *const std::os::raw::c_void;
     fn lower(self) -> Self::FfiType {
         std::sync::Arc::into_raw(self) as Self::FfiType
@@ -101,8 +101,8 @@ pub extern "C" fn todolist_12ba_TodoList_add_item(
 ) -> () {
     uniffi::deps::ffi_support::call_with_result(err, || -> Result<_, TodoError> {
         let _retval = TodoList::add_item(
-          &<std::sync::Arc<TodoList> as uniffi::ViaFfi>::try_lift(ptr).unwrap(),
-          <String as uniffi::ViaFfi>::try_lift(todo).unwrap())?,
+          &<std::sync::Arc<TodoList> as uniffi::FfiConverter>::try_lift(ptr).unwrap(),
+          <String as uniffi::FfiConverter>::try_lift(todo).unwrap())?,
         )
         Ok(_retval)
     })
@@ -112,7 +112,7 @@ pub extern "C" fn todolist_12ba_TodoList_add_item(
 The UniFFI runtime implements lifting for object instances using `Arc::from_raw`:
 
 ```rust
-unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
+unsafe impl<T: Sync + Send> FfiConverter for std::sync::Arc<T> {
     type FfiType = *const std::os::raw::c_void;
     fn try_lift(v: Self::FfiType) -> Result<Self> {
         let v = v as *const T;

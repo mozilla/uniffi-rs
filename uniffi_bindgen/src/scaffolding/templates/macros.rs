@@ -9,7 +9,7 @@
 {%- macro _arg_list_rs_call(func) %}
     {%- for arg in func.full_arguments() %}
         {%- if arg.by_ref() %}&{% endif %}
-        {{- arg.type_()|viaffi_impl }}::try_lift({{ arg.name() }}).unwrap()
+        {{- arg.type_()|ffi_converter_impl }}::try_lift({{ arg.name() }}).unwrap()
         {%- if !loop.last %}, {% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -38,7 +38,7 @@
 
 {% macro return_type_func(func) %}{% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi }}{%- else -%}(){%- endmatch -%}{%- endmacro -%}
 
-{% macro ret(func) %}{% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|viaffi_impl }}::lower(_retval){% else %}_retval{% endmatch %}{% endmacro %}
+{% macro ret(func) %}{% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|ffi_converter_impl }}::lower(_retval){% else %}_retval{% endmatch %}{% endmacro %}
 
 {% macro construct(obj, cons) %}
     {{- obj.name() }}::{% call to_rs_call(cons) -%}
@@ -48,15 +48,15 @@
 {% match cons.throws_type() %}
 {% when Some with (e) %}
     uniffi::call_with_result(call_status, || {
-        let _new = {% call construct(obj, cons) %}.map_err({{ e|viaffi_impl }}::lower)?;
+        let _new = {% call construct(obj, cons) %}.map_err({{ e|ffi_converter_impl }}::lower)?;
         let _arc = std::sync::Arc::new(_new);
-        Ok({{ obj.type_()|viaffi_impl }}::lower(_arc))
+        Ok({{ obj.type_()|ffi_converter_impl }}::lower(_arc))
     })
 {% else %}
     uniffi::call_with_output(call_status, || {
         let _new = {% call construct(obj, cons) %};
         let _arc = std::sync::Arc::new(_new);
-        {{ obj.type_()|viaffi_impl }}::lower(_arc)
+        {{ obj.type_()|ffi_converter_impl }}::lower(_arc)
     })
 {% endmatch %}
 {% endmacro %}
@@ -65,7 +65,7 @@
 {% match meth.throws_type() -%}
 {% when Some with (e) -%}
 uniffi::call_with_result(call_status, || {
-    let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %}.map_err({{ e|viaffi_impl }}::lower)?;
+    let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %}.map_err({{ e|ffi_converter_impl }}::lower)?;
     Ok({% call ret(meth) %})
 })
 {% else %}
@@ -73,7 +73,7 @@ uniffi::call_with_output(call_status, || {
     {% match meth.return_type() -%}
     {% when Some with (return_type) -%}
     let retval = {{ obj.name() }}::{% call to_rs_call(meth) %};
-    {{ return_type|viaffi_impl }}::lower(retval)
+    {{ return_type|ffi_converter_impl }}::lower(retval)
     {% else -%}
     {{ obj.name() }}::{% call to_rs_call(meth) %}
     {% endmatch -%}
@@ -85,14 +85,14 @@ uniffi::call_with_output(call_status, || {
 {% match func.throws_type() %}
 {% when Some with (e) %}
 uniffi::call_with_result(call_status, || {
-    let _retval = {% call to_rs_call(func) %}.map_err({{ e|viaffi_impl }}::lower)?;
+    let _retval = {% call to_rs_call(func) %}.map_err({{ e|ffi_converter_impl }}::lower)?;
     Ok({% call ret(func) %})
 })
 {% else %}
 uniffi::call_with_output(call_status, || {
     {% match func.return_type() -%}
     {% when Some with (return_type) -%}
-    {{ return_type|viaffi_impl }}::lower({% call to_rs_call(func) %})
+    {{ return_type|ffi_converter_impl }}::lower({% call to_rs_call(func) %})
     {% else -%}
     {% call to_rs_call(func) %}
     {% endmatch -%}

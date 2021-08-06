@@ -16,7 +16,7 @@ The code for UniFFI is organized into the following crates:
       higher-level API in a target language. There is a sub-module for each supported language.
 - **[`./uniffi`](./api/uniffi/index.html):** This is a run-time support crate that is used by the generated Rust scaffolding. It
   controls how values of various types are passed back-and-forth over the FFI layer, by means of the
-  [`ViaFfi`](./api/uniffi/trait.ViaFfi.html) trait.
+  [`FfiConverter`](./api/uniffi/trait.FfiConverter.html) trait.
 - **[`./uniffi_build`](./api/uniffi_build/index.html):** This is a small hook to run `uniffi-bindgen` from the `build.rs` script
   of a UniFFI component, in order to automatically generate the Rust scaffolding as part of its build process.
 - **[`./uniffi_macros`](./api/uniffi_macros/index.html):** This contains some helper macros that UniFFI components can use to

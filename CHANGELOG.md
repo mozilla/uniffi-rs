@@ -25,10 +25,6 @@
       which imports and uses the low-level C FFI. The name can be customized using
       the `module_name` config option.
 - Python timestamps will now be in UTC and timezone-aware rather than naive.
-- Replaced `lower_into_buffer()` and `try_lift_from_buffer()` with the
-  `RustBufferViaFfi` trait.  If you use those functions in your custom ViaFfi
-  implementation then you'll need to update the code.  Check out the `Option<>`
-  implementation in uniffi/src/lib.rs for an example.
 - Kotlin exceptions names will now replace a trailing "Error" with "Exception"
   rather than appending the string (FooException instead of FooErrorException)
 - JNA 5.7 or greater is required for Kotlin consumers

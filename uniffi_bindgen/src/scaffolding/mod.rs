@@ -68,11 +68,11 @@ mod filters {
         })
     }
 
-    /// Get the name of the ViaFfi implementation for this type
+    /// Get the name of the FfiConverter implementation for this type
     ///
     /// - For primitives / standard types this is the type itself.
     /// - For user-defined types, this is a unique generated name.  We then generate a unit-struct
-    pub fn viaffi_impl_name(type_: &Type) -> askama::Result<String> {
+    pub fn ffi_converter_impl_name(type_: &Type) -> askama::Result<String> {
         Ok(match type_ {
             // Timestamp/Duraration are handled by standard types
             Type::Timestamp => "std::time::SystemTime".into(),
@@ -80,21 +80,21 @@ mod filters {
             // Object is handled by Arc<T>
             Type::Object(name) => format!("std::sync::Arc<{}>", name),
             // Other user-defined types are handled by a unit-struct that we generate.  The
-            // ViaFfi implementation for this can be found in one of the scaffolding template code.
+            // FfiConverter implementation for this can be found in one of the scaffolding template code.
             //
             // We generate a unit-struct to sidestep Rust's orphan rules since we can't directly
-            // implement ViaFfi on a type from an external crate.
+            // implement FfiConverter on a type from an external crate.
             //
             // CallbackInterface is handled by special case code on both the scaffolding and
             // bindings side.  It's not a unit-struct, but the same name generation code works.
             Type::Enum(_) | Type::Record(_) | Type::Error(_) | Type::CallbackInterface(_) => {
-                format!("ViaFfi{}", type_.canonical_name())
+                format!("FfiConverter{}", type_.canonical_name())
             }
-            // Wrapper types are implemented by generics that wrap the viaffi implementation of the
+            // Wrapper types are implemented by generics that wrap the FfiConverter implementation of the
             // inner type.
-            Type::Optional(inner) => format!("Option<{}>", viaffi_impl_name(inner)?),
-            Type::Sequence(inner) => format!("Vec<{}>", viaffi_impl_name(inner)?),
-            Type::Map(inner) => format!("HashMap<String, {}>", viaffi_impl_name(inner)?),
+            Type::Optional(inner) => format!("Option<{}>", ffi_converter_impl_name(inner)?),
+            Type::Sequence(inner) => format!("Vec<{}>", ffi_converter_impl_name(inner)?),
+            Type::Map(inner) => format!("HashMap<String, {}>", ffi_converter_impl_name(inner)?),
             // Primitive types / strings are implemented by their rust type
             Type::Int8 => "i8".into(),
             Type::UInt8 => "u8".into(),
@@ -111,10 +111,10 @@ mod filters {
         })
     }
 
-    // Map a type to Rust code that specifies the ViaFfi implementation.
+    // Map a type to Rust code that specifies the FfiConverter implementation.
     //
-    // This outputs something like `<TheViaFfiImplStruct as Viaffi>`
-    pub fn viaffi_impl(type_: &Type) -> Result<String, askama::Error> {
-        Ok(format!("<{} as uniffi::ViaFfi>", viaffi_impl_name(type_)?))
+    // This outputs something like `<TheFfiConverterImplStruct as FfiConverter>`
+    pub fn ffi_converter_impl(type_: &Type) -> Result<String, askama::Error> {
+        Ok(format!("<{} as uniffi::FfiConverter>", ffi_converter_impl_name(type_)?))
     }
 }

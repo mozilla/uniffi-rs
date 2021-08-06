@@ -10,7 +10,7 @@
 //!    - Catching panics
 //!    - Adapting `Result<>` types into either a return value or an error
 
-use crate::{RustBuffer, RustBufferViaFfi, ViaFfi};
+use crate::{RustBuffer, RustBufferFfiConverter, FfiConverter};
 use anyhow::Result;
 use ffi_support::IntoFfi;
 use std::mem::MaybeUninit;
@@ -74,7 +74,7 @@ const CALL_PANIC: i8 = 2;
 // A trait for errors that can be thrown to the FFI code
 //
 // This gets implemented in uniffi_bindgen/src/scaffolding/templates/ErrorTemplate.rs
-pub trait FfiError: RustBufferViaFfi {}
+pub trait FfiError: RustBufferFfiConverter {}
 
 // Generalized rust call handling function
 fn make_call<F, R>(out_status: &mut RustCallStatus, callback: F) -> R::Value
@@ -136,7 +136,7 @@ where
 /// Wrap a rust function call and return the result directly
 ///
 /// callback is responsible for making the call to the rust function.  It must convert any return
-/// value into a type that implements IntoFfi (typically handled with ViaFfi::lower()).
+/// value into a type that implements IntoFfi (typically handled with FfiConverter::lower()).
 ///
 /// - If the function succeeds then the function's return value will be returned to the outer code
 /// - If the function panics:
@@ -155,7 +155,7 @@ where
 /// callback is responsible for making the call to the rust function.
 ///   - callback must convert any return value into a type that implements IntoFfi
 ///   - callback must convert any Error the into a `RustBuffer` to be returned over the FFI
-///   - (Both of these are typically handled with ViaFfi::lower())
+///   - (Both of these are typically handled with FfiConverter::lower())
 ///
 /// - If the function returns an `Ok` value it will be unwrapped and returned
 /// - If the function returns an `Err`:
@@ -177,7 +177,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{RustBufferViaFfi, ViaFfi};
+    use crate::{RustBufferFfiConverter, FfiConverter};
 
     fn function(a: u8) -> i8 {
         match a {
@@ -213,12 +213,12 @@ mod test {
     #[derive(Debug, PartialEq)]
     struct TestError(String);
 
-    // Use RustBufferViaFfi to simplify lifting TestError out of RustBuffer to check it
-    impl RustBufferViaFfi for TestError {
+    // Use RustBufferFfiConverter to simplify lifting TestError out of RustBuffer to check it
+    impl RustBufferFfiConverter for TestError {
         type RustType = Self;
 
         fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
-            <String as ViaFfi>::write(obj.0, buf);
+            <String as FfiConverter>::write(obj.0, buf);
         }
 
         fn try_read(buf: &mut &[u8]) -> Result<Self> {

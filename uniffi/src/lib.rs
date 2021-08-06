@@ -8,23 +8,24 @@
 //! component scaffolding in order to transfer data back and forth across the C-style FFI layer,
 //! as well as some utilities for testing the generated bindings.
 //!
-//! The key concept here is the [`ViaFfi`] trait, we create an implementation for each type that
-//! can be passed across the FFI.  It's responsible for:
+//! The key concept here is the [`FfiConverter`] trait, which is responsible for converting between
+//! a Rust type and a low-level C-style type that can be passed across the FFI:
 //!
-//!  * How to [represent](ViaFfi::FfiType) values of that type in the low-level C-style type
+//!  * How to [represent](FfiConverter::FfiType) values of the rust type in the low-level C-style type
 //!    system of the FFI layer.
-//!  * How to ["lower"](ViaFfi::lower) rust values of that type into an appropriate low-level
+//!  * How to ["lower"](FfiConverter::lower) values of the rust type into an appropriate low-level
 //!    FFI value.
-//!  * How to ["lift"](ViaFfi::try_lift) low-level FFI values back into rust values of that type.
-//!  * How to [write](ViaFfi::write) rust values of that type into a buffer, for cases
+//!  * How to ["lift"](FfiConverter::try_lift) low-level FFI values back into values of the rust
+//!    type.
+//!  * How to [write](FfiConverter::write) values of the rust type into a buffer, for cases
 //!    where they are part of a compound data structure that is serialized for transfer.
-//!  * How to [read](ViaFfi::try_read) rust values of that type from buffer, for cases
+//!  * How to [read](FfiConverter::try_read) values of the rust type from buffer, for cases
 //!    where they are received as part of a compound data structure that was serialized for transfer.
 //!
 //! This logic encapsulates the rust-side handling of data transfer. Each foreign-language binding
 //! must also implement a matching set of data-handling rules for each data type.
 //!
-//! In addition to the core` ViaFfi` trait, we provide a handful of struct definitions useful
+//! In addition to the core` FfiConverter` trait, we provide a handful of struct definitions useful
 //! for passing core rust types over the FFI, such as [`RustBuffer`].
 
 use anyhow::{bail, Result};
@@ -124,7 +125,7 @@ macro_rules! assert_compatible_version {
 
 /// Trait defining how to transfer values via the FFI layer.
 ///
-/// The `ViaFfi` trait defines how to pass values of a particular type back-and-forth over
+/// The `FfiConverter` trait defines how to pass values of a particular type back-and-forth over
 /// the uniffi generated FFI layer, both as standalone argument or return values, and as
 /// part of serialized compound data structures.
 ///
@@ -142,12 +143,13 @@ macro_rules! assert_compatible_version {
 /// In general, you should not need to implement this trait by hand, and should instead rely on
 /// implementations generated from your component UDL via the `uniffi-bindgen scaffolding` command.
 
-pub unsafe trait ViaFfi: Sized {
+pub unsafe trait FfiConverter: Sized {
     /// The type used in rust code.
     ///
-    /// For primitive / standard types, we implement ViaFfi on the type itself and RustType=Self.
+    /// For primitive / standard types, we implement FfiConverter on the type itself and RustType=Self.
     /// For user-defined types we create a unit struct and implement it there.  This sidesteps
-    /// Rust's orphan rules with types from external crates, since we're not implementing ViaFfi on
+    /// Rust's orphan rules with types from external crates, since we're not implementing
+    /// FfiConverter on
     /// the external type directly.
     type RustType;
 
@@ -223,7 +225,7 @@ pub fn check_remaining(buf: &[u8], num_bytes: usize) -> Result<()> {
     Ok(())
 }
 
-/// Blanket implementation of ViaFfi for numeric primitives.
+/// Blanket implementation of FfiConverter for numeric primitives.
 ///
 /// Numeric primitives have a straightforward mapping into C-compatible numeric types,
 /// sice they are themselves a C-compatible numeric type!
@@ -232,7 +234,7 @@ macro_rules! impl_via_ffi_for_num_primitive {
     ($($T:ty),*) => {
             $(
                 paste! {
-                    unsafe impl ViaFfi for $T {
+                    unsafe impl FfiConverter for $T {
                         type RustType = Self;
                         type FfiType = Self;
 
@@ -266,7 +268,7 @@ impl_via_ffi_for_num_primitive! {
 ///
 /// Booleans are passed as an `i8` in order to avoid problems with handling
 /// C-compatible boolean values on JVM-based languages.
-unsafe impl ViaFfi for bool {
+unsafe impl FfiConverter for bool {
     type RustType = Self;
     type FfiType = i8;
 
@@ -287,18 +289,18 @@ unsafe impl ViaFfi for bool {
     }
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
-        buf.put_i8(<bool as ViaFfi>::lower(obj));
+        buf.put_i8(<bool as FfiConverter>::lower(obj));
     }
 
     fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
         check_remaining(buf, 1)?;
-        <bool as ViaFfi>::try_lift(buf.get_i8())
+        <bool as FfiConverter>::try_lift(buf.get_i8())
     }
 }
 
 /// Support for passing Strings via the FFI.
 ///
-/// Unlike many other implementations of `ViaFfi`, this passes a struct containing
+/// Unlike many other implementations of `FfiConverter`, this passes a struct containing
 /// a raw pointer rather than copying the data from one side to the other. This is a
 /// safety hazard, but turns out to be pretty nice for useability. This struct
 /// *must* be a valid `RustBuffer` and it *must* contain valid utf-8 data (in other
@@ -307,7 +309,7 @@ unsafe impl ViaFfi for bool {
 /// When serialized in a buffer, strings are represented as a i32 byte length
 /// followed by utf8-encoded bytes. (It's a signed integer because unsigned types are
 /// currently experimental in Kotlin).
-unsafe impl ViaFfi for String {
+unsafe impl FfiConverter for String {
     type RustType = Self;
     type FfiType = RustBuffer;
 
@@ -357,19 +359,19 @@ unsafe impl ViaFfi for String {
 /// For complex types where it's too fiddly or too unsafe to convert them into a special-purpose
 /// C-compatible value, you can use this trait to implement `lower()` in terms of `write()` and
 /// `lift` in terms of `read()`.
-pub trait RustBufferViaFfi: Sized {
+pub trait RustBufferFfiConverter: Sized {
     type RustType;
     fn write(obj: Self::RustType, buf: &mut Vec<u8>);
     fn try_read(buf: &mut &[u8]) -> Result<Self::RustType>;
 }
 
-unsafe impl<T: RustBufferViaFfi> ViaFfi for T {
+unsafe impl<T: RustBufferFfiConverter> FfiConverter for T {
     type RustType = T::RustType;
     type FfiType = RustBuffer;
 
     fn lower(obj: Self::RustType) -> RustBuffer {
         let mut buf = Vec::new();
-        <T as RustBufferViaFfi>::write(obj, &mut buf);
+        <T as RustBufferFfiConverter>::write(obj, &mut buf);
         RustBuffer::from_vec(buf)
     }
 
@@ -406,7 +408,7 @@ unsafe impl<T: RustBufferViaFfi> ViaFfi for T {
 /// the sign of the seconds portion represents the direction of the offset
 /// overall. The sign of the seconds portion can then be used to determine
 /// if the total offset should be added to or subtracted from the unix epoch.
-impl RustBufferViaFfi for SystemTime {
+impl RustBufferFfiConverter for SystemTime {
     type RustType = Self;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
@@ -448,7 +450,7 @@ impl RustBufferViaFfi for SystemTime {
 /// magnitude in seconds, and a u32 that indicates the nanosecond portion
 /// of the magnitude. The nanosecond portion is expected to be between 0
 /// and 999,999,999.
-impl RustBufferViaFfi for Duration {
+impl RustBufferFfiConverter for Duration {
     type RustType = Self;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
@@ -471,7 +473,7 @@ impl RustBufferViaFfi for Duration {
 /// In future we could do the same optimization as rust uses internally, where the
 /// `None` option is represented as a null pointer and the `Some` as a valid pointer,
 /// but that seems more fiddly and less safe in the short term, so it can wait.
-impl<T: ViaFfi> RustBufferViaFfi for Option<T> {
+impl<T: FfiConverter> RustBufferFfiConverter for Option<T> {
     type RustType = Option<T::RustType>;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
@@ -479,7 +481,7 @@ impl<T: ViaFfi> RustBufferViaFfi for Option<T> {
             None => buf.put_i8(0),
             Some(v) => {
                 buf.put_i8(1);
-                <T as ViaFfi>::write(v, buf);
+                <T as FfiConverter>::write(v, buf);
             }
         }
     }
@@ -488,7 +490,7 @@ impl<T: ViaFfi> RustBufferViaFfi for Option<T> {
         check_remaining(buf, 1)?;
         Ok(match buf.get_i8() {
             0 => None,
-            1 => Some(<T as ViaFfi>::try_read(buf)?),
+            1 => Some(<T as FfiConverter>::try_read(buf)?),
             _ => bail!("unexpected tag byte for Option"),
         })
     }
@@ -503,7 +505,7 @@ impl<T: ViaFfi> RustBufferViaFfi for Option<T> {
 /// Ideally we would pass `Vec<u8>` directly as a `RustBuffer` rather
 /// than serializing, and perhaps even pass other vector types using a
 /// similar struct. But that's for future work.
-impl<T: ViaFfi> RustBufferViaFfi for Vec<T> {
+impl<T: FfiConverter> RustBufferFfiConverter for Vec<T> {
     type RustType = Vec<T::RustType>;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
@@ -511,7 +513,7 @@ impl<T: ViaFfi> RustBufferViaFfi for Vec<T> {
         let len = i32::try_from(obj.len()).unwrap();
         buf.put_i32(len); // We limit arrays to i32::MAX items
         for item in obj.into_iter() {
-            <T as ViaFfi>::write(item, buf);
+            <T as FfiConverter>::write(item, buf);
         }
     }
 
@@ -520,7 +522,7 @@ impl<T: ViaFfi> RustBufferViaFfi for Vec<T> {
         let len = usize::try_from(buf.get_i32())?;
         let mut vec = Vec::with_capacity(len);
         for _ in 0..len {
-            vec.push(<T as ViaFfi>::try_read(buf)?)
+            vec.push(<T as FfiConverter>::try_read(buf)?)
         }
         Ok(vec)
     }
@@ -534,7 +536,7 @@ impl<T: ViaFfi> RustBufferViaFfi for Vec<T> {
 /// We write a `i32` entries count followed by each entry (string
 /// key followed by the value) in turn.
 /// (It's a signed type due to limits of the JVM).
-impl<V: ViaFfi> RustBufferViaFfi for HashMap<String, V> {
+impl<V: FfiConverter> RustBufferFfiConverter for HashMap<String, V> {
     type RustType = HashMap<String, V::RustType>;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
@@ -542,8 +544,8 @@ impl<V: ViaFfi> RustBufferViaFfi for HashMap<String, V> {
         let len = i32::try_from(obj.len()).unwrap();
         buf.put_i32(len); // We limit HashMaps to i32::MAX entries
         for (key, value) in obj.into_iter() {
-            <String as ViaFfi>::write(key, buf);
-            <V as ViaFfi>::write(value, buf);
+            <String as FfiConverter>::write(key, buf);
+            <V as FfiConverter>::write(value, buf);
         }
     }
 
@@ -553,7 +555,7 @@ impl<V: ViaFfi> RustBufferViaFfi for HashMap<String, V> {
         let mut map = HashMap::with_capacity(len);
         for _ in 0..len {
             let key = String::try_read(buf)?;
-            let value = <V as ViaFfi>::try_read(buf)?;
+            let value = <V as FfiConverter>::try_read(buf)?;
             map.insert(key, value);
         }
         Ok(map)
@@ -565,7 +567,7 @@ impl<V: ViaFfi> RustBufferViaFfi for HashMap<String, V> {
 /// To avoid dealing with complex lifetime semantics over the FFI, any data passed
 /// by reference must be encapsulated in an `Arc`, and must be safe to share
 /// across threads.
-unsafe impl<T: Sync + Send> ViaFfi for std::sync::Arc<T> {
+unsafe impl<T: Sync + Send> FfiConverter for std::sync::Arc<T> {
     type RustType = Self;
     // Don't use a pointer to <T> as that requires a `pub <T>`
     type FfiType = *const std::os::raw::c_void;

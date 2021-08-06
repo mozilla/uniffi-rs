@@ -11,7 +11,7 @@
 //    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
 #}
 {% let trait_name = cbi.name() -%}
-{% let trait_impl = cbi.type_()|viaffi_impl_name -%}
+{% let trait_impl = cbi.type_()|ffi_converter_impl_name -%}
 {% let foreign_callback_internals = format!("foreign_callback_{}_internals", trait_name)|upper -%}
 
 // Register a foreign callback for getting across the FFI.
@@ -60,7 +60,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
         let mut args_buf = Vec::new();
         {% endif -%}
         {%- for arg in meth.arguments() %}
-        {{ arg.type_()|viaffi_impl }}::write({{ arg.name() }}, &mut args_buf);
+        {{ arg.type_()|ffi_converter_impl }}::write({{ arg.name() }}, &mut args_buf);
         {%- endfor -%}
         let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
 
@@ -73,7 +73,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
         {% when Some with (return_type) -%}
         let vec = ret_rbuf.destroy_into_vec();
         let mut ret_buf = vec.as_slice();
-        {{ return_type|viaffi_impl }}::try_read(&mut ret_buf).unwrap()
+        {{ return_type|ffi_converter_impl }}::try_read(&mut ret_buf).unwrap()
         {%- else -%}
         uniffi::RustBuffer::destroy(ret_rbuf);
         {%- endmatch %}
@@ -81,7 +81,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
     {%- endfor %}
 }
 
-unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
+unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
     // This RustType allows for rust code that inputs this type as a Box<dyn CallbackInterfaceTrait> param
     type RustType = Box<dyn {{ trait_name }}>;
     type FfiType = u64;
@@ -110,6 +110,6 @@ unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
     fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self::RustType> {
         use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 8)?;
-        <Self as uniffi::ViaFfi>::try_lift(buf.get_u64())
+        <Self as uniffi::FfiConverter>::try_lift(buf.get_u64())
     }
 }
