@@ -85,7 +85,7 @@
 use anyhow::Result;
 
 use super::enum_::{Enum, Variant};
-use super::types::Type;
+use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 /// Represents an Error that might be thrown by functions/methods in the component interface.
@@ -129,10 +129,11 @@ impl Error {
     pub fn is_flat(&self) -> bool {
         self.enum_.is_flat()
     }
+}
 
-    // For compatibility with the Enum interface
-    pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
-        self.enum_.contains_object_references(ci)
+impl IterTypes for Error {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        self.wrapped_enum().iter_types()
     }
 }
 

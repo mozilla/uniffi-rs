@@ -36,7 +36,7 @@ enum class {{ e.name()|class_name_kt }} {
 {% else %}
 
 {% call kt::unsigned_types_annotation(e) %}
-sealed class {{ e.name()|class_name_kt }}{% if e.contains_object_references(ci) %}: Disposable {% endif %} {
+sealed class {{ e.name()|class_name_kt }}{% if ci.item_contains_object_references(e) %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
     object {{ variant.name()|class_name_kt }} : {{ e.name()|class_name_kt }}()
@@ -85,14 +85,14 @@ sealed class {{ e.name()|class_name_kt }}{% if e.contains_object_references(ci) 
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
 
-    {% if e.contains_object_references(ci) %}
+    {% if ci.item_contains_object_references(e) %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
             is {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }} -> {
                 {% for field in variant.fields() -%}
-                    {%- if ci.type_contains_object_references(field.type_()) -%}
+                    {%- if ci.item_contains_object_references(field) -%}
                     this.{{ field.name() }}?.destroy()
                     {% endif -%}
                 {%- endfor %}

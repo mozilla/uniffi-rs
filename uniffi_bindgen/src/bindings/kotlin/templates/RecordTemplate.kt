@@ -8,7 +8,7 @@ data class {{ rec.name()|class_name_kt }} (
     {%- endmatch -%}
     {% if !loop.last %}, {% endif %}
     {%- endfor %}
-) {% if rec.contains_object_references(ci) %}: Disposable {% endif %}{
+) {% if ci.item_contains_object_references(rec) %}: Disposable {% endif %}{
     companion object {
         internal fun lift(rbuf: RustBuffer.ByValue): {{ rec.name()|class_name_kt }} {
             return liftFromRustBuffer(rbuf) { buf -> {{ rec.name()|class_name_kt }}.read(buf) }
@@ -33,11 +33,11 @@ data class {{ rec.name()|class_name_kt }} (
         {% endfor %}
     }
 
-    {% if rec.contains_object_references(ci) %}
+    {% if ci.item_contains_object_references(rec) %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {
         {% for field in rec.fields() %}
-            {%- if ci.type_contains_object_references(field.type_()) -%}
+            {%- if ci.item_contains_object_references(field) -%}
             this.{{ field.name() }}?.destroy()
             {% endif -%}
         {%- endfor %}

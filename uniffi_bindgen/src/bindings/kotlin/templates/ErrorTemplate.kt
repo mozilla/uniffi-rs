@@ -27,7 +27,7 @@ interface CallStatusErrorHandler<E> {
 
 // Error {{ e.name() }}
 {%- let toplevel_name=e.name()|exception_name_kt %}
-sealed class {{ toplevel_name }}: Exception(){% if e.contains_object_references(ci) %}, Disposable {% endif %} {
+sealed class {{ toplevel_name }}: Exception(){% if ci.item_contains_object_references(e) %}, Disposable {% endif %} {
     // Each variant is a nested class
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
@@ -60,14 +60,14 @@ sealed class {{ toplevel_name }}: Exception(){% if e.contains_object_references(
         }
     }
 
-    {% if e.contains_object_references(ci) %}
+    {% if ci.item_contains_object_references(e) %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
             is {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }} -> {
                 {% for field in variant.fields() -%}
-                    {%- if ci.type_contains_object_references(field.type_()) -%}
+                    {%- if ci.item_contains_object_references(field) -%}
                     this.{{ field.name() }}?.destroy()
                     {% endif -%}
                 {%- endfor %}

@@ -54,7 +54,7 @@ use anyhow::{bail, Result};
 use super::attributes::{ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::function::Argument;
-use super::types::Type;
+use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 /// An "object" is an opaque type that can be instantiated and passed around by reference,
@@ -143,16 +143,17 @@ impl Object {
         }
         Ok(())
     }
+}
 
-    // We need to check both methods and constructor
-    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
-        self.methods()
-            .iter()
-            .any(|&meth| meth.contains_unsigned_types(&ci))
-            || self
-                .constructors()
+impl IterTypes for Object {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(
+            self.methods
                 .iter()
-                .any(|&constructor| constructor.contains_unsigned_types(&ci))
+                .map(IterTypes::iter_types)
+                .chain(self.constructors.iter().map(IterTypes::iter_types))
+                .flatten(),
+        )
     }
 }
 
@@ -263,11 +264,11 @@ impl Constructor {
     fn is_primary_constructor(&self) -> bool {
         self.name == "new"
     }
+}
 
-    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
-        self.arguments()
-            .iter()
-            .any(|&arg| ci.type_contains_unsigned_types(&arg.type_()))
+impl IterTypes for Constructor {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(self.arguments.iter().map(IterTypes::iter_types).flatten())
     }
 }
 
@@ -383,20 +384,17 @@ impl Method {
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
         Ok(())
     }
+}
 
-    // Intentionally exactly the same as the Function version
-    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
-        let check_return_type = {
-            match self.return_type() {
-                None => false,
-                Some(t) => ci.type_contains_unsigned_types(t),
-            }
-        };
-        check_return_type
-            || self
-                .arguments()
+impl IterTypes for Method {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(
+            self.arguments
                 .iter()
-                .any(|&arg| ci.type_contains_unsigned_types(&arg.type_()))
+                .map(IterTypes::iter_types)
+                .flatten()
+                .chain(self.return_type.iter_types()),
+        )
     }
 }
 

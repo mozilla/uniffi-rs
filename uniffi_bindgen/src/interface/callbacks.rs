@@ -39,7 +39,7 @@ use anyhow::{bail, Result};
 
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::object::Method;
-use super::types::Type;
+use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 #[derive(Debug, Clone)]
@@ -81,6 +81,12 @@ impl CallbackInterface {
             type_: FFIType::ForeignCallback,
         }];
         self.ffi_init_callback.return_type = None;
+    }
+}
+
+impl IterTypes for CallbackInterface {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(self.methods.iter().map(IterTypes::iter_types).flatten())
     }
 }
 
