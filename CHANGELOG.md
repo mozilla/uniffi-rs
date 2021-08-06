@@ -13,6 +13,9 @@
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.12.0...HEAD).
 
 ### ⚠️ Breaking Changes ⚠️
+- UniFFI no longer has ffi-support as a dependency.  This means it handles
+  panic logging on its own.  If you previously enabled the `log_panics` feature
+  for `ffi-support`, now you should enable it for `uniffi`.
 - The Swift bindings now explicitly generate two separate Swift modules, one for
   the high-level Swift code and one for the low-level C FFI. This change is intended
   to simplify distribution of the bindings via Swift packages, but brings with it

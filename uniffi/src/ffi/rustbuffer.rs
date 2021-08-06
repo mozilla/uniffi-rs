@@ -186,16 +186,6 @@ impl Default for RustBuffer {
     }
 }
 
-unsafe impl crate::deps::ffi_support::IntoFfi for RustBuffer {
-    type Value = Self;
-    fn ffi_default() -> Self {
-        unsafe { Self::from_raw_parts(std::ptr::null_mut(), 0, 0) }
-    }
-    fn into_ffi_value(self) -> Self::Value {
-        self
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
