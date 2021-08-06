@@ -156,7 +156,7 @@ mod filters {
                 coerce_py(&"v", t)?,
                 nm
             ),
-            Type::Wrapped { .. } => panic!("No support for Wrapped types yet"),
+            Type::Wrapped { prim, .. } => coerce_py(nm, prim.as_ref())?,
             Type::External { .. } => panic!("should not be necessary to coerce External types"),
         })
     }
@@ -189,7 +189,7 @@ mod filters {
                 class_name_py(&type_.canonical_name())?,
                 nm
             ),
-            Type::Wrapped { .. } => panic!("No support for Wrapped types yet"),
+            Type::Wrapped { prim, .. } => lower_py(nm, prim.as_ref())?,
             Type::External { .. } => panic!("should not be necessary to lower External types"),
         })
     }
@@ -221,7 +221,7 @@ mod filters {
                 nm,
                 class_name_py(&type_.canonical_name())?
             ),
-            Type::Wrapped { .. } => panic!("No support for Wrapped types yet"),
+            Type::Wrapped { prim, .. } => lift_py(nm, prim.as_ref())?,
             Type::External { .. } => panic!("should not be necessary to lift External types"),
         })
     }
