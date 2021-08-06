@@ -82,8 +82,7 @@ mod filters {
             // Other user-defined types are handled by a unit-struct that we generate.  The
             // FfiConverter implementation for this can be found in one of the scaffolding template code.
             //
-            // We generate a unit-struct to sidestep Rust's orphan rules since we can't directly
-            // implement FfiConverter on a type from an external crate.
+            // We generate a unit-struct to sidestep Rust's orphan rules (ADR-0006).
             //
             // CallbackInterface is handled by special case code on both the scaffolding and
             // bindings side.  It's not a unit-struct, but the same name generation code works.

@@ -148,9 +148,7 @@ pub unsafe trait FfiConverter: Sized {
     ///
     /// For primitive / standard types, we implement FfiConverter on the type itself and RustType=Self.
     /// For user-defined types we create a unit struct and implement it there.  This sidesteps
-    /// Rust's orphan rules with types from external crates, since we're not implementing
-    /// FfiConverter on
-    /// the external type directly.
+    /// Rust's orphan rules (ADR-0006).
     type RustType;
 
     /// The low-level type used for passing values of this type over the FFI.

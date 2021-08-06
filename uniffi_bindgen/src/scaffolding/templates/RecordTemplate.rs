@@ -4,7 +4,7 @@
 // If the caller's struct does not match the shape and types declared in the UDL then the rust
 // compiler will complain with a type error.
 //
-// We define a unit-struct to implement the trait to sidestep the orphan rule.
+// We define a unit-struct to implement the trait to sidestep Rust's orphan rule (ADR-0006)
 #}
 struct {{ rec.type_()|ffi_converter_impl_name }};
 

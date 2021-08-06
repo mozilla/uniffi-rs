@@ -3,7 +3,7 @@
 // rust `enum`. We provide the traits for sending it across the FFI, which will fail to
 // compile if the provided struct has a different shape to the one declared in the UDL.
 //
-// We define a unit-struct to implement the trait to sidestep the orphan rule.
+// We define a unit-struct to implement the trait to sidestep Rust's orphan rule (ADR-0006).
 #}
 
 struct {{ e.type_()|ffi_converter_impl_name }};
