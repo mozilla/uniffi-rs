@@ -35,6 +35,18 @@ pub(super) use resolver::{resolve_builtin_type, TypeResolver};
 /// Represents all the different high-level types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
 /// of their internal structure apart from what type of thing they are (record, enum, etc).
+//
+// How to implement a new type:
+//
+// - Add a new Type variant
+// - Figure out how to parse that type from the UDL file and implement that in the `interface`
+//   module.
+// - Update the `Type` impl.
+// - Update the Rust bindings:
+//   - Update `scaffolding/type_logic.rs`.
+//   - If you need to dynamically generate your `FfiConverter` update the templates code.  Check
+//     out the `RecordTemplate.rs` for an example.
+// - Update the bindings code for each language.
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum Type {
     // Primitive types.

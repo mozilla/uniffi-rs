@@ -5,6 +5,8 @@
 use anyhow::Result;
 use askama::Template;
 
+mod type_logic;
+
 use super::interface::*;
 
 #[derive(Template)]
@@ -25,28 +27,7 @@ mod filters {
     use super::*;
 
     pub fn type_rs(type_: &Type) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            Type::Int8 => "i8".into(),
-            Type::UInt8 => "u8".into(),
-            Type::Int16 => "i16".into(),
-            Type::UInt16 => "u16".into(),
-            Type::Int32 => "i32".into(),
-            Type::UInt32 => "u32".into(),
-            Type::Int64 => "i64".into(),
-            Type::UInt64 => "u64".into(),
-            Type::Float32 => "f32".into(),
-            Type::Float64 => "f64".into(),
-            Type::Boolean => "bool".into(),
-            Type::String => "String".into(),
-            Type::Timestamp => "std::time::SystemTime".into(),
-            Type::Duration => "std::time::Duration".into(),
-            Type::Enum(name) | Type::Record(name) | Type::Error(name) => name.clone(),
-            Type::Object(name) => format!("std::sync::Arc<{}>", name),
-            Type::CallbackInterface(name) => format!("Box<dyn {}>", name),
-            Type::Optional(t) => format!("Option<{}>", type_rs(t)?),
-            Type::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
-            Type::Map(t) => format!("std::collections::HashMap<String, {}>", type_rs(t)?),
-        })
+        Ok(type_logic::rust_type(type_))
     }
 
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
@@ -68,46 +49,8 @@ mod filters {
         })
     }
 
-    /// Get the name of the FfiConverter implementation for this type
-    ///
-    /// - For primitives / standard types this is the type itself.
-    /// - For user-defined types, this is a unique generated name.  We then generate a unit-struct
     pub fn ffi_converter_name(type_: &Type) -> askama::Result<String> {
-        Ok(match type_ {
-            // Timestamp/Duraration are handled by standard types
-            Type::Timestamp => "std::time::SystemTime".into(),
-            Type::Duration => "std::time::Duration".into(),
-            // Object is handled by Arc<T>
-            Type::Object(name) => format!("std::sync::Arc<{}>", name),
-            // Other user-defined types are handled by a unit-struct that we generate.  The
-            // FfiConverter implementation for this can be found in one of the scaffolding template code.
-            //
-            // We generate a unit-struct to sidestep Rust's orphan rules (ADR-0006).
-            //
-            // CallbackInterface is handled by special case code on both the scaffolding and
-            // bindings side.  It's not a unit-struct, but the same name generation code works.
-            Type::Enum(_) | Type::Record(_) | Type::Error(_) | Type::CallbackInterface(_) => {
-                format!("FfiConverter{}", type_.canonical_name())
-            }
-            // Wrapper types are implemented by generics that wrap the FfiConverter implementation of the
-            // inner type.
-            Type::Optional(inner) => format!("Option<{}>", ffi_converter_name(inner)?),
-            Type::Sequence(inner) => format!("Vec<{}>", ffi_converter_name(inner)?),
-            Type::Map(inner) => format!("HashMap<String, {}>", ffi_converter_name(inner)?),
-            // Primitive types / strings are implemented by their rust type
-            Type::Int8 => "i8".into(),
-            Type::UInt8 => "u8".into(),
-            Type::Int16 => "i16".into(),
-            Type::UInt16 => "u16".into(),
-            Type::Int32 => "i32".into(),
-            Type::UInt32 => "u32".into(),
-            Type::Int64 => "i64".into(),
-            Type::UInt64 => "u64".into(),
-            Type::Float32 => "f32".into(),
-            Type::Float64 => "f64".into(),
-            Type::String => "String".into(),
-            Type::Boolean => "bool".into(),
-        })
+        Ok(type_logic::ffi_converter_name(type_))
     }
 
     // Map a type to Rust code that specifies the FfiConverter implementation.
