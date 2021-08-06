@@ -47,7 +47,7 @@
 use anyhow::{bail, Result};
 
 use super::literal::{convert_default_value, Literal};
-use super::types::Type;
+use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 /// Represents a "data class" style object, for passing around complex values.
@@ -75,15 +75,11 @@ impl Record {
     pub fn fields(&self) -> Vec<&Field> {
         self.fields.iter().collect()
     }
+}
 
-    pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
-        ci.type_contains_object_references(&self.type_())
-    }
-
-    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
-        self.fields()
-            .iter()
-            .any(|f| ci.type_contains_unsigned_types(&f.type_))
+impl IterTypes for Record {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(self.fields.iter().map(IterTypes::iter_types).flatten())
     }
 }
 
@@ -120,6 +116,12 @@ impl Field {
     }
     pub fn default_value(&self) -> Option<Literal> {
         self.default.clone()
+    }
+}
+
+impl IterTypes for Field {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        self.type_.iter_types()
     }
 }
 

@@ -40,6 +40,6 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
     }
 }
 
-{% if ! e.contains_object_references(ci) %}
+{% if ! ci.item_contains_object_references(e) %}
 extension {{ e.name()|class_name_swift }}: Equatable, Hashable {}
 {% endif %}

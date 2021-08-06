@@ -45,7 +45,7 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::hash_map::DefaultHasher,
+    collections::{hash_map::DefaultHasher, HashSet},
     convert::TryFrom,
     hash::{Hash, Hasher},
     str::FromStr,
@@ -55,7 +55,7 @@ use anyhow::{bail, Result};
 
 pub mod types;
 pub use types::Type;
-use types::TypeUniverse;
+use types::{IterTypes, TypeIterator, TypeUniverse};
 
 mod attributes;
 mod callbacks;
@@ -216,75 +216,52 @@ impl<'ci> ComponentInterface {
         self.types.get_type_definition(name)
     }
 
-    /// Check whether the given type contains any (possibly nested) Type::Object references.
+    /// Iterate over all types contained in the given item.
+    ///
+    /// This method uses `IterTypes::iter_types` to iterate over the types contained within the
+    /// given item, but additionally recurses into the definition of user-defined types like records
+    /// and enums to yield the types that *they* contain.
+    fn iter_types_in_item<'a, T: IterTypes>(
+        &'a self,
+        item: &'a T,
+    ) -> impl Iterator<Item = &'a Type> + 'a {
+        RecursiveTypeIterator::new(self, item)
+    }
+
+    /// Check whether the given item contains any (possibly nested) Type::Object references.
     ///
     /// This is important to know in language bindings that cannot integrate object types
     /// tightly with the host GC, and hence need to perform manual destruction of objects.
-    pub fn type_contains_object_references(&self, type_: &Type) -> bool {
-        match type_ {
-            Type::Object(_) => true,
-            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => {
-                self.type_contains_object_references(t)
-            }
-            Type::Record(name) => self
-                .get_record_definition(name)
-                .map(|rec| {
-                    rec.fields()
-                        .iter()
-                        .any(|f| self.type_contains_object_references(&f.type_))
-                })
-                .unwrap_or(false),
-            Type::Enum(name) => self
-                .get_enum_definition(name)
-                .map(|e| {
-                    e.variants().iter().any(|v| {
-                        v.fields()
-                            .iter()
-                            .any(|f| self.type_contains_object_references(&f.type_))
-                    })
-                })
-                .unwrap_or(false),
-            _ => false,
-        }
+    pub fn item_contains_object_references<T: IterTypes>(&self, item: &T) -> bool {
+        self.iter_types_in_item(item)
+            .any(|t| matches!(t, Type::Object(_)))
     }
 
+    /// Check whether the given item contains any (possibly nested) unsigned types
+    pub fn item_contains_unsigned_types<T: IterTypes>(&self, item: &T) -> bool {
+        self.iter_types_in_item(item)
+            .any(|t| matches!(t, Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64))
+    }
+
+    /// Check whether the interface contains any optional types
     pub fn contains_optional_types(&self) -> bool {
-        self.iter_types()
-            .iter()
+        self.types
+            .iter_known_types()
             .any(|t| matches!(t, Type::Optional(_)))
     }
 
+    /// Check whether the interface contains any sequence types
     pub fn contains_sequence_types(&self) -> bool {
-        self.iter_types()
-            .iter()
+        self.types
+            .iter_known_types()
             .any(|t| matches!(t, Type::Sequence(_)))
     }
 
+    /// Check whether the interface contains any map types
     pub fn contains_map_types(&self) -> bool {
-        self.iter_types().iter().any(|t| matches!(t, Type::Map(_)))
-    }
-
-    /// Check whether the given type contains any (possibly nested) unsigned types
-    pub fn type_contains_unsigned_types(&self, type_: &Type) -> bool {
-        match type_ {
-            Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => true,
-            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => {
-                self.type_contains_unsigned_types(t)
-            }
-            Type::Object(t) => self
-                .get_object_definition(t)
-                .map(|obj| obj.contains_unsigned_types(&self))
-                .unwrap_or(false),
-            Type::Record(name) => self
-                .get_record_definition(name)
-                .map(|rec| rec.contains_unsigned_types(&self))
-                .unwrap_or(false),
-            Type::Enum(name) => self
-                .get_enum_definition(name)
-                .map(|e| e.contains_unsigned_types(&self))
-                .unwrap_or(false),
-            _ => false,
-        }
+        self.types
+            .iter_known_types()
+            .any(|t| matches!(t, Type::Map(_)))
     }
 
     /// Calculate a numeric checksum for this ComponentInterface.
@@ -589,6 +566,121 @@ impl Hash for ComponentInterface {
     }
 }
 
+impl IterTypes for ComponentInterface {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        self.types.iter_types()
+    }
+}
+
+/// Stateful iterator for yielding all types contained in a given item.
+///
+/// This struct is the implementation of [`ComponentInterface::iter_types_in_item`] and should be
+/// considered an opaque implementation detail. It's a separate struct because I couldn't
+/// figure out a way to implement it using iterators and closures that would make the lifetimes
+/// work out correctly.
+///
+/// The idea here is that we want to yield all the types from `IterTypes::iter_types` on a
+/// given item, and additionally we want to recurse into the definition of any user-provided
+/// types like records, enums, etc so we can also yield the types contained therein.
+///
+/// To guard against infinite recursion, we maintain a list of previously-seen user-defined
+/// types, ensuring that we recurse into the definition of those types only once. To simplify
+/// the implementation, we maintain a queue of pending user-defined types that we have seen
+/// but not yet recursed into. (Ironically, the use of an explicit queue means our implementation
+/// is not actually recursive...)
+struct RecursiveTypeIterator<'a> {
+    /// The [`ComponentInterface`] from which this iterator was created.
+    ci: &'a ComponentInterface,
+    /// The currently-active iterator from which we're yielding.
+    current: TypeIterator<'a>,
+    /// A set of names of user-defined types that we have already seen.
+    seen: HashSet<&'a str>,
+    /// A queue of user-defined types that we need to recurse into.
+    pending: Vec<&'a Type>,
+}
+
+impl<'a> RecursiveTypeIterator<'a> {
+    /// Allocate a new `RecursiveTypeIterator` over the given item.
+    fn new<T: IterTypes>(ci: &'a ComponentInterface, item: &'a T) -> RecursiveTypeIterator<'a> {
+        RecursiveTypeIterator {
+            ci,
+            // We begin by iterating over the types from the item itself.
+            current: item.iter_types(),
+            seen: Default::default(),
+            pending: Default::default(),
+        }
+    }
+
+    /// Add a new type to the queue of pending types, if not previously seen.
+    fn add_pending_type(&mut self, type_: &'a Type) {
+        match type_ {
+            Type::Record(nm)
+            | Type::Enum(nm)
+            | Type::Error(nm)
+            | Type::Object(nm)
+            | Type::CallbackInterface(nm) => {
+                if !self.seen.contains(nm.as_str()) {
+                    self.pending.push(type_);
+                    self.seen.insert(nm.as_str());
+                }
+            }
+            _ => (),
+        }
+    }
+
+    /// Advance the iterator to recurse into the next pending type, if any.
+    ///
+    /// This method is called when the current iterator is empty, and it will select
+    /// the next pending type from the queue and start iterating over its contained types.
+    /// The return value will be the first item from the new iterator.
+    fn advance_to_next_type(&mut self) -> Option<&'a Type> {
+        if let Some(next_type) = self.pending.pop() {
+            // This is a little awkward because the various definition lookup methods return an `Option<T>`.
+            // In the unlikely event that one of them returns `None` then, rather than trying to advance
+            // to a non-existent type, we just leave the existing iterator in place and allow the recursive
+            // call to `next()` to try again with the next pending type.
+            let next_iter = match next_type {
+                Type::Record(nm) => self
+                    .ci
+                    .get_record_definition(&nm)
+                    .map(IterTypes::iter_types),
+                Type::Enum(nm) => self.ci.get_enum_definition(&nm).map(IterTypes::iter_types),
+                Type::Error(nm) => self.ci.get_error_definition(&nm).map(IterTypes::iter_types),
+                Type::Object(nm) => self
+                    .ci
+                    .get_object_definition(&nm)
+                    .map(IterTypes::iter_types),
+                Type::CallbackInterface(nm) => self
+                    .ci
+                    .get_callback_interface_definition(&nm)
+                    .map(IterTypes::iter_types),
+                _ => None,
+            };
+            if let Some(next_iter) = next_iter {
+                self.current = next_iter;
+            }
+            // Advance the new iterator to its first item. If the new iterator happens to be empty,
+            // this will recurse back in to `advance_to_next_type` until we find one that isn't.
+            self.next()
+        } else {
+            // We've completely finished the iteration over all pending types.
+            None
+        }
+    }
+}
+
+impl<'a> Iterator for RecursiveTypeIterator<'a> {
+    type Item = &'a Type;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(type_) = self.current.next() {
+            self.add_pending_type(type_);
+            Some(type_)
+        } else {
+            self.advance_to_next_type()
+        }
+    }
+}
+
 /// Trait to help build a `ComponentInterface` from WedIDL syntax nodes.
 ///
 /// This trait does structural matching on the various weedle AST nodes and
@@ -850,5 +942,35 @@ mod test {
             .add_type_definition("Map{}", Type::Map(Box::new(Type::Boolean)))
             .is_ok());
         assert_eq!(ci.contains_map_types(), true);
+    }
+
+    #[test]
+    fn test_no_infinite_recursion_when_walking_types() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                void tester(Testing foo);
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert!(!ci.item_contains_unsigned_types(&Type::Object("Testing".into())));
+    }
+
+    #[test]
+    fn test_correct_recursion_when_walking_types() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface TestObj {
+                void tester(TestRecord foo);
+            };
+            dictionary TestRecord {
+                NestedRecord bar;
+            };
+            dictionary NestedRecord {
+                u64 baz;
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert!(ci.item_contains_unsigned_types(&Type::Object("TestObj".into())));
     }
 }

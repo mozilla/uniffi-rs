@@ -228,6 +228,67 @@ impl TypeUniverse {
     }
 }
 
+/// An abstract type for an iterator over &Type references.
+///
+/// Ideally we would not need to name this type explicitly, and could just
+/// use an `impl Iterator<Item=&Type>` on any method that yields types.
+/// Unfortunately existential types are not currently supported in trait method
+/// signatures, so for now we hide the concrete type behind a box.
+pub type TypeIterator<'a> = Box<dyn Iterator<Item = &'a Type> + 'a>;
+
+/// A trait for objects that may contain references to types.
+///
+/// Various objects in our interface will contain (possibly nested) references to types -
+/// for example a `Record` struct will contain one or more `Field` structs which will each
+/// have an associated type. This trait provides a uniform interface for inspecting the
+/// types references by an object.
+
+pub trait IterTypes {
+    /// Iterate over all types contained within on object.
+    ///
+    /// This method iterates over the types contained with in object, making
+    /// no particular guarantees about ordering or handling of duplicates.
+    ///
+    /// The return type is a Box in order to hide the concrete implementation
+    /// details of the iterator. Ideally we would return `impl Iterator` here
+    /// but that's not currently supported for trait methods.
+    fn iter_types(&self) -> TypeIterator<'_>;
+}
+
+impl<T: IterTypes> IterTypes for &T {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        (*self).iter_types()
+    }
+}
+
+impl<T: IterTypes> IterTypes for Box<T> {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        self.as_ref().iter_types()
+    }
+}
+
+impl<T: IterTypes> IterTypes for Option<T> {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(self.iter().map(IterTypes::iter_types).flatten())
+    }
+}
+
+impl IterTypes for Type {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        let nested_types = match self {
+            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => Some(t.iter_types()),
+            _ => None,
+        };
+        Box::new(std::iter::once(self).chain(nested_types.into_iter().flatten()))
+    }
+}
+
+impl IterTypes for TypeUniverse {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(self.all_known_types.iter())
+    }
+}
+
 #[cfg(test)]
 mod test_type {
     use super::*;

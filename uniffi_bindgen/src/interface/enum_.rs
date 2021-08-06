@@ -79,7 +79,7 @@
 use anyhow::{bail, Result};
 
 use super::record::Field;
-use super::types::Type;
+use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 /// Represents an enum with named variants, each of which may have named
@@ -113,17 +113,11 @@ impl Enum {
     pub fn is_flat(&self) -> bool {
         self.flat
     }
+}
 
-    pub fn contains_object_references(&self, ci: &ComponentInterface) -> bool {
-        ci.type_contains_object_references(&self.type_())
-    }
-
-    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
-        self.variants().iter().any(|v| {
-            v.fields()
-                .iter()
-                .any(|f| ci.type_contains_unsigned_types(&f.type_))
-        })
+impl IterTypes for Enum {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(self.variants.iter().map(IterTypes::iter_types).flatten())
     }
 }
 
@@ -196,6 +190,12 @@ impl Variant {
 
     pub fn has_fields(&self) -> bool {
         !self.fields.is_empty()
+    }
+}
+
+impl IterTypes for Variant {
+    fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(self.fields.iter().map(IterTypes::iter_types).flatten())
     }
 }
 
