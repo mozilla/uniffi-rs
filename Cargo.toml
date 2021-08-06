@@ -12,6 +12,7 @@ members = [
   "examples/todolist",
   "fixtures/coverall",
   "fixtures/callbacks",
+  "fixtures/ext-types/guid",
   "fixtures/external-types/crate-one",
   "fixtures/external-types/crate-two",
   "fixtures/external-types/lib",

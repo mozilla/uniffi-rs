@@ -195,6 +195,11 @@ class RustBufferBuilder(object):
             self.writeString(k)
             self.write{{ inner_type.canonical_name()|class_name_py }}(v)
 
+    {% when Type::Custom with { primitive, name, ffi_converter_name, bindings_kind } -%}
+
+    def write{{ canonical_type_name }}(self, items):
+        return self.write{{ primitive.canonical_name()|class_name_py }}(items)
+
     {%- else -%}
     # This type cannot currently be serialized, but we can produce a helpful error.
 

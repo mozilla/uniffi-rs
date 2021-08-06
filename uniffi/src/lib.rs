@@ -28,7 +28,7 @@
 //! In addition to the core` FfiConverter` trait, we provide a handful of struct definitions useful
 //! for passing core rust types over the FFI, such as [`RustBuffer`].
 
-use anyhow::{bail, Result};
+use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
 use paste::paste;
 use std::{
@@ -36,6 +36,9 @@ use std::{
     convert::TryFrom,
     time::{Duration, SystemTime},
 };
+
+// Make Result<> public to support external impls of FfiConverter
+pub use anyhow::Result;
 
 pub mod ffi;
 pub use ffi::*;

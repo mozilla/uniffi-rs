@@ -1,0 +1,12 @@
+[ExternalWrapping]
+typedef string Guid;
+
+dictionary GuidHelper {
+    Guid guid;
+    sequence<Guid> guids;
+};
+
+namespace ext_types_guid {
+    Guid get_guid(optional Guid? val);
+    GuidHelper get_guid_helper(optional GuidHelper? vals);
+};

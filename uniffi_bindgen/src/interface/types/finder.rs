@@ -19,6 +19,7 @@
 
 use std::convert::TryFrom;
 
+use heck::CamelCase;
 use anyhow::{bail, Result};
 
 use super::super::attributes::{EnumAttributes, InterfaceAttributes, TypedefAttributes};
@@ -106,7 +107,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 Type::Custom {
                     name: name.to_string(),
                     primitive: wrapped_type.clone().into(),
-                    ffi_converter_name: "TODO".into(),
+                    ffi_converter_name: format!("FFIConverterWrapping{}{}", name, wrapped_type.canonical_name().to_camel_case()),
                     bindings_kind: CustomTypeBindingsKind::Primitive(wrapped_type.into()),
                 }
             )
