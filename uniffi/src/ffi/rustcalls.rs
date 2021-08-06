@@ -10,7 +10,7 @@
 //!    - Catching panics
 //!    - Adapting `Result<>` types into either a return value or an error
 
-use crate::{RustBuffer, RustBufferFfiConverter, FfiConverter};
+use crate::{FfiConverter, RustBuffer, RustBufferFfiConverter};
 use anyhow::Result;
 use ffi_support::IntoFfi;
 use std::mem::MaybeUninit;
@@ -177,7 +177,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{RustBufferFfiConverter, FfiConverter};
+    use crate::{FfiConverter, RustBufferFfiConverter};
 
     fn function(a: u8) -> i8 {
         match a {

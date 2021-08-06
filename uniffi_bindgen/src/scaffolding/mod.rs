@@ -114,6 +114,9 @@ mod filters {
     //
     // This outputs something like `<TheFfiConverterImplStruct as FfiConverter>`
     pub fn ffi_converter_impl(type_: &Type) -> Result<String, askama::Error> {
-        Ok(format!("<{} as uniffi::FfiConverter>", ffi_converter_impl_name(type_)?))
+        Ok(format!(
+            "<{} as uniffi::FfiConverter>",
+            ffi_converter_impl_name(type_)?
+        ))
     }
 }

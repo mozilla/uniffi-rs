@@ -34,7 +34,12 @@ impl RustGetters {
         callback.get_list(v, arg2)
     }
 
-    fn get_string_optional_callback<'a>(&self, callback: Option<Box<dyn ForeignGetters + 'a>>, v: String, arg2: bool) -> Option<String> {
+    fn get_string_optional_callback<'a>(
+        &self,
+        callback: Option<Box<dyn ForeignGetters + 'a>>,
+        v: String,
+        arg2: bool,
+    ) -> Option<String> {
         callback.map(|c| c.get_string(v, arg2))
     }
 }
