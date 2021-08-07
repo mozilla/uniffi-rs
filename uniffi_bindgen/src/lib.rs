@@ -211,9 +211,15 @@ pub fn run_tests<P: AsRef<Path>>(
     Ok(())
 }
 
-// Generate the bindings in the target languages that call the scaffolding
-// Rust code.
-pub fn run_checks(target_languages: Vec<&str>) -> Result<()> {
+fn check_udl_file<P: AsRef<Path>>(udl_file: P) -> Result<()> {
+    let udl_file = udl_file.as_ref();
+    // We're just verifying that we can sucessfully parse the udl
+    let _ = parse_udl(udl_file);
+    println!("There were no errors detected in the UDL file");
+    Ok(())
+}
+
+fn check_language_environment(target_languages: Vec<&str>) -> Result<()> {
     /* Ideally for language-specific things we'd import these commands or defer
      ** to their version of the bindgen to keep things neat and clean
      */
@@ -399,7 +405,14 @@ pub fn run_main() -> Result<()> {
             m.values_of("test_scripts").unwrap().collect(), // Required
             m.value_of_os("config"),
         )?,
-        ("check", Some(m)) => crate::run_checks(m.values_of("language").unwrap().collect())?,
+        ("check", Some(m)) => {
+            if m.is_present("udl_file") {
+                check_udl_file(m.value_of_os("udl_file").unwrap())?;
+            };
+            if m.is_present("language") {
+                check_language_environment(m.values_of("language").unwrap().collect())?;
+            };
+        }
         _ => bail!("No command specified; try `--help` for some help."),
     }
     Ok(())
@@ -491,7 +504,8 @@ fn gen_comands<'a>() -> ArgMatches<'a> {
                 .short("-l")
                 .possible_values(POSSIBLE_LANGUAGES)
                 .help("Check if the environment is suitable for building the foreign language"),
-        );
+        )
+        .arg(Arg::with_name("udl_file"));
 
     // This is needed to be able to use `cargo uniffi <command>` as well as `cargo-uniffi <command>`
     // since cargo will check for the binary cargo-uniffi but clap doesn't "understand" that
