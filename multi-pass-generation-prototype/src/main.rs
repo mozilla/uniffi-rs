@@ -12,5 +12,5 @@ fn main() {
                 ('b'.into(), TypeItem::String),
             ],
         }).into(),
-    ], File::create("output.py").unwrap());
+    ], File::create("06-output.py").unwrap());
 }
