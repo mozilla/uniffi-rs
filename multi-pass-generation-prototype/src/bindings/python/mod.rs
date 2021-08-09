@@ -1,7 +1,13 @@
+mod codeblocks;
+mod passes;
+
+use codeblocks::CodeBlock;
+
 use crate::udl::UdlItem;
 use crate::generate::VecPass;
 use crate::log::FileLogger;
 use crate::passes::add_nested_types;
+use passes::map_udl_items_to_code_blocks;
 use std::fs::File;
 use std::io::Write;
 
@@ -13,5 +19,6 @@ fn log_input(input: &Vec<UdlItem>) {
 pub fn render_udl_to_file(input: Vec<UdlItem>, _file: File) {
     log_input(&input);
     input
-        .run_pass(&add_nested_types(FileLogger::new("01-add-nested-types.log")));
+        .run_pass(&add_nested_types(FileLogger::new("01-add-nested-types.log")))
+        .run_pass(&map_udl_items_to_code_blocks(FileLogger::new("02-map-items-to-code-blocks.log")));
 }
