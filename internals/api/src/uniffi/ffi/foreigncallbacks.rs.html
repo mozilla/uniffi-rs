@@ -185,13 +185,6 @@
 <span id="182">182</span>
 <span id="183">183</span>
 <span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -334,15 +327,8 @@
 <span class="comment">// Note that these are guaranteed by</span>
 <span class="comment">// https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html</span>
 <span class="comment">// and thus this is a little paranoid.</span>
-<span class="ident">ffi_support</span>::<span class="macro">static_assert</span><span class="macro">!</span>(
-    <span class="ident">STATIC_ASSERT_USIZE_EQ_FUNC_SIZE</span>,
-    <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">ForeignCallback</span><span class="op">&gt;</span>()
-);
-
-<span class="ident">ffi_support</span>::<span class="macro">static_assert</span><span class="macro">!</span>(
-    <span class="ident">STATIC_ASSERT_USIZE_EQ_OPT_FUNC_SIZE</span>,
-    <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ForeignCallback</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-);
+<span class="ident">static_assertions</span>::<span class="macro">assert_eq_size</span><span class="macro">!</span>(<span class="ident">usize</span>, <span class="ident">ForeignCallback</span>);
+<span class="ident">static_assertions</span>::<span class="macro">assert_eq_size</span><span class="macro">!</span>(<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ForeignCallback</span><span class="op">&gt;</span>);
 
 <span class="doccomment">/// Struct to hold a foreign callback.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ForeignCallbackInternals</span> {

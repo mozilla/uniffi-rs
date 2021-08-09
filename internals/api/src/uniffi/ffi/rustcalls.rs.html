@@ -258,7 +258,6 @@
 <span id="255">255</span>
 <span id="256">256</span>
 <span id="257">257</span>
-<span id="258">258</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -272,9 +271,9 @@
 <span class="doccomment">//!    - Catching panics</span>
 <span class="doccomment">//!    - Adapting `Result&lt;&gt;` types into either a return value or an error</span>
 
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">FfiDefault</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">RustBuffer</span>, <span class="ident">RustBufferViaFfi</span>, <span class="ident">ViaFfi</span>};
 <span class="kw">use</span> <span class="ident">anyhow</span>::<span class="prelude-ty">Result</span>;
-<span class="kw">use</span> <span class="ident">ffi_support</span>::<span class="ident">IntoFfi</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">MaybeUninit</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">panic</span>;
 
@@ -341,15 +340,14 @@
 <span class="comment">// Generalized rust call handling function</span>
 <span class="comment">// callback is responsible for making the call to the rust function.  If that function returns an</span>
 <span class="comment">// `Err` value, callback should serialize the error into a `RustBuffer` to be returned over the FFI.</span>
-<span class="kw">fn</span> <span class="ident">make_call</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">out_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
+<span class="kw">fn</span> <span class="ident">make_call</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">out_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">panic</span>::<span class="ident">UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">RustBuffer</span><span class="op">&gt;</span>,
-    <span class="ident">R</span>: <span class="ident">IntoFfi</span>,
+    <span class="ident">R</span>: <span class="ident">FfiDefault</span>,
 {
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">panic</span>::<span class="ident">catch_unwind</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="comment">// Use ffi_support&#39;s panic handling hook</span>
-        <span class="ident">ffi_support</span>::<span class="ident">ensure_panic_hook_is_setup</span>();
-        <span class="ident">callback</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">into_ffi_value</span>())
+        <span class="kw">crate</span>::<span class="ident">panichook</span>::<span class="ident">ensure_setup</span>();
+        <span class="ident">callback</span>()
     });
     <span class="kw">match</span> <span class="ident">result</span> {
         <span class="comment">// Happy path.  Note: no need to update out_status in this case because the calling code</span>
@@ -403,10 +401,10 @@
 <span class="doccomment">/// - If the function panics:</span>
 <span class="doccomment">///     - `out_status.code` will be set to `CALL_PANIC`</span>
 <span class="doccomment">///     - the return value is undefined</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_output</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">out_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_output</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">out_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">panic</span>::<span class="ident">UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>,
-    <span class="ident">R</span>: <span class="ident">IntoFfi</span>,
+    <span class="ident">R</span>: <span class="ident">FfiDefault</span>,
 {
     <span class="ident">make_call</span>(<span class="ident">out_status</span>, <span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">callback</span>()))
 }
@@ -422,11 +420,11 @@
 <span class="doccomment">/// - If the function panics:</span>
 <span class="doccomment">///     - `out_status.code` will be set to `CALL_PANIC`</span>
 <span class="doccomment">///     - the return value is undefined</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_result</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">out_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_result</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">out_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">panic</span>::<span class="ident">UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>,
     <span class="ident">E</span>: <span class="ident">FfiError</span>,
-    <span class="ident">R</span>: <span class="ident">IntoFfi</span>,
+    <span class="ident">R</span>: <span class="ident">FfiDefault</span>,
 {
     <span class="ident">make_call</span>(<span class="ident">out_status</span>, <span class="op">|</span><span class="op">|</span> <span class="ident">callback</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">lower</span>()))
 }
