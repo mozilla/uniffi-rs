@@ -216,7 +216,7 @@ foreign language code:</p>
     uniffi::deps::ffi_support::call_with_output(err, || {
         let _new = TodoList::new();
         let _arc = std::sync::Arc::new(_new);
-        &lt;std::sync::Arc&lt;TodoList&gt; as uniffi::ViaFfi&gt;::lower(_arc)
+        &lt;std::sync::Arc&lt;TodoList&gt; as uniffi::FfiConverter&gt;::lower(_arc)
     })
 }
 <span class="boring">}
@@ -225,7 +225,7 @@ foreign language code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>unsafe impl&lt;T: Sync + Send&gt; ViaFfi for std::sync::Arc&lt;T&gt; {
+</span>unsafe impl&lt;T: Sync + Send&gt; FfiConverter for std::sync::Arc&lt;T&gt; {
     type FfiType = *const std::os::raw::c_void;
     fn lower(self) -&gt; Self::FfiType {
         std::sync::Arc::into_raw(self) as Self::FfiType
@@ -251,8 +251,8 @@ lives for the duration of the method call:</p>
 ) -&gt; () {
     uniffi::deps::ffi_support::call_with_result(err, || -&gt; Result&lt;_, TodoError&gt; {
         let _retval = TodoList::add_item(
-          &amp;&lt;std::sync::Arc&lt;TodoList&gt; as uniffi::ViaFfi&gt;::try_lift(ptr).unwrap(),
-          &lt;String as uniffi::ViaFfi&gt;::try_lift(todo).unwrap())?,
+          &amp;&lt;std::sync::Arc&lt;TodoList&gt; as uniffi::FfiConverter&gt;::try_lift(ptr).unwrap(),
+          &lt;String as uniffi::FfiConverter&gt;::try_lift(todo).unwrap())?,
         )
         Ok(_retval)
     })
@@ -263,7 +263,7 @@ lives for the duration of the method call:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>unsafe impl&lt;T: Sync + Send&gt; ViaFfi for std::sync::Arc&lt;T&gt; {
+</span>unsafe impl&lt;T: Sync + Send&gt; FfiConverter for std::sync::Arc&lt;T&gt; {
     type FfiType = *const std::os::raw::c_void;
     fn try_lift(v: Self::FfiType) -&gt; Result&lt;Self&gt; {
         let v = v as *const T;

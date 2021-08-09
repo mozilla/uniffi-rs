@@ -1083,7 +1083,7 @@ higher-level API in a target language. There is a sub-module for each supported 
 </li>
 <li><strong><a href="internals/./api/uniffi/index.html"><code>./uniffi</code></a>:</strong> This is a run-time support crate that is used by the generated Rust scaffolding. It
 controls how values of various types are passed back-and-forth over the FFI layer, by means of the
-<a href="internals/./api/uniffi/trait.ViaFfi.html"><code>ViaFfi</code></a> trait.</li>
+<a href="internals/./api/uniffi/trait.FfiConverter.html"><code>FfiConverter</code></a> trait.</li>
 <li><strong><a href="internals/./api/uniffi_build/index.html"><code>./uniffi_build</code></a>:</strong> This is a small hook to run <code>uniffi-bindgen</code> from the <code>build.rs</code> script
 of a UniFFI component, in order to automatically generate the Rust scaffolding as part of its build process.</li>
 <li><strong><a href="internals/./api/uniffi_macros/index.html"><code>./uniffi_macros</code></a>:</strong> This contains some helper macros that UniFFI components can use to
@@ -1232,7 +1232,7 @@ foreign language code:</p>
     uniffi::deps::ffi_support::call_with_output(err, || {
         let _new = TodoList::new();
         let _arc = std::sync::Arc::new(_new);
-        &lt;std::sync::Arc&lt;TodoList&gt; as uniffi::ViaFfi&gt;::lower(_arc)
+        &lt;std::sync::Arc&lt;TodoList&gt; as uniffi::FfiConverter&gt;::lower(_arc)
     })
 }
 <span class="boring">}
@@ -1241,7 +1241,7 @@ foreign language code:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>unsafe impl&lt;T: Sync + Send&gt; ViaFfi for std::sync::Arc&lt;T&gt; {
+</span>unsafe impl&lt;T: Sync + Send&gt; FfiConverter for std::sync::Arc&lt;T&gt; {
     type FfiType = *const std::os::raw::c_void;
     fn lower(self) -&gt; Self::FfiType {
         std::sync::Arc::into_raw(self) as Self::FfiType
@@ -1267,8 +1267,8 @@ lives for the duration of the method call:</p>
 ) -&gt; () {
     uniffi::deps::ffi_support::call_with_result(err, || -&gt; Result&lt;_, TodoError&gt; {
         let _retval = TodoList::add_item(
-          &amp;&lt;std::sync::Arc&lt;TodoList&gt; as uniffi::ViaFfi&gt;::try_lift(ptr).unwrap(),
-          &lt;String as uniffi::ViaFfi&gt;::try_lift(todo).unwrap())?,
+          &amp;&lt;std::sync::Arc&lt;TodoList&gt; as uniffi::FfiConverter&gt;::try_lift(ptr).unwrap(),
+          &lt;String as uniffi::FfiConverter&gt;::try_lift(todo).unwrap())?,
         )
         Ok(_retval)
     })
@@ -1279,7 +1279,7 @@ lives for the duration of the method call:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>unsafe impl&lt;T: Sync + Send&gt; ViaFfi for std::sync::Arc&lt;T&gt; {
+</span>unsafe impl&lt;T: Sync + Send&gt; FfiConverter for std::sync::Arc&lt;T&gt; {
     type FfiType = *const std::os::raw::c_void;
     fn try_lift(v: Self::FfiType) -&gt; Result&lt;Self&gt; {
         let v = v as *const T;
