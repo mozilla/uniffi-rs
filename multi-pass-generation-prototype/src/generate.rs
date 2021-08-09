@@ -27,15 +27,53 @@ impl<T> VecPass<T> for Vec<T> {
 /// Pass that maps each input element to N output elements
 pub struct Map<I, O, L> where
     I: Debug,
+    O: Debug + Clone,
+    L: Logger
+{
+    pub map_func: Box<dyn Fn(I) -> Vec<O>>,
+    pub logger: L,
+}
+
+impl<I, O, L> Map<I, O, L> where
+    I: Debug,
+    O: Debug + Clone,
+    L: Logger
+{
+    fn map_one_item(&self, i: usize, item: I) -> Vec<O> {
+        if i > 0 {
+            self.logger.log_separator();
+        }
+        self.logger.log_input(&item);
+        let result = (self.map_func)(item);
+        result.iter().for_each(|i| self.logger.log_output(i));
+        result
+    }
+}
+
+impl<I, O, L> Pass<I> for Map<I, O, L> where
+    I: Debug,
+    O: Debug + Clone,
+    L: Logger
+{
+    type OutputType = O;
+
+    fn run_pass(&self, input: Vec<I>) -> Vec<O> {
+        input.into_iter().enumerate().map(|(i, item)| self.map_one_item(i, item)).flatten().collect()
+    }
+}
+
+
+/// Like Map, but ensures all output items are unique
+pub struct UniqueMap<I, O, L> where
+    I: Debug,
     O: Debug + Eq + Hash + Clone,
     L: Logger
 {
     pub map_func: Box<dyn Fn(I) -> Vec<O>>,
     pub logger: L,
-    pub prevent_dupes: bool,
 }
 
-impl<I, O, L> Map<I, O, L> where
+impl<I, O, L> UniqueMap<I, O, L> where
     I: Debug,
     O: Debug + Eq + Hash + Clone,
     L: Logger
@@ -47,7 +85,7 @@ impl<I, O, L> Map<I, O, L> where
         self.logger.log_input(&item);
         let result = (self.map_func)(item);
         result.into_iter().filter(|i| {
-            if !(self.prevent_dupes && !seen.insert(i.clone())) {
+            if seen.insert(i.clone()) {
                 self.logger.log_output(i);
                 true
             } else {
@@ -59,7 +97,7 @@ impl<I, O, L> Map<I, O, L> where
 }
 
 
-impl<I, O, L> Pass<I> for Map<I, O, L> where
+impl<I, O, L> Pass<I> for UniqueMap<I, O, L> where
     I: Debug,
     O: Debug + Eq + Hash + Clone,
     L: Logger
@@ -152,7 +190,6 @@ mod test {
         let duplicate = Map {
             map_func: Box::new(|i| vec![i, i]),
             logger: StringLogger::new(),
-            prevent_dupes: false,
         };
         assert_eq!(
             duplicate.run_pass(vec![1, 2, 3]),
@@ -177,11 +214,10 @@ mod test {
     }
 
     #[test]
-    fn test_prevent_dupes() {
-        let mod3 = Map {
+    fn test_unique_map() {
+        let mod3 = UniqueMap {
             map_func: Box::new(|i| vec![i % 3]),
             logger: StringLogger::new(),
-            prevent_dupes: true,
         };
         assert_eq!(
             mod3.run_pass(vec![1, 2, 4, 6]),

@@ -1,17 +1,18 @@
 /// UDL items -- imagine the component interface code outputing a Vec of these things
 
 use std::convert::*;
+use serde::Serialize;
 
 // Seems like there should be a nicer way to spell out this nested enum, any suggestions?
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum UdlItem {
     Type(TypeItem),
     // We would also add:
     // Function(FunctionItem),
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum TypeItem {
     I32,
     String,
@@ -19,7 +20,7 @@ pub enum TypeItem {
     Record(RecordDef),
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord, Serialize)]
 pub struct RecordDef {
     pub name: String,
     pub fields: Vec<(String, TypeItem)>,

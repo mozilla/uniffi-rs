@@ -1,7 +1,7 @@
 mod codeblocks;
 mod passes;
 
-use codeblocks::CodeBlock;
+use codeblocks::{CodeBlock, TemplateRenderer};
 
 use crate::udl::UdlItem;
 use crate::generate::VecPass;
@@ -21,5 +21,6 @@ pub fn render_udl_to_file(input: Vec<UdlItem>, _file: File) {
     input
         .run_pass(&add_nested_types(FileLogger::new("01-add-nested-types.log")))
         .run_pass(&map_udl_items_to_code_blocks(FileLogger::new("02-map-items-to-code-blocks.log")))
-        .run_pass(&add_common_code_and_sort_codeblocks(FileLogger::new("03-add-common-code-and-sort.log")));
+        .run_pass(&add_common_code_and_sort_codeblocks(FileLogger::new("03-add-common-code-and-sort.log")))
+        .run_pass(&map_codeblocks_to_template_renderer(FileLogger::new("04-map-codeblocks-to-template-renderer.log")));
 }
