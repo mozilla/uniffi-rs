@@ -33,6 +33,10 @@
 
 - Both python and ruby backends now handle U16 correctly.
 - Error variants can now contain named fields, similar to Enum variants
+- Replaced the `ViaFfi` trait with the `FfiConverter` trait.  `FfiConverter` is
+  a more flexible version of `ViaFfi` because it can convert any Rust
+  type to/from an Ffi type, rather than only Self.  This allows for using
+  UniFFI with a type defined in an external crate.
 
 ## v0.12.0 (2021-06-14)
 

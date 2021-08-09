@@ -87,7 +87,7 @@ unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
     type FfiType = u64;
     
     // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
-    // probably a way to, but but this carries lots of thread safety risks, down to impedence
+    // probably a way to, but this carries lots of thread safety risks, down to impedence
     // mismatches between Rust and foreign languages, and our uncertainty around implementations of
     // concurrent handlemaps.
     //

@@ -72,6 +72,7 @@ mod filters {
     ///
     /// - For primitives / standard types this is the type itself.
     /// - For user-defined types, this is a unique generated name.  We then generate a unit-struct
+    ///   in the scaffolding code that implements FfiConverter.
     pub fn ffi_converter_name(type_: &Type) -> askama::Result<String> {
         Ok(match type_ {
             // Timestamp/Duraration are handled by standard types

@@ -9,7 +9,7 @@ Discussion : [PR 1001](https://github.com/mozilla/uniffi-rs/pull/1001).
 
 ## Context and Problem Statement
 
-UniFFI currently cannot support types from external crates because of Rust's
+UniFFI currently cannot support types from external crates because Rust's
 orphan rule prevents implementing `ViaFfi`.  The orphan rules specifies that
 the trait needs to be in the `uniffi` crate or the external crate, but we are
 generating the scaffolding code for the crate being uniffied.
@@ -35,7 +35,7 @@ that struct to lift/lower the external type that we actually want to use.
     wrap the external type (`struct WrapperType(ExternalType)`)
 
   * In the filters functions we generate code to wrap lift/lower/read/write.
-    For example the lower_rs filter could output `External_type(x).lower()` to
+    For example the lower_rs filter could output `WrapperType(x).lower()` to
     lower `WrapperType`.
 
 * **[Option 2] Replace the `ViaFfi` trait with something more generic**
@@ -66,7 +66,7 @@ This decision is taken because:
 
 * We believe it will make it easier to implement the other wrapping-style
   features mentioned above.  One sign of this was the CallbackInterface code,
-  which converts it's type to `Box<dyn CallbackInterfaceTrait>`.  The
+  which converts its type to `Box<dyn CallbackInterfaceTrait>`.  The
   `FfiConverter` trait was able to implement this, removing the current
   lift/lower/read/write template code and fixing a bug with `Option<>`.
 
