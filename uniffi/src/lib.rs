@@ -11,21 +11,21 @@
 //! The key concept here is the [`FfiConverter`] trait, which is responsible for converting between
 //! a Rust type and a low-level C-style type that can be passed across the FFI:
 //!
-//!  * How to [represent](FfiConverter::FfiType) values of the rust type in the low-level C-style type
+//!  * How to [represent](FfiConverter::FfiType) values of the Rust type in the low-level C-style type
 //!    system of the FFI layer.
-//!  * How to ["lower"](FfiConverter::lower) values of the rust type into an appropriate low-level
+//!  * How to ["lower"](FfiConverter::lower) values of the Rust type into an appropriate low-level
 //!    FFI value.
-//!  * How to ["lift"](FfiConverter::try_lift) low-level FFI values back into values of the rust
+//!  * How to ["lift"](FfiConverter::try_lift) low-level FFI values back into values of the Rust
 //!    type.
-//!  * How to [write](FfiConverter::write) values of the rust type into a buffer, for cases
+//!  * How to [write](FfiConverter::write) values of the Rust type into a buffer, for cases
 //!    where they are part of a compound data structure that is serialized for transfer.
-//!  * How to [read](FfiConverter::try_read) values of the rust type from buffer, for cases
+//!  * How to [read](FfiConverter::try_read) values of the Rust type from buffer, for cases
 //!    where they are received as part of a compound data structure that was serialized for transfer.
 //!
-//! This logic encapsulates the rust-side handling of data transfer. Each foreign-language binding
+//! This logic encapsulates the Rust-side handling of data transfer. Each foreign-language binding
 //! must also implement a matching set of data-handling rules for each data type.
 //!
-//! In addition to the core` FfiConverter` trait, we provide a handful of struct definitions useful
+//! In addition to the core `FfiConverter` trait, we provide a handful of struct definitions useful
 //! for passing core rust types over the FFI, such as [`RustBuffer`].
 
 use anyhow::{bail, Result};
@@ -144,9 +144,9 @@ macro_rules! assert_compatible_version {
 /// implementations generated from your component UDL via the `uniffi-bindgen scaffolding` command.
 
 pub unsafe trait FfiConverter: Sized {
-    /// The type used in rust code.
+    /// The type used in Rust code.
     ///
-    /// For primitive / standard types, we implement FfiConverter on the type itself and RustType=Self.
+    /// For primitive / standard types, we implement `FfiConverter` on the type itself with `RustType=Self`.
     /// For user-defined types we create a unit struct and implement it there.  This sidesteps
     /// Rust's orphan rules (ADR-0006).
     type RustType;
@@ -168,7 +168,7 @@ pub unsafe trait FfiConverter: Sized {
     /// by (hopefully cheaply!) converting it into someting that can be passed over the FFI
     /// and reconstructed on the other side.
     ///
-    /// Note that this method takes an owned `self`; this allows it to transfer ownership
+    /// Note that this method takes an owned `Self::RustType`; this allows it to transfer ownership
     /// in turn to the foreign language code, e.g. by boxing the value and passing a pointer.
     fn lower(obj: Self::RustType) -> Self::FfiType;
 
@@ -188,7 +188,7 @@ pub unsafe trait FfiConverter: Sized {
     /// in cases where we're not able to use a special-purpose FFI type and must fall back to
     /// sending serialized bytes.
     ///
-    /// Note that this method takes an owned `self` because it's transfering ownership
+    /// Note that this method takes an owned `Self::RustType` because it's transfering ownership
     /// to the foreign language code via the RustBuffer.
     fn write(obj: Self::RustType, buf: &mut Vec<u8>);
 
@@ -223,7 +223,7 @@ pub fn check_remaining(buf: &[u8], num_bytes: usize) -> Result<()> {
     Ok(())
 }
 
-/// Blanket implementation of FfiConverter for numeric primitives.
+/// Blanket implementation of `FfiConverter` for numeric primitives.
 ///
 /// Numeric primitives have a straightforward mapping into C-compatible numeric types,
 /// sice they are themselves a C-compatible numeric type!

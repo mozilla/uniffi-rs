@@ -135,8 +135,8 @@ where
 
 /// Wrap a rust function call and return the result directly
 ///
-/// callback is responsible for making the call to the rust function.  It must convert any return
-/// value into a type that implements IntoFfi (typically handled with FfiConverter::lower()).
+/// `callback` is responsible for making the call to the Rust function.  It must convert any return
+/// value into a type that implements `IntoFfi` (typically handled with `FfiConverter::lower()`).
 ///
 /// - If the function succeeds then the function's return value will be returned to the outer code
 /// - If the function panics:
@@ -152,10 +152,10 @@ where
 
 /// Wrap a rust function call that returns a `Result<_, RustBuffer>`
 ///
-/// callback is responsible for making the call to the rust function.
-///   - callback must convert any return value into a type that implements IntoFfi
-///   - callback must convert any Error the into a `RustBuffer` to be returned over the FFI
-///   - (Both of these are typically handled with FfiConverter::lower())
+/// `callback` is responsible for making the call to the Rust function.
+///   - `callback` must convert any return value into a type that implements `IntoFfi`
+///   - `callback` must convert any `Error` the into a `RustBuffer` to be returned over the FFI
+///   - (Both of these are typically handled with `FfiConverter::lower()`)
 ///
 /// - If the function returns an `Ok` value it will be unwrapped and returned
 /// - If the function returns an `Err`:
