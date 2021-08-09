@@ -10,9 +10,9 @@
 //!    - Catching panics
 //!    - Adapting `Result<>` types into either a return value or an error
 
+use super::FfiDefault;
 use crate::{RustBuffer, RustBufferViaFfi, ViaFfi};
 use anyhow::Result;
-use ffi_support::IntoFfi;
 use std::mem::MaybeUninit;
 use std::panic;
 
@@ -79,15 +79,14 @@ pub trait FfiError: RustBufferViaFfi {}
 // Generalized rust call handling function
 // callback is responsible for making the call to the rust function.  If that function returns an
 // `Err` value, callback should serialize the error into a `RustBuffer` to be returned over the FFI.
-fn make_call<F, R>(out_status: &mut RustCallStatus, callback: F) -> R::Value
+fn make_call<F, R>(out_status: &mut RustCallStatus, callback: F) -> R
 where
     F: panic::UnwindSafe + FnOnce() -> Result<R, RustBuffer>,
-    R: IntoFfi,
+    R: FfiDefault,
 {
     let result = panic::catch_unwind(|| {
-        // Use ffi_support's panic handling hook
-        ffi_support::ensure_panic_hook_is_setup();
-        callback().map(|v| v.into_ffi_value())
+        crate::panichook::ensure_setup();
+        callback()
     });
     match result {
         // Happy path.  Note: no need to update out_status in this case because the calling code
@@ -141,10 +140,10 @@ where
 /// - If the function panics:
 ///     - `out_status.code` will be set to `CALL_PANIC`
 ///     - the return value is undefined
-pub fn call_with_output<F, R>(out_status: &mut RustCallStatus, callback: F) -> R::Value
+pub fn call_with_output<F, R>(out_status: &mut RustCallStatus, callback: F) -> R
 where
     F: panic::UnwindSafe + FnOnce() -> R,
-    R: IntoFfi,
+    R: FfiDefault,
 {
     make_call(out_status, || Ok(callback()))
 }
@@ -160,11 +159,11 @@ where
 /// - If the function panics:
 ///     - `out_status.code` will be set to `CALL_PANIC`
 ///     - the return value is undefined
-pub fn call_with_result<F, R, E>(out_status: &mut RustCallStatus, callback: F) -> R::Value
+pub fn call_with_result<F, R, E>(out_status: &mut RustCallStatus, callback: F) -> R
 where
     F: panic::UnwindSafe + FnOnce() -> Result<R, E>,
     E: FfiError,
-    R: IntoFfi,
+    R: FfiDefault,
 {
     make_call(out_status, || callback().map_err(|e| e.lower()))
 }
