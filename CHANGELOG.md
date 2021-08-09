@@ -28,10 +28,6 @@
       which imports and uses the low-level C FFI. The name can be customized using
       the `module_name` config option.
 - Python timestamps will now be in UTC and timezone-aware rather than naive.
-- Replaced `lower_into_buffer()` and `try_lift_from_buffer()` with the
-  `RustBufferViaFfi` trait.  If you use those functions in your custom ViaFfi
-  implementation then you'll need to update the code.  Check out the `Option<>`
-  implementation in uniffi/src/lib.rs for an example.
 - Kotlin exceptions names will now replace a trailing "Error" with "Exception"
   rather than appending the string (FooException instead of FooErrorException)
 - JNA 5.7 or greater is required for Kotlin consumers
@@ -40,6 +36,10 @@
 
 - Both python and ruby backends now handle U16 correctly.
 - Error variants can now contain named fields, similar to Enum variants
+- Replaced the `ViaFfi` trait with the `FfiConverter` trait.  `FfiConverter` is
+  a more flexible version of `ViaFfi` because it can convert any Rust
+  type to/from an Ffi type, rather than only Self.  This allows for using
+  UniFFI with a type defined in an external crate.
 
 ## v0.12.0 (2021-06-14)
 

@@ -11,7 +11,7 @@
 //    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
 #}
 {% let trait_name = cbi.name() -%}
-{% let trait_impl = format!("{}Proxy", trait_name) -%}
+{% let trait_impl = cbi.type_()|ffi_converter_name -%}
 {% let foreign_callback_internals = format!("foreign_callback_{}_internals", trait_name)|upper -%}
 
 // Register a foreign callback for getting across the FFI.
@@ -59,9 +59,9 @@ impl {{ trait_name }} for {{ trait_impl }} {
         {% else -%}
         let mut args_buf = Vec::new();
         {% endif -%}
-        {% for arg in meth.arguments() -%}
-            {{ arg.name()|write_rs("&mut args_buf", arg.type_()) -}};
-        {% endfor -%}
+        {%- for arg in meth.arguments() %}
+        {{ arg.type_()|ffi_converter }}::write({{ arg.name() }}, &mut args_buf);
+        {%- endfor -%}
         let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
 
     {#- Calling into foreign code. #}
@@ -73,7 +73,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
         {% when Some with (return_type) -%}
         let vec = ret_rbuf.destroy_into_vec();
         let mut ret_buf = vec.as_slice();
-        {{ "&mut ret_buf"|read_rs(return_type) }}
+        {{ return_type|ffi_converter }}::try_read(&mut ret_buf).unwrap()
         {%- else -%}
         uniffi::RustBuffer::destroy(ret_rbuf);
         {%- endmatch %}
@@ -81,36 +81,35 @@ impl {{ trait_name }} for {{ trait_impl }} {
     {%- endfor %}
 }
 
-unsafe impl uniffi::ViaFfi for {{ trait_impl }} {
+unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
+    // This RustType allows for rust code that inputs this type as a Box<dyn CallbackInterfaceTrait> param
+    type RustType = Box<dyn {{ trait_name }}>;
     type FfiType = u64;
     
-    // Lower and write are trivially implemented, but carry lots of thread safety risks, down to
-    // impedence mismatches between Rust and foreign languages, and our uncertainty around implementations
-    // of concurrent handlemaps.
+    // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
+    // probably a way to, but this carries lots of thread safety risks, down to impedence
+    // mismatches between Rust and foreign languages, and our uncertainty around implementations of
+    // concurrent handlemaps.
     //
     // The use case for them is also quite exotic: it's passing a foreign callback back to the foreign
     // language.
     //
     // Until we have some certainty, and use cases, we shouldn't use them. 
-    // 
-    // They are implemented here for runtime use, but at scaffolding.rs will bail instead of generating
-    // the code to call these methods.
-    fn lower(self) -> Self::FfiType {
-        self.handle
+    fn lower(_obj: Self::RustType) -> Self::FfiType {
+        panic!("Lowering CallbackInterface not supported")
     }
 
-    fn write(self, buf: &mut Vec<u8>) {
-        use uniffi::deps::bytes::BufMut;
-        buf.put_u64(self.handle);
+    fn write(_obj: Self::RustType, _buf: &mut Vec<u8>) {
+        panic!("Writing CallbackInterface not supported")
     }
 
-    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self> {
-        Ok(Self { handle: v })
+    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self::RustType> {
+        Ok(Box::new(Self { handle: v }))
     }
 
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self::RustType> {
         use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 8)?;
-        <Self as uniffi::ViaFfi>::try_lift(buf.get_u64())
+        <Self as uniffi::FfiConverter>::try_lift(buf.get_u64())
     }
 }

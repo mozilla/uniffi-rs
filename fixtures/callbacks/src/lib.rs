@@ -33,6 +33,15 @@ impl RustGetters {
     fn get_list(&self, callback: Box<dyn ForeignGetters>, v: Vec<i32>, arg2: bool) -> Vec<i32> {
         callback.get_list(v, arg2)
     }
+
+    fn get_string_optional_callback(
+        &self,
+        callback: Option<Box<dyn ForeignGetters>>,
+        v: String,
+        arg2: bool,
+    ) -> Option<String> {
+        callback.map(|c| c.get_string(v, arg2))
+    }
 }
 
 impl Default for RustGetters {

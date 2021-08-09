@@ -45,6 +45,10 @@ listOf("Some", null).forEach { v ->
     val observed = rustGetters.getOption(callback, v, flag)
     assert(expected == observed) { "roundtripping through callback: $expected != $observed" }
 }
+
+assert(rustGetters.getStringOptionalCallback(callback, "TestString", false) == "TestString")
+assert(rustGetters.getStringOptionalCallback(null, "TestString", false) == null)
+
 rustGetters.destroy()
 
 // 2. Pass the callback in as a constructor argument, to be stored on the Object struct.
