@@ -4,8 +4,9 @@
 
 use crate::udl::{UdlItem, TypeItem, RecordDef};
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
 pub enum CodeBlock {
+    Common, // Common code we always include
     FFIConverterPrimitiveClass,
     FFIConverterOptionClass,
     FFIConverterPrimitive {

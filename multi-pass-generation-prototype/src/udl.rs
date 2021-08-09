@@ -4,14 +4,14 @@ use std::convert::*;
 
 // Seems like there should be a nicer way to spell out this nested enum, any suggestions?
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
 pub enum UdlItem {
     Type(TypeItem),
     // We would also add:
     // Function(FunctionItem),
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
 pub enum TypeItem {
     I32,
     String,
@@ -19,7 +19,7 @@ pub enum TypeItem {
     Record(RecordDef),
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
 pub struct RecordDef {
     pub name: String,
     pub fields: Vec<(String, TypeItem)>,
