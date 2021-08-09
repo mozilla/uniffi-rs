@@ -139,15 +139,8 @@ pub const IDX_CALLBACK_FREE: u32 = 0;
 // Note that these are guaranteed by
 // https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html
 // and thus this is a little paranoid.
-ffi_support::static_assert!(
-    STATIC_ASSERT_USIZE_EQ_FUNC_SIZE,
-    std::mem::size_of::<usize>() == std::mem::size_of::<ForeignCallback>()
-);
-
-ffi_support::static_assert!(
-    STATIC_ASSERT_USIZE_EQ_OPT_FUNC_SIZE,
-    std::mem::size_of::<usize>() == std::mem::size_of::<Option<ForeignCallback>>()
-);
+static_assertions::assert_eq_size!(usize, ForeignCallback);
+static_assertions::assert_eq_size!(usize, Option<ForeignCallback>);
 
 /// Struct to hold a foreign callback.
 pub struct ForeignCallbackInternals {

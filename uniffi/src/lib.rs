@@ -49,10 +49,11 @@ pub mod testing;
 pub mod deps {
     pub use anyhow;
     pub use bytes;
-    pub use ffi_support;
     pub use log;
     pub use static_assertions;
 }
+
+mod panichook;
 
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
