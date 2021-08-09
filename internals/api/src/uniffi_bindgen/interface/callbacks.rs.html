@@ -173,6 +173,12 @@
 <span id="170">170</span>
 <span id="171">171</span>
 <span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -215,7 +221,7 @@
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">ffi</span>::{<span class="ident">FFIArgument</span>, <span class="ident">FFIFunction</span>, <span class="ident">FFIType</span>};
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">object</span>::<span class="ident">Method</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">types</span>::<span class="ident">Type</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">types</span>::{<span class="ident">IterTypes</span>, <span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
@@ -257,6 +263,12 @@
             <span class="ident">type_</span>: <span class="ident">FFIType</span>::<span class="ident">ForeignCallback</span>,
         }];
         <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">return_type</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">IterTypes</span> <span class="kw">for</span> <span class="ident">CallbackInterface</span> {
+    <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="ident">Box</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">methods</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">IterTypes</span>::<span class="ident">iter_types</span>).<span class="ident">flatten</span>())
     }
 }
 

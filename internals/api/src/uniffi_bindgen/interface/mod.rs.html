@@ -855,6 +855,128 @@
 <span id="852">852</span>
 <span id="853">853</span>
 <span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
+<span id="927">927</span>
+<span id="928">928</span>
+<span id="929">929</span>
+<span id="930">930</span>
+<span id="931">931</span>
+<span id="932">932</span>
+<span id="933">933</span>
+<span id="934">934</span>
+<span id="935">935</span>
+<span id="936">936</span>
+<span id="937">937</span>
+<span id="938">938</span>
+<span id="939">939</span>
+<span id="940">940</span>
+<span id="941">941</span>
+<span id="942">942</span>
+<span id="943">943</span>
+<span id="944">944</span>
+<span id="945">945</span>
+<span id="946">946</span>
+<span id="947">947</span>
+<span id="948">948</span>
+<span id="949">949</span>
+<span id="950">950</span>
+<span id="951">951</span>
+<span id="952">952</span>
+<span id="953">953</span>
+<span id="954">954</span>
+<span id="955">955</span>
+<span id="956">956</span>
+<span id="957">957</span>
+<span id="958">958</span>
+<span id="959">959</span>
+<span id="960">960</span>
+<span id="961">961</span>
+<span id="962">962</span>
+<span id="963">963</span>
+<span id="964">964</span>
+<span id="965">965</span>
+<span id="966">966</span>
+<span id="967">967</span>
+<span id="968">968</span>
+<span id="969">969</span>
+<span id="970">970</span>
+<span id="971">971</span>
+<span id="972">972</span>
+<span id="973">973</span>
+<span id="974">974</span>
+<span id="975">975</span>
+<span id="976">976</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -903,7 +1025,7 @@
 <span class="doccomment">//!   * Error messages and general developer experience leave a lot to be desired.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">collections</span>::<span class="ident">hash_map</span>::<span class="ident">DefaultHasher</span>,
+    <span class="ident">collections</span>::{<span class="ident">hash_map</span>::<span class="ident">DefaultHasher</span>, <span class="ident">HashSet</span>},
     <span class="ident">convert</span>::<span class="ident">TryFrom</span>,
     <span class="ident">hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>},
     <span class="ident">str</span>::<span class="ident">FromStr</span>,
@@ -913,7 +1035,7 @@
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">types</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">types</span>::<span class="ident">Type</span>;
-<span class="kw">use</span> <span class="ident">types</span>::<span class="ident">TypeUniverse</span>;
+<span class="kw">use</span> <span class="ident">types</span>::{<span class="ident">IterTypes</span>, <span class="ident">TypeIterator</span>, <span class="ident">TypeUniverse</span>};
 
 <span class="kw">mod</span> <span class="ident">attributes</span>;
 <span class="kw">mod</span> <span class="ident">callbacks</span>;
@@ -1074,75 +1196,52 @@
         <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="ident">name</span>)
     }
 
-    <span class="doccomment">/// Check whether the given type contains any (possibly nested) Type::Object references.</span>
+    <span class="doccomment">/// Iterate over all types contained in the given item.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method uses `IterTypes::iter_types` to iterate over the types contained within the</span>
+    <span class="doccomment">/// given item, but additionally recurses into the definition of user-defined types like records</span>
+    <span class="doccomment">/// and enums to yield the types that *they* contain.</span>
+    <span class="kw">fn</span> <span class="ident">iter_types_in_item</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">IterTypes</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>,
+        <span class="ident">item</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Type</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span> {
+        <span class="ident">RecursiveTypeIterator</span>::<span class="ident">new</span>(<span class="self">self</span>, <span class="ident">item</span>)
+    }
+
+    <span class="doccomment">/// Check whether the given item contains any (possibly nested) Type::Object references.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is important to know in language bindings that cannot integrate object types</span>
     <span class="doccomment">/// tightly with the host GC, and hence need to perform manual destruction of objects.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_contains_object_references</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="self">self</span>.<span class="ident">type_contains_object_references</span>(<span class="ident">t</span>)
-            }
-            <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
-                .<span class="ident">get_record_definition</span>(<span class="ident">name</span>)
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">rec</span><span class="op">|</span> {
-                    <span class="ident">rec</span>.<span class="ident">fields</span>()
-                        .<span class="ident">iter</span>()
-                        .<span class="ident">any</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">type_contains_object_references</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">type_</span>))
-                })
-                .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
-            <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
-                .<span class="ident">get_enum_definition</span>(<span class="ident">name</span>)
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-                    <span class="ident">e</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
-                        <span class="ident">v</span>.<span class="ident">fields</span>()
-                            .<span class="ident">iter</span>()
-                            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">type_contains_object_references</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">type_</span>))
-                    })
-                })
-                .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">item_contains_object_references</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IterTypes</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">item</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">iter_types_in_item</span>(<span class="ident">item</span>)
+            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="kw">_</span>)))
     }
 
+    <span class="doccomment">/// Check whether the given item contains any (possibly nested) unsigned types</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">item_contains_unsigned_types</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IterTypes</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">item</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">iter_types_in_item</span>(<span class="ident">item</span>)
+            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">UInt8</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt16</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt32</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt64</span>))
+    }
+
+    <span class="doccomment">/// Check whether the interface contains any optional types</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_optional_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">iter_types</span>()
-            .<span class="ident">iter</span>()
+        <span class="self">self</span>.<span class="ident">types</span>
+            .<span class="ident">iter_known_types</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)))
     }
 
+    <span class="doccomment">/// Check whether the interface contains any sequence types</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_sequence_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">iter_types</span>()
-            .<span class="ident">iter</span>()
+        <span class="self">self</span>.<span class="ident">types</span>
+            .<span class="ident">iter_known_types</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)))
     }
 
+    <span class="doccomment">/// Check whether the interface contains any map types</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_map_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">iter_types</span>().<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>)))
-    }
-
-    <span class="doccomment">/// Check whether the given type contains any (possibly nested) unsigned types</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type</span>::<span class="ident">UInt8</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt16</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt32</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="self">self</span>.<span class="ident">type_contains_unsigned_types</span>(<span class="ident">t</span>)
-            }
-            <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
-                .<span class="ident">get_object_definition</span>(<span class="ident">t</span>)
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">obj</span><span class="op">|</span> <span class="ident">obj</span>.<span class="ident">contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>))
-                .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
-            <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
-                .<span class="ident">get_record_definition</span>(<span class="ident">name</span>)
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">rec</span><span class="op">|</span> <span class="ident">rec</span>.<span class="ident">contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>))
-                .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
-            <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
-                .<span class="ident">get_enum_definition</span>(<span class="ident">name</span>)
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>))
-                .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
-        }
+        <span class="self">self</span>.<span class="ident">types</span>
+            .<span class="ident">iter_known_types</span>()
+            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>)))
     }
 
     <span class="doccomment">/// Calculate a numeric checksum for this ComponentInterface.</span>
@@ -1447,6 +1546,121 @@
     }
 }
 
+<span class="kw">impl</span> <span class="ident">IterTypes</span> <span class="kw">for</span> <span class="ident">ComponentInterface</span> {
+    <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">iter_types</span>()
+    }
+}
+
+<span class="doccomment">/// Stateful iterator for yielding all types contained in a given item.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This struct is the implementation of [`ComponentInterface::iter_types_in_item`] and should be</span>
+<span class="doccomment">/// considered an opaque implementation detail. It&#39;s a separate struct because I couldn&#39;t</span>
+<span class="doccomment">/// figure out a way to implement it using iterators and closures that would make the lifetimes</span>
+<span class="doccomment">/// work out correctly.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The idea here is that we want to yield all the types from `IterTypes::iter_types` on a</span>
+<span class="doccomment">/// given item, and additionally we want to recurse into the definition of any user-provided</span>
+<span class="doccomment">/// types like records, enums, etc so we can also yield the types contained therein.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// To guard against infinite recursion, we maintain a list of previously-seen user-defined</span>
+<span class="doccomment">/// types, ensuring that we recurse into the definition of those types only once. To simplify</span>
+<span class="doccomment">/// the implementation, we maintain a queue of pending user-defined types that we have seen</span>
+<span class="doccomment">/// but not yet recursed into. (Ironically, the use of an explicit queue means our implementation</span>
+<span class="doccomment">/// is not actually recursive...)</span>
+<span class="kw">struct</span> <span class="ident">RecursiveTypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// The [`ComponentInterface`] from which this iterator was created.</span>
+    <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>,
+    <span class="doccomment">/// The currently-active iterator from which we&#39;re yielding.</span>
+    <span class="ident">current</span>: <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// A set of names of user-defined types that we have already seen.</span>
+    <span class="ident">seen</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// A queue of user-defined types that we need to recurse into.</span>
+    <span class="ident">pending</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Type</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">RecursiveTypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Allocate a new `RecursiveTypeIterator` over the given item.</span>
+    <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IterTypes</span><span class="op">&gt;</span>(<span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>, <span class="ident">item</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RecursiveTypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+        <span class="ident">RecursiveTypeIterator</span> {
+            <span class="ident">ci</span>,
+            <span class="comment">// We begin by iterating over the types from the item itself.</span>
+            <span class="ident">current</span>: <span class="ident">item</span>.<span class="ident">iter_types</span>(),
+            <span class="ident">seen</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
+            <span class="ident">pending</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
+        }
+    }
+
+    <span class="doccomment">/// Add a new type to the queue of pending types, if not previously seen.</span>
+    <span class="kw">fn</span> <span class="ident">add_pending_type</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Type</span>) {
+        <span class="kw">match</span> <span class="ident">type_</span> {
+            <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">nm</span>)
+            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">nm</span>)
+            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">nm</span>)
+            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">nm</span>)
+            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">seen</span>.<span class="ident">contains</span>(<span class="ident">nm</span>.<span class="ident">as_str</span>()) {
+                    <span class="self">self</span>.<span class="ident">pending</span>.<span class="ident">push</span>(<span class="ident">type_</span>);
+                    <span class="self">self</span>.<span class="ident">seen</span>.<span class="ident">insert</span>(<span class="ident">nm</span>.<span class="ident">as_str</span>());
+                }
+            }
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> (),
+        }
+    }
+
+    <span class="doccomment">/// Advance the iterator to recurse into the next pending type, if any.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is called when the current iterator is empty, and it will select</span>
+    <span class="doccomment">/// the next pending type from the queue and start iterating over its contained types.</span>
+    <span class="doccomment">/// The return value will be the first item from the new iterator.</span>
+    <span class="kw">fn</span> <span class="ident">advance_to_next_type</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Type</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next_type</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">pending</span>.<span class="ident">pop</span>() {
+            <span class="comment">// This is a little awkward because the various definition lookup methods return an `Option&lt;T&gt;`.</span>
+            <span class="comment">// In the unlikely event that one of them returns `None` then, rather than trying to advance</span>
+            <span class="comment">// to a non-existent type, we just leave the existing iterator in place and allow the recursive</span>
+            <span class="comment">// call to `next()` to try again with the next pending type.</span>
+            <span class="kw">let</span> <span class="ident">next_iter</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">next_type</span> {
+                <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
+                    .<span class="ident">ci</span>
+                    .<span class="ident">get_record_definition</span>(<span class="kw-2">&amp;</span><span class="ident">nm</span>)
+                    .<span class="ident">map</span>(<span class="ident">IterTypes</span>::<span class="ident">iter_types</span>),
+                <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">ci</span>.<span class="ident">get_enum_definition</span>(<span class="kw-2">&amp;</span><span class="ident">nm</span>).<span class="ident">map</span>(<span class="ident">IterTypes</span>::<span class="ident">iter_types</span>),
+                <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">ci</span>.<span class="ident">get_error_definition</span>(<span class="kw-2">&amp;</span><span class="ident">nm</span>).<span class="ident">map</span>(<span class="ident">IterTypes</span>::<span class="ident">iter_types</span>),
+                <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
+                    .<span class="ident">ci</span>
+                    .<span class="ident">get_object_definition</span>(<span class="kw-2">&amp;</span><span class="ident">nm</span>)
+                    .<span class="ident">map</span>(<span class="ident">IterTypes</span>::<span class="ident">iter_types</span>),
+                <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
+                    .<span class="ident">ci</span>
+                    .<span class="ident">get_callback_interface_definition</span>(<span class="kw-2">&amp;</span><span class="ident">nm</span>)
+                    .<span class="ident">map</span>(<span class="ident">IterTypes</span>::<span class="ident">iter_types</span>),
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            };
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next_iter</span>) <span class="op">=</span> <span class="ident">next_iter</span> {
+                <span class="self">self</span>.<span class="ident">current</span> <span class="op">=</span> <span class="ident">next_iter</span>;
+            }
+            <span class="comment">// Advance the new iterator to its first item. If the new iterator happens to be empty,</span>
+            <span class="comment">// this will recurse back in to `advance_to_next_type` until we find one that isn&#39;t.</span>
+            <span class="self">self</span>.<span class="ident">next</span>()
+        } <span class="kw">else</span> {
+            <span class="comment">// We&#39;ve completely finished the iteration over all pending types.</span>
+            <span class="prelude-val">None</span>
+        }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">RecursiveTypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Type</span>;
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">type_</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">current</span>.<span class="ident">next</span>() {
+            <span class="self">self</span>.<span class="ident">add_pending_type</span>(<span class="ident">type_</span>);
+            <span class="prelude-val">Some</span>(<span class="ident">type_</span>)
+        } <span class="kw">else</span> {
+            <span class="self">self</span>.<span class="ident">advance_to_next_type</span>()
+        }
+    }
+}
+
 <span class="doccomment">/// Trait to help build a `ComponentInterface` from WedIDL syntax nodes.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This trait does structural matching on the various weedle AST nodes and</span>
@@ -1708,6 +1922,36 @@
             .<span class="ident">add_type_definition</span>(<span class="string">&quot;Map{}&quot;</span>, <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Type</span>::<span class="ident">Boolean</span>)))
             .<span class="ident">is_ok</span>());
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">contains_map_types</span>(), <span class="bool-val">true</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_no_infinite_recursion_when_walking_types</span>() {
+        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
+            namespace test{};
+            interface Testing {
+                void tester(Testing foo);
+            };
+        &quot;#</span>;
+        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface</span>::<span class="ident">from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">ci</span>.<span class="ident">item_contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="ident">Type</span>::<span class="ident">Object</span>(<span class="string">&quot;Testing&quot;</span>.<span class="ident">into</span>())));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_correct_recursion_when_walking_types</span>() {
+        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
+            namespace test{};
+            interface TestObj {
+                void tester(TestRecord foo);
+            };
+            dictionary TestRecord {
+                NestedRecord bar;
+            };
+            dictionary NestedRecord {
+                u64 baz;
+            };
+        &quot;#</span>;
+        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface</span>::<span class="ident">from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">item_contains_unsigned_types</span>(<span class="kw-2">&amp;</span><span class="ident">Type</span>::<span class="ident">Object</span>(<span class="string">&quot;TestObj&quot;</span>.<span class="ident">into</span>())));
     }
 }
 </pre></div>
