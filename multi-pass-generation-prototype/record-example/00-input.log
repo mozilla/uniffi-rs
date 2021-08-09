@@ -1,0 +1,2 @@
+< Type(I32)
+< Type(Record(RecordDef { name: "Foo", fields: [("a", I32), ("b", String)] }))

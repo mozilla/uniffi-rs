@@ -1,0 +1,17 @@
+< Common
+> RenderInfo { template_name: "Common", data: Null }
+
+< FFIConverterPrimitiveClass
+> RenderInfo { template_name: "FFIConverterPrimitiveClass", data: Null }
+
+< FFIConverterPrimitive { name: "I32", size: 4, pack_fmt: ">i" }
+> RenderInfo { template_name: "FFIConverterPrimitive", data: Object({"name": String("I32"), "pack_fmt": String(">i"), "size": Number(4)}) }
+
+< FFIConverterString
+> RenderInfo { template_name: "FFIConverterString", data: Null }
+
+< RecordClassDef(RecordDef { name: "Foo", fields: [("a", I32), ("b", String)] })
+> RenderInfo { template_name: "RecordClassDef", data: Object({"fields": Array([Array([String("a"), String("I32")]), Array([String("b"), String("String")])]), "name": String("Foo")}) }
+
+< FFIConverterRecord(RecordDef { name: "Foo", fields: [("a", I32), ("b", String)] })
+> RenderInfo { template_name: "FFIConverterRecord", data: Object({"fields": Array([Array([String("a"), String("I32")]), Array([String("b"), String("String")])]), "name": String("Foo")}) }

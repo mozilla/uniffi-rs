@@ -1,0 +1,7 @@
+< Type(I32)
+> Type(I32)
+
+< Type(Record(RecordDef { name: "Foo", fields: [("a", I32), ("b", String)] }))
+> Type(Record(RecordDef { name: "Foo", fields: [("a", I32), ("b", String)] }))
+X Type(I32)
+> Type(String)

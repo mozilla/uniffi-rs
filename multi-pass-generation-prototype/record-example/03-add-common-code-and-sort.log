@@ -1,0 +1,12 @@
+< FFIConverterPrimitiveClass
+< FFIConverterPrimitive { name: "I32", size: 4, pack_fmt: ">i" }
+< RecordClassDef(RecordDef { name: "Foo", fields: [("a", I32), ("b", String)] })
+< FFIConverterRecord(RecordDef { name: "Foo", fields: [("a", I32), ("b", String)] })
+< FFIConverterString
+
+> Common
+> FFIConverterPrimitiveClass
+> FFIConverterPrimitive { name: "I32", size: 4, pack_fmt: ">i" }
+> FFIConverterString
+> RecordClassDef(RecordDef { name: "Foo", fields: [("a", I32), ("b", String)] })
+> FFIConverterRecord(RecordDef { name: "Foo", fields: [("a", I32), ("b", String)] })
