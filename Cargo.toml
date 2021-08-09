@@ -4,6 +4,7 @@ members = [
   "uniffi_build",
   "uniffi_macros",
   "uniffi",
+  "multi-pass-generation-prototype",
   "examples/arithmetic",
   "examples/callbacks",
   "examples/geometry",
