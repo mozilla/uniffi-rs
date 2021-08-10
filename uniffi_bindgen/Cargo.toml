@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_bindgen"
-version = "0.13.0"
+version = "0.13.1"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 description = "a multi-language bindings generator for rust (codegen and cli tooling)"
 documentation = "https://mozilla.github.io/uniffi-rs"
