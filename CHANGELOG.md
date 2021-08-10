@@ -10,7 +10,11 @@
 
 ## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.12.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.13.0...HEAD).
+
+## v0.13.0 (_2021-08-09_)
+
+[All changes in v0.13.0](https://github.com/mozilla/uniffi-rs/compare/v0.12.0...v0.13.0).
 
 ### ⚠️ Breaking Changes ⚠️
 - UniFFI no longer has ffi-support as a dependency.  This means it handles
@@ -41,7 +45,7 @@
   type to/from an Ffi type, rather than only Self.  This allows for using
   UniFFI with a type defined in an external crate.
 
-## v0.12.0 (2021-06-14)
+## v0.12.0 (_2021-06-14_)
 
 [All changes in v0.12.0](https://github.com/mozilla/uniffi-rs/compare/v0.11.0...v0.12.0).
 
@@ -61,7 +65,7 @@
 - Kotlin objects now implement `AutoCloseable` by default; closing an object instance is equivalent
   to calling its `destroy()` method.
 
-## v0.11.0 (2021-06-03)
+## v0.11.0 (_2021-06-03_)
 
 [All changes in v0.11.0](https://github.com/mozilla/uniffi-rs/compare/v0.10.0...v0.11.0).
 
