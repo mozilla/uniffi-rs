@@ -12,7 +12,7 @@ struct {{ e.type_()|ffi_converter_name }};
 impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
     type RustType = {{ e.name() }};
 
-    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
+    fn write(obj: Self::RustType, buf: &mut std::vec::Vec<u8>) {
         use uniffi::deps::bytes::BufMut;
         match obj {
             {%- for variant in e.variants() %}

@@ -1,0 +1,18 @@
+[package]
+name = "i1015-fully-qualified-types"
+edition = "2018"
+version = "0.13.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+name = "uniffi_regression_test_i1015"
+
+[dependencies]
+uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+
+[build-dependencies]
+uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}

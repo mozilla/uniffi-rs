@@ -1,0 +1,13 @@
+// We use a bunch of special built-in types, but the underlying Rust
+// code does not have the corresponding types in scope. This will fail
+// to compile if the generated Rust scaffolding incorrectly assumes that
+// they are in scope, ref https://github.com/mozilla/uniffi-rs/issues/1015.
+
+dictionary Values {
+  duration d;
+  timestamp t;
+};
+
+namespace regression_test_i1015 {
+  record<DOMString, sequence<Values>>? test();
+};

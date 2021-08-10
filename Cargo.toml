@@ -16,6 +16,7 @@ members = [
   "fixtures/external-types/crate-two",
   "fixtures/external-types/lib",
   "fixtures/regressions/enum-without-i32-helpers",
+  "fixtures/regressions/fully-qualified-types",
   "fixtures/regressions/kotlin-experimental-unsigned-types",
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",

@@ -99,7 +99,7 @@ unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
         panic!("Lowering CallbackInterface not supported")
     }
 
-    fn write(_obj: Self::RustType, _buf: &mut Vec<u8>) {
+    fn write(_obj: Self::RustType, _buf: &mut std::vec::Vec<u8>) {
         panic!("Writing CallbackInterface not supported")
     }
 
