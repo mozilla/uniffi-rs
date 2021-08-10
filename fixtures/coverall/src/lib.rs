@@ -17,6 +17,22 @@ enum CoverallError {
     TooManyHoles,
 }
 
+/// This error doesn't appear in the interface, instead
+/// we rely on an `Into<CoverallError>` impl to surface it to consumers.
+#[derive(Debug, thiserror::Error)]
+enum InternalCoverallError {
+    #[error("The coverall has an excess of holes")]
+    ExcessiveHoles,
+}
+
+impl From<InternalCoverallError> for CoverallError {
+    fn from(err: InternalCoverallError) -> CoverallError {
+        match err {
+            InternalCoverallError::ExcessiveHoles => CoverallError::TooManyHoles,
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 enum ComplexError {
     #[error("OsError: {code} ({extended_code})")]
@@ -149,6 +165,14 @@ impl Coveralls {
     fn maybe_throw(&self, should_throw: bool) -> Result<bool> {
         if should_throw {
             Err(CoverallError::TooManyHoles)
+        } else {
+            Ok(true)
+        }
+    }
+
+    fn maybe_throw_into(&self, should_throw: bool) -> Result<bool, InternalCoverallError> {
+        if should_throw {
+            Err(InternalCoverallError::ExcessiveHoles)
         } else {
             Ok(true)
         }

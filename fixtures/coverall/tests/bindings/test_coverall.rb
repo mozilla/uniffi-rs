@@ -102,6 +102,10 @@ class TestCoverall < Test::Unit::TestCase
       coveralls.maybe_throw true
     end
 
+    assert_raise Coverall::CoverallError::TooManyHoles do
+      coveralls.maybe_throw_into true
+    end
+
     assert_raise Coverall::InternalError, 'expected panic: oh no' do
       coveralls.panic 'expected panic: oh no'
     end
