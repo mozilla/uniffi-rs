@@ -94,6 +94,7 @@ uniffi::call_with_output(call_status, || {
     {% when Some with (return_type) -%}
     {{ return_type|ffi_converter }}::lower({% call to_rs_call(func) %})
     {% else -%}
+    {% if func.full_arguments().is_empty() %}#[allow(clippy::redundant_closure)]{% endif %}
     {% call to_rs_call(func) %}
     {% endmatch -%}
 })
