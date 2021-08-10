@@ -124,6 +124,9 @@
 <span id="121">121</span>
 <span id="122">122</span>
 <span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -170,8 +173,8 @@
             <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">name</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">name</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>.<span class="ident">clone</span>(),
             <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;std::sync::Arc&lt;{}&gt;&quot;</span>, <span class="ident">name</span>),
             <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Box&lt;dyn {}&gt;&quot;</span>, <span class="ident">name</span>),
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Option&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Vec&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
             <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;std::collections::HashMap&lt;String, {}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
         })
     }
@@ -219,9 +222,12 @@
             }
             <span class="comment">// Wrapper types are implemented by generics that wrap the FfiConverter implementation of the</span>
             <span class="comment">// inner type.</span>
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Option&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Vec&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;HashMap&lt;String, {}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(
+                <span class="string">&quot;std::collections::HashMap&lt;String, {}&gt;&quot;</span>,
+                <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>
+            ),
             <span class="comment">// Primitive types / strings are implemented by their rust type</span>
             <span class="ident">Type</span>::<span class="ident">Int8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;i8&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">Type</span>::<span class="ident">UInt8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;u8&quot;</span>.<span class="ident">into</span>(),
