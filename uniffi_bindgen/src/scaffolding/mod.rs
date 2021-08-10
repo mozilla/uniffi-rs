@@ -43,8 +43,8 @@ mod filters {
             Type::Enum(name) | Type::Record(name) | Type::Error(name) => name.clone(),
             Type::Object(name) => format!("std::sync::Arc<{}>", name),
             Type::CallbackInterface(name) => format!("Box<dyn {}>", name),
-            Type::Optional(t) => format!("Option<{}>", type_rs(t)?),
-            Type::Sequence(t) => format!("Vec<{}>", type_rs(t)?),
+            Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
+            Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),
             Type::Map(t) => format!("std::collections::HashMap<String, {}>", type_rs(t)?),
         })
     }
@@ -92,9 +92,12 @@ mod filters {
             }
             // Wrapper types are implemented by generics that wrap the FfiConverter implementation of the
             // inner type.
-            Type::Optional(inner) => format!("Option<{}>", ffi_converter_name(inner)?),
-            Type::Sequence(inner) => format!("Vec<{}>", ffi_converter_name(inner)?),
-            Type::Map(inner) => format!("HashMap<String, {}>", ffi_converter_name(inner)?),
+            Type::Optional(inner) => format!("std::option::Option<{}>", ffi_converter_name(inner)?),
+            Type::Sequence(inner) => format!("std::vec::Vec<{}>", ffi_converter_name(inner)?),
+            Type::Map(inner) => format!(
+                "std::collections::HashMap<String, {}>",
+                ffi_converter_name(inner)?
+            ),
             // Primitive types / strings are implemented by their rust type
             Type::Int8 => "i8".into(),
             Type::UInt8 => "u8".into(),

@@ -12,7 +12,7 @@ struct {{ rec.type_()|ffi_converter_name }};
 impl uniffi::RustBufferFfiConverter for {{ rec.type_()|ffi_converter_name }} {
     type RustType = {{ rec.name() }};
 
-    fn write(obj: {{ rec.name() }}, buf: &mut Vec<u8>) {
+    fn write(obj: {{ rec.name() }}, buf: &mut std::vec::Vec<u8>) {
         // If the provided struct doesn't match the fields declared in the UDL, then
         // the generated code here will fail to compile with somewhat helpful error.
         {%- for field in rec.fields() %}

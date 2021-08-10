@@ -12,14 +12,15 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.13.0...HEAD).
 
-
 ### What's Changed
 
 - Fixed an accidental regression in v0.13.0 where errors were no longer being coerced
   to the correct type via `Into`. If the UDL declares a `[Throws=ExampleError]` function
   or method, the underlying implementation can now return anything that is `Into<ExampleError>`,
   matching the implicit `Into` behavoir of Rust's `?` operator.
-
+- Fixed an accidental regression in v0.13.0 where the generated Rust scaffolding assumed
+  that the `HashMap` type would be in scope. It now uses fully-qualified type names in order
+  to be more robust.
 
 ## v0.13.0 (_2021-08-09_)
 
