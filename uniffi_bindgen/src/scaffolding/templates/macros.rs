@@ -48,7 +48,7 @@
 {% match cons.throws_type() %}
 {% when Some with (e) %}
     uniffi::call_with_result(call_status, || {
-        let _new = {% call construct(obj, cons) %}.map_err({{ e|ffi_converter }}::lower)?;
+        let _new = {% call construct(obj, cons) %}.map_err(Into::into).map_err({{ e|ffi_converter }}::lower)?;
         let _arc = std::sync::Arc::new(_new);
         Ok({{ obj.type_()|ffi_converter }}::lower(_arc))
     })
@@ -65,7 +65,7 @@
 {% match meth.throws_type() -%}
 {% when Some with (e) -%}
 uniffi::call_with_result(call_status, || {
-    let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %}.map_err({{ e|ffi_converter }}::lower)?;
+    let _retval =  {{ obj.name() }}::{% call to_rs_call(meth) %}.map_err(Into::into).map_err({{ e|ffi_converter }}::lower)?;
     Ok({% call ret(meth) %})
 })
 {% else %}
@@ -85,7 +85,7 @@ uniffi::call_with_output(call_status, || {
 {% match func.throws_type() %}
 {% when Some with (e) %}
 uniffi::call_with_result(call_status, || {
-    let _retval = {% call to_rs_call(func) %}.map_err({{ e|ffi_converter }}::lower)?;
+    let _retval = {% call to_rs_call(func) %}.map_err(Into::into).map_err({{ e|ffi_converter }}::lower)?;
     Ok({% call ret(func) %})
 })
 {% else %}

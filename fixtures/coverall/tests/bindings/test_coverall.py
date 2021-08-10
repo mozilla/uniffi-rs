@@ -92,6 +92,9 @@ class TestCoverall(unittest.TestCase):
         with self.assertRaises(CoverallError.TooManyHoles):
             coveralls.maybe_throw(True)
 
+        with self.assertRaises(CoverallError.TooManyHoles):
+            coveralls.maybe_throw_into(True)
+
         with self.assertRaisesRegex(InternalError, "expected panic: oh no"):
             coveralls.panic("expected panic: oh no")
 

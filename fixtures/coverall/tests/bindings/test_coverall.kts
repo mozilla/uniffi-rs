@@ -112,6 +112,13 @@ Coveralls("test_simple_errors").use { coveralls ->
     }
 
     try {
+        coveralls.maybeThrowInto(true)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: CoverallException.TooManyHoles) {
+        // Expected result
+    }
+
+    try {
         coveralls.panic("oops")
         throw RuntimeException("Expected method to throw exception")
     } catch(e: InternalException) {

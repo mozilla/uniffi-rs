@@ -88,6 +88,13 @@ do {
         // It's okay!
     }
 
+    do {
+        let _ = try coveralls.maybeThrowInto(shouldThrow: true)
+        fatalError("Should have thrown")
+    } catch CoverallError.TooManyHoles {
+        // It's okay!
+    }
+
     // Note: Can't test coveralls.panic() because rust panics trigger a fatal error in swift
 }
 

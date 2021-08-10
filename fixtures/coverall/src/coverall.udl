@@ -60,6 +60,11 @@ interface Coveralls {
     [Throws=CoverallError]
     boolean maybe_throw(boolean should_throw);
 
+    /// Throws something that impls `Into<CoverallError>`,
+    /// rather than directly throwing `CoverallError`.
+    [Throws=CoverallError]
+    boolean maybe_throw_into(boolean should_throw);
+
     [Throws=ComplexError]
     boolean maybe_throw_complex(i8 input);
 
