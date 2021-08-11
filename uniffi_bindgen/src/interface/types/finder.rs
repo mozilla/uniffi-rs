@@ -115,51 +115,89 @@ impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
 mod test {
     use super::*;
 
+    // A helper to take valid UDL and a closure to check what's in it.
+    fn test_a_finding<F>(udl: &str, tester: F)
+    where
+        F: FnOnce(TypeUniverse),
+    {
+        let idl = weedle::parse(udl).unwrap();
+        let mut types = TypeUniverse::default();
+        types.add_type_definitions_from(idl.as_ref()).unwrap();
+        tester(types);
+    }
+
     #[test]
-    fn test_type_finding() -> Result<()> {
-        const UDL: &str = r#"
+    fn test_type_finding() {
+        test_a_finding(
+            r#"
             callback interface TestCallbacks {
                 string hello(u32 count);
             };
+        "#,
+            |types| {
+                assert!(
+                    matches!(types.get_type_definition("TestCallbacks").unwrap(), Type::CallbackInterface(nm) if nm == "TestCallbacks")
+                );
+            },
+        );
 
+        test_a_finding(
+            r#"
             dictionary TestRecord {
                 u32 field;
             };
+        "#,
+            |types| {
+                assert!(
+                    matches!(types.get_type_definition("TestRecord").unwrap(), Type::Record(nm) if nm == "TestRecord")
+                );
+            },
+        );
 
+        test_a_finding(
+            r#"
             enum TestItems { "one", "two" };
 
             [Error]
             enum TestError { "ErrorOne", "ErrorTwo" };
+        "#,
+            |types| {
+                assert!(
+                    matches!(types.get_type_definition("TestItems").unwrap(), Type::Enum(nm) if nm == "TestItems")
+                );
+                assert!(
+                    matches!(types.get_type_definition("TestError").unwrap(), Type::Error(nm) if nm == "TestError")
+                );
+            },
+        );
 
+        test_a_finding(
+            r#"
             interface TestObject {
                 constructor();
             };
+        "#,
+            |types| {
+                assert!(
+                    matches!(types.get_type_definition("TestObject").unwrap(), Type::Object(nm) if nm == "TestObject")
+                );
+            },
+        );
 
+        test_a_finding(
+            r#"
+            interface TestObject {};
             typedef TestObject Alias;
-        "#;
-        let idl = weedle::parse(UDL).unwrap();
-        let mut types = TypeUniverse::default();
-        types.add_type_definitions_from(idl.as_ref())?;
-        assert_eq!(types.iter_known_types().count(), 5);
-        assert!(
-            matches!(types.get_type_definition("TestCallbacks").unwrap(), Type::CallbackInterface(nm) if nm == "TestCallbacks")
+        "#,
+            |types| {
+                assert!(
+                    matches!(types.get_type_definition("TestObject").unwrap(), Type::Object(nm) if nm == "TestObject")
+                );
+                assert!(
+                    matches!(types.get_type_definition("Alias").unwrap(), Type::Object(nm) if nm == "TestObject")
+                );
+            },
         );
-        assert!(
-            matches!(types.get_type_definition("TestRecord").unwrap(), Type::Record(nm) if nm == "TestRecord")
-        );
-        assert!(
-            matches!(types.get_type_definition("TestItems").unwrap(), Type::Enum(nm) if nm == "TestItems")
-        );
-        assert!(
-            matches!(types.get_type_definition("TestError").unwrap(), Type::Error(nm) if nm == "TestError")
-        );
-        assert!(
-            matches!(types.get_type_definition("TestObject").unwrap(), Type::Object(nm) if nm == "TestObject")
-        );
-        assert!(
-            matches!(types.get_type_definition("Alias").unwrap(), Type::Object(nm) if nm == "TestObject")
-        );
-        Ok(())
     }
 
     #[test]
