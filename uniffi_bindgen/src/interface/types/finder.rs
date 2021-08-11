@@ -21,7 +21,7 @@ use std::convert::TryFrom;
 
 use anyhow::{bail, Result};
 
-use super::super::attributes::{EnumAttributes, InterfaceAttributes};
+use super::super::attributes::{DictionaryAttributes, EnumAttributes, InterfaceAttributes};
 use super::{Type, TypeUniverse};
 
 /// Trait to help with an early "type discovery" phase when processing the UDL.
@@ -59,11 +59,25 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
         // Some enum types are defined using an `interface` with a special attribute.
-        if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_enum_attr() {
+        let ia = InterfaceAttributes::try_from(self.attributes.as_ref())?;
+        if ia.contains_enum_attr() {
+            if ia.is_exported() {
+                types.mark_as_exported(&name)
+            }
             types.add_type_definition(self.identifier.0, Type::Enum(name))
-        } else if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_error_attr() {
+        } else if ia.contains_error_attr() {
+            if ia.is_exported() {
+                types.mark_as_exported(&name)
+            }
             types.add_type_definition(self.identifier.0, Type::Error(name))
         } else {
+            // `[Exported]` on interfaces is a bit hacky - we support the attribute on an
+            // `Interface` because sometimes they are actually enums or errors, as handled above.
+            // But we don't allow "real" interfaces to be exported because it's tricky to generate
+            // the code and there's no good reason - the original can just be used directly.
+            if ia.is_exported() {
+                bail!("[Export] on interfaces isn't supported");
+            }
             types.add_type_definition(self.identifier.0, Type::Object(name))
         }
     }
@@ -72,6 +86,9 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
 impl TypeFinder for weedle::DictionaryDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
+        if DictionaryAttributes::try_from(self.attributes.as_ref())?.is_exported() {
+            types.mark_as_exported(&name);
+        }
         types.add_type_definition(self.identifier.0, Type::Record(name))
     }
 }
@@ -80,7 +97,11 @@ impl TypeFinder for weedle::EnumDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
         // Our error types are defined using an `enum` with a special attribute.
-        if EnumAttributes::try_from(self.attributes.as_ref())?.contains_error_attr() {
+        let ea = EnumAttributes::try_from(self.attributes.as_ref())?;
+        if ea.is_exported() {
+            types.mark_as_exported(&name);
+        }
+        if ea.contains_error_attr() {
             types.add_type_definition(self.identifier.0, Type::Error(name))
         } else {
             types.add_type_definition(self.identifier.0, Type::Enum(name))
@@ -146,11 +167,21 @@ mod test {
             dictionary TestRecord {
                 u32 field;
             };
+
+            [Export]
+            dictionary ExportedTestRecord {
+                u32 field;
+            };
         "#,
             |types| {
                 assert!(
                     matches!(types.get_type_definition("TestRecord").unwrap(), Type::Record(nm) if nm == "TestRecord")
                 );
+                assert!(!types.is_exported("TestRecord"));
+                assert!(
+                    matches!(types.get_type_definition("ExportedTestRecord").unwrap(), Type::Record(nm) if nm == "ExportedTestRecord")
+                );
+                assert!(types.is_exported("ExportedTestRecord"));
             },
         );
 
@@ -158,16 +189,36 @@ mod test {
             r#"
             enum TestItems { "one", "two" };
 
+            [Export]
+            enum ExportedTestItems { "one", "two" };
+
             [Error]
             enum TestError { "ErrorOne", "ErrorTwo" };
+
+            [Error, Export]
+            enum ExportedTestError { "ErrorOne", "ErrorTwo" };
+
         "#,
             |types| {
                 assert!(
                     matches!(types.get_type_definition("TestItems").unwrap(), Type::Enum(nm) if nm == "TestItems")
                 );
+                assert!(!types.is_exported("TestItems"));
+
+                assert!(
+                    matches!(types.get_type_definition("ExportedTestItems").unwrap(), Type::Enum(nm) if nm == "ExportedTestItems")
+                );
+                assert!(types.is_exported("ExportedTestItems"));
+
                 assert!(
                     matches!(types.get_type_definition("TestError").unwrap(), Type::Error(nm) if nm == "TestError")
                 );
+                assert!(!types.is_exported("TestError"));
+
+                assert!(
+                    matches!(types.get_type_definition("ExportedTestError").unwrap(), Type::Error(nm) if nm == "ExportedTestError")
+                );
+                assert!(types.is_exported("ExportedTestError"));
             },
         );
 

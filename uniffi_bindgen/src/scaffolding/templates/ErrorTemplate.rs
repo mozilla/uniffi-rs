@@ -6,6 +6,9 @@
 // We define a unit-struct to implement the trait to sidestep Rust's orphan rule (ADR-0006).
 #}
 
+{%- if ci.is_name_exported(e.name()) -%}
+pub
+{%- endif %}
 struct {{ e.type_()|ffi_converter_name }};
 
 #[doc(hidden)]

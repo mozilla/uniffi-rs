@@ -216,6 +216,11 @@ impl<'ci> ComponentInterface {
         self.types.get_type_definition(name)
     }
 
+    /// Returns true if the specified type has been marked as being exported.
+    pub fn is_name_exported(&self, name: &str) -> bool {
+        self.types.is_exported(name)
+    }
+
     /// Iterate over all types contained in the given item.
     ///
     /// This method uses `IterTypes::iter_types` to iterate over the types contained within the

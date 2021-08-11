@@ -32,6 +32,8 @@ pub(super) enum Attribute {
     SelfType(SelfType),
     Threadsafe, // N.B. the `[Threadsafe]` attribute is deprecated and will be removed
     Throws(String),
+    // Whether the type is marked for export
+    Export,
 }
 
 impl Attribute {
@@ -57,6 +59,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
                 "Threadsafe" => Ok(Attribute::Threadsafe),
+                "Export" => Ok(Attribute::Export),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -122,6 +125,9 @@ impl EnumAttributes {
     pub fn contains_error_attr(&self) -> bool {
         self.0.iter().any(|attr| attr.is_error())
     }
+    pub fn is_exported(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::Export))
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
@@ -131,6 +137,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Error => Ok(()),
+            Attribute::Export => Ok(()),
             _ => bail!(format!("{:?} not supported for enums", attr)),
         })?;
         Ok(Self(attrs))
@@ -228,6 +235,44 @@ impl<T: TryInto<ArgumentAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
     }
 }
 
+/// Represents UDL attributes that might appear on a `dictionary` definition.
+#[derive(Debug, Clone, Hash, Default)]
+pub(super) struct DictionaryAttributes(Vec<Attribute>);
+
+impl DictionaryAttributes {
+    pub fn is_exported(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::Export))
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for DictionaryAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::Export => Ok(()),
+            _ => bail!(format!(
+                "{:?} not supported for dictionary definition",
+                attr
+            )),
+        })?;
+        Ok(Self(attrs))
+    }
+}
+
+impl<T: TryInto<DictionaryAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
+    for DictionaryAttributes
+{
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
+    }
+}
+
 /// Represents UDL attributes that might appear on an `interface` definition.
 #[derive(Debug, Clone, Hash, Default)]
 pub(super) struct InterfaceAttributes(Vec<Attribute>);
@@ -246,6 +291,10 @@ impl InterfaceAttributes {
             .iter()
             .any(|attr| matches!(attr, Attribute::Threadsafe))
     }
+
+    pub fn is_exported(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::Export))
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttributes {
@@ -257,11 +306,17 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
             Attribute::Enum => Ok(()),
             Attribute::Error => Ok(()),
             Attribute::Threadsafe => Ok(()),
+            Attribute::Export => Ok(()),
             _ => bail!(format!("{:?} not supported for interface definition", attr)),
         })?;
         // Can't be both `[Threadsafe]` and an `[Enum]`.
-        if attrs.len() > 1 {
-            bail!("conflicting attributes on interface definition");
+        if attrs
+            .iter()
+            .filter(|attr| matches!(attr, Attribute::Threadsafe | Attribute::Enum))
+            .count()
+            > 1
+        {
+            bail!("conflicting attributes on interface definition - can't be both `[Threadsafe]` and an `[Enum]`");
         }
         Ok(Self(attrs))
     }
@@ -626,6 +681,11 @@ mod test {
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.contains_enum_attr(), true));
 
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Enum, Export]").unwrap();
+        let attrs = InterfaceAttributes::try_from(&node).unwrap();
+        assert!(attrs.contains_enum_attr());
+        assert!(attrs.is_exported());
+
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.contains_enum_attr(), false));
@@ -639,8 +699,15 @@ mod test {
         let err = InterfaceAttributes::try_from(&node).unwrap_err();
         assert_eq!(
             err.to_string(),
-            "conflicting attributes on interface definition"
+            "conflicting attributes on interface definition - can't be both `[Threadsafe]` and an `[Enum]`"
         );
+    }
+
+    #[test]
+    fn test_interface_export_attribute() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Export]").unwrap();
+        let attrs = InterfaceAttributes::try_from(&node).unwrap();
+        assert!(attrs.is_exported());
     }
 
     #[test]

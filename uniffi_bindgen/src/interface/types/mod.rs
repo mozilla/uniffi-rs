@@ -21,7 +21,11 @@
 //! about how these API-level types map into the lower-level types of the FFI layer as represented
 //! by the [`ffi::FFIType`](super::ffi::FFIType) enum, but that's a detail that is invisible to end users.
 
-use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
+use std::{
+    collections::hash_map::Entry,
+    collections::BTreeSet,
+    collections::{HashMap, HashSet},
+};
 
 use anyhow::{bail, Result};
 
@@ -168,6 +172,8 @@ pub(crate) struct TypeUniverse {
     type_definitions: HashMap<String, Type>,
     // All the types in the universe, by canonical type name, in a well-defined order.
     all_known_types: BTreeSet<Type>,
+    // All types in the universe declared as `Export`
+    exported_names: HashSet<String>,
 }
 
 impl TypeUniverse {
@@ -227,6 +233,16 @@ impl TypeUniverse {
     /// Iterator over all the known types in this universe.
     pub fn iter_known_types(&self) -> impl Iterator<Item = Type> + '_ {
         self.all_known_types.iter().cloned()
+    }
+
+    /// Mark the specified type name as being exported.
+    pub fn mark_as_exported(&mut self, name: &str) {
+        self.exported_names.insert(name.to_string());
+    }
+
+    /// Returns whether the specified type name is marked as exported.
+    pub fn is_exported(&self, name: &str) -> bool {
+        self.exported_names.contains(name)
     }
 }
 

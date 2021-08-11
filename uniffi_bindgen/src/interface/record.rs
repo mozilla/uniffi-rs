@@ -85,9 +85,6 @@ impl IterTypes for Record {
 
 impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Record> {
-        if self.attributes.is_some() {
-            bail!("dictionary attributes are not supported yet");
-        }
         if self.inheritance.is_some() {
             bail!("dictionary inheritence is not supported");
         }
