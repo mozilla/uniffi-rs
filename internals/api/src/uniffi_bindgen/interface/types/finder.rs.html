@@ -181,6 +181,44 @@
 <span id="178">178</span>
 <span id="179">179</span>
 <span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -299,51 +337,89 @@
 <span class="kw">mod</span> <span class="ident">test</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
+    <span class="comment">// A helper to take valid UDL and a closure to check what&#39;s in it.</span>
+    <span class="kw">fn</span> <span class="ident">test_a_finding</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">udl</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">tester</span>: <span class="ident">F</span>)
+    <span class="kw">where</span>
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">TypeUniverse</span>),
+    {
+        <span class="kw">let</span> <span class="ident">idl</span> <span class="op">=</span> <span class="ident">weedle</span>::<span class="ident">parse</span>(<span class="ident">udl</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse</span>::<span class="ident">default</span>();
+        <span class="ident">types</span>.<span class="ident">add_type_definitions_from</span>(<span class="ident">idl</span>.<span class="ident">as_ref</span>()).<span class="ident">unwrap</span>();
+        <span class="ident">tester</span>(<span class="ident">types</span>);
+    }
+
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_type_finding</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
+    <span class="kw">fn</span> <span class="ident">test_type_finding</span>() {
+        <span class="ident">test_a_finding</span>(
+            <span class="string">r#&quot;
             callback interface TestCallbacks {
                 string hello(u32 count);
             };
+        &quot;#</span>,
+            <span class="op">|</span><span class="ident">types</span><span class="op">|</span> {
+                <span class="macro">assert</span><span class="macro">!</span>(
+                    <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestCallbacks&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestCallbacks&quot;</span>)
+                );
+            },
+        );
 
+        <span class="ident">test_a_finding</span>(
+            <span class="string">r#&quot;
             dictionary TestRecord {
                 u32 field;
             };
+        &quot;#</span>,
+            <span class="op">|</span><span class="ident">types</span><span class="op">|</span> {
+                <span class="macro">assert</span><span class="macro">!</span>(
+                    <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestRecord&quot;</span>)
+                );
+            },
+        );
 
+        <span class="ident">test_a_finding</span>(
+            <span class="string">r#&quot;
             enum TestItems { &quot;one&quot;, &quot;two&quot; };
 
             [Error]
             enum TestError { &quot;ErrorOne&quot;, &quot;ErrorTwo&quot; };
+        &quot;#</span>,
+            <span class="op">|</span><span class="ident">types</span><span class="op">|</span> {
+                <span class="macro">assert</span><span class="macro">!</span>(
+                    <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestItems&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestItems&quot;</span>)
+                );
+                <span class="macro">assert</span><span class="macro">!</span>(
+                    <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestError&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestError&quot;</span>)
+                );
+            },
+        );
 
+        <span class="ident">test_a_finding</span>(
+            <span class="string">r#&quot;
             interface TestObject {
                 constructor();
             };
+        &quot;#</span>,
+            <span class="op">|</span><span class="ident">types</span><span class="op">|</span> {
+                <span class="macro">assert</span><span class="macro">!</span>(
+                    <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestObject&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestObject&quot;</span>)
+                );
+            },
+        );
 
+        <span class="ident">test_a_finding</span>(
+            <span class="string">r#&quot;
+            interface TestObject {};
             typedef TestObject Alias;
-        &quot;#</span>;
-        <span class="kw">let</span> <span class="ident">idl</span> <span class="op">=</span> <span class="ident">weedle</span>::<span class="ident">parse</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse</span>::<span class="ident">default</span>();
-        <span class="ident">types</span>.<span class="ident">add_type_definitions_from</span>(<span class="ident">idl</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">5</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(
-            <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestCallbacks&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestCallbacks&quot;</span>)
+        &quot;#</span>,
+            <span class="op">|</span><span class="ident">types</span><span class="op">|</span> {
+                <span class="macro">assert</span><span class="macro">!</span>(
+                    <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestObject&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestObject&quot;</span>)
+                );
+                <span class="macro">assert</span><span class="macro">!</span>(
+                    <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;Alias&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestObject&quot;</span>)
+                );
+            },
         );
-        <span class="macro">assert</span><span class="macro">!</span>(
-            <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestRecord&quot;</span>)
-        );
-        <span class="macro">assert</span><span class="macro">!</span>(
-            <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestItems&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestItems&quot;</span>)
-        );
-        <span class="macro">assert</span><span class="macro">!</span>(
-            <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestError&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestError&quot;</span>)
-        );
-        <span class="macro">assert</span><span class="macro">!</span>(
-            <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;TestObject&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestObject&quot;</span>)
-        );
-        <span class="macro">assert</span><span class="macro">!</span>(
-            <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="string">&quot;Alias&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestObject&quot;</span>)
-        );
-        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
