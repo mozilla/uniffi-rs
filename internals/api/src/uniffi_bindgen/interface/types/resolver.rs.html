@@ -526,7 +526,7 @@
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">expr</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)));
         <span class="comment">// Matching the Box&lt;T&gt; is hard, use names as a convenient workaround.</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;OptionalRecordTestRecord&quot;</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;OptionalTypeTestRecord&quot;</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">2</span>);
 
         <span class="prelude-val">Ok</span>(())

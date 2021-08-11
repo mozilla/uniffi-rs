@@ -316,6 +316,8 @@
 <span id="313">313</span>
 <span id="314">314</span>
 <span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -408,11 +410,13 @@
             <span class="comment">// API defined types.</span>
             <span class="comment">// Note that these all get unique names, and the parser ensures that the names do not</span>
             <span class="comment">// conflict with a builtin type. We add a prefix to the name to guard against pathological</span>
-            <span class="comment">// cases like a record named `SequenceRecord` interfering with `sequence&lt;Record&gt;`</span>
-            <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Object{}&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Error{}&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Enum{}&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Record{}&quot;</span>, <span class="ident">nm</span>),
+            <span class="comment">// cases like a record named `SequenceRecord` interfering with `sequence&lt;Record&gt;`.</span>
+            <span class="comment">// However, types that support importing all end up with the same prefix of &quot;Type&quot;, so</span>
+            <span class="comment">// that the import handling code knows how to find the remote reference.</span>
+            <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="ident">nm</span>),
             <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="ident">nm</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;CallbackInterface{}&quot;</span>, <span class="ident">nm</span>),
             <span class="ident">Type</span>::<span class="ident">Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Timestamp&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Duration&quot;</span>.<span class="ident">into</span>(),
@@ -622,7 +626,7 @@
                 <span class="string">&quot;Example&quot;</span>.<span class="ident">into</span>()
             )))))
             .<span class="ident">canonical_name</span>(),
-            <span class="string">&quot;OptionalSequenceObjectExample&quot;</span>
+            <span class="string">&quot;OptionalSequenceTypeExample&quot;</span>
         );
     }
 }
