@@ -1,0 +1,40 @@
+namespace imported_types_lib {
+    CombinedType get_combined_type(optional CombinedType? val);
+};
+
+// A type defined in a .udl file in the `uniffi-one` crate (ie, in
+// `../../uniffi-one/src/uniffi-one.udl`)
+[External="uniffi-one"]
+typedef extern UniffiOneType;
+
+// A "wrapped" type defined in the guid crate (ie, defined in `../../guid/src/lib.rs` and
+// "declared" in `../../guid/src/guid.udl`). But it's still "external" from our POV,
+// So same as the `.udl` type above!
+[External="ext-types-guid"]
+typedef extern Guid;
+
+// And re-use the `wrapper-types` example - this exposes `JsonObject` and `Handle`
+[External="wrapper-types"]
+typedef extern JsonObject;
+
+[External="wrapper-types"]
+typedef extern Handle;
+
+// And a new type here to tie them all together.
+dictionary CombinedType {
+    UniffiOneType uot;
+    sequence<UniffiOneType> uots;
+    UniffiOneType? maybe_uot;
+
+    Guid guid;
+    sequence<Guid> guids;
+    Guid? maybe_guid;
+
+    JsonObject json;
+    sequence<JsonObject> jsons;
+    JsonObject? maybe_json;
+
+    Handle handle;
+    sequence<Handle> handles;
+    Handle? maybe_handle;
+};
