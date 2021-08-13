@@ -11,6 +11,7 @@ import {{ config.ffi_module_name() }}
 #endif
 
 {% include "RustBufferTemplate.swift" %}
+{% include "Helpers.swift" %}
 {% include "RustBufferHelper.swift" %}
 
 // Public interface members begin here.
@@ -33,4 +34,10 @@ import {{ config.ffi_module_name() }}
 {% include "ObjectTemplate.swift" %}
 {% endfor %}
 
+// Callback Interfaces
+{% for cbi in ci.iter_callback_interface_definitions() %}
+{% include "CallbackInterfaceTemplate.swift" %}
+{% endfor %}
+
 {% import "macros.swift" as swift %}
+

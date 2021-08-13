@@ -32,7 +32,7 @@
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_swift(arg.type_()) }}
+        {{- arg.name()|var_name_swift|lower_swift(arg.type_()) }}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro -%}
