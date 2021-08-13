@@ -95,16 +95,10 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
         0 => bail!("Crate did not produce any cdylibs, it must not be a uniffi component"),
         1 => &cdylibs[0],
         _ => {
-            let package_name = Path::new(pkg_dir)
-                .file_name()
-                .and_then(|s| s.to_str())
-                .unwrap();
-            match cdylibs.iter().find(|cdylib| {
-                cdylib
-                    .package_id
-                    .repr
-                    .starts_with(&format!("{:} ", package_name))
-            }) {
+            match cdylibs
+                .iter()
+                .find(|cdylib| cdylib.target.src_path.starts_with(pkg_dir))
+            {
                 Some(cdylib) => {
                     log::warn!(
                         "Crate produced multiple cdylibs, using the one produced by {}",
