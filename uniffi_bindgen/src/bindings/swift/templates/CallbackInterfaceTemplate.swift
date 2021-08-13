@@ -66,8 +66,48 @@ let {{ callback_interface_impl }} : ForeignCallback =
         }
     }
 
-let {{ callback_internals }} = _{{ callback_internals }}()
-class _{{ callback_internals }}<T: {{ type_name }}>: CallbackInternals<T> {
+// This erasure is probably not needed and can be replaced by 
+// a better implementation of _{{ callback_internals }}
+private class {{ type_name }}Erased: {{ type_name }} {
+    
+    let parent: {{ type_name }}
+
+    init(_ parent: {{ type_name }}) {
+        self.parent = parent
+    }
+
+    {% for meth in cbi.methods() -%}
+    func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_protocol(meth) %}) {% call swift::throws(meth) -%}
+    {%- match meth.return_type() -%}
+    {%- when Some with (return_type) %} -> {{ return_type|type_swift -}}
+    {%- else -%}
+    {%- endmatch %}
+    {
+        {%- if meth.arguments().len() != 0 -%}
+            {#- Calling the concrete callback object #}
+            
+            
+            parent.{{ meth.name()|fn_name_swift }}(
+                    {% for arg in meth.arguments() -%}
+                    {{ arg.name() }}: {{ arg.name() }}
+                    {%- if !loop.last %}, {% endif %}
+                    {% endfor -%}
+                )
+        {% else %}
+            parent.{{ meth.name()|fn_name_swift }}()
+        {% endif -%}
+    }
+    {% endfor %}
+}
+
+extension _{{ callback_internals }} where T == {{ type_name }}Erased {
+    func lower(_ v: {{ type_name }}) -> Handle {
+        super.lower({{ type_name }}Erased(v))
+    }
+}
+
+private let {{ callback_internals }} = _{{ callback_internals }}<{{ type_name }}Erased>()
+private class _{{ callback_internals }}<T: {{ type_name }}>: CallbackInternals<T> {
 
     init() {
         super.init(foreignCallback: {{ callback_interface_impl }})
