@@ -93,6 +93,7 @@ class Lock {
 typealias Handle = UInt64
 class ConcurrentHandleMap<T: AnyObject> {
     private var leftMap: [Handle: T] = [:]
+    private var counter: [Handle: UInt64] = [:]
     private var rightMap: [ObjectIdentifier: Handle] = [:]
 
     private let lock = Lock()
@@ -101,13 +102,15 @@ class ConcurrentHandleMap<T: AnyObject> {
 
     func insert(obj: T) -> Handle {
         lock.withLock {
-            rightMap[ObjectIdentifier(obj)] ?? {
+            let handle = rightMap[ObjectIdentifier(obj)] ?? {
                 currentHandle += stride
                 let handle = currentHandle
                 leftMap[handle] = obj
                 rightMap[ObjectIdentifier(obj)] = handle
                 return handle
             }()
+            counter[handle] = (counter[handle] ?? 0) + 1
+            return handle
         }
     }
 
@@ -130,14 +133,17 @@ class ConcurrentHandleMap<T: AnyObject> {
     @discardableResult
     func remove(handle: Handle) -> T? {
         lock.withLock {
+            defer { counter[handle] = (counter[handle] ?? 1) - 1 }
+            guard counter[handle] == 1 else { return leftMap[handle] }
             let obj = leftMap.removeValue(forKey: handle)
-             if let obj = obj {
-                 rightMap.removeValue(forKey:  ObjectIdentifier(obj))
-             }
+            if let obj = obj {
+                rightMap.removeValue(forKey: ObjectIdentifier(obj))
+            }
             return obj
         }
     }
 }
+
 
 // Magic number for the Rust proxy to call using the same mechanism as every other method,
 // to free the callback once it's dropped by Rust.
