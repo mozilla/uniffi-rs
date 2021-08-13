@@ -98,17 +98,19 @@ class TestCoverall < Test::Unit::TestCase
     coveralls = Coverall::Coveralls.new 'test_simple_errors'
     assert_equal coveralls.get_name, 'test_simple_errors'
 
-    assert_raise Coverall::CoverallError::TooManyHoles do
+    err = assert_raise Coverall::CoverallError::TooManyHoles do
       coveralls.maybe_throw true
     end
+    assert_equal err.message, 'The coverall has too many holes'
 
     assert_raise Coverall::CoverallError::TooManyHoles do
       coveralls.maybe_throw_into true
     end
 
-    assert_raise Coverall::InternalError, 'expected panic: oh no' do
+    err = assert_raise Coverall::InternalError do
       coveralls.panic 'expected panic: oh no'
     end
+    assert_equal err.message, 'expected panic: oh no'
 
     assert_raise_message /expected panic: oh no/ do
       coveralls.panic 'expected panic: oh no'

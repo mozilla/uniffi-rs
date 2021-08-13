@@ -18,6 +18,10 @@
     `private type <type-name> in public interface`
   or similar, please declare the types as `pub` in your Rust code.
 
+- Errors declared using the `[Error] enum` syntax will now expose the error string from
+  Rust to the foreign language bindings. This reverts an unintended change in behaviour
+  from the v0.13 release which made the error message inaccessible.
+
 ### What's Changed
 
 - You can now use external types of various flavours - see

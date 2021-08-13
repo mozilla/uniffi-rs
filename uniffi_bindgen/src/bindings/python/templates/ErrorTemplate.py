@@ -24,9 +24,20 @@ class RustCallStatus(ctypes.Structure):
 {%- for e in ci.iter_error_definitions() %}
 
 class {{ e.name()|class_name_py }}:
+
+    {%- if e.is_flat() %}
+
+    # Each variant is a nested class of the error itself.
+    # It just carries a string error message, so no special implementation is necessary.
+    {%- for variant in e.variants() %}
+    class {{ variant.name()|class_name_py }}(Exception):
+        pass
+    {%- endfor %}
+
+    {%- else %}
+
     # Each variant is a nested class of the error itself.
     {%- for variant in e.variants() %}
-
     class {{ variant.name()|class_name_py }}(Exception):
         def __init__(self{% for field in variant.fields() %}, {{ field.name()|var_name_py }}{% endfor %}):
             {%- if variant.has_fields() %}
@@ -49,6 +60,8 @@ class {{ e.name()|class_name_py }}:
             return "{{ e.name()|class_name_py }}.{{ variant.name()|class_name_py }}"
             {%- endif %}
     {%- endfor %}
+
+    {%- endif %}
 {%- endfor %}
 
 # Map error classes to the RustBufferTypeBuilder method to read them
