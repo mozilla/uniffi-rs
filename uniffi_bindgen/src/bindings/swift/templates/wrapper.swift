@@ -13,6 +13,7 @@ import {{ config.ffi_module_name() }}
 #endif
 
 {% include "RustBufferTemplate.swift" %}
+{% include "Helpers.swift" %}
 {% include "RustBufferHelper.swift" %}
 {% include "Helpers.swift" %}
 
