@@ -454,6 +454,18 @@
 <span id="451">451</span>
 <span id="452">452</span>
 <span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -583,7 +595,11 @@
     <span class="kw">let</span> <span class="ident">out_dir_override</span> <span class="op">=</span> <span class="ident">out_dir_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
     <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
     <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">_config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">udl_file</span>, <span class="ident">config_file_override</span>);
+    <span class="kw">let</span> <span class="ident">_config</span> <span class="op">=</span> <span class="ident">get_config</span>(
+        <span class="kw-2">&amp;</span><span class="ident">component</span>,
+        <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>,
+        <span class="ident">config_file_override</span>,
+    );
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>)
         .<span class="ident">file_stem</span>()
         .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">anyhow</span><span class="macro">!</span>(<span class="string">&quot;not a file&quot;</span>))<span class="question-mark">?</span>
@@ -615,8 +631,12 @@
     <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
 
     <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">udl_file</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">get_config</span>(
+        <span class="kw-2">&amp;</span><span class="ident">component</span>,
+        <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>,
+        <span class="ident">config_file_override</span>,
+    )<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
     <span class="kw">for</span> <span class="ident">language</span> <span class="kw">in</span> <span class="ident">target_languages</span> {
         <span class="ident">bindings</span>::<span class="ident">write_bindings</span>(
             <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>,
@@ -633,19 +653,22 @@
 <span class="comment">// Note that the cdylib we&#39;re testing against must be built already.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_tests</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">cdylib_dir</span>: <span class="ident">P</span>,
-    <span class="ident">udl_file</span>: <span class="ident">P</span>,
+    <span class="ident">udl_files</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>],
     <span class="ident">test_scripts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
     <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">cdylib_dir</span> <span class="op">=</span> <span class="ident">cdylib_dir</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">config_file_override</span> <span class="op">=</span> <span class="ident">config_file_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
+    <span class="comment">// XXX - this is just for tests, so one config_file_override for all .udl files doesn&#39;t really</span>
+    <span class="comment">// make sense, so we don&#39;t let tests do this.</span>
+    <span class="comment">// &quot;Real&quot; apps will build the .udl files one at a file and can therefore do whatever they want</span>
+    <span class="comment">// with overrides, so don&#39;t have this problem.</span>
+    <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">udl_files</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">config_file_override</span>.<span class="ident">is_none</span>());
 
-    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">udl_file</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">cdylib_dir</span> <span class="op">=</span> <span class="ident">cdylib_dir</span>.<span class="ident">as_ref</span>();
+    <span class="kw">let</span> <span class="ident">config_file_override</span> <span class="op">=</span> <span class="ident">config_file_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
 
     <span class="comment">// Group the test scripts by language first.</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">language_tests</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">TargetLanguage</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
+
     <span class="kw">for</span> <span class="ident">test_script</span> <span class="kw">in</span> <span class="ident">test_scripts</span> {
         <span class="kw">let</span> <span class="ident">lang</span>: <span class="ident">TargetLanguage</span> <span class="op">=</span> <span class="ident">PathBuf</span>::<span class="ident">from</span>(<span class="ident">test_script</span>)
             .<span class="ident">extension</span>()
@@ -658,8 +681,13 @@
     }
 
     <span class="kw">for</span> (<span class="ident">lang</span>, <span class="ident">test_scripts</span>) <span class="kw">in</span> <span class="ident">language_tests</span> {
-        <span class="ident">bindings</span>::<span class="ident">write_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">cdylib_dir</span>, <span class="ident">lang</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
-        <span class="ident">bindings</span>::<span class="ident">compile_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">cdylib_dir</span>, <span class="ident">lang</span>)<span class="question-mark">?</span>;
+        <span class="kw">for</span> <span class="ident">udl_file</span> <span class="kw">in</span> <span class="ident">udl_files</span> {
+            <span class="kw">let</span> <span class="ident">crate_root</span> <span class="op">=</span> <span class="ident">guess_crate_root</span>(<span class="ident">Path</span>::<span class="ident">new</span>(<span class="ident">udl_file</span>))<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">Path</span>::<span class="ident">new</span>(<span class="ident">udl_file</span>))<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">crate_root</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
+            <span class="ident">bindings</span>::<span class="ident">write_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">cdylib_dir</span>, <span class="ident">lang</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+            <span class="ident">bindings</span>::<span class="ident">compile_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">cdylib_dir</span>, <span class="ident">lang</span>)<span class="question-mark">?</span>;
+        }
         <span class="kw">for</span> <span class="ident">test_script</span> <span class="kw">in</span> <span class="ident">test_scripts</span> {
             <span class="ident">bindings</span>::<span class="ident">run_script</span>(<span class="ident">cdylib_dir</span>, <span class="kw-2">&amp;</span><span class="ident">test_script</span>, <span class="ident">lang</span>)<span class="question-mark">?</span>;
         }
@@ -686,20 +714,14 @@
 
 <span class="kw">fn</span> <span class="ident">get_config</span>(
     <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
     <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Config</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">default_config</span>: <span class="ident">Config</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">into</span>();
 
     <span class="kw">let</span> <span class="ident">config_file</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">config_file_override</span> {
         <span class="prelude-val">Some</span>(<span class="ident">cfg</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">PathBuf</span>::<span class="ident">from</span>(<span class="ident">cfg</span>)),
-        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="ident">crate_root</span> <span class="op">=</span> <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>.<span class="ident">join</span>(<span class="string">&quot;uniffi.toml&quot;</span>);
-            <span class="kw">match</span> <span class="ident">crate_root</span>.<span class="ident">canonicalize</span>() {
-                <span class="prelude-val">Ok</span>(<span class="ident">f</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">f</span>),
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            }
-        }
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;uniffi.toml&quot;</span>).<span class="ident">canonicalize</span>().<span class="ident">ok</span>(),
     };
 
     <span class="kw">match</span> <span class="ident">config_file</span> {
@@ -875,12 +897,14 @@
             <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;out_dir&quot;</span>),
             <span class="op">!</span><span class="ident">m</span>.<span class="ident">is_present</span>(<span class="string">&quot;no_format&quot;</span>),
         )<span class="question-mark">?</span>,
-        (<span class="string">&quot;test&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">m</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">run_tests</span>(
-            <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;cdylib_dir&quot;</span>).<span class="ident">unwrap</span>(),           <span class="comment">// Required</span>
-            <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;udl_file&quot;</span>).<span class="ident">unwrap</span>(),             <span class="comment">// Required</span>
-            <span class="ident">m</span>.<span class="ident">values_of</span>(<span class="string">&quot;test_scripts&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">collect</span>(), <span class="comment">// Required</span>
-            <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;config&quot;</span>),
-        )<span class="question-mark">?</span>,
+        (<span class="string">&quot;test&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">m</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="kw">crate</span>::<span class="ident">run_tests</span>(
+                <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;cdylib_dir&quot;</span>).<span class="ident">unwrap</span>(), <span class="comment">// Required</span>
+                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;udl_file&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">to_string_lossy</span>()], <span class="comment">// Required</span>
+                <span class="ident">m</span>.<span class="ident">values_of</span>(<span class="string">&quot;test_scripts&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">collect</span>(), <span class="comment">// Required</span>
+                <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;config&quot;</span>),
+            )<span class="question-mark">?</span>
+        }
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;No command specified; try `--help` for some help.&quot;</span>),
     }
     <span class="prelude-val">Ok</span>(())

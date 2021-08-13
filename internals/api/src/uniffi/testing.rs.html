@@ -157,6 +157,11 @@
 <span id="154">154</span>
 <span id="155">155</span>
 <span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -195,7 +200,11 @@
 <span class="doccomment">/// a foreign-language test file that exercises that component&#39;s bindings. It ensures that the</span>
 <span class="doccomment">/// component is compiled and available for use and then executes the foreign language script,</span>
 <span class="doccomment">/// returning successfully iff the script exits successfully.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_foreign_language_testcase</span>(<span class="ident">pkg_dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">test_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_foreign_language_testcase</span>(
+    <span class="ident">pkg_dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+    <span class="ident">udl_files</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>],
+    <span class="ident">test_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">cdylib_file</span> <span class="op">=</span> <span class="ident">ensure_compiled_cdylib</span>(<span class="ident">pkg_dir</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="ident">cdylib_file</span>.<span class="ident">as_str</span>())
         .<span class="ident">parent</span>()
@@ -203,7 +212,7 @@
         .<span class="ident">to_str</span>()
         .<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">_lock</span> <span class="op">=</span> <span class="ident">UNIFFI_BINDGEN</span>.<span class="ident">lock</span>();
-    <span class="ident">run_uniffi_bindgen_test</span>(<span class="ident">out_dir</span>, <span class="ident">udl_file</span>, <span class="ident">test_file</span>)<span class="question-mark">?</span>;
+    <span class="ident">run_uniffi_bindgen_test</span>(<span class="ident">out_dir</span>, <span class="ident">udl_files</span>, <span class="ident">test_file</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
@@ -300,9 +309,10 @@
 <span class="doccomment">/// on the `uniffi_bindgen` crate and execute its methods in-process. This is useful for folks</span>
 <span class="doccomment">/// who are working on uniffi itself and want to test out their changes to the bindings generator.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;builtin-bindgen&quot;</span>))]</span>
-<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_test</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">test_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_test</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">udl_files</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>], <span class="ident">test_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">udl_files</span> <span class="op">=</span> <span class="ident">udl_files</span>.<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);
     <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">Command</span>::<span class="ident">new</span>(<span class="string">&quot;uniffi-bindgen&quot;</span>)
-        .<span class="ident">args</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;test&quot;</span>, <span class="ident">out_dir</span>, <span class="ident">udl_file</span>, <span class="ident">test_file</span>])
+        .<span class="ident">args</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;test&quot;</span>, <span class="ident">out_dir</span>, <span class="ident">udl_files</span>, <span class="ident">test_file</span>])
         .<span class="ident">status</span>()<span class="question-mark">?</span>;
     <span class="kw">if</span> <span class="op">!</span><span class="ident">status</span>.<span class="ident">success</span>() {
         <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Error while running tests: {}&quot;</span>,);
@@ -311,8 +321,8 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;builtin-bindgen&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_test</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">test_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">uniffi_bindgen</span>::<span class="ident">run_tests</span>(<span class="ident">out_dir</span>, <span class="ident">udl_file</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">test_file</span>], <span class="prelude-val">None</span>)
+<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_test</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">udl_files</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>], <span class="ident">test_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="ident">uniffi_bindgen</span>::<span class="ident">run_tests</span>(<span class="ident">out_dir</span>, <span class="ident">udl_files</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">test_file</span>], <span class="prelude-val">None</span>)
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi" data-search-js="../../search-index.js"></div>
