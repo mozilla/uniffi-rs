@@ -259,7 +259,7 @@ mod test {
         assert_eq!(func2.arguments()[1].name(), "arg2");
         assert_eq!(
             func2.arguments()[1].type_().canonical_name(),
-            "RecordTestDict"
+            "TypeTestDict"
         );
         Ok(())
     }

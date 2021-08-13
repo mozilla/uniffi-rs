@@ -89,11 +89,13 @@ impl Type {
             // API defined types.
             // Note that these all get unique names, and the parser ensures that the names do not
             // conflict with a builtin type. We add a prefix to the name to guard against pathological
-            // cases like a record named `SequenceRecord` interfering with `sequence<Record>`
-            Type::Object(nm) => format!("Object{}", nm),
-            Type::Error(nm) => format!("Error{}", nm),
-            Type::Enum(nm) => format!("Enum{}", nm),
-            Type::Record(nm) => format!("Record{}", nm),
+            // cases like a record named `SequenceRecord` interfering with `sequence<Record>`.
+            // However, types that support importing all end up with the same prefix of "Type", so
+            // that the import handling code knows how to find the remote reference.
+            Type::Object(nm) => format!("Type{}", nm),
+            Type::Error(nm) => format!("Type{}", nm),
+            Type::Enum(nm) => format!("Type{}", nm),
+            Type::Record(nm) => format!("Type{}", nm),
             Type::CallbackInterface(nm) => format!("CallbackInterface{}", nm),
             Type::Timestamp => "Timestamp".into(),
             Type::Duration => "Duration".into(),
@@ -303,7 +305,7 @@ mod test_type {
                 "Example".into()
             )))))
             .canonical_name(),
-            "OptionalSequenceObjectExample"
+            "OptionalSequenceTypeExample"
         );
     }
 }

@@ -50,7 +50,7 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
             quote! {
                 #[test]
                 fn #test_name () -> uniffi::deps::anyhow::Result<()> {
-                    uniffi::testing::run_foreign_language_testcase(#pkg_dir, #udl_file, #test_file_path)
+                    uniffi::testing::run_foreign_language_testcase(#pkg_dir, &[#udl_file], #test_file_path)
                 }
             }
         })

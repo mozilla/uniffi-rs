@@ -35,7 +35,11 @@ lazy_static! {
 /// a foreign-language test file that exercises that component's bindings. It ensures that the
 /// component is compiled and available for use and then executes the foreign language script,
 /// returning successfully iff the script exits successfully.
-pub fn run_foreign_language_testcase(pkg_dir: &str, udl_file: &str, test_file: &str) -> Result<()> {
+pub fn run_foreign_language_testcase(
+    pkg_dir: &str,
+    udl_files: &[&str],
+    test_file: &str,
+) -> Result<()> {
     let cdylib_file = ensure_compiled_cdylib(pkg_dir)?;
     let out_dir = Path::new(cdylib_file.as_str())
         .parent()
@@ -43,7 +47,7 @@ pub fn run_foreign_language_testcase(pkg_dir: &str, udl_file: &str, test_file: &
         .to_str()
         .unwrap();
     let _lock = UNIFFI_BINDGEN.lock();
-    run_uniffi_bindgen_test(out_dir, udl_file, test_file)?;
+    run_uniffi_bindgen_test(out_dir, udl_files, test_file)?;
     Ok(())
 }
 
@@ -91,16 +95,10 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
         0 => bail!("Crate did not produce any cdylibs, it must not be a uniffi component"),
         1 => &cdylibs[0],
         _ => {
-            let package_name = Path::new(pkg_dir)
-                .file_name()
-                .and_then(|s| s.to_str())
-                .unwrap();
-            match cdylibs.iter().find(|cdylib| {
-                cdylib
-                    .package_id
-                    .repr
-                    .starts_with(&format!("{:} ", package_name))
-            }) {
+            match cdylibs
+                .iter()
+                .find(|cdylib| cdylib.target.src_path.starts_with(pkg_dir))
+            {
                 Some(cdylib) => {
                     log::warn!(
                         "Crate produced multiple cdylibs, using the one produced by {}",
@@ -140,9 +138,10 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
 /// on the `uniffi_bindgen` crate and execute its methods in-process. This is useful for folks
 /// who are working on uniffi itself and want to test out their changes to the bindings generator.
 #[cfg(not(feature = "builtin-bindgen"))]
-fn run_uniffi_bindgen_test(out_dir: &str, udl_file: &str, test_file: &str) -> Result<()> {
+fn run_uniffi_bindgen_test(out_dir: &str, udl_files: &[&str], test_file: &str) -> Result<()> {
+    let udl_files = udl_files.map(|&x| x).collect::<Vec<&str>>().join("\n");
     let status = Command::new("uniffi-bindgen")
-        .args(&["test", out_dir, udl_file, test_file])
+        .args(&["test", out_dir, udl_files, test_file])
         .status()?;
     if !status.success() {
         bail!("Error while running tests: {}",);
@@ -151,6 +150,6 @@ fn run_uniffi_bindgen_test(out_dir: &str, udl_file: &str, test_file: &str) -> Re
 }
 
 #[cfg(feature = "builtin-bindgen")]
-fn run_uniffi_bindgen_test(out_dir: &str, udl_file: &str, test_file: &str) -> Result<()> {
-    uniffi_bindgen::run_tests(out_dir, udl_file, vec![test_file], None)
+fn run_uniffi_bindgen_test(out_dir: &str, udl_files: &[&str], test_file: &str) -> Result<()> {
+    uniffi_bindgen::run_tests(out_dir, udl_files, vec![test_file], None)
 }

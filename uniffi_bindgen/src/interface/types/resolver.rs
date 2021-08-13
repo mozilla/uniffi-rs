@@ -207,7 +207,7 @@ mod test {
         let t = types.resolve_type_expression(expr).unwrap();
         assert!(matches!(t, Type::Optional(_)));
         // Matching the Box<T> is hard, use names as a convenient workaround.
-        assert_eq!(t.canonical_name(), "OptionalRecordTestRecord");
+        assert_eq!(t.canonical_name(), "OptionalTypeTestRecord");
         assert_eq!(types.iter_known_types().count(), 2);
 
         Ok(())
