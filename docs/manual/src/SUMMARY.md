@@ -15,6 +15,9 @@
   - [Functions](./udl/functions.md)
     - [Throwing errors](./udl/errors.md)
   - [Interfaces/Objects](./udl/interfaces.md)
+  - [External Types](./udl/ext_types.md)
+    - [Declaring External Types](./udl/ext_types_external.md)
+    - [Implementing Wrapped Types](./udl/ext_types_wrapped.md)
 
 # Kotlin
 

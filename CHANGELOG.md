@@ -18,6 +18,11 @@
     `private type <type-name> in public interface`
   or similar, please declare the types as `pub` in your Rust.
 
+### What's Changed
+
+- You can now use external types of various flavours - see
+  [the fine manual](https://mozilla.github.io/uniffi-rs/udl/ext_types.html)
+
 ## v0.13.1 (_2021-08-09_)
 
 [All changes in v0.13.1](https://github.com/mozilla/uniffi-rs/compare/v0.13.0...v0.13.1).
