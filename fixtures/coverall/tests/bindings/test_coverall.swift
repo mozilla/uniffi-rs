@@ -84,7 +84,7 @@ do {
     do {
         let _ = try coveralls.maybeThrow(shouldThrow: true)
         fatalError("Should have thrown")
-    } catch CoverallError.TooManyHoles(message) {
+    } catch CoverallError.TooManyHoles(let message) {
         // It's okay!
         assert(message == "The coverall has too many holes")
     }

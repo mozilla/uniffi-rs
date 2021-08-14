@@ -156,7 +156,9 @@ class RustBufferStream
     {% if e.is_flat() -%}
     {%- for variant in e.variants() %}
     if variant == {{ loop.index }}
-      return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}
+      return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}.new(
+        readString()
+      )
     end
     {%- endfor %}
 
