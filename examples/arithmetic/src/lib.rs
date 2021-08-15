@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #[derive(Debug, thiserror::Error)]
-enum ArithmeticError {
+pub enum ArithmeticError {
     #[error("Integer overflow on an operation with {a} and {b}")]
     IntegerOverflow { a: u64, b: u64 },
 }

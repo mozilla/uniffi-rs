@@ -12,6 +12,12 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.13.1...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+- The Rust implementations of all `dictionary`, `enum` or `error` types defined in UDL must be
+  public. If you see errors like:
+    `private type <type-name> in public interface`
+  or similar, please declare the types as `pub` in your Rust.
+
 ## v0.13.1 (_2021-08-09_)
 
 [All changes in v0.13.1](https://github.com/mozilla/uniffi-rs/compare/v0.13.0...v0.13.1).

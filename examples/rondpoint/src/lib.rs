@@ -49,7 +49,7 @@ pub struct minusculeMAJUSCULEDict {
 }
 
 #[allow(non_camel_case_types)]
-enum minusculeMAJUSCULEEnum {
+pub enum minusculeMAJUSCULEEnum {
     minusculeMAJUSCULEVariant,
 }
 
@@ -272,7 +272,7 @@ impl Optionneur {
     }
 }
 
-struct OptionneurDictionnaire {
+pub struct OptionneurDictionnaire {
     i8_var: i8,
     u8_var: u8,
     i16_var: i16,
