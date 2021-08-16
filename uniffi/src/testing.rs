@@ -139,11 +139,7 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<String> {
 /// who are working on uniffi itself and want to test out their changes to the bindings generator.
 #[cfg(not(feature = "builtin-bindgen"))]
 fn run_uniffi_bindgen_test(out_dir: &str, udl_files: &[&str], test_file: &str) -> Result<()> {
-    let udl_files = udl_files
-        .into_iter()
-        .map(|&x| x)
-        .collect::<Vec<&str>>()
-        .join("\n");
+    let udl_files = udl_files.join("\n");
     let status = Command::new("uniffi-bindgen")
         .args(&["test", out_dir, &udl_files, test_file])
         .status()?;
