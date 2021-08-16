@@ -27,16 +27,16 @@ interface CallStatusErrorHandler<E> {
 
 // Error {{ e.name() }}
 {%- let toplevel_name=e.name()|exception_name_kt %}
-sealed class {{ toplevel_name }}: Exception(){% if ci.item_contains_object_references(e) %}, Disposable {% endif %} {
-
-    {% if e.is_flat() %}
+{% if e.is_flat() %}
+sealed class {{ toplevel_name }}(message: String): Exception(message){% if ci.item_contains_object_references(e) %}, Disposable {% endif %} {
         // Each variant is a nested class
         // Flat enums carries a string error message, so no special implementation is necessary.
         {% for variant in e.variants() -%}
-        class {{ variant.name()|exception_name_kt }}() : {{ toplevel_name }}()
+        class {{ variant.name()|exception_name_kt }}(message: String) : {{ toplevel_name }}(message)
         {% endfor %}
 
-    {%- else %}
+{%- else %}
+sealed class {{ toplevel_name }}(): Exception(){% if ci.item_contains_object_references(e) %}, Disposable {% endif %} {
 
     // Each variant is a nested class
     {% for variant in e.variants() -%}
@@ -51,7 +51,7 @@ sealed class {{ toplevel_name }}: Exception(){% if ci.item_contains_object_refer
     {%- endif %}
     {% endfor %}
 
-    {%- endif %}
+{%- endif %}
 
     companion object ErrorHandler : CallStatusErrorHandler<{{ toplevel_name }}> {
         override fun lift(error_buf: RustBuffer.ByValue): {{ toplevel_name }} {
