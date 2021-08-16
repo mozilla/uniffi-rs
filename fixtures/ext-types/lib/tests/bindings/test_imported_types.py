@@ -7,6 +7,8 @@ from imported_types_lib import *
 
 class TestIt(unittest.TestCase):
     def test_it(self):
+        self.assertEqual(get_uniffi_one_type().sval, "you got me")
+
         ct = get_combined_type(None)
         self.assertEqual(ct.uot.sval, "hello")
         self.assertEqual(ct.guid, "a-guid")

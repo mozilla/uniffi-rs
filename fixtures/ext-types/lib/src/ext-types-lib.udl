@@ -1,4 +1,5 @@
 namespace imported_types_lib {
+    UniffiOneType get_uniffi_one_type();
     CombinedType get_combined_type(optional CombinedType? val);
 };
 

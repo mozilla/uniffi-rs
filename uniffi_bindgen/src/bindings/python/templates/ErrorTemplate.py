@@ -55,8 +55,7 @@ class {{ e.name()|class_name_py }}:
 _error_class_to_reader_method = {
 {%- for e in ci.iter_error_definitions() %}
 {%- let typ=ci.get_type(e.name()).unwrap() %}
-{%- let canonical_type_name = typ.canonical_name()|class_name_py %}
-    {{ e.name()|class_name_py }}: RustBufferTypeReader.read{{ canonical_type_name }},
+    {{ e.name()|class_name_py }}: {{ typ|ffi_converter_name }}.read,
 {%- endfor %}
 }
 
@@ -91,7 +90,7 @@ def rust_call_with_error(error_class, fn, *args):
         # with the message.  But if that code panics, then it just sends back
         # an empty buffer.
         if call_status.error_buf.len > 0:
-            msg = call_status.error_buf.consumeIntoString()
+            msg = FfiConverterString.lift(call_status.error_buf)
         else:
             msg = "Unknown rust panic"
         raise InternalError(msg)

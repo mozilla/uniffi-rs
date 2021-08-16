@@ -20,6 +20,12 @@ pub struct CombinedType {
     pub maybe_handle: Option<Handle>,
 }
 
+pub fn get_uniffi_one_type() -> UniffiOneType {
+    UniffiOneType {
+        sval: "you got me".to_string(),
+    }
+}
+
 fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
     existing.unwrap_or_else(|| CombinedType {
         uot: UniffiOneType {
