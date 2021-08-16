@@ -22,8 +22,7 @@ import contextlib
 import datetime
 
 {% include "RustBufferTemplate.py" %}
-{% include "RustBufferStream.py" %}
-{% include "RustBufferBuilder.py" %}
+{% include "FfiConverters.py" %}
 
 # Error definitions
 {% include "ErrorTemplate.py" %}

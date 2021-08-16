@@ -1,7 +1,7 @@
 {#
 // Template to call into rust. Used in several places.
 // Variable names in `arg_list_decl` should match up with arg lists
-// passed to rust via `_arg_list_ffi_call` (we use  `var_name_py` in `lower_py`)
+// passed to rust via `_arg_list_ffi_call`
 #}
 
 {%- macro to_ffi_call(func) -%}
@@ -32,7 +32,7 @@ rust_call(
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_py(arg.type_()) }}
+        {{ arg.type_()|ffi_converter_name }}.lower({{ arg.name() }})
         {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -63,15 +63,3 @@ rust_call(
     {%- endfor %}
     ctypes.POINTER(RustCallStatus),
 {% endmacro -%}
-
-{%- macro coerce_args(func) %}
-    {%- for arg in func.arguments() %}
-    {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_()) -}}
-    {% endfor -%}
-{%- endmacro -%}
-
-{%- macro coerce_args_extra_indent(func) %}
-        {%- for arg in func.arguments() %}
-        {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_()) }}
-        {%- endfor %}
-{%- endmacro -%}
