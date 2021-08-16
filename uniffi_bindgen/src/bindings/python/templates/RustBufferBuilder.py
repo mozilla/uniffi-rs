@@ -228,7 +228,7 @@ class RustBufferTypeBuilder(object):
 
     @classmethod
     def write{{ canonical_type_name }}(cls, builder, v):
-        from {{ crate_name }} import RustBufferTypeBuilder;
+        from {{ crate_name|mod_name_py }} import RustBufferTypeBuilder;
         RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
 
     {%- else -%}

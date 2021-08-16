@@ -277,7 +277,7 @@ class RustBufferTypeReader(object):
 
     @staticmethod
     def read{{ canonical_type_name }}(stream):
-        from {{ crate_name }} import RustBufferTypeReader;
+        from {{ crate_name|mod_name_py }} import RustBufferTypeReader;
         return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {%- else %}
