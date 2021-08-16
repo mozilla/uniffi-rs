@@ -18,6 +18,11 @@
     `private type <type-name> in public interface`
   or similar, please declare the types as `pub` in your Rust code.
 
+### What's Changed
+
+- An environment variable `UNIFFI_TESTS_DISABLE_EXTENSIONS` can disable foreign language bindings
+  when running tests. See [the contributing guide](./contributing.md) for more.
+
 ## v0.13.1 (_2021-08-09_)
 
 [All changes in v0.13.1](https://github.com/mozilla/uniffi-rs/compare/v0.13.0...v0.13.1).
