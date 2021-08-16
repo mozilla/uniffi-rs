@@ -72,10 +72,6 @@ class RustBuffer(ctypes.Structure):
             builder.write(value.encode("utf-8"))
             return builder.finalize()
 
-    def consumeIntoString(self):
-        with self.consumeWithStream() as stream:
-            return stream.read(stream.remaining()).decode("utf-8")
-
     {% when Type::Timestamp -%}
 
     @staticmethod
@@ -84,10 +80,6 @@ class RustBuffer(ctypes.Structure):
             RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
-    def consumeInto{{ canonical_type_name }}(self):
-        with self.consumeWithStream() as stream:
-            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
-
     {% when Type::Duration -%}
 
     @staticmethod
@@ -95,10 +87,6 @@ class RustBuffer(ctypes.Structure):
         with RustBuffer.allocWithBuilder() as builder:
             RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
-
-    def consumeInto{{ canonical_type_name }}(self):
-        with self.consumeWithStream() as stream:
-            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {% when Type::Record with (record_name) -%}
     {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
@@ -110,10 +98,6 @@ class RustBuffer(ctypes.Structure):
             RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
-    def consumeInto{{ canonical_type_name }}(self):
-        with self.consumeWithStream() as stream:
-            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
-
     {% when Type::Enum with (enum_name) -%}
     {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
     # The Enum type {{ enum_name }}.
@@ -124,10 +108,6 @@ class RustBuffer(ctypes.Structure):
             RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
-    def consumeInto{{ canonical_type_name }}(self):
-        with self.consumeWithStream() as stream:
-            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
-
     {% when Type::Optional with (inner_type) -%}
     # The Optional<T> type for {{ inner_type.canonical_name() }}.
 
@@ -136,10 +116,6 @@ class RustBuffer(ctypes.Structure):
         with RustBuffer.allocWithBuilder() as builder:
             RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
-
-    def consumeInto{{ canonical_type_name }}(self):
-        with self.consumeWithStream() as stream:
-            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
 
     {% when Type::Sequence with (inner_type) -%}
     # The Sequence<T> type for {{ inner_type.canonical_name() }}.
@@ -150,10 +126,6 @@ class RustBuffer(ctypes.Structure):
             RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
-    def consumeInto{{ canonical_type_name }}(self):
-        with self.consumeWithStream() as stream:
-            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
-
     {% when Type::Map with (inner_type) -%}
     # The Map<T> type for {{ inner_type.canonical_name() }}.
 
@@ -163,14 +135,69 @@ class RustBuffer(ctypes.Structure):
             RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
             return builder.finalize()
 
-    def consumeInto{{ canonical_type_name }}(self):
-        with self.consumeWithStream() as stream:
-            return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
-
     {%- else -%}
     {#- No code emitted for types that don't lower into a RustBuffer -#}
     {%- endmatch -%}
     {%- endfor %}
+
+class RustBufferStream(object):
+    # Helper for structured reading of bytes from a RustBuffer
+
+    def __init__(self, rbuf):
+        self.rbuf = rbuf
+        self.offset = 0
+
+    def remaining(self):
+        return self.rbuf.len - self.offset
+
+    def _unpack_from(self, size, format):
+        if self.offset + size > self.rbuf.len:
+            raise InternalError("read past end of rust buffer")
+        value = struct.unpack(format, self.rbuf.data[self.offset:self.offset+size])[0]
+        self.offset += size
+        return value
+
+    def read(self, size):
+        if self.offset + size > self.rbuf.len:
+            raise InternalError("read past end of rust buffer")
+        data = self.rbuf.data[self.offset:self.offset+size]
+        self.offset += size
+        return data
+
+class RustBufferBuilder(object):
+    # Helper for structured writing of bytes into a RustBuffer.
+
+    def __init__(self):
+        self.rbuf = RustBuffer.alloc(16)
+        self.rbuf.len = 0
+
+    def finalize(self):
+        rbuf = self.rbuf
+        self.rbuf = None
+        return rbuf
+
+    def discard(self):
+        if self.rbuf is not None:
+            rbuf = self.finalize()
+            rbuf.free()
+
+    @contextlib.contextmanager
+    def _reserve(self, numBytes):
+        if self.rbuf.len + numBytes > self.rbuf.capacity:
+            self.rbuf = RustBuffer.reserve(self.rbuf, numBytes)
+        yield None
+        self.rbuf.len += numBytes
+
+    def _pack_into(self, size, format, value):
+        with self._reserve(size):
+            # XXX TODO: I feel like I should be able to use `struct.pack_into` here but can't figure it out.
+            for i, byte in enumerate(struct.pack(format, value)):
+                self.rbuf.data[self.rbuf.len + i] = byte
+
+    def write(self, value):
+        with self._reserve(len(value)):
+            for i, byte in enumerate(value):
+                self.rbuf.data[self.rbuf.len + i] = byte
 
 
 class ForeignBytes(ctypes.Structure):
