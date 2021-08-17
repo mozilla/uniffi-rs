@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["class_name_py",""],["coerce_py",""],["enum_name_py",""],["fn_name_py",""],["lift_py",""],["literal_py",""],["lower_py",""],["type_ffi",""],["var_name_py",""]]});
+initSidebarItems({"fn":[["class_name_py",""],["coerce_py",""],["enum_name_py",""],["fn_name_py",""],["lift_py",""],["literal_py",""],["lower_py",""],["mod_name_py",""],["type_ffi",""],["var_name_py",""]]});

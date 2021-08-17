@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Building a Swift module - The UniFFI user guide</title>
+        <title>Implementing Wrapped Types - The UniFFI user guide</title>
         
         
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li><li class="chapter-item expanded "><a href="../udl/ext_types.html"><strong aria-hidden="true">3.7.</strong> External Types</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/ext_types_external.html"><strong aria-hidden="true">3.7.1.</strong> Declaring External Types</a></li><li class="chapter-item expanded "><a href="../udl/ext_types_wrapped.html"><strong aria-hidden="true">3.7.2.</strong> Implementing Wrapped Types</a></li></ol></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">4.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/overview.html"><strong aria-hidden="true">5.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../swift/module.html" class="active"><strong aria-hidden="true">6.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">7.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/design_principles.html"><strong aria-hidden="true">8.</strong> Design Principles</a></li><li class="chapter-item expanded "><a href="../internals/crates.html"><strong aria-hidden="true">9.</strong> Navigating the code</a></li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">10.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">11.</strong> Managing object references</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li><li class="chapter-item expanded "><a href="../udl/ext_types.html"><strong aria-hidden="true">3.7.</strong> External Types</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/ext_types_external.html"><strong aria-hidden="true">3.7.1.</strong> Declaring External Types</a></li><li class="chapter-item expanded "><a href="../udl/ext_types_wrapped.html" class="active"><strong aria-hidden="true">3.7.2.</strong> Implementing Wrapped Types</a></li></ol></li></ol></li><li class="chapter-item expanded "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">4.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/overview.html"><strong aria-hidden="true">5.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../swift/module.html"><strong aria-hidden="true">6.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">7.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/design_principles.html"><strong aria-hidden="true">8.</strong> Design Principles</a></li><li class="chapter-item expanded "><a href="../internals/crates.html"><strong aria-hidden="true">9.</strong> Navigating the code</a></li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">10.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">11.</strong> Managing object references</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -159,39 +159,81 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#compiling-a-swift-module" id="compiling-a-swift-module">Compiling a Swift module</a></h1>
-<p>Before you can import the generated Swift bindings as a module (say, to use them
-from your application, or to try them out using <code>swift</code> on the command-line) you
-first need to compile them into a Swift module.</p>
-<p>To do so, you'll need both the generated <code>.swift</code> file and the corresponding
-<code>.modulemap</code> file, which tells Swift how to expose the underlying C FFI layer.
-Use <code>swiftc</code> to combine the cdylib from your Rust crate with the generated
-Swift bindings:</p>
-<pre><code>swiftc
-    -module-name example                         # Name for resulting Swift module
-    -emit-library -o libexample.dylib            # File to link with if using Swift REPL
-    -emit-module -emit-module-path ./            # Output directory for resulting module
-    -parse-as-library
-    -L ./target/debug/                           # Directory containing compiled Rust crate
-    -lexample                                    # Name of compiled Rust crate cdylib
-    -Xcc -fmodule-map-file=exampleFFI.modulemap  # The modulemap file from above
-    example.swift                                # The generated bindings file
+                        <h1><a class="header" href="#external-types-which-wrap-primitive-types" id="external-types-which-wrap-primitive-types">External types which wrap primitive types</a></h1>
+<p><em>Note: The facility described in this document is not yet available for all foreign language
+bindings.</em></p>
+<p>It's possible to expose types in your Rust crate to UniFFI, so long as the type can
+be expressed as one of UniFFI's <a href="./builtin_types.html">builtin_types</a>.</p>
+<p>For example, consider the following trivial Rust abstraction for a &quot;handle&quot; which wraps an
+integer:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Handle(i64);
+<span class="boring">}
+</span></code></pre></pre>
+<p>You can use this type in your udl by declaring it via a <code>typedef</code> with a <code>Wrapped</code> attribute,
+defining the primitive type which it wraps.</p>
+<pre><code class="language-idl">[Wrapped]
+typedef i64 Handle;
 </code></pre>
-<p>This will produce an <code>example.swiftmodule</code> file that can be loaded by
-other Swift code or used from the Swift command-line REPL.</p>
+<p>For this to work, your Rust code must also implement a special trait named
+<code>UniffiCustomTypeWrapper</code>. This trait is generated by UniFFI and can be found in the generated
+Rust scaffolding - it is defined as:</p>
+<pre><code class="language-Rust">trait UniffiCustomTypeWrapper {
+    type Wrapped;
+
+    fn wrap(val: Self::Wrapped) -&gt; uniffi::Result&lt;Self&gt;
+    where
+        Self: Sized;
+    fn unwrap(obj: Self) -&gt; Self::Wrapped;
+}
+</code></pre>
+<p>where <code>Wrapped</code> is the Rust type being wrapped - <code>i64</code> in the example above. Thus, the trait
+implemention for <code>Handle</code> would look something like:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl UniffiCustomTypeWrapper for Handle {
+    type Wrapped = i64;
+
+    fn wrap(val: Self::Wrapped) -&gt; uniffi::Result&lt;Self&gt; {
+        Ok(Handle(val))
+    }
+
+    fn unwrap(obj: Self) -&gt; Self::Wrapped {
+        obj.0
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Because <code>UniffiCustomTypeWrapper</code> is defined in each crate, this means you can wrap objects even
+if they are not defined in your crate - see the 'wrapper_types' example which demonstrates
+how <code>serde_json::Value</code> can be wrapped.</p>
+<h2><a class="header" href="#custom-foreign-wrappers" id="custom-foreign-wrappers">Custom Foreign Wrappers</a></h2>
+<p>In the example above, the foreign bindings just see the &quot;wrapped&quot; value - eg, the bindings will
+get an integer for the <code>Handle</code>.</p>
+<p>We intend on making it possible to customize this - for example, <code>serde_json::Value</code> could be
+transformed into a suitable JSON object in the bindings.</p>
+<h2><a class="header" href="#using-wrapped-types-from-other-crates" id="using-wrapped-types-from-other-crates">Using Wrapped Types from other crates</a></h2>
+<p>To use the <code>Handle</code> example above from another crate, these other crates just refer to the type
+as a regular <code>External</code> type - for example, another crate might use <code>udl</code> such as:</p>
+<pre><code class="language-idl">[External=&quot;crate_defining_handle_name&quot;]
+typedef extern Handle;
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../swift/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../udl/ext_types_external.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../swift/xcode.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../kotlin/gradle.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -203,13 +245,13 @@ other Swift code or used from the Swift command-line REPL.</p>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../swift/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../udl/ext_types_external.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../swift/xcode.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../kotlin/gradle.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 

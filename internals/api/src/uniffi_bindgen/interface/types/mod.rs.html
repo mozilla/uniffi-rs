@@ -318,6 +318,14 @@
 <span id="315">315</span>
 <span id="316">316</span>
 <span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -383,6 +391,10 @@
     <span class="ident">Optional</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
     <span class="ident">Sequence</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
     <span class="ident">Map</span>(<span class="comment">/* String, */</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
+    <span class="comment">// An FfiConverter we `use` from an external crate</span>
+    <span class="ident">External</span> { <span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">crate_name</span>: <span class="ident">String</span> },
+    <span class="comment">// A local type we will generate an FfiConverter via wrapping a primitive.</span>
+    <span class="ident">Wrapped</span> { <span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">prim</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> },
 }
 
 <span class="kw">impl</span> <span class="ident">Type</span> {
@@ -428,6 +440,8 @@
             <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Optional{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
             <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Sequence{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
             <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Map{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
+            <span class="comment">// A type that exists externally.</span>
+            <span class="ident">Type</span>::<span class="ident">External</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Wrapped</span> { <span class="ident">name</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="ident">name</span>),
         }
     }
 }
@@ -468,7 +482,9 @@
             <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Timestamp</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">FFIType</span>::<span class="ident">RustBuffer</span>,
+            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Duration</span>
+            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">FFIType</span>::<span class="ident">RustBuffer</span>,
+            <span class="ident">Type</span>::<span class="ident">Wrapped</span> { <span class="ident">prim</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">FFIType</span>::<span class="ident">from</span>(<span class="ident">prim</span>.<span class="ident">as_ref</span>()),
         }
     }
 }

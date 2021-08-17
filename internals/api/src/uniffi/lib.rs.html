@@ -652,6 +652,9 @@
 <span id="649">649</span>
 <span id="650">650</span>
 <span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -683,7 +686,7 @@
 <span class="doccomment">//! In addition to the core `FfiConverter` trait, we provide a handful of struct definitions useful</span>
 <span class="doccomment">//! for passing core rust types over the FFI, such as [`RustBuffer`].</span>
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">anyhow</span>::<span class="ident">bail</span>;
 <span class="kw">use</span> <span class="ident">bytes</span>::<span class="ident">buf</span>::{<span class="ident">Buf</span>, <span class="ident">BufMut</span>};
 <span class="kw">use</span> <span class="ident">paste</span>::<span class="ident">paste</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
@@ -691,6 +694,9 @@
     <span class="ident">convert</span>::<span class="ident">TryFrom</span>,
     <span class="ident">time</span>::{<span class="ident">Duration</span>, <span class="ident">SystemTime</span>},
 };
+
+<span class="comment">// Make Result&lt;&gt; public to support external impls of FfiConverter</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">anyhow</span>::<span class="prelude-ty">Result</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">ffi</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ffi</span>::<span class="kw-2">*</span>;

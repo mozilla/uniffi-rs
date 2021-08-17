@@ -329,6 +329,8 @@
 <span id="326">326</span>
 <span id="327">327</span>
 <span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -522,6 +524,8 @@
             <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}?&quot;</span>, <span class="ident">type_swift</span>(<span class="ident">type_</span>)<span class="question-mark">?</span>),
             <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;[{}]&quot;</span>, <span class="ident">type_swift</span>(<span class="ident">type_</span>)<span class="question-mark">?</span>),
             <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;[String:{}]&quot;</span>, <span class="ident">type_swift</span>(<span class="ident">type_</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type</span>::<span class="ident">External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lifting types, yet&quot;</span>),
+            <span class="ident">Type</span>::<span class="ident">Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lifting types, yet&quot;</span>),
         })
     }
 
