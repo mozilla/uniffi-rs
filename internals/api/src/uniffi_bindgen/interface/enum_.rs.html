@@ -417,6 +417,8 @@
 <span id="414">414</span>
 <span id="415">415</span>
 <span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -560,6 +562,7 @@
                     })
                 })
                 .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
+            <span class="comment">// Enums declared using the `enum` syntax can never have variants with fields.</span>
             <span class="ident">flat</span>: <span class="bool-val">true</span>,
         })
     }
@@ -586,6 +589,7 @@
                     ),
                 })
                 .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
+            <span class="comment">// Enums declared using the `[Enum] interface` syntax might have variants with fields.</span>
             <span class="ident">flat</span>: <span class="bool-val">false</span>,
         })
     }
