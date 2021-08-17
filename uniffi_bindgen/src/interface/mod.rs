@@ -206,6 +206,28 @@ impl<'ci> ComponentInterface {
         self.errors.iter().find(|e| e.name == name)
     }
 
+    /// Get details about all `Type::External` types
+    pub fn iter_external_types(&self) -> Vec<(String, String)> {
+        self.types
+            .iter_known_types()
+            .filter_map(|t| match t {
+                Type::External { name, crate_name } => Some((name, crate_name)),
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Get details about all `Type::Wrapped` types
+    pub fn iter_wrapped_types(&self) -> Vec<(String, Type)> {
+        self.types
+            .iter_known_types()
+            .filter_map(|t| match t {
+                Type::Wrapped { name, prim } => Some((name, *prim)),
+                _ => None,
+            })
+            .collect()
+    }
+
     /// Iterate over all known types in the interface.
     pub fn iter_types(&self) -> Vec<Type> {
         self.types.iter_known_types().collect()
@@ -740,6 +762,8 @@ impl APIBuilder for weedle::Definition<'_> {
                 let obj = d.convert(ci)?;
                 ci.add_callback_interface_definition(obj);
             }
+            // everything needed for typedefs is done in finder.rs.
+            weedle::Definition::Typedef(_) => {}
             _ => bail!("don't know how to deal with {:?}", self),
         }
         Ok(())

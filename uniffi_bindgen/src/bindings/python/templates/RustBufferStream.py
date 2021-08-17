@@ -267,7 +267,20 @@ class RustBufferTypeReader(object):
             count -= 1
         return items
 
-    {%- else -%}
+    {% when Type::Wrapped with { name, prim } -%}
+
+    @classmethod
+    def read{{ canonical_type_name }}(cls, stream):
+        return cls.read{{ prim.canonical_name()|class_name_py }}(stream)
+
+    {% when Type::External with { name, crate_name } -%}
+
+    @staticmethod
+    def read{{ canonical_type_name }}(stream):
+        from {{ crate_name|mod_name_py }} import RustBufferTypeReader;
+        return RustBufferTypeReader.read{{ canonical_type_name }}(stream)
+
+    {%- else %}
     # This type cannot currently be serialized, but we can produce a helpful error.
     @staticmethod
     def read{{ canonical_type_name }}(stream):

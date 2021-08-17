@@ -20,6 +20,9 @@
 
 ### What's Changed
 
+- You can now use external types of various flavours - see
+  [the fine manual](https://mozilla.github.io/uniffi-rs/udl/ext_types.html)
+
 - An environment variable `UNIFFI_TESTS_DISABLE_EXTENSIONS` can disable foreign language bindings
   when running tests. See [the contributing guide](./contributing.md) for more.
 

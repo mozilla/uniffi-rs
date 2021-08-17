@@ -98,6 +98,8 @@ mod filters {
             Type::Optional(t) => format!("{}?", type_kt(t)?),
             Type::Sequence(t) => format!("List<{}>", type_kt(t)?),
             Type::Map(t) => format!("Map<String, {}>", type_kt(t)?),
+            Type::External { .. } => panic!("no support for external types yet"),
+            Type::Wrapped { .. } => panic!("no support for wrapped types yet"),
         })
     }
 

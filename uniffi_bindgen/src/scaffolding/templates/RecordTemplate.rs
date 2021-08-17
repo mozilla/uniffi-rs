@@ -4,9 +4,10 @@
 // If the caller's struct does not match the shape and types declared in the UDL then the rust
 // compiler will complain with a type error.
 //
-// We define a unit-struct to implement the trait to sidestep Rust's orphan rule (ADR-0006)
+// We define a unit-struct to implement the trait to sidestep Rust's orphan rule (ADR-0006). It's
+// public so other crates can refer to it via an `[External='crate'] typedef`
 #}
-struct {{ rec.type_()|ffi_converter_name }};
+pub struct {{ rec.type_()|ffi_converter_name }};
 
 #[doc(hidden)]
 impl uniffi::RustBufferFfiConverter for {{ rec.type_()|ffi_converter_name }} {

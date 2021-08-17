@@ -10,11 +10,20 @@ members = [
   "examples/rondpoint",
   "examples/sprites",
   "examples/todolist",
+  "examples/wrapper-types",
+
   "fixtures/coverall",
   "fixtures/callbacks",
+
+  "fixtures/ext-types/guid",
+  "fixtures/ext-types/uniffi-one",
+  "fixtures/ext-types/lib",
+
+  # we should roll the above and below up somehow that makes sense...
   "fixtures/external-types/crate-one",
   "fixtures/external-types/crate-two",
   "fixtures/external-types/lib",
+
   "fixtures/regressions/enum-without-i32-helpers",
   "fixtures/regressions/fully-qualified-types",
   "fixtures/regressions/kotlin-experimental-unsigned-types",
