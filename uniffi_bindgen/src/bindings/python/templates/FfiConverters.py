@@ -544,48 +544,15 @@ class {{ typ|ffi_converter_name }}:
             {{ inner_type|ffi_converter_name }}.write(builder, v)
 
 {% when Type::Wrapped with { name, prim } -%}
-class {{ typ|ffi_converter_name }}:
 
-    @staticmethod
-    def lift(value):
-        return {{ prim|ffi_converter_name }}.lift(value)
-
-    @staticmethod
-    def lower(value):
-        return {{ prim|ffi_converter_name }}.lower(value)
-
-    @staticmethod
-    def read(stream):
-        return {{ prim|ffi_converter_name }}.read(stream)
-
-    @staticmethod
-    def write(builder, value):
-        {{ prim|ffi_converter_name }}.write(builder, value)
+{{ typ|ffi_converter_name }} = {{ prim|ffi_converter_name }}
 
 {% when Type::External with { name, crate_name } -%}
-class {{ typ|ffi_converter_name }}:
-    @staticmethod
-    def lift(value):
-        from {{ crate_name|mod_name_py }} import {{ typ|ffi_converter_name }} as ExternalFfiConverter
-        return ExternalFfiConverter.lift(value)
+# For external types import the converter from the external module
+from {{ crate_name|mod_name_py }} import {{ typ|ffi_converter_name }}
 
-    @staticmethod
-    def lower(value):
-        from {{ crate_name|mod_name_py }} import {{ typ|ffi_converter_name }} as ExternalFfiConverter
-        return ExternalFfiConverter.lower(value)
-
-    @staticmethod
-    def read(stream):
-        from {{ crate_name|mod_name_py }} import {{ typ|ffi_converter_name }} as ExternalFfiConverter
-        return ExternalFfiConverter.read(stream)
-
-    @staticmethod
-    def write(builder, value):
-        from {{ crate_name|mod_name_py }} import {{ typ|ffi_converter_name }} as ExternalFfiConverter
-        ExternalFfiConverter.write(builder, value)
-
-    {%- else %}
-    # This type is not currently handled, but we can produce a helpful error.
+{%- else %}
+# This type is not currently handled, but we can produce a helpful error.
 class {{ typ|ffi_converter_name }}:
     @staticmethod
     def lift(value):

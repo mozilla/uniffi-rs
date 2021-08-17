@@ -217,6 +217,18 @@ impl<'ci> ComponentInterface {
             .collect()
     }
 
+    /// Get all external type crate names
+    pub fn iter_external_type_crate_names(&self) -> Vec<String> {
+        let crate_names: HashSet<String> = self.types
+            .iter_known_types()
+            .filter_map(|t| match t {
+                Type::External { crate_name, .. } => Some(crate_name),
+                _ => None,
+            })
+            .collect();
+        crate_names.into_iter().collect()
+    }
+
     /// Get details about all `Type::Wrapped` types
     pub fn iter_wrapped_types(&self) -> Vec<(String, Type)> {
         self.types

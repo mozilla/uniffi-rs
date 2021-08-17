@@ -11,4 +11,6 @@ dictionary WrappedTypesDemo {
 
 namespace wrapper_types {
     WrappedTypesDemo get_wrapped_types_demo(WrappedTypesDemo? demo);
+    Handle get_next_handle(Handle handle);
+    JsonObject objectify(string name, JsonObject json);
 };

@@ -21,6 +21,10 @@ import struct
 import contextlib
 import datetime
 
+{%- for crate_name in ci.iter_external_type_crate_names() %}
+import {{ crate_name|mod_name_py }}
+{%- endfor %}
+
 {% include "RustBufferTemplate.py" %}
 {% include "FfiConverters.py" %}
 

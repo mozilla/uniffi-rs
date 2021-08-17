@@ -3,3 +3,14 @@ namespace uniffi_one {};
 dictionary UniffiOneType {
     string sval;
 };
+
+enum Animal {
+  "Dog",
+  "Cat",
+};
+
+[Enum]
+interface IpAddr {
+  V4(u8 q1, u8 q2, u8 q3, u8 q4);
+  V6(string addr);
+};

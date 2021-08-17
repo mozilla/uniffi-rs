@@ -1,12 +1,24 @@
 namespace imported_types_lib {
-    UniffiOneType get_uniffi_one_type();
+    // Test the types individually
+    UniffiOneType get_uniffi_one_type(UniffiOneType val);
+    Animal get_another_animal(Animal val);
+    IpAddr get_another_ip(IpAddr addr);
+
+    // Test the CombinedType, which combines different external types together
     CombinedType get_combined_type(optional CombinedType? val);
 };
 
-// A type defined in a .udl file in the `uniffi-one` crate (ie, in
+// Some types defined in a .udl file in the `uniffi-one` crate (ie, in
 // `../../uniffi-one/src/uniffi-one.udl`)
 [External="uniffi-one"]
 typedef extern UniffiOneType;
+
+[External="uniffi-one"]
+typedef extern Animal;
+
+[External="uniffi-one"]
+typedef extern IpAddr;
+
 
 // A "wrapped" type defined in the guid crate (ie, defined in `../../guid/src/lib.rs` and
 // "declared" in `../../guid/src/guid.udl`). But it's still "external" from our POV,
@@ -38,4 +50,8 @@ dictionary CombinedType {
     Handle handle;
     sequence<Handle> handles;
     Handle? maybe_handle;
+
+    Animal animal;
+    sequence<Animal> animals;
+    Animal? maybe_animal;
 };
