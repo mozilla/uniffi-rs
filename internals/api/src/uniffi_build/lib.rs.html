@@ -53,6 +53,9 @@
 <span id="50">50</span>
 <span id="51">51</span>
 <span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -83,6 +86,9 @@
 <span class="doccomment">/// itself and need to test out their changes to the bindings generator.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_scaffolding</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;cargo:rerun-if-changed={}&quot;</span>, <span class="ident">udl_file</span>);
+    <span class="comment">// The UNIFFI_TESTS_DISABLE_EXTENSIONS variable disables some bindings, but it is evaluated</span>
+    <span class="comment">// at *build* time, so we need to rebuild when it changes.</span>
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;cargo:rerun-if-env-changed=UNIFFI_TESTS_DISABLE_EXTENSIONS&quot;</span>);
     <span class="comment">// Why don&#39;t we just depend on uniffi-bindgen and call the public functions?</span>
     <span class="comment">// Calling the command line helps making sure that the generated swift/Kotlin/whatever</span>
     <span class="comment">// bindings were generated with the same version of uniffi as the Rust scaffolding code.</span>
