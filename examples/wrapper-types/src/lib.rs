@@ -14,8 +14,18 @@ impl UniffiCustomTypeWrapper for JsonObject {
     }
 }
 
+fn objectify(name: String, obj: serde_json::Value) -> serde_json::Value {
+    let mut map = serde_json::Map::new();
+    map.insert(name, obj);
+    serde_json::Value::Object(map)
+}
+
 // And we also have a trivial "Handle" type which wraps an i64.
 pub struct Handle(pub i64);
+
+fn get_next_handle(handle: Handle) -> Handle {
+    Handle(handle.0 + 1)
+}
 
 impl UniffiCustomTypeWrapper for Handle {
     type Wrapped = i64;
