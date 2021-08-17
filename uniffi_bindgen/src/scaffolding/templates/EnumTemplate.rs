@@ -7,7 +7,7 @@
 // public so other crates can refer to it via an `[External='crate'] typedef`
 #}
 
-struct {{ e.type_()|ffi_converter_name }};
+pub struct {{ e.type_()|ffi_converter_name }};
 
 #[doc(hidden)]
 impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
