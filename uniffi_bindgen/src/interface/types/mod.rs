@@ -26,6 +26,7 @@ use std::{collections::hash_map::Entry, collections::BTreeSet, collections::Hash
 use anyhow::{bail, Result};
 
 use super::ffi::FFIType;
+use super::Language;
 
 mod finder;
 pub(super) use finder::TypeFinder;
@@ -65,7 +66,7 @@ pub enum Type {
     // An FfiConverter we `use` from an external crate
     External { name: String, crate_name: String },
     // A local type we will generate an FfiConverter via wrapping a primitive.
-    Wrapped { name: String, prim: Box<Type> },
+    Wrapped { name: String, prim: Box<Type>, languages: BTreeSet<Language>},
 }
 
 impl Type {

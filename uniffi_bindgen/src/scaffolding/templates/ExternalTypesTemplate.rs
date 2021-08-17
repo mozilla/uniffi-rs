@@ -7,7 +7,7 @@ use {{ crate_name|crate_name_rs }}::FfiConverterType{{ name }};
 {% endfor %}
 
 // More complicated locally `Wrapped` types - we generate FfiConverter.
-{% for (name, prim) in ci.iter_wrapped_types() %}
+{% for (name, prim) in ci.iter_rust_wrapped_types() %}
 {% if loop.first %}
 
 // A trait that's in our crate for our external wrapped types to implement.

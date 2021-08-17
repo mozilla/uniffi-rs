@@ -5,6 +5,7 @@
 import unittest
 import uniffi_one
 from imported_types_lib import *
+from ext_types_guid import Guid
 
 class TestIt(unittest.TestCase):
     def test_it(self):
@@ -12,7 +13,7 @@ class TestIt(unittest.TestCase):
 
         ct = get_combined_type(None)
         self.assertEqual(ct.uot.sval, "hello")
-        self.assertEqual(ct.guid, "a-guid")
+        self.assertEqual(ct.guid, Guid("a-guid"))
         self.assertEqual(ct.json, '{"hello":"there"}')
 
         ct2 = get_combined_type(ct)

@@ -7,20 +7,20 @@ from ext_types_guid import *
 
 class TestGuid(unittest.TestCase):
     def test_get_guid(self):
-        self.assertEqual(get_guid(None), "NewGuid")
-        self.assertEqual(get_guid("SomeGuid"), "SomeGuid")
+        self.assertEqual(get_guid(None), Guid("NewGuid"))
+        self.assertEqual(get_guid(Guid("SomeGuid")), Guid("SomeGuid"))
 
     def test_guid_helper(self):
         helper = get_guid_helper(None)
-        self.assertEqual(helper.guid, "first-guid")
-        self.assertEqual(helper.guids, ["second-guid", "third-guid"])
+        self.assertEqual(helper.guid, Guid("first-guid"))
+        self.assertEqual(helper.guids, [Guid("second-guid"), Guid("third-guid")])
         self.assertEqual(helper.maybe_guid, None)
 
+    def test_rust_guid(self):
+        self.assertEqual(get_rust_guid(), "RustGuid")
 
-    # def test_round_trip(self):
-    #     ct = get_combined_type(None)
-    #     self.assertEqual(ct.cot.sval, "hello")
-    #     self.assertEqual(ct.ctt.ival, 1)
+    def test_python_guid(self):
+        self.assertEqual(get_python_guid(), PythonGuid("PythonGuid"))
 
 if __name__=='__main__':
     unittest.main()

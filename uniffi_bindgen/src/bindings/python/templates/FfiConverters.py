@@ -543,9 +543,14 @@ class {{ typ|ffi_converter_name }}:
             FfiConverterString.write(builder, k)
             {{ inner_type|ffi_converter_name }}.write(builder, v)
 
-{% when Type::Wrapped with { name, prim } -%}
+{% when Type::Wrapped with { name, prim, languages } %}
 
+{%- match typ|python_wrapper(context) %}
+{%- when Some with ( python_wrapper ) %}
+{{ python_wrapper }}
+{%- else %}
 {{ typ|ffi_converter_name }} = {{ prim|ffi_converter_name }}
+{%- endmatch %}
 
 {% when Type::External with { name, crate_name } -%}
 # For external types import the converter from the external module

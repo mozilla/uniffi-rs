@@ -17,12 +17,14 @@ pub mod gen_ruby;
 pub use gen_ruby::{Config, RubyWrapper};
 
 use super::super::interface::ComponentInterface;
+use crate::UniffiContext;
 
 // Generate ruby bindings for the given ComponentInterface, in the given output directory.
 
 pub fn write_bindings(
     config: &Config,
     ci: &ComponentInterface,
+    _context: &UniffiContext,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {

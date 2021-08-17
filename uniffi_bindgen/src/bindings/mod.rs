@@ -13,6 +13,7 @@ use std::convert::{TryFrom, TryInto};
 use std::path::Path;
 
 use crate::interface::ComponentInterface;
+use crate::UniffiContext;
 use crate::MergeWith;
 
 pub mod kotlin;
@@ -102,6 +103,7 @@ impl MergeWith for Config {
 pub fn write_bindings<P>(
     config: &Config,
     ci: &ComponentInterface,
+    context: &UniffiContext,
     out_dir: P,
     language: TargetLanguage,
     try_format_code: bool,
@@ -112,15 +114,15 @@ where
     let out_dir = out_dir.as_ref();
     match language {
         TargetLanguage::Kotlin => {
-            kotlin::write_bindings(&config.kotlin, ci, out_dir, try_format_code)?
+            kotlin::write_bindings(&config.kotlin, ci, context, out_dir, try_format_code)?
         }
         TargetLanguage::Swift => {
-            swift::write_bindings(&config.swift, ci, out_dir, try_format_code)?
+            swift::write_bindings(&config.swift, ci, context, out_dir, try_format_code)?
         }
         TargetLanguage::Python => {
-            python::write_bindings(&config.python, ci, out_dir, try_format_code)?
+            python::write_bindings(&config.python, ci, context, out_dir, try_format_code)?
         }
-        TargetLanguage::Ruby => ruby::write_bindings(&config.ruby, ci, out_dir, try_format_code)?,
+        TargetLanguage::Ruby => ruby::write_bindings(&config.ruby, ci, context, out_dir, try_format_code)?,
     }
     Ok(())
 }

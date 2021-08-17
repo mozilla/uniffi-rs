@@ -41,6 +41,7 @@ use std::{
 pub mod gen_swift;
 pub use gen_swift::{BridgingHeader, Config, ModuleMap, SwiftWrapper};
 
+use crate::UniffiContext;
 use super::super::interface::ComponentInterface;
 
 /// The Swift bindings generated from a [`ComponentInterface`].
@@ -62,6 +63,7 @@ pub struct Bindings {
 pub fn write_bindings(
     config: &Config,
     ci: &ComponentInterface,
+    _context: &UniffiContext,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {

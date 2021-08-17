@@ -68,6 +68,13 @@ __all__ = [
     {%- for e in ci.iter_error_definitions() %}
     "{{ e.name()|class_name_py }}",
     {%- endfor %}
+    {%- for typ in ci.iter_types() %}
+    {%- match typ|python_wrapper_name %}
+    {%- when Some with ( name ) %}
+    "{{ name }}",
+    {%- else -%}
+    {%- endmatch %}
+    {%- endfor %}
 ]
 
 {% import "macros.py" as py %}

@@ -105,6 +105,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 Type::Wrapped {
                     name: name.to_string(),
                     prim: prim.into(),
+                    languages: attrs.wrapped_languages(),
                 },
             )
         } else {
@@ -219,7 +220,7 @@ mod test {
                                                                                  if name == "ExternalType" && crate_name == "crate-name")
                 );
                 assert!(
-                    matches!(types.get_type_definition("ExternalWrapping").unwrap(), Type::Wrapped { name, prim }
+                    matches!(types.get_type_definition("ExternalWrapping").unwrap(), Type::Wrapped { name, prim, .. }
                                                                                      if name == "ExternalWrapping" && prim == Box::new(Type::String))
                 );
             },

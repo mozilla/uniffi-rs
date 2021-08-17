@@ -1,5 +1,13 @@
-[Wrapped]
+[Wrapped=(Rust,Python)]
 typedef string Guid;
+
+// A Guid that's only wrapped on the rust side
+[Wrapped]
+typedef string RustGuid;
+
+// A Guid that's only wrapped on the python side
+[Wrapped=(Python)]
+typedef string PythonGuid;
 
 dictionary GuidHelper {
     Guid guid;
@@ -10,4 +18,7 @@ dictionary GuidHelper {
 namespace ext_types_guid {
     Guid get_guid(optional Guid? val);
     GuidHelper get_guid_helper(optional GuidHelper? vals);
+
+    RustGuid get_rust_guid();
+    PythonGuid get_python_guid();
 };

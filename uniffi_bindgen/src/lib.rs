@@ -107,10 +107,12 @@ use std::{
 };
 
 pub mod bindings;
+pub mod context;
 pub mod interface;
 pub mod scaffolding;
 
 use bindings::TargetLanguage;
+use context::UniffiContext;
 use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
@@ -162,16 +164,19 @@ pub fn generate_bindings<P: AsRef<Path>>(
     let udl_file = udl_file.as_ref();
 
     let component = parse_udl(udl_file)?;
+    let crate_root = guess_crate_root(udl_file)?;
     let config = get_config(
         &component,
-        guess_crate_root(udl_file)?,
+        crate_root,
         config_file_override,
     )?;
     let out_dir = get_out_dir(&udl_file, out_dir_override)?;
+    let context = context::UniffiContext { crate_root: crate_root.into() };
     for language in target_languages {
         bindings::write_bindings(
             &config.bindings,
             &component,
+            &context,
             &out_dir,
             language.try_into()?,
             try_format_code,
@@ -216,7 +221,8 @@ pub fn run_tests<P: AsRef<Path>>(
             let crate_root = guess_crate_root(Path::new(udl_file))?;
             let component = parse_udl(Path::new(udl_file))?;
             let config = get_config(&component, crate_root, config_file_override)?;
-            bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
+            let context = context::UniffiContext { crate_root: crate_root.into() };
+            bindings::write_bindings(&config.bindings, &component, &context, &cdylib_dir, lang, true)?;
             bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
         }
         for test_script in test_scripts {

@@ -6,9 +6,11 @@ use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
 use serde::{Deserialize, Serialize};
+use std::fs;
 
 use crate::interface::*;
 use crate::MergeWith;
+use crate::UniffiContext;
 
 // Some config options for it the caller wants to customize the generated python.
 // Note that this can only be used to control details of the python *that do not affect the underlying component*,
@@ -49,10 +51,11 @@ impl MergeWith for Config {
 pub struct PythonWrapper<'a> {
     config: Config,
     ci: &'a ComponentInterface,
+    context: &'a UniffiContext,
 }
 impl<'a> PythonWrapper<'a> {
-    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
-        Self { config, ci }
+    pub fn new(config: Config, ci: &'a ComponentInterface, context: &'a UniffiContext) -> Self {
+        Self { config, ci, context}
     }
 }
 
@@ -137,5 +140,34 @@ mod filters {
 
     pub fn ffi_converter_name(type_: &Type) -> Result<String, askama::Error> {
         Ok(format!("FfiConverter{}", type_.canonical_name().to_camel_case()))
+    }
+
+    pub fn python_wrapper_name(type_: &Type) -> Result<Option<String>, askama::Error> {
+        Ok(match type_ {
+            Type::Wrapped { name, languages, .. } => {
+                if languages.contains(&Language::Python) {
+                    Some(name.clone())
+                } else {
+                    None
+                }
+            }
+            _ => None
+        })
+    }
+
+    pub fn python_wrapper(type_: &Type, context: &UniffiContext) -> Result<Option<String>, askama::Error> {
+        Ok(match type_ {
+            Type::Wrapped { name, languages, .. } => {
+                if languages.contains(&Language::Python) {
+                    let path = context.get_bindings_path("python", format!("{}.py", name));
+                    Some(fs::read_to_string(&path).expect(
+                            &format!("Error reading wrapper file: {:?}", &path)
+                    ))
+                } else {
+                    None
+                }
+            }
+            _ => None
+        })
     }
 }

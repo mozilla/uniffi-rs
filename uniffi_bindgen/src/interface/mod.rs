@@ -74,6 +74,8 @@ mod object;
 pub use object::{Constructor, Method, Object};
 mod record;
 pub use record::{Field, Record};
+mod languages;
+pub use languages::Language;
 
 pub mod ffi;
 pub use ffi::{FFIArgument, FFIFunction, FFIType};
@@ -230,11 +232,17 @@ impl<'ci> ComponentInterface {
     }
 
     /// Get details about all `Type::Wrapped` types
-    pub fn iter_wrapped_types(&self) -> Vec<(String, Type)> {
+    pub fn iter_rust_wrapped_types(&self) -> Vec<(String, Type)> {
         self.types
             .iter_known_types()
             .filter_map(|t| match t {
-                Type::Wrapped { name, prim } => Some((name, *prim)),
+                Type::Wrapped { name, prim, languages } => {
+                    if languages.contains(&Language::Rust) {
+                        Some((name, *prim))
+                    } else {
+                        None
+                    }
+                }
                 _ => None,
             })
             .collect()

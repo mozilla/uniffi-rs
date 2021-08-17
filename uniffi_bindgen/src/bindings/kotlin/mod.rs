@@ -14,12 +14,14 @@ use std::{
 
 pub mod gen_kotlin;
 pub use gen_kotlin::{Config, KotlinWrapper};
+use crate::UniffiContext;
 
 use super::super::interface::ComponentInterface;
 
 pub fn write_bindings(
     config: &Config,
     ci: &ComponentInterface,
+    _context: &UniffiContext,
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {

@@ -104,7 +104,14 @@ mod filters {
                 ffi_converter_name(inner)?
             ),
             // External and Wrapped bytes have FfiConverters with a predictable name based on the type name.
-            Type::Wrapped { name, .. } | Type::External { name, .. } => {
+            Type::Wrapped { name, prim, languages, .. } => {
+                if languages.contains(&Language::Rust) {
+                    format!("FfiConverterType{}", name)
+                } else {
+                    ffi_converter_name(prim)?
+                }
+            }
+            Type::External { name, .. } => {
                 format!("FfiConverterType{}", name)
             }
             // Primitive types / strings are implemented by their rust type
