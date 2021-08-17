@@ -203,7 +203,7 @@ class RustBufferTypeReader(object):
     @classmethod
     def readVariant{{ loop.index}}Of{{ canonical_type_name }}(cls, stream):
         {%- if e.is_flat() %}
-        return {{ error_name|class_name_py }}.{{ variant.name()|class_name_py }}(self.readString())
+        return {{ error_name|class_name_py }}.{{ variant.name()|class_name_py }}(cls.readString(stream))
         {%- else %}
         {%- if variant.has_fields() %}
         return {{ error_name|class_name_py }}.{{ variant.name()|class_name_py }}(
