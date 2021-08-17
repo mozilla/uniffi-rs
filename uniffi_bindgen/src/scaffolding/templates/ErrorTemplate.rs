@@ -13,6 +13,39 @@ pub struct {{ e.type_()|ffi_converter_name }};
 impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
     type RustType = {{ e.name() }};
 
+    {% if e.is_flat() %}
+
+    // For "flat" error enums, we stringify the error on the Rust side and surface that
+    // as the error message in the foreign language.
+
+
+    fn write(obj: {{ e.name() }}, buf: &mut std::vec::Vec<u8>) {
+        use uniffi::deps::bytes::BufMut;
+        let msg = obj.to_string();
+        match obj {
+            {%- for variant in e.variants() %}
+            {{ e.name() }}::{{ variant.name() }}{..} => {
+                buf.put_i32({{ loop.index }});
+                <String as uniffi::FfiConverter>::write(msg, buf);
+            },
+            {%- endfor %}
+        };
+    }
+
+    fn try_read(_buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<{{ e.name() }}> {
+        // It's not currently possible to send errors from the foreign language *into* Rust.
+        panic!("try_read not supported for flat errors");
+    }
+
+    {% else %}
+
+    // For rich structured enums, we map individual fields on the Rust side over to
+    // corresponding fields on the foreign-language side.
+    //
+    // If a variant doesn't have fields defined in the UDL, it's currently still possible that
+    // the Rust enum has fields and they're just not listed. In that case we use the `Variant{..}`
+    // syntax to match the variant while ignoring its fields.
+
     fn write(obj: {{ e.name() }}, buf: &mut std::vec::Vec<u8>) {
         use uniffi::deps::bytes::BufMut;
         match obj {
@@ -27,16 +60,9 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
         };
     }
 
-    {% if e.is_flat() %}
-    // If a variant doesn't have fields defined in the UDL, it's currently still possible that
-    // the Rust enum has fields and they're just not listed.  Let's just punt on implementing
-    // try_read() to avoid that case.  It should be no issue since passing back Errors into the
-    // rust code isn't supported.
-    fn try_read(_buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<{{ e.name() }}> {
-        panic!("try_read not supported for fieldless errors");
-    }
-    {% else %}
     fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<{{ e.name() }}> {
+        // It's not currently supported to send errors from the foreign language *into* Rust,
+        // but this is what the supporting code might look like...
         use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 4)?;
         Ok(match buf.get_i32() {

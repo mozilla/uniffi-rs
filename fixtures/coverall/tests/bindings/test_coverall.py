@@ -89,7 +89,7 @@ class TestCoverall(unittest.TestCase):
         coveralls = Coveralls("test_errors")
         self.assertEqual(coveralls.get_name(), "test_errors")
 
-        with self.assertRaises(CoverallError.TooManyHoles):
+        with self.assertRaisesRegex(CoverallError.TooManyHoles, "The coverall has too many holes"):
             coveralls.maybe_throw(True)
 
         with self.assertRaises(CoverallError.TooManyHoles):

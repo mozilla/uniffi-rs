@@ -140,6 +140,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
                     })
                 })
                 .collect::<Result<Vec<_>>>()?,
+            // Enums declared using the `enum` syntax can never have variants with fields.
             flat: true,
         })
     }
@@ -166,6 +167,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
                     ),
                 })
                 .collect::<Result<Vec<_>>>()?,
+            // Enums declared using the `[Enum] interface` syntax might have variants with fields.
             flat: false,
         })
     }
