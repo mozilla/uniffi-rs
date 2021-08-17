@@ -27,6 +27,9 @@ use std::process::Command;
 /// itself and need to test out their changes to the bindings generator.
 pub fn generate_scaffolding(udl_file: &str) -> Result<()> {
     println!("cargo:rerun-if-changed={}", udl_file);
+    // The UNIFFI_TESTS_DISABLE_EXTENSIONS variable disables some bindings, but it is evaluated
+    // at *build* time, so we need to rebuild when it changes.
+    println!("cargo:rerun-if-env-changed=UNIFFI_TESTS_DISABLE_EXTENSIONS");
     // Why don't we just depend on uniffi-bindgen and call the public functions?
     // Calling the command line helps making sure that the generated swift/Kotlin/whatever
     // bindings were generated with the same version of uniffi as the Rust scaffolding code.

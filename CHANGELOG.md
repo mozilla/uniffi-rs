@@ -16,12 +16,15 @@
 - The Rust implementations of all `dictionary`, `enum` or `error` types defined in UDL must be
   public. If you see errors like:
     `private type <type-name> in public interface`
-  or similar, please declare the types as `pub` in your Rust.
+  or similar, please declare the types as `pub` in your Rust code.
 
 ### What's Changed
 
 - You can now use external types of various flavours - see
   [the fine manual](https://mozilla.github.io/uniffi-rs/udl/ext_types.html)
+
+- An environment variable `UNIFFI_TESTS_DISABLE_EXTENSIONS` can disable foreign language bindings
+  when running tests. See [the contributing guide](./contributing.md) for more.
 
 ## v0.13.1 (_2021-08-09_)
 
