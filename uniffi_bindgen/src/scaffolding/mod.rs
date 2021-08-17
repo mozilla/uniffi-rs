@@ -5,8 +5,8 @@
 use anyhow::Result;
 use askama::Template;
 
-use heck::SnakeCase;
 use super::interface::*;
+use heck::SnakeCase;
 
 #[derive(Template)]
 #[template(syntax = "rs", escape = "none", path = "scaffolding_template.rs")]
