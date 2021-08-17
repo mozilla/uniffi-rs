@@ -18,7 +18,7 @@ lazy_static::lazy_static! {
 }
 
 #[derive(Debug, thiserror::Error)]
-enum TodoError {
+pub enum TodoError {
     #[error("The todo does not exist!")]
     TodoDoesNotExist,
     #[error("The todolist is empty!")]
