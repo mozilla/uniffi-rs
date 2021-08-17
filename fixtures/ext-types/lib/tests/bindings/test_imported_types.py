@@ -3,11 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import unittest
+import uniffi_one
 from imported_types_lib import *
 
 class TestIt(unittest.TestCase):
     def test_it(self):
-        self.assertEqual(get_uniffi_one_type().sval, "you got me")
+        self.assertEqual(get_uniffi_one_type(uniffi_one.UniffiOneType("test")).sval, "test - test")
 
         ct = get_combined_type(None)
         self.assertEqual(ct.uot.sval, "hello")

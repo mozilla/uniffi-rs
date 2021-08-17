@@ -41,6 +41,8 @@ pub enum FFIType {
     RustBuffer,
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
+    ExternalRustBuffer { crate_name: String },
+    /// A RustBuffer for a type that was imported from an external crate
     ForeignBytes,
     /// A pointer to a single function in to the foreign language.
     /// This function contains all the machinery to make callbacks work on the foreign language side.

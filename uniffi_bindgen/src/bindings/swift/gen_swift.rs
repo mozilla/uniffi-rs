@@ -213,6 +213,7 @@ mod filters {
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
             FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
+            FFIType::ExternalRustBuffer { .. } => panic!("no support for ExternalRustBuffer yet"),
         })
     }
 

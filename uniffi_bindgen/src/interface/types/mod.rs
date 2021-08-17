@@ -153,8 +153,8 @@ impl From<&Type> for FFIType {
             | Type::Sequence(_)
             | Type::Map(_)
             | Type::Timestamp
-            | Type::Duration
-            | Type::External { .. } => FFIType::RustBuffer,
+            | Type::Duration => FFIType::RustBuffer,
+            Type::External { crate_name, .. } => FFIType::ExternalRustBuffer { crate_name: crate_name.clone() },
             Type::Wrapped { prim, .. } => FFIType::from(prim.as_ref()),
         }
     }

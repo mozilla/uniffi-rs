@@ -282,6 +282,7 @@ impl CodeOracle for KotlinCodeOracle {
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FFIType::ForeignCallback => "ForeignCallback".to_string(),
+            FFIType::ExternalRustBuffer { .. } => panic!("no support for ExternalRustBuffer yet"),
         }
     }
 }

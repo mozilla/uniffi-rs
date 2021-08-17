@@ -74,6 +74,9 @@ mod filters {
             FFIType::Float64 => "ctypes.c_double".to_string(),
             FFIType::RustArcPtr => "ctypes.c_void_p".to_string(),
             FFIType::RustBuffer => "RustBuffer".to_string(),
+            FFIType::ExternalRustBuffer { crate_name } => {
+                format!("{}.RustBuffer", mod_name_py(crate_name)?)
+            }
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
             FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
         })

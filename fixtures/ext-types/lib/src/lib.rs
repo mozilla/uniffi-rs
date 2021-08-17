@@ -1,6 +1,24 @@
 use ext_types_guid::Guid;
-use uniffi_one::UniffiOneType;
+use uniffi_one::{Animal, IpAddr, UniffiOneType};
 use wrapper_types::Handle;
+
+fn get_uniffi_one_type(val: UniffiOneType) -> UniffiOneType {
+    UniffiOneType { sval: format!("{} - {}", val.sval, val.sval) }
+}
+
+fn get_another_animal(animal: Animal) -> Animal {
+    match animal {
+        Animal::Dog => Animal::Cat,
+        Animal::Cat => Animal::Dog,
+    }
+}
+
+fn get_another_ip(ip: IpAddr) -> IpAddr {
+    match ip {
+        IpAddr::V4 { .. } => IpAddr::V6 { addr: "1:2:3:4".to_string() },
+        IpAddr::V6 { .. } => IpAddr::V4 { q1: 127, q2: 0, q3: 0, q4: 1 },
+    }
+}
 
 pub struct CombinedType {
     pub uot: UniffiOneType,
@@ -18,12 +36,10 @@ pub struct CombinedType {
     pub handle: Handle,
     pub handles: Vec<Handle>,
     pub maybe_handle: Option<Handle>,
-}
 
-pub fn get_uniffi_one_type() -> UniffiOneType {
-    UniffiOneType {
-        sval: "you got me".to_string(),
-    }
+    pub animal: Animal,
+    pub animals: Vec<Animal>,
+    pub maybe_animal: Option<Animal>,
 }
 
 fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
@@ -52,6 +68,10 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
         handle: Handle(123),
         handles: vec![Handle(1), Handle(2), Handle(3)],
         maybe_handle: Some(Handle(4)),
+
+        animal: Animal::Dog,
+        animals: vec![Animal::Cat, Animal::Dog],
+        maybe_animal: Some(Animal::Cat),
     })
 }
 

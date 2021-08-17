@@ -6,5 +6,7 @@ assert(val.handle == 123)
 
 val = WrappedTypesDemo('{"foo":"bar"}', 456)
 val2 = get_wrapped_types_demo(val)
-print(val2)
 assert(val == val2)
+
+assert(get_next_handle(val.handle) == 457)
+assert(objectify("outer", '{"hello":"there"}') == '{"outer":{"hello":"there"}}')
