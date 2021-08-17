@@ -9,7 +9,7 @@
 
 use quote::{format_ident, quote};
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use syn::{bracketed, punctuated::Punctuated, LitStr, Token};
 
 /// A macro to build testcases for a component's generated bindings.
@@ -47,7 +47,13 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
                 "uniffi_foreign_language_testcase_{}",
                 test_file_name.replace(|c: char| !c.is_alphanumeric(), "_")
             );
+            let maybe_ignore = if should_skip_path(&test_file_pathbuf) {
+                quote! { #[ignore] }
+            } else {
+                quote! { }
+            };
             quote! {
+                #maybe_ignore
                 #[test]
                 fn #test_name () -> uniffi::deps::anyhow::Result<()> {
                     uniffi::testing::run_foreign_language_testcase(#pkg_dir, &[#udl_file], #test_file_path)
@@ -59,6 +65,14 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
         #(#test_functions)*
     };
     proc_macro::TokenStream::from(test_module)
+}
+
+// UNIFFI_TESTS_DISABLE_EXTENSIONS contains a comma-sep'd list of extensions (without leading `.`)
+fn should_skip_path(path: &Path) -> bool {
+    let ext = path.extension().expect("File has no extension!");
+    env::var("UNIFFI_TESTS_DISABLE_EXTENSIONS")
+        .map(|v| v.split(',').any(|look| look == ext))
+        .unwrap_or(false)
 }
 
 /// Newtype to simplifying parsing a list of file paths from macro input.
