@@ -11,8 +11,8 @@ pub enum Animal {
 }
 
 pub enum IpAddr {
-    V4 {q1: u8, q2: u8, q3: u8, q4: u8},
-    V6 {addr: String},
+    V4 { q1: u8, q2: u8, q3: u8, q4: u8 },
+    V6 { addr: String },
 }
 
 include!(concat!(env!("OUT_DIR"), "/uniffi-one.uniffi.rs"));

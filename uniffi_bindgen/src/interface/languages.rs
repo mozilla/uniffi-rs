@@ -23,7 +23,7 @@ impl std::convert::TryFrom<&str> for Language {
             "swift" => Ok(Language::Swift),
             "python" => Ok(Language::Python),
             "ruby" => Ok(Language::Ruby),
-            _ => Err(format!("Unknown language: {}", value))
+            _ => Err(format!("Unknown language: {}", value)),
         }
     }
 }

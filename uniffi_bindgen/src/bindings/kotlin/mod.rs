@@ -13,8 +13,8 @@ use std::{
 };
 
 pub mod gen_kotlin;
-pub use gen_kotlin::{Config, KotlinWrapper};
 use crate::UniffiContext;
+pub use gen_kotlin::{Config, KotlinWrapper};
 
 use super::super::interface::ComponentInterface;
 

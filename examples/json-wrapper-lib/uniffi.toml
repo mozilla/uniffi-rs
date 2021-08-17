@@ -1,0 +1,8 @@
+[bindings.python]
+cdylib_name = "json_wrapper_lib"
+
+[bindings.ruby]
+cdylib_name = "json_wrapper_lib"
+
+[bindings.swift]
+cdylib_name = "json_wrapper_lib"

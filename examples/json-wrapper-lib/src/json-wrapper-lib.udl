@@ -1,0 +1,6 @@
+[External="json-wrapper-ext"]
+typedef extern JsonObject;
+
+namespace json_wrapper_lib {
+    JsonObject? get(JsonObject obj, string key);
+};

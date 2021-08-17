@@ -55,7 +55,11 @@ pub struct PythonWrapper<'a> {
 }
 impl<'a> PythonWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface, context: &'a UniffiContext) -> Self {
-        Self { config, ci, context}
+        Self {
+            config,
+            ci,
+            context,
+        }
     }
 }
 
@@ -139,35 +143,46 @@ mod filters {
     }
 
     pub fn ffi_converter_name(type_: &Type) -> Result<String, askama::Error> {
-        Ok(format!("FfiConverter{}", type_.canonical_name().to_camel_case()))
+        Ok(format!(
+            "FfiConverter{}",
+            type_.canonical_name().to_camel_case()
+        ))
     }
 
     pub fn python_wrapper_name(type_: &Type) -> Result<Option<String>, askama::Error> {
         Ok(match type_ {
-            Type::Wrapped { name, languages, .. } => {
+            Type::Wrapped {
+                name, languages, ..
+            } => {
                 if languages.contains(&Language::Python) {
                     Some(name.clone())
                 } else {
                     None
                 }
             }
-            _ => None
+            _ => None,
         })
     }
 
-    pub fn python_wrapper(type_: &Type, context: &UniffiContext) -> Result<Option<String>, askama::Error> {
+    pub fn python_wrapper(
+        type_: &Type,
+        context: &UniffiContext,
+    ) -> Result<Option<String>, askama::Error> {
         Ok(match type_ {
-            Type::Wrapped { name, languages, .. } => {
+            Type::Wrapped {
+                name, languages, ..
+            } => {
                 if languages.contains(&Language::Python) {
                     let path = context.get_bindings_path("python", format!("{}.py", name));
-                    Some(fs::read_to_string(&path).expect(
-                            &format!("Error reading wrapper file: {:?}", &path)
-                    ))
+                    Some(
+                        fs::read_to_string(&path)
+                            .unwrap_or_else(|_| panic!("Error reading wrapper file: {:?}", &path)),
+                    )
                 } else {
                     None
                 }
             }
-            _ => None
+            _ => None,
         })
     }
 }

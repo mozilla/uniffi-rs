@@ -3,7 +3,9 @@ use uniffi_one::{Animal, IpAddr, UniffiOneType};
 use wrapper_types::Handle;
 
 fn get_uniffi_one_type(val: UniffiOneType) -> UniffiOneType {
-    UniffiOneType { sval: format!("{} - {}", val.sval, val.sval) }
+    UniffiOneType {
+        sval: format!("{} - {}", val.sval, val.sval),
+    }
 }
 
 fn get_another_animal(animal: Animal) -> Animal {
@@ -15,8 +17,15 @@ fn get_another_animal(animal: Animal) -> Animal {
 
 fn get_another_ip(ip: IpAddr) -> IpAddr {
     match ip {
-        IpAddr::V4 { .. } => IpAddr::V6 { addr: "1:2:3:4".to_string() },
-        IpAddr::V6 { .. } => IpAddr::V4 { q1: 127, q2: 0, q3: 0, q4: 1 },
+        IpAddr::V4 { .. } => IpAddr::V6 {
+            addr: "1:2:3:4".to_string(),
+        },
+        IpAddr::V6 { .. } => IpAddr::V4 {
+            q1: 127,
+            q2: 0,
+            q3: 0,
+            q4: 1,
+        },
     }
 }
 

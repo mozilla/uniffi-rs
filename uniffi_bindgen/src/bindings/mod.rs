@@ -13,8 +13,8 @@ use std::convert::{TryFrom, TryInto};
 use std::path::Path;
 
 use crate::interface::ComponentInterface;
-use crate::UniffiContext;
 use crate::MergeWith;
+use crate::UniffiContext;
 
 pub mod kotlin;
 pub mod python;
@@ -122,7 +122,9 @@ where
         TargetLanguage::Python => {
             python::write_bindings(&config.python, ci, context, out_dir, try_format_code)?
         }
-        TargetLanguage::Ruby => ruby::write_bindings(&config.ruby, ci, context, out_dir, try_format_code)?,
+        TargetLanguage::Ruby => {
+            ruby::write_bindings(&config.ruby, ci, context, out_dir, try_format_code)?
+        }
     }
     Ok(())
 }

@@ -1,0 +1,5 @@
+[Wrapped=(Rust,Python)]
+typedef string JsonObject;
+
+namespace json_wrapper_ext {
+};

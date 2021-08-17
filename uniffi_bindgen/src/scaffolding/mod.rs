@@ -66,8 +66,7 @@ mod filters {
             FFIType::Float32 => "f32".into(),
             FFIType::Float64 => "f64".into(),
             FFIType::RustArcPtr => "*const std::os::raw::c_void".into(),
-            FFIType::RustBuffer
-            | FFIType:: ExternalRustBuffer { .. } => "uniffi::RustBuffer".into(),
+            FFIType::RustBuffer | FFIType::ExternalRustBuffer { .. } => "uniffi::RustBuffer".into(),
             FFIType::ForeignBytes => "uniffi::ForeignBytes".into(),
             FFIType::ForeignCallback => "uniffi::ForeignCallback".into(),
         })
@@ -104,7 +103,12 @@ mod filters {
                 ffi_converter_name(inner)?
             ),
             // External and Wrapped bytes have FfiConverters with a predictable name based on the type name.
-            Type::Wrapped { name, prim, languages, .. } => {
+            Type::Wrapped {
+                name,
+                prim,
+                languages,
+                ..
+            } => {
                 if languages.contains(&Language::Rust) {
                     format!("FfiConverterType{}", name)
                 } else {

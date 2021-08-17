@@ -14,10 +14,10 @@
 //! all handled by a single abstraction. This might need to be refactored in future
 //! if we grow significantly more complicated attribute handling.
 
-use std::convert::{TryFrom, TryInto};
-use std::collections::{BTreeSet, HashSet};
-use std::iter::FromIterator;
 use super::Language;
+use std::collections::{BTreeSet, HashSet};
+use std::convert::{TryFrom, TryInto};
+use std::iter::FromIterator;
 
 use anyhow::{bail, Result};
 
@@ -38,7 +38,9 @@ pub(super) enum Attribute {
     // `[External="crate_name"]` - We can `use crate_name::...` for the type.
     External(String),
     // Something hand-written in this crate which wraps a primitive type.
-    Wrapped(BTreeSet<Language> /* Which languages have a wrapping? */),
+    Wrapped(
+        BTreeSet<Language>, /* Which languages have a wrapping? */
+    ),
 }
 
 impl Attribute {
@@ -64,7 +66,9 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
                 "Threadsafe" => Ok(Attribute::Threadsafe),
-                "Wrapped" => Ok(Attribute::Wrapped(BTreeSet::from_iter(vec![Language::Rust]))),
+                "Wrapped" => Ok(Attribute::Wrapped(BTreeSet::from_iter(vec![
+                    Language::Rust,
+                ]))),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like "[Throws=Error]"
@@ -81,19 +85,22 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 }
             }
             // Matches assignment-style attributes like "[Wrapper=(Rust,Ruby)]"
-            weedle::attribute::ExtendedAttribute::IdentList(list) => {
-                match list.identifier.0 {
-                    "Wrapped" => Ok(Attribute::Wrapped(
-                            list.list.body.list.iter().map(|ident| {
-                                Language::try_from(ident.0).expect("Error parsing language list")
-                            }).collect()
-                    )),
-                    _ => anyhow::bail!(
-                        "Attribute identity list not supported: {:?}",
-                        list.identifier.0,
-                    ),
-                }
-            }
+            weedle::attribute::ExtendedAttribute::IdentList(list) => match list.identifier.0 {
+                "Wrapped" => Ok(Attribute::Wrapped(
+                    list.list
+                        .body
+                        .list
+                        .iter()
+                        .map(|ident| {
+                            Language::try_from(ident.0).expect("Error parsing language list")
+                        })
+                        .collect(),
+                )),
+                _ => anyhow::bail!(
+                    "Attribute identity list not supported: {:?}",
+                    list.identifier.0,
+                ),
+            },
             _ => anyhow::bail!("Attribute not supported: {:?}", weedle_attribute),
         }
     }
@@ -738,10 +745,14 @@ mod test {
 
     #[test]
     fn test_typedef_attribute() {
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Wrapped=(Rust,Python)]").unwrap();
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Wrapped=(Rust,Python)]").unwrap();
         let attrs = TypedefAttributes::try_from(&node).unwrap();
         assert!(attrs.is_wrapped());
-        assert!(attrs.wrapped_languages() == BTreeSet::from_iter(vec![Language::Rust, Language::Python]));
+        assert!(
+            attrs.wrapped_languages()
+                == BTreeSet::from_iter(vec![Language::Rust, Language::Python])
+        );
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Wrapped]").unwrap();
         let attrs = TypedefAttributes::try_from(&node).unwrap();

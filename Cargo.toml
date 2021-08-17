@@ -11,6 +11,8 @@ members = [
   "examples/sprites",
   "examples/todolist",
   "examples/wrapper-types",
+  "examples/json-wrapper-lib",
+  "examples/json-wrapper-ext",
 
   "fixtures/coverall",
   "fixtures/callbacks",

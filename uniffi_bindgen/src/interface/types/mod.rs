@@ -64,9 +64,16 @@ pub enum Type {
     Sequence(Box<Type>),
     Map(/* String, */ Box<Type>),
     // An FfiConverter we `use` from an external crate
-    External { name: String, crate_name: String },
+    External {
+        name: String,
+        crate_name: String,
+    },
     // A local type we will generate an FfiConverter via wrapping a primitive.
-    Wrapped { name: String, prim: Box<Type>, languages: BTreeSet<Language>},
+    Wrapped {
+        name: String,
+        prim: Box<Type>,
+        languages: BTreeSet<Language>,
+    },
 }
 
 impl Type {
@@ -155,7 +162,9 @@ impl From<&Type> for FFIType {
             | Type::Map(_)
             | Type::Timestamp
             | Type::Duration => FFIType::RustBuffer,
-            Type::External { crate_name, .. } => FFIType::ExternalRustBuffer { crate_name: crate_name.clone() },
+            Type::External { crate_name, .. } => FFIType::ExternalRustBuffer {
+                crate_name: crate_name.clone(),
+            },
             Type::Wrapped { prim, .. } => FFIType::from(prim.as_ref()),
         }
     }

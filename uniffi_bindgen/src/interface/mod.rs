@@ -221,7 +221,8 @@ impl<'ci> ComponentInterface {
 
     /// Get all external type crate names
     pub fn iter_external_type_crate_names(&self) -> Vec<String> {
-        let crate_names: HashSet<String> = self.types
+        let crate_names: HashSet<String> = self
+            .types
             .iter_known_types()
             .filter_map(|t| match t {
                 Type::External { crate_name, .. } => Some(crate_name),
@@ -236,7 +237,11 @@ impl<'ci> ComponentInterface {
         self.types
             .iter_known_types()
             .filter_map(|t| match t {
-                Type::Wrapped { name, prim, languages } => {
+                Type::Wrapped {
+                    name,
+                    prim,
+                    languages,
+                } => {
                     if languages.contains(&Language::Rust) {
                         Some((name, *prim))
                     } else {

@@ -41,8 +41,8 @@ use std::{
 pub mod gen_swift;
 pub use gen_swift::{BridgingHeader, Config, ModuleMap, SwiftWrapper};
 
-use crate::UniffiContext;
 use super::super::interface::ComponentInterface;
+use crate::UniffiContext;
 
 /// The Swift bindings generated from a [`ComponentInterface`].
 ///

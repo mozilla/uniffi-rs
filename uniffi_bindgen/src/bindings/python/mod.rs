@@ -16,8 +16,8 @@ use anyhow::{bail, Context, Result};
 pub mod gen_python;
 pub use gen_python::{Config, PythonWrapper};
 
-use crate::UniffiContext;
 use super::super::interface::ComponentInterface;
+use crate::UniffiContext;
 
 // Generate python bindings for the given ComponentInterface, in the given output directory.
 
@@ -48,7 +48,11 @@ pub fn write_bindings(
 
 // Generate python bindings for the given ComponentInterface, as a string.
 
-pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface, context: &UniffiContext) -> Result<String> {
+pub fn generate_python_bindings(
+    config: &Config,
+    ci: &ComponentInterface,
+    context: &UniffiContext,
+) -> Result<String> {
     use askama::Template;
     PythonWrapper::new(config.clone(), ci, context)
         .render()
