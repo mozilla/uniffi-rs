@@ -10,7 +10,11 @@
 
 ## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.13.1...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.0...HEAD).
+
+## v0.14.0 (_2021-08-17_)
+
+[All changes in v0.14.0](https://github.com/mozilla/uniffi-rs/compare/v0.13.1...v0.14.0).
 
 ### ⚠️ Breaking Changes ⚠️
 - The Rust implementations of all `dictionary`, `enum` or `error` types defined in UDL must be
