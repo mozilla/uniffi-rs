@@ -30,7 +30,7 @@ If this tool sounds interesting to you, please help us develop it! You can:
 
 * View the [contributor guidelines](./docs/contributing.md).
 * File or work on [issues](https://github.com/mozilla/uniffi-rs/issues) here in GitHub.
-* Join discussions in the [Cross-Platform Rust Components](https://chat.mozilla.org/#/room/#rust-components:mozilla.org)
+* Join discussions in the [#uniffi:mozilla.org](https://matrix.to/#/#uniffi:mozilla.org)
   room on Matrix.
 
 ## Code of Conduct
