@@ -2,7 +2,7 @@
 
 Anyone is welcome to help with the UniFFI project. Feel free to get in touch with other community members on Matrix or through issues here on GitHub.
 
-* Matrix: [#rust-components:mozilla.org](https://chat.mozilla.org/#/room/#rust-components:mozilla.org)
+* Matrix: [#uniffi:mozilla.org](https://matrix.to/#/#uniffi:mozilla.org)
 * The [issue list](https://github.com/mozilla/uniffi-rs/issues)
 
 Participation in this project is governed by the
