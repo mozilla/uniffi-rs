@@ -8,6 +8,8 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.1...HEAD).
 
+- Implement Timestamp and Duration types in Ruby backend.
+
 ## v0.19.1 - (_2022-06-16_)
 
 [All changes in v0.19.1](https://github.com/mozilla/uniffi-rs/compare/v0.19.0...v0.19.1).
