@@ -5,7 +5,7 @@
 # This builds a docker image containing all the tools we need to run our
 # test suite in CI, including rust, kotlin, and swift.
 
-FROM circleci/rust:buster
+FROM cimg/rust:1.52.1
 
 MAINTAINER Ryan Kelly "rfkelly@mozilla.com"
 
@@ -41,6 +41,7 @@ ADD rust-toolchain.toml rust-toolchain.toml
 RUN rustup self update
 RUN rustup update
 RUN rustup show
+RUN rm rust-toolchain.toml
 
 RUN mkdir -p /tmp/setup-swift \
     && cd /tmp/setup-swift \
@@ -74,4 +75,4 @@ RUN mkdir -p /tmp/setup-jna \
     && cd ../ \
     && rm -rf ./setup-jna
 
-RUN sudo gem install ffi --no-ri
+RUN sudo gem install ffi --no-document
