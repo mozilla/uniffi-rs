@@ -266,7 +266,7 @@ impl<'ci> ComponentInterface {
                 t,
                 Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 |
                 // XXX we can't map from Type to ci in gen_kotlin/compound/*CodeType,
-                // so we decalre all these compound types as containing unsigned types.
+                // so we declare all these compound types as containing unsigned types.
                 // The need for this annotation is going away soon as unsigned types
                 // stabilize in Kotlin.
                 Type::Optional(_) | Type::Sequence(_) | Type::Map(_)

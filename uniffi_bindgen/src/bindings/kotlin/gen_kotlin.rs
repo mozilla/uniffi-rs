@@ -127,25 +127,17 @@ impl<'a> KotlinWrapper<'a> {
 
     pub fn initialization_code(&self) -> Vec<String> {
         let oracle = &self.oracle;
-        Vec::new()
+        self.members()
             .into_iter()
-            .chain(
-                self.members()
-                    .into_iter()
-                    .filter_map(|member| member.initialization_code(oracle)),
-            )
+            .filter_map(|member| member.initialization_code(oracle))
             .collect()
     }
 
     pub fn declaration_code(&self) -> Vec<String> {
         let oracle = &self.oracle;
-        Vec::new()
+        self.members()
             .into_iter()
-            .chain(
-                self.members()
-                    .into_iter()
-                    .filter_map(|member| member.definition_code(oracle)),
-            )
+            .filter_map(|member| member.definition_code(oracle))
             .chain(
                 self.ci
                     .iter_types()
@@ -157,14 +149,11 @@ impl<'a> KotlinWrapper<'a> {
 
     pub fn imports(&self) -> Vec<String> {
         let oracle = &self.oracle;
-        let mut imports: Vec<String> = Vec::new()
+        let mut imports: Vec<String> = self
+            .members()
             .into_iter()
-            .chain(
-                self.members()
-                    .into_iter()
-                    .filter_map(|member| member.import_code(oracle))
-                    .flatten(),
-            )
+            .filter_map(|member| member.import_code(oracle))
+            .flatten()
             .chain(
                 self.ci
                     .iter_types()
@@ -257,7 +246,7 @@ impl CodeOracle for KotlinCodeOracle {
     }
 
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
-    fn enum_variant(&self, nm: &dyn fmt::Display) -> String {
+    fn enum_variant_name(&self, nm: &dyn fmt::Display) -> String {
         nm.to_string().to_shouty_snake_case()
     }
 
@@ -266,7 +255,7 @@ impl CodeOracle for KotlinCodeOracle {
     /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
     /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
     /// and is distinguished from an "Exception".
-    fn exception_name(&self, nm: &dyn fmt::Display) -> String {
+    fn error_name(&self, nm: &dyn fmt::Display) -> String {
         let name = nm.to_string();
         match name.strip_suffix("Error") {
             None => name,
@@ -366,7 +355,7 @@ pub mod filters {
 
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
     pub fn enum_variant_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(oracle().enum_variant(nm))
+        Ok(oracle().enum_variant_name(nm))
     }
 
     /// Get the idiomatic Kotlin rendering of an exception name
@@ -375,6 +364,6 @@ pub mod filters {
     /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
     /// and is distinguished from an "Exception".
     pub fn exception_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(oracle().exception_name(nm))
+        Ok(oracle().error_name(nm))
     }
 }
