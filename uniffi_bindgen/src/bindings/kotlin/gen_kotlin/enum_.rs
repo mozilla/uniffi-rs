@@ -30,7 +30,11 @@ impl CodeType for EnumCodeType {
 
     fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
         if let Literal::Enum(v, _) = literal {
-            format!("{}.{}", self.type_label(oracle), oracle.enum_variant(v))
+            format!(
+                "{}.{}",
+                self.type_label(oracle),
+                oracle.enum_variant_name(v)
+            )
         } else {
             unreachable!();
         }
