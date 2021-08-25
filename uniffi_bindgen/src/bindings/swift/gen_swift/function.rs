@@ -9,16 +9,18 @@ use askama::Template;
 use super::filters;
 
 #[derive(Template)]
-#[template(syntax = "swift", escape = "none", path = "TopLevelFunctionTemplate.swift")]
+#[template(
+    syntax = "swift",
+    escape = "none",
+    path = "TopLevelFunctionTemplate.swift"
+)]
 pub struct SwiftFunction {
     inner: Function,
 }
 
 impl SwiftFunction {
     pub fn new(inner: Function, _ci: &ComponentInterface) -> Self {
-        Self {
-            inner,
-        }
+        Self { inner }
     }
     pub fn inner(&self) -> &Function {
         &self.inner

@@ -27,7 +27,9 @@ fn render_literal(oracle: &dyn CodeOracle, literal: &Literal) -> String {
             | Type::Float32
             | Type::Float64 =>
             // XXX we should pass in the codetype itself.
-            format!("{}({})", oracle.find(type_).type_label(oracle), num_str),
+            {
+                format!("{}({})", oracle.find(type_).type_label(oracle), num_str)
+            }
             _ => panic!("Unexpected literal: {} is not a number", num_str),
         }
     }
@@ -53,11 +55,7 @@ fn render_literal(oracle: &dyn CodeOracle, literal: &Literal) -> String {
                 Radix::Hexadecimal => format!("{:#x}", i),
             },
         ),
-        Literal::Float(string, type_) => typed_number(
-            oracle,
-            type_,
-            string.clone()
-        ),
+        Literal::Float(string, type_) => typed_number(oracle, type_, string.clone()),
         _ => unreachable!("Literal"),
     }
 }
@@ -91,7 +89,7 @@ macro_rules! impl_code_type_for_primitive {
                 }
 
                 fn read(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.read({})", $class_name, nm)
+                    format!("{}.read(from: {})", $class_name, nm)
                 }
 
                 fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {

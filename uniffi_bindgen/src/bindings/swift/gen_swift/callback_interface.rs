@@ -8,6 +8,7 @@ use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
 
+#[allow(unused_imports)]
 use super::filters;
 pub struct CallbackInterfaceCodeType {
     id: String,
@@ -71,16 +72,18 @@ impl CodeType for CallbackInterfaceCodeType {
 }
 
 #[derive(Template)]
-#[template(syntax = "swift", escape = "none", path = "CallbackInterfaceTemplate.swift")]
+#[template(
+    syntax = "swift",
+    escape = "none",
+    path = "CallbackInterfaceTemplate.swift"
+)]
 pub struct SwiftCallbackInterface {
     inner: CallbackInterface,
 }
 
 impl SwiftCallbackInterface {
     pub fn new(inner: CallbackInterface, _ci: &ComponentInterface) -> Self {
-        Self {
-            inner,
-        }
+        Self { inner }
     }
     pub fn inner(&self) -> &CallbackInterface {
         &self.inner
@@ -103,7 +106,11 @@ impl CodeDeclaration for SwiftCallbackInterface {
 }
 
 #[derive(Template)]
-#[template(syntax = "swift", escape = "none", path = "CallbackInterfaceRuntime.swift")]
+#[template(
+    syntax = "swift",
+    escape = "none",
+    path = "CallbackInterfaceRuntime.swift"
+)]
 pub struct SwiftCallbackInterfaceRuntime {
     is_needed: bool,
 }

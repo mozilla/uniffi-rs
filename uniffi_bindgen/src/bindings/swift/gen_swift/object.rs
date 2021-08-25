@@ -69,9 +69,7 @@ pub struct SwiftObject {
 
 impl SwiftObject {
     pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
-        Self {
-            inner,
-        }
+        Self { inner }
     }
     pub fn inner(&self) -> &Object {
         &self.inner

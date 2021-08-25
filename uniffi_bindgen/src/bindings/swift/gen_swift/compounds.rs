@@ -57,23 +57,23 @@ macro_rules! impl_code_type_for_compound {
                 }
 
                 fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("lower{}({})", self.canonical_name(oracle), oracle.var_name(nm))
+                    format!("{}.lower()", oracle.var_name(nm))
                 }
 
                 fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
-                    format!("write{}({}, {})", self.canonical_name(oracle), oracle.var_name(nm), target)
+                    format!("{}.write({})", oracle.var_name(nm), target)
                 }
 
                 fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("lift{}({})", self.canonical_name(oracle), nm)
+                    format!("{}.lift({})", self.type_label(oracle), nm)
                 }
 
                 fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("read{}({})", self.canonical_name(oracle), nm)
+                    format!("{}.read(from: {})", self.type_label(oracle), nm)
                 }
 
                 fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-                    Some(self.render().unwrap())
+                    None
                 }
             }
         }
@@ -125,7 +125,7 @@ impl_code_type_for_compound!(
 
 impl_code_type_for_compound!(
     SequenceCodeType,
-    "List<{}>",
+    "[{}]",
     "Sequence{}",
     r#"
     {%- import "macros.swift" as swift -%}
@@ -165,7 +165,7 @@ impl_code_type_for_compound!(
 
 impl_code_type_for_compound!(
     MapCodeType,
-    "Map<String, {}>",
+    "[String: {}]",
     "Map{}",
     r#"
     {%- import "macros.swift" as swift -%}

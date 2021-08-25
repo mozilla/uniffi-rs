@@ -27,19 +27,19 @@ macro_rules! impl_code_type_for_miscellany {
                  }
 
                  fn lift(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                     format!("lift{}({})", $canonical_name, nm)
+                     format!("{}.lift({})", $class_name, nm)
                  }
 
                  fn read(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                     format!("read{}({})", $canonical_name, nm)
+                     format!("{}.read(from: {})", $class_name, nm)
                  }
 
                  fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                     format!("lower{}({})", $canonical_name, oracle.var_name(nm))
+                     format!("{}.lower()", oracle.var_name(nm))
                  }
 
                  fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
-                     format!("write{}({}, {})", $canonical_name, oracle.var_name(nm), target)
+                     format!("{}.write(into: {})", oracle.var_name(nm), target)
                  }
 
                  fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
@@ -104,9 +104,9 @@ impl_code_type_for_miscellany!(
     vec!["Foundation"],
     r#"
     extension TimeInterval {
-        fileprivate static func liftDuration(_ buf: RustBuffer) throws -> Self {
+        fileprivate static func lift(_ buf: RustBuffer) throws -> Self {
           let reader = Reader(data: Data(rustBuffer: buf))
-          let value = try Self.readDuration(from: reader)
+          let value = try Self.read(from: reader)
           if reader.hasRemaining() {
               throw UniffiInternalError.incompleteData
           }
@@ -114,19 +114,19 @@ impl_code_type_for_miscellany!(
           return value
         }
 
-        fileprivate func lowerDuration() -> RustBuffer {
+        fileprivate func lower() -> RustBuffer {
           let writer = Writer()
-          self.writeDuration(into: writer)
+          self.write(into: writer)
           return RustBuffer(bytes: writer.bytes)
         }
 
-        fileprivate static func readDuration(from buf: Reader) throws -> Self {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             let seconds: UInt64 = try buf.readInt()
             let nanoseconds: UInt32 = try buf.readInt()
             return Double(seconds) + (Double(nanoseconds) / 1.0e9)
         }
 
-        fileprivate func writeDuration(into buf: Writer) {
+        fileprivate func write(into buf: Writer) {
             if self.rounded(.down) > Double(Int64.max) {
                 fatalError("Duration overflow, exceeds max bounds supported by Uniffi")
             }

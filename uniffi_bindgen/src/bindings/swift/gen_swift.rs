@@ -7,7 +7,7 @@ use std::fmt;
 
 use anyhow::Result;
 use askama::Template;
-use heck::{CamelCase, MixedCase, ShoutySnakeCase};
+use heck::{CamelCase, MixedCase};
 use serde::{Deserialize, Serialize};
 
 use crate::bindings::backend::CodeDeclaration;
@@ -187,12 +187,16 @@ impl<'a> SwiftWrapper<'a> {
         .chain(ci.iter_function_definitions().into_iter().map(|inner| {
             Box::new(function::SwiftFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
         }))
-        .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-            Box::new(object::SwiftObject::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(ci.iter_record_definitions().into_iter().map(|inner| {
-            Box::new(record::SwiftRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
+        .chain(
+            ci.iter_object_definitions().into_iter().map(|inner| {
+                Box::new(object::SwiftObject::new(inner, ci)) as Box<dyn CodeDeclaration>
+            }),
+        )
+        .chain(
+            ci.iter_record_definitions().into_iter().map(|inner| {
+                Box::new(record::SwiftRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
+            }),
+        )
         .chain(
             ci.iter_error_definitions().into_iter().map(|inner| {
                 Box::new(error::SwiftError::new(inner, ci)) as Box<dyn CodeDeclaration>
@@ -233,7 +237,8 @@ impl<'a> SwiftWrapper<'a> {
 
     pub fn imports(&self) -> Vec<String> {
         let oracle = &self.oracle;
-        let mut imports: Vec<String> = self.members()
+        let mut imports: Vec<String> = self
+            .members()
             .into_iter()
             .filter_map(|member| member.import_code(oracle))
             .flatten()
@@ -330,7 +335,7 @@ impl CodeOracle for SwiftCodeOracle {
 
     /// Get the idiomatic Swift rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &dyn fmt::Display) -> String {
-        nm.to_string().to_shouty_snake_case()
+        nm.to_string().to_mixed_case()
     }
 
     /// Get the idiomatic Swift rendering of an exception name
@@ -352,19 +357,20 @@ impl CodeOracle for SwiftCodeOracle {
 
     fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
         match ffi_type {
-            // Note that unsigned integers in Swift are currently experimental, but java.nio.ByteBuffer does not
-            // support them yet. Thus, we use the signed variants to represent both signed and unsigned
-            // types from the component API.
-            FFIType::Int8 | FFIType::UInt8 => "Byte".to_string(),
-            FFIType::Int16 | FFIType::UInt16 => "Short".to_string(),
-            FFIType::Int32 | FFIType::UInt32 => "Int".to_string(),
-            FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
-            FFIType::Float32 => "Float".to_string(),
-            FFIType::Float64 => "Double".to_string(),
-            FFIType::RustArcPtr => "Pointer".to_string(),
-            FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
-            FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
-            FFIType::ForeignCallback => "ForeignCallback".to_string(),
+            FFIType::Int8 => "int8_t".into(),
+            FFIType::UInt8 => "uint8_t".into(),
+            FFIType::Int16 => "int16_t".into(),
+            FFIType::UInt16 => "uint16_t".into(),
+            FFIType::Int32 => "int32_t".into(),
+            FFIType::UInt32 => "uint32_t".into(),
+            FFIType::Int64 => "int64_t".into(),
+            FFIType::UInt64 => "uint64_t".into(),
+            FFIType::Float32 => "float".into(),
+            FFIType::Float64 => "double".into(),
+            FFIType::RustArcPtr => "void*_Nonnull".into(),
+            FFIType::RustBuffer => "RustBuffer".into(),
+            FFIType::ForeignBytes => "ForeignBytes".into(),
+            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
         }
     }
 }
