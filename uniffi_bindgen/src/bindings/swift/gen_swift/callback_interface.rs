@@ -37,7 +37,12 @@ impl CodeType for CallbackInterfaceCodeType {
         format!("{}.lower()", oracle.var_name(nm))
     }
 
-    fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
+    fn write(
+        &self,
+        oracle: &dyn CodeOracle,
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+    ) -> String {
         format!("{}.write(into: {})", oracle.var_name(nm), target)
     }
 
