@@ -81,7 +81,7 @@ macro_rules! impl_code_type_for_primitive {
                 }
 
                 fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
-                    format!("{}.write({})", oracle.var_name(nm), target)
+                    format!("{}.write(into: {})", oracle.var_name(nm), target)
                 }
 
                 fn lift(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {

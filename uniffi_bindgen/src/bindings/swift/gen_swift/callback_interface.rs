@@ -48,7 +48,7 @@ impl CodeType for CallbackInterfaceCodeType {
         target: &dyn fmt::Display,
     ) -> String {
         format!(
-            "{}.write({}, {})",
+            "{}.write(into: {}, {})",
             self.internals(oracle),
             oracle.var_name(nm),
             target
@@ -60,7 +60,7 @@ impl CodeType for CallbackInterfaceCodeType {
     }
 
     fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.internals(oracle), nm)
+        format!("{}.read(from: {})", self.internals(oracle), nm)
     }
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {

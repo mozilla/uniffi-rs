@@ -42,7 +42,7 @@ impl CodeType for RecordCodeType {
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
     ) -> String {
-        format!("{}.write({})", oracle.var_name(nm), target)
+        format!("{}.write(into: {})", oracle.var_name(nm), target)
     }
 
     fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {

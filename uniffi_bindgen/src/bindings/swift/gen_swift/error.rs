@@ -42,7 +42,7 @@ impl CodeType for ErrorCodeType {
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
     ) -> String {
-        format!("{}.write({})", oracle.var_name(nm), target)
+        format!("{}.write(into: {})", oracle.var_name(nm), target)
     }
 
     fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
@@ -50,7 +50,7 @@ impl CodeType for ErrorCodeType {
     }
 
     fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.type_label(oracle), nm)
+        format!("{}.read(from: {})", self.type_label(oracle), nm)
     }
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
