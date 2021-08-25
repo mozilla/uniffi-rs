@@ -16,11 +16,7 @@ pub struct CallbackInterfaceCodeType {
 
 impl CallbackInterfaceCodeType {
     pub fn new(_id: String) -> Self {
-        panic!("Callbacks are not supported in Swift yet")
-    }
-
-    fn internals(&self, oracle: &dyn CodeOracle) -> String {
-        format!("{}Internals", self.canonical_name(oracle))
+        unimplemented!("Callbacks are not supported in Swift yet")
     }
 }
 
@@ -38,36 +34,23 @@ impl CodeType for CallbackInterfaceCodeType {
     }
 
     fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower({})", self.internals(oracle), oracle.var_name(nm))
+        format!("{}.lower()", oracle.var_name(nm))
     }
 
-    fn write(
-        &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!(
-            "{}.write(into: {}, {})",
-            self.internals(oracle),
-            oracle.var_name(nm),
-            target
-        )
+    fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
+        format!("{}.write(into: {})", oracle.var_name(nm), target)
     }
 
     fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.internals(oracle), nm)
+        format!("{}.lift({})", self.type_label(oracle), nm)
     }
 
     fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read(from: {})", self.internals(oracle), nm)
+        format!("{}.read(from: {})", self.type_label(oracle), nm)
     }
 
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} callback interface is found in CallbackInterfaceTemplate.swift",
-            self.type_label(oracle)
-        ))
+    fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
+        None
     }
 }
 
@@ -91,9 +74,8 @@ impl SwiftCallbackInterface {
 }
 
 impl CodeDeclaration for SwiftCallbackInterface {
-    fn initialization_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        let code_type = CallbackInterfaceCodeType::new(self.inner.name().into());
-        Some(format!("{}.register(lib)", code_type.internals(oracle)))
+    fn initialization_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
+        None
     }
 
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
