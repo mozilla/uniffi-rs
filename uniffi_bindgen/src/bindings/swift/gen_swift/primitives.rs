@@ -107,7 +107,7 @@ impl_code_type_for_primitive!(
     extension Bool: ViaFfi {
         fileprivate typealias FfiType = Int8
 
-        fileprivate static func read(from buf: Reader) throws -> Bool {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readInt())
         }
 
@@ -115,11 +115,11 @@ impl_code_type_for_primitive!(
             buf.writeInt(self.lower())
         }
 
-        fileprivate static func lift(_ v: Int8) throws -> Bool {
+        fileprivate static func lift(_ v: FfiType) throws -> Self {
             return v != 0
         }
 
-        fileprivate func lower() -> Int8 {
+        fileprivate func lower() -> FfiType {
             return self ? 1 : 0
         }
     }
@@ -174,7 +174,7 @@ impl_code_type_for_primitive!(
     "Int8",
     r#"
     extension Int8: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Int8 {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readInt())
         }
 
@@ -190,7 +190,7 @@ impl_code_type_for_primitive!(
     "Int16",
     r#"
     extension Int16: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Int16 {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readInt())
         }
 
@@ -206,7 +206,7 @@ impl_code_type_for_primitive!(
     "Int32",
     r#"
     extension Int32: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Int32 {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readInt())
         }
 
@@ -222,7 +222,7 @@ impl_code_type_for_primitive!(
     "Int64",
     r#"
     extension Int64: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Int64 {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readInt())
         }
 
@@ -238,7 +238,7 @@ impl_code_type_for_primitive!(
     "UInt8",
     r#"
     extension UInt8: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> UInt8 {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readInt())
         }
 
@@ -254,7 +254,7 @@ impl_code_type_for_primitive!(
     "UInt16",
     r#"
     extension UInt16: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> UInt16 {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readInt())
         }
 
@@ -262,7 +262,6 @@ impl_code_type_for_primitive!(
             buf.writeInt(self.lower())
         }
     }
-
 "#
 );
 
@@ -271,7 +270,7 @@ impl_code_type_for_primitive!(
     "UInt32",
     r#"
     extension UInt32: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> UInt32 {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readInt())
         }
 
@@ -287,7 +286,7 @@ impl_code_type_for_primitive!(
     "UInt64",
     r#"
     extension UInt64: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> UInt64 {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readInt())
         }
 
@@ -303,7 +302,7 @@ impl_code_type_for_primitive!(
     "Float",
     r#"
     extension Float: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Float {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readFloat())
         }
 
@@ -319,7 +318,7 @@ impl_code_type_for_primitive!(
     "Double",
     r#"
     extension Double: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Double {
+        fileprivate static func read(from buf: Reader) throws -> Self {
             return try self.lift(buf.readDouble())
         }
 
