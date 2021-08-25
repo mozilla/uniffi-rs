@@ -338,21 +338,9 @@ impl CodeOracle for SwiftCodeOracle {
         nm.to_string().to_mixed_case()
     }
 
-    /// Get the idiomatic Swift rendering of an exception name
-    ///
-    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
-    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
-    /// and is distinguished from an "Exception".
+    /// Get the idiomatic Swift rendering of an exception name.
     fn error_name(&self, nm: &dyn fmt::Display) -> String {
-        let name = nm.to_string();
-        match name.strip_suffix("Error") {
-            None => name,
-            Some(stripped) => {
-                let mut kt_exc_name = stripped.to_owned();
-                kt_exc_name.push_str("Exception");
-                kt_exc_name
-            }
-        }
+        self.class_name(nm)
     }
 
     fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
