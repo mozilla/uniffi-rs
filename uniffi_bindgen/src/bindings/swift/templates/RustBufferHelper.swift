@@ -236,248 +236,44 @@ extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == S
 {%- match typ -%}
 
 {% when Type::String -%}
-extension String: ViaFfi {
-    fileprivate typealias FfiType = RustBuffer
 
-    fileprivate static func lift(_ v: FfiType) throws -> Self {
-        defer {
-            try! rustCall { {{ ci.ffi_rustbuffer_free().name() }}(v, $0) }
-        }
-        if v.data == nil {
-            return String()
-        }
-        let bytes = UnsafeBufferPointer<UInt8>(start: v.data!, count: Int(v.len))
-        return String(bytes: bytes, encoding: String.Encoding.utf8)!
-    }
-
-    fileprivate func lower() -> FfiType {
-        return self.utf8CString.withUnsafeBufferPointer { ptr in
-            // The swift string gives us int8_t, we want uint8_t.
-            ptr.withMemoryRebound(to: UInt8.self) { ptr in
-                // The swift string gives us a trailing null byte, we don't want it.
-                let buf = UnsafeBufferPointer(rebasing: ptr.prefix(upTo: ptr.count - 1))
-                let bytes = ForeignBytes(bufferPointer: buf)
-                return try! rustCall { {{ ci.ffi_rustbuffer_from_bytes().name() }}(bytes, $0) }
-            }
-        }
-    }
-
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        let len: Int32 = try buf.readInt()
-        return String(bytes: try buf.readBytes(count: Int(len)), encoding: String.Encoding.utf8)!
-    }
-
-    fileprivate func write(into buf: Writer) {
-        let len = Int32(self.utf8.count)
-        buf.writeInt(len)
-        buf.writeBytes(self.utf8)
-    }
-}
 
 {% when Type::Boolean -%}
-extension Bool: ViaFfi {
-    fileprivate typealias FfiType = Int8
 
-    fileprivate static func read(from buf: Reader) throws -> Bool {
-        return try self.lift(buf.readInt())
-    }
-
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
-    }
-
-    fileprivate static func lift(_ v: Int8) throws -> Bool {
-        return v != 0
-    }
-
-    fileprivate func lower() -> Int8 {
-        return self ? 1 : 0
-    }
-}
 
 {% when Type::Timestamp -%}
-extension Date: ViaFfiUsingByteBuffer, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        let seconds: Int64 = try buf.readInt()
-        let nanoseconds: UInt32 = try buf.readInt()
-        if seconds >= 0 {
-            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
-        } else {
-            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
-        }
-    }
 
-    fileprivate func write(into buf: Writer) {
-        var delta = self.timeIntervalSince1970
-        var sign: Int64 = 1
-        if delta < 0 {
-            // The nanoseconds portion of the epoch offset must always be
-            // positive, to simplify the calculation we will use the absolute
-            // value of the offset.
-            sign = -1
-            delta = -delta
-        }
-        if delta.rounded(.down) > Double(Int64.max) {
-            fatalError("Timestamp overflow, exceeds max bounds supported by Uniffi")
-        }
-        let seconds = Int64(delta)
-        let nanoseconds = UInt32((delta - Double(seconds)) * 1.0e9)
-        buf.writeInt(sign * seconds)
-        buf.writeInt(nanoseconds)
-    }
-}
 
 {% when Type::Duration -%}
-extension TimeInterval {
-    fileprivate static func liftDuration(_ buf: RustBuffer) throws -> Self {
-      let reader = Reader(data: Data(rustBuffer: buf))
-      let value = try Self.readDuration(from: reader)
-      if reader.hasRemaining() {
-          throw UniffiInternalError.incompleteData
-      }
-      buf.deallocate()
-      return value
-    }
 
-    fileprivate func lowerDuration() -> RustBuffer {
-      let writer = Writer()
-      self.writeDuration(into: writer)
-      return RustBuffer(bytes: writer.bytes)
-    }
-
-    fileprivate static func readDuration(from buf: Reader) throws -> Self {
-        let seconds: UInt64 = try buf.readInt()
-        let nanoseconds: UInt32 = try buf.readInt()
-        return Double(seconds) + (Double(nanoseconds) / 1.0e9)
-    }
-
-    fileprivate func writeDuration(into buf: Writer) {
-        if self.rounded(.down) > Double(Int64.max) {
-            fatalError("Duration overflow, exceeds max bounds supported by Uniffi")
-        }
-
-        if self < 0 {
-            fatalError("Invalid duration, must be non-negative")
-        }
-
-        let seconds = UInt64(self)
-        let nanoseconds = UInt32((self - Double(seconds)) * 1.0e9)
-        buf.writeInt(seconds)
-        buf.writeInt(nanoseconds)
-    }
-}
 
 {% when Type::UInt8 -%}
-extension UInt8: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> UInt8 {
-        return try self.lift(buf.readInt())
-    }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
-    }
-}
 
 {% when Type::Int8 -%}
-extension Int8: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Int8 {
-        return try self.lift(buf.readInt())
-    }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
-    }
-}
 
 {% when Type::UInt16 -%}
-extension UInt16: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> UInt16 {
-        return try self.lift(buf.readInt())
-    }
-
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
-    }
-}
 
 {% when Type::Int16 -%}
-extension Int16: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Int16 {
-        return try self.lift(buf.readInt())
-    }
-
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
-    }
-}
 
 {% when Type::UInt32 -%}
-extension UInt32: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> UInt32 {
-        return try self.lift(buf.readInt())
-    }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
-    }
-}
 
 {% when Type::Int32 -%}
-extension Int32: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Int32 {
-        return try self.lift(buf.readInt())
-    }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
-    }
-}
 
 {% when Type::UInt64 -%}
-extension UInt64: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> UInt64 {
-        return try self.lift(buf.readInt())
-    }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
-    }
-}
 
 {% when Type::Int64 -%}
-extension Int64: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Int64 {
-        return try self.lift(buf.readInt())
-    }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
-    }
-}
 
 {% when Type::Float32 -%}
-extension Float: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Float {
-        return try self.lift(buf.readFloat())
-    }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeFloat(self.lower())
-    }
-}
 
 {% when Type::Float64 -%}
-extension Double: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Double {
-        return try self.lift(buf.readDouble())
-    }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeDouble(self.lower())
-    }
-}
 
 {% else %}
 {# The methods for lifting/lowering/serializing this type are implemented inline with the type itself #}

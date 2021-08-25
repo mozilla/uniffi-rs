@@ -12,25 +12,10 @@ import {{ config.ffi_module_name() }}
 
 {% include "RustBufferTemplate.swift" %}
 {% include "RustBufferHelper.swift" %}
+{% include "Helpers.swift" %}
 
 // Public interface members begin here.
-
-{% for e in ci.iter_enum_definitions() %}
-{% include "EnumTemplate.swift" %}
-{%- endfor -%}
-
-{% include "ErrorTemplate.swift" %}
-
-{%- for rec in ci.iter_record_definitions() %}
-{% include "RecordTemplate.swift" %}
-{% endfor %}
-
-{% for func in ci.iter_function_definitions() %}
-{% include "TopLevelFunctionTemplate.swift" %}
-{% endfor %}
-
-{% for obj in ci.iter_object_definitions() %}
-{% include "ObjectTemplate.swift" %}
-{% endfor %}
-
+{% for code in self.declaration_code() %}
+{{ code }}
+{%- endfor %}
 {% import "macros.swift" as swift %}

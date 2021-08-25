@@ -2,9 +2,13 @@ fileprivate extension RustBuffer {
     // Allocate a new buffer, copying the contents of a `UInt8` array.
     init(bytes: [UInt8]) {
         let rbuf = bytes.withUnsafeBufferPointer { ptr in
-            try! rustCall { {{ ci.ffi_rustbuffer_from_bytes().name() }}(ForeignBytes(bufferPointer: ptr), $0) }
+            try! RustBuffer.from(ptr)
         }
         self.init(capacity: rbuf.capacity, len: rbuf.len, data: rbuf.data)
+    }
+
+    static func from<R>(_ ptr: UnsafeBufferPointer<UInt8>) -> Any {
+        try! rustCall { {{ ci.ffi_rustbuffer_from_bytes().name() }}(ForeignBytes(bufferPointer: ptr), $0) }
     }
 
     // Frees the buffer in place.

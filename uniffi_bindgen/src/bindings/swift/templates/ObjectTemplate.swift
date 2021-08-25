@@ -1,4 +1,6 @@
 
+{% import "macros.swift" as swift %}
+{%- let obj = self.inner() %}
 public protocol {{ obj.name() }}Protocol {
     {% for meth in obj.methods() -%}
     func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_protocol(meth) %}) {% call swift::throws(meth) -%}

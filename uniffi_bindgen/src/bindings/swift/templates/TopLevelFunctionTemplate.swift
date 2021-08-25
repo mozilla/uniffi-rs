@@ -1,3 +1,5 @@
+{% import "macros.swift" as swift %}
+{%- let func = self.inner() %}
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
 

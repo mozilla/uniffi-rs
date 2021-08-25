@@ -2,13 +2,29 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::HashSet;
+use std::fmt;
+
 use anyhow::Result;
 use askama::Template;
-use heck::{CamelCase, MixedCase};
+use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
+use crate::bindings::backend::CodeDeclaration;
 use crate::interface::*;
 use crate::MergeWith;
+
+use crate::bindings::backend::{CodeOracle, CodeType, TypeIdentifier};
+
+mod callback_interface;
+mod compounds;
+mod enum_;
+mod error;
+mod function;
+mod miscellany;
+mod object;
+mod primitives;
+mod record;
 
 /// Config options for the caller to customize the generated Swift.
 ///
@@ -139,192 +155,298 @@ impl<'config, 'ci> ModuleMap<'config, 'ci> {
     }
 }
 
-/// Template for generating the `.modulemap` file that exposes the low-level C FFI.
-///
-/// This file wraps the low-level C FFI from [`BridgingHeader`] into a more ergonomic,
-/// higher-level Swift API. It's the part that knows about API-level concepts like
-/// Objects and Records and so-forth.
 #[derive(Template)]
 #[template(syntax = "swift", escape = "none", path = "wrapper.swift")]
-pub struct SwiftWrapper<'config, 'ci> {
-    config: &'config Config,
-    ci: &'ci ComponentInterface,
+pub struct SwiftWrapper<'a> {
+    config: Config,
+    ci: &'a ComponentInterface,
+    oracle: SwiftCodeOracle,
 }
+impl<'a> SwiftWrapper<'a> {
+    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
+        Self {
+            config,
+            ci,
+            oracle: Default::default(),
+        }
+    }
 
-impl<'config, 'ci> SwiftWrapper<'config, 'ci> {
-    pub fn new(config: &'config Config, ci: &'ci ComponentInterface) -> Self {
-        Self { config, ci }
+    pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
+        let ci = self.ci;
+        vec![
+            Box::new(object::SwiftObjectRuntime::new(ci)) as Box<dyn CodeDeclaration>,
+            Box::new(callback_interface::SwiftCallbackInterfaceRuntime::new(ci))
+                as Box<dyn CodeDeclaration>,
+        ]
+        .into_iter()
+        .chain(
+            ci.iter_enum_definitions().into_iter().map(|inner| {
+                Box::new(enum_::SwiftEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
+            }),
+        )
+        .chain(ci.iter_function_definitions().into_iter().map(|inner| {
+            Box::new(function::SwiftFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
+        }))
+        .chain(ci.iter_object_definitions().into_iter().map(|inner| {
+            Box::new(object::SwiftObject::new(inner, ci)) as Box<dyn CodeDeclaration>
+        }))
+        .chain(ci.iter_record_definitions().into_iter().map(|inner| {
+            Box::new(record::SwiftRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
+        }))
+        .chain(
+            ci.iter_error_definitions().into_iter().map(|inner| {
+                Box::new(error::SwiftError::new(inner, ci)) as Box<dyn CodeDeclaration>
+            }),
+        )
+        .chain(
+            ci.iter_callback_interface_definitions()
+                .into_iter()
+                .map(|inner| {
+                    Box::new(callback_interface::SwiftCallbackInterface::new(inner, ci))
+                        as Box<dyn CodeDeclaration>
+                }),
+        )
+        .collect()
+    }
+
+    pub fn initialization_code(&self) -> Vec<String> {
+        let oracle = &self.oracle;
+        self.members()
+            .into_iter()
+            .filter_map(|member| member.initialization_code(oracle))
+            .collect()
+    }
+
+    pub fn declaration_code(&self) -> Vec<String> {
+        let oracle = &self.oracle;
+        self.members()
+            .into_iter()
+            .filter_map(|member| member.definition_code(oracle))
+            .chain(
+                self.ci
+                    .iter_types()
+                    .into_iter()
+                    .filter_map(|type_| oracle.find(&type_).helper_code(oracle)),
+            )
+            .collect()
+    }
+
+    pub fn imports(&self) -> Vec<String> {
+        let oracle = &self.oracle;
+        let mut imports: Vec<String> = self.members()
+            .into_iter()
+            .filter_map(|member| member.import_code(oracle))
+            .flatten()
+            .chain(
+                self.ci
+                    .iter_types()
+                    .into_iter()
+                    .filter_map(|type_| oracle.find(&type_).import_code(oracle))
+                    .flatten(),
+            )
+            .collect::<HashSet<String>>()
+            .into_iter()
+            .collect();
+
+        imports.sort();
+        imports
     }
 }
 
-/// Filters for our Askama templates above.
-///
-/// These output C (for the bridging header) and Swift (for the actual library) declarations,
-/// mostly for dealing with types.
-mod filters {
+#[derive(Default)]
+pub struct SwiftCodeOracle;
+
+impl SwiftCodeOracle {
+    fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
+        // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
+        // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
+
+        // Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &dyn CodeOracle
+        match type_ {
+            Type::UInt8 => Box::new(primitives::UInt8CodeType),
+            Type::Int8 => Box::new(primitives::Int8CodeType),
+            Type::UInt16 => Box::new(primitives::UInt16CodeType),
+            Type::Int16 => Box::new(primitives::Int16CodeType),
+            Type::UInt32 => Box::new(primitives::UInt32CodeType),
+            Type::Int32 => Box::new(primitives::Int32CodeType),
+            Type::UInt64 => Box::new(primitives::UInt64CodeType),
+            Type::Int64 => Box::new(primitives::Int64CodeType),
+            Type::Float32 => Box::new(primitives::Float32CodeType),
+            Type::Float64 => Box::new(primitives::Float64CodeType),
+            Type::Boolean => Box::new(primitives::BooleanCodeType),
+            Type::String => Box::new(primitives::StringCodeType),
+
+            Type::Timestamp => Box::new(miscellany::TimestampCodeType),
+            Type::Duration => Box::new(miscellany::DurationCodeType),
+
+            Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
+            Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
+            Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
+            Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
+            Type::CallbackInterface(id) => {
+                Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
+            }
+
+            Type::Optional(ref inner) => {
+                let outer = type_.clone();
+                let inner = *inner.to_owned();
+                Box::new(compounds::OptionalCodeType::new(inner, outer))
+            }
+            Type::Sequence(ref inner) => {
+                let outer = type_.clone();
+                let inner = *inner.to_owned();
+                Box::new(compounds::SequenceCodeType::new(inner, outer))
+            }
+            Type::Map(ref inner) => {
+                let outer = type_.clone();
+                let inner = *inner.to_owned();
+                Box::new(compounds::MapCodeType::new(inner, outer))
+            }
+            Type::External { .. } => panic!("no support for external types yet"),
+            Type::Wrapped { .. } => panic!("no support for wrapped types yet"),
+        }
+    }
+}
+
+impl CodeOracle for SwiftCodeOracle {
+    fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType> {
+        self.create_code_type(type_.clone())
+    }
+
+    /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
+    fn class_name(&self, nm: &dyn fmt::Display) -> String {
+        nm.to_string().to_camel_case()
+    }
+
+    /// Get the idiomatic Swift rendering of a function name.
+    fn fn_name(&self, nm: &dyn fmt::Display) -> String {
+        nm.to_string().to_mixed_case()
+    }
+
+    /// Get the idiomatic Swift rendering of a variable name.
+    fn var_name(&self, nm: &dyn fmt::Display) -> String {
+        nm.to_string().to_mixed_case()
+    }
+
+    /// Get the idiomatic Swift rendering of an individual enum variant.
+    fn enum_variant_name(&self, nm: &dyn fmt::Display) -> String {
+        nm.to_string().to_shouty_snake_case()
+    }
+
+    /// Get the idiomatic Swift rendering of an exception name
+    ///
+    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
+    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
+    /// and is distinguished from an "Exception".
+    fn error_name(&self, nm: &dyn fmt::Display) -> String {
+        let name = nm.to_string();
+        match name.strip_suffix("Error") {
+            None => name,
+            Some(stripped) => {
+                let mut kt_exc_name = stripped.to_owned();
+                kt_exc_name.push_str("Exception");
+                kt_exc_name
+            }
+        }
+    }
+
+    fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
+        match ffi_type {
+            // Note that unsigned integers in Swift are currently experimental, but java.nio.ByteBuffer does not
+            // support them yet. Thus, we use the signed variants to represent both signed and unsigned
+            // types from the component API.
+            FFIType::Int8 | FFIType::UInt8 => "Byte".to_string(),
+            FFIType::Int16 | FFIType::UInt16 => "Short".to_string(),
+            FFIType::Int32 | FFIType::UInt32 => "Int".to_string(),
+            FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
+            FFIType::Float32 => "Float".to_string(),
+            FFIType::Float64 => "Double".to_string(),
+            FFIType::RustArcPtr => "Pointer".to_string(),
+            FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
+            FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+            FFIType::ForeignCallback => "ForeignCallback".to_string(),
+        }
+    }
+}
+
+pub mod filters {
     use super::*;
     use std::fmt;
 
-    /// Declares a Swift type in the public interface for the library.
+    fn oracle() -> impl CodeOracle {
+        SwiftCodeOracle
+    }
+
     pub fn type_swift(type_: &Type) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            Type::Int8 => "Int8".into(),
-            Type::UInt8 => "UInt8".into(),
-            Type::Int16 => "Int16".into(),
-            Type::UInt16 => "UInt16".into(),
-            Type::Int32 => "Int32".into(),
-            Type::UInt32 => "UInt32".into(),
-            Type::Int64 => "Int64".into(),
-            Type::UInt64 => "UInt64".into(),
-            Type::Float32 => "Float".into(),
-            Type::Float64 => "Double".into(),
-            Type::Boolean => "Bool".into(),
-            Type::String => "String".into(),
-            Type::Timestamp => "Date".into(),
-            Type::Duration => "TimeInterval".into(),
-            Type::Enum(name)
-            | Type::Record(name)
-            | Type::Object(name)
-            | Type::Error(name)
-            | Type::CallbackInterface(name) => class_name_swift(name)?,
-            Type::Optional(type_) => format!("{}?", type_swift(type_)?),
-            Type::Sequence(type_) => format!("[{}]", type_swift(type_)?),
-            Type::Map(type_) => format!("[String:{}]", type_swift(type_)?),
-            Type::External { .. } => panic!("No support for lifting types, yet"),
-            Type::Wrapped { .. } => panic!("No support for lifting types, yet"),
-        })
+        let oracle = oracle();
+        Ok(oracle.find(type_).type_label(&oracle))
     }
 
-    /// Declares a C type in the bridging header.
+    pub fn canonical_name(type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).canonical_name(&oracle))
+    }
+
+    pub fn lower_swift(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).lower(&oracle, nm))
+    }
+
+    pub fn write_swift(
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+        type_: &Type,
+    ) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).write(&oracle, nm, target))
+    }
+
+    pub fn lift_swift(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).lift(&oracle, nm))
+    }
+
+    pub fn literal_swift(literal: &Literal, type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).literal(&oracle, literal))
+    }
+
+    pub fn read_swift(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).read(&oracle, nm))
+    }
+
+    /// Get the Swift syntax for representing a given low-level `FFIType`.
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            // These native types map nicely to the FFI without conversion.
-            FFIType::Int8 => "int8_t".into(),
-            FFIType::UInt8 => "uint8_t".into(),
-            FFIType::Int16 => "int16_t".into(),
-            FFIType::UInt16 => "uint16_t".into(),
-            FFIType::Int32 => "int32_t".into(),
-            FFIType::UInt32 => "uint32_t".into(),
-            FFIType::Int64 => "int64_t".into(),
-            FFIType::UInt64 => "uint64_t".into(),
-            FFIType::Float32 => "float".into(),
-            FFIType::Float64 => "double".into(),
-            FFIType::RustArcPtr => "void*_Nonnull".into(),
-            FFIType::RustBuffer => "RustBuffer".into(),
-            FFIType::ForeignBytes => "ForeignBytes".into(),
-            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
-        })
+        Ok(oracle().ffi_type_label(type_))
     }
 
-    /// Render a literal value for Swift code.
-    pub fn literal_swift(literal: &Literal) -> Result<String, askama::Error> {
-        fn typed_number(type_: &Type, num_str: String) -> Result<String, askama::Error> {
-            Ok(match type_ {
-                // special case Int32.
-                Type::Int32 => num_str,
-                // otherwise use constructor e.g. UInt8(x)
-                Type::Int8
-                | Type::UInt8
-                | Type::Int16
-                | Type::UInt16
-                | Type::UInt32
-                | Type::Int64
-                | Type::UInt64
-                | Type::Float32
-                | Type::Float64 => format!("{}({})", type_swift(type_)?, num_str),
-                _ => panic!("Unexpected literal: {} is not a number", num_str),
-            })
-        }
-
-        Ok(match literal {
-            Literal::Boolean(v) => format!("{}", v),
-            Literal::String(s) => format!("\"{}\"", s),
-            Literal::Null => "nil".into(),
-            Literal::EmptySequence => "[]".into(),
-            Literal::EmptyMap => "[:]".into(),
-            Literal::Enum(v, _) => format!(".{}", enum_variant_swift(v)?),
-            Literal::Int(i, radix, type_) => typed_number(
-                type_,
-                match radix {
-                    Radix::Octal => format!("0o{:o}", i),
-                    Radix::Decimal => format!("{}", i),
-                    Radix::Hexadecimal => format!("{:#x}", i),
-                },
-            )?,
-            Literal::UInt(i, radix, type_) => typed_number(
-                type_,
-                match radix {
-                    Radix::Octal => format!("0o{:o}", i),
-                    Radix::Decimal => format!("{}", i),
-                    Radix::Hexadecimal => format!("{:#x}", i),
-                },
-            )?,
-            Literal::Float(string, type_) => typed_number(type_, string.clone())?,
-        })
-    }
-
-    /// Lower a Swift type into an FFI type.
-    ///
-    /// This is used to pass arguments over the FFI, from Swift to Rust.
-    pub fn lower_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        match type_ {
-            Type::Duration => Ok(format!(
-                "{}.lower{}()",
-                var_name_swift(name)?,
-                type_.canonical_name()
-            )),
-            _ => Ok(format!("{}.lower()", var_name_swift(name)?)),
-        }
-    }
-
-    /// Lift a Swift type from an FFI type.
-    ///
-    /// This is used to receive values over the FFI, from Rust to Swift.
-    pub fn lift_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        match type_ {
-            Type::Duration => Ok(format!(
-                "{}.lift{}({})",
-                type_swift(type_)?,
-                type_.canonical_name(),
-                name
-            )),
-            _ => Ok(format!("{}.lift({})", type_swift(type_)?, name)),
-        }
-    }
-
-    /// Read a Swift type from a byte buffer.
-    ///
-    /// This is used to receive values over the FFI, when they're part of a complex type
-    /// that is passed by serializing into bytes.
-    pub fn read_swift(name: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        match type_ {
-            Type::Duration => Ok(format!(
-                "{}.read{}(from: {})",
-                type_swift(type_)?,
-                type_.canonical_name(),
-                name
-            )),
-            _ => Ok(format!("{}.read(from: {})", type_swift(type_)?, name)),
-        }
-    }
-
-    /// Render the idiomatic Swift casing for the name of an enum.
-    pub fn enum_variant_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
-    }
-
-    /// Render the idiomatic Swift casing for the name of a class.
+    /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
     pub fn class_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_camel_case())
+        Ok(oracle().class_name(nm))
     }
 
-    /// Render the idiomatic Swift casing for the name of a function.
+    /// Get the idiomatic Swift rendering of a function name.
     pub fn fn_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
+        Ok(oracle().fn_name(nm))
     }
 
-    /// Render the idiomatic Swift casing for the name of a variable.
+    /// Get the idiomatic Swift rendering of a variable name.
     pub fn var_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
+        Ok(oracle().var_name(nm))
+    }
+
+    /// Get the idiomatic Swift rendering of an individual enum variant.
+    pub fn enum_variant_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(oracle().enum_variant_name(nm))
+    }
+
+    /// Get the idiomatic Swift rendering of an exception name
+    ///
+    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
+    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
+    /// and is distinguished from an "Exception".
+    pub fn exception_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(oracle().error_name(nm))
     }
 }

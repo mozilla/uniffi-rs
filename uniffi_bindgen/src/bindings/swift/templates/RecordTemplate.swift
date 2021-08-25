@@ -1,3 +1,5 @@
+{% import "macros.swift" as swift %}
+{%- let rec = self.inner() %}
 public struct {{ rec.name()|class_name_swift }} {
     {%- for field in rec.fields() %}
     public var {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift }}
@@ -12,7 +14,7 @@ public struct {{ rec.name()|class_name_swift }} {
     }
 }
 
-{% if ! ci.item_contains_object_references(rec) %}
+{% if ! self.contains_object_references() %}
 extension {{ rec.name()|class_name_swift }}: Equatable, Hashable {
     public static func ==(lhs: {{ rec.name()|class_name_swift }}, rhs: {{ rec.name()|class_name_swift }}) -> Bool {
         {%- for field in rec.fields() %}
