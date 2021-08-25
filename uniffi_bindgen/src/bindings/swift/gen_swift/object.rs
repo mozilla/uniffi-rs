@@ -82,15 +82,7 @@ impl CodeDeclaration for SwiftObject {
     }
 
     fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        Some(
-            vec![
-                "java.util.concurrent.atomic.AtomicLong",
-                "java.util.concurrent.atomic.AtomicBoolean",
-            ]
-            .into_iter()
-            .map(|s| s.into())
-            .collect(),
-        )
+        None
     }
 }
 

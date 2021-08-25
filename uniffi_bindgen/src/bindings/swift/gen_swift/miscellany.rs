@@ -47,9 +47,14 @@ macro_rules! impl_code_type_for_miscellany {
                  }
 
                  fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-                    Some(
-                        $imports.into_iter().map(|s| s.into()).collect()
-                    )
+                    let imports: Vec<&str> = $imports;
+                    if (!imports.is_empty()) {
+                        Some(
+                            imports.into_iter().map(|s| s.into()).collect()
+                        )
+                    } else {
+                        None
+                    }
                  }
              }
          }
@@ -60,7 +65,7 @@ impl_code_type_for_miscellany!(
     TimestampCodeType,
     "Date",
     "Timestamp",
-    vec!["Foundation"],
+    vec![],
     r#"
     extension Date: ViaFfiUsingByteBuffer, ViaFfi {
         fileprivate static func read(from buf: Reader) throws -> Self {
@@ -101,25 +106,9 @@ impl_code_type_for_miscellany!(
     DurationCodeType,
     "TimeInterval",
     "Duration",
-    vec!["Foundation"],
+    vec![],
     r#"
-    extension TimeInterval {
-        fileprivate static func lift(_ buf: RustBuffer) throws -> Self {
-          let reader = Reader(data: Data(rustBuffer: buf))
-          let value = try Self.read(from: reader)
-          if reader.hasRemaining() {
-              throw UniffiInternalError.incompleteData
-          }
-          buf.deallocate()
-          return value
-        }
-
-        fileprivate func lower() -> RustBuffer {
-          let writer = Writer()
-          self.write(into: writer)
-          return RustBuffer(bytes: writer.bytes)
-        }
-
+    extension TimeInterval: ViaFfiUsingByteBuffer, ViaFfi {
         fileprivate static func read(from buf: Reader) throws -> Self {
             let seconds: UInt64 = try buf.readInt()
             let nanoseconds: UInt32 = try buf.readInt()
