@@ -147,7 +147,7 @@ fileprivate protocol ViaFfiUsingByteBuffer: Serializable {}
 extension ViaFfiUsingByteBuffer {
     fileprivate typealias FfiType = RustBuffer
 
-    fileprivate static func lift(_ buf: RustBuffer) throws -> Self {
+    fileprivate static func lift(_ buf: FfiType) throws -> Self {
       let reader = Reader(data: Data(rustBuffer: buf))
       let value = try Self.read(from: reader)
       if reader.hasRemaining() {
@@ -157,7 +157,7 @@ extension ViaFfiUsingByteBuffer {
       return value
     }
 
-    fileprivate func lower() -> RustBuffer {
+    fileprivate func lower() -> FfiType {
       let writer = Writer()
       self.write(into: writer)
       return RustBuffer(bytes: writer.bytes)
@@ -230,53 +230,3 @@ extension Dictionary: ViaFfiUsingByteBuffer, ViaFfi, Serializable where Key == S
     }
 }
 {% endif %}
-
-{% for typ in ci.iter_types() %}
-{% let canonical_type_name = typ.canonical_name()|class_name_swift %}
-{%- match typ -%}
-
-{% when Type::String -%}
-
-
-{% when Type::Boolean -%}
-
-
-{% when Type::Timestamp -%}
-
-
-{% when Type::Duration -%}
-
-
-{% when Type::UInt8 -%}
-
-
-{% when Type::Int8 -%}
-
-
-{% when Type::UInt16 -%}
-
-{% when Type::Int16 -%}
-
-{% when Type::UInt32 -%}
-
-
-{% when Type::Int32 -%}
-
-
-{% when Type::UInt64 -%}
-
-
-{% when Type::Int64 -%}
-
-
-{% when Type::Float32 -%}
-
-
-{% when Type::Float64 -%}
-
-
-{% else %}
-{# The methods for lifting/lowering/serializing this type are implemented inline with the type itself #}
-
-{% endmatch %}
-{% endfor %}
