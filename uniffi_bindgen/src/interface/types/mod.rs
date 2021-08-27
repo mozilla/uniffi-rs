@@ -37,6 +37,7 @@ pub(super) use resolver::{resolve_builtin_type, TypeResolver};
 /// of their internal structure apart from what type of thing they are (record, enum, etc).
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum Type {
+    Generic,
     // Primitive types.
     UInt8,
     Int8,
@@ -58,6 +59,7 @@ pub enum Type {
     Enum(String),
     Error(String),
     CallbackInterface(String),
+    DecoratorObject(String),
     // Structurally recursive types.
     Optional(Box<Type>),
     Sequence(Box<Type>),
@@ -113,6 +115,16 @@ impl Type {
             Type::Map(t) => format!("Map{}", t.canonical_name()),
             // A type that exists externally.
             Type::External { name, .. } | Type::Wrapped { name, .. } => format!("Type{}", name),
+            Type::DecoratorObject(nm) => format!("Decorator{}", nm),
+            Type::Generic => "GenericAny".into(),
+        }
+    }
+
+    pub fn is_generic(&self) -> bool {
+        match self {
+            Type::Generic => true,
+            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => t.is_generic(),
+            _ => false,
         }
     }
 }
@@ -156,7 +168,31 @@ impl From<&Type> for FFIType {
             | Type::Duration
             | Type::External { .. } => FFIType::RustBuffer,
             Type::Wrapped { prim, .. } => FFIType::from(prim.as_ref()),
+            Type::DecoratorObject(_) => {
+                unreachable!("Decorator objects should never cross the FFI")
+            }
+            Type::Generic => unreachable!("Generic types should never cross the FFI"),
         }
+    }
+}
+
+pub(crate) fn rewrite_generic(l: &Type, r: &Type) -> Type {
+    match l {
+        // Generic gets replaced with the right hand side
+        Type::Generic => r.to_owned(),
+
+        // Special case T? when T is itself optional, to avoid String??
+        Type::Optional(t) if matches!(**t, Type::Generic) && matches!(r, Type::Optional { .. }) => {
+            rewrite_generic(t, r)
+        }
+
+        // Structural types
+        Type::Optional(t) => Type::Optional(Box::new(rewrite_generic(t, r))),
+        Type::Sequence(t) => Type::Sequence(Box::new(rewrite_generic(t, r))),
+        Type::Map(t) => Type::Map(Box::new(rewrite_generic(t, r))),
+
+        // Nothing else is re-written.
+        _ => l.to_owned(),
     }
 }
 
@@ -226,7 +262,7 @@ impl TypeUniverse {
     /// methods during the type resolution process.
     pub fn add_known_type(&mut self, type_: Type) -> Result<Type> {
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
-        if !self.all_known_types.contains(&type_) {
+        if !self.all_known_types.contains(&type_) && !type_.is_generic() {
             self.all_known_types.insert(type_.clone());
         }
         Ok(type_)

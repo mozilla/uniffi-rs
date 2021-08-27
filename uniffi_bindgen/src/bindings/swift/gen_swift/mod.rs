@@ -311,6 +311,10 @@ impl SwiftCodeOracle {
                 name,
                 self.create_code_type(prim.as_ref().clone()),
             )),
+            Type::DecoratorObject(_) => {
+                unreachable!("Decorator objects should never cross the FFI")
+            }
+            Type::Generic => unreachable!("Generic types should never cross the FFI"),
         }
     }
 }

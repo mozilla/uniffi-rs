@@ -36,6 +36,11 @@ pub(super) enum Attribute {
     External(String),
     // Something hand-written in this crate which wraps a primitive type.
     Wrapped,
+    // Decorator objects are methods used to dispatch generated methods. e.g. catchAll and async
+    // They only exist on the foreign language side.
+    DecoratorObject,
+    WithDecoratorObject(String),
+    WithDecoratorMethod(String),
 }
 
 impl Attribute {
@@ -62,6 +67,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Error" => Ok(Attribute::Error),
                 "Threadsafe" => Ok(Attribute::Threadsafe),
                 "Wrapped" => Ok(Attribute::Wrapped),
+                "Decorator" => Ok(Attribute::DecoratorObject),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -71,6 +77,12 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                     "Throws" => Ok(Attribute::Throws(name_from_id_or_string(&identity.rhs))),
                     "Self" => Ok(Attribute::SelfType(SelfType::try_from(&identity.rhs)?)),
                     "External" => Ok(Attribute::External(name_from_id_or_string(&identity.rhs))),
+                    "Decorator" => Ok(Attribute::WithDecoratorObject(name_from_id_or_string(
+                        &identity.rhs,
+                    ))),
+                    "CallsWith" => Ok(Attribute::WithDecoratorMethod(name_from_id_or_string(
+                        &identity.rhs,
+                    ))),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
@@ -252,6 +264,21 @@ impl InterfaceAttributes {
             .iter()
             .any(|attr| matches!(attr, Attribute::Threadsafe))
     }
+
+    pub fn is_decorator(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::DecoratorObject))
+    }
+
+    pub(super) fn get_decorator_object(&self) -> Option<&str> {
+        self.0.iter().find_map(|attr| match attr {
+            // This will hopefully return a helpful compilation error
+            // if the decorator method is not defined.
+            Attribute::WithDecoratorObject(inner) => Some(inner.as_ref()),
+            _ => None,
+        })
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttributes {
@@ -263,6 +290,8 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
             Attribute::Enum => Ok(()),
             Attribute::Error => Ok(()),
             Attribute::Threadsafe => Ok(()),
+            Attribute::DecoratorObject => Ok(()),
+            Attribute::WithDecoratorObject(_) => Ok(()),
             _ => bail!(format!("{:?} not supported for interface definition", attr)),
         })?;
         // Can't be both `[Threadsafe]` and an `[Enum]`.
@@ -346,6 +375,15 @@ impl MethodAttributes {
             .iter()
             .any(|attr| matches!(attr, Attribute::SelfType(SelfType::ByArc)))
     }
+
+    pub fn get_decorator_method(&self) -> Option<&str> {
+        self.0.iter().find_map(|attr| match attr {
+            // This will hopefully return a helpful compilation error
+            // if the decorator method is not defined.
+            Attribute::WithDecoratorMethod(inner) => Some(inner.as_ref()),
+            _ => None,
+        })
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for MethodAttributes {
@@ -356,6 +394,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for MethodAttributes
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::SelfType(_) => Ok(()),
             Attribute::Throws(_) => Ok(()),
+            &Attribute::WithDecoratorMethod(_) => Ok(()),
             _ => bail!(format!("{:?} not supported for methods", attr)),
         })?;
         Ok(Self(attrs))
@@ -529,6 +568,24 @@ mod test {
     }
 
     #[test]
+    fn test_decorator() -> Result<()> {
+        let (_, node) = weedle::attribute::ExtendedAttribute::parse("Decorator").unwrap();
+        let attr = Attribute::try_from(&node)?;
+        assert!(matches!(attr, Attribute::DecoratorObject));
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttribute::parse("Decorator=MyDecoratorProtocol").unwrap();
+        let attr = Attribute::try_from(&node)?;
+        assert!(matches!(attr, Attribute::WithDecoratorObject(nm) if nm == "MyDecoratorProtocol"));
+
+        let (_, node) = weedle::attribute::ExtendedAttribute::parse("CallsWith=asyncCall").unwrap();
+        let attr = Attribute::try_from(&node)?;
+        assert!(matches!(attr, Attribute::WithDecoratorMethod(nm) if nm == "asyncCall"));
+
+        Ok(())
+    }
+
+    #[test]
     fn test_unsupported() {
         let (_, node) =
             weedle::attribute::ExtendedAttribute::parse("UnsupportedAttribute").unwrap();
@@ -579,6 +636,14 @@ mod test {
             err.to_string(),
             "SelfType(ByArc) not supported for functions"
         );
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[CallsWith=asyncDispatch]").unwrap();
+        let err = FunctionAttributes::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "WithDecoratorMethod(\"asyncDispatch\") not supported for functions"
+        );
     }
 
     #[test]
@@ -592,17 +657,28 @@ mod test {
         let attrs = MethodAttributes::try_from(&node).unwrap();
         assert!(!attrs.get_self_by_arc());
         assert!(attrs.get_throws_err().is_none());
+        assert!(attrs.get_decorator_method().is_none());
 
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc, Throws=Error]").unwrap();
         let attrs = MethodAttributes::try_from(&node).unwrap();
         assert!(attrs.get_self_by_arc());
         assert!(attrs.get_throws_err().is_some());
+        assert!(attrs.get_decorator_method().is_none());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc]").unwrap();
         let attrs = MethodAttributes::try_from(&node).unwrap();
         assert!(attrs.get_self_by_arc());
         assert!(attrs.get_throws_err().is_none());
+        assert!(attrs.get_decorator_method().is_none());
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[CallsWith=asyncDispatch]").unwrap();
+        let attrs = MethodAttributes::try_from(&node).unwrap();
+        assert!(matches!(
+            attrs.get_decorator_method(),
+            Some("asyncDispatch")
+        ));
     }
 
     #[test]
@@ -706,6 +782,16 @@ mod test {
         assert_eq!(
             err.to_string(),
             "ByRef not supported for interface definition"
+        );
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(
+            "[Decorator=MyDecoratorObject, Decorator]",
+        )
+        .unwrap();
+        let err = InterfaceAttributes::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "conflicting attributes on interface definition"
         );
     }
 

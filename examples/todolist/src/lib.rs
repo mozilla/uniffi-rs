@@ -27,7 +27,7 @@ pub enum TodoError {
     DuplicateTodo,
     #[error("Empty String error!: {0}")]
     EmptyString(String),
-    #[error("I am a delegated Error: {0}")]
+    #[error("I am a decorated Error: {0}")]
     DeligatedError(#[from] std::io::Error),
 }
 

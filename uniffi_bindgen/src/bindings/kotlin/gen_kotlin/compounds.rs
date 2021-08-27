@@ -47,6 +47,10 @@ macro_rules! impl_code_type_for_compound {
                     format!($type_label_pattern, oracle.find(self.inner()).type_label(oracle))
                 }
 
+                fn type_t_label(&self, oracle: &dyn CodeOracle, t: &str) -> String {
+                    format!($type_label_pattern, oracle.find(self.inner()).type_t_label(oracle, t))
+                }
+
                 fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
                     format!($canonical_name_pattern, oracle.find(self.inner()).canonical_name(oracle))
                 }

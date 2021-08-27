@@ -192,6 +192,10 @@ mod filters {
             }
             Type::External { .. } => panic!("No support for external types, yet"),
             Type::Wrapped { .. } => panic!("No support for wrapped types, yet"),
+            Type::DecoratorObject(_) => {
+                unreachable!("Decorator objects should never cross the FFI")
+            }
+            Type::Generic => unreachable!("Generic types should never cross the FFI"),
         })
     }
 
@@ -225,6 +229,10 @@ mod filters {
             ),
             Type::External { .. } => panic!("No support for lowering external types, yet"),
             Type::Wrapped { .. } => panic!("No support for lowering wrapped types, yet"),
+            Type::DecoratorObject(_) => {
+                unreachable!("Decorator objects should never cross the FFI")
+            }
+            Type::Generic => unreachable!("Generic types should never cross the FFI"),
         })
     }
 
@@ -257,6 +265,10 @@ mod filters {
             ),
             Type::External { .. } => panic!("No support for lifting external types, yet"),
             Type::Wrapped { .. } => panic!("No support for lifting wrapped types, yet"),
+            Type::DecoratorObject(_) => {
+                unreachable!("Decorator objects should never cross the FFI")
+            }
+            Type::Generic => unreachable!("Generic types should never cross the FFI"),
         })
     }
 }

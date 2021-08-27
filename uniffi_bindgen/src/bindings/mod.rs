@@ -22,7 +22,7 @@ pub mod swift;
 
 /// Enumeration of all foreign language targets currently supported by this crate.
 ///
-/// The functions in this module will delegate to a language-specific backend based
+/// The functions in this module will decorator to a language-specific backend based
 /// on the provided `TargetLanguage`. For convenience of calling code we also provide
 /// a few `TryFrom` implementations to help guess the correct target language from
 /// e.g. a file extension of command-line argument.

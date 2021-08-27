@@ -8,8 +8,8 @@
     {%- match func.throws() %}
     {%- when Some with (e) %}
     rustCallWithError({{ e|exception_name_kt}})
-    {%- else %}
-    rustCall()
+    {%- else -%}
+    rustCall
     {%- endmatch %} { status ->
     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}status)
 }

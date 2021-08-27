@@ -66,8 +66,8 @@ use anyhow::{bail, Result};
 use super::attributes::{ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::function::Argument;
-use super::types::{IterTypes, Type, TypeIterator};
-use super::{APIConverter, ComponentInterface};
+use super::types::{rewrite_generic, IterTypes, Type, TypeIterator};
+use super::{APIConverter, ComponentInterface, DecoratorMethod, DecoratorObject};
 
 /// An "object" is an opaque type that can be instantiated and passed around by reference,
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
@@ -87,6 +87,7 @@ use super::{APIConverter, ComponentInterface};
 pub struct Object {
     pub(super) name: String,
     pub(super) constructors: Vec<Constructor>,
+    pub(super) decorator_type: Option<Type>,
     pub(super) methods: Vec<Method>,
     pub(super) ffi_func_free: FFIFunction,
     pub(super) uses_deprecated_threadsafe_attribute: bool,
@@ -97,6 +98,7 @@ impl Object {
         Object {
             name,
             constructors: Default::default(),
+            decorator_type: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
             uses_deprecated_threadsafe_attribute: false,
@@ -109,6 +111,10 @@ impl Object {
 
     pub fn type_(&self) -> Type {
         Type::Object(self.name.clone())
+    }
+
+    pub fn decorator_type(&self) -> Option<Type> {
+        self.decorator_type.clone()
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {
@@ -223,6 +229,19 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
             }
+        }
+        // Everyone gets a primary constructor, even if not declared explicitly.
+        if object.primary_constructor().is_none() {
+            object.constructors.push(Default::default());
+        }
+
+        // Finally, add the decorator object.
+        if let Some(nm) = attributes.get_decorator_object() {
+            object.decorator_type = ci
+                .get_type(nm)
+                // No type has been declared of this name, but
+                // we let check_validity() detect and report the error.
+                .or_else(|| Some(Type::DecoratorObject(nm.into())));
         }
         Ok(object)
     }
@@ -372,6 +391,34 @@ impl Method {
         self.return_type.as_ref()
     }
 
+    fn decorator_method<'a>(
+        &self,
+        decorator_object: &Option<&'a DecoratorObject>,
+    ) -> Option<&'a DecoratorMethod> {
+        if decorator_object.is_none() || !self.uses_decorator_method() {
+            None
+        } else {
+            let decorator_object = decorator_object.unwrap();
+            let dm = self.decorator_method_name().unwrap();
+            decorator_object.find_method(&dm)
+        }
+    }
+
+    pub fn decorated_return_type(
+        &self,
+        decorator_object: &Option<&DecoratorObject>,
+    ) -> Option<Type> {
+        if let Some(dm) = self.decorator_method(decorator_object) {
+            match (dm.return_type(), self.return_type()) {
+                (Some(dmt), _) if !dmt.is_generic() => Some(dmt.clone()),
+                (Some(dmt), Some(t)) => Some(rewrite_generic(dmt, t)),
+                _ => None,
+            }
+        } else {
+            self.return_type().cloned()
+        }
+    }
+
     pub fn ffi_func(&self) -> &FFIFunction {
         &self.ffi_func
     }
@@ -384,6 +431,17 @@ impl Method {
         self.attributes
             .get_throws_err()
             .map(|name| Type::Error(name.to_owned()))
+    }
+
+    pub fn decorated_throws_type(
+        &self,
+        decorator_object: &Option<&DecoratorObject>,
+    ) -> Option<Type> {
+        if let Some(dm) = self.decorator_method(&decorator_object) {
+            dm.throws_type()
+        } else {
+            self.throws_type()
+        }
     }
 
     pub fn takes_self_by_arc(&self) -> bool {
@@ -399,6 +457,14 @@ impl Method {
         self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
         Ok(())
+    }
+
+    pub fn uses_decorator_method(&self) -> bool {
+        self.attributes.get_decorator_method().is_some()
+    }
+
+    pub fn decorator_method_name(&self) -> Option<String> {
+        Some(self.attributes.get_decorator_method()?.to_string())
     }
 }
 
