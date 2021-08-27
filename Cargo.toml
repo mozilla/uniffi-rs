@@ -14,6 +14,7 @@ members = [
 
   "fixtures/coverall",
   "fixtures/callbacks",
+  "fixtures/decorators",
 
   "fixtures/ext-types/guid",
   "fixtures/ext-types/uniffi-one",

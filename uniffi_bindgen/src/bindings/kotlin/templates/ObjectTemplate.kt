@@ -89,3 +89,32 @@ class {{ obj|type_name }}(
         {% endfor %}
     }
 }
+
+{%- match decorator_info %}
+{%- when Some with (decorator_info) -%}
+class {{ decorator_info.decorated_class }}(
+    val obj: {{ obj|type_name }},
+    val decorator: {{ decorator_info.decorator_class}}
+) {
+    {% for meth in obj.methods() -%}
+    fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %}) =
+        {%- match meth.decorator_method_name() %}
+        {%- when Some with (decorator_method) -%}
+            decorator.{{ decorator_method|fn_name }} {
+                obj.{{ meth.name()|fn_name }}(
+                    {%- for arg in meth.arguments() %}
+                        {{- arg.name() }},
+                    {%- endfor %}
+                )
+            }
+        {%- else %}
+        obj.{{ meth.name()|fn_name }}(
+            {%- for arg in meth.arguments() %}
+                {{- arg.name() }},
+            {%- endfor %}
+        )
+        {%- endmatch %}
+    {% endfor %}
+}
+{%- else %}
+{%- endmatch %}

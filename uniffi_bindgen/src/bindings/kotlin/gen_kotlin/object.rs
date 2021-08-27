@@ -4,6 +4,7 @@
 
 use std::fmt;
 
+use super::Config;
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Object};
 use askama::Template;
@@ -62,16 +63,45 @@ impl CodeType for ObjectCodeType {
     }
 }
 
+// Decorator data for an object
+//
+// This combines info from the UDL and config files
+struct DecoratorInfo {
+    decorated_class: String,
+    decorator_class: String,
+    import: Option<String>,
+}
+
 #[derive(Template)]
 #[template(syntax = "kt", escape = "none", path = "ObjectTemplate.kt")]
 pub struct KotlinObject {
     inner: Object,
+    decorator_info: Option<DecoratorInfo>,
 }
 
 impl KotlinObject {
-    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
-        Self { inner }
+    pub fn new(inner: Object, _ci: &ComponentInterface, config: &Config) -> Self {
+        let decorator_info = match (
+            inner.decorated_class(),
+            config
+                .decorators
+                .as_ref()
+                .and_then(|map| map.get(inner.name())),
+        ) {
+            (Some(decorated_class), Some(config)) => Some(DecoratorInfo {
+                decorated_class,
+                decorator_class: config.class_name.clone(),
+                import: config.import.clone(),
+            }),
+            _ => None,
+        };
+
+        Self {
+            inner,
+            decorator_info,
+        }
     }
+
     pub fn inner(&self) -> &Object {
         &self.inner
     }
@@ -83,15 +113,18 @@ impl CodeDeclaration for KotlinObject {
     }
 
     fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        Some(
-            vec![
-                "java.util.concurrent.atomic.AtomicLong",
-                "java.util.concurrent.atomic.AtomicBoolean",
-            ]
-            .into_iter()
-            .map(|s| s.into())
-            .collect(),
-        )
+        let mut imports = vec![
+            "java.util.concurrent.atomic.AtomicLong",
+            "java.util.concurrent.atomic.AtomicBoolean",
+        ];
+        if let Some(DecoratorInfo {
+            import: Some(ref import),
+            ..
+        }) = self.decorator_info
+        {
+            imports.push(import);
+        }
+        Some(imports.into_iter().map(|s| s.into()).collect())
     }
 }
 

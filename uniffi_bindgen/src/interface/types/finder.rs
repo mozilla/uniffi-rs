@@ -59,9 +59,10 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
         // Some enum types are defined using an `interface` with a special attribute.
-        if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_enum_attr() {
+        let attrs = InterfaceAttributes::try_from(self.attributes.as_ref())?;
+        if attrs.contains_enum_attr() {
             types.add_type_definition(self.identifier.0, Type::Enum(name))
-        } else if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_error_attr() {
+        } else if attrs.contains_error_attr() {
             types.add_type_definition(self.identifier.0, Type::Error(name))
         } else {
             types.add_type_definition(self.identifier.0, Type::Object(name))

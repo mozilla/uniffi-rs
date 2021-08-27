@@ -1,0 +1,18 @@
+namespace decorators {};
+
+[Decorated=DecoratedRustObject]
+interface RustObject {
+  constructor();
+
+  [Name=from_string]
+  constructor(string string);
+
+  [CallsWith=string_saver]
+  string identity_string(string s);
+
+  [CallsWith=with_counter]
+  string get_string();
+
+  [CallsWith=with_return]
+  i32 length();
+};

@@ -214,11 +214,28 @@ pub fn run_tests<P: AsRef<Path>>(
 
     for (lang, test_scripts) in language_tests {
         for udl_file in udl_files {
-            let crate_root = guess_crate_root(Path::new(udl_file))?;
+            let udl_path = Path::new(udl_file);
+            // TODO: replace this hack
+            let extra_files = if lang == TargetLanguage::Kotlin
+                && udl_path.file_name().and_then(|f| f.to_str()) == Some("decorators.udl")
+            {
+                let mut extra_file = udl_path.to_path_buf();
+                extra_file.set_file_name("decorators.kt");
+                vec![extra_file]
+            } else {
+                vec![]
+            };
+            let crate_root = guess_crate_root(udl_path)?;
             let component = parse_udl(Path::new(udl_file))?;
             let config = get_config(&component, crate_root, config_file_override)?;
             bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
-            bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
+            bindings::compile_bindings(
+                &config.bindings,
+                &component,
+                &cdylib_dir,
+                lang,
+                &extra_files,
+            )?;
         }
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;

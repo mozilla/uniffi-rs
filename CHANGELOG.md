@@ -8,6 +8,10 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).
 
+### What's New
+
+- [Decorator objects](docs/manual/src/udl/decorators.md) reduce boiler plate in Foreign Language bindings.
+
 ## v0.16.0 - (_2021-12-15_)
 
 [All changes in v0.16.0](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...v0.16.0)

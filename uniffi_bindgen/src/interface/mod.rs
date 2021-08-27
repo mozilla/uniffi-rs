@@ -539,6 +539,22 @@ impl<'ci> ComponentInterface {
                 }
             }
         }
+
+        // For each object not using a decorator object: no method should use a decorator method.
+        for obj in self.objects.iter() {
+            if obj.decorated_class.is_none() {
+                for method in obj.methods.iter() {
+                    if let Some(dm) = &method.decorator_method_name() {
+                        bail!("Object method '{}.{}' calls with a decorator method '{}', but no decorated class specified",
+                            obj.name(),
+                            method.name(),
+                            dm,
+                        );
+                    }
+                }
+            }
+        }
+
         Ok(())
     }
 

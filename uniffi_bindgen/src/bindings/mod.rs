@@ -10,7 +10,7 @@
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::interface::ComponentInterface;
 use crate::MergeWith;
@@ -131,13 +131,16 @@ pub fn compile_bindings<P>(
     ci: &ComponentInterface,
     out_dir: P,
     language: TargetLanguage,
+    extra_files: &[PathBuf],
 ) -> Result<()>
 where
     P: AsRef<Path>,
 {
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Kotlin => kotlin::compile_bindings(&config.kotlin, ci, out_dir)?,
+        TargetLanguage::Kotlin => {
+            kotlin::compile_bindings(&config.kotlin, ci, out_dir, extra_files)?
+        }
         TargetLanguage::Swift => swift::compile_bindings(&config.swift, ci, out_dir)?,
         TargetLanguage::Python => (),
         TargetLanguage::Ruby => (),

@@ -87,6 +87,7 @@ use super::{APIConverter, ComponentInterface};
 pub struct Object {
     pub(super) name: String,
     pub(super) constructors: Vec<Constructor>,
+    pub(super) decorated_class: Option<String>,
     pub(super) methods: Vec<Method>,
     pub(super) ffi_func_free: FFIFunction,
     pub(super) uses_deprecated_threadsafe_attribute: bool,
@@ -97,6 +98,7 @@ impl Object {
         Object {
             name,
             constructors: Default::default(),
+            decorated_class: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
             uses_deprecated_threadsafe_attribute: false,
@@ -109,6 +111,10 @@ impl Object {
 
     pub fn type_(&self) -> Type {
         Type::Object(self.name.clone())
+    }
+
+    pub fn decorated_class(&self) -> Option<String> {
+        self.decorated_class.clone()
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {
@@ -224,6 +230,8 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                 _ => bail!("no support for interface member type {:?} yet", member),
             }
         }
+        // Finally, add the decorator name.
+        object.decorated_class = attributes.get_decorated_class().map(|s| s.to_owned());
         Ok(object)
     }
 }
@@ -399,6 +407,14 @@ impl Method {
         self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
         Ok(())
+    }
+
+    pub fn uses_decorator_method(&self) -> bool {
+        self.attributes.get_decorator_method().is_some()
+    }
+
+    pub fn decorator_method_name(&self) -> Option<String> {
+        Some(self.attributes.get_decorator_method()?.to_string())
     }
 }
 

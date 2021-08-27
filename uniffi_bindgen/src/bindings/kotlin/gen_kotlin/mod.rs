@@ -25,13 +25,14 @@ mod object;
 mod primitives;
 mod record;
 
-// config options to customize the generated Kotlin.
+// Config options to customize the generated Kotlin.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
     package_name: Option<String>,
     cdylib_name: Option<String>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
+    decorators: Option<HashMap<String, DecoratorConfig>>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -40,6 +41,13 @@ pub struct CustomTypeConfig {
     type_name: Option<String>,
     into_custom: TemplateExpression,
     from_custom: TemplateExpression,
+}
+
+// Config for a decorated object
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+struct DecoratorConfig {
+    class_name: String,
+    import: Option<String>,
 }
 
 impl Config {
@@ -66,6 +74,7 @@ impl From<&ComponentInterface> for Config {
             package_name: Some(format!("uniffi.{}", ci.namespace())),
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
             custom_types: HashMap::new(),
+            decorators: None,
         }
     }
 }
@@ -76,6 +85,7 @@ impl MergeWith for Config {
             package_name: self.package_name.merge_with(&other.package_name),
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
             custom_types: self.custom_types.merge_with(&other.custom_types),
+            decorators: self.decorators.merge_with(&other.decorators),
         }
     }
 }
@@ -119,7 +129,7 @@ impl<'a> KotlinWrapper<'a> {
             Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
         }))
         .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-            Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn CodeDeclaration>
+            Box::new(object::KotlinObject::new(inner, ci, &self.config)) as Box<dyn CodeDeclaration>
         }))
         .chain(ci.iter_record_definitions().into_iter().map(|inner| {
             Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
