@@ -5,7 +5,7 @@
 use std::time::{Duration, SystemTime};
 
 #[derive(Debug, thiserror::Error)]
-enum ChronologicalError {
+pub enum ChronologicalError {
     #[error("Time overflow on an operation with {a:?} and {b:?}")]
     TimeOverflow { a: SystemTime, b: Duration },
     #[error("Time difference error {a:?} is before {b:?}")]

@@ -20,6 +20,12 @@ CALL_SUCCESS = 0
 CALL_ERROR = 1
 CALL_PANIC = 2
 {%- for e in ci.iter_error_definitions() %}
+{% if e.is_flat() %}
+class {{ e.name()|class_name_rb }}
+    {%- for variant in e.variants() %}
+    {{ variant.name()|class_name_rb }} = Class.new StandardError
+    {%- endfor %}
+{% else %}
 module {{ e.name()|class_name_rb }}
   {%- for variant in e.variants() %}
   class {{ variant.name()|class_name_rb }} < StandardError
@@ -35,6 +41,7 @@ module {{ e.name()|class_name_rb }}
     {% endif %}
   end
   {%- endfor %}
+{% endif %}
 end
 {%- endfor %}
 

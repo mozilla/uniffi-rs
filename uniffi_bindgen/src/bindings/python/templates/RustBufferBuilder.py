@@ -218,6 +218,19 @@ class RustBufferTypeBuilder(object):
             cls.writeString(builder, k)
             cls.write{{ inner_type.canonical_name()|class_name_py }}(builder, v)
 
+    {% when Type::Wrapped with { name, prim } %}
+
+    @classmethod
+    def write{{ canonical_type_name }}(cls, builder, v):
+        cls.write{{ prim.canonical_name()|class_name_py }}(builder, v)
+
+    {%- when Type::External with { name, crate_name } %}
+
+    @classmethod
+    def write{{ canonical_type_name }}(cls, builder, v):
+        from {{ crate_name|mod_name_py }} import RustBufferTypeBuilder;
+        RustBufferTypeBuilder.write{{ canonical_type_name }}(builder, v)
+
     {%- else -%}
     # This type cannot currently be serialized, but we can produce a helpful error.
 

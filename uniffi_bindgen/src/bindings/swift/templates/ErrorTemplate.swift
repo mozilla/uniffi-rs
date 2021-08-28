@@ -44,15 +44,36 @@ fileprivate extension RustCallStatus {
 {# Define enums to handle each individual error #}
 {% for e in ci.iter_error_definitions() %}
 public enum {{ e.name()|class_name_swift }} {
+
+    {% if e.is_flat() %}
+    {% for variant in e.variants() %}
+    // Simple error enums only carry a message
+    case {{ variant.name()|class_name_swift }}(message: String)
+    {% endfor %}
+
+    {%- else %}
     {% for variant in e.variants() %}
     case {{ variant.name()|class_name_swift }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
     {% endfor %}
+
+    {%- endif %}
 }
 
 extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
     fileprivate static func read(from buf: Reader) throws -> {{ e.name()|class_name_swift }} {
         let variant: Int32 = try buf.readInt()
         switch variant {
+
+        {% if e.is_flat() %}
+
+        {% for variant in e.variants() %}
+        case {{ loop.index }}: return .{{ variant.name()|class_name_swift }}(
+            message: try String.read(from: buf)
+        )
+        {% endfor %}
+
+       {% else %}
+
         {% for variant in e.variants() %}
         case {{ loop.index }}: return .{{ variant.name()|class_name_swift }}{% if variant.has_fields() -%}(
             {% for field in variant.fields() -%}
@@ -60,12 +81,25 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
             {% endfor -%}
         ){% endif -%}
         {% endfor %}
+
+         {% endif -%}
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
     fileprivate func write(into buf: Writer) {
         switch self {
+
+        {% if e.is_flat() %}
+
+        {% for variant in e.variants() %}
+        case let .{{ variant.name()|class_name_swift }}(message):
+            buf.writeInt(Int32({{ loop.index }}))
+            message.write(into: buf)
+        {%- endfor %}
+
+        {% else %}
+
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}
         case let .{{ variant.name()|class_name_swift }}({% for field in variant.fields() %}{{ field.name()|var_name_swift }}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
@@ -78,6 +112,8 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
             buf.writeInt(Int32({{ loop.index }}))
         {% endif %}
         {%- endfor %}
+
+        {%- endif %}
         }
     }
 }

@@ -30,14 +30,17 @@ uniffi::assert_compatible_version!("{{ uniffi_version }}"); // Please check that
 {% include "TopLevelFunctionTemplate.rs" %}
 {% endfor -%}
 
-// Object definitions, correspoding to UDL `interface` definitions.
+// Object definitions, corresponding to UDL `interface` definitions.
 {% for obj in ci.iter_object_definitions() %}
 {% include "ObjectTemplate.rs" %}
 {% endfor %}
 
-// Callback Interface defitions, corresponding to UDL `callback interface` definitions.
+// Callback Interface definitions, corresponding to UDL `callback interface` definitions.
 {% for cbi in ci.iter_callback_interface_definitions() %}
 {% include "CallbackInterfaceTemplate.rs" %}
 {% endfor %}
+
+// External and Wrapped types
+{% include "ExternalTypesTemplate.rs" %}
 
 {%- import "macros.rs" as rs -%}

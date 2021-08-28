@@ -1,0 +1,3 @@
+[bindings.python]
+# XXX - we need to use the "embedding" library name here. We can fix that, but haven't yet.
+cdylib_name = "uniffi_ext_types_lib"

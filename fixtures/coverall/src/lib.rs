@@ -12,7 +12,7 @@ lazy_static::lazy_static! {
 }
 
 #[derive(Debug, thiserror::Error)]
-enum CoverallError {
+pub enum CoverallError {
     #[error("The coverall has too many holes")]
     TooManyHoles,
 }
@@ -20,7 +20,7 @@ enum CoverallError {
 /// This error doesn't appear in the interface, instead
 /// we rely on an `Into<CoverallError>` impl to surface it to consumers.
 #[derive(Debug, thiserror::Error)]
-enum InternalCoverallError {
+pub enum InternalCoverallError {
     #[error("The coverall has an excess of holes")]
     ExcessiveHoles,
 }
@@ -34,7 +34,7 @@ impl From<InternalCoverallError> for CoverallError {
 }
 
 #[derive(Debug, thiserror::Error)]
-enum ComplexError {
+pub enum ComplexError {
     #[error("OsError: {code} ({extended_code})")]
     OsError { code: i16, extended_code: i16 },
     #[error("PermissionDenied: {reason}")]
@@ -235,7 +235,7 @@ impl Drop for Coveralls {
     }
 }
 #[derive(Debug, Clone, Copy)]
-enum Color {
+pub enum Color {
     Red,
     Blue,
     Green,

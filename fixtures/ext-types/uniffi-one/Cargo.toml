@@ -1,0 +1,17 @@
+[package]
+# TODO: modify the crate name to test non-default names.
+name = "uniffi-one"
+edition = "2018"
+version = "0.14.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+publish = false
+
+[dependencies]
+anyhow = "1"
+bytes = "1.0"
+uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+
+[build-dependencies]
+uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}

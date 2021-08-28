@@ -1,0 +1,2 @@
+[bindings.python]
+cdylib_name = "uniffi_ext_types_lib"

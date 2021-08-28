@@ -109,6 +109,7 @@ Coveralls("test_simple_errors").use { coveralls ->
         throw RuntimeException("Expected method to throw exception")
     } catch(e: CoverallException.TooManyHoles) {
         // Expected result
+        assert(e.message == "The coverall has too many holes")
     }
 
     try {

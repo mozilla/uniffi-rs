@@ -6,6 +6,7 @@ use anyhow::Result;
 use askama::Template;
 
 use super::interface::*;
+use heck::SnakeCase;
 
 #[derive(Template)]
 #[template(syntax = "rs", escape = "none", path = "scaffolding_template.rs")]
@@ -23,6 +24,7 @@ impl<'a> RustScaffolding<'a> {
 }
 mod filters {
     use super::*;
+    use std::fmt;
 
     pub fn type_rs(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -46,6 +48,8 @@ mod filters {
             Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
             Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),
             Type::Map(t) => format!("std::collections::HashMap<String, {}>", type_rs(t)?),
+            Type::External { .. } => panic!("External types coming to a uniffi near you soon!"),
+            Type::Wrapped { .. } => panic!("Wrapped types coming to a uniffi near you soon!"),
         })
     }
 
@@ -98,6 +102,10 @@ mod filters {
                 "std::collections::HashMap<String, {}>",
                 ffi_converter_name(inner)?
             ),
+            // External and Wrapped bytes have FfiConverters with a predictable name based on the type name.
+            Type::Wrapped { name, .. } | Type::External { name, .. } => {
+                format!("FfiConverterType{}", name)
+            }
             // Primitive types / strings are implemented by their rust type
             Type::Int8 => "i8".into(),
             Type::UInt8 => "u8".into(),
@@ -122,5 +130,10 @@ mod filters {
             "<{} as uniffi::FfiConverter>",
             ffi_converter_name(type_)?
         ))
+    }
+
+    // Turns a `crate-name` into the `crate_name` the .rs code needs to specify.
+    pub fn crate_name_rs(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_snake_case())
     }
 }

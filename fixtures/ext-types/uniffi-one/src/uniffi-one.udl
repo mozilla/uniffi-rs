@@ -1,0 +1,5 @@
+namespace uniffi_one {};
+
+dictionary UniffiOneType {
+    string sval;
+};

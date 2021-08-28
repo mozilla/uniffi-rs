@@ -120,6 +120,10 @@ mod filters {
         Ok(nm.to_string().to_snake_case())
     }
 
+    pub fn mod_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_snake_case())
+    }
+
     pub fn var_name_py(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_snake_case())
     }
@@ -156,6 +160,8 @@ mod filters {
                 coerce_py(&"v", t)?,
                 nm
             ),
+            Type::Wrapped { prim, .. } => coerce_py(nm, prim.as_ref())?,
+            Type::External { .. } => panic!("should not be necessary to coerce External types"),
         })
     }
 
@@ -187,6 +193,8 @@ mod filters {
                 class_name_py(&type_.canonical_name())?,
                 nm
             ),
+            Type::Wrapped { prim, .. } => lower_py(nm, prim.as_ref())?,
+            Type::External { .. } => panic!("should not be necessary to lower External types"),
         })
     }
 
@@ -217,6 +225,8 @@ mod filters {
                 nm,
                 class_name_py(&type_.canonical_name())?
             ),
+            Type::Wrapped { prim, .. } => lift_py(nm, prim.as_ref())?,
+            Type::External { .. } => panic!("should not be necessary to lift External types"),
         })
     }
 }

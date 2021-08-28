@@ -2,7 +2,7 @@
 
 Anyone is welcome to help with the UniFFI project. Feel free to get in touch with other community members on Matrix or through issues here on GitHub.
 
-* Matrix: [#rust-components:mozilla.org](https://chat.mozilla.org/#/room/#rust-components:mozilla.org)
+* Matrix: [#uniffi:mozilla.org](https://matrix.to/#/#uniffi:mozilla.org)
 * The [issue list](https://github.com/mozilla/uniffi-rs/issues)
 
 Participation in this project is governed by the
@@ -60,6 +60,10 @@ test suite you will need:
   * A `ruby` interpreter.
   * The [`FFI`](https://github.com/ffi/ffi) Ruby gem, installable via `gem install FFI`.
 
+We also support an environment variable `UNIFFI_TESTS_DISABLE_EXTENSIONS`;
+It is a set of file extensions, without a leading period and separated by commas.
+Eg, `UNIFFI_TESTS_DISABLE_EXTENSIONS=swift,rb cargo test` will skip test filenames ending in
+`.swift` or `.rb`
 
 ## Navigating the code
 

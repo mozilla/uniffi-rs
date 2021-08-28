@@ -10,7 +10,29 @@
 
 ## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.13.1...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.0...HEAD).
+
+## v0.14.0 (_2021-08-17_)
+
+[All changes in v0.14.0](https://github.com/mozilla/uniffi-rs/compare/v0.13.1...v0.14.0).
+
+### ⚠️ Breaking Changes ⚠️
+- The Rust implementations of all `dictionary`, `enum` or `error` types defined in UDL must be
+  public. If you see errors like:
+    `private type <type-name> in public interface`
+  or similar, please declare the types as `pub` in your Rust code.
+
+- Errors declared using the `[Error] enum` syntax will now expose the error string from
+  Rust to the foreign language bindings. This reverts an unintended change in behaviour
+  from the v0.13 release which made the error message inaccessible.
+
+### What's Changed
+
+- You can now use external types of various flavours - see
+  [the fine manual](https://mozilla.github.io/uniffi-rs/udl/ext_types.html)
+
+- An environment variable `UNIFFI_TESTS_DISABLE_EXTENSIONS` can disable foreign language bindings
+  when running tests. See [the contributing guide](./contributing.md) for more.
 
 ## v0.13.1 (_2021-08-09_)
 
