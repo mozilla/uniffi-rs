@@ -61,16 +61,4 @@ internal abstract class CallbackInternals<CallbackInterface>(
     fun drop(handle: Long): RustBuffer.ByValue {
         return handleMap.remove(handle).let { RustBuffer.ByValue() }
     }
-
-    fun lift(n: Long) = handleMap.get(n)
-
-    fun read(buf: ByteBuffer) = lift(buf.getLong())
-
-    fun lower(v: CallbackInterface) =
-        handleMap.insert(v).also {
-            assert(handleMap.get(it) === v) { "Handle map is not returning the object we just placed there. This is a bug in the HandleMap." }
-        }
-
-    fun write(v: CallbackInterface, buf: RustBufferBuilder) =
-        buf.putLong(lower(v))
 }

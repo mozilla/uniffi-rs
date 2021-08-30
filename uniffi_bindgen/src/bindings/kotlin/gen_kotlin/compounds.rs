@@ -5,7 +5,6 @@
 use crate::bindings::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
 use askama::Template;
 use paste::paste;
-use std::fmt;
 
 #[allow(unused_imports)]
 use super::filters;
@@ -63,22 +62,6 @@ macro_rules! impl_code_type_for_compound {
                     render_literal(oracle, &literal, self.inner())
                 }
 
-                fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("lower{}({})", self.canonical_name(oracle), oracle.var_name(nm))
-                }
-
-                fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
-                    format!("write{}({}, {})", self.canonical_name(oracle), oracle.var_name(nm), target)
-                }
-
-                fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("lift{}({})", self.canonical_name(oracle), nm)
-                }
-
-                fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("read{}({})", self.canonical_name(oracle), nm)
-                }
-
                 fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
                     Some(self.render().unwrap())
                 }
@@ -98,37 +81,25 @@ impl_code_type_for_compound!(
     {%- let inner_type_name = inner_type|type_kt %}
     {%- let canonical_type_name = outer_type|canonical_name %}
 
-    // Helper functions for passing values of type {{ outer_type|type_kt }}
     {% call kt::unsigned_types_annotation(self) %}
-    internal fun lower{{ canonical_type_name }}(v: {{ inner_type_name }}?): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(v) { v, buf ->
-            write{{ canonical_type_name }}(v, buf)
+    object {{ outer_type|ffi_converter_name }} {
+        internal fun write(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
+            if (v == null) {
+                buf.putByte(0)
+            } else {
+                buf.putByte(1)
+                {{ inner_type|ffi_converter_name }}.write(v, buf)
+            }
         }
-    }
 
-    {% call kt::unsigned_types_annotation(self) %}
-    internal fun write{{ canonical_type_name }}(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
-        if (v == null) {
-            buf.putByte(0)
-        } else {
-            buf.putByte(1)
-            {{ "v"|write_kt("buf", inner_type) }}
+        internal fun read(buf: ByteBuffer): {{ inner_type_name }}? {
+            if (buf.get().toInt() == 0) {
+                return null
+            }
+            return {{ inner_type|ffi_converter_name }}.read(buf)
         }
-    }
 
-    {% call kt::unsigned_types_annotation(self) %}
-    internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ inner_type_name }}? {
-        return liftFromRustBuffer(rbuf) { buf ->
-            read{{ canonical_type_name }}(buf)
-        }
-    }
-
-    {% call kt::unsigned_types_annotation(self) %}
-    internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ inner_type_name }}? {
-        if (buf.get().toInt() == 0) {
-            return null
-        }
-        return {{ "buf"|read_kt(inner_type) }}
+        {% call kt::lift_and_lower_from_read_and_write(outer_type) %}
     }
  "#
 );
@@ -144,36 +115,26 @@ impl_code_type_for_compound!(
     {%- let inner_type_name = inner_type|type_kt %}
     {%- let canonical_type_name = outer_type|canonical_name %}
 
-    // Helper functions for passing values of type {{ outer_type|type_kt }}
     {% call kt::unsigned_types_annotation(self) %}
-    internal fun lower{{ canonical_type_name }}(v: List<{{ inner_type_name }}>): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(v) { v, buf ->
-            write{{ canonical_type_name }}(v, buf)
+    object {{ outer_type|ffi_converter_name }} {
+        internal fun write(v: List<{{ inner_type_name }}>, buf: RustBufferBuilder) {
+            buf.putInt(v.size)
+            v.forEach {
+                {{ inner_type|ffi_converter_name }}.write(it, buf)
+            }
         }
+
+        {% call kt::unsigned_types_annotation(self) %}
+        internal fun read(buf: ByteBuffer): List<{{ inner_type_name }}> {
+            val len = buf.getInt()
+            return List<{{ inner_type_name }}>(len) {
+                {{ inner_type|ffi_converter_name }}.read(buf)
+            }
+        }
+
+        {% call kt::lift_and_lower_from_read_and_write(outer_type) %}
     }
 
-    {% call kt::unsigned_types_annotation(self) %}
-    internal fun write{{ canonical_type_name }}(v: List<{{ inner_type_name }}>, buf: RustBufferBuilder) {
-        buf.putInt(v.size)
-        v.forEach {
-            {{ "it"|write_kt("buf", inner_type) }}
-        }
-    }
-
-    {% call kt::unsigned_types_annotation(self) %}
-    internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): List<{{ inner_type_name }}> {
-        return liftFromRustBuffer(rbuf) { buf ->
-            read{{ canonical_type_name }}(buf)
-        }
-    }
-
-    {% call kt::unsigned_types_annotation(self) %}
-    internal fun read{{ canonical_type_name }}(buf: ByteBuffer): List<{{ inner_type_name }}> {
-        val len = buf.getInt()
-        return List<{{ inner_type_name }}>(len) {
-            {{ "buf"|read_kt(inner_type) }}
-        }
-    }
 "#
 );
 
@@ -188,44 +149,32 @@ impl_code_type_for_compound!(
     {%- let inner_type_name = inner_type|type_kt %}
     {%- let canonical_type_name = outer_type|canonical_name %}
 
-    // Helper functions for passing values of type {{ outer_type|type_kt }}
     {% call kt::unsigned_types_annotation(self) %}
-    internal fun lower{{ canonical_type_name }}(m: Map<String, {{ inner_type_name }}>): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(m) { m, buf ->
-            write{{ canonical_type_name }}(m, buf)
+    object {{ outer_type|ffi_converter_name }} {
+        internal fun write(v: Map<String, {{ inner_type_name }}>, buf: RustBufferBuilder) {
+            buf.putInt(v.size)
+            // The parens on `(k, v)` here ensure we're calling the right method,
+            // which is important for compatibility with older android devices.
+            // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
+            v.forEach { (k, v) ->
+                FFIConverterString.write(k, buf)
+                {{ inner_type|ffi_converter_name }}.write(v, buf)
+            }
         }
-    }
 
-    {% call kt::unsigned_types_annotation(self) %}
-    internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}>, buf: RustBufferBuilder) {
-        buf.putInt(v.size)
-        // The parens on `(k, v)` here ensure we're calling the right method,
-        // which is important for compatibility with older android devices.
-        // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
-        v.forEach { (k, v) ->
-            {{ "k"|write_kt("buf", TypeIdentifier::String) }}
-            {{ "v"|write_kt("buf", inner_type) }}
+        internal fun read(buf: ByteBuffer): Map<String, {{ inner_type_name }}> {
+            // TODO: Once Kotlin's `buildMap` API is stabilized we should use it here.
+            val items : MutableMap<String, {{ inner_type_name }}> = mutableMapOf()
+            val len = buf.getInt()
+            repeat(len) {
+                val k = FFIConverterString.read(buf)
+                val v = {{ inner_type|ffi_converter_name }}.read(buf)
+                items[k] = v
+            }
+            return items
         }
-    }
 
-    {% call kt::unsigned_types_annotation(self) %}
-    internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): Map<String, {{ inner_type_name }}> {
-        return liftFromRustBuffer(rbuf) { buf ->
-            read{{ canonical_type_name }}(buf)
-        }
-    }
-
-    {% call kt::unsigned_types_annotation(self) %}
-    internal fun read{{ canonical_type_name }}(buf: ByteBuffer): Map<String, {{ inner_type_name }}> {
-        // TODO: Once Kotlin's `buildMap` API is stabilized we should use it here.
-        val items : MutableMap<String, {{ inner_type_name }}> = mutableMapOf()
-        val len = buf.getInt()
-        repeat(len) {
-            val k = {{ "buf"|read_kt(TypeIdentifier::String) }}
-            val v = {{ "buf"|read_kt(inner_type) }}
-            items[k] = v
-        }
-        return items
+        {% call kt::lift_and_lower_from_read_and_write(outer_type) %}
     }
 "#
 );

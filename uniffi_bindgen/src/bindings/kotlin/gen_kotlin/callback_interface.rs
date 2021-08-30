@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::fmt;
-
 use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
@@ -34,32 +32,6 @@ impl CodeType for CallbackInterfaceCodeType {
 
     fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
         unreachable!();
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower({})", self.internals(oracle), oracle.var_name(nm))
-    }
-
-    fn write(
-        &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!(
-            "{}.write({}, {})",
-            self.internals(oracle),
-            oracle.var_name(nm),
-            target
-        )
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.internals(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.internals(oracle), nm)
     }
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {

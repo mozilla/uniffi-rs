@@ -37,14 +37,6 @@ class {{ obj.name()|class_name_kt }}(
         }
     }
 
-    internal fun lower(): Pointer = callWithPointer { it }
-
-    internal fun write(buf: RustBufferBuilder) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(this.lower()))
-    }
-
     {% for meth in obj.methods() -%}
     {%- match meth.return_type() -%}
 
@@ -53,7 +45,7 @@ class {{ obj.name()|class_name_kt }}(
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
-            {{ "it"|lift_kt(return_type) }}
+            {{ return_type|ffi_converter_name }}.lift(it)
         }
 
     {%- when None -%}
@@ -65,19 +57,31 @@ class {{ obj.name()|class_name_kt }}(
     {% endfor %}
 
     companion object {
-        internal fun lift(ptr: Pointer): {{ obj.name()|class_name_kt }} {
-            return {{ obj.name()|class_name_kt }}(ptr)
-        }
-
-        internal fun read(buf: ByteBuffer): {{ obj.name()|class_name_kt }} {
-            // The Rust code always writes pointers as 8 bytes, and will
-            // fail to compile if they don't fit.
-            return {{ obj.name()|class_name_kt }}.lift(Pointer(buf.getLong()))
-        }
-
         {% for cons in obj.alternate_constructors() -%}
         fun {{ cons.name()|fn_name_kt }}({% call kt::arg_list_decl(cons) %}): {{ obj.name()|class_name_kt }} =
             {{ obj.name()|class_name_kt }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}
     }
 }
+
+{% let type_ = obj.type_() %}
+
+{% call kt::unsigned_types_annotation(self) %}
+object {{ type_|ffi_converter_name }} {
+    internal fun lift(ptr: Pointer) = {{ obj.name()|class_name_kt }}(ptr)
+
+    internal fun lower(obj: {{ obj.name()|class_name_kt }}): Pointer = obj.pointer
+
+    internal fun read(buf: ByteBuffer): {{ obj.name()|class_name_kt }} {
+        // The Rust code always writes pointers as 8 bytes, and will
+        // fail to compile if they don't fit.
+        return lift(Pointer(buf.getLong()))
+    }
+
+    internal fun write(obj: {{ obj.name()|class_name_kt }}, buf: RustBufferBuilder) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(obj)))
+    }
+}
+

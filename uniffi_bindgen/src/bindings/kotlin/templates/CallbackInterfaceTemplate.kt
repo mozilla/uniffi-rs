@@ -45,7 +45,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
             val buf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
             kotlinCallbackInterface.{{ meth.name()|fn_name_kt }}(
                     {% for arg in meth.arguments() -%}
-                    {{ "buf"|read_kt(arg.type_()) }}
+                    {{ arg.type_()|ffi_converter_name }}.read(buf)
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
@@ -58,7 +58,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
                 {%- when Some with (return_type) -%}
                 .let { rval ->
                     val rbuf = RustBufferBuilder()
-                    {{ "rval"|write_kt("rbuf", return_type) }}
+                    {{ return_type|ffi_converter_name }}.write(rval, rbuf)
                     rbuf.finalize()
                 }
                 {%- else -%}
@@ -82,3 +82,14 @@ internal object {{ callback_internals }}: CallbackInternals<{{ type_name }}>(
         }
     }
 }
+
+{% let type_ = cbi.type_() %}
+
+object {{ type_|ffi_converter_name }} {
+    internal fun lift(n: Long) = {{ callback_internals }}.handleMap.get(n)
+    internal fun lower(v: {{ type_name }}) = {{ callback_internals }}.handleMap.insert(v).also {
+        assert({{ callback_internals }}.handleMap.get(it) === v) { "Handle map is not returning the object we just placed there. This is a bug in the HandleMap." }
+    }
+    {% call kt::read_and_write_from_lower_and_lift(type_, "Long") %}
+}
+

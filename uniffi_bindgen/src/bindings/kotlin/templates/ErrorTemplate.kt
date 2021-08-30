@@ -1,5 +1,6 @@
 {% import "macros.kt" as kt %}
 {%- let e = self.inner() %}
+{%- let type_ = e.type_() %}
 
 // Error {{ e.name() }}
 {%- let toplevel_name=e.name()|exception_name_kt %}
@@ -27,34 +28,8 @@ sealed class {{ toplevel_name }}: Exception(){% if self.contains_object_referenc
     {% endfor %}
 
 {%- endif %}
-
     companion object ErrorHandler : CallStatusErrorHandler<{{ toplevel_name }}> {
-        override fun lift(error_buf: RustBuffer.ByValue): {{ toplevel_name }} {
-            return liftFromRustBuffer(error_buf) { error_buf -> read(error_buf) }
-        }
-
-        fun read(error_buf: ByteBuffer): {{ toplevel_name }} {
-            {% if e.is_flat() %}
-                return when(error_buf.getInt()) {
-                {%- for variant in e.variants() %}
-                {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}(String.read(error_buf))
-                {%- endfor %}
-                else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
-            }
-            {% else %}
-
-            return when(error_buf.getInt()) {
-                {%- for variant in e.variants() %}
-                {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}({% if variant.has_fields() %}
-                    {% for field in variant.fields() -%}
-                    {{ "error_buf"|read_kt(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
-                    {% endfor -%}
-                {%- endif -%})
-                {%- endfor %}
-                else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
-            }
-            {%- endif %}
-        }
+        override fun lift(error_buf: RustBuffer.ByValue) = {{ type_|ffi_converter_name }}.lift(error_buf)
     }
 
     {% if self.contains_object_references() %}
@@ -74,3 +49,36 @@ sealed class {{ toplevel_name }}: Exception(){% if self.contains_object_referenc
     }
     {% endif %}
 }
+
+object {{ type_|ffi_converter_name }} {
+    fun read(error_buf: ByteBuffer): {{ toplevel_name }} {
+        {% if e.is_flat() %}
+            return when(error_buf.getInt()) {
+            {%- for variant in e.variants() %}
+            {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}(FFIConverterString.read(error_buf))
+            {%- endfor %}
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+        {% else %}
+
+        return when(error_buf.getInt()) {
+            {%- for variant in e.variants() %}
+            {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}({% if variant.has_fields() %}
+                {% for field in variant.fields() -%}
+                {{ field.type_()|ffi_converter_name }}.read(error_buf){% if loop.last %}{% else %},{% endif %}
+                {% endfor -%}
+            {%- endif -%})
+            {%- endfor %}
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+        {%- endif %}
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun write(v: {{ toplevel_name }}, buf: RustBufferBuilder) {
+        throw RuntimeException("writing/lowering errors is not supported")
+    }
+
+    {% call kt::lift_and_lower_from_read_and_write(type_) %}
+}
+

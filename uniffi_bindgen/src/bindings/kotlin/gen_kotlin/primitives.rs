@@ -6,7 +6,6 @@ use crate::bindings::backend::{CodeOracle, CodeType, Literal};
 use crate::interface::{types::Type, Radix};
 use askama::Template;
 use paste::paste;
-use std::fmt;
 
 #[allow(unused_imports)]
 use super::filters;
@@ -68,22 +67,6 @@ macro_rules! impl_code_type_for_primitive {
                     render_literal(oracle, &literal)
                 }
 
-                fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.lower()", oracle.var_name(nm))
-                }
-
-                fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
-                    format!("{}.write({})", oracle.var_name(nm), target)
-                }
-
-                fn lift(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.lift({})", $class_name, nm)
-                }
-
-                fn read(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.read({})", $class_name, nm)
-                }
-
                 fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
                     Some(self.render().unwrap())
                 }
@@ -96,20 +79,22 @@ impl_code_type_for_primitive!(
     BooleanCodeType,
     "Boolean",
     r#"
-    internal fun Boolean.Companion.lift(v: Byte): Boolean {
-        return v.toInt() != 0
-    }
+    object FFIConverterBoolean {
+        internal fun lift(v: Byte): Boolean {
+            return v.toInt() != 0
+        }
 
-    internal fun Boolean.Companion.read(buf: ByteBuffer): Boolean {
-        return Boolean.lift(buf.get())
-    }
+        internal fun read(buf: ByteBuffer): Boolean {
+            return lift(buf.get())
+        }
 
-    internal fun Boolean.lower(): Byte {
-        return if (this) 1.toByte() else 0.toByte()
-    }
+        internal fun lower(v: Boolean): Byte {
+            return if (v) 1.toByte() else 0.toByte()
+        }
 
-    internal fun Boolean.write(buf: RustBufferBuilder) {
-        buf.putByte(this.lower())
+        internal fun write(v: Boolean, buf: RustBufferBuilder) {
+            buf.putByte(lower(v))
+        }
     }
 "#
 );
@@ -118,36 +103,38 @@ impl_code_type_for_primitive!(
     StringCodeType,
     "String",
     r#"
-    internal fun String.Companion.lift(rbuf: RustBuffer.ByValue): String {
-        try {
-            val byteArr = ByteArray(rbuf.len)
-            rbuf.asByteBuffer()!!.get(byteArr)
-            return byteArr.toString(Charsets.UTF_8)
-        } finally {
-            RustBuffer.free(rbuf)
+    object FFIConverterString {
+        internal fun lift(rbuf: RustBuffer.ByValue): String {
+            try {
+                val byteArr = ByteArray(rbuf.len)
+                rbuf.asByteBuffer()!!.get(byteArr)
+                return byteArr.toString(Charsets.UTF_8)
+            } finally {
+                RustBuffer.free(rbuf)
+            }
         }
-    }
 
-    internal fun String.Companion.read(buf: ByteBuffer): String {
-        val len = buf.getInt()
-        val byteArr = ByteArray(len)
-        buf.get(byteArr)
-        return byteArr.toString(Charsets.UTF_8)
-    }
+        internal fun read(buf: ByteBuffer): String {
+            val len = buf.getInt()
+            val byteArr = ByteArray(len)
+            buf.get(byteArr)
+            return byteArr.toString(Charsets.UTF_8)
+        }
 
-    internal fun String.lower(): RustBuffer.ByValue {
-        val byteArr = this.toByteArray(Charsets.UTF_8)
-        // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
-        // to copy them into a JNA `Memory`. So we might as well directly copy them into a `RustBuffer`.
-        val rbuf = RustBuffer.alloc(byteArr.size)
-        rbuf.asByteBuffer()!!.put(byteArr)
-        return rbuf
-    }
+        internal fun lower(v: String): RustBuffer.ByValue {
+            val byteArr = v.toByteArray(Charsets.UTF_8)
+            // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
+            // to copy them into a JNA `Memory`. So we might as well directly copy them into a `RustBuffer`.
+            val rbuf = RustBuffer.alloc(byteArr.size)
+            rbuf.asByteBuffer()!!.put(byteArr)
+            return rbuf
+        }
 
-    internal fun String.write(buf: RustBufferBuilder) {
-        val byteArr = this.toByteArray(Charsets.UTF_8)
-        buf.putInt(byteArr.size)
-        buf.put(byteArr)
+        internal fun write(v: String, buf: RustBufferBuilder) {
+            val byteArr = v.toByteArray(Charsets.UTF_8)
+            buf.putInt(byteArr.size)
+            buf.put(byteArr)
+        }
     }
     "#
 );
@@ -156,20 +143,22 @@ impl_code_type_for_primitive!(
     Int8CodeType,
     "Byte",
     r#"
-    internal fun Byte.Companion.lift(v: Byte): Byte {
-        return v
-    }
+    object FFIConverterByte {
+        internal fun lift(v: Byte): Byte {
+            return v
+        }
 
-    internal fun Byte.Companion.read(buf: ByteBuffer): Byte {
-        return buf.get()
-    }
+        internal fun read(buf: ByteBuffer): Byte {
+            return buf.get()
+        }
 
-    internal fun Byte.lower(): Byte {
-        return this
-    }
+        internal fun lower(v: Byte): Byte {
+            return v
+        }
 
-    internal fun Byte.write(buf: RustBufferBuilder) {
-        buf.putByte(this)
+        internal fun write(v: Byte, buf: RustBufferBuilder) {
+            buf.putByte(v)
+        }
     }
 "#
 );
@@ -178,20 +167,22 @@ impl_code_type_for_primitive!(
     Int16CodeType,
     "Short",
     r#"
-    internal fun Short.Companion.lift(v: Short): Short {
-        return v
-    }
+    object FFIConverterShort {
+        internal fun lift(v: Short): Short {
+            return v
+        }
 
-    internal fun Short.Companion.read(buf: ByteBuffer): Short {
-        return buf.getShort()
-    }
+        internal fun read(buf: ByteBuffer): Short {
+            return buf.getShort()
+        }
 
-    internal fun Short.lower(): Short {
-        return this
-    }
+        internal fun lower(v: Short): Short {
+            return v
+        }
 
-    internal fun Short.write(buf: RustBufferBuilder) {
-        buf.putShort(this)
+        internal fun write(v: Short, buf: RustBufferBuilder) {
+            buf.putShort(v)
+        }
     }
 "#
 );
@@ -200,20 +191,22 @@ impl_code_type_for_primitive!(
     Int32CodeType,
     "Int",
     r#"
-    internal fun Int.Companion.lift(v: Int): Int {
-        return v
-    }
+    object FFIConverterInt {
+        internal fun lift(v: Int): Int {
+            return v
+        }
 
-    internal fun Int.Companion.read(buf: ByteBuffer): Int {
-        return buf.getInt()
-    }
+        internal fun read(buf: ByteBuffer): Int {
+            return buf.getInt()
+        }
 
-    internal fun Int.lower(): Int {
-        return this
-    }
+        internal fun lower(v: Int): Int {
+            return v
+        }
 
-    internal fun Int.write(buf: RustBufferBuilder) {
-        buf.putInt(this)
+        internal fun write(v: Int, buf: RustBufferBuilder) {
+            buf.putInt(v)
+        }
     }
 "#
 );
@@ -222,20 +215,22 @@ impl_code_type_for_primitive!(
     Int64CodeType,
     "Long",
     r#"
-    internal fun Long.Companion.lift(v: Long): Long {
-        return v
-    }
+    object FFIConverterLong {
+        internal fun lift(v: Long): Long {
+            return v
+        }
 
-    internal fun Long.Companion.read(buf: ByteBuffer): Long {
-        return buf.getLong()
-    }
+        internal fun read(buf: ByteBuffer): Long {
+            return buf.getLong()
+        }
 
-    internal fun Long.lower(): Long {
-        return this
-    }
+        internal fun lower(v: Long): Long {
+            return v
+        }
 
-    internal fun Long.write(buf: RustBufferBuilder) {
-        buf.putLong(this)
+        internal fun write(v: Long, buf: RustBufferBuilder) {
+            buf.putLong(v)
+        }
     }
 "#
 );
@@ -245,23 +240,22 @@ impl_code_type_for_primitive!(
     "UByte",
     r#"
     @ExperimentalUnsignedTypes
-    internal fun UByte.Companion.lift(v: Byte): UByte {
-        return v.toUByte()
-    }
+    object FFIConverterUByte {
+        internal fun lift(v: Byte): UByte {
+            return v.toUByte()
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun UByte.Companion.read(buf: ByteBuffer): UByte {
-        return UByte.lift(buf.get())
-    }
+        internal fun read(buf: ByteBuffer): UByte {
+            return lift(buf.get())
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun UByte.lower(): Byte {
-        return this.toByte()
-    }
+        internal fun lower(v: UByte): Byte {
+            return v.toByte()
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun UByte.write(buf: RustBufferBuilder) {
-        buf.putByte(this.toByte())
+        internal fun write(v: UByte, buf: RustBufferBuilder) {
+            buf.putByte(v.toByte())
+        }
     }
 "#
 );
@@ -271,23 +265,22 @@ impl_code_type_for_primitive!(
     "UShort",
     r#"
     @ExperimentalUnsignedTypes
-    internal fun UShort.Companion.lift(v: Short): UShort {
-        return v.toUShort()
-    }
+    object FFIConverterUShort {
+        internal fun lift(v: Short): UShort {
+            return v.toUShort()
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun UShort.Companion.read(buf: ByteBuffer): UShort {
-        return UShort.lift(buf.getShort())
-    }
+        internal fun read(buf: ByteBuffer): UShort {
+            return lift(buf.getShort())
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun UShort.lower(): Short {
-        return this.toShort()
-    }
+        internal fun lower(v: UShort): Short {
+            return v.toShort()
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun UShort.write(buf: RustBufferBuilder) {
-        buf.putShort(this.toShort())
+        internal fun write(v: UShort, buf: RustBufferBuilder) {
+            buf.putShort(v.toShort())
+        }
     }
 "#
 );
@@ -297,23 +290,22 @@ impl_code_type_for_primitive!(
     "UInt",
     r#"
     @ExperimentalUnsignedTypes
-    internal fun UInt.Companion.lift(v: Int): UInt {
-        return v.toUInt()
-    }
+    object FFIConverterUInt {
+        internal fun lift(v: Int): UInt {
+            return v.toUInt()
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun UInt.Companion.read(buf: ByteBuffer): UInt {
-        return UInt.lift(buf.getInt())
-    }
+        internal fun read(buf: ByteBuffer): UInt {
+            return lift(buf.getInt())
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun UInt.lower(): Int {
-        return this.toInt()
-    }
+        internal fun lower(v: UInt): Int {
+            return v.toInt()
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun UInt.write(buf: RustBufferBuilder) {
-        buf.putInt(this.toInt())
+        internal fun write(v: UInt, buf: RustBufferBuilder) {
+            buf.putInt(v.toInt())
+        }
     }
 "#
 );
@@ -323,23 +315,22 @@ impl_code_type_for_primitive!(
     "ULong",
     r#"
     @ExperimentalUnsignedTypes
-    internal fun ULong.Companion.lift(v: Long): ULong {
-        return v.toULong()
-    }
+    object FFIConverterULong {
+        internal fun lift(v: Long): ULong {
+            return v.toULong()
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun ULong.Companion.read(buf: ByteBuffer): ULong {
-        return ULong.lift(buf.getLong())
-    }
+        internal fun read(buf: ByteBuffer): ULong {
+            return lift(buf.getLong())
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun ULong.lower(): Long {
-        return this.toLong()
-    }
+        internal fun lower(v: ULong): Long {
+            return v.toLong()
+        }
 
-    @ExperimentalUnsignedTypes
-    internal fun ULong.write(buf: RustBufferBuilder) {
-        buf.putLong(this.toLong())
+        internal fun write(v: ULong, buf: RustBufferBuilder) {
+            buf.putLong(v.toLong())
+        }
     }
 "#
 );
@@ -348,20 +339,22 @@ impl_code_type_for_primitive!(
     Float32CodeType,
     "Float",
     r#"
-    internal fun Float.Companion.lift(v: Float): Float {
-        return v
-    }
+    object FFIConverterFloat {
+        internal fun lift(v: Float): Float {
+            return v
+        }
 
-    internal fun Float.Companion.read(buf: ByteBuffer): Float {
-        return buf.getFloat()
-    }
+        internal fun read(buf: ByteBuffer): Float {
+            return buf.getFloat()
+        }
 
-    internal fun Float.lower(): Float {
-        return this
-    }
+        internal fun lower(v: Float): Float {
+            return v
+        }
 
-    internal fun Float.write(buf: RustBufferBuilder) {
-        buf.putFloat(this)
+        internal fun write(v: Float, buf: RustBufferBuilder) {
+            buf.putFloat(v)
+        }
     }
 "#
 );
@@ -370,21 +363,23 @@ impl_code_type_for_primitive!(
     Float64CodeType,
     "Double",
     r#"
-    internal fun Double.Companion.lift(v: Double): Double {
-        return v
-    }
+    object FFIConverterDouble {
+        internal fun lift(v: Double): Double {
+            return v
+        }
 
-    internal fun Double.Companion.read(buf: ByteBuffer): Double {
-        val v = buf.getDouble()
-        return v
-    }
+        internal fun read(buf: ByteBuffer): Double {
+            val v = buf.getDouble()
+            return v
+        }
 
-    internal fun Double.lower(): Double {
-        return this
-    }
+        internal fun lower(v: Double): Double {
+            return v
+        }
 
-    internal fun Double.write(buf: RustBufferBuilder) {
-        buf.putDouble(this)
+        internal fun write(v: Double, buf: RustBufferBuilder) {
+            buf.putDouble(v)
+        }
     }
 "#
 );

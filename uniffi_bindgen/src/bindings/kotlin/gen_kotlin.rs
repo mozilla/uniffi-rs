@@ -305,23 +305,9 @@ pub mod filters {
         Ok(oracle.find(type_).canonical_name(&oracle))
     }
 
-    pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn ffi_converter_name(type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_).lower(&oracle, nm))
-    }
-
-    pub fn write_kt(
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).write(&oracle, nm, target))
-    }
-
-    pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).lift(&oracle, nm))
+        Ok(format!("FFIConverter{}", oracle.find(type_).canonical_name(&oracle)))
     }
 
     pub fn literal_kt(literal: &Literal, type_: &Type) -> Result<String, askama::Error> {
@@ -329,14 +315,14 @@ pub mod filters {
         Ok(oracle.find(type_).literal(&oracle, literal))
     }
 
-    pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).read(&oracle, nm))
-    }
-
     /// Get the Kotlin syntax for representing a given low-level `FFIType`.
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
+    }
+
+    // FIXME: clean up the API and give this a better name
+    pub fn type_ffi_for_type(type_: &Type) -> Result<String, askama::Error> {
+        type_ffi(&type_.into())
     }
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).

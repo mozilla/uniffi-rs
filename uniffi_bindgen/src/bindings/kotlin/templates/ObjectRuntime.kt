@@ -110,7 +110,7 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
 // [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
 //
 abstract class FFIObject(
-    protected val pointer: Pointer
+    internal val pointer: Pointer
 ): Disposable, AutoCloseable {
 
     private val wasDestroyed = AtomicBoolean(false)

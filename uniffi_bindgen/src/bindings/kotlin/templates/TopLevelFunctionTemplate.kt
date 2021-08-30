@@ -5,8 +5,7 @@
 
 {% call kt::unsigned_types_annotation(self) %}
 fun {{ func.name()|fn_name_kt }}({%- call kt::arg_list_decl(func) -%}): {{ return_type|type_kt }} {
-    val _retval = {% call kt::to_ffi_call(func) %}
-    return {{ "_retval"|lift_kt(return_type) }}
+    return {{ return_type|ffi_converter_name }}.lift({% call kt::to_ffi_call(func) %})
 }
 
 {% when None -%}
