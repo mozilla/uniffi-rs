@@ -128,6 +128,14 @@ impl Object {
         self.uses_deprecated_threadsafe_attribute
     }
 
+    pub fn iter_ffi_function_definitions(&self) -> Vec<FFIFunction> {
+        vec![self.ffi_object_free().clone()]
+            .into_iter()
+            .chain(self.constructors.iter().map(|f| f.ffi_func.clone()))
+            .chain(self.methods.iter().map(|f| f.ffi_func.clone()))
+            .collect()
+    }
+
     pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
         self.ffi_func_free.name = format!("ffi_{}_{}_object_free", ci_prefix, self.name);
         self.ffi_func_free.arguments = vec![FFIArgument {

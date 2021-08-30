@@ -142,3 +142,29 @@ class RustBufferBuilder() {
         }
     }
 }
+
+// Helpers for reading primitive data types from a bytebuffer.
+internal fun<T> liftFromRustBuffer(rbuf: RustBuffer.ByValue, readItem: (ByteBuffer) -> T): T {
+    val buf = rbuf.asByteBuffer()!!
+    try {
+       val item = readItem(buf)
+       if (buf.hasRemaining()) {
+           throw RuntimeException("junk remaining in buffer after lifting, something is very wrong!!")
+       }
+       return item
+    } finally {
+        RustBuffer.free(rbuf)
+    }
+}
+
+internal fun<T> lowerIntoRustBuffer(v: T, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
+    // TODO: maybe we can calculate some sort of initial size hint?
+    val buf = RustBufferBuilder()
+    try {
+        writeItem(v, buf)
+        return buf.finalize()
+    } catch (e: Throwable) {
+        buf.discard()
+        throw e
+    }
+}

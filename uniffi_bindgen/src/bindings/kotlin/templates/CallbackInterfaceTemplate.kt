@@ -1,3 +1,5 @@
+{% import "macros.kt" as kt %}
+{%- let cbi = self.inner() %}
 {% let type_name = cbi.name()|class_name_kt %}
 public interface {{ type_name }} {
     {% for meth in cbi.methods() -%}
@@ -15,8 +17,9 @@ public interface {{ type_name }} {
 
 internal class {{ callback_interface_impl }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
+    {% call kt::unsigned_types_annotation(self) %}
     override fun invoke(handle: Long, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue {
-        return {{ callback_internals }}.handleMap.callWithResult(handle) { cb -> 
+        return {{ callback_internals }}.handleMap.callWithResult(handle) { cb ->
             when (method) {
                 IDX_CALLBACK_FREE -> {{ callback_internals }}.drop(handle)
                 {% for meth in cbi.methods() -%}
@@ -33,6 +36,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
 
     {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt %}
+    {% call kt::unsigned_types_annotation(self) %}
     private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue): RustBuffer.ByValue =
         try {
         {#- Unpacking args from the RustBuffer #}
@@ -52,15 +56,15 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
         {#- Packing up the return value into a RustBuffer #}
                 {%- match meth.return_type() -%}
                 {%- when Some with (return_type) -%}
-                .let { rval -> 
+                .let { rval ->
                     val rbuf = RustBufferBuilder()
-                    {{ "rval"|write_kt("rbuf", return_type) }} 
+                    {{ "rval"|write_kt("rbuf", return_type) }}
                     rbuf.finalize()
                 }
                 {%- else -%}
                 .let { RustBuffer.ByValue() }
                 {% endmatch -%}
-                // TODO catch errors and report them back to Rust. 
+                // TODO catch errors and report them back to Rust.
                 // https://github.com/mozilla/uniffi-rs/issues/351
         } finally {
             RustBuffer.free(args)
