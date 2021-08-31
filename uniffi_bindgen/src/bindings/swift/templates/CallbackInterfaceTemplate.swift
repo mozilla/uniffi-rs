@@ -107,6 +107,19 @@ extension _{{ callback_internals }} where T == {{ type_name }}Erased {
         super.lower({{ type_name }}Erased(v))
     }
 }
+extension Optional where Wrapped == {{ type_name }} {
+    func lower() -> RustBuffer {
+        let writer = Writer()
+        switch self {
+        case .some(let callback):
+            writer.writeInt(Int8(1))
+            {{ callback_internals }}.write(v: {{ type_name }}Erased(callback), into: writer)
+        case .none:
+            writer.writeInt(Int8(0))
+        }
+        return RustBuffer(bytes: writer.bytes)
+    }
+}
 
 private let {{ callback_internals }} = _{{ callback_internals }}<{{ type_name }}Erased>()
 private class _{{ callback_internals }}<T: {{ type_name }}>: CallbackInternals<T> {

@@ -82,10 +82,11 @@ private func makeRustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) 
 {% if ci.iter_callback_interface_definitions().len() > 0 %}
 
 class Lock {
-    init(){}
-    func withLock<T>(f: () throws -> T ) rethrows -> T {
-        objc_sync_enter(self)
-        defer { objc_sync_exit(self) }
+    init() {}
+    let lock = NSLock()
+    func withLock<T>(f: () throws -> T) rethrows -> T {
+        lock.lock()
+        defer { lock.unlock() }
         return try f()
     }
 }
