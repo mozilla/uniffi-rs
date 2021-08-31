@@ -1,2 +1,10 @@
 [bindings.python]
 cdylib_name = "uniffi_ext_types_lib"
+
+[bindings.kotlin]
+cdylib_name = "uniffi_ext_types_lib"
+extra_sources = [
+    "uniffi/ext_types_guid/ext_types_guid.kt",
+    "uniffi/uniffi_one/uniffi_one.kt",
+    "uniffi/wrapper_types/wrapper_types.kt",
+]

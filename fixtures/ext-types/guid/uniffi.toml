@@ -1,2 +1,5 @@
 [bindings.python]
 cdylib_name = "ext_types_guid"
+
+[bindings.kotlin]
+cdylib_name = "ext_types_guid"

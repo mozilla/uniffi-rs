@@ -1,11 +1,11 @@
 namespace imported_types_lib {
     // Test the types individually
-    UniffiOneType get_uniffi_one_type(UniffiOneType val);
-    Animal get_another_animal(Animal val);
+    UniffiOneType get_uniffi_one_type(UniffiOneType value);
+    Animal get_another_animal(Animal value);
     IpAddr get_another_ip(IpAddr addr);
 
     // Test the CombinedType, which combines different external types together
-    CombinedType get_combined_type(optional CombinedType? val);
+    CombinedType get_combined_type(optional CombinedType? value);
 };
 
 // Some types defined in a .udl file in the `uniffi-one` crate (ie, in

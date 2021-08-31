@@ -23,7 +23,7 @@ impl CodeType for EnumCodeType {
     }
 
     fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("Enum{}", self.type_label(oracle))
+        format!("Type{}", self.type_label(oracle))
     }
 
     fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {

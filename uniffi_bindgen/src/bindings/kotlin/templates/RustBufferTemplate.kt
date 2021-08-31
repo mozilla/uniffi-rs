@@ -47,9 +47,60 @@ open class ForeignBytes : Structure() {
 }
 
 
-// A helper for structured writing of data into a `RustBuffer`.
-// This is very similar to `java.nio.ByteBuffer` but it knows how to grow
-// the underlying `RustBuffer` on demand.
+// API for writing of data to a `RustBuffer`.
+//
+// This has a bit of an odd shape in order to support external types.  We have
+// multiple UDL files, each one gets compiled into its own package with its own
+// copy of `RustBuffer`, `RustBufferBuilder`, etc.  This means this API can
+// only depend on standard Java types.
+
+// Buffer writer function.  Call it with the size you want to write and a
+// closure that writes the data to a `ByteBuffer`.
+typealias BufferWriteFunc = (size: Int, write: (ByteBuffer) -> Unit) -> Unit
+
+internal inline fun putByte(v: Byte, bufferWrite: BufferWriteFunc) {
+    bufferWrite(1) { bbuf ->
+        bbuf.put(v)
+    }
+}
+
+internal inline fun putShort(v: Short, bufferWrite: BufferWriteFunc) {
+    bufferWrite(2) { bbuf ->
+        bbuf.putShort(v)
+    }
+}
+
+internal inline fun putInt(v: Int, bufferWrite: BufferWriteFunc) {
+    bufferWrite(4) { bbuf ->
+        bbuf.putInt(v)
+    }
+}
+
+internal inline fun putLong(v: Long, bufferWrite: BufferWriteFunc) {
+    bufferWrite(8) { bbuf ->
+        bbuf.putLong(v)
+    }
+}
+
+internal inline fun putFloat(v: Float, bufferWrite: BufferWriteFunc) {
+    bufferWrite(4) { bbuf ->
+        bbuf.putFloat(v)
+    }
+}
+
+internal inline fun putDouble(v: Double, bufferWrite: BufferWriteFunc) {
+    bufferWrite(8) { bbuf ->
+        bbuf.putDouble(v)
+    }
+}
+
+internal inline fun put(v: ByteArray, bufferWrite: BufferWriteFunc) {
+    bufferWrite(v.size) { bbuf ->
+        bbuf.put(v)
+    }
+}
+
+// A helper for writing of data into a `RustBuffer`.
 //
 // TODO: we should benchmark writing things into a `RustBuffer` versus building
 // up a bytearray and then copying it across.
@@ -87,7 +138,8 @@ class RustBufferBuilder() {
         RustBuffer.free(rbuf)
     }
 
-    internal fun reserve(size: Int, write: (ByteBuffer) -> Unit) {
+    // Note: needs to match the BufferWriteFunc signature
+    internal fun write(size: Int, write: (ByteBuffer) -> Unit) {
         // TODO: this will perform two checks to ensure we're not overflowing the buffer:
         // one here where we check if it needs to grow, and another when we call a write
         // method on the ByteBuffer. It might be cheaper to use exception-driven control-flow
@@ -98,48 +150,6 @@ class RustBufferBuilder() {
             this.setRustBuffer(RustBuffer.reserve(this.rbuf, size))
         }
         write(this.bbuf!!)
-    }
-
-    fun putByte(v: Byte) {
-        this.reserve(1) { bbuf ->
-            bbuf.put(v)
-        }
-    }
-
-    fun putShort(v: Short) {
-        this.reserve(2) { bbuf ->
-            bbuf.putShort(v)
-        }
-    }
-
-    fun putInt(v: Int) {
-        this.reserve(4) { bbuf ->
-            bbuf.putInt(v)
-        }
-    }
-
-    fun putLong(v: Long) {
-        this.reserve(8) { bbuf ->
-            bbuf.putLong(v)
-        }
-    }
-
-    fun putFloat(v: Float) {
-        this.reserve(4) { bbuf ->
-            bbuf.putFloat(v)
-        }
-    }
-
-    fun putDouble(v: Double) {
-        this.reserve(8) { bbuf ->
-            bbuf.putDouble(v)
-        }
-    }
-
-    fun put(v: ByteArray) {
-        this.reserve(v.size) { bbuf ->
-            bbuf.put(v)
-        }
     }
 }
 
@@ -158,11 +168,11 @@ internal inline fun<T> liftFromRustBuffer(rbuf: RustBuffer.ByValue, readItem: (B
 }
 
 // Implement `lower()` by writing to a `RustBuffer`
-internal inline fun<T> lowerIntoRustBuffer(v: T, writeItem: (T, RustBufferBuilder) -> Unit): RustBuffer.ByValue {
+internal inline fun<T> lowerIntoRustBuffer(v: T, writeItem: (T, BufferWriteFunc) -> Unit): RustBuffer.ByValue {
     // TODO: maybe we can calculate some sort of initial size hint?
     val buf = RustBufferBuilder()
     try {
-        writeItem(v, buf)
+        writeItem(v, buf::write)
         return buf.finalize()
     } catch (e: Throwable) {
         buf.discard()

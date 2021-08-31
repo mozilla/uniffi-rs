@@ -58,7 +58,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
                 {%- when Some with (return_type) -%}
                 .let { rval ->
                     val rbuf = RustBufferBuilder()
-                    {{ return_type|ffi_converter_name }}.write(rval, rbuf)
+                    {{ return_type|ffi_converter_name }}.write(rval, rbuf::write)
                     rbuf.finalize()
                 }
                 {%- else -%}
@@ -85,11 +85,12 @@ internal object {{ callback_internals }}: CallbackInternals<{{ type_name }}>(
 
 {% let type_ = cbi.type_() %}
 
-object {{ type_|ffi_converter_name }} {
-    internal fun lift(n: Long) = {{ callback_internals }}.handleMap.get(n)
-    internal fun lower(v: {{ type_name }}) = {{ callback_internals }}.handleMap.insert(v).also {
+object {{ type_|ffi_converter_name }}: FFIConverter<{{ type_name }}, Long> {
+    override fun lift(v: Long) = {{ callback_internals }}.handleMap.get(v)!!
+    override fun lower(v: {{ type_name }}) = {{ callback_internals }}.handleMap.insert(v).also {
         assert({{ callback_internals }}.handleMap.get(it) === v) { "Handle map is not returning the object we just placed there. This is a bug in the HandleMap." }
     }
-    {% call kt::read_and_write_from_lower_and_lift(type_, "Long") %}
+    override fun read(buf: ByteBuffer) = lift(buf.getLong())
+    override fun write(v: {{ type_name }}, bufferWrite: BufferWriteFunc) = putLong(lower(v), bufferWrite)
 }
 

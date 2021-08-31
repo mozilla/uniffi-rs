@@ -50,22 +50,23 @@ sealed class {{ toplevel_name }}: Exception(){% if self.contains_object_referenc
     {% endif %}
 }
 
-object {{ type_|ffi_converter_name }} {
-    fun read(error_buf: ByteBuffer): {{ toplevel_name }} {
+{% call kt::unsigned_types_annotation(self) %}
+object {{ type_|ffi_converter_name }}: FFIConverterRustBuffer<{{ toplevel_name }}> {
+    override fun read(buf: ByteBuffer): {{ toplevel_name }} {
         {% if e.is_flat() %}
-            return when(error_buf.getInt()) {
+            return when(buf.getInt()) {
             {%- for variant in e.variants() %}
-            {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}(FFIConverterString.read(error_buf))
+            {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}(FFIConverterString.read(buf))
             {%- endfor %}
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         {% else %}
 
-        return when(error_buf.getInt()) {
+        return when(buf.getInt()) {
             {%- for variant in e.variants() %}
             {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}({% if variant.has_fields() %}
                 {% for field in variant.fields() -%}
-                {{ field.type_()|ffi_converter_name }}.read(error_buf){% if loop.last %}{% else %},{% endif %}
+                {{ field.type_()|ffi_converter_name }}.read(buf){% if loop.last %}{% else %},{% endif %}
                 {% endfor -%}
             {%- endif -%})
             {%- endfor %}
@@ -75,10 +76,8 @@ object {{ type_|ffi_converter_name }} {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun write(v: {{ toplevel_name }}, buf: RustBufferBuilder) {
+    override fun write(v: {{ toplevel_name }}, bufferWrite: BufferWriteFunc) {
         throw RuntimeException("writing/lowering errors is not supported")
     }
-
-    {% call kt::lift_and_lower_from_read_and_write(type_) %}
 }
 

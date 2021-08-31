@@ -2,8 +2,8 @@ use ext_types_guid::Guid;
 use uniffi_one::{Animal, IpAddr, UniffiOneType};
 use wrapper_types::Handle;
 
-fn get_uniffi_one_type(val: UniffiOneType) -> UniffiOneType {
-    UniffiOneType { sval: format!("{} - {}", val.sval, val.sval) }
+fn get_uniffi_one_type(value: UniffiOneType) -> UniffiOneType {
+    UniffiOneType { sval: format!("{} - {}", value.sval, value.sval) }
 }
 
 fn get_another_animal(animal: Animal) -> Animal {

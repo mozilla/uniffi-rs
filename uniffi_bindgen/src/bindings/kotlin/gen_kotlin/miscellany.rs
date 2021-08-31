@@ -49,14 +49,14 @@ impl_code_type_for_miscellany!(
     "Timestamp",
     vec!["java.time.Instant", "java.time.DateTimeException"],
     r#"
-    object FFIConverterTimestamp {
-         internal fun lift(rbuf: RustBuffer.ByValue): java.time.Instant {
-             return liftFromRustBuffer(rbuf) { buf ->
+    object FFIConverterTimestamp: FFIConverter<java.time.Instant, RustBuffer.ByValue> {
+         override fun lift(v: RustBuffer.ByValue): java.time.Instant {
+             return liftFromRustBuffer(v) { buf ->
                  read(buf)
              }
          }
 
-         internal fun read(buf: ByteBuffer): java.time.Instant {
+         override fun read(buf: ByteBuffer): java.time.Instant {
              val seconds = buf.getLong()
              // Type mismatch (should be u32) but we check for overflow/underflow below
              val nanoseconds = buf.getInt().toLong()
@@ -70,13 +70,13 @@ impl_code_type_for_miscellany!(
              }
          }
 
-         internal fun lower(v: java.time.Instant): RustBuffer.ByValue {
+         override fun lower(v: java.time.Instant): RustBuffer.ByValue {
              return lowerIntoRustBuffer(v) { v, buf ->
                  write(v, buf)
              }
          }
 
-         internal fun write(v: java.time.Instant, buf: RustBufferBuilder) {
+         override fun write(v: java.time.Instant, bufferWrite: BufferWriteFunc) {
              var epochOffset = java.time.Duration.between(java.time.Instant.EPOCH, v)
 
              var sign = 1
@@ -91,9 +91,9 @@ impl_code_type_for_miscellany!(
                  throw IllegalArgumentException("Invalid timestamp, nano value must be non-negative")
              }
 
-             buf.putLong(sign * epochOffset.seconds)
+             putLong(sign * epochOffset.seconds, bufferWrite)
              // Type mismatch (should be u32) but since values will always be between 0 and 999,999,999 it should be OK
-             buf.putInt(epochOffset.nano)
+             putInt(epochOffset.nano, bufferWrite)
          }
      }
  "#
@@ -106,14 +106,14 @@ impl_code_type_for_miscellany!(
     vec!["java.time.Duration", "java.time.DateTimeException"],
     r#"
 
-    object FFIConverterDuration {
-        internal fun lift(rbuf: RustBuffer.ByValue): java.time.Duration {
-            return liftFromRustBuffer(rbuf) { buf ->
+    object FFIConverterDuration: FFIConverter<java.time.Duration, RustBuffer.ByValue> {
+        override fun lift(v: RustBuffer.ByValue): java.time.Duration {
+            return liftFromRustBuffer(v) { buf ->
                 read(buf)
             }
         }
 
-        internal fun read(buf: ByteBuffer): java.time.Duration {
+        override fun read(buf: ByteBuffer): java.time.Duration {
             // Type mismatch (should be u64) but we check for overflow/underflow below
             val seconds = buf.getLong()
             // Type mismatch (should be u32) but we check for overflow/underflow below
@@ -127,13 +127,13 @@ impl_code_type_for_miscellany!(
             return java.time.Duration.ofSeconds(seconds, nanoseconds)
         }
 
-        internal fun lower(v: java.time.Duration): RustBuffer.ByValue {
+        override fun lower(v: java.time.Duration): RustBuffer.ByValue {
             return lowerIntoRustBuffer(v) { v, buf ->
                 write(v, buf)
             }
         }
 
-        internal fun write(v: java.time.Duration, buf: RustBufferBuilder) {
+        override fun write(v: java.time.Duration, bufferWrite: BufferWriteFunc) {
             if (v.seconds < 0) {
                 // Rust does not support negative Durations
                 throw IllegalArgumentException("Invalid duration, must be non-negative")
@@ -146,9 +146,9 @@ impl_code_type_for_miscellany!(
             }
 
             // Type mismatch (should be u64) but since Rust doesn't support negative durations we should be OK
-            buf.putLong(v.seconds)
+            putLong(v.seconds, bufferWrite)
             // Type mismatch (should be u32) but since values will always be between 0 and 999,999,999 it should be OK
-            buf.putInt(v.nano)
+            putInt(v.nano, bufferWrite)
         }
     }
 "#

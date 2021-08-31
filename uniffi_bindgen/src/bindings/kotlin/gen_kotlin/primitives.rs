@@ -79,21 +79,21 @@ impl_code_type_for_primitive!(
     BooleanCodeType,
     "Boolean",
     r#"
-    object FFIConverterBoolean {
-        internal fun lift(v: Byte): Boolean {
+    object FFIConverterBoolean: FFIConverter<Boolean, Byte> {
+        override fun lift(v: Byte): Boolean {
             return v.toInt() != 0
         }
 
-        internal fun read(buf: ByteBuffer): Boolean {
+        override fun read(buf: ByteBuffer): Boolean {
             return lift(buf.get())
         }
 
-        internal fun lower(v: Boolean): Byte {
+        override fun lower(v: Boolean): Byte {
             return if (v) 1.toByte() else 0.toByte()
         }
 
-        internal fun write(v: Boolean, buf: RustBufferBuilder) {
-            buf.putByte(lower(v))
+        override fun write(v: Boolean, bufferWrite: BufferWriteFunc) {
+            putByte(lower(v), bufferWrite)
         }
     }
 "#
@@ -103,25 +103,25 @@ impl_code_type_for_primitive!(
     StringCodeType,
     "String",
     r#"
-    object FFIConverterString {
-        internal fun lift(rbuf: RustBuffer.ByValue): String {
+    object FFIConverterString: FFIConverter<String, RustBuffer.ByValue> {
+        override fun lift(v: RustBuffer.ByValue): String {
             try {
-                val byteArr = ByteArray(rbuf.len)
-                rbuf.asByteBuffer()!!.get(byteArr)
+                val byteArr = ByteArray(v.len)
+                v.asByteBuffer()!!.get(byteArr)
                 return byteArr.toString(Charsets.UTF_8)
             } finally {
-                RustBuffer.free(rbuf)
+                RustBuffer.free(v)
             }
         }
 
-        internal fun read(buf: ByteBuffer): String {
+        override fun read(buf: ByteBuffer): String {
             val len = buf.getInt()
             val byteArr = ByteArray(len)
             buf.get(byteArr)
             return byteArr.toString(Charsets.UTF_8)
         }
 
-        internal fun lower(v: String): RustBuffer.ByValue {
+        override fun lower(v: String): RustBuffer.ByValue {
             val byteArr = v.toByteArray(Charsets.UTF_8)
             // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
             // to copy them into a JNA `Memory`. So we might as well directly copy them into a `RustBuffer`.
@@ -130,10 +130,10 @@ impl_code_type_for_primitive!(
             return rbuf
         }
 
-        internal fun write(v: String, buf: RustBufferBuilder) {
+        override fun write(v: String, bufferWrite: BufferWriteFunc) {
             val byteArr = v.toByteArray(Charsets.UTF_8)
-            buf.putInt(byteArr.size)
-            buf.put(byteArr)
+            putInt(byteArr.size, bufferWrite)
+            put(byteArr, bufferWrite)
         }
     }
     "#
@@ -143,21 +143,21 @@ impl_code_type_for_primitive!(
     Int8CodeType,
     "Byte",
     r#"
-    object FFIConverterByte {
-        internal fun lift(v: Byte): Byte {
+    object FFIConverterByte: FFIConverter<Byte, Byte> {
+        override fun lift(v: Byte): Byte {
             return v
         }
 
-        internal fun read(buf: ByteBuffer): Byte {
+        override fun read(buf: ByteBuffer): Byte {
             return buf.get()
         }
 
-        internal fun lower(v: Byte): Byte {
+        override fun lower(v: Byte): Byte {
             return v
         }
 
-        internal fun write(v: Byte, buf: RustBufferBuilder) {
-            buf.putByte(v)
+        override fun write(v: Byte, bufferWrite: BufferWriteFunc) {
+            putByte(v, bufferWrite)
         }
     }
 "#
@@ -167,21 +167,21 @@ impl_code_type_for_primitive!(
     Int16CodeType,
     "Short",
     r#"
-    object FFIConverterShort {
-        internal fun lift(v: Short): Short {
+    object FFIConverterShort: FFIConverter<Short, Short> {
+        override fun lift(v: Short): Short {
             return v
         }
 
-        internal fun read(buf: ByteBuffer): Short {
+        override fun read(buf: ByteBuffer): Short {
             return buf.getShort()
         }
 
-        internal fun lower(v: Short): Short {
+        override fun lower(v: Short): Short {
             return v
         }
 
-        internal fun write(v: Short, buf: RustBufferBuilder) {
-            buf.putShort(v)
+        override fun write(v: Short, bufferWrite: BufferWriteFunc) {
+            putShort(v, bufferWrite)
         }
     }
 "#
@@ -191,21 +191,21 @@ impl_code_type_for_primitive!(
     Int32CodeType,
     "Int",
     r#"
-    object FFIConverterInt {
-        internal fun lift(v: Int): Int {
+    object FFIConverterInt: FFIConverter<Int, Int> {
+        override fun lift(v: Int): Int {
             return v
         }
 
-        internal fun read(buf: ByteBuffer): Int {
+        override fun read(buf: ByteBuffer): Int {
             return buf.getInt()
         }
 
-        internal fun lower(v: Int): Int {
+        override fun lower(v: Int): Int {
             return v
         }
 
-        internal fun write(v: Int, buf: RustBufferBuilder) {
-            buf.putInt(v)
+        override fun write(v: Int, bufferWrite: BufferWriteFunc) {
+            putInt(v, bufferWrite)
         }
     }
 "#
@@ -215,21 +215,21 @@ impl_code_type_for_primitive!(
     Int64CodeType,
     "Long",
     r#"
-    object FFIConverterLong {
-        internal fun lift(v: Long): Long {
+    object FFIConverterLong: FFIConverter<Long, Long> {
+        override fun lift(v: Long): Long {
             return v
         }
 
-        internal fun read(buf: ByteBuffer): Long {
+        override fun read(buf: ByteBuffer): Long {
             return buf.getLong()
         }
 
-        internal fun lower(v: Long): Long {
+        override fun lower(v: Long): Long {
             return v
         }
 
-        internal fun write(v: Long, buf: RustBufferBuilder) {
-            buf.putLong(v)
+        override fun write(v: Long, bufferWrite: BufferWriteFunc) {
+            putLong(v, bufferWrite)
         }
     }
 "#
@@ -240,21 +240,21 @@ impl_code_type_for_primitive!(
     "UByte",
     r#"
     @ExperimentalUnsignedTypes
-    object FFIConverterUByte {
-        internal fun lift(v: Byte): UByte {
+    object FFIConverterUByte: FFIConverter<UByte, Byte> {
+        override fun lift(v: Byte): UByte {
             return v.toUByte()
         }
 
-        internal fun read(buf: ByteBuffer): UByte {
+        override fun read(buf: ByteBuffer): UByte {
             return lift(buf.get())
         }
 
-        internal fun lower(v: UByte): Byte {
+        override fun lower(v: UByte): Byte {
             return v.toByte()
         }
 
-        internal fun write(v: UByte, buf: RustBufferBuilder) {
-            buf.putByte(v.toByte())
+        override fun write(v: UByte, bufferWrite: BufferWriteFunc) {
+            putByte(v.toByte(), bufferWrite)
         }
     }
 "#
@@ -265,21 +265,21 @@ impl_code_type_for_primitive!(
     "UShort",
     r#"
     @ExperimentalUnsignedTypes
-    object FFIConverterUShort {
-        internal fun lift(v: Short): UShort {
+    object FFIConverterUShort: FFIConverter<UShort, Short> {
+        override fun lift(v: Short): UShort {
             return v.toUShort()
         }
 
-        internal fun read(buf: ByteBuffer): UShort {
+        override fun read(buf: ByteBuffer): UShort {
             return lift(buf.getShort())
         }
 
-        internal fun lower(v: UShort): Short {
+        override fun lower(v: UShort): Short {
             return v.toShort()
         }
 
-        internal fun write(v: UShort, buf: RustBufferBuilder) {
-            buf.putShort(v.toShort())
+        override fun write(v: UShort, bufferWrite: BufferWriteFunc) {
+            putShort(v.toShort(), bufferWrite)
         }
     }
 "#
@@ -290,21 +290,21 @@ impl_code_type_for_primitive!(
     "UInt",
     r#"
     @ExperimentalUnsignedTypes
-    object FFIConverterUInt {
-        internal fun lift(v: Int): UInt {
+    object FFIConverterUInt: FFIConverter<UInt, Int> {
+        override fun lift(v: Int): UInt {
             return v.toUInt()
         }
 
-        internal fun read(buf: ByteBuffer): UInt {
+        override fun read(buf: ByteBuffer): UInt {
             return lift(buf.getInt())
         }
 
-        internal fun lower(v: UInt): Int {
+        override fun lower(v: UInt): Int {
             return v.toInt()
         }
 
-        internal fun write(v: UInt, buf: RustBufferBuilder) {
-            buf.putInt(v.toInt())
+        override fun write(v: UInt, bufferWrite: BufferWriteFunc) {
+            putInt(v.toInt(), bufferWrite)
         }
     }
 "#
@@ -315,21 +315,21 @@ impl_code_type_for_primitive!(
     "ULong",
     r#"
     @ExperimentalUnsignedTypes
-    object FFIConverterULong {
-        internal fun lift(v: Long): ULong {
+    object FFIConverterULong: FFIConverter<ULong, Long> {
+        override fun lift(v: Long): ULong {
             return v.toULong()
         }
 
-        internal fun read(buf: ByteBuffer): ULong {
+        override fun read(buf: ByteBuffer): ULong {
             return lift(buf.getLong())
         }
 
-        internal fun lower(v: ULong): Long {
+        override fun lower(v: ULong): Long {
             return v.toLong()
         }
 
-        internal fun write(v: ULong, buf: RustBufferBuilder) {
-            buf.putLong(v.toLong())
+        override fun write(v: ULong, bufferWrite: BufferWriteFunc) {
+            putLong(v.toLong(), bufferWrite)
         }
     }
 "#
@@ -339,21 +339,21 @@ impl_code_type_for_primitive!(
     Float32CodeType,
     "Float",
     r#"
-    object FFIConverterFloat {
-        internal fun lift(v: Float): Float {
+    object FFIConverterFloat: FFIConverter<Float, Float> {
+        override fun lift(v: Float): Float {
             return v
         }
 
-        internal fun read(buf: ByteBuffer): Float {
+        override fun read(buf: ByteBuffer): Float {
             return buf.getFloat()
         }
 
-        internal fun lower(v: Float): Float {
+        override fun lower(v: Float): Float {
             return v
         }
 
-        internal fun write(v: Float, buf: RustBufferBuilder) {
-            buf.putFloat(v)
+        override fun write(v: Float, bufferWrite: BufferWriteFunc) {
+            putFloat(v, bufferWrite)
         }
     }
 "#
@@ -363,22 +363,22 @@ impl_code_type_for_primitive!(
     Float64CodeType,
     "Double",
     r#"
-    object FFIConverterDouble {
-        internal fun lift(v: Double): Double {
+    object FFIConverterDouble: FFIConverter<Double, Double> {
+        override fun lift(v: Double): Double {
             return v
         }
 
-        internal fun read(buf: ByteBuffer): Double {
+        override fun read(buf: ByteBuffer): Double {
             val v = buf.getDouble()
             return v
         }
 
-        internal fun lower(v: Double): Double {
+        override fun lower(v: Double): Double {
             return v
         }
 
-        internal fun write(v: Double, buf: RustBufferBuilder) {
-            buf.putDouble(v)
+        override fun write(v: Double, bufferWrite: BufferWriteFunc) {
+            putDouble(v, bufferWrite)
         }
     }
 "#

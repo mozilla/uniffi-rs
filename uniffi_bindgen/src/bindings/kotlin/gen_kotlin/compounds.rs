@@ -82,24 +82,22 @@ impl_code_type_for_compound!(
     {%- let canonical_type_name = outer_type|canonical_name %}
 
     {% call kt::unsigned_types_annotation(self) %}
-    object {{ outer_type|ffi_converter_name }} {
-        internal fun write(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
+    object {{ outer_type|ffi_converter_name }}: FFIConverterRustBuffer<{{ inner_type_name }}?> {
+        override fun write(v: {{ inner_type_name }}?, bufferWrite: BufferWriteFunc) {
             if (v == null) {
-                buf.putByte(0)
+                putByte(0, bufferWrite)
             } else {
-                buf.putByte(1)
-                {{ inner_type|ffi_converter_name }}.write(v, buf)
+                putByte(1, bufferWrite)
+                {{ inner_type|ffi_converter_name }}.write(v, bufferWrite)
             }
         }
 
-        internal fun read(buf: ByteBuffer): {{ inner_type_name }}? {
+        override fun read(buf: ByteBuffer): {{ inner_type_name }}? {
             if (buf.get().toInt() == 0) {
                 return null
             }
             return {{ inner_type|ffi_converter_name }}.read(buf)
         }
-
-        {% call kt::lift_and_lower_from_read_and_write(outer_type) %}
     }
  "#
 );
@@ -116,23 +114,21 @@ impl_code_type_for_compound!(
     {%- let canonical_type_name = outer_type|canonical_name %}
 
     {% call kt::unsigned_types_annotation(self) %}
-    object {{ outer_type|ffi_converter_name }} {
-        internal fun write(v: List<{{ inner_type_name }}>, buf: RustBufferBuilder) {
-            buf.putInt(v.size)
+    object {{ outer_type|ffi_converter_name }}: FFIConverterRustBuffer<List<{{ inner_type_name }}>> {
+        override fun write(v: List<{{ inner_type_name }}>, bufferWrite: BufferWriteFunc) {
+            putInt(v.size, bufferWrite)
             v.forEach {
-                {{ inner_type|ffi_converter_name }}.write(it, buf)
+                {{ inner_type|ffi_converter_name }}.write(it, bufferWrite)
             }
         }
 
         {% call kt::unsigned_types_annotation(self) %}
-        internal fun read(buf: ByteBuffer): List<{{ inner_type_name }}> {
+        override fun read(buf: ByteBuffer): List<{{ inner_type_name }}> {
             val len = buf.getInt()
             return List<{{ inner_type_name }}>(len) {
                 {{ inner_type|ffi_converter_name }}.read(buf)
             }
         }
-
-        {% call kt::lift_and_lower_from_read_and_write(outer_type) %}
     }
 
 "#
@@ -150,19 +146,19 @@ impl_code_type_for_compound!(
     {%- let canonical_type_name = outer_type|canonical_name %}
 
     {% call kt::unsigned_types_annotation(self) %}
-    object {{ outer_type|ffi_converter_name }} {
-        internal fun write(v: Map<String, {{ inner_type_name }}>, buf: RustBufferBuilder) {
-            buf.putInt(v.size)
+    object {{ outer_type|ffi_converter_name }}: FFIConverterRustBuffer<Map<String, {{ inner_type_name }}>> {
+        override fun write(v: Map<String, {{ inner_type_name }}>, bufferWrite: BufferWriteFunc) {
+            putInt(v.size, bufferWrite)
             // The parens on `(k, v)` here ensure we're calling the right method,
             // which is important for compatibility with older android devices.
             // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
             v.forEach { (k, v) ->
-                FFIConverterString.write(k, buf)
-                {{ inner_type|ffi_converter_name }}.write(v, buf)
+                FFIConverterString.write(k, bufferWrite)
+                {{ inner_type|ffi_converter_name }}.write(v, bufferWrite)
             }
         }
 
-        internal fun read(buf: ByteBuffer): Map<String, {{ inner_type_name }}> {
+        override fun read(buf: ByteBuffer): Map<String, {{ inner_type_name }}> {
             // TODO: Once Kotlin's `buildMap` API is stabilized we should use it here.
             val items : MutableMap<String, {{ inner_type_name }}> = mutableMapOf()
             val len = buf.getInt()
@@ -173,8 +169,6 @@ impl_code_type_for_compound!(
             }
             return items
         }
-
-        {% call kt::lift_and_lower_from_read_and_write(outer_type) %}
     }
 "#
 );

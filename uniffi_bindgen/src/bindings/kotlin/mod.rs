@@ -71,6 +71,7 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
         .arg("-classpath")
         .arg(env::var("CLASSPATH").unwrap_or_else(|_| "".to_string()))
         .arg(&kt_file)
+        .args(config.extra_sources.clone().into_iter().flat_map(|packages| packages.into_iter().map(|p| (PathBuf::from(out_dir).join(p)))))
         .arg("-d")
         .arg(jar_file)
         .spawn()

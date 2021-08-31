@@ -23,7 +23,7 @@ impl CodeType for RecordCodeType {
     }
 
     fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("Record{}", self.type_label(oracle))
+        format!("Type{}", self.type_label(oracle))
     }
 
     fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {

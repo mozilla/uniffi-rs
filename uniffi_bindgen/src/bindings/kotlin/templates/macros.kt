@@ -89,21 +89,3 @@ fun {{ func.name() }}(
     {%- call arg_list_ffi_decl(func) %}
 ){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|type_ffi }}{% when None %}: Unit{% endmatch %}
 {% endmacro %}
-
-{# Implement the lift/lower() FFI convert functions using read/write functions (This only works if the FFIType is RustBuffer) #}
-{%- macro lift_and_lower_from_read_and_write(type_) %}
-    {% call unsigned_types_annotation(self) %}
-    internal fun lift(buf: RustBuffer.ByValue) = liftFromRustBuffer(buf) { buf -> read(buf) }
-
-    {% call unsigned_types_annotation(self) %}
-    internal fun lower(value: {{ type_|type_kt }}) = lowerIntoRustBuffer(value) { v, buf -> write(v, buf) }
-{% endmacro %}
-
-{# Implement the read/write() FFI convert functions using lower/lift functions #}
-{%- macro read_and_write_from_lower_and_lift(type_, buffer_item_type) %}
-    {% call unsigned_types_annotation(self) %}
-    internal fun read(buf: ByteBuffer) = lift(buf.get{{ buffer_item_type }}())
-
-    {% call unsigned_types_annotation(self) %}
-    internal fun write(v: {{ type_|type_kt }}, buf: RustBufferBuilder) = buf.put{{ buffer_item_type }}(lower(v))
-{% endmacro %}

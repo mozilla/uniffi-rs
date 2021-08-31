@@ -31,6 +31,9 @@ import {{ imported_class }}
 // The Rust Buffer and 3 templated methods (alloc, free, reserve).
 {% include "RustBufferTemplate.kt" %}
 
+// The FFIConverter interface
+{% include "FFIConverter.kt" %}
+
 {% include "Helpers.kt" %}
 
 // Contains loading, initialization code,

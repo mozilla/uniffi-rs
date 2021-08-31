@@ -21,8 +21,8 @@ data class {{ rec.name()|class_name_kt }} (
 }
 
 {% call kt::unsigned_types_annotation(self) %}
-object {{ rec.type_()|ffi_converter_name }} {
-    internal fun read(buf: ByteBuffer): {{ rec.name()|class_name_kt }} {
+object {{ rec.type_()|ffi_converter_name }}: FFIConverterRustBuffer<{{ rec.name()|class_name_kt }}> {
+    override fun read(buf: ByteBuffer): {{ rec.name()|class_name_kt }} {
         return {{ rec.name()|class_name_kt }}(
         {%- for field in rec.fields() %}
         {{ field.type_()|ffi_converter_name }}.read(buf){% if loop.last %}{% else %},{% endif %}
@@ -30,11 +30,9 @@ object {{ rec.type_()|ffi_converter_name }} {
         )
     }
 
-    internal fun write(v: {{ rec.name()|class_name_kt }}, buf: RustBufferBuilder) {
+    override fun write(v: {{ rec.name()|class_name_kt }}, bufferWrite: BufferWriteFunc) {
         {%- for field in rec.fields() %}
-            {{ field.type_()|ffi_converter_name }}.write(v.{{ field.name()|var_name_kt }}, buf)
+            {{ field.type_()|ffi_converter_name }}.write(v.{{ field.name()|var_name_kt }}, bufferWrite)
         {% endfor %}
     }
-
-    {% call kt::lift_and_lower_from_read_and_write(rec.type_()) %}
 }

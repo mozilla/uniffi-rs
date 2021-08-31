@@ -281,7 +281,10 @@ impl<'ci> ComponentInterface {
                 // so we declare all these compound types as containing unsigned types.
                 // The need for this annotation is going away soon as unsigned types
                 // stabilize in Kotlin.
-                Type::Optional(_) | Type::Sequence(_) | Type::Map(_)
+                Type::Optional(_) | Type::Sequence(_) | Type::Map(_) |
+                // There's currently no way of knowing if an external type is unsigned or not, so
+                // declare this unsigned just in case.
+                Type::External { .. }
             )
         })
     }
@@ -1015,5 +1018,29 @@ mod test {
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
         assert!(ci.item_contains_unsigned_types(&Type::Object("TestObj".into())));
+    }
+
+    #[test]
+    fn test_wrapped_types() {
+        const UDL: &str = r#"
+            namespace test{};
+            [Wrapped]
+            typedef u64 Handle;
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert!(ci.item_contains_unsigned_types(&ci.get_type("Handle").unwrap()));
+    }
+
+    #[test]
+    fn test_external_types() {
+        // We currently have no way of knowing if external types are unsigned or not, so let's flag
+        // them that way just to be sure.
+        const UDL: &str = r#"
+            namespace test{};
+            [External="some-other-module"]
+            typedef extern Handle;
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert!(ci.item_contains_unsigned_types(&ci.get_type("Handle").unwrap()));
     }
 }

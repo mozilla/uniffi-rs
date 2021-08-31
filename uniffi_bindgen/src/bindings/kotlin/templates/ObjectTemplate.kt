@@ -67,21 +67,21 @@ class {{ obj.name()|class_name_kt }}(
 {% let type_ = obj.type_() %}
 
 {% call kt::unsigned_types_annotation(self) %}
-object {{ type_|ffi_converter_name }} {
-    internal fun lift(ptr: Pointer) = {{ obj.name()|class_name_kt }}(ptr)
+object {{ type_|ffi_converter_name }}: FFIConverter<{{ obj.name()|class_name_kt }}, Pointer> {
+    override fun lift(v: Pointer) = {{ obj.name()|class_name_kt }}(v)
 
-    internal fun lower(obj: {{ obj.name()|class_name_kt }}): Pointer = obj.pointer
+    override fun lower(v: {{ obj.name()|class_name_kt }}): Pointer = v.pointer
 
-    internal fun read(buf: ByteBuffer): {{ obj.name()|class_name_kt }} {
+    override fun read(buf: ByteBuffer): {{ obj.name()|class_name_kt }} {
         // The Rust code always writes pointers as 8 bytes, and will
         // fail to compile if they don't fit.
         return lift(Pointer(buf.getLong()))
     }
 
-    internal fun write(obj: {{ obj.name()|class_name_kt }}, buf: RustBufferBuilder) {
+    override fun write(v: {{ obj.name()|class_name_kt }}, bufferWrite: BufferWriteFunc) {
         // The Rust code always expects pointers written as 8 bytes,
         // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(lower(obj)))
+        putLong(Pointer.nativeValue(lower(v)), bufferWrite)
     }
 }
 

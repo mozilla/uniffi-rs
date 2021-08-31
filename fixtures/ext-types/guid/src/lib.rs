@@ -14,8 +14,8 @@ pub struct GuidHelper {
     pub maybe_guid: Option<Guid>,
 }
 
-fn get_guid_helper(vals: Option<GuidHelper>) -> GuidHelper {
-    match vals {
+fn get_guid_helper(values: Option<GuidHelper>) -> GuidHelper {
+    match values {
         None => GuidHelper {
             guid: Guid("first-guid".to_string()),
             guids: vec![
@@ -24,15 +24,15 @@ fn get_guid_helper(vals: Option<GuidHelper>) -> GuidHelper {
             ],
             maybe_guid: None,
         },
-        Some(vals) => vals,
+        Some(values) => values,
     }
 }
 
 impl UniffiCustomTypeWrapper for Guid {
     type Wrapped = String;
 
-    fn wrap(val: Self::Wrapped) -> uniffi::Result<Self> {
-        Ok(Guid(val))
+    fn wrap(values: Self::Wrapped) -> uniffi::Result<Self> {
+        Ok(Guid(values))
     }
 
     fn unwrap(obj: Self) -> Self::Wrapped {

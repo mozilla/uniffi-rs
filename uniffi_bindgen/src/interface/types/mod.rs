@@ -287,6 +287,7 @@ impl IterTypes for Type {
     fn iter_types(&self) -> TypeIterator<'_> {
         let nested_types = match self {
             Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => Some(t.iter_types()),
+            Type::Wrapped { prim, .. } => Some(prim.iter_types()),
             _ => None,
         };
         Box::new(std::iter::once(self).chain(nested_types.into_iter().flatten()))

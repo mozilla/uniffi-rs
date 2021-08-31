@@ -17,16 +17,13 @@ enum class {{ enum_class }} {
 }
 
 {% call kt::unsigned_types_annotation(self) %}
-object {{ type_|ffi_converter_name }} {
-    internal fun read(buf: ByteBuffer) = try {
+object {{ type_|ffi_converter_name }}: FFIConverterRustBuffer<{{ enum_class }}> {
+    override fun read(buf: ByteBuffer) = try {
         {{ enum_class }}.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
         throw RuntimeException("invalid enum value, something is very wrong!!", e)
     }
-
-    internal fun write(e: {{ enum_class }}, buf: RustBufferBuilder) = buf.putInt(e.ordinal + 1)
-
-    {% call kt::lift_and_lower_from_read_and_write(type_) %}
+    override fun write(v: {{ enum_class }}, bufferWrite: BufferWriteFunc) = putInt(v.ordinal + 1, bufferWrite)
 }
 
 {% else %}
@@ -64,8 +61,8 @@ sealed class {{ enum_class }}{% if self.contains_object_references() %}: Disposa
 }
 
 {% call kt::unsigned_types_annotation(self) %}
-object {{ type_|ffi_converter_name }} {
-    internal fun read(buf: ByteBuffer): {{ enum_class }} {
+object {{ type_|ffi_converter_name }}: FFIConverterRustBuffer<{{ enum_class }}> {
+    override fun read(buf: ByteBuffer): {{ enum_class }} {
         return when(buf.getInt()) {
             {%- for variant in e.variants() %}
             {{ loop.index }} -> {{ enum_class }}.{{ variant.name()|class_name_kt }}{% if variant.has_fields() %}(
@@ -78,20 +75,18 @@ object {{ type_|ffi_converter_name }} {
         }
     }
 
-    internal fun write(e: {{ enum_class }}, buf: RustBufferBuilder) {
-        when(e) {
+    override fun write(v: {{ enum_class }}, bufferWrite: BufferWriteFunc) {
+        when(v) {
             {%- for variant in e.variants() %}
             is {{ enum_class }}.{{ variant.name()|class_name_kt }} -> {
-                buf.putInt({{ loop.index }})
+                putInt({{ loop.index }}, bufferWrite)
                 {% for field in variant.fields() -%}
-                {{ field.type_()|ffi_converter_name }}.write(e.{{ field.name()|var_name_kt }}, buf)
+                {{ field.type_()|ffi_converter_name }}.write(v.{{ field.name()|var_name_kt }}, bufferWrite)
                 {% endfor %}
             }
             {%- endfor %}
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
-
-    {% call kt::lift_and_lower_from_read_and_write(type_) %}
 }
 
 {% endif %}

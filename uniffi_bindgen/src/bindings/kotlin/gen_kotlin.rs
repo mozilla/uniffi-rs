@@ -7,7 +7,7 @@ use std::fmt;
 
 use anyhow::Result;
 use askama::Template;
-use heck::{CamelCase, MixedCase, ShoutySnakeCase};
+use heck::{CamelCase, MixedCase, SnakeCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
 use crate::bindings::backend::CodeDeclaration;
@@ -25,6 +25,8 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
+mod external;
+mod wrapped;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
@@ -33,6 +35,8 @@ mod record;
 pub struct Config {
     package_name: Option<String>,
     cdylib_name: Option<String>,
+    // Hack that allows the ext-types tests to work.  We should replace it with a real system.
+    pub extra_sources: Option<Vec<String>>,
 }
 
 impl Config {
@@ -58,6 +62,7 @@ impl From<&ComponentInterface> for Config {
         Config {
             package_name: Some(format!("uniffi.{}", ci.namespace())),
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
+            extra_sources: None,
         }
     }
 }
@@ -67,6 +72,12 @@ impl MergeWith for Config {
         Config {
             package_name: self.package_name.merge_with(&other.package_name),
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
+            extra_sources: match (self.extra_sources.as_ref(), other.extra_sources.as_ref()) {
+                (Some(packages), Some(packages2)) => Some([&packages[..], &packages2[..]].concat()),
+                (Some(packages), None) => Some(packages.clone()),
+                (None, Some(packages2)) => Some(packages2.clone()),
+                (None, None) => None,
+            }
         }
     }
 }
@@ -115,12 +126,33 @@ impl<'a> KotlinWrapper<'a> {
             }),
         )
         .chain(
+            ci.iter_types().iter().filter_map(|t| match t {
+                Type::External { name, crate_name } => Some(
+                    Box::new(external::ExternalDefinition::new(name.clone(), crate_name.clone())) as Box<dyn CodeDeclaration>
+                ),
+                _ => None,
+            })
+        )
+        .chain(
             ci.iter_callback_interface_definitions()
                 .into_iter()
                 .map(|inner| {
                     Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci))
                         as Box<dyn CodeDeclaration>
                 }),
+        )
+        .chain(
+            ci.iter_types().iter().filter_map(|t| match t {
+                Type::Wrapped { name, prim } => Some(
+                    Box::new(wrapped::KotlinWrappedType::new(
+                        t.clone(),
+                        name.clone(),
+                        *prim.clone(),
+                        ci,
+                    )) as Box<dyn CodeDeclaration>
+                ),
+                _ => None,
+            })
         )
         .collect()
     }
@@ -219,8 +251,12 @@ impl KotlinCodeOracle {
                 let inner = *inner.to_owned();
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
-            Type::External { .. } => panic!("no support for external types yet"),
-            Type::Wrapped { .. } => panic!("no support for wrapped types yet"),
+            Type::External { name, .. } => Box::new(
+                external::ExternalCodeType::new(name)
+            ),
+            Type::Wrapped { name, prim } => Box::new(
+                wrapped::WrappedCodeType::new(name, self.create_code_type(*prim))
+            ),
         }
     }
 }
@@ -248,6 +284,11 @@ impl CodeOracle for KotlinCodeOracle {
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &dyn fmt::Display) -> String {
         nm.to_string().to_shouty_snake_case()
+    }
+
+    /// Get the idiomatic Kotlin rendering of a module name
+    fn mod_name(&self, nm: &dyn fmt::Display) -> String {
+        nm.to_string().to_snake_case()
     }
 
     /// Get the idiomatic Kotlin rendering of an exception name
@@ -282,7 +323,7 @@ impl CodeOracle for KotlinCodeOracle {
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FFIType::ForeignCallback => "ForeignCallback".to_string(),
-            FFIType::ExternalRustBuffer { .. } => panic!("no support for ExternalRustBuffer yet"),
+            FFIType::ExternalRustBuffer { crate_name } => format!("RustBuffer{}.ByValue", crate_name.to_camel_case()),
         }
     }
 }

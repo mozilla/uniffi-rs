@@ -8,6 +8,6 @@ dictionary GuidHelper {
 };
 
 namespace ext_types_guid {
-    Guid get_guid(optional Guid? val);
-    GuidHelper get_guid_helper(optional GuidHelper? vals);
+    Guid get_guid(optional Guid? value);
+    GuidHelper get_guid_helper(optional GuidHelper? values);
 };

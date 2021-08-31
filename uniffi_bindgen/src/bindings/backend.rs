@@ -31,6 +31,9 @@ pub trait CodeOracle {
     /// Get the idiomatic rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &dyn fmt::Display) -> String;
 
+    /// Get the idiomatic rendering of a module
+    fn mod_name(&self, nm: &dyn fmt::Display) -> String;
+
     /// Get the idiomatic rendering of an exception name
     ///
     /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
