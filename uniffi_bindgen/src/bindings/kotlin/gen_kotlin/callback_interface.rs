@@ -102,7 +102,7 @@ impl CodeDeclaration for KotlinCallbackInterface {
         Some(self.render().unwrap())
     }
 
-    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
+    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         Some(
             vec![
                 "java.util.concurrent.locks.ReentrantLock",

@@ -8,6 +8,7 @@ use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Object};
 use askama::Template;
 
+// Filters is used by ObjectTemplate.kt, which looks for the filters module here.
 use super::filters;
 pub struct ObjectCodeType {
     id: String,
@@ -88,7 +89,7 @@ impl CodeDeclaration for KotlinObject {
         Some(self.render().unwrap())
     }
 
-    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
+    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         Some(
             vec![
                 "java.util.concurrent.atomic.AtomicLong",

@@ -152,13 +152,13 @@ impl<'a> KotlinWrapper<'a> {
         let mut imports: Vec<String> = self
             .members()
             .into_iter()
-            .filter_map(|member| member.import_code(oracle))
+            .filter_map(|member| member.imports(oracle))
             .flatten()
             .chain(
                 self.ci
                     .iter_types()
                     .into_iter()
-                    .filter_map(|type_| oracle.find(&type_).import_code(oracle))
+                    .filter_map(|type_| oracle.find(&type_).imports(oracle))
                     .flatten(),
             )
             .collect::<HashSet<String>>()

@@ -31,11 +31,7 @@ pub trait CodeOracle {
     /// Get the idiomatic rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &dyn fmt::Display) -> String;
 
-    /// Get the idiomatic rendering of an exception name
-    ///
-    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
-    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
-    /// and is distinguished from an "Exception".
+    /// Get the idiomatic rendering of an error name.
     fn error_name(&self, nm: &dyn fmt::Display) -> String;
 
     fn ffi_type_label(&self, ffi_type: &FFIType) -> String;
@@ -109,7 +105,7 @@ pub trait CodeType {
 
     /// A list of imports that are needed if this type is in use.
     /// Classes are imported exactly once.
-    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
+    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         None
     }
 }
@@ -123,7 +119,7 @@ pub trait CodeType {
 pub trait CodeDeclaration {
     /// A list of imports that are needed if this type is in use.
     /// Classes are imported exactly once.
-    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
+    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         None
     }
 
