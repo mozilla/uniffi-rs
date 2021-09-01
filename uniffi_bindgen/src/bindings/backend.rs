@@ -2,6 +2,34 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+//! # Backend traits
+//!
+//! This module provides a number of traits useful for implementing a backend for Uniffi.
+//!
+//! A `CodeType` is needed for each type that will cross the FFI. It should provide helper machinery
+//! in the target language to lift from and lower into a value of that type into a primitive type
+//! (the FFIType), and foreign language expressions that call into the machinery. This helper code
+//! can be provided by a template file.
+//!
+//! A `CodeDeclaration` is needed for each type that is declared in the UDL file. This has access to
+//! the [ComponentInterface], which is the closest thing to an Intermediate Representation.
+//!
+//! `CodeDeclaration`s provide the target language's version of the UDL type, including forwarding method calls
+//! into Rust. It is likely if you're implementing a `CodeDeclaration` for this purpose, it will also need to cross
+//! the FFI, and you'll also need a `CodeType`.
+//!
+//! `CodeDeclaration`s can also be used to conditionally include code: e.g. only include the CallbackInterfaceRuntime
+//! if the user has used at least one callback interface.
+//!
+//! Each backend has a wrapper template for each file it needs to generate. This should collect the `CodeDeclaration`s that
+//! the backend and `ComponentInterface` between them specify and use them to stitch together a file in the target language.
+//!
+//! The `CodeOracle` provides methods to map the `Type` values found in the `ComponentInterface` to the `CodeType`s specified
+//! by the backend. It also provides methods for transforming identifiers into the coding standard for the target language.
+//!
+//! Each backend will have its own `filter` module, which is used by the askama templates used in all `CodeType`s and `CodeDeclaration`s.
+//! This filter provides methods to generate expressions and identifiers in the target language. These are all forwarded to the oracle.
+
 use crate::interface::*;
 use std::fmt;
 
