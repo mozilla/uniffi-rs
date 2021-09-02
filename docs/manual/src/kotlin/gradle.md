@@ -43,6 +43,11 @@ allprojects {
 }
 ```
 
+> ## Update
+>
+> As of [PR #993](https://github.com/mozilla/uniffi-rs/pull/993), the Kotlin backend was refactored, and it became harder to support the
+> `@ExperimentalUnsignedTypes` annotation. Uniffi's Android customers are rapidly moving toward Kotlin 1.5, so adding this compiler arg is no longer necessary.
+
 ## JNA dependency
 
 UniFFI relies on [JNA] for the ability to call native methods.

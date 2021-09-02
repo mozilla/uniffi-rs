@@ -106,9 +106,6 @@ pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
     let mut cmd = Command::new("kotlinc");
     // Make sure it can load the .jar and its dependencies.
     cmd.arg("-classpath").arg(classpath);
-    // Code that wants to use an API with unsigned types, must opt in to this experimental Kotlin feature.
-    // Specify it here in order to not have to worry about that when writing tests.
-    cmd.arg("-Xopt-in=kotlin.ExperimentalUnsignedTypes");
     // Enable runtime assertions, for easy testing etc.
     cmd.arg("-J-ea");
     // Our test scripts should not produce any warnings.

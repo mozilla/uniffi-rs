@@ -21,5 +21,6 @@ anyhow = "1"
 askama = { version = "0.10", default-features = false, features = ["config"] }
 heck = "0.3"
 clap = { version = "2", default-features = false }
+paste = "1.0"
 serde = "1"
 toml = "0.5"
