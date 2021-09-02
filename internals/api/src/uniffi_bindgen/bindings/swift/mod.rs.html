@@ -355,7 +355,7 @@
     <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">BridgingHeader</span>::<span class="ident">new</span>(<span class="ident">config</span>, <span class="ident">ci</span>)
         .<span class="ident">render</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow</span><span class="macro">!</span>(<span class="string">&quot;failed to render Swift bridging header&quot;</span>))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">library</span> <span class="op">=</span> <span class="ident">SwiftWrapper</span>::<span class="ident">new</span>(<span class="ident">config</span>, <span class="ident">ci</span>)
+    <span class="kw">let</span> <span class="ident">library</span> <span class="op">=</span> <span class="ident">SwiftWrapper</span>::<span class="ident">new</span>(<span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
         .<span class="ident">render</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow</span><span class="macro">!</span>(<span class="string">&quot;failed to render Swift library&quot;</span>))<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">modulemap</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">generate_module_map</span>() {
