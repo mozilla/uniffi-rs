@@ -124,9 +124,6 @@
 <span id="121">121</span>
 <span id="122">122</span>
 <span id="123">123</span>
-<span id="124">124</span>
-<span id="125">125</span>
-<span id="126">126</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -236,9 +233,6 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmd</span> <span class="op">=</span> <span class="ident">Command</span>::<span class="ident">new</span>(<span class="string">&quot;kotlinc&quot;</span>);
     <span class="comment">// Make sure it can load the .jar and its dependencies.</span>
     <span class="ident">cmd</span>.<span class="ident">arg</span>(<span class="string">&quot;-classpath&quot;</span>).<span class="ident">arg</span>(<span class="ident">classpath</span>);
-    <span class="comment">// Code that wants to use an API with unsigned types, must opt in to this experimental Kotlin feature.</span>
-    <span class="comment">// Specify it here in order to not have to worry about that when writing tests.</span>
-    <span class="ident">cmd</span>.<span class="ident">arg</span>(<span class="string">&quot;-Xopt-in=kotlin.ExperimentalUnsignedTypes&quot;</span>);
     <span class="comment">// Enable runtime assertions, for easy testing etc.</span>
     <span class="ident">cmd</span>.<span class="ident">arg</span>(<span class="string">&quot;-J-ea&quot;</span>);
     <span class="comment">// Our test scripts should not produce any warnings.</span>

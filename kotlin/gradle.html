@@ -193,6 +193,11 @@ but currently misses some places, see <a href="https://github.com/mozilla/uniffi
     }
 }
 </code></pre>
+<blockquote>
+<h2><a class="header" href="#update" id="update">Update</a></h2>
+<p>As of <a href="https://github.com/mozilla/uniffi-rs/pull/993">PR #993</a>, the Kotlin backend was refactored, and it became harder to support the
+<code>@ExperimentalUnsignedTypes</code> annotation. Uniffi's Android customers are rapidly moving toward Kotlin 1.5, so adding this compiler arg is no longer necessary.</p>
+</blockquote>
 <h2><a class="header" href="#jna-dependency" id="jna-dependency">JNA dependency</a></h2>
 <p>UniFFI relies on <a href="https://github.com/java-native-access/jna">JNA</a> for the ability to call native methods.
 JNA 5.7 or greater is required.</p>

@@ -301,18 +301,103 @@
 <span id="298">298</span>
 <span id="299">299</span>
 <span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashSet</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::<span class="prelude-ty">Result</span>;
 <span class="kw">use</span> <span class="ident">askama</span>::<span class="ident">Template</span>;
 <span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">CamelCase</span>, <span class="ident">MixedCase</span>, <span class="ident">ShoutySnakeCase</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">bindings</span>::<span class="ident">backend</span>::<span class="ident">CodeDeclaration</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">interface</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">MergeWith</span>;
+
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">bindings</span>::<span class="ident">backend</span>::{<span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">TypeIdentifier</span>};
+
+<span class="kw">mod</span> <span class="ident">callback_interface</span>;
+<span class="kw">mod</span> <span class="ident">compounds</span>;
+<span class="kw">mod</span> <span class="ident">enum_</span>;
+<span class="kw">mod</span> <span class="ident">error</span>;
+<span class="kw">mod</span> <span class="ident">function</span>;
+<span class="kw">mod</span> <span class="ident">miscellany</span>;
+<span class="kw">mod</span> <span class="ident">object</span>;
+<span class="kw">mod</span> <span class="ident">primitives</span>;
+<span class="kw">mod</span> <span class="ident">record</span>;
 
 <span class="comment">// Some config options for it the caller wants to customize the generated Kotlin.</span>
 <span class="comment">// Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,</span>
@@ -364,52 +449,199 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KotlinWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">config</span>: <span class="ident">Config</span>,
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>,
+    <span class="ident">oracle</span>: <span class="ident">KotlinCodeOracle</span>,
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">KotlinWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">config</span>, <span class="ident">ci</span> }
+        <span class="self">Self</span> {
+            <span class="ident">config</span>,
+            <span class="ident">ci</span>,
+            <span class="ident">oracle</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
+        }
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">members</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ci</span>;
+        <span class="macro">vec</span><span class="macro">!</span>[
+            <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">object</span>::<span class="ident">KotlinObjectRuntime</span>::<span class="ident">new</span>(<span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>,
+            <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">callback_interface</span>::<span class="ident">KotlinCallbackInterfaceRuntime</span>::<span class="ident">new</span>(<span class="ident">ci</span>))
+                <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>,
+        ]
+        .<span class="ident">into_iter</span>()
+        .<span class="ident">chain</span>(
+            <span class="ident">ci</span>.<span class="ident">iter_enum_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+                <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">enum_</span>::<span class="ident">KotlinEnum</span>::<span class="ident">new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+            }),
+        )
+        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_function_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+            <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">function</span>::<span class="ident">KotlinFunction</span>::<span class="ident">new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+        }))
+        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_object_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+            <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">object</span>::<span class="ident">KotlinObject</span>::<span class="ident">new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+        }))
+        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_record_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+            <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">record</span>::<span class="ident">KotlinRecord</span>::<span class="ident">new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+        }))
+        .<span class="ident">chain</span>(
+            <span class="ident">ci</span>.<span class="ident">iter_error_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+                <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">error</span>::<span class="ident">KotlinError</span>::<span class="ident">new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+            }),
+        )
+        .<span class="ident">chain</span>(
+            <span class="ident">ci</span>.<span class="ident">iter_callback_interface_definitions</span>()
+                .<span class="ident">into_iter</span>()
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+                    <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">callback_interface</span>::<span class="ident">KotlinCallbackInterface</span>::<span class="ident">new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>))
+                        <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+                }),
+        )
+        .<span class="ident">collect</span>()
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialization_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">oracle</span>;
+        <span class="self">self</span>.<span class="ident">members</span>()
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">member</span><span class="op">|</span> <span class="ident">member</span>.<span class="ident">initialization_code</span>(<span class="ident">oracle</span>))
+            .<span class="ident">collect</span>()
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">declaration_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">oracle</span>;
+        <span class="self">self</span>.<span class="ident">members</span>()
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">member</span><span class="op">|</span> <span class="ident">member</span>.<span class="ident">definition_code</span>(<span class="ident">oracle</span>))
+            .<span class="ident">chain</span>(
+                <span class="self">self</span>.<span class="ident">ci</span>
+                    .<span class="ident">iter_types</span>()
+                    .<span class="ident">into_iter</span>()
+                    .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">type_</span><span class="op">|</span> <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>).<span class="ident">helper_code</span>(<span class="ident">oracle</span>)),
+            )
+            .<span class="ident">collect</span>()
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">imports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">oracle</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">imports</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">members</span>()
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">member</span><span class="op">|</span> <span class="ident">member</span>.<span class="ident">imports</span>(<span class="ident">oracle</span>))
+            .<span class="ident">flatten</span>()
+            .<span class="ident">chain</span>(
+                <span class="self">self</span>.<span class="ident">ci</span>
+                    .<span class="ident">iter_types</span>()
+                    .<span class="ident">into_iter</span>()
+                    .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">type_</span><span class="op">|</span> <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>).<span class="ident">imports</span>(<span class="ident">oracle</span>))
+                    .<span class="ident">flatten</span>(),
+            )
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">collect</span>();
+
+        <span class="ident">imports</span>.<span class="ident">sort</span>();
+        <span class="ident">imports</span>
     }
 }
 
-<span class="kw">mod</span> <span class="ident">filters</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KotlinCodeOracle</span>;
 
-    <span class="doccomment">/// Get the Kotlin syntax for representing a given api-level `Type`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_kt</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="comment">// These native Kotlin types map nicely to the FFI without conversion.</span>
-            <span class="ident">Type</span>::<span class="ident">UInt8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UByte&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">UInt16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UShort&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">UInt32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UInt&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ULong&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Int8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Byte&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Int16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Short&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Int32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Int&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Long&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Float&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Double&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="comment">// These types need conversion, and special handling for lifting/lowering.</span>
-            <span class="ident">Type</span>::<span class="ident">Boolean</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Boolean&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;String&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;java.time.Instant&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;java.time.Duration&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">name</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">name</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">name</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">name</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">class_name_kt</span>(<span class="ident">name</span>)<span class="question-mark">?</span>,
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}?&quot;</span>, <span class="ident">type_kt</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;List&lt;{}&gt;&quot;</span>, <span class="ident">type_kt</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Map&lt;String, {}&gt;&quot;</span>, <span class="ident">type_kt</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
+<span class="kw">impl</span> <span class="ident">KotlinCodeOracle</span> {
+    <span class="kw">fn</span> <span class="ident">create_code_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="ident">TypeIdentifier</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
+        <span class="comment">// I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}</span>
+        <span class="comment">// However, there&#39;s some violence and gore I need to do to (temporarily) make the oracle usable from filters.</span>
+
+        <span class="comment">// Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &amp;dyn CodeOracle</span>
+        <span class="kw">match</span> <span class="ident">type_</span> {
+            <span class="ident">Type</span>::<span class="ident">UInt8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">UInt8CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">Int8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">Int8CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">UInt16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">UInt16CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">Int16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">Int16CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">UInt32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">UInt32CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">Int32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">Int32CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">UInt64CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">Int64CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">Float32CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">Float64CodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">Boolean</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">BooleanCodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">primitives</span>::<span class="ident">StringCodeType</span>),
+
+            <span class="ident">Type</span>::<span class="ident">Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">miscellany</span>::<span class="ident">TimestampCodeType</span>),
+            <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">miscellany</span>::<span class="ident">DurationCodeType</span>),
+
+            <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">enum_</span>::<span class="ident">EnumCodeType</span>::<span class="ident">new</span>(<span class="ident">id</span>)),
+            <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">object</span>::<span class="ident">ObjectCodeType</span>::<span class="ident">new</span>(<span class="ident">id</span>)),
+            <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">record</span>::<span class="ident">RecordCodeType</span>::<span class="ident">new</span>(<span class="ident">id</span>)),
+            <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">error</span>::<span class="ident">ErrorCodeType</span>::<span class="ident">new</span>(<span class="ident">id</span>)),
+            <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">callback_interface</span>::<span class="ident">CallbackInterfaceCodeType</span>::<span class="ident">new</span>(<span class="ident">id</span>))
+            }
+
+            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
+                <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
+                <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">compounds</span>::<span class="ident">OptionalCodeType</span>::<span class="ident">new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
+            }
+            <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
+                <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
+                <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">compounds</span>::<span class="ident">SequenceCodeType</span>::<span class="ident">new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
+            }
+            <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
+                <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
+                <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">compounds</span>::<span class="ident">MapCodeType</span>::<span class="ident">new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
+            }
             <span class="ident">Type</span>::<span class="ident">External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;no support for external types yet&quot;</span>),
             <span class="ident">Type</span>::<span class="ident">Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;no support for wrapped types yet&quot;</span>),
-        })
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">CodeOracle</span> <span class="kw">for</span> <span class="ident">KotlinCodeOracle</span> {
+    <span class="kw">fn</span> <span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">TypeIdentifier</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">create_code_type</span>(<span class="ident">type_</span>.<span class="ident">clone</span>())
     }
 
-    <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FFIType`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).</span>
+    <span class="kw">fn</span> <span class="ident">class_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_camel_case</span>()
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.</span>
+    <span class="kw">fn</span> <span class="ident">fn_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>()
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a variable name.</span>
+    <span class="kw">fn</span> <span class="ident">var_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>()
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an individual enum variant.</span>
+    <span class="kw">fn</span> <span class="ident">enum_variant_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_shouty_snake_case</span>()
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an exception name</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.  Rust code typically uses</span>
+    <span class="doccomment">/// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error</span>
+    <span class="doccomment">/// and is distinguished from an &quot;Exception&quot;.</span>
+    <span class="kw">fn</span> <span class="ident">error_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">nm</span>.<span class="ident">to_string</span>();
+        <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">strip_suffix</span>(<span class="string">&quot;Error&quot;</span>) {
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">stripped</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kt_exc_name</span> <span class="op">=</span> <span class="ident">stripped</span>.<span class="ident">to_owned</span>();
+                <span class="ident">kt_exc_name</span>.<span class="ident">push_str</span>(<span class="string">&quot;Exception&quot;</span>);
+                <span class="ident">kt_exc_name</span>
+            }
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="kw">match</span> <span class="ident">ffi_type</span> {
             <span class="comment">// Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not</span>
             <span class="comment">// support them yet. Thus, we use the signed variants to represent both signed and unsigned</span>
             <span class="comment">// types from the component API.</span>
@@ -423,70 +655,80 @@
             <span class="ident">FFIType</span>::<span class="ident">RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer.ByValue&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType</span>::<span class="ident">ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignCallback&quot;</span>.<span class="ident">to_string</span>(),
-        })
+        }
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">filters</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+
+    <span class="kw">fn</span> <span class="ident">oracle</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">CodeOracle</span> {
+        <span class="ident">KotlinCodeOracle</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">literal_kt</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">fn</span> <span class="ident">typed_number</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>, <span class="ident">num_str</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-            <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-                <span class="comment">// Bytes, Shorts and Ints can all be inferred from the type.</span>
-                <span class="ident">Type</span>::<span class="ident">Int8</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int16</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">num_str</span>,
-                <span class="ident">Type</span>::<span class="ident">Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}L&quot;</span>, <span class="ident">num_str</span>),
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_kt</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">type_</span>).<span class="ident">type_label</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>))
+    }
 
-                <span class="ident">Type</span>::<span class="ident">UInt8</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt16</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}u&quot;</span>, <span class="ident">num_str</span>),
-                <span class="ident">Type</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}uL&quot;</span>, <span class="ident">num_str</span>),
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">type_</span>).<span class="ident">canonical_name</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>))
+    }
 
-                <span class="ident">Type</span>::<span class="ident">Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}f&quot;</span>, <span class="ident">num_str</span>),
-                <span class="ident">Type</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">num_str</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Unexpected literal: {} is not a number&quot;</span>, <span class="ident">num_str</span>),
-            })
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">type_</span>).<span class="ident">lower</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">nm</span>))
+    }
 
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">literal</span> {
-            <span class="ident">Literal</span>::<span class="ident">Boolean</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">v</span>),
-            <span class="ident">Literal</span>::<span class="ident">String</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;\&quot;{}\&quot;&quot;</span>, <span class="ident">s</span>),
-            <span class="ident">Literal</span>::<span class="ident">Null</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;null&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Literal</span>::<span class="ident">EmptySequence</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;listOf()&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Literal</span>::<span class="ident">EmptyMap</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;mapOf&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Literal</span>::<span class="ident">Enum</span>(<span class="ident">v</span>, <span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.{}&quot;</span>, <span class="ident">type_kt</span>(<span class="ident">type_</span>)<span class="question-mark">?</span>, <span class="ident">enum_variant_kt</span>(<span class="ident">v</span>)<span class="question-mark">?</span>),
-            <span class="ident">Literal</span>::<span class="ident">Int</span>(<span class="ident">i</span>, <span class="ident">radix</span>, <span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">typed_number</span>(
-                <span class="ident">type_</span>,
-                <span class="kw">match</span> <span class="ident">radix</span> {
-                    <span class="ident">Radix</span>::<span class="ident">Octal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
-                    <span class="ident">Radix</span>::<span class="ident">Decimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>),
-                    <span class="ident">Radix</span>::<span class="ident">Hexadecimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
-                },
-            )<span class="question-mark">?</span>,
-            <span class="ident">Literal</span>::<span class="ident">UInt</span>(<span class="ident">i</span>, <span class="ident">radix</span>, <span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">typed_number</span>(
-                <span class="ident">type_</span>,
-                <span class="kw">match</span> <span class="ident">radix</span> {
-                    <span class="ident">Radix</span>::<span class="ident">Octal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
-                    <span class="ident">Radix</span>::<span class="ident">Decimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>),
-                    <span class="ident">Radix</span>::<span class="ident">Hexadecimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
-                },
-            )<span class="question-mark">?</span>,
-            <span class="ident">Literal</span>::<span class="ident">Float</span>(<span class="ident">string</span>, <span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">typed_number</span>(<span class="ident">type_</span>, <span class="ident">string</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>,
-        })
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_kt</span>(
+        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>,
+        <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>,
+        <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">type_</span>).<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">nm</span>, <span class="ident">target</span>))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">type_</span>).<span class="ident">lift</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">nm</span>))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">literal_kt</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">type_</span>).<span class="ident">literal</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">literal</span>))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">type_</span>).<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">nm</span>))
+    }
+
+    <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FFIType`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">ffi_type_label</span>(<span class="ident">type_</span>))
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">class_name_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_camel_case</span>())
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">class_name</span>(<span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fn_name_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>())
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">fn_name</span>(<span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a variable name.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">var_name_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>())
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">var_name</span>(<span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of an individual enum variant.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_variant_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_shouty_snake_case</span>())
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">enum_variant_name</span>(<span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of an exception name</span>
@@ -495,111 +737,7 @@
     <span class="doccomment">/// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error</span>
     <span class="doccomment">/// and is distinguished from an &quot;Exception&quot;.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exception_name_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">nm</span>.<span class="ident">to_string</span>();
-        <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">strip_suffix</span>(<span class="string">&quot;Error&quot;</span>) {
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">name</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">stripped</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kt_exc_name</span> <span class="op">=</span> <span class="ident">stripped</span>.<span class="ident">to_owned</span>();
-                <span class="ident">kt_exc_name</span>.<span class="ident">push_str</span>(<span class="string">&quot;Exception&quot;</span>);
-                <span class="prelude-val">Ok</span>(<span class="ident">kt_exc_name</span>)
-            }
-        }
-    }
-
-    <span class="doccomment">/// Get a Kotlin expression for lowering a value into something we can pass over the FFI.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Where possible, this delegates to a `lower()` method on the type itself, but special</span>
-    <span class="doccomment">/// handling is required for some compound data types.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">nm</span> <span class="op">=</span> <span class="ident">var_name_kt</span>(<span class="ident">nm</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(
-                <span class="string">&quot;{}Internals.lower({})&quot;</span>,
-                <span class="ident">class_name_kt</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>,
-                <span class="ident">nm</span>,
-            ),
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Timestamp</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;lower{}({})&quot;</span>, <span class="ident">class_name_kt</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>, <span class="ident">nm</span>,)
-            }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.lower()&quot;</span>, <span class="ident">nm</span>),
-        })
-    }
-
-    <span class="doccomment">/// Get a Kotlin expression for writing a value into a byte buffer.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Where possible, this delegates to a `write()` method on the type itself, but special</span>
-    <span class="doccomment">/// handling is required for some compound data types.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_kt</span>(
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>,
-        <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>,
-        <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">nm</span> <span class="op">=</span> <span class="ident">var_name_kt</span>(<span class="ident">nm</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(
-                <span class="string">&quot;{}Internals.write({}, {})&quot;</span>,
-                <span class="ident">class_name_kt</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>,
-                <span class="ident">nm</span>,
-                <span class="ident">target</span>,
-            ),
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Timestamp</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(
-                <span class="string">&quot;write{}({}, {})&quot;</span>,
-                <span class="ident">class_name_kt</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>,
-                <span class="ident">nm</span>,
-                <span class="ident">target</span>,
-            ),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.write({})&quot;</span>, <span class="ident">nm</span>, <span class="ident">target</span>),
-        })
-    }
-
-    <span class="doccomment">/// Get a Kotlin expression for lifting a value from something we received over the FFI.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Where possible, this delegates to a `lift()` method on the type itself, but special</span>
-    <span class="doccomment">/// handling is required for some compound data types.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">nm</span> <span class="op">=</span> <span class="ident">nm</span>.<span class="ident">to_string</span>();
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(
-                <span class="string">&quot;{}Internals.lift({})&quot;</span>,
-                <span class="ident">class_name_kt</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>,
-                <span class="ident">nm</span>,
-            ),
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Timestamp</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;lift{}({})&quot;</span>, <span class="ident">class_name_kt</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>, <span class="ident">nm</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.lift({})&quot;</span>, <span class="ident">type_kt</span>(<span class="ident">type_</span>)<span class="question-mark">?</span>, <span class="ident">nm</span>),
-        })
-    }
-
-    <span class="doccomment">/// Get a Kotlin expression for reading a value from a byte buffer.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Where possible, this delegates to a `read()` method on the type itself, but special</span>
-    <span class="doccomment">/// handling is required for some compound data types.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_kt</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">nm</span> <span class="op">=</span> <span class="ident">nm</span>.<span class="ident">to_string</span>();
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(
-                <span class="string">&quot;{}Internals.read({})&quot;</span>,
-                <span class="ident">class_name_kt</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>,
-                <span class="ident">nm</span>,
-            ),
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Timestamp</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;read{}({})&quot;</span>, <span class="ident">class_name_kt</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>, <span class="ident">nm</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.read({})&quot;</span>, <span class="ident">type_kt</span>(<span class="ident">type_</span>)<span class="question-mark">?</span>, <span class="ident">nm</span>),
-        })
+        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">error_name</span>(<span class="ident">nm</span>))
     }
 }
 </pre></div>

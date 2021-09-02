@@ -179,6 +179,10 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -254,6 +258,10 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_init_callback</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">FFIFunction</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ffi_init_callback</span>
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_ffi_function_definitions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FFIFunction</span><span class="op">&gt;</span> {
+        <span class="macro">vec</span><span class="macro">!</span>[<span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">clone</span>()]
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">derive_ffi_funcs</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ci_prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
