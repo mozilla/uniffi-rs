@@ -46,7 +46,7 @@
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name_swift }}: {{ arg.type_()|type_swift -}}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_swift }}
+        {%- when Some with(literal) %} = {{ literal|literal_swift(arg.type_()) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
@@ -61,7 +61,7 @@
     {%- for field in item.fields() -%}
         {{ field.name()|var_name_swift }}: {{ field.type_()|type_swift -}}
         {%- match field.default_value() %}
-            {%- when Some with(literal) %} = {{ literal|literal_swift }}
+            {%- when Some with(literal) %} = {{ literal|literal_swift(field.type_()) }}
             {%- else %}
         {%- endmatch -%}
         {% if !loop.last %}, {% endif %}

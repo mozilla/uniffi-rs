@@ -1,6 +1,8 @@
 
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+{% import "macros.swift" as swift %}
+{%- let e = self.inner() %}
 public enum {{ e.name()|class_name_swift }} {
     {% for variant in e.variants() %}
     case {{ variant.name()|enum_variant_swift }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
@@ -40,6 +42,6 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
     }
 }
 
-{% if ! ci.item_contains_object_references(e) %}
+{% if ! self.contains_object_references() %}
 extension {{ e.name()|class_name_swift }}: Equatable, Hashable {}
 {% endif %}

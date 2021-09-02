@@ -114,7 +114,7 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bin
     let header = BridgingHeader::new(config, ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
-    let library = SwiftWrapper::new(config, ci)
+    let library = SwiftWrapper::new(config.clone(), ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift library"))?;
     let modulemap = if config.generate_module_map() {
