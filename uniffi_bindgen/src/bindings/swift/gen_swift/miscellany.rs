@@ -46,7 +46,7 @@ macro_rules! impl_code_type_for_miscellany {
                      Some(self.render().unwrap())
                  }
 
-                 fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
+                 fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
                     let imports: Vec<&str> = $imports;
                     if (!imports.is_empty()) {
                         Some(

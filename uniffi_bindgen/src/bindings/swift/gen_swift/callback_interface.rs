@@ -87,7 +87,7 @@ impl CodeDeclaration for SwiftCallbackInterface {
         Some(self.render().unwrap())
     }
 
-    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
+    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         None
     }
 }
