@@ -244,22 +244,18 @@ impl_code_type_for_primitive!(
     UInt8CodeType,
     "UByte",
     r#"
-    @ExperimentalUnsignedTypes
     internal fun UByte.Companion.lift(v: Byte): UByte {
         return v.toUByte()
     }
 
-    @ExperimentalUnsignedTypes
     internal fun UByte.Companion.read(buf: ByteBuffer): UByte {
         return UByte.lift(buf.get())
     }
 
-    @ExperimentalUnsignedTypes
     internal fun UByte.lower(): Byte {
         return this.toByte()
     }
 
-    @ExperimentalUnsignedTypes
     internal fun UByte.write(buf: RustBufferBuilder) {
         buf.putByte(this.toByte())
     }
@@ -270,22 +266,18 @@ impl_code_type_for_primitive!(
     UInt16CodeType,
     "UShort",
     r#"
-    @ExperimentalUnsignedTypes
     internal fun UShort.Companion.lift(v: Short): UShort {
         return v.toUShort()
     }
 
-    @ExperimentalUnsignedTypes
     internal fun UShort.Companion.read(buf: ByteBuffer): UShort {
         return UShort.lift(buf.getShort())
     }
 
-    @ExperimentalUnsignedTypes
     internal fun UShort.lower(): Short {
         return this.toShort()
     }
 
-    @ExperimentalUnsignedTypes
     internal fun UShort.write(buf: RustBufferBuilder) {
         buf.putShort(this.toShort())
     }
@@ -296,22 +288,18 @@ impl_code_type_for_primitive!(
     UInt32CodeType,
     "UInt",
     r#"
-    @ExperimentalUnsignedTypes
     internal fun UInt.Companion.lift(v: Int): UInt {
         return v.toUInt()
     }
 
-    @ExperimentalUnsignedTypes
     internal fun UInt.Companion.read(buf: ByteBuffer): UInt {
         return UInt.lift(buf.getInt())
     }
 
-    @ExperimentalUnsignedTypes
     internal fun UInt.lower(): Int {
         return this.toInt()
     }
 
-    @ExperimentalUnsignedTypes
     internal fun UInt.write(buf: RustBufferBuilder) {
         buf.putInt(this.toInt())
     }
@@ -322,22 +310,18 @@ impl_code_type_for_primitive!(
     UInt64CodeType,
     "ULong",
     r#"
-    @ExperimentalUnsignedTypes
     internal fun ULong.Companion.lift(v: Long): ULong {
         return v.toULong()
     }
 
-    @ExperimentalUnsignedTypes
     internal fun ULong.Companion.read(buf: ByteBuffer): ULong {
         return ULong.lift(buf.getLong())
     }
 
-    @ExperimentalUnsignedTypes
     internal fun ULong.lower(): Long {
         return this.toLong()
     }
 
-    @ExperimentalUnsignedTypes
     internal fun ULong.write(buf: RustBufferBuilder) {
         buf.putLong(this.toLong())
     }

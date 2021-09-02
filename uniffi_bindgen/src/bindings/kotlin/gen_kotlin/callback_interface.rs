@@ -74,21 +74,14 @@ impl CodeType for CallbackInterfaceCodeType {
 #[template(syntax = "kt", escape = "none", path = "CallbackInterfaceTemplate.kt")]
 pub struct KotlinCallbackInterface {
     inner: CallbackInterface,
-    contains_unsigned_types: bool,
 }
 
 impl KotlinCallbackInterface {
-    pub fn new(inner: CallbackInterface, ci: &ComponentInterface) -> Self {
-        Self {
-            contains_unsigned_types: ci.item_contains_unsigned_types(&inner),
-            inner,
-        }
+    pub fn new(inner: CallbackInterface, _ci: &ComponentInterface) -> Self {
+        Self { inner }
     }
     pub fn inner(&self) -> &CallbackInterface {
         &self.inner
-    }
-    pub fn contains_unsigned_types(&self) -> bool {
-        self.contains_unsigned_types
     }
 }
 

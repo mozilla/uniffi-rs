@@ -68,14 +68,6 @@
     uniffi_out_err: RustCallStatus
 {%- endmacro -%}
 
-{#
-// Add annotation if there are unsigned types
-// Works for MemberDeclarations that have declared a contains_unsigned_types() method.
-#}
-{%- macro unsigned_types_annotation(member) -%}
-{% if member.contains_unsigned_types() %}@ExperimentalUnsignedTypes{% endif %}
-{%- endmacro -%}
-
 // Macro for destroying fields
 {%- macro destroy_fields(member) %}
     Disposable.destroy(

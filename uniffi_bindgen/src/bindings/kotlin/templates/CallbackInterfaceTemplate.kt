@@ -17,7 +17,6 @@ public interface {{ type_name }} {
 
 internal class {{ callback_interface_impl }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
-    {% call kt::unsigned_types_annotation(self) %}
     override fun invoke(handle: Long, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue {
         return {{ callback_internals }}.handleMap.callWithResult(handle) { cb ->
             when (method) {
@@ -36,7 +35,6 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
 
     {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt %}
-    {% call kt::unsigned_types_annotation(self) %}
     private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue): RustBuffer.ByValue =
         try {
         {#- Unpacking args from the RustBuffer #}

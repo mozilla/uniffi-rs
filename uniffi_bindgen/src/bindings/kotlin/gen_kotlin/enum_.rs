@@ -73,14 +73,12 @@ impl CodeType for EnumCodeType {
 #[template(syntax = "kt", escape = "none", path = "EnumTemplate.kt")]
 pub struct KotlinEnum {
     inner: Enum,
-    contains_unsigned_types: bool,
     contains_object_references: bool,
 }
 
 impl KotlinEnum {
     pub fn new(inner: Enum, ci: &ComponentInterface) -> Self {
         Self {
-            contains_unsigned_types: ci.item_contains_unsigned_types(&inner),
             contains_object_references: ci.item_contains_object_references(&inner),
             inner,
         }
@@ -90,9 +88,6 @@ impl KotlinEnum {
     }
     pub fn contains_object_references(&self) -> bool {
         self.contains_object_references
-    }
-    pub fn contains_unsigned_types(&self) -> bool {
-        self.contains_unsigned_types
     }
 }
 

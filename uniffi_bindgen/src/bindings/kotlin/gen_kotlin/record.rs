@@ -65,14 +65,12 @@ impl CodeType for RecordCodeType {
 #[template(syntax = "kt", escape = "none", path = "RecordTemplate.kt")]
 pub struct KotlinRecord {
     inner: Record,
-    contains_unsigned_types: bool,
     contains_object_references: bool,
 }
 
 impl KotlinRecord {
     pub fn new(inner: Record, ci: &ComponentInterface) -> Self {
         Self {
-            contains_unsigned_types: ci.item_contains_unsigned_types(&inner),
             contains_object_references: ci.item_contains_object_references(&inner),
             inner,
         }
@@ -82,9 +80,6 @@ impl KotlinRecord {
     }
     pub fn contains_object_references(&self) -> bool {
         self.contains_object_references
-    }
-    pub fn contains_unsigned_types(&self) -> bool {
-        self.contains_unsigned_types
     }
 }
 

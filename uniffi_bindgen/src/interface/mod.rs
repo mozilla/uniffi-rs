@@ -261,17 +261,8 @@ impl<'ci> ComponentInterface {
 
     /// Check whether the given item contains any (possibly nested) unsigned types
     pub fn item_contains_unsigned_types<T: IterTypes>(&self, item: &T) -> bool {
-        self.iter_types_in_item(item).any(|t| {
-            matches!(
-                t,
-                Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 |
-                // XXX we can't map from Type to ci in gen_kotlin/compound/*CodeType,
-                // so we declare all these compound types as containing unsigned types.
-                // The need for this annotation is going away soon as unsigned types
-                // stabilize in Kotlin.
-                Type::Optional(_) | Type::Sequence(_) | Type::Map(_)
-            )
-        })
+        self.iter_types_in_item(item)
+            .any(|t| matches!(t, Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64))
     }
 
     /// Check whether the interface contains any optional types

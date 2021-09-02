@@ -1,6 +1,5 @@
 {% import "macros.kt" as kt %}
 {%- let rec = self.inner() %}
-{% call kt::unsigned_types_annotation(self) %}
 data class {{ rec.name()|class_name_kt }} (
     {%- for field in rec.fields() %}
     {%- let field_type = field.type_() %}

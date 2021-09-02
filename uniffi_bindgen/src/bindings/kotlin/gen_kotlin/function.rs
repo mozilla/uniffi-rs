@@ -12,21 +12,14 @@ use super::filters;
 #[template(syntax = "kt", escape = "none", path = "TopLevelFunctionTemplate.kt")]
 pub struct KotlinFunction {
     inner: Function,
-    contains_unsigned_types: bool,
 }
 
 impl KotlinFunction {
-    pub fn new(inner: Function, ci: &ComponentInterface) -> Self {
-        Self {
-            contains_unsigned_types: ci.item_contains_unsigned_types(&inner),
-            inner,
-        }
+    pub fn new(inner: Function, _ci: &ComponentInterface) -> Self {
+        Self { inner }
     }
     pub fn inner(&self) -> &Function {
         &self.inner
-    }
-    pub fn contains_unsigned_types(&self) -> bool {
-        self.contains_unsigned_types
     }
 }
 
