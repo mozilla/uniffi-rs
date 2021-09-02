@@ -2,97 +2,67 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::fmt;
-
-use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Enum};
+use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType};
+use crate::interface::types::EnumTypeHandler;
+use crate::interface::{ComponentInterface, Enum, Literal, Variant};
+use crate::Result;
+use anyhow::Context;
 use askama::Template;
 
-use super::filters;
-pub struct EnumCodeType {
-    id: String,
-}
-
-impl EnumCodeType {
-    pub fn new(id: String) -> Self {
-        Self { id }
-    }
-}
-
-impl CodeType for EnumCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.class_name(&self.id)
+impl KotlinCodeType for EnumTypeHandler<'_> {
+    fn nm(&self) -> String {
+        names::class_name(self.name)
     }
 
-    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("Enum{}", self.type_label(oracle))
-    }
-
-    fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
+    fn literal(&self, literal: &Literal) -> String {
         if let Literal::Enum(v, _) = literal {
-            format!(
-                "{}.{}",
-                self.type_label(oracle),
-                oracle.enum_variant_name(v)
-            )
+            // Note: only fieldless enums are currently supported
+            format!("{}.{}", self.nm(), names::enum_variant_name(v),)
         } else {
             unreachable!();
         }
     }
 
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower()", oracle.var_name(nm))
-    }
-
-    fn write(
+    fn declare_code(
         &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!("{}.write({})", oracle.var_name(nm), target)
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.type_label(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.type_label(oracle), nm)
-    }
-
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} enum is found in EnumTemplate.kt",
-            self.type_label(oracle)
+        declarations: &mut CodeDeclarations,
+        ci: &ComponentInterface,
+    ) -> Result<()> {
+        declarations.definitions.insert(KotlinEnum::new(
+            ci.get_enum_definition(self.name)
+                .context("Enum definition not found")?
+                .clone(),
+            ci,
         ))
     }
 }
 
-#[derive(Template)]
+trait KotlineEnum {
+    fn variant_name(&self, variant: &Variant) -> String;
+}
+
+impl KotlineEnum for Enum {
+    fn variant_name(&self, variant: &Variant) -> String {
+        if self.is_flat() {
+            names::enum_variant_name(variant.name())
+        } else {
+            names::class_name(variant.name())
+        }
+    }
+}
+
+#[derive(Template, Hash)]
 #[template(syntax = "kt", escape = "none", path = "EnumTemplate.kt")]
 pub struct KotlinEnum {
-    inner: Enum,
+    e: Enum,
     contains_object_references: bool,
 }
 
 impl KotlinEnum {
-    pub fn new(inner: Enum, ci: &ComponentInterface) -> Self {
+    pub fn new(e: Enum, ci: &ComponentInterface) -> Self {
         Self {
-            contains_object_references: ci.item_contains_object_references(&inner),
-            inner,
+            contains_object_references: ci.item_contains_object_references(&e),
+            e,
         }
-    }
-    pub fn inner(&self) -> &Enum {
-        &self.inner
-    }
-    pub fn contains_object_references(&self) -> bool {
-        self.contains_object_references
-    }
-}
-
-impl CodeDeclaration for KotlinEnum {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
     }
 }

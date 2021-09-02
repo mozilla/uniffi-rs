@@ -1,25 +1,23 @@
 {% import "macros.kt" as kt %}
-{%- let rec = self.inner() %}
-data class {{ rec.name()|class_name_kt }} (
+data class {{ rec.nm() }} (
     {%- for field in rec.fields() %}
-    {%- let field_type = field.type_() %}
-    var {{ field.name()|var_name_kt }}: {{ field_type|type_kt -}}
+    var {{ field.nm() }}: {{ field.type_().nm() -}}
     {%- match field.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_kt(field_type) }}
+        {%- when Some with(literal) %} = {{ field.type_().literal(literal) }}
         {%- else %}
     {%- endmatch -%}
     {% if !loop.last %}, {% endif %}
     {%- endfor %}
-) {% if self.contains_object_references() %}: Disposable {% endif %}{
+) {% if contains_object_references %}: Disposable {% endif %}{
     companion object {
-        internal fun lift(rbuf: RustBuffer.ByValue): {{ rec.name()|class_name_kt }} {
-            return liftFromRustBuffer(rbuf) { buf -> {{ rec.name()|class_name_kt }}.read(buf) }
+        internal fun lift(rbuf: RustBuffer.ByValue): {{ rec.nm() }} {
+            return liftFromRustBuffer(rbuf) { buf -> {{ rec.nm() }}.read(buf) }
         }
 
-        internal fun read(buf: ByteBuffer): {{ rec.name()|class_name_kt }} {
-            return {{ rec.name()|class_name_kt }}(
+        internal fun read(buf: ByteBuffer): {{ rec.nm() }} {
+            return {{ rec.nm() }}(
             {%- for field in rec.fields() %}
-            {{ "buf"|read_kt(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {{ field.type_().read("buf") }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
             )
         }
@@ -31,11 +29,11 @@ data class {{ rec.name()|class_name_kt }} (
 
     internal fun write(buf: RustBufferBuilder) {
         {%- for field in rec.fields() %}
-            {{ "this.{}"|format(field.name())|write_kt("buf", field.type_()) }}
+            {{ field.type_().write(field.name(), "buf") }}
         {% endfor %}
     }
 
-    {% if self.contains_object_references() %}
+    {% if contains_object_references %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {
         {% call kt::destroy_fields(rec) %}

@@ -2,119 +2,51 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::fmt;
-
-use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType};
+use crate::interface::types::ObjectTypeHandler;
 use crate::interface::{ComponentInterface, Object};
+use crate::Result;
+use anyhow::Context;
 use askama::Template;
 
-// Filters is used by ObjectTemplate.kt, which looks for the filters module here.
-use super::filters;
-pub struct ObjectCodeType {
-    id: String,
-}
-
-impl ObjectCodeType {
-    pub fn new(id: String) -> Self {
-        Self { id }
-    }
-}
-
-impl CodeType for ObjectCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.class_name(&self.id)
+impl KotlinCodeType for ObjectTypeHandler<'_> {
+    fn nm(&self) -> String {
+        names::class_name(self.name)
     }
 
-    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("Object{}", self.type_label(oracle))
-    }
-
-    fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
-        unreachable!();
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower()", oracle.var_name(nm))
-    }
-
-    fn write(
+    fn declare_code(
         &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!("{}.write({})", oracle.var_name(nm), target)
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.type_label(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.type_label(oracle), nm)
-    }
-
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} class is found in ObjectTemplate.kt",
-            self.type_label(oracle)
+        declarations: &mut CodeDeclarations,
+        ci: &ComponentInterface,
+    ) -> Result<()> {
+        declarations
+            .imports
+            .insert("java.util.concurrent.atomic.AtomicLong".into());
+        declarations
+            .imports
+            .insert("java.util.concurrent.atomic.AtomicBoolean".into());
+        declarations.runtimes.insert(KotlinObjectRuntime)?;
+        declarations.definitions.insert(KotlinObject::new(
+            ci.get_object_definition(self.name)
+                .context("Object definition not found")?
+                .clone(),
+            ci,
         ))
     }
 }
 
-#[derive(Template)]
+#[derive(Template, Hash)]
 #[template(syntax = "kt", escape = "none", path = "ObjectTemplate.kt")]
 pub struct KotlinObject {
-    inner: Object,
+    obj: Object,
 }
 
 impl KotlinObject {
-    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
-        Self { inner }
-    }
-    pub fn inner(&self) -> &Object {
-        &self.inner
+    pub fn new(obj: Object, _ci: &ComponentInterface) -> Self {
+        Self { obj }
     }
 }
 
-impl CodeDeclaration for KotlinObject {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
-    }
-
-    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        Some(
-            vec![
-                "java.util.concurrent.atomic.AtomicLong",
-                "java.util.concurrent.atomic.AtomicBoolean",
-            ]
-            .into_iter()
-            .map(|s| s.into())
-            .collect(),
-        )
-    }
-}
-
-#[derive(Template)]
+#[derive(Template, Hash)]
 #[template(syntax = "kt", escape = "none", path = "ObjectRuntime.kt")]
-pub struct KotlinObjectRuntime {
-    is_needed: bool,
-}
-
-impl KotlinObjectRuntime {
-    pub fn new(ci: &ComponentInterface) -> Self {
-        Self {
-            is_needed: !ci.iter_object_definitions().is_empty(),
-        }
-    }
-}
-
-impl CodeDeclaration for KotlinObjectRuntime {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        if self.is_needed {
-            Some(self.render().unwrap())
-        } else {
-            None
-        }
-    }
-}
+pub struct KotlinObjectRuntime;

@@ -2,89 +2,54 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::fmt;
-
-use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Error};
+use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType};
+use crate::interface::types::ErrorTypeHandler;
+use crate::interface::{ComponentInterface, Error, Variant};
+use crate::Result;
+use anyhow::Context;
 use askama::Template;
 
-use super::filters;
-pub struct ErrorCodeType {
-    id: String,
-}
-
-impl ErrorCodeType {
-    pub fn new(id: String) -> Self {
-        Self { id }
-    }
-}
-
-impl CodeType for ErrorCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.class_name(&self.id)
+impl KotlinCodeType for ErrorTypeHandler<'_> {
+    fn nm(&self) -> String {
+        names::error_name(self.name)
     }
 
-    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("Error{}", self.type_label(oracle))
-    }
-
-    fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
-        unreachable!();
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower()", oracle.var_name(nm))
-    }
-
-    fn write(
+    fn declare_code(
         &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!("{}.write({})", oracle.var_name(nm), target)
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.type_label(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.type_label(oracle), nm)
-    }
-
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} error is found in ErrorTemplate.kt",
-            self.type_label(oracle)
+        declarations: &mut CodeDeclarations,
+        ci: &ComponentInterface,
+    ) -> Result<()> {
+        declarations.definitions.insert(KotlinError::new(
+            ci.get_error_definition(self.name)
+                .context("Error definition not found")?
+                .clone(),
+            ci,
         ))
     }
 }
 
-#[derive(Template)]
+trait KotlineError {
+    fn variant_name(&self, variant: &Variant) -> String;
+}
+
+impl KotlineError for Error {
+    fn variant_name(&self, variant: &Variant) -> String {
+        names::error_name(variant.name())
+    }
+}
+
+#[derive(Template, Hash)]
 #[template(syntax = "kt", escape = "none", path = "ErrorTemplate.kt")]
 pub struct KotlinError {
-    inner: Error,
+    e: Error,
     contains_object_references: bool,
 }
 
 impl KotlinError {
-    pub fn new(inner: Error, ci: &ComponentInterface) -> Self {
+    pub fn new(e: Error, ci: &ComponentInterface) -> Self {
         Self {
-            contains_object_references: ci.item_contains_object_references(&inner),
-            inner,
+            contains_object_references: ci.item_contains_object_references(&e),
+            e,
         }
-    }
-    pub fn inner(&self) -> &Error {
-        &self.inner
-    }
-    pub fn contains_object_references(&self) -> bool {
-        self.contains_object_references
-    }
-}
-
-impl CodeDeclaration for KotlinError {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
     }
 }

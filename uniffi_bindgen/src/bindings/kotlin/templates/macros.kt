@@ -5,9 +5,9 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-    {%- match func.throws() %}
+    {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|exception_name_kt}})
+    rustCallWithError({{ e.nm() }})
     {%- else %}
     rustCall()
     {%- endmatch %} { status ->
@@ -16,9 +16,9 @@
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) %}
-    {%- match func.throws() %}
+    {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|exception_name_kt}})
+    rustCallWithError({{ e.nm() }})
     {%- else %}
     rustCall()
     {%- endmatch %} { status ->
@@ -29,7 +29,7 @@
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_kt(arg.type_()) }}
+        {{- arg.type_().lower(arg.name()) }}
         {%- if !loop.last %}, {% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -42,9 +42,9 @@
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
         {% let arg_type = arg.type_() -%}
-        {{ arg.name()|var_name_kt }}: {{ arg_type|type_kt -}}
+        {{ arg.nm() }}: {{ arg_type.nm() -}}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_kt(arg_type) }}
+        {%- when Some with(literal) %} = {{ arg_type.literal(literal) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
@@ -53,7 +53,7 @@
 
 {% macro arg_list_protocol(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name_kt }}: {{ arg.type_()|type_kt -}}
+        {{ arg.nm() }}: {{ arg.type_().nm() -}}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro %}
@@ -63,7 +63,7 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name() }}: {{ arg.type_()|type_ffi -}},
+        {{- arg.name() }}: {{ arg.type_().nm() -}},
     {%- endfor %}
     uniffi_out_err: RustCallStatus
 {%- endmacro -%}
@@ -72,12 +72,12 @@
 {%- macro destroy_fields(member) %}
     Disposable.destroy(
     {%- for field in member.fields() %}
-        this.{{ field.name()|var_name_kt }}{%- if !loop.last %}, {% endif -%}
+        this.{{ field.nm() }}{%- if !loop.last %}, {% endif -%}
     {% endfor -%})
 {%- endmacro -%}
 
 {%- macro ffi_function_definition(func) %}
 fun {{ func.name() }}(
     {%- call arg_list_ffi_decl(func) %}
-){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|type_ffi }}{% when None %}: Unit{% endmatch %}
+){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_.nm() }}{% when None %}: Unit{% endmatch %}
 {% endmacro %}

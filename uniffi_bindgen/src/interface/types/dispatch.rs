@@ -44,18 +44,40 @@ pub enum SimpleTypeHandler {
 //
 // When handlers need to reference names and other data from the `Type` instance, we use the `'d`
 // lifetime.  This means that these references are only valid for the dispatched call.
-pub struct RecordTypeHandler<'d> { pub name: &'d str }
-pub struct EnumTypeHandler<'d> { pub name: &'d str }
-pub struct ErrorTypeHandler<'d> { pub name: &'d str }
-pub struct ObjectTypeHandler<'d> { pub name: &'d str }
-pub struct CallbackInterfaceTypeHandler<'d> { pub name: &'d str }
+pub struct RecordTypeHandler<'d> {
+    pub name: &'d str,
+}
+pub struct EnumTypeHandler<'d> {
+    pub name: &'d str,
+}
+pub struct ErrorTypeHandler<'d> {
+    pub name: &'d str,
+}
+pub struct ObjectTypeHandler<'d> {
+    pub name: &'d str,
+}
+pub struct CallbackInterfaceTypeHandler<'d> {
+    pub name: &'d str,
+}
 pub struct TimestampTypeHandler;
 pub struct DurationTypeHandler;
-pub struct OptionalTypeHandler<'d> { pub inner: &'d Type }
-pub struct SequenceTypeHandler<'d> { pub inner: &'d Type }
-pub struct MapTypeHandler<'d> { pub inner: &'d Type }
-pub struct ExternalTypeHandler<'d> { pub name: &'d str, pub crate_name: &'d str }
-pub struct WrapperTypeHandler<'d> { pub name: &'d str, pub wrapped: &'d Type }
+pub struct OptionalTypeHandler<'d> {
+    pub inner: &'d Type,
+}
+pub struct SequenceTypeHandler<'d> {
+    pub inner: &'d Type,
+}
+pub struct MapTypeHandler<'d> {
+    pub inner: &'d Type,
+}
+pub struct ExternalTypeHandler<'d> {
+    pub name: &'d str,
+    pub crate_name: &'d str,
+}
+pub struct WrapperTypeHandler<'d> {
+    pub name: &'d str,
+    pub wrapped: &'d Type,
+}
 
 // Dispatch function calls for `Type` to one of the `TypeHandler` structs.
 macro_rules! dispatch_type_function(

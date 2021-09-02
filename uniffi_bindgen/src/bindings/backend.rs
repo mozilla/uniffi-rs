@@ -31,7 +31,12 @@
 //! This filter provides methods to generate expressions and identifiers in the target language. These are all forwarded to the oracle.
 
 use crate::interface::*;
+use crate::Result;
+use askama::Template;
+use std::collections::hash_map::DefaultHasher;
+use std::collections::HashSet;
 use std::fmt;
+use std::hash::{Hash, Hasher};
 
 pub type TypeIdentifier = Type;
 pub type Literal = crate::interface::Literal;
@@ -161,5 +166,40 @@ pub trait CodeDeclaration {
     /// a given Object type.
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         None
+    }
+}
+
+/// Stores a list of rendered templates without duplicates
+///
+/// This is used for types like `CallbackInterface` and `Object` that need support code that
+/// should only be rendered once, even if there are multiples of those types.
+#[derive(Default)]
+pub struct TemplateRenderSet {
+    items: Vec<String>,
+    hashes_seen: HashSet<u64>,
+}
+
+impl TemplateRenderSet {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, String> {
+        self.items.iter()
+    }
+
+    pub fn insert<T: 'static + Template + Hash>(&mut self, template: T) -> Result<()> {
+        if self.hashes_seen.insert(self.calc_hash(&template)) {
+            self.items.push(template.render()?);
+        }
+        Ok(())
+    }
+
+    fn calc_hash<T: 'static + Hash>(&self, template: &T) -> u64 {
+        let mut s = DefaultHasher::new();
+        // Make sure to include the type id to make things unique
+        template.hash(&mut s);
+        std::any::TypeId::of::<T>().hash(&mut s);
+        s.finish()
     }
 }

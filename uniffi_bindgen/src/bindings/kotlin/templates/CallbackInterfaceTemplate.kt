@@ -1,29 +1,22 @@
 {% import "macros.kt" as kt %}
-{%- let cbi = self.inner() %}
-{% let type_name = cbi.name()|class_name_kt %}
-public interface {{ type_name }} {
+public interface {{ cbi.nm() }} {
     {% for meth in cbi.methods() -%}
-    fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %})
+    fun {{ meth.nm() }}({% call kt::arg_list_decl(meth) %})
     {%- match meth.return_type() -%}
-    {%- when Some with (return_type) %}: {{ return_type|type_kt -}}
+    {%- when Some with (return_type) %}: {{ return_type.nm() -}}
     {%- else -%}
     {%- endmatch %}
     {% endfor %}
 }
 
-{% let canonical_type_name = cbi.type_().canonical_name()|class_name_kt %}
-{% let callback_internals = format!("{}Internals", canonical_type_name) -%}
-{% let callback_interface_impl = format!("{}FFI", canonical_type_name) -%}
-
-internal class {{ callback_interface_impl }} : ForeignCallback {
+internal class {{ self.callback_interface_impl() }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
     override fun invoke(handle: Long, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue {
-        return {{ callback_internals }}.handleMap.callWithResult(handle) { cb ->
+        return {{ self.callback_internals() }}.handleMap.callWithResult(handle) { cb ->
             when (method) {
-                IDX_CALLBACK_FREE -> {{ callback_internals }}.drop(handle)
+                IDX_CALLBACK_FREE -> {{ self.callback_internals() }}.drop(handle)
                 {% for meth in cbi.methods() -%}
-                {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt -%}
-                {{ loop.index }} -> this.{{ method_name }}(cb, args)
+                {{ loop.index }} -> this.{{ self.invoke_method_name(meth) }}(cb, args)
                 {% endfor %}
                 // This should never happen, because an out of bounds method index won't
                 // ever be used. Once we can catch errors, we should return an InternalException.
@@ -34,21 +27,20 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
     }
 
     {% for meth in cbi.methods() -%}
-    {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt %}
-    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue): RustBuffer.ByValue =
+    private fun {{ self.invoke_method_name(meth) }}(kotlinCallbackInterface: {{ cbi.nm() }}, args: RustBuffer.ByValue): RustBuffer.ByValue =
         try {
         {#- Unpacking args from the RustBuffer #}
             {%- if meth.arguments().len() != 0 -%}
             {#- Calling the concrete callback object #}
             val buf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
-            kotlinCallbackInterface.{{ meth.name()|fn_name_kt }}(
+            kotlinCallbackInterface.{{ meth.nm() }}(
                     {% for arg in meth.arguments() -%}
-                    {{ "buf"|read_kt(arg.type_()) }}
+                    {{ arg.type_().read("buf") }}
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
             {% else %}
-            kotlinCallbackInterface.{{ meth.name()|fn_name_kt }}()
+            kotlinCallbackInterface.{{ meth.nm()}}()
             {% endif -%}
 
         {#- Packing up the return value into a RustBuffer #}
@@ -56,7 +48,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
                 {%- when Some with (return_type) -%}
                 .let { rval ->
                     val rbuf = RustBufferBuilder()
-                    {{ "rval"|write_kt("rbuf", return_type) }}
+                    {{ return_type.write("rval", "rbuf") }}
                     rbuf.finalize()
                 }
                 {%- else -%}
@@ -71,8 +63,8 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
     {% endfor %}
 }
 
-internal object {{ callback_internals }}: CallbackInternals<{{ type_name }}>(
-    foreignCallback = {{ callback_interface_impl }}()
+internal object {{ self.callback_internals() }}: CallbackInternals<{{ cbi.nm() }}>(
+    foreignCallback = {{ self.callback_interface_impl() }}()
 ) {
     override fun register(lib: _UniFFILib) {
         rustCall() { status ->

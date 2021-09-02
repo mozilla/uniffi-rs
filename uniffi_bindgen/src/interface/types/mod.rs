@@ -31,11 +31,11 @@ mod codetype;
 mod finder;
 mod resolver;
 
-pub(super) use finder::TypeFinder;
-pub(super) use resolver::{resolve_builtin_type, TypeResolver};
+use crate::interface::ffi::FFIType;
 pub use codetype::NewCodeType;
 pub use dispatch::*;
-use crate::interface::ffi::FFIType;
+pub(super) use finder::TypeFinder;
+pub(super) use resolver::{resolve_builtin_type, TypeResolver};
 
 /// Represents all the different high-level types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
@@ -71,7 +71,6 @@ pub enum Type {
     External { name: String, crate_name: String },
     // A local type we will generate an FfiConverter via wrapping a primitive.
     Wrapped { name: String, prim: Box<Type> },
-
     // To add a new type:
     //   - Add a variant to this enum
     //   - In `dispatch.rs` add a type handler struct and a case in `dispatch_type_function!`

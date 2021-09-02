@@ -2,89 +2,44 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::fmt;
-
-use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType};
+use crate::interface::types::RecordTypeHandler;
 use crate::interface::{ComponentInterface, Record};
+use crate::Result;
+use anyhow::Context;
 use askama::Template;
 
-use super::filters;
-pub struct RecordCodeType {
-    id: String,
-}
-
-impl RecordCodeType {
-    pub fn new(id: String) -> Self {
-        Self { id }
-    }
-}
-
-impl CodeType for RecordCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.class_name(&self.id)
+impl KotlinCodeType for RecordTypeHandler<'_> {
+    fn nm(&self) -> String {
+        names::class_name(self.name)
     }
 
-    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("Record{}", self.type_label(oracle))
-    }
-
-    fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
-        unreachable!();
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower()", oracle.var_name(nm))
-    }
-
-    fn write(
+    fn declare_code(
         &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!("{}.write({})", oracle.var_name(nm), target)
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.type_label(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.type_label(oracle), nm)
-    }
-
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} record is found in RecordTemplate.kt",
-            self.type_label(oracle)
+        declarations: &mut CodeDeclarations,
+        ci: &ComponentInterface,
+    ) -> Result<()> {
+        declarations.definitions.insert(KotlinRecord::new(
+            ci.get_record_definition(self.name)
+                .context("Record definition not found")?
+                .clone(),
+            ci,
         ))
     }
 }
 
-#[derive(Template)]
+#[derive(Template, Hash)]
 #[template(syntax = "kt", escape = "none", path = "RecordTemplate.kt")]
 pub struct KotlinRecord {
-    inner: Record,
+    rec: Record,
     contains_object_references: bool,
 }
 
 impl KotlinRecord {
-    pub fn new(inner: Record, ci: &ComponentInterface) -> Self {
+    pub fn new(rec: Record, ci: &ComponentInterface) -> Self {
         Self {
-            contains_object_references: ci.item_contains_object_references(&inner),
-            inner,
+            contains_object_references: ci.item_contains_object_references(&rec),
+            rec,
         }
-    }
-    pub fn inner(&self) -> &Record {
-        &self.inner
-    }
-    pub fn contains_object_references(&self) -> bool {
-        self.contains_object_references
-    }
-}
-
-impl CodeDeclaration for KotlinRecord {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
     }
 }

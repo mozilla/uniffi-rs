@@ -3,13 +3,13 @@
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
 
-fun {{ func.name()|fn_name_kt }}({%- call kt::arg_list_decl(func) -%}): {{ return_type|type_kt }} {
+fun {{ func.nm() }}({%- call kt::arg_list_decl(func) -%}): {{ return_type.nm() }} {
     val _retval = {% call kt::to_ffi_call(func) %}
-    return {{ "_retval"|lift_kt(return_type) }}
+    return {{ return_type.lift("_retval") }}
 }
 
 {% when None -%}
 
-fun {{ func.name()|fn_name_kt }}({% call kt::arg_list_decl(func) %}) =
+fun {{ func.nm() }}({% call kt::arg_list_decl(func) %}) =
     {% call kt::to_ffi_call(func) %}
 {% endmatch %}
