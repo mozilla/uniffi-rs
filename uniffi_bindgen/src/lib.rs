@@ -106,8 +106,9 @@ use std::{
     process::Command,
 };
 
-pub mod bindings;
+#[macro_use]
 pub mod interface;
+pub mod bindings;
 pub mod scaffolding;
 
 use bindings::TargetLanguage;

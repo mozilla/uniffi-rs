@@ -455,6 +455,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::interface::NewCodeType;
 
     #[test]
     fn test_that_all_argument_and_return_types_become_known() {
@@ -470,20 +471,20 @@ mod test {
         ci.get_object_definition("Testing").unwrap();
 
         assert_eq!(ci.iter_types().len(), 6);
-        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u16"));
-        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u32"));
+        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "U16"));
+        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "U32"));
         assert!(ci
             .iter_types()
             .iter()
-            .any(|t| t.canonical_name() == "Sequenceu32"));
+            .any(|t| t.canonical_name() == "SequenceU32"));
         assert!(ci
             .iter_types()
             .iter()
-            .any(|t| t.canonical_name() == "string"));
+            .any(|t| t.canonical_name() == "String"));
         assert!(ci
             .iter_types()
             .iter()
-            .any(|t| t.canonical_name() == "Optionalstring"));
+            .any(|t| t.canonical_name() == "OptionalString"));
         assert!(ci
             .iter_types()
             .iter()

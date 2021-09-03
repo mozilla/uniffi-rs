@@ -53,9 +53,10 @@ use std::{
 
 use anyhow::{bail, Result};
 
+#[macro_use]
 pub mod types;
-pub use types::Type;
 use types::{IterTypes, TypeIterator, TypeUniverse};
+pub use types::{NewCodeType, Type};
 
 mod attributes;
 mod callbacks;

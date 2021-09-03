@@ -190,6 +190,7 @@ pub(in super::super) fn resolve_builtin_type(name: &str) -> Option<Type> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::interface::NewCodeType;
     use weedle::Parse;
 
     #[test]
@@ -219,14 +220,14 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("u32?").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "Optionalu32");
+        assert_eq!(t.canonical_name(), "OptionalU32");
         assert_eq!(types.iter_known_types().count(), 2);
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "u32"));
+            .any(|t| t.canonical_name() == "U32"));
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "Optionalu32"));
+            .any(|t| t.canonical_name() == "OptionalU32"));
     }
 
     #[test]
@@ -235,14 +236,14 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("sequence<string>").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "Sequencestring");
+        assert_eq!(t.canonical_name(), "SequenceString");
         assert_eq!(types.iter_known_types().count(), 2);
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "Sequencestring"));
+            .any(|t| t.canonical_name() == "SequenceString"));
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "string"));
+            .any(|t| t.canonical_name() == "String"));
     }
 
     #[test]
@@ -251,17 +252,17 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("record<DOMString, float>").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "Mapf32");
+        assert_eq!(t.canonical_name(), "MapF32");
         assert_eq!(types.iter_known_types().count(), 3);
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "Mapf32"));
+            .any(|t| t.canonical_name() == "MapF32"));
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "string"));
+            .any(|t| t.canonical_name() == "String"));
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "f32"));
+            .any(|t| t.canonical_name() == "F32"));
     }
 
     #[test]

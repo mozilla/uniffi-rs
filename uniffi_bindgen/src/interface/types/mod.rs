@@ -25,12 +25,17 @@ use std::{collections::hash_map::Entry, collections::BTreeSet, collections::Hash
 
 use anyhow::{bail, Result};
 
-use super::ffi::FFIType;
-
+#[macro_use]
+pub mod dispatch;
+mod codetype;
 mod finder;
-pub(super) use finder::TypeFinder;
 mod resolver;
+
+pub(super) use finder::TypeFinder;
 pub(super) use resolver::{resolve_builtin_type, TypeResolver};
+pub use codetype::NewCodeType;
+pub use dispatch::*;
+use crate::interface::ffi::FFIType;
 
 /// Represents all the different high-level types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
@@ -66,55 +71,13 @@ pub enum Type {
     External { name: String, crate_name: String },
     // A local type we will generate an FfiConverter via wrapping a primitive.
     Wrapped { name: String, prim: Box<Type> },
-}
 
-impl Type {
-    /// Get the canonical, unique-within-this-component name for a type.
-    ///
-    /// When generating helper code for foreign language bindings, it's sometimes useful to be
-    /// able to name a particular type in order to e.g. call a helper function that is specific
-    /// to that type. We support this by defining a naming convention where each type gets a
-    /// unique canonical name, constructed recursively from the names of its component types (if any).
-    pub fn canonical_name(&self) -> String {
-        match self {
-            // Builtin primitive types, with plain old names.
-            Type::Int8 => "i8".into(),
-            Type::UInt8 => "u8".into(),
-            Type::Int16 => "i16".into(),
-            Type::UInt16 => "u16".into(),
-            Type::Int32 => "i32".into(),
-            Type::UInt32 => "u32".into(),
-            Type::Int64 => "i64".into(),
-            Type::UInt64 => "u64".into(),
-            Type::Float32 => "f32".into(),
-            Type::Float64 => "f64".into(),
-            Type::String => "string".into(),
-            Type::Boolean => "bool".into(),
-            // API defined types.
-            // Note that these all get unique names, and the parser ensures that the names do not
-            // conflict with a builtin type. We add a prefix to the name to guard against pathological
-            // cases like a record named `SequenceRecord` interfering with `sequence<Record>`.
-            // However, types that support importing all end up with the same prefix of "Type", so
-            // that the import handling code knows how to find the remote reference.
-            Type::Object(nm) => format!("Type{}", nm),
-            Type::Error(nm) => format!("Type{}", nm),
-            Type::Enum(nm) => format!("Type{}", nm),
-            Type::Record(nm) => format!("Type{}", nm),
-            Type::CallbackInterface(nm) => format!("CallbackInterface{}", nm),
-            Type::Timestamp => "Timestamp".into(),
-            Type::Duration => "Duration".into(),
-            // Recursive types.
-            // These add a prefix to the name of the underlying type.
-            // The component API definition cannot give names to recursive types, so as long as the
-            // prefixes we add here are all unique amongst themselves, then we have no chance of
-            // acccidentally generating name collisions.
-            Type::Optional(t) => format!("Optional{}", t.canonical_name()),
-            Type::Sequence(t) => format!("Sequence{}", t.canonical_name()),
-            Type::Map(t) => format!("Map{}", t.canonical_name()),
-            // A type that exists externally.
-            Type::External { name, .. } | Type::Wrapped { name, .. } => format!("Type{}", name),
-        }
-    }
+    // To add a new type:
+    //   - Add a variant to this enum
+    //   - In `dispatch.rs` add a type handler struct and a case in `dispatch_type_function!`
+    //   - Implement `NewCodeType` for the type handler
+    //   - For each language, implement `[Language]CodeType` for the type handler (Note: currently
+    //     only supported on Kotlin)
 }
 
 /// When passing data across the FFI, each `Type` value will be lowered into a corresponding
@@ -306,8 +269,8 @@ mod test_type {
     #[test]
     fn test_canonical_names() {
         // Non-exhaustive, but gives a bit of a flavour of what we want.
-        assert_eq!(Type::UInt8.canonical_name(), "u8");
-        assert_eq!(Type::String.canonical_name(), "string");
+        assert_eq!(Type::UInt8.canonical_name(), "U8");
+        assert_eq!(Type::String.canonical_name(), "String");
         assert_eq!(
             Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object(
                 "Example".into()
