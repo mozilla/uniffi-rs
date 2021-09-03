@@ -10,6 +10,10 @@
 
 ## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+- The `build_foreign_language_testcases!` macro now takes an array of UDL files as the
+  first argument.
+
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.0...HEAD).
 
 ## v0.14.0 (_2021-08-17_)

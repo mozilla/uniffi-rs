@@ -1,5 +1,5 @@
 uniffi_macros::build_foreign_language_testcases!(
-    "src/todolist.udl",
+    ["src/todolist.udl",],
     [
         "tests/bindings/test_todolist.kts",
         "tests/bindings/test_todolist.swift",
