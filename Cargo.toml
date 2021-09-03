@@ -29,5 +29,6 @@ members = [
   "fixtures/regressions/kotlin-experimental-unsigned-types",
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",
+  "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
 ]

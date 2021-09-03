@@ -112,7 +112,7 @@ impl syn::parse::Parse for FilePaths {
 /// This will expand to the appropriate `include!` invocation to include
 /// the generated `my_component_name.uniffi.rs` (which it assumes has
 /// been successfully built by your crate's `build.rs` script).
-//
+///
 #[proc_macro]
 pub fn include_scaffolding(component_name: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let name = syn::parse_macro_input!(component_name as syn::LitStr);
@@ -123,6 +123,43 @@ pub fn include_scaffolding(component_name: proc_macro::TokenStream) -> proc_macr
     } else {
         quote! {
             include!(concat!(env!("OUT_DIR"), "/", #name, ".uniffi.rs"));
+        }
+    }.into()
+}
+
+/// A helper macro to generate and include component scaffolding.
+///
+/// This is a convenience macro designed for writing `trybuild`-style tests and
+/// probably shouldn't be used for production code. Given the path to a `.udl` file,
+/// if will run `uniffi-bindgen` to produce the corresponding Rust scaffolding and then
+/// include it directly into the calling file. Like so:
+///
+/// ```rs
+/// uniffi_macros::generate_and_include_scaffolding!("path/to/my/interface.udl");
+/// ```
+///
+#[proc_macro]
+pub fn generate_and_include_scaffolding(
+    udl_file: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    let udl_file = syn::parse_macro_input!(udl_file as syn::LitStr);
+    let udl_file_string = udl_file.value();
+    let udl_file_path = Path::new(udl_file_string.as_str());
+    if std::env::var("OUT_DIR").is_err() {
+        quote! {
+            compile_error!("This macro assumes the crate has a build.rs script, but $OUT_DIR is not present");
+        }
+    } else if uniffi_build::generate_scaffolding(&udl_file_path.to_string_lossy()).is_err() {
+        quote! {
+            compile_error!(concat!("Failed to generate scaffolding from UDL file at ", #udl_file));
+        }
+    } else {
+        // We know the filename is good because `generate_scaffolding` succeeded,
+        // so this `unwrap` will never fail.
+        let name = udl_file_path.file_stem().unwrap().to_os_string();
+        let name = LitStr::new(&name.to_string_lossy(), udl_file.span());
+        quote! {
+            uniffi_macros::include_scaffolding!(#name);
         }
     }.into()
 }

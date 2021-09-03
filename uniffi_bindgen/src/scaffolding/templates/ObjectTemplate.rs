@@ -24,6 +24,13 @@
 fn uniffi_note_threadsafe_deprecation_{{ obj.name() }}() {}
 {% endif %}
 
+
+// All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
+// if they are not, but unfortunately it fails with an unactionably obscure error message.
+// By asserting the requirement explicitly, we help Rust produce a more scrutable error message
+// and thus help the user debug why the requirement isn't being met.
+uniffi::deps::static_assertions::assert_impl_all!({{ obj.name() }}: Sync, Send);
+
 {% let ffi_free = obj.ffi_object_free() -%}
 #[doc(hidden)]
 #[no_mangle]

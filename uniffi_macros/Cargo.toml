@@ -18,3 +18,10 @@ proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "1.0", features = ["extra-traits"] }
 glob = "0.3"
+uniffi_build = { path = "../uniffi_build", version = "= 0.14.0"}
+
+[features]
+default = []
+# Use the `uniffi_bindgen` from this workspace instead of the one installed on your system.
+# You probably only want to enable this feature if you're working on uniffi itself.
+builtin-bindgen = ["uniffi_build/builtin-bindgen"]

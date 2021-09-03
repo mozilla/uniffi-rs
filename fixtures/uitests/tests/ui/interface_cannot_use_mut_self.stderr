@@ -1,0 +1,8 @@
+error[E0308]: mismatched types
+   --> $DIR/counter.uniffi.rs:160:13
+    |
+160 |             &<std::sync::Arc<Counter> as uniffi::FfiConverter>::try_lift(ptr).unwrap(),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ types differ in mutability
+    |
+    = note: expected mutable reference `&mut Counter`
+                       found reference `&Arc<Counter>`
