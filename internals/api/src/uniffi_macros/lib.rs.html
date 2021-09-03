@@ -129,6 +129,43 @@
 <span id="126">126</span>
 <span id="127">127</span>
 <span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -244,7 +281,7 @@
 <span class="doccomment">/// This will expand to the appropriate `include!` invocation to include</span>
 <span class="doccomment">/// the generated `my_component_name.uniffi.rs` (which it assumes has</span>
 <span class="doccomment">/// been successfully built by your crate&#39;s `build.rs` script).</span>
-<span class="comment">//</span>
+<span class="doccomment">///</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_scaffolding</span>(<span class="ident">component_name</span>: <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span> {
     <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="macro">parse_macro_input</span><span class="macro">!</span>(<span class="ident">component_name</span> <span class="kw">as</span> <span class="ident">syn</span>::<span class="ident">LitStr</span>);
@@ -255,6 +292,43 @@
     } <span class="kw">else</span> {
         <span class="macro">quote</span><span class="macro">!</span> {
             <span class="macro">include</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/&quot;</span>, #<span class="ident">name</span>, <span class="string">&quot;.uniffi.rs&quot;</span>));
+        }
+    }.<span class="ident">into</span>()
+}
+
+<span class="doccomment">/// A helper macro to generate and include component scaffolding.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is a convenience macro designed for writing `trybuild`-style tests and</span>
+<span class="doccomment">/// probably shouldn&#39;t be used for production code. Given the path to a `.udl` file,</span>
+<span class="doccomment">/// if will run `uniffi-bindgen` to produce the corresponding Rust scaffolding and then</span>
+<span class="doccomment">/// include it directly into the calling file. Like so:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rs</span>
+<span class="doccomment">/// uniffi_macros::generate_and_include_scaffolding!(&quot;path/to/my/interface.udl&quot;);</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_and_include_scaffolding</span>(
+    <span class="ident">udl_file</span>: <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="macro">parse_macro_input</span><span class="macro">!</span>(<span class="ident">udl_file</span> <span class="kw">as</span> <span class="ident">syn</span>::<span class="ident">LitStr</span>);
+    <span class="kw">let</span> <span class="ident">udl_file_string</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">value</span>();
+    <span class="kw">let</span> <span class="ident">udl_file_path</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="ident">udl_file_string</span>.<span class="ident">as_str</span>());
+    <span class="kw">if</span> <span class="ident">std</span>::<span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">is_err</span>() {
+        <span class="macro">quote</span><span class="macro">!</span> {
+            <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
+        }
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">uniffi_build</span>::<span class="ident">generate_scaffolding</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file_path</span>.<span class="ident">to_string_lossy</span>()).<span class="ident">is_err</span>() {
+        <span class="macro">quote</span><span class="macro">!</span> {
+            <span class="macro">compile_error</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="string">&quot;Failed to generate scaffolding from UDL file at &quot;</span>, #<span class="ident">udl_file</span>));
+        }
+    } <span class="kw">else</span> {
+        <span class="comment">// We know the filename is good because `generate_scaffolding` succeeded,</span>
+        <span class="comment">// so this `unwrap` will never fail.</span>
+        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">udl_file_path</span>.<span class="ident">file_stem</span>().<span class="ident">unwrap</span>().<span class="ident">to_os_string</span>();
+        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">LitStr</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>.<span class="ident">to_string_lossy</span>(), <span class="ident">udl_file</span>.<span class="ident">span</span>());
+        <span class="macro">quote</span><span class="macro">!</span> {
+            <span class="ident">uniffi_macros</span>::<span class="macro">include_scaffolding</span><span class="macro">!</span>(#<span class="ident">name</span>);
         }
     }.<span class="ident">into</span>()
 }
