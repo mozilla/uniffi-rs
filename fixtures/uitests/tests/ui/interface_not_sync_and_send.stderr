@@ -1,0 +1,32 @@
+error[E0277]: `Cell<u32>` cannot be shared between threads safely
+   --> $DIR/counter.uniffi.rs:119:1
+    |
+119 | uniffi::deps::static_assertions::assert_impl_all!(Counter: Sync, Send);
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | `Cell<u32>` cannot be shared between threads safely
+    | required by this bound in `assert_impl_all`
+    |
+    = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
+    = note: required because it appears within the type `Counter`
+    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
+   --> $DIR/counter.uniffi.rs:145:9
+    |
+145 |         <std::sync::Arc<Counter> as uniffi::FfiConverter>::lower(_arc)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
+    |
+    = help: the following implementations were found:
+              <Arc<T> as FfiConverter>
+    = note: required by `lower`
+
+error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
+   --> $DIR/counter.uniffi.rs:160:14
+    |
+160 |             &<std::sync::Arc<Counter> as uniffi::FfiConverter>::try_lift(ptr).unwrap(),
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
+    |
+    = help: the following implementations were found:
+              <Arc<T> as FfiConverter>
+    = note: required by `try_lift`

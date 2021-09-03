@@ -1,0 +1,19 @@
+[package]
+name = "uniffi_uitests"
+version = "0.14.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+edition = "2018"
+publish = false
+
+[lib]
+name = "uniffi_uitests"
+
+[dependencies]
+uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
+uniffi_macros = {path = "../../uniffi_macros", features=["builtin-bindgen"]}
+
+[build-dependencies]
+uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}
+
+[dev-dependencies]
+trybuild = "1"

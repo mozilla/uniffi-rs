@@ -1,0 +1,5 @@
+namespace uitests {};
+
+interface Counter {
+  u32 increment();
+};

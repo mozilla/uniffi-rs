@@ -60,8 +60,8 @@ fn create_entry_with<S: Into<String>>(item: S) -> Result<TodoEntry> {
 type Result<T, E = TodoError> = std::result::Result<T, E>;
 
 // A simple Todolist.
-// UniFFI requires all objects to be `Send + Sync`, so we wrap our `Vec` in a RwLock
-// (a Mutex would also work, but a RwLock is more appropriate for this use-case, so we use it).
+// UniFFI requires that we use interior mutability for managing mutable state, so we wrap our `Vec` in a RwLock.
+// (A Mutex would also work, but a RwLock is more appropriate for this use-case, so we use it).
 #[derive(Debug)]
 pub struct TodoList {
     items: RwLock<Vec<String>>,
