@@ -18,17 +18,6 @@ fileprivate extension RustBuffer {
     }
 }
 
-public extension RustBuffer {
-    // Allocate a new buffer, copying the contents of a `UInt8` array.
-    static var empty: RustBuffer {
-        return RustBuffer.init(
-                capacity: 0,
-                len: 0,
-                data: nil
-            )
-    }
-}
-
 fileprivate extension ForeignBytes {
     init(bufferPointer: UnsafeBufferPointer<UInt8>) {
         self.init(len: Int32(bufferPointer.count), data: bufferPointer.baseAddress)
