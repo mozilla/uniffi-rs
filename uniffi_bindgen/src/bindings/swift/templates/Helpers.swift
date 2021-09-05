@@ -71,7 +71,7 @@ class ConcurrentHandleMap<T: AnyObject> {
 // to free the callback once it's dropped by Rust.
 private let IDX_CALLBACK_FREE: Int32 = 0
 
-class CallbackInternals<CallbackInterface: AnyObject> {
+class CallbackInterfaceInternals<CallbackInterface: AnyObject> {
 
     let foreignCallback: ForeignCallback
 

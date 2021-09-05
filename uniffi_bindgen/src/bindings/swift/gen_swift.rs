@@ -212,7 +212,7 @@ mod filters {
             FFIType::RustArcPtr => "void*_Nonnull".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
-            FFIType::ForeignCallback => "ForeignCallback".to_string(),
+            FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
         })
     }
 

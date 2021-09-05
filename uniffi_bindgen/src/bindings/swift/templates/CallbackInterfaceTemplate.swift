@@ -11,7 +11,7 @@ public protocol {{ type_name }} : AnyObject {
 
 {% let canonical_type_name = cbi.type_().canonical_name()|class_name_swift %}
 {% let callback_internals = format!("{}Internals", canonical_type_name) -%}
-{% let callback_interface_impl = format!("{}FFI", canonical_type_name) -%}
+{% let callback_interface_impl = format!("{}", canonical_type_name)|var_name_swift -%}
 
 let {{ callback_interface_impl }} : ForeignCallback = 
     { (handle: UInt64, method: Int32, args: RustBuffer) -> RustBuffer in
@@ -120,7 +120,7 @@ extension Optional where Wrapped == {{ type_name }} {
 }
 
 private let {{ callback_internals }} = _{{ callback_internals }}<{{ type_name }}Erased>()
-private class _{{ callback_internals }}<T: {{ type_name }}>: CallbackInternals<T> {
+private class _{{ callback_internals }}<T: {{ type_name }}>: CallbackInterfaceInternals<T> {
 
     init() {
         super.init(foreignCallback: {{ callback_interface_impl }})
