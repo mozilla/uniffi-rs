@@ -25,6 +25,7 @@ use function::KotlinCodeFunction;
 use names::KotlinCodeName;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
+use std::hash::Hash;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
@@ -71,16 +72,34 @@ impl MergeWith for Config {
     }
 }
 
-/// Container for code to be rendered in the Kotlin bindings
+/// Code to be rendered in the Kotlin bindings
 #[derive(Default)]
-struct CodeDeclarations {
-    // These store template renders
-    pub definitions: TemplateRenderSet,
-    pub runtimes: TemplateRenderSet,
-    // Imports and initialization code is short.  It's easier to use strings than Templates.  Use a
-    // BTreeSet to make imports nice and alphabetical.
+struct CodeBuilder {
+    // Templates to render in the main code section
+    pub code_blocks: TemplateRenderSet,
+    // Modules to import.  Use a BTreeSet to make them sorted and alphabetical.
     pub imports: BTreeSet<String>,
-    pub initialization_code: BTreeSet<String>,
+    // Lines of code to run once we load the shared library.
+    pub initialization_code_set: BTreeSet<String>,
+}
+
+impl CodeBuilder {
+    pub fn code_block(mut self, template: impl 'static + Template + Hash) -> Self {
+        self.code_blocks
+            .insert(template)
+            .expect("Error rendering templates");
+        self
+    }
+
+    pub fn import(mut self, s: String) -> Self {
+        self.imports.insert(s);
+        self
+    }
+
+    pub fn initialization_code(mut self, s: String) -> Self {
+        self.initialization_code_set.insert(s);
+        self
+    }
 }
 
 #[derive(Template)]
@@ -88,42 +107,27 @@ struct CodeDeclarations {
 pub struct KotlinWrapper<'a> {
     config: Config,
     ci: &'a ComponentInterface,
-    declarations: CodeDeclarations,
+    initialization_code: Vec<String>,
+    code_blocks: Vec<String>,
+    imports: Vec<String>,
 }
 impl<'a> KotlinWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
-        let mut declarations = Default::default();
+        let mut code_builder = Default::default();
         // BTreeSet sorts the types for nicer output
         for type_ in ci.iter_types().iter().collect::<BTreeSet<_>>().iter() {
-            type_
-                .declare_code(&mut declarations, ci)
-                .expect("Error rendering templates");
+            code_builder = type_.declare_code(code_builder, ci);
         }
         for func in ci.iter_function_definitions() {
-            func.declare_code(&mut declarations, ci)
-                .expect("Error rendering templates");
+            code_builder = func.declare_code(code_builder, ci);
         }
 
         Self {
             config,
             ci,
-            declarations,
+            imports: code_builder.imports.into_iter().collect(),
+            code_blocks: code_builder.code_blocks.into_iter().collect(),
+            initialization_code: code_builder.initialization_code_set.into_iter().collect(),
         }
-    }
-
-    pub fn initialization_code(&self) -> Vec<&String> {
-        self.declarations.initialization_code.iter().collect()
-    }
-
-    pub fn declaration_code(&self) -> Vec<&String> {
-        self.declarations
-            .runtimes
-            .iter()
-            .chain(self.declarations.definitions.iter())
-            .collect()
-    }
-
-    pub fn imports(&self) -> Vec<&String> {
-        self.declarations.imports.iter().collect()
     }
 }

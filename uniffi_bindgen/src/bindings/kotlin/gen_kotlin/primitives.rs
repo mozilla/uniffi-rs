@@ -2,10 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType, NewCodeType};
+use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType, NewCodeType};
 use crate::interface::types::{SimpleTypeHandler, Type};
 use crate::interface::{ComponentInterface, Literal, Radix};
-use crate::Result;
 use askama::Template;
 
 impl KotlinCodeType for SimpleTypeHandler {
@@ -27,17 +26,13 @@ impl KotlinCodeType for SimpleTypeHandler {
         .into()
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        _ci: &ComponentInterface,
-    ) -> Result<()> {
+    fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
         // Needs to be separated out because String uses a different template struct than the rest
         if matches!(self, Self::String) {
-            return declarations.definitions.insert(StringTemplate);
+            return code_builder.code_block(StringTemplate);
         }
 
-        declarations.definitions.insert(match self {
+        code_builder.code_block(match self {
             Self::Boolean => PrimitiveTemplate::boolean(self),
             Self::UInt8 => PrimitiveTemplate::uint(self, "get"),
             Self::UInt16 => PrimitiveTemplate::uint(self, "getShort"),

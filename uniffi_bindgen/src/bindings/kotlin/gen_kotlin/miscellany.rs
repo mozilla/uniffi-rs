@@ -2,10 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeDeclarations, KotlinCodeType, NewCodeType};
+use super::{names, CodeBuilder, KotlinCodeType, NewCodeType};
 use crate::interface::types::{DurationTypeHandler, TimestampTypeHandler};
 use crate::interface::ComponentInterface;
-use crate::Result;
 use askama::Template;
 
 macro_rules! shared_funcs(() => {
@@ -31,12 +30,8 @@ impl KotlinCodeType for TimestampTypeHandler {
         "java.time.Instant".into()
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        _ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations.definitions.insert(TimestampTemplate)
+    fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
+        code_builder.code_block(TimestampTemplate)
     }
 
     shared_funcs!();
@@ -47,12 +42,8 @@ impl KotlinCodeType for DurationTypeHandler {
         "java.time.Duration".into()
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        _ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations.definitions.insert(DurationTemplate)
+    fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
+        code_builder.code_block(DurationTemplate)
     }
 
     shared_funcs!();

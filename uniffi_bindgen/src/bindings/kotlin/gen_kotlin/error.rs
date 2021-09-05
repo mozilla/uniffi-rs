@@ -2,11 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType};
+use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
 use crate::interface::types::ErrorTypeHandler;
 use crate::interface::{ComponentInterface, Error, Variant};
-use crate::Result;
-use anyhow::Context;
 use askama::Template;
 
 impl KotlinCodeType for ErrorTypeHandler<'_> {
@@ -14,14 +12,10 @@ impl KotlinCodeType for ErrorTypeHandler<'_> {
         names::error_name(self.name)
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations.definitions.insert(KotlinError::new(
+    fn declare_code(&self, code_builder: CodeBuilder, ci: &ComponentInterface) -> CodeBuilder {
+        code_builder.code_block(KotlinError::new(
             ci.get_error_definition(self.name)
-                .context("Error definition not found")?
+                .expect("Error definition not found")
                 .clone(),
             ci,
         ))

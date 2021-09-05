@@ -2,10 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeDeclarations, KotlinCodeType, NewCodeType};
+use super::{names, CodeBuilder, KotlinCodeType, NewCodeType};
 use crate::interface::types::{MapTypeHandler, OptionalTypeHandler, SequenceTypeHandler};
 use crate::interface::{ComponentInterface, Literal, Type};
-use crate::Result;
 use askama::Template;
 
 macro_rules! shared_funcs(() => {
@@ -43,12 +42,8 @@ impl KotlinCodeType for MapTypeHandler<'_> {
         }
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        _ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations.definitions.insert(MapTemplate {
+    fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
+        code_builder.code_block(MapTemplate {
             name: self.nm(),
             canonical_name: self.canonical_name(),
             inner: self.inner.clone(),
@@ -70,12 +65,8 @@ impl KotlinCodeType for SequenceTypeHandler<'_> {
         }
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        _ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations.definitions.insert(SequenceTemplate {
+    fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
+        code_builder.code_block(SequenceTemplate {
             name: self.nm(),
             canonical_name: self.canonical_name(),
             inner: self.inner.clone(),
@@ -97,12 +88,8 @@ impl KotlinCodeType for OptionalTypeHandler<'_> {
         }
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        _ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations.definitions.insert(OptionalTemplate {
+    fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
+        code_builder.code_block(OptionalTemplate {
             name: self.nm(),
             canonical_name: self.canonical_name(),
             inner: self.inner.clone(),

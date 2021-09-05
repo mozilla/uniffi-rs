@@ -2,11 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType};
+use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
 use crate::interface::types::EnumTypeHandler;
 use crate::interface::{ComponentInterface, Enum, Literal, Variant};
-use crate::Result;
-use anyhow::Context;
 use askama::Template;
 
 impl KotlinCodeType for EnumTypeHandler<'_> {
@@ -23,14 +21,10 @@ impl KotlinCodeType for EnumTypeHandler<'_> {
         }
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations.definitions.insert(KotlinEnum::new(
+    fn declare_code(&self, code_builder: CodeBuilder, ci: &ComponentInterface) -> CodeBuilder {
+        code_builder.code_block(KotlinEnum::new(
             ci.get_enum_definition(self.name)
-                .context("Enum definition not found")?
+                .expect("Enum definition not found")
                 .clone(),
             ci,
         ))

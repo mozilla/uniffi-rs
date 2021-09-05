@@ -2,12 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType};
+use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
 use crate::interface::types::CallbackInterfaceTypeHandler;
 use crate::interface::types::NewCodeType;
 use crate::interface::{CallbackInterface, ComponentInterface, Method};
-use crate::Result;
-use anyhow::Context;
 use askama::Template;
 
 fn internals_name(cbi: &impl NewCodeType) -> String {
@@ -44,32 +42,18 @@ impl KotlinCodeType for CallbackInterfaceTypeHandler<'_> {
         format!("{}.read({})", internals_name(self), nm)
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations
-            .imports
-            .insert("java.util.concurrent.locks.ReentrantLock".into());
-        declarations
-            .imports
-            .insert("kotlin.concurrent.withLock".into());
-        declarations
-            .runtimes
-            .insert(KotlinCallbackInterfaceRuntime)?;
-        declarations
-            .definitions
-            .insert(KotlinCallbackInterface::new(
+    fn declare_code(&self, code_builder: CodeBuilder, ci: &ComponentInterface) -> CodeBuilder {
+        code_builder
+            .import("java.util.concurrent.locks.ReentrantLock".into())
+            .import("kotlin.concurrent.withLock".into())
+            .code_block(KotlinCallbackInterfaceRuntime)
+            .code_block(KotlinCallbackInterface::new(
                 ci.get_callback_interface_definition(self.name)
-                    .context("CallbackInterface definition not found")?
+                    .expect("CallbackInterface definition not found")
                     .clone(),
                 ci,
-            ))?;
-        declarations
-            .initialization_code
-            .insert(format!("{}Internals.register(lib)", self.canonical_name()));
-        Ok(())
+            ))
+            .initialization_code(format!("{}Internals.register(lib)", self.canonical_name()))
     }
 }
 

@@ -2,9 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType};
+use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
 use crate::interface::{ComponentInterface, Function};
-use crate::Result;
 use askama::Template;
 
 pub(super) trait KotlinCodeFunction {
@@ -12,13 +11,7 @@ pub(super) trait KotlinCodeFunction {
     fn nm(&self) -> String;
 
     /// Add code needed for this type to declarations
-    fn declare_code(
-        &self,
-        _declarations: &mut CodeDeclarations,
-        _ci: &ComponentInterface,
-    ) -> Result<()> {
-        Ok(())
-    }
+    fn declare_code(&self, code_builder: CodeBuilder, ci: &ComponentInterface) -> CodeBuilder;
 }
 
 impl KotlinCodeFunction for Function {
@@ -26,14 +19,8 @@ impl KotlinCodeFunction for Function {
         names::fn_name(self.name())
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        _ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations
-            .definitions
-            .insert(KotlinFunction::new(self.clone()))
+    fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
+        code_builder.code_block(KotlinFunction::new(self.clone()))
     }
 }
 

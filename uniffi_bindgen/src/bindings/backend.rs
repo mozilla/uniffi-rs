@@ -184,10 +184,6 @@ impl TemplateRenderSet {
         Default::default()
     }
 
-    pub fn iter(&self) -> std::slice::Iter<'_, String> {
-        self.items.iter()
-    }
-
     pub fn insert<T: 'static + Template + Hash>(&mut self, template: T) -> Result<()> {
         if self.hashes_seen.insert(self.calc_hash(&template)) {
             self.items.push(template.render()?);
@@ -201,5 +197,14 @@ impl TemplateRenderSet {
         template.hash(&mut s);
         std::any::TypeId::of::<T>().hash(&mut s);
         s.finish()
+    }
+}
+
+impl std::iter::IntoIterator for TemplateRenderSet {
+    type Item = String;
+    type IntoIter = std::vec::IntoIter<String>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.items.into_iter()
     }
 }

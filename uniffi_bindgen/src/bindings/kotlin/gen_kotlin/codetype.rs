@@ -2,9 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeDeclarations};
+use super::{names, CodeBuilder};
 use crate::interface::{ComponentInterface, Literal, NewCodeType};
-use crate::Result;
 
 type_dispatch! {
     /// Kotlin-specific type behavior
@@ -12,10 +11,9 @@ type_dispatch! {
         /// Name for this type in Kotlin code
         fn nm(&self) -> String;
 
-
-        /// Add code needed for this type to declarations
-        fn declare_code(&self, _declarations: &mut CodeDeclarations, _ci: &ComponentInterface) -> Result<()> {
-            Ok(())
+        /// Add code needed for this type, then return the code builder back.
+        fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
+            code_builder
         }
 
         fn literal(&self, _literal: &Literal) -> String {

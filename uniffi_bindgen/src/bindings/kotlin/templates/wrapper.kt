@@ -24,7 +24,7 @@ import com.sun.jna.Structure
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-{%- for imported_class in self.imports() %}
+{%- for imported_class in imports %}
 import {{ imported_class }}
 {%- endfor %}
 
@@ -38,7 +38,7 @@ import {{ imported_class }}
 {% include "NamespaceLibraryTemplate.kt" %}
 
 // Public interface members begin here.
-{% for code in self.declaration_code() %}
+{% for code in code_blocks %}
 {{ code }}
 {%- endfor %}
 

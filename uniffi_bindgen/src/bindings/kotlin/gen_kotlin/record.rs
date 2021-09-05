@@ -2,11 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeDeclarations, KotlinCodeName, KotlinCodeType};
+use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
 use crate::interface::types::RecordTypeHandler;
 use crate::interface::{ComponentInterface, Record};
-use crate::Result;
-use anyhow::Context;
 use askama::Template;
 
 impl KotlinCodeType for RecordTypeHandler<'_> {
@@ -14,14 +12,10 @@ impl KotlinCodeType for RecordTypeHandler<'_> {
         names::class_name(self.name)
     }
 
-    fn declare_code(
-        &self,
-        declarations: &mut CodeDeclarations,
-        ci: &ComponentInterface,
-    ) -> Result<()> {
-        declarations.definitions.insert(KotlinRecord::new(
+    fn declare_code(&self, code_builder: CodeBuilder, ci: &ComponentInterface) -> CodeBuilder {
+        code_builder.code_block(KotlinRecord::new(
             ci.get_record_definition(self.name)
-                .context("Record definition not found")?
+                .expect("Record definition not found")
                 .clone(),
             ci,
         ))
