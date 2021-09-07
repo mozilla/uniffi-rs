@@ -1,15 +1,17 @@
-internal fun {{ type_name }}.Companion.lift(v: {{ ffi_name }} ): {{ type_name }} {
-    return {{ lift_expr }}
-}
+object {{ ffi_converter_name }}: FFIConverter<{{ type_name }}, {{ ffi_name }}> {
+    override fun lift(v: {{ ffi_name }} ): {{ type_name }} {
+        return {{ lift_expr }}
+    }
 
-internal fun {{ type_name }}.Companion.read(buf: ByteBuffer): {{ type_name }} {
-    return {{ read_expr }}
-}
+    override fun read(buf: ByteBuffer): {{ type_name }} {
+        return {{ read_expr }}
+    }
 
-internal fun {{ type_name }}.lower(): {{ ffi_name }}  {
-    return {{ lower_expr }}
-}
+    override fun lower(v: {{ type_name }}): {{ ffi_name }}  {
+        return {{ lower_expr }}
+    }
 
-internal fun {{ type_name }}.write(buf: RustBufferBuilder) {
-    {{ write_expr }}
+    override fun write(v: {{ type_name }}, buf: RustBufferBuilder) {
+        {{ write_expr }}
+    }
 }

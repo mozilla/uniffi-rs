@@ -35,7 +35,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
             val buf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
             kotlinCallbackInterface.{{ meth.nm() }}(
                     {% for arg in meth.arguments() -%}
-                    {{ arg.type_().read("buf") }}
+                    {{ arg.type_().read() }}(buf)
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
@@ -48,7 +48,7 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
                 {%- when Some with (return_type) -%}
                 .let { rval ->
                     val rbuf = RustBufferBuilder()
-                    {{ return_type.write("rval", "rbuf") }}
+                    {{ return_type.write() }}(rval, rbuf)
                     rbuf.finalize()
                 }
                 {%- else -%}
@@ -71,4 +71,13 @@ internal object {{ callback_internals }}: CallbackInternals<{{ cbi.nm() }}>(
             lib.{{ cbi.ffi_init_callback().name() }}(this.foreignCallback, status)
         }
     }
+}
+
+object {{ cbi.ffi_converter_name() }}: FFIConverter<{{ cbi.nm() }}, Long> {
+    override fun lift(v: Long) = {{ callback_internals }}.handleMap.get(v)!!
+    override fun lower(v: {{ cbi.nm() }}) = {{ callback_internals }}.handleMap.insert(v).also {
+        assert({{ callback_internals }}.handleMap.get(it) === v) { "Handle map is not returning the object we just placed there. This is a bug in the HandleMap." }
+    }
+    override fun read(buf: ByteBuffer) = lift(buf.getLong())
+    override fun write(v: {{ cbi.nm() }}, buf: RustBufferBuilder) = buf.putLong(lower(v))
 }

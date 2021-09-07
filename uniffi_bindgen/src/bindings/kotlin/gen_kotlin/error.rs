@@ -4,7 +4,7 @@
 
 use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType, KotlinVariantName};
 use crate::codegen::ErrorTypeHandler;
-use crate::interface::{ComponentInterface, Error};
+use crate::interface::{ComponentInterface, Error, Type};
 use askama::Template;
 
 impl KotlinCodeType for ErrorTypeHandler<'_> {

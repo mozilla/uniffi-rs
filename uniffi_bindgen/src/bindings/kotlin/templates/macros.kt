@@ -29,7 +29,7 @@
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.type_().lower(arg.name()) }}
+        {{- arg.type_().lower() }}({{ arg.nm() }})
         {%- if !loop.last %}, {% endif %}
     {%- endfor %}
 {%- endmacro -%}

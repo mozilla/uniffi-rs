@@ -20,27 +20,6 @@ impl KotlinCodeType for CallbackInterfaceTypeHandler<'_> {
         names::class_name(self.name)
     }
 
-    fn lower(&self, nm: &str) -> String {
-        format!("{}.lower({})", internals_name(self), names::var_name(nm))
-    }
-
-    fn write(&self, nm: &str, target: &str) -> String {
-        format!(
-            "{}.write({}, {})",
-            internals_name(self),
-            names::var_name(nm),
-            target
-        )
-    }
-
-    fn lift(&self, nm: &str) -> String {
-        format!("{}.lift({})", internals_name(self), nm)
-    }
-
-    fn read(&self, nm: &str) -> String {
-        format!("{}.read({})", internals_name(self), nm)
-    }
-
     fn declare_code(&self, code_builder: CodeBuilder, ci: &ComponentInterface) -> CodeBuilder {
         code_builder
             .import("java.util.concurrent.locks.ReentrantLock".into())

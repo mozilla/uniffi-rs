@@ -34,14 +34,6 @@ class {{ obj.nm() }}(
         }
     }
 
-    internal fun lower(): Pointer = callWithPointer { it }
-
-    internal fun write(buf: RustBufferBuilder) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(this.lower()))
-    }
-
     {% for meth in obj.methods() -%}
     {%- match meth.return_type() -%}
 
@@ -50,7 +42,7 @@ class {{ obj.nm() }}(
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
-            {{ return_type.lift("it") }}
+            {{ return_type.lift() }}(it)
         }
 
     {%- when None -%}
@@ -61,20 +53,32 @@ class {{ obj.nm() }}(
     {% endmatch %}
     {% endfor %}
 
+    {% if obj.has_alternate_constructor() -%}
     companion object {
-        internal fun lift(ptr: Pointer): {{ obj.nm() }} {
-            return {{ obj.nm() }}(ptr)
-        }
-
-        internal fun read(buf: ByteBuffer): {{ obj.nm() }} {
-            // The Rust code always writes pointers as 8 bytes, and will
-            // fail to compile if they don't fit.
-            return {{ obj.nm() }}.lift(Pointer(buf.getLong()))
-        }
-
         {% for cons in obj.alternate_constructors() -%}
         fun {{ cons.nm() }}({% call kt::arg_list_decl(cons) %}): {{ obj.nm() }} =
             {{ obj.nm() }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}
+    }
+    {% endif %}
+}
+
+object {{ obj.ffi_converter_name() }}: FFIConverter<{{ obj.nm() }}, Pointer> {
+    override fun lower(v: {{ obj.nm() }}): Pointer = v.callWithPointer { it }
+
+    override fun write(v: {{ obj.nm() }}, buf: RustBufferBuilder) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(v)))
+    }
+
+    override fun lift(v: Pointer): {{ obj.nm() }} {
+        return {{ obj.nm() }}(v)
+    }
+
+    override fun read(buf: ByteBuffer): {{ obj.nm() }} {
+        // The Rust code always writes pointers as 8 bytes, and will
+        // fail to compile if they don't fit.
+        return lift(Pointer(buf.getLong()))
     }
 }

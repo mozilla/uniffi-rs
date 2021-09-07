@@ -23,7 +23,7 @@ class InternalException(message: String) : Exception(message)
 
 // Each top-level error class has a companion object that can lift the error from the call status's rust buffer
 interface CallStatusErrorHandler<E> {
-    fun lift(error_buf: RustBuffer.ByValue): E;
+    fun lift(errorBuf: RustBuffer.ByValue): E;
 }
 
 // Helpers for calling Rust
@@ -43,7 +43,7 @@ private inline fun <U, E: Exception> rustCallWithError(errorHandler: CallStatusE
         // with the message.  but if that code panics, then it just sends back
         // an empty buffer.
         if (status.error_buf.len > 0) {
-            throw InternalException({{ Type::String.lift("status.error_buf") }})
+            throw InternalException({{ Type::String.lift() }}(status.error_buf))
         } else {
             throw InternalException("Rust panic")
         }
@@ -54,8 +54,8 @@ private inline fun <U, E: Exception> rustCallWithError(errorHandler: CallStatusE
 
 // CallStatusErrorHandler implementation for times when we don't expect a CALL_ERROR
 object NullCallStatusErrorHandler: CallStatusErrorHandler<InternalException> {
-    override fun lift(error_buf: RustBuffer.ByValue): InternalException {
-        RustBuffer.free(error_buf)
+    override fun lift(errorBuf: RustBuffer.ByValue): InternalException {
+        RustBuffer.free(errorBuf)
         return InternalException("Unexpected CALL_ERROR")
     }
 }

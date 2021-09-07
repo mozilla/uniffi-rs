@@ -2,29 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeBuilder, KotlinCodeType};
-use crate::codegen::{DurationTypeHandler, NewCodeType, TimestampTypeHandler};
+use super::{CodeBuilder, KotlinCodeType};
+use crate::codegen::{DurationTypeHandler, TimestampTypeHandler};
 use crate::interface::ComponentInterface;
 use askama::Template;
-
-// KotlinCodeType functions shared by TimestampTypeHandler and DurationTypeHandler
-macro_rules! shared_funcs(() => {
-    fn lift(&self, nm: &str) -> String {
-        format!("lift{}({})", self.canonical_name(), nm)
-    }
-
-    fn read(&self, nm: &str) -> String {
-        format!("read{}({})", self.canonical_name(), nm)
-    }
-
-    fn lower(&self, nm: &str) -> String {
-        format!("lower{}({})", self.canonical_name(), names::var_name(nm))
-    }
-
-    fn write(&self, nm: &str, target: &str) -> String {
-        format!("write{}({}, {})", self.canonical_name(), names::var_name(nm), target)
-    }
-});
 
 impl KotlinCodeType for TimestampTypeHandler {
     fn nm(&self) -> String {
@@ -32,10 +13,10 @@ impl KotlinCodeType for TimestampTypeHandler {
     }
 
     fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
-        code_builder.code_block(TimestampTemplate)
+        code_builder.code_block(TimestampTemplate {
+            ffi_converter_name: self.ffi_converter_name(),
+        })
     }
-
-    shared_funcs!();
 }
 
 impl KotlinCodeType for DurationTypeHandler {
@@ -44,16 +25,20 @@ impl KotlinCodeType for DurationTypeHandler {
     }
 
     fn declare_code(&self, code_builder: CodeBuilder, _ci: &ComponentInterface) -> CodeBuilder {
-        code_builder.code_block(DurationTemplate)
+        code_builder.code_block(DurationTemplate {
+            ffi_converter_name: self.ffi_converter_name(),
+        })
     }
-
-    shared_funcs!();
 }
 
 #[derive(Template, Hash)]
 #[template(syntax = "kt", escape = "none", path = "Timestamp.kt")]
-struct TimestampTemplate;
+struct TimestampTemplate {
+    ffi_converter_name: String,
+}
 
 #[derive(Template, Hash)]
 #[template(syntax = "kt", escape = "none", path = "Duration.kt")]
-struct DurationTemplate;
+struct DurationTemplate {
+    ffi_converter_name: String,
+}

@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
+use super::{CodeBuilder, KotlinCodeName, KotlinCodeType};
 use crate::codegen::{NewCodeType, PrimitiveTypeHandler};
 use crate::interface::{ComponentInterface, Literal, Radix, Type};
 use askama::Template;
@@ -46,22 +46,6 @@ impl KotlinCodeType for PrimitiveTypeHandler {
             Self::Float64 => PrimitiveTemplate::int(self, "getDouble"),
             Self::String => unreachable!(),
         })
-    }
-
-    fn lower(&self, nm: &str) -> String {
-        format!("{}.lower()", names::var_name(nm))
-    }
-
-    fn write(&self, nm: &str, target: &str) -> String {
-        format!("{}.write({})", names::var_name(nm), target)
-    }
-
-    fn lift(&self, nm: &str) -> String {
-        format!("{}.lift({})", self.nm(), nm)
-    }
-
-    fn read(&self, nm: &str) -> String {
-        format!("{}.read({})", self.nm(), nm)
     }
 
     fn literal(&self, literal: &Literal) -> String {
@@ -114,6 +98,7 @@ struct StringTemplate;
 #[template(syntax = "kt", escape = "none", path = "Primitive.kt")]
 struct PrimitiveTemplate {
     type_name: String,
+    ffi_converter_name: String,
     ffi_name: String,
     lift_expr: String,
     lower_expr: String,
@@ -125,11 +110,12 @@ impl PrimitiveTemplate {
     fn int(handler: &PrimitiveTypeHandler, get_func: &str) -> Self {
         Self {
             type_name: handler.nm(),
+            ffi_converter_name: handler.ffi_converter_name(),
             ffi_name: handler.ffi_type().nm(),
             lift_expr: "v".into(),
             read_expr: format!("buf.{}()", get_func),
-            lower_expr: "this".into(),
-            write_expr: format!("buf.put{}(this)", handler.ffi_type().nm()),
+            lower_expr: "v".into(),
+            write_expr: format!("buf.put{}(v)", handler.ffi_type().nm()),
         }
     }
 
@@ -138,22 +124,24 @@ impl PrimitiveTemplate {
         let ffi_name = handler.ffi_type().nm();
         Self {
             type_name: handler.nm(),
+            ffi_converter_name: handler.ffi_converter_name(),
             ffi_name: handler.ffi_type().nm(),
             lift_expr: format!("v.to{}()", type_name),
-            read_expr: format!("{}.lift(buf.{}())", type_name, get_func),
-            lower_expr: format!("this.to{}()", ffi_name),
-            write_expr: format!("buf.put{}(this.to{}())", ffi_name, ffi_name),
+            read_expr: format!("lift(buf.{}())", get_func),
+            lower_expr: format!("v.to{}()", ffi_name),
+            write_expr: format!("buf.put{}(v.to{}())", ffi_name, ffi_name),
         }
     }
 
     fn boolean(handler: &PrimitiveTypeHandler) -> Self {
         Self {
             type_name: handler.nm(),
+            ffi_converter_name: handler.ffi_converter_name(),
             ffi_name: handler.ffi_type().nm(),
             lift_expr: "v.toInt() != 0".into(),
-            read_expr: "Boolean.lift(buf.get())".into(),
-            lower_expr: "if (this) 1.toByte() else 0.toByte()".into(),
-            write_expr: "buf.putByte(this.lower())".into(),
+            read_expr: "lift(buf.get())".into(),
+            lower_expr: "if (v) 1.toByte() else 0.toByte()".into(),
+            write_expr: "buf.putByte(lower(v))".into(),
         }
     }
 }

@@ -27,31 +27,8 @@ sealed class {{ e.nm() }}: Exception(){% if contains_object_references %}, Dispo
 {%- endif %}
 
     companion object ErrorHandler : CallStatusErrorHandler<{{ e.nm() }}> {
-        override fun lift(error_buf: RustBuffer.ByValue): {{ e.nm() }} {
-            return liftFromRustBuffer(error_buf) { error_buf -> read(error_buf) }
-        }
-
-        fun read(error_buf: ByteBuffer): {{ e.nm() }} {
-            {% if e.is_flat() %}
-                return when(error_buf.getInt()) {
-                {%- for variant in e.variants() %}
-                {{ loop.index }} -> {{ e.nm() }}.{{ e.variant_name(variant) }}(String.read(error_buf))
-                {%- endfor %}
-                else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
-            }
-            {% else %}
-
-            return when(error_buf.getInt()) {
-                {%- for variant in e.variants() %}
-                {{ loop.index }} -> {{ e.nm() }}.{{ e.variant_name(variant) }}({% if variant.has_fields() %}
-                    {% for field in variant.fields() -%}
-                    {{ field.type_().read("error_buf") }}{% if loop.last %}{% else %},{% endif %}
-                    {% endfor -%}
-                {%- endif -%})
-                {%- endfor %}
-                else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
-            }
-            {%- endif %}
+        override fun lift(errorBuf: RustBuffer.ByValue): {{ e.nm() }} {
+            return {{ e.lift() }}(errorBuf)
         }
     }
 
@@ -71,4 +48,36 @@ sealed class {{ e.nm() }}: Exception(){% if contains_object_references %}, Dispo
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
     {% endif %}
+}
+
+object {{ e.ffi_converter_name() }}: FFIConverterRustBuffer<{{ e.nm() }}> {
+    override fun read(buf: ByteBuffer): {{ e.nm() }} {
+        return when(buf.getInt()) {
+            {%- for variant in e.variants() %}
+            {{ loop.index }} -> {{ e.nm() }}.{{ e.variant_name(variant) }}(
+                {%- if e.is_flat() %}
+                {{ Type::String.read() }}(buf),
+                {%- else %}
+                {%- for field in variant.fields() -%}
+                {{ field.type_().read() }}(buf),
+                {%- endfor %}
+                {%- endif %}
+            )
+            {%- endfor %}
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun write(v: {{ e.nm() }}, buf: RustBufferBuilder) {
+        when(v) {
+            {%- for variant in e.variants() %}
+            is {{ e.nm() }}.{{ e.variant_name(variant) }} -> {
+                buf.putInt({{ loop.index }})
+                {% for field in variant.fields() -%}
+                {{ field.type_().write() }}(v.{{ field.nm() }}, buf)
+                {% endfor %}
+            }
+            {%- endfor %}
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
 }

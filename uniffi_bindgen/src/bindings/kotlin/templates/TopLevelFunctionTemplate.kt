@@ -3,8 +3,7 @@
 {%- when Some with (return_type) %}
 
 fun {{ func.nm() }}({%- call kt::arg_list_decl(func) -%}): {{ return_type.nm() }} {
-    val _retval = {% call kt::to_ffi_call(func) %}
-    return {{ return_type.lift("_retval") }}
+    return {{ return_type.lift() }}({% call kt::to_ffi_call(func) %})
 }
 
 {% when None -%}

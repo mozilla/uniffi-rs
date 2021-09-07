@@ -11,28 +11,17 @@ enum class {{ e.nm() }} {
     {% for variant in e.variants() -%}
     {{ e.variant_name(variant) }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
-
-    companion object {
-        internal fun lift(rbuf: RustBuffer.ByValue): {{ e.nm() }} {
-            return liftFromRustBuffer(rbuf) { buf -> {{ e.nm() }}.read(buf) }
-        }
-
-        internal fun read(buf: ByteBuffer) =
-            try { values()[buf.getInt() - 1] }
-            catch (e: IndexOutOfBoundsException) {
-                throw RuntimeException("invalid enum value, something is very wrong!!", e)
-            }
-    }
-
-    internal fun lower(): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(this, {v, buf -> v.write(buf)})
-    }
-
-    internal fun write(buf: RustBufferBuilder) {
-        buf.putInt(this.ordinal + 1)
-    }
 }
 
+object {{ e.ffi_converter_name() }}: FFIConverterRustBuffer<{{ e.nm() }}> {
+    override fun read(buf: ByteBuffer) = try {
+        {{ e.nm() }}.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun write(v: {{ e.nm() }}, buf: RustBufferBuilder) = buf.putInt(v.ordinal + 1)
+}
 {% else %}
 
 sealed class {{ e.nm() }}{% if contains_object_references %}: Disposable {% endif %} {
@@ -47,42 +36,6 @@ sealed class {{ e.nm() }}{% if contains_object_references %}: Disposable {% endi
     ) : {{ e.nm() }}()
     {%- endif %}
     {% endfor %}
-
-    companion object {
-        internal fun lift(rbuf: RustBuffer.ByValue): {{ e.nm() }} {
-            return liftFromRustBuffer(rbuf) { buf -> {{ e.nm() }}.read(buf) }
-        }
-
-        internal fun read(buf: ByteBuffer): {{ e.nm() }} {
-            return when(buf.getInt()) {
-                {%- for variant in e.variants() %}
-                {{ loop.index }} -> {{ e.nm() }}.{{ e.variant_name(variant) }}{% if variant.has_fields() %}(
-                    {% for field in variant.fields() -%}
-                    {{ field.type_().read("buf") }}{% if loop.last %}{% else %},{% endif %}
-                    {% endfor -%}
-                ){%- endif -%}
-                {%- endfor %}
-                else -> throw RuntimeException("invalid enum value, something is very wrong!!")
-            }
-        }
-    }
-
-    internal fun lower(): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(this, {v, buf -> v.write(buf)})
-    }
-
-    internal fun write(buf: RustBufferBuilder) {
-        when(this) {
-            {%- for variant in e.variants() %}
-            is {{ e.nm() }}.{{ e.variant_name(variant) }} -> {
-                buf.putInt({{ loop.index }})
-                {% for field in variant.fields() -%}
-                {{ field.type_().write(field.nm(), "buf") }}
-                {% endfor %}
-            }
-            {%- endfor %}
-        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
-    }
 
     {% if contains_object_references %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
@@ -100,6 +53,34 @@ sealed class {{ e.nm() }}{% if contains_object_references %}: Disposable {% endi
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
     {% endif %}
+}
+
+object {{ e.ffi_converter_name() }}: FFIConverterRustBuffer<{{ e.nm() }}> {
+    override fun read(buf: ByteBuffer): {{ e.nm() }} {
+        return when(buf.getInt()) {
+            {%- for variant in e.variants() %}
+            {{ loop.index }} -> {{ e.nm() }}.{{ e.variant_name(variant) }}{% if variant.has_fields() %}(
+                {% for field in variant.fields() -%}
+                {{ field.type_().read() }}(buf),
+                {% endfor -%}
+            ){%- endif -%}
+            {%- endfor %}
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun write(v: {{ e.nm() }}, buf: RustBufferBuilder) {
+        when(v) {
+            {%- for variant in e.variants() %}
+            is {{ e.nm() }}.{{ e.variant_name(variant) }} -> {
+                buf.putInt({{ loop.index }})
+                {% for field in variant.fields() -%}
+                {{ field.type_().write() }}(v.{{ field.nm() }}, buf)
+                {% endfor %}
+            }
+            {%- endfor %}
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
 }
 
 {% endif %}

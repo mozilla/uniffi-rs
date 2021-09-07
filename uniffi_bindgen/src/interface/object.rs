@@ -109,6 +109,10 @@ impl Object {
             .find(|cons| cons.is_primary_constructor())
     }
 
+    pub fn has_alternate_constructor(&self) -> bool {
+        !self.constructors.is_empty()
+    }
+
     pub fn alternate_constructors(&self) -> Vec<&Constructor> {
         self.constructors
             .iter()
