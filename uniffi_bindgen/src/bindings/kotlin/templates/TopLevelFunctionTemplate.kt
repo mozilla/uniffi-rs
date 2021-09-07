@@ -1,5 +1,4 @@
 {% import "macros.kt" as kt %}
-{%- let func = self.inner() %}
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
 

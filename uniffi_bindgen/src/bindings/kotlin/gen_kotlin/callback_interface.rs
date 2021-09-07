@@ -61,21 +61,17 @@ impl KotlinCodeType for CallbackInterfaceTypeHandler<'_> {
 #[template(syntax = "kt", escape = "none", path = "CallbackInterfaceTemplate.kt")]
 pub struct KotlinCallbackInterface {
     cbi: CallbackInterface,
+    callback_internals: String,
+    callback_interface_impl: String,
 }
 
 impl KotlinCallbackInterface {
     pub fn new(cbi: CallbackInterface, _ci: &ComponentInterface) -> Self {
-        Self { cbi }
-    }
-
-    // Functions used by the template code
-
-    fn callback_internals(&self) -> String {
-        internals_name(&self.cbi)
-    }
-
-    fn callback_interface_impl(&self) -> String {
-        interface_impl_name(&self.cbi)
+        Self {
+            callback_internals: internals_name(&cbi),
+            callback_interface_impl: interface_impl_name(&cbi),
+            cbi,
+        }
     }
 
     fn invoke_method_name(&self, meth: &Method) -> String {

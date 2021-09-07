@@ -27,14 +27,11 @@ impl KotlinCodeFunction for Function {
 #[derive(Template, Hash)]
 #[template(syntax = "kt", escape = "none", path = "TopLevelFunctionTemplate.kt")]
 pub struct KotlinFunction {
-    inner: Function,
+    func: Function,
 }
 
 impl KotlinFunction {
-    pub fn new(inner: Function) -> Self {
-        Self { inner }
-    }
-    pub fn inner(&self) -> &Function {
-        &self.inner
+    pub fn new(func: Function) -> Self {
+        Self { func }
     }
 }

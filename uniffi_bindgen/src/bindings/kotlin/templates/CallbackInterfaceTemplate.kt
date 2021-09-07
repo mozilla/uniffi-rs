@@ -9,12 +9,12 @@ public interface {{ cbi.nm() }} {
     {% endfor %}
 }
 
-internal class {{ self.callback_interface_impl() }} : ForeignCallback {
+internal class {{ callback_interface_impl }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
     override fun invoke(handle: Long, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue {
-        return {{ self.callback_internals() }}.handleMap.callWithResult(handle) { cb ->
+        return {{ callback_internals }}.handleMap.callWithResult(handle) { cb ->
             when (method) {
-                IDX_CALLBACK_FREE -> {{ self.callback_internals() }}.drop(handle)
+                IDX_CALLBACK_FREE -> {{ callback_internals }}.drop(handle)
                 {% for meth in cbi.methods() -%}
                 {{ loop.index }} -> this.{{ self.invoke_method_name(meth) }}(cb, args)
                 {% endfor %}
@@ -63,8 +63,8 @@ internal class {{ self.callback_interface_impl() }} : ForeignCallback {
     {% endfor %}
 }
 
-internal object {{ self.callback_internals() }}: CallbackInternals<{{ cbi.nm() }}>(
-    foreignCallback = {{ self.callback_interface_impl() }}()
+internal object {{ callback_internals }}: CallbackInternals<{{ cbi.nm() }}>(
+    foreignCallback = {{ callback_interface_impl }}()
 ) {
     override fun register(lib: _UniFFILib) {
         rustCall() { status ->
