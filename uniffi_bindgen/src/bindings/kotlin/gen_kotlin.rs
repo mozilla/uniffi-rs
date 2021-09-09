@@ -16,7 +16,7 @@ mod primitives;
 mod record;
 mod wrapper;
 
-use crate::bindings::backend::TemplateRenderSet;
+use crate::codegen::TemplateRenderSet;
 use crate::interface::*;
 use crate::MergeWith;
 use askama::Template;

@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::{names, CodeBuilder};
-use crate::interface::{ComponentInterface, Literal, NewCodeType};
+use crate::codegen::NewCodeType;
+use crate::interface::{ComponentInterface, Literal};
 
 type_dispatch! {
     /// Kotlin-specific type behavior

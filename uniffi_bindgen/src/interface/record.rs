@@ -151,7 +151,6 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
 mod test {
     use super::super::literal::Radix;
     use super::*;
-    use crate::interface::NewCodeType;
 
     #[test]
     fn test_multiple_record_types() {
@@ -178,7 +177,7 @@ mod test {
         assert_eq!(record.name(), "Simple");
         assert_eq!(record.fields().len(), 1);
         assert_eq!(record.fields()[0].name(), "field");
-        assert_eq!(record.fields()[0].type_().canonical_name(), "U32");
+        assert_eq!(record.fields()[0].type_(), Type::UInt32);
         assert!(!record.fields()[0].required);
         assert!(record.fields()[0].default_value().is_none());
 
@@ -187,20 +186,20 @@ mod test {
         assert_eq!(record.fields().len(), 3);
         assert_eq!(record.fields()[0].name(), "key");
         assert_eq!(
-            record.fields()[0].type_().canonical_name(),
-            "OptionalString"
+            record.fields()[0].type_(),
+            Type::Optional(Type::String.into()),
         );
         assert!(!record.fields()[0].required);
         assert!(record.fields()[0].default_value().is_none());
         assert_eq!(record.fields()[1].name(), "value");
-        assert_eq!(record.fields()[1].type_().canonical_name(), "U32");
+        assert_eq!(record.fields()[1].type_(), Type::UInt32);
         assert!(!record.fields()[1].required);
         assert!(matches!(
             record.fields()[1].default_value(),
             Some(Literal::UInt(0, Radix::Decimal, Type::UInt32))
         ));
         assert_eq!(record.fields()[2].name(), "spin");
-        assert_eq!(record.fields()[2].type_().canonical_name(), "Bool");
+        assert_eq!(record.fields()[2].type_(), Type::Boolean);
         assert!(record.fields()[2].required);
         assert!(record.fields()[2].default_value().is_none());
     }
@@ -222,18 +221,15 @@ mod test {
         assert_eq!(record.fields()[1].name(), "value");
 
         assert_eq!(ci.iter_types().len(), 4);
-        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "U32"));
+        assert!(ci.iter_types().iter().any(|t| *t == Type::UInt32));
+        assert!(ci.iter_types().iter().any(|t| *t == Type::String));
         assert!(ci
             .iter_types()
             .iter()
-            .any(|t| t.canonical_name() == "String"));
+            .any(|t| *t == Type::Optional(Type::String.into())));
         assert!(ci
             .iter_types()
             .iter()
-            .any(|t| t.canonical_name() == "OptionalString"));
-        assert!(ci
-            .iter_types()
-            .iter()
-            .any(|t| t.canonical_name() == "TypeTesting"));
+            .any(|t| *t == Type::Record("Testing".into())));
     }
 }

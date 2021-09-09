@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType, NewCodeType};
-use crate::interface::types::{SimpleTypeHandler, Type};
-use crate::interface::{ComponentInterface, Literal, Radix};
+use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
+use crate::codegen::{NewCodeType, SimpleTypeHandler};
+use crate::interface::{ComponentInterface, Literal, Radix, Type};
 use askama::Template;
 
 impl KotlinCodeType for SimpleTypeHandler {

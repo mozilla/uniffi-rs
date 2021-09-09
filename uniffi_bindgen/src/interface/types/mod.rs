@@ -26,14 +26,10 @@ use std::{collections::hash_map::Entry, collections::BTreeSet, collections::Hash
 use anyhow::{bail, Result};
 
 #[macro_use]
-pub mod dispatch;
-mod codetype;
 mod finder;
 mod resolver;
 
 use crate::interface::ffi::FFIType;
-pub use codetype::NewCodeType;
-pub use dispatch::*;
 pub(super) use finder::TypeFinder;
 pub(super) use resolver::{resolve_builtin_type, TypeResolver};
 
@@ -153,11 +149,7 @@ impl TypeUniverse {
     /// This will fail if you try to add a name for which an existing type definition exists.
     pub fn add_type_definition(&mut self, name: &str, type_: Type) -> Result<()> {
         if resolve_builtin_type(name).is_some() {
-            bail!(
-                "please don't shadow builtin types ({}, {})",
-                name,
-                type_.canonical_name()
-            );
+            bail!("please don't shadow builtin types ({})", name);
         }
         let type_ = self.add_known_type(type_)?;
         match self.type_definitions.entry(name.to_string()) {
@@ -258,25 +250,6 @@ impl IterTypes for Type {
 impl IterTypes for TypeUniverse {
     fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.all_known_types.iter())
-    }
-}
-
-#[cfg(test)]
-mod test_type {
-    use super::*;
-
-    #[test]
-    fn test_canonical_names() {
-        // Non-exhaustive, but gives a bit of a flavour of what we want.
-        assert_eq!(Type::UInt8.canonical_name(), "U8");
-        assert_eq!(Type::String.canonical_name(), "String");
-        assert_eq!(
-            Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object(
-                "Example".into()
-            )))))
-            .canonical_name(),
-            "OptionalSequenceTypeExample"
-        );
     }
 }
 

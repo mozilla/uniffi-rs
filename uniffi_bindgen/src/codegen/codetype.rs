@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::interface::types::dispatch::*;
+use super::dispatch::*;
 use crate::interface::FFIType;
 
 type_dispatch! {
@@ -189,22 +189,32 @@ impl NewCodeType for WrapperTypeHandler<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interface::{Record, Type};
+    use crate::interface::ComponentInterface;
 
     #[test]
     fn test_canonical_name() {
-        assert_eq!(Type::UInt32.canonical_name(), "U32");
+        const UDL: &str = r#"
+            namespace test{};
+            interface TestObject { };
+            dictionary TestRecord {
+                u8 field1;
+                string field2;
+                timestamp? field3;
+                sequence<TestObject>? field4;
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        // Non-exhaustive, but gives a bit of a flavour of what we want.
+        let record = ci.get_record_definition("TestRecord").unwrap();
+        let fields = record.fields();
+        assert_eq!(record.type_().canonical_name(), "TypeTestRecord");
+        assert_eq!(record.canonical_name(), "TypeTestRecord");
+        assert_eq!(fields[0].type_().canonical_name(), "U8");
+        assert_eq!(fields[1].type_().canonical_name(), "String");
+        assert_eq!(fields[2].type_().canonical_name(), "OptionalTimestamp");
         assert_eq!(
-            Record {
-                name: "Foo".into(),
-                fields: vec![]
-            }
-            .canonical_name(),
-            "TypeFoo"
-        );
-        assert_eq!(
-            Type::Optional(Box::new(Type::Timestamp)).canonical_name(),
-            "OptionalTimestamp"
+            fields[3].type_().canonical_name(),
+            "OptionalSequenceTypeTestObject"
         );
     }
 }

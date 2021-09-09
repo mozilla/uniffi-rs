@@ -21,7 +21,7 @@
 //!    impl for `Type`, `Record`, `Object`, `CallbackInterface`, etc. by dispatching the calls to
 //!    the appropriate handler type.  See `CodeType` and `KotlinCodeType` for an example.
 
-use super::Type;
+use crate::interface::Type;
 
 // Dispatch handler for simple types that correspond to standard types on the target language.
 // It's easier to implement traits for all of these together than with separate structs.
@@ -166,7 +166,7 @@ macro_rules! type_dispatch_impl_for_type (
             $(
                 $vis fn $fn_name(&self $(, $param: $type)* ) $(-> $fn_return)? {
                     use crate::interface::types::Type;
-                    use crate::interface::types::dispatch::*;
+                    use crate::codegen::*;
                     dispatch_type_function!(self, $fn_name, ($($param),*))
                 }
             )+

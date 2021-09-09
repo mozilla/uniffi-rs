@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::KotlinCodeType;
-use crate::interface::types::ExternalTypeHandler;
+use crate::codegen::ExternalTypeHandler;
 
 impl KotlinCodeType for ExternalTypeHandler<'_> {
     fn nm(&self) -> String {

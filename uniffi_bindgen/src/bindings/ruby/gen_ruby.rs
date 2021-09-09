@@ -7,6 +7,7 @@ use askama::Template;
 use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
 use serde::{Deserialize, Serialize};
 
+use crate::codegen::NewCodeType;
 use crate::interface::*;
 use crate::MergeWith;
 

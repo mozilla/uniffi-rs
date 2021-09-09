@@ -5,6 +5,7 @@
 use anyhow::Result;
 use askama::Template;
 
+use super::codegen::NewCodeType;
 use super::interface::*;
 use heck::SnakeCase;
 

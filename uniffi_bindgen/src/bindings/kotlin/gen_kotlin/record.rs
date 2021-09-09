@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
-use crate::interface::types::RecordTypeHandler;
+use crate::codegen::RecordTypeHandler;
 use crate::interface::{ComponentInterface, Record};
 use askama::Template;
 

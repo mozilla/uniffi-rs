@@ -107,8 +107,9 @@ use std::{
 };
 
 #[macro_use]
-pub mod interface;
+pub mod codegen;
 pub mod bindings;
+pub mod interface;
 pub mod scaffolding;
 
 use bindings::TargetLanguage;

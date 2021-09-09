@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeBuilder, KotlinCodeType, NewCodeType};
-use crate::interface::types::{DurationTypeHandler, TimestampTypeHandler};
+use super::{names, CodeBuilder, KotlinCodeType};
+use crate::codegen::{DurationTypeHandler, NewCodeType, TimestampTypeHandler};
 use crate::interface::ComponentInterface;
 use askama::Template;
 

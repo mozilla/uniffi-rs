@@ -190,7 +190,6 @@ pub(in super::super) fn resolve_builtin_type(name: &str) -> Option<Type> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::interface::NewCodeType;
     use weedle::Parse;
 
     #[test]
@@ -206,9 +205,7 @@ mod test {
 
         let (_, expr) = weedle::types::Type::parse("TestRecord?").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert!(matches!(t, Type::Optional(_)));
-        // Matching the Box<T> is hard, use names as a convenient workaround.
-        assert_eq!(t.canonical_name(), "OptionalTypeTestRecord");
+        assert_eq!(t, Type::Optional(Type::Record("TestRecord".into()).into()));
         assert_eq!(types.iter_known_types().count(), 2);
 
         Ok(())
@@ -220,14 +217,12 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("u32?").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "OptionalU32");
+        assert_eq!(t, Type::Optional(Type::UInt32.into()));
         assert_eq!(types.iter_known_types().count(), 2);
+        assert!(types.iter_known_types().any(|t| t == Type::UInt32));
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "U32"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "OptionalU32"));
+            .any(|t| t == Type::Optional(Type::UInt32.into())));
     }
 
     #[test]
@@ -236,14 +231,12 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("sequence<string>").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "SequenceString");
+        assert_eq!(t, Type::Sequence(Type::String.into()));
         assert_eq!(types.iter_known_types().count(), 2);
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "SequenceString"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "String"));
+            .any(|t| t == Type::Sequence(Type::String.into())));
+        assert!(types.iter_known_types().any(|t| t == Type::String));
     }
 
     #[test]
@@ -252,17 +245,13 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("record<DOMString, float>").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "MapF32");
+        assert_eq!(t, Type::Map(Type::Float32.into()));
         assert_eq!(types.iter_known_types().count(), 3);
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "MapF32"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "String"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "F32"));
+            .any(|t| t == Type::Map(Type::Float32.into())));
+        assert!(types.iter_known_types().any(|t| t == Type::String));
+        assert!(types.iter_known_types().any(|t| t == Type::Float32));
     }
 
     #[test]

@@ -222,7 +222,6 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::interface::NewCodeType;
 
     #[test]
     fn test_minimal_and_rich_function() -> Result<()> {
@@ -250,17 +249,17 @@ mod test {
         let func2 = ci.get_function_definition("rich").unwrap();
         assert_eq!(func2.name(), "rich");
         assert_eq!(
-            func2.return_type().unwrap().canonical_name(),
-            "SequenceOptionalString"
+            *func2.return_type().unwrap(),
+            Type::Sequence(Type::Optional(Type::String.into()).into())
         );
         assert!(matches!(func2.throws(), Some("TestError")));
         assert_eq!(func2.arguments().len(), 2);
         assert_eq!(func2.arguments()[0].name(), "arg1");
-        assert_eq!(func2.arguments()[0].type_().canonical_name(), "U32");
+        assert_eq!(func2.arguments()[0].type_(), Type::UInt32);
         assert_eq!(func2.arguments()[1].name(), "arg2");
         assert_eq!(
-            func2.arguments()[1].type_().canonical_name(),
-            "TypeTestDict"
+            func2.arguments()[1].type_(),
+            Type::Record("TestDict".into())
         );
         Ok(())
     }
