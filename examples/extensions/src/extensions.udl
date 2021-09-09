@@ -1,0 +1,19 @@
+// Example of extensions in action.  Once you have extensions defined, you can
+// just use them in the UDL.
+
+namespace extensions {
+  string render_template(string name, JsonObject context);
+};
+
+dictionary Product {
+  Identifier id;
+  string     name;
+  i32        cost;
+};
+
+interface ObjectDatabase {
+  constructor()
+
+  void set(string id, SerializedObject obj);
+  SerializedObject? get(string id);
+};

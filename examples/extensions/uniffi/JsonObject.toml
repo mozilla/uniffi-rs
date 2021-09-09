@@ -1,0 +1,19 @@
+# Example of wrapping on the both sides.
+
+wrapped_type = "String"
+
+[rust]
+imports = ["serde_json"]
+convert_from_wrapped = "serde_json::from_string({})"
+convert_to_wrapped = "{}.to_string()"
+
+
+[kotlin]
+imports = ["org.json.JSONObject"]
+convert_from_wrapped = "JSONObject({})"
+convert_to_wrapped = "{}.toString()"
+
+[python]
+imports = ["json"] 
+convert_from_wrapped = "json.loads({})"
+convert_to_wrapped = "json.dumps({})"

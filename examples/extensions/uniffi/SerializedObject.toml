@@ -1,0 +1,16 @@
+# Example of wrapping on the bindings side only
+
+wrapped_type = "String"
+
+[kotlin]
+imports = [
+    "kotlinx.serialization",
+    "kotlinx.serialization.json",
+]
+convert_from_wrapped = "Json.decodeFromString<MyObject>({})"
+convert_to_wrapped = "Json.encodeToString({})"
+
+[python]
+imports = ["pickle"]
+convert_from_wrapped = "pickle.loads({})"
+convert_to_wrapped = "pickle.dumps({})"

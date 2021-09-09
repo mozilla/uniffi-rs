@@ -1,0 +1,9 @@
+# Example of wrapping on the scaffolding side only.  These would typically
+# convert the wrapped type into an application-defined type
+
+wrapped_type = "u64"
+
+[rust]
+imports = ["my::module::Identifier"]
+convert_from_wrapped = "{}.into()"
+convert_to_wrapped = "{}.into()"
