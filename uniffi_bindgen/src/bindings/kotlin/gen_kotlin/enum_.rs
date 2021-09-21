@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
+use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType, KotlinVariantName};
 use crate::codegen::EnumTypeHandler;
-use crate::interface::{ComponentInterface, Enum, Literal, Variant};
+use crate::interface::{ComponentInterface, Enum, Literal};
 use askama::Template;
 
 impl KotlinCodeType for EnumTypeHandler<'_> {
@@ -28,20 +28,6 @@ impl KotlinCodeType for EnumTypeHandler<'_> {
                 .clone(),
             ci,
         ))
-    }
-}
-
-trait KotlineEnum {
-    fn variant_name(&self, variant: &Variant) -> String;
-}
-
-impl KotlineEnum for Enum {
-    fn variant_name(&self, variant: &Variant) -> String {
-        if self.is_flat() {
-            names::enum_variant_name(variant.name())
-        } else {
-            names::class_name(variant.name())
-        }
     }
 }
 

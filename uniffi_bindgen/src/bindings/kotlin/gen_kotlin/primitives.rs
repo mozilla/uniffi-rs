@@ -3,11 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
-use crate::codegen::{NewCodeType, SimpleTypeHandler};
+use crate::codegen::{NewCodeType, PrimitiveTypeHandler};
 use crate::interface::{ComponentInterface, Literal, Radix, Type};
 use askama::Template;
 
-impl KotlinCodeType for SimpleTypeHandler {
+impl KotlinCodeType for PrimitiveTypeHandler {
     fn nm(&self) -> String {
         match self {
             Self::UInt8 => "UByte",
@@ -122,7 +122,7 @@ struct PrimitiveTemplate {
 }
 
 impl PrimitiveTemplate {
-    fn int(handler: &SimpleTypeHandler, get_func: &str) -> Self {
+    fn int(handler: &PrimitiveTypeHandler, get_func: &str) -> Self {
         Self {
             type_name: handler.nm(),
             ffi_name: handler.ffi_type().nm(),
@@ -133,7 +133,7 @@ impl PrimitiveTemplate {
         }
     }
 
-    fn uint(handler: &SimpleTypeHandler, get_func: &str) -> Self {
+    fn uint(handler: &PrimitiveTypeHandler, get_func: &str) -> Self {
         let type_name = handler.nm();
         let ffi_name = handler.ffi_type().nm();
         Self {
@@ -146,7 +146,7 @@ impl PrimitiveTemplate {
         }
     }
 
-    fn boolean(handler: &SimpleTypeHandler) -> Self {
+    fn boolean(handler: &PrimitiveTypeHandler) -> Self {
         Self {
             type_name: handler.nm(),
             ffi_name: handler.ffi_type().nm(),

@@ -19,13 +19,13 @@
 //!  - Define a macro that can dispatch function calls for `Type` to one of the handler structs.
 //!  - Wrap traits with the `type_dispatch!` macro, defined here.  `type_dispatch!` derives a trait
 //!    impl for `Type`, `Record`, `Object`, `CallbackInterface`, etc. by dispatching the calls to
-//!    the appropriate handler type.  See `CodeType` and `KotlinCodeType` for an example.
+//!    the appropriate handler type.  See `NewCodeType` and `KotlinCodeType` for an example.
 
 use crate::interface::Type;
 
-// Dispatch handler for simple types that correspond to standard types on the target language.
+// Dispatch handler for primitive types that correspond to standard types on the target language.
 // It's easier to implement traits for all of these together than with separate structs.
-pub enum SimpleTypeHandler {
+pub enum PrimitiveTypeHandler {
     UInt8,
     Int8,
     UInt16,
@@ -83,18 +83,18 @@ pub struct WrapperTypeHandler<'d> {
 macro_rules! dispatch_type_function(
     ($self:ident, $fn_name:ident, ($($param:ident),*)) => {
         match $self {
-            Type::UInt8 => SimpleTypeHandler::UInt8.$fn_name($($param),*),
-            Type::Int8 => SimpleTypeHandler::Int8.$fn_name($($param),*),
-            Type::UInt16 => SimpleTypeHandler::UInt16.$fn_name($($param),*),
-            Type::Int16 => SimpleTypeHandler::Int16.$fn_name($($param),*),
-            Type::UInt32 => SimpleTypeHandler::UInt32.$fn_name($($param),*),
-            Type::Int32 => SimpleTypeHandler::Int32.$fn_name($($param),*),
-            Type::UInt64 => SimpleTypeHandler::UInt64.$fn_name($($param),*),
-            Type::Int64 => SimpleTypeHandler::Int64.$fn_name($($param),*),
-            Type::Float32 => SimpleTypeHandler::Float32.$fn_name($($param),*),
-            Type::Float64 => SimpleTypeHandler::Float64.$fn_name($($param),*),
-            Type::Boolean => SimpleTypeHandler::Boolean.$fn_name($($param),*),
-            Type::String => SimpleTypeHandler::String.$fn_name($($param),*),
+            Type::UInt8 => PrimitiveTypeHandler::UInt8.$fn_name($($param),*),
+            Type::Int8 => PrimitiveTypeHandler::Int8.$fn_name($($param),*),
+            Type::UInt16 => PrimitiveTypeHandler::UInt16.$fn_name($($param),*),
+            Type::Int16 => PrimitiveTypeHandler::Int16.$fn_name($($param),*),
+            Type::UInt32 => PrimitiveTypeHandler::UInt32.$fn_name($($param),*),
+            Type::Int32 => PrimitiveTypeHandler::Int32.$fn_name($($param),*),
+            Type::UInt64 => PrimitiveTypeHandler::UInt64.$fn_name($($param),*),
+            Type::Int64 => PrimitiveTypeHandler::Int64.$fn_name($($param),*),
+            Type::Float32 => PrimitiveTypeHandler::Float32.$fn_name($($param),*),
+            Type::Float64 => PrimitiveTypeHandler::Float64.$fn_name($($param),*),
+            Type::Boolean => PrimitiveTypeHandler::Boolean.$fn_name($($param),*),
+            Type::String => PrimitiveTypeHandler::String.$fn_name($($param),*),
             Type::Timestamp => TimestampTypeHandler.$fn_name($($param),*),
             Type::Duration => DurationTypeHandler.$fn_name($($param),*),
             Type::Object(name) => ObjectTypeHandler { name }.$fn_name($($param),*),
@@ -119,7 +119,7 @@ macro_rules! dispatch_type_function(
     }
 );
 
-// The `type_dispatch!` trait wrapper.  F
+// The `type_dispatch!` trait wrapper.
 
 macro_rules! type_dispatch {
     (

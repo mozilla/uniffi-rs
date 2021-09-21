@@ -7,6 +7,7 @@ use crate::codegen::{MapTypeHandler, NewCodeType, OptionalTypeHandler, SequenceT
 use crate::interface::{ComponentInterface, Literal, Type};
 use askama::Template;
 
+// KotlinCodeType functions shared by MapTemplate, SequenceTypeHandler, and OptionalTypeHandler
 macro_rules! shared_funcs(() => {
     fn lower(&self, nm: &str) -> String {
         format!("lower{}({})", self.canonical_name(), names::var_name(nm))

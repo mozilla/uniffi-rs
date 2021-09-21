@@ -21,8 +21,8 @@ type_dispatch! {
             unreachable!();
         }
 
-        // Note: the expressions below the most common FFI conversion names.  It would be really
-        // great to standardize all types to use the same method
+        // The expressions below cover the most common FFI conversion names.  It would be
+        // really great to standardize all types to use the same method
 
         /// An expression for lowering a value into something we can pass over the FFI.
         ///

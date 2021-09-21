@@ -26,7 +26,7 @@ type_dispatch! {
 
 // NewCodeType is simple enough that we can implement it in one file.
 
-impl NewCodeType for SimpleTypeHandler {
+impl NewCodeType for PrimitiveTypeHandler {
     fn canonical_name(&self) -> String {
         match self {
             Self::Int8 => "I8".into(),

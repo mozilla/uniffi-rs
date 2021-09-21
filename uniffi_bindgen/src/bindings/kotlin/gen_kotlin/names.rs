@@ -41,7 +41,7 @@ pub(super) fn error_name(name: &str) -> String {
     }
 }
 
-// `KotlinName` defines the Kotlin name for various parts of the interface.
+/// Get the Kotlin name for various parts of the interface.
 pub(super) trait KotlinCodeName {
     /// Name for this type in Kotlin code
     fn nm(&self) -> String;
@@ -87,6 +87,27 @@ impl KotlinCodeName for interface::FFIType {
             interface::FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
             interface::FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             interface::FFIType::ForeignCallback => "ForeignCallback".to_string(),
+        }
+    }
+}
+
+/// Get the Kotlin name for enum/error variants.
+pub(super) trait KotlinVariantName {
+    fn variant_name(&self, variant: &interface::Variant) -> String;
+}
+
+impl KotlinVariantName for interface::Error {
+    fn variant_name(&self, variant: &interface::Variant) -> String {
+        error_name(variant.name())
+    }
+}
+
+impl KotlinVariantName for interface::Enum {
+    fn variant_name(&self, variant: &interface::Variant) -> String {
+        if self.is_flat() {
+            enum_variant_name(variant.name())
+        } else {
+            class_name(variant.name())
         }
     }
 }

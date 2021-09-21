@@ -7,6 +7,7 @@ use crate::codegen::{DurationTypeHandler, NewCodeType, TimestampTypeHandler};
 use crate::interface::ComponentInterface;
 use askama::Template;
 
+// KotlinCodeType functions shared by TimestampTypeHandler and DurationTypeHandler
 macro_rules! shared_funcs(() => {
     fn lift(&self, nm: &str) -> String {
         format!("lift{}({})", self.canonical_name(), nm)

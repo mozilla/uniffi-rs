@@ -22,7 +22,7 @@ use crate::MergeWith;
 use askama::Template;
 use codetype::KotlinCodeType;
 use function::KotlinCodeFunction;
-use names::KotlinCodeName;
+use names::{KotlinCodeName, KotlinVariantName};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 use std::hash::Hash;
@@ -87,6 +87,8 @@ impl CodeBuilder {
     pub fn code_block(mut self, template: impl 'static + Template + Hash) -> Self {
         self.code_blocks
             .insert(template)
+            // Template rendering shouldn't fail in practice and we can't really do anything to
+            // recover, so just panic if it does.
             .expect("Error rendering templates");
         self
     }
@@ -102,22 +104,25 @@ impl CodeBuilder {
     }
 }
 
+/// Top-level renderer for the Kotlin bindings
 #[derive(Template)]
-#[template(syntax = "kt", escape = "none", path = "wrapper.kt")]
-pub struct KotlinWrapper<'a> {
+#[template(syntax = "kt", escape = "none", path = "bindings.kt")]
+pub struct KotlinBindings<'a> {
     config: Config,
     ci: &'a ComponentInterface,
     initialization_code: Vec<String>,
     code_blocks: Vec<String>,
     imports: Vec<String>,
 }
-impl<'a> KotlinWrapper<'a> {
+impl<'a> KotlinBindings<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
         let mut code_builder = Default::default();
-        // BTreeSet sorts the types for nicer output
+        // Generate code for all known types.  This handles both primitive types as well as
+        // records, objects, etc.  BTreeSet sorts the types for nicer output.
         for type_ in ci.iter_types().iter().collect::<BTreeSet<_>>().iter() {
             code_builder = type_.declare_code(code_builder, ci);
         }
+        // Also generate code for toplevel-functions
         for func in ci.iter_function_definitions() {
             code_builder = func.declare_code(code_builder, ci);
         }

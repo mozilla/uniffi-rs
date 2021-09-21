@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType};
+use super::{names, CodeBuilder, KotlinCodeName, KotlinCodeType, KotlinVariantName};
 use crate::codegen::ErrorTypeHandler;
-use crate::interface::{ComponentInterface, Error, Variant};
+use crate::interface::{ComponentInterface, Error};
 use askama::Template;
 
 impl KotlinCodeType for ErrorTypeHandler<'_> {
@@ -19,16 +19,6 @@ impl KotlinCodeType for ErrorTypeHandler<'_> {
                 .clone(),
             ci,
         ))
-    }
-}
-
-trait KotlineError {
-    fn variant_name(&self, variant: &Variant) -> String;
-}
-
-impl KotlineError for Error {
-    fn variant_name(&self, variant: &Variant) -> String {
-        names::error_name(variant.name())
     }
 }
 
