@@ -3,10 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::bindings::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
+use crate::interface::types::Type;
+use askama::Template;
 use paste::paste;
 use std::fmt;
 
-#[allow(unused_imports)]
+// Used in template files.
 use super::filters;
 
 fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
@@ -21,18 +23,28 @@ fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdenti
 }
 
 macro_rules! impl_code_type_for_compound {
-     ($T:ty, $type_label_pattern:literal, $canonical_name_pattern:literal) => {
+     ($T:ty, $type_label_pattern:literal, $canonical_name_pattern:literal, $template_file:literal) => {
         paste! {
+            #[derive(Template)]
+            #[template(syntax = "swift", escape = "none", path = $template_file)]
             pub struct $T {
                 inner: TypeIdentifier,
+                outer: TypeIdentifier,
             }
 
             impl $T {
-                pub fn new(inner: TypeIdentifier, _outer: TypeIdentifier) -> Self {
-                    Self { inner }
+                pub fn new(inner: TypeIdentifier, outer: TypeIdentifier) -> Self {
+                    Self { inner, outer }
                 }
                 fn inner(&self) -> &TypeIdentifier {
                     &self.inner
+                }
+                fn outer(&self) -> &TypeIdentifier {
+                    &self.outer
+                }
+
+                fn ffi_converter_name(&self, oracle: &dyn CodeOracle) -> String {
+                    format!("FfiConverter{}", self.canonical_name(oracle))
                 }
             }
 
@@ -50,33 +62,46 @@ macro_rules! impl_code_type_for_compound {
                 }
 
                 fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.lower()", oracle.var_name(nm))
+                    format!("{}.lower({})", self.ffi_converter_name(oracle), oracle.var_name(nm))
                 }
 
                 fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
-                    format!("{}.write(into: {})", oracle.var_name(nm), target)
+                    format!("{}.write({}, into: {})", self.ffi_converter_name(oracle), oracle.var_name(nm), target)
                 }
 
                 fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.lift({})", self.type_label(oracle), nm)
+                    format!("{}.lift({})", self.ffi_converter_name(oracle), nm)
                 }
 
                 fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.read(from: {})", self.type_label(oracle), nm)
+                    format!("{}.read(from: {})", self.ffi_converter_name(oracle), nm)
                 }
 
-                fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-                    Some(
-                        format!("// Helper code for {} is found in RustBufferHelper.swift", self.type_label(oracle))
-                    )
+                fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
+                    Some(self.render().unwrap())
                 }
             }
         }
     }
  }
 
-impl_code_type_for_compound!(OptionalCodeType, "{}?", "Option{}");
+impl_code_type_for_compound!(
+    OptionalCodeType,
+    "{}?",
+    "Option{}",
+    "OptionalTemplate.swift"
+);
 
-impl_code_type_for_compound!(SequenceCodeType, "[{}]", "Sequence{}");
+impl_code_type_for_compound!(
+    SequenceCodeType,
+    "[{}]",
+    "Sequence{}",
+    "ArrayTemplate.swift"
+);
 
-impl_code_type_for_compound!(MapCodeType, "[String: {}]", "Map{}");
+impl_code_type_for_compound!(
+    MapCodeType,
+    "[String: {}]",
+    "Map{}",
+    "DictionaryTemplate.swift"
+);

@@ -25,7 +25,7 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
 
         {% for variant in e.variants() %}
         case {{ loop.index }}: return .{{ variant.name()|class_name_swift }}(
-            message: try String.read(from: buf)
+            message: try {{ "buf"|read_swift(Type::String) }}
         )
         {% endfor %}
 
@@ -52,7 +52,7 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
         {% for variant in e.variants() %}
         case let .{{ variant.name()|class_name_swift }}(message):
             buf.writeInt(Int32({{ loop.index }}))
-            message.write(into: buf)
+            {{ "message"|write_swift("buf", Type::String) }}
         {%- endfor %}
 
         {% else %}
@@ -62,7 +62,7 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
         case let .{{ variant.name()|class_name_swift }}({% for field in variant.fields() %}{{ field.name()|var_name_swift }}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             buf.writeInt(Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
-            {{ field.name()|var_name_swift }}.write(into: buf)
+            {{ field.name()|write_swift("buf", field.type_()) }}
             {% endfor -%}
         {% else %}
         case .{{ variant.name()|class_name_swift }}:

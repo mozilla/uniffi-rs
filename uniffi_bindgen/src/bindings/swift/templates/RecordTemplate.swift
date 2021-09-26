@@ -44,7 +44,7 @@ fileprivate extension {{ rec.name()|class_name_swift }} {
 
     func write(into buf: Writer) {
         {%- for field in rec.fields() %}
-        {{ field.name()|var_name_swift }}.write(into: buf)
+        {{ "self.{}"|format(field.name())|write_swift("buf", field.type_()) }}
         {%- endfor %}
     }
 }
