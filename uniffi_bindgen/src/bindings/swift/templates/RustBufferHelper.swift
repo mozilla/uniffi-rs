@@ -32,3 +32,65 @@ extension FfiConverterUsingByteBuffer {
         return value
     }
 }
+
+// Helpers for structural types. Note that because of canonical_names, it /should/ be impossible
+// to make another `FfiConverterSequence` etc just using the UDL.
+fileprivate enum FfiConverterSequence {
+    static func write<T>(_ value: [T], into buf: Writer, writeItem: (T, Writer) -> Void) {
+        let len = Int32(value.count)
+        buf.writeInt(len)
+        for item in value {
+            writeItem(item, buf)
+        }
+    }
+
+    static func read<T>(from buf: Reader, readItem: (Reader) throws -> T) throws -> [T] {
+        let len: Int32 = try buf.readInt()
+        var seq = [T]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try readItem(buf))
+        }
+        return seq
+    }
+}
+
+fileprivate enum FfiConverterOptional {
+    static func write<T>(_ value: T?, into buf: Writer, writeItem: (T, Writer) -> Void) {
+        guard let value = value else {
+            buf.writeInt(Int8(0))
+            return
+        }
+        buf.writeInt(Int8(1))
+        writeItem(value, buf)
+    }
+
+    static func read<T>(from buf: Reader, readItem: (Reader) throws -> T) throws -> T? {
+        switch try buf.readInt() as Int8 {
+        case 0: return nil
+        case 1: return try readItem(buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+fileprivate enum FfiConverterDictionary {
+    static func write<T>(_ value: [String: T], into buf: Writer, writeItem: (String, T, Writer) -> Void) {
+        let len = Int32(value.count)
+        buf.writeInt(len)
+        for (key, value) in value {
+            writeItem(key, value, buf)
+        }
+    }
+
+    static func read<T>(from buf: Reader, readItem: (Reader) throws -> (String, T)) throws -> [String: T] {
+        let len: Int32 = try buf.readInt()
+        var dict = [String: T]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let (key, value) = try readItem(buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}

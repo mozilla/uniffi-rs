@@ -102,6 +102,6 @@ impl_code_type_for_compound!(
 impl_code_type_for_compound!(
     MapCodeType,
     "[String: {}]",
-    "Map{}",
+    "Dictionary{}",
     "DictionaryTemplate.swift"
 );
