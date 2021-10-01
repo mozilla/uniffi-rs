@@ -1,6 +1,12 @@
 {% import "macros.swift" as swift %}
-{% let cbi = self.inner() %}
-{% let type_name = cbi.name()|class_name_swift %}
+{%- let cbi = self.inner() %}
+{%- let type_name = cbi.name()|class_name_swift %}
+{%- let canonical_type_name = cbi.type_()|canonical_name %}
+{%- let ffi_converter = format!("ffiConverter{}", canonical_type_name) %}
+{%- let foreign_callback = format!("foreignCallback{}", canonical_type_name) %}
+
+// Declaration and FfiConverters for {{ type_name }} Callback Interface
+
 public protocol {{ type_name }} : AnyObject {
     {% for meth in cbi.methods() -%}
     func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_protocol(meth) %}) {% call swift::throws(meth) -%}
@@ -11,15 +17,11 @@ public protocol {{ type_name }} : AnyObject {
     {% endfor %}
 }
 
-{% let canonical_type_name = cbi.type_().canonical_name()|class_name_swift %}
-{% let callback_internals = format!("{}Internals", canonical_type_name) -%}
-{% let callback_interface_impl = format!("{}", canonical_type_name)|var_name_swift -%}
-
-let {{ callback_interface_impl }} : ForeignCallback =
-    { (handle: UInt64, method: Int32, args: RustBuffer) -> RustBuffer in
-
+// The ForeignCallback that is passed to Rust.
+fileprivate let {{ foreign_callback }} : ForeignCallback =
+    { (handle: Handle, method: Int32, args: RustBuffer) -> RustBuffer in
         {% for meth in cbi.methods() -%}
-    {% let method_name = format!("invoke_{}", meth.name())|fn_name_swift %}
+    {%- let method_name = format!("invoke_{}", meth.name())|fn_name_swift -%}
 
     func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: RustBuffer) throws -> RustBuffer {
         defer { args.deallocate() }
@@ -42,7 +44,7 @@ let {{ callback_interface_impl }} : ForeignCallback =
                 {%- match meth.return_type() -%}
                 {%- when Some with (return_type) -%}
                 let writer = Writer()
-                result.write(into: writer)
+                {{ "result"|write_swift("writer", return_type) }}
                 return RustBuffer(bytes: writer.bytes)
                 {%- else -%}
                 return RustBuffer()
@@ -53,84 +55,26 @@ let {{ callback_interface_impl }} : ForeignCallback =
     }
     {% endfor %}
 
-        return {{ callback_internals }}.handleMap.callWithResult(handle: handle) { cb -> RustBuffer in
-            switch method {
-                case IDX_CALLBACK_FREE: return {{ callback_internals }}.drop(handle: handle)
-                {% for meth in cbi.methods() -%}
-                {% let method_name = format!("invoke_{}", meth.name())|fn_name_swift -%}
-                case {{ loop.index }}: return try! {{ method_name }}(cb, args)
-                {% endfor %}
-                // This should never happen, because an out of bounds method index won't
-                // ever be used. Once we can catch errors, we should return an InternalError.
-                // https://github.com/mozilla/uniffi-rs/issues/351
-                default: return RustBuffer()
-            }
+        let cb = try! {{ ffi_converter }}.lift(handle)
+        switch method {
+            case IDX_CALLBACK_FREE:
+                {{ ffi_converter }}.drop(handle: handle)
+                return RustBuffer()
+            {% for meth in cbi.methods() -%}
+            {% let method_name = format!("invoke_{}", meth.name())|fn_name_swift -%}
+            case {{ loop.index }}: return try! {{ method_name }}(cb, args)
+            {% endfor %}
+            // This should never happen, because an out of bounds method index won't
+            // ever be used. Once we can catch errors, we should return an InternalError.
+            // https://github.com/mozilla/uniffi-rs/issues/351
+            default: return RustBuffer()
         }
     }
 
-// This erasure is probably not needed and can be replaced by 
-// a better implementation of _{{ callback_internals }}
-private class {{ type_name }}Erased: {{ type_name }} {
-    
-    let parent: {{ type_name }}
-
-    init(_ parent: {{ type_name }}) {
-        self.parent = parent
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+private let {{ ffi_converter }}: FfiConverterCallbackInterface<{{ type_name }}> = {
+    try! rustCall { (err: UnsafeMutablePointer<RustCallStatus>) in
+            {{ cbi.ffi_init_callback().name() }}({{ foreign_callback }}, err)
     }
-
-    {% for meth in cbi.methods() -%}
-    func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_protocol(meth) %}) {% call swift::throws(meth) -%}
-    {%- match meth.return_type() -%}
-    {%- when Some with (return_type) %} -> {{ return_type|type_swift -}}
-    {%- else -%}
-    {%- endmatch %}
-    {
-        {%- if meth.arguments().len() != 0 -%}
-            {#- Calling the concrete callback object #}
-            
-            
-            parent.{{ meth.name()|fn_name_swift }}(
-                    {% for arg in meth.arguments() -%}
-                    {{ arg.name() }}: {{ arg.name() }}
-                    {%- if !loop.last %}, {% endif %}
-                    {% endfor -%}
-                )
-        {% else %}
-            parent.{{ meth.name()|fn_name_swift }}()
-        {% endif -%}
-    }
-    {% endfor %}
-}
-
-extension _{{ callback_internals }} where T == {{ type_name }}Erased {
-    func lower(_ v: {{ type_name }}) -> Handle {
-        super.lower({{ type_name }}Erased(v))
-    }
-}
-extension Optional where Wrapped == {{ type_name }} {
-    func lower() -> RustBuffer {
-        let writer = Writer()
-        switch self {
-        case .some(let callback):
-            writer.writeInt(Int8(1))
-            {{ callback_internals }}.write(v: {{ type_name }}Erased(callback), into: writer)
-        case .none:
-            writer.writeInt(Int8(0))
-        }
-        return RustBuffer(bytes: writer.bytes)
-    }
-}
-
-private let {{ callback_internals }} = _{{ callback_internals }}<{{ type_name }}Erased>()
-private class _{{ callback_internals }}<T: {{ type_name }}>: CallbackInterfaceInternals<T> {
-
-    init() {
-        super.init(foreignCallback: {{ callback_interface_impl }})
-        register()
-    }
-    func register() {
-        try? rustCall { (err: UnsafeMutablePointer<RustCallStatus>) in
-            {{ cbi.ffi_init_callback().name() }}(self.foreignCallback, err)
-        }
-    }
-}
+    return FfiConverterCallbackInterface<{{ type_name }}>()
+}()

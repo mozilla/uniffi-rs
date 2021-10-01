@@ -8,15 +8,18 @@ use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
 
-#[allow(unused_imports)]
 use super::filters;
 pub struct CallbackInterfaceCodeType {
     id: String,
 }
 
 impl CallbackInterfaceCodeType {
-    pub fn new(_id: String) -> Self {
-        unimplemented!("Callbacks are not supported in Swift yet")
+    pub fn new(id: String) -> Self {
+        Self { id }
+    }
+
+    fn ffi_converter_name(&self, oracle: &dyn CodeOracle) -> String {
+        format!("ffiConverter{}", &self.canonical_name(oracle))
     }
 }
 
@@ -34,7 +37,11 @@ impl CodeType for CallbackInterfaceCodeType {
     }
 
     fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower()", oracle.var_name(nm))
+        format!(
+            "{}.lower({})",
+            self.ffi_converter_name(oracle),
+            oracle.var_name(nm)
+        )
     }
 
     fn write(
@@ -43,15 +50,20 @@ impl CodeType for CallbackInterfaceCodeType {
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
     ) -> String {
-        format!("{}.write(into: {})", oracle.var_name(nm), target)
+        format!(
+            "{}.write({}, into: {})",
+            self.ffi_converter_name(oracle),
+            oracle.var_name(nm),
+            target
+        )
     }
 
     fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.type_label(oracle), nm)
+        format!("{}.lift({})", self.ffi_converter_name(oracle), nm)
     }
 
     fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read(from: {})", self.type_label(oracle), nm)
+        format!("{}.read(from: {})", self.ffi_converter_name(oracle), nm)
     }
 
     fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
