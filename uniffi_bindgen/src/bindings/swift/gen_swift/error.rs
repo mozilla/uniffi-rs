@@ -5,7 +5,7 @@
 use std::fmt;
 
 use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Error};
+use crate::interface::{ComponentInterface, Error, Type};
 use askama::Template;
 
 use super::filters;

@@ -31,7 +31,7 @@ extension {{ e.name()|class_name_swift }}: ViaFfiUsingByteBuffer, ViaFfi {
         case let .{{ variant.name()|enum_variant_swift }}({% for field in variant.fields() %}{{ field.name()|var_name_swift }}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             buf.writeInt(Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
-            {{ field.name()|var_name_swift }}.write(into: buf)
+            {{ field.name()|write_swift("buf", field.type_()) }}
             {% endfor -%}
         {% else %}
         case .{{ variant.name()|enum_variant_swift }}:

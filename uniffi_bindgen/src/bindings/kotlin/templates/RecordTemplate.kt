@@ -31,7 +31,7 @@ data class {{ rec.name()|class_name_kt }} (
 
     internal fun write(buf: RustBufferBuilder) {
         {%- for field in rec.fields() %}
-            {{ "(this.{})"|format(field.name())|write_kt("buf", field.type_()) }}
+            {{ "this.{}"|format(field.name())|write_kt("buf", field.type_()) }}
         {% endfor %}
     }
 
