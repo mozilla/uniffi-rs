@@ -17,13 +17,6 @@ internal class ConcurrentHandleMap<T>(
                     }
             }
 
-    fun <R> callWithResult(handle: Handle, fn: (T) -> R): R =
-        lock.withLock {
-            leftMap[handle] ?: throw RuntimeException("Panic: handle not in handlemap")
-        }.let { obj ->
-            fn.invoke(obj)
-        }
-
     fun get(handle: Handle) = lock.withLock {
         leftMap[handle]
     }
@@ -42,14 +35,14 @@ internal class ConcurrentHandleMap<T>(
 }
 
 interface ForeignCallback : com.sun.jna.Callback {
-    public fun invoke(handle: Long, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue
+    public fun invoke(handle: Handle, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue
 }
 
 // Magic number for the Rust proxy to call using the same mechanism as every other method,
 // to free the callback once it's dropped by Rust.
 internal const val IDX_CALLBACK_FREE = 0
 
-internal abstract class CallbackInternals<CallbackInterface>(
+internal abstract class FfiConverterCallbackInterface<CallbackInterface>(
     protected val foreignCallback: ForeignCallback
 ) {
     val handleMap = ConcurrentHandleMap<CallbackInterface>()
@@ -58,11 +51,11 @@ internal abstract class CallbackInternals<CallbackInterface>(
     // This method is generated for each callback interface.
     abstract fun register(lib: _UniFFILib)
 
-    fun drop(handle: Long): RustBuffer.ByValue {
+    fun drop(handle: Handle): RustBuffer.ByValue {
         return handleMap.remove(handle).let { RustBuffer.ByValue() }
     }
 
-    fun lift(n: Long) = handleMap.get(n)
+    fun lift(n: Handle) = handleMap.get(n)
 
     fun read(buf: ByteBuffer) = lift(buf.getLong())
 

@@ -1,6 +1,6 @@
 {% import "macros.swift" as swift %}
 {%- let cbi = self.inner() %}
-{%- let type_name = cbi.name()|class_name_swift %}
+{%- let type_name = cbi.type_()|type_swift %}
 {%- let canonical_type_name = cbi.type_()|canonical_name %}
 {%- let ffi_converter = format!("ffiConverter{}", canonical_type_name) %}
 {%- let foreign_callback = format!("foreignCallback{}", canonical_type_name) %}

@@ -18,8 +18,8 @@ impl CallbackInterfaceCodeType {
         Self { id }
     }
 
-    fn internals(&self, oracle: &dyn CodeOracle) -> String {
-        format!("{}Internals", self.canonical_name(oracle))
+    fn ffi_converter_name(&self, oracle: &dyn CodeOracle) -> String {
+        format!("FfiConverter{}", self.canonical_name(oracle))
     }
 }
 
@@ -37,7 +37,11 @@ impl CodeType for CallbackInterfaceCodeType {
     }
 
     fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower({})", self.internals(oracle), oracle.var_name(nm))
+        format!(
+            "{}.lower({})",
+            self.ffi_converter_name(oracle),
+            oracle.var_name(nm)
+        )
     }
 
     fn write(
@@ -48,18 +52,18 @@ impl CodeType for CallbackInterfaceCodeType {
     ) -> String {
         format!(
             "{}.write({}, {})",
-            self.internals(oracle),
+            self.ffi_converter_name(oracle),
             oracle.var_name(nm),
             target
         )
     }
 
     fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.internals(oracle), nm)
+        format!("{}.lift({})", self.ffi_converter_name(oracle), nm)
     }
 
     fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.internals(oracle), nm)
+        format!("{}.read({})", self.ffi_converter_name(oracle), nm)
     }
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
@@ -88,7 +92,10 @@ impl KotlinCallbackInterface {
 impl CodeDeclaration for KotlinCallbackInterface {
     fn initialization_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         let code_type = CallbackInterfaceCodeType::new(self.inner.name().into());
-        Some(format!("{}.register(lib)", code_type.internals(oracle)))
+        Some(format!(
+            "{}.register(lib)",
+            code_type.ffi_converter_name(oracle)
+        ))
     }
 
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
