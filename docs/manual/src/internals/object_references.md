@@ -37,7 +37,8 @@ allowing UniFFI to largely stay out of handling lifetimes entirely for these obj
 
 When constructing a new object, UniFFI is able to add the `Arc` automatically, because it
 knows that the return type of the Rust constructor must be a new uniquely-owned struct of
-the corresponding type.
+the corresponding type. However, you can add a `[Self=ByArc]` attribute to constructors if
+your constructor already returns an `Arc` and UniFFI will use that `Arc` directly.
 
 When you want to return object instances from functions or methods, or store object instances
 as fields in records, the underlying Rust code will need to work with `Arc<T>` directly, to ensure

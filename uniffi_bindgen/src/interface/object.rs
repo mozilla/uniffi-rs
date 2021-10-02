@@ -259,6 +259,10 @@ impl Constructor {
             .map(|name| Type::Error(name.to_owned()))
     }
 
+    pub fn returns_arc(&self) -> bool {
+        self.attributes.get_self_by_arc()
+    }
+
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) {
         self.ffi_func.name.push_str(ci_prefix);
         self.ffi_func.name.push('_');

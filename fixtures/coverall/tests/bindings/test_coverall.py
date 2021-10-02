@@ -84,6 +84,10 @@ class TestCoverall(unittest.TestCase):
         coveralls = None
         self.assertEqual(get_num_alive(), 0)
 
+        glob = Coveralls.global_new()
+        self.assertEqual(glob.get_name(), "global")
+        # We can also get it via global_coveralls
+        self.assertEqual(global_coveralls().get_name(), "global")
 
     def test_simple_errors(self):
         coveralls = Coveralls("test_errors")

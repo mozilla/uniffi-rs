@@ -9,6 +9,14 @@ lazy_static::lazy_static! {
     static ref NUM_ALIVE: RwLock<u64> = {
         RwLock::new(0)
     };
+    // A "global" for the purposes of testing constructors that return Arc<>
+    static ref GLOBAL_COVERALLS: Arc<Coveralls> = {
+        let new = Arc::new(Coveralls::new("global".to_string()));
+        // We don't want this counting towards NUM_ALIVE or it messes with
+        // our leak/lifetime tests.
+        *NUM_ALIVE.write().unwrap() -= 1;
+        new
+    };
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -31,6 +39,10 @@ impl From<InternalCoverallError> for CoverallError {
             InternalCoverallError::ExcessiveHoles => CoverallError::TooManyHoles,
         }
     }
+}
+
+fn global_coveralls() -> Arc<Coveralls> {
+    Arc::clone(&GLOBAL_COVERALLS)
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -140,6 +152,10 @@ impl Coveralls {
             name,
             other: Mutex::new(None),
         }
+    }
+
+    fn global_new() -> Arc<Self> {
+        Arc::clone(&GLOBAL_COVERALLS)
     }
 
     fn fallible_new(name: String, should_fail: bool) -> Result<Self> {

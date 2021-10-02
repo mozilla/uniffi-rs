@@ -189,6 +189,26 @@ impl TodoList {
 }
 ```
 
+Note also that constructors can use the `[Self=ByArc]` UDL attribute, which is used to signal that
+the constructor will be returning an `Arc<Self>` which UniFFI can use directly instead of explicitly
+wrapping the object. For example, this UDL:
+
+```idl
+interface TodoList {
+    // +-- indicate the constructor returns an `Arc<Self>`
+    // V
+    [Self=ByArc]
+    constructor();
+    ...
+};
+```
+
+```rust
+impl TodoList {
+    fn new() -> Arc<Self> { ... }
+}
+```
+
 You can read more about the technical details in the docs on the
 [internal details of managing object references](../internals/object_references.md).
 

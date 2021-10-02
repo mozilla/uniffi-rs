@@ -12,6 +12,11 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.0...HEAD).
 
+### What's Changed
+
+- Your UDL can now use a `[Self=ByArc]` attribute on constructors to signal that they return an
+  `Arc<Self>` and avoid UniFFI trying to wrap it in another `Arc`.
+
 ## v0.14.0 (_2021-08-17_)
 
 [All changes in v0.14.0](https://github.com/mozilla/uniffi-rs/compare/v0.13.1...v0.14.0).

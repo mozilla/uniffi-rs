@@ -49,13 +49,21 @@
 {% when Some with (e) %}
     uniffi::call_with_result(call_status, || {
         let _new = {% call construct(obj, cons) %}.map_err(Into::into).map_err({{ e|ffi_converter }}::lower)?;
+        {%- if cons.returns_arc() %}
+        let _arc = _new;
+        {%- else %}
         let _arc = std::sync::Arc::new(_new);
+        {%- endif %}
         Ok({{ obj.type_()|ffi_converter }}::lower(_arc))
     })
 {% else %}
     uniffi::call_with_output(call_status, || {
         let _new = {% call construct(obj, cons) %};
+        {%- if cons.returns_arc() %}
+        let _arc = _new;
+        {%- else %}
         let _arc = std::sync::Arc::new(_new);
+        {%- endif %}
         {{ obj.type_()|ffi_converter }}::lower(_arc)
     })
 {% endmatch %}

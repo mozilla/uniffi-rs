@@ -3,6 +3,9 @@ namespace coverall {
     SimpleDict create_none_dict();
 
     u64 get_num_alive();
+
+    // Get the "global" coveralls - same as `Coveralls::global_new` (ie, returns an Arc)
+    Coveralls global_coveralls();
 };
 
 dictionary SimpleDict {
@@ -46,6 +49,10 @@ interface ComplexError {
 
 interface Coveralls {
     constructor(string name);
+
+    // There's one "global" coverall - this creates or returns it via an Arc<>
+    [Name="global_new", Self=ByArc]
+    constructor();
 
     // Either constructs a new object or throws an error.
     [Throws=CoverallError, Name="fallible_new"]

@@ -289,6 +289,7 @@ impl<T: TryInto<InterfaceAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
 ///
 /// This supports the `[Throws=ErrorName]` attribute for constructors that can produce
 /// an error, and the `[Name=MethodName]` for non-default constructors.
+/// [Self=ByArc] is supported, which means the value returned is already wrapped in an Arc.
 #[derive(Debug, Clone, Hash, Default)]
 pub(super) struct ConstructorAttributes(Vec<Attribute>);
 
@@ -308,6 +309,12 @@ impl ConstructorAttributes {
             _ => None,
         })
     }
+
+    pub(super) fn get_self_by_arc(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::SelfType(SelfType::ByArc)))
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttributes {
@@ -318,6 +325,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttri
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
             Attribute::Name(_) => Ok(()),
+            Attribute::SelfType(_) => Ok(()),
             _ => bail!(format!("{:?} not supported for constructors", attr)),
         })?;
         Ok(Self(attrs))
@@ -624,6 +632,10 @@ mod test {
         let attrs = ConstructorAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.get_throws_err(), Some("Error")));
         assert!(matches!(attrs.get_name(), Some("MyFactory")));
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc]").unwrap();
+        let attrs = ConstructorAttributes::try_from(&node).unwrap();
+        assert!(attrs.get_self_by_arc());
     }
 
     #[test]
@@ -632,14 +644,6 @@ mod test {
             weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, ByRef]").unwrap();
         let err = ConstructorAttributes::try_from(&node).unwrap_err();
         assert_eq!(err.to_string(), "ByRef not supported for constructors");
-
-        let (_, node) =
-            weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, Self=ByArc]").unwrap();
-        let err = ConstructorAttributes::try_from(&node).unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            "SelfType(ByArc) not supported for constructors"
-        );
     }
 
     #[test]
