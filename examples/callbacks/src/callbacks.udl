@@ -1,6 +1,7 @@
 namespace callbacks {};
 
 interface Telephone {
+  constructor();
   void call(boolean domestic, OnCallAnswered call_responder);
 };
 
