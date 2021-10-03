@@ -11,10 +11,10 @@ use std::fmt;
 use super::filters;
 
 macro_rules! impl_code_type_for_miscellany {
-     ($T:ty, $class_name:literal, $canonical_name:literal, $imports:expr, $helper_code:literal) => {
+     ($T:ty, $class_name:literal, $canonical_name:literal, $imports:expr, $template_file:literal) => {
          paste! {
              #[derive(Template)]
-             #[template(syntax = "swift", ext = "swift", escape = "none", source = $helper_code )]
+             #[template(syntax = "swift", escape = "none", path = $template_file)]
              pub struct $T;
 
              impl CodeType for $T  {
@@ -66,40 +66,7 @@ impl_code_type_for_miscellany!(
     "Date",
     "Timestamp",
     vec![],
-    r#"
-    extension Date: ViaFfiUsingByteBuffer, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            let seconds: Int64 = try buf.readInt()
-            let nanoseconds: UInt32 = try buf.readInt()
-            if seconds >= 0 {
-                let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
-                return Date.init(timeIntervalSince1970: delta)
-            } else {
-                let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
-                return Date.init(timeIntervalSince1970: delta)
-            }
-        }
-
-        fileprivate func write(into buf: Writer) {
-            var delta = self.timeIntervalSince1970
-            var sign: Int64 = 1
-            if delta < 0 {
-                // The nanoseconds portion of the epoch offset must always be
-                // positive, to simplify the calculation we will use the absolute
-                // value of the offset.
-                sign = -1
-                delta = -delta
-            }
-            if delta.rounded(.down) > Double(Int64.max) {
-                fatalError("Timestamp overflow, exceeds max bounds supported by Uniffi")
-            }
-            let seconds = Int64(delta)
-            let nanoseconds = UInt32((delta - Double(seconds)) * 1.0e9)
-            buf.writeInt(sign * seconds)
-            buf.writeInt(nanoseconds)
-        }
-    }
- "#
+    "TimestampHelper.swift"
 );
 
 impl_code_type_for_miscellany!(
@@ -107,28 +74,5 @@ impl_code_type_for_miscellany!(
     "TimeInterval",
     "Duration",
     vec![],
-    r#"
-    extension TimeInterval: ViaFfiUsingByteBuffer, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            let seconds: UInt64 = try buf.readInt()
-            let nanoseconds: UInt32 = try buf.readInt()
-            return Double(seconds) + (Double(nanoseconds) / 1.0e9)
-        }
-
-        fileprivate func write(into buf: Writer) {
-            if self.rounded(.down) > Double(Int64.max) {
-                fatalError("Duration overflow, exceeds max bounds supported by Uniffi")
-            }
-
-            if self < 0 {
-                fatalError("Invalid duration, must be non-negative")
-            }
-
-            let seconds = UInt64(self)
-            let nanoseconds = UInt32((self - Double(seconds)) * 1.0e9)
-            buf.writeInt(seconds)
-            buf.writeInt(nanoseconds)
-        }
-    }
-"#
+    "DurationHelper.swift"
 );
