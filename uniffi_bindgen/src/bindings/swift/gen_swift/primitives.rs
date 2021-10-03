@@ -61,10 +61,10 @@ fn render_literal(oracle: &dyn CodeOracle, literal: &Literal) -> String {
 }
 
 macro_rules! impl_code_type_for_primitive {
-    ($T:ty, $class_name:literal, $helper_code:literal) => {
+    ($T:ty, $class_name:literal, $template_file:literal) => {
         paste! {
             #[derive(Template)]
-            #[template(syntax = "swift", ext = "swift", escape = "none", source = $helper_code )]
+            #[template(syntax = "swift", escape = "none", path = $template_file)]
             pub struct $T;
 
             impl CodeType for $T  {
@@ -100,231 +100,15 @@ macro_rules! impl_code_type_for_primitive {
     }
 }
 
-impl_code_type_for_primitive!(
-    BooleanCodeType,
-    "Bool",
-    r#"
-    extension Bool: ViaFfi {
-        fileprivate typealias FfiType = Int8
-
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readInt())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeInt(self.lower())
-        }
-
-        fileprivate static func lift(_ v: FfiType) throws -> Self {
-            return v != 0
-        }
-
-        fileprivate func lower() -> FfiType {
-            return self ? 1 : 0
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    StringCodeType,
-    "String",
-    r#"
-    extension String: ViaFfi {
-        fileprivate typealias FfiType = RustBuffer
-
-        fileprivate static func lift(_ v: FfiType) throws -> Self {
-            defer {
-                v.deallocate()
-            }
-            if v.data == nil {
-                return String()
-            }
-            let bytes = UnsafeBufferPointer<UInt8>(start: v.data!, count: Int(v.len))
-            return String(bytes: bytes, encoding: String.Encoding.utf8)!
-        }
-
-        fileprivate func lower() -> FfiType {
-            return self.utf8CString.withUnsafeBufferPointer { ptr in
-                // The swift string gives us int8_t, we want uint8_t.
-                ptr.withMemoryRebound(to: UInt8.self) { ptr in
-                    // The swift string gives us a trailing null byte, we don't want it.
-                    let buf = UnsafeBufferPointer(rebasing: ptr.prefix(upTo: ptr.count - 1))
-                    return RustBuffer.from(buf)
-                }
-            }
-        }
-
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            let len: Int32 = try buf.readInt()
-            return String(bytes: try buf.readBytes(count: Int(len)), encoding: String.Encoding.utf8)!
-        }
-
-        fileprivate func write(into buf: Writer) {
-            let len = Int32(self.utf8.count)
-            buf.writeInt(len)
-            buf.writeBytes(self.utf8)
-        }
-    }
-    "#
-);
-
-impl_code_type_for_primitive!(
-    Int8CodeType,
-    "Int8",
-    r#"
-    extension Int8: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readInt())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeInt(self.lower())
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    Int16CodeType,
-    "Int16",
-    r#"
-    extension Int16: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readInt())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeInt(self.lower())
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    Int32CodeType,
-    "Int32",
-    r#"
-    extension Int32: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readInt())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeInt(self.lower())
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    Int64CodeType,
-    "Int64",
-    r#"
-    extension Int64: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readInt())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeInt(self.lower())
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    UInt8CodeType,
-    "UInt8",
-    r#"
-    extension UInt8: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readInt())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeInt(self.lower())
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    UInt16CodeType,
-    "UInt16",
-    r#"
-    extension UInt16: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readInt())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeInt(self.lower())
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    UInt32CodeType,
-    "UInt32",
-    r#"
-    extension UInt32: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readInt())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeInt(self.lower())
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    UInt64CodeType,
-    "UInt64",
-    r#"
-    extension UInt64: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readInt())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeInt(self.lower())
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    Float32CodeType,
-    "Float",
-    r#"
-    extension Float: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readFloat())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeFloat(self.lower())
-        }
-    }
-"#
-);
-
-impl_code_type_for_primitive!(
-    Float64CodeType,
-    "Double",
-    r#"
-    extension Double: Primitive, ViaFfi {
-        fileprivate static func read(from buf: Reader) throws -> Self {
-            return try self.lift(buf.readDouble())
-        }
-
-        fileprivate func write(into buf: Writer) {
-            buf.writeDouble(self.lower())
-        }
-    }
-"#
-);
+impl_code_type_for_primitive!(BooleanCodeType, "Bool", "BooleanHelper.swift");
+impl_code_type_for_primitive!(StringCodeType, "String", "StringHelper.swift");
+impl_code_type_for_primitive!(Int8CodeType, "Int8", "Int8Helper.swift");
+impl_code_type_for_primitive!(Int16CodeType, "Int16", "Int16Helper.swift");
+impl_code_type_for_primitive!(Int32CodeType, "Int32", "Int32Helper.swift");
+impl_code_type_for_primitive!(Int64CodeType, "Int64", "Int64Helper.swift");
+impl_code_type_for_primitive!(UInt8CodeType, "UInt8", "UInt8Helper.swift");
+impl_code_type_for_primitive!(UInt16CodeType, "UInt16", "UInt16Helper.swift");
+impl_code_type_for_primitive!(UInt32CodeType, "UInt32", "UInt32Helper.swift");
+impl_code_type_for_primitive!(UInt64CodeType, "UInt64", "UInt64Helper.swift");
+impl_code_type_for_primitive!(Float32CodeType, "Float", "Float32Helper.swift");
+impl_code_type_for_primitive!(Float64CodeType, "Double", "Float64Helper.swift");
