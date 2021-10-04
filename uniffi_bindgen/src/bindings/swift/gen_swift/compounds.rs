@@ -96,12 +96,12 @@ impl_code_type_for_compound!(
     SequenceCodeType,
     "[{}]",
     "Sequence{}",
-    "ArrayTemplate.swift"
+    "SequenceTemplate.swift"
 );
 
 impl_code_type_for_compound!(
     MapCodeType,
     "[String: {}]",
     "Dictionary{}",
-    "DictionaryTemplate.swift"
+    "MapTemplate.swift"
 );

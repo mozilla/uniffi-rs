@@ -7,14 +7,13 @@ use askama::Template;
 use paste::paste;
 use std::fmt;
 
-#[allow(unused_imports)]
 use super::filters;
 
 fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
     match literal {
         Literal::Null => "null".into(),
         Literal::EmptySequence => "listOf()".into(),
-        Literal::EmptyMap => "mapOf".into(),
+        Literal::EmptyMap => "mapOf()".into(),
 
         // For optionals
         _ => oracle.find(inner).literal(oracle, literal),
@@ -22,10 +21,10 @@ fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdenti
 }
 
 macro_rules! impl_code_type_for_compound {
-     ($T:ty, $type_label_pattern:literal, $canonical_name_pattern: literal, $helper_code:literal) => {
+     ($T:ty, $type_label_pattern:literal, $canonical_name_pattern: literal, $template_file:literal) => {
         paste! {
             #[derive(Template)]
-            #[template(syntax = "kt", ext = "kt", escape = "none", source = $helper_code )]
+            #[template(syntax = "kt", escape = "none", path = $template_file)]
             pub struct $T {
                 inner: TypeIdentifier,
                 outer: TypeIdentifier,
@@ -80,133 +79,11 @@ macro_rules! impl_code_type_for_compound {
     }
  }
 
-impl_code_type_for_compound!(
-    OptionalCodeType,
-    "{}?",
-    "Optional{}",
-    r#"
-    {%- import "macros.kt" as kt -%}
-    {%- let inner_type = self.inner() %}
-    {%- let outer_type = self.outer() %}
-    {%- let inner_type_name = inner_type|type_kt %}
-    {%- let canonical_type_name = outer_type|canonical_name %}
-
-    // Helper functions for passing values of type {{ outer_type|type_kt }}
-    internal fun lower{{ canonical_type_name }}(v: {{ inner_type_name }}?): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(v) { v, buf ->
-            write{{ canonical_type_name }}(v, buf)
-        }
-    }
-
-    internal fun write{{ canonical_type_name }}(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
-        if (v == null) {
-            buf.putByte(0)
-        } else {
-            buf.putByte(1)
-            {{ "v"|write_kt("buf", inner_type) }}
-        }
-    }
-
-    internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ inner_type_name }}? {
-        return liftFromRustBuffer(rbuf) { buf ->
-            read{{ canonical_type_name }}(buf)
-        }
-    }
-
-    internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ inner_type_name }}? {
-        if (buf.get().toInt() == 0) {
-            return null
-        }
-        return {{ "buf"|read_kt(inner_type) }}
-    }
- "#
-);
-
+impl_code_type_for_compound!(OptionalCodeType, "{}?", "Optional{}", "OptionalTemplate.kt");
 impl_code_type_for_compound!(
     SequenceCodeType,
     "List<{}>",
     "Sequence{}",
-    r#"
-    {%- import "macros.kt" as kt -%}
-    {%- let inner_type = self.inner() %}
-    {%- let outer_type = self.outer() %}
-    {%- let inner_type_name = inner_type|type_kt %}
-    {%- let canonical_type_name = outer_type|canonical_name %}
-
-    // Helper functions for passing values of type {{ outer_type|type_kt }}
-    internal fun lower{{ canonical_type_name }}(v: List<{{ inner_type_name }}>): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(v) { v, buf ->
-            write{{ canonical_type_name }}(v, buf)
-        }
-    }
-
-    internal fun write{{ canonical_type_name }}(v: List<{{ inner_type_name }}>, buf: RustBufferBuilder) {
-        buf.putInt(v.size)
-        v.forEach {
-            {{ "it"|write_kt("buf", inner_type) }}
-        }
-    }
-
-    internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): List<{{ inner_type_name }}> {
-        return liftFromRustBuffer(rbuf) { buf ->
-            read{{ canonical_type_name }}(buf)
-        }
-    }
-
-    internal fun read{{ canonical_type_name }}(buf: ByteBuffer): List<{{ inner_type_name }}> {
-        val len = buf.getInt()
-        return List<{{ inner_type_name }}>(len) {
-            {{ "buf"|read_kt(inner_type) }}
-        }
-    }
-"#
+    "SequenceTemplate.kt"
 );
-
-impl_code_type_for_compound!(
-    MapCodeType,
-    "Map<String, {}>",
-    "Map{}",
-    r#"
-    {%- import "macros.kt" as kt -%}
-    {%- let inner_type = self.inner() %}
-    {%- let outer_type = self.outer() %}
-    {%- let inner_type_name = inner_type|type_kt %}
-    {%- let canonical_type_name = outer_type|canonical_name %}
-
-    // Helper functions for passing values of type {{ outer_type|type_kt }}
-    internal fun lower{{ canonical_type_name }}(m: Map<String, {{ inner_type_name }}>): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(m) { m, buf ->
-            write{{ canonical_type_name }}(m, buf)
-        }
-    }
-
-    internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}>, buf: RustBufferBuilder) {
-        buf.putInt(v.size)
-        // The parens on `(k, v)` here ensure we're calling the right method,
-        // which is important for compatibility with older android devices.
-        // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
-        v.forEach { (k, v) ->
-            {{ "k"|write_kt("buf", TypeIdentifier::String) }}
-            {{ "v"|write_kt("buf", inner_type) }}
-        }
-    }
-
-    internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): Map<String, {{ inner_type_name }}> {
-        return liftFromRustBuffer(rbuf) { buf ->
-            read{{ canonical_type_name }}(buf)
-        }
-    }
-
-    internal fun read{{ canonical_type_name }}(buf: ByteBuffer): Map<String, {{ inner_type_name }}> {
-        // TODO: Once Kotlin's `buildMap` API is stabilized we should use it here.
-        val items : MutableMap<String, {{ inner_type_name }}> = mutableMapOf()
-        val len = buf.getInt()
-        repeat(len) {
-            val k = {{ "buf"|read_kt(TypeIdentifier::String) }}
-            val v = {{ "buf"|read_kt(inner_type) }}
-            items[k] = v
-        }
-        return items
-    }
-"#
-);
+impl_code_type_for_compound!(MapCodeType, "Map<String, {}>", "Map{}", "MapTemplate.kt");
