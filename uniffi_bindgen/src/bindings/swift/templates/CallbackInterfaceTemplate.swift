@@ -30,14 +30,18 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
             {#- Calling the concrete callback object #}
 
             let reader = Reader(data: Data(rustBuffer: args))
-            let result = swiftCallbackInterface.{{ meth.name()|fn_name_swift }}(
+            {% if meth.return_type().is_some() %}let result = {% endif -%}
+            {% if meth.throws().is_some() %}try {% endif -%}
+            swiftCallbackInterface.{{ meth.name()|fn_name_swift }}(
                     {% for arg in meth.arguments() -%}
                     {{ arg.name() }}: try {{ "reader"|read_swift(arg.type_()) }}
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
             {% else %}
-            let result = swiftCallbackInterface.{{ meth.name()|fn_name_swift }}()
+            {% if meth.return_type().is_some() %}let result = {% endif -%}
+            {% if meth.throws().is_some() %}try {% endif -%}
+            swiftCallbackInterface.{{ meth.name()|fn_name_swift }}()
             {% endif -%}
 
         {#- Packing up the return value into a RustBuffer #}

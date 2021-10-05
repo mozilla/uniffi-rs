@@ -1,3 +1,6 @@
 [bindings.kotlin]
 package_name = "uniffi.callbacks"
 cdylib_name = "callbacks"
+
+[bindings.swift]
+cdylib_name = "callbacks"
