@@ -11,7 +11,7 @@ in Rust.
 
 # Using callback interfaces
 
-## 1. Define a Rust trait.
+## 1. Define a Rust trait.
 
 This toy example defines a way of Rust accessing a key-value store exposed
 by the host operating system (e.g. the key chain).
@@ -23,7 +23,7 @@ trait Keychain: Send {
 }
 ```
 
-## 2. Define a callback interface in the UDL
+## 2. Define a callback interface in the UDL.
 
 ```webidl
 callback interface Keychain {
