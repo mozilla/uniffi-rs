@@ -25,28 +25,28 @@ func test() {
         let flag = true
         let expected = callback.getBool(v: v, arg2: flag)
         let observed = rustGetters.getBool(callback: callback, v: v, arg2: flag)
-        assert(expected == observed, "roundtripping through callback: $expected != $observed")
+        assert(expected == observed, "roundtripping through callback: \(String(describing: expected)) != \(String(describing: observed))")
     }
 
     [[Int32(1), Int32(2)], [Int32(0), Int32(1)]].forEach { v in
         let flag = true
         let expected = callback.getList(v: v, arg2: flag)
         let observed = rustGetters.getList(callback: callback, v: v, arg2: flag)
-        assert(expected == observed, "roundtripping through callback: $expected != $observed")
+        assert(expected == observed, "roundtripping through callback: \(String(describing: expected)) != \(String(describing: observed))")
     }
 
     ["Hello", "world"].forEach { v in
         let flag = true
         let expected = callback.getString(v: v, arg2: flag)
         let observed = rustGetters.getString(callback: callback, v: v, arg2: flag)
-        assert(expected == observed, "roundtripping through callback: $expected != $observed")
+        assert(expected == observed, "roundtripping through callback: \(String(describing: expected)) != \(String(describing: observed))")
     }
 
     ["Some", nil].forEach { v in
         let flag = false
         let expected = callback.getOption(v: v, arg2: flag)
         let observed = rustGetters.getOption(callback: callback, v: v, arg2: flag)
-        assert(expected == observed, "roundtripping through callback: $expected != $observed")
+        assert(expected == observed, "roundtripping through callback: \(String(describing: expected)) != \(String(describing: observed))")
     }
 
     assert(rustGetters.getStringOptionalCallback(callback: callback, v: "TestString", arg2: false) == "TestString")
