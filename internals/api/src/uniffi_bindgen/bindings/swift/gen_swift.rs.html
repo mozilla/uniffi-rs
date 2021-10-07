@@ -808,7 +808,7 @@
             <span class="ident">FFIType</span>::<span class="ident">RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">FFIType</span>::<span class="ident">RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">FFIType</span>::<span class="ident">ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
+            <span class="ident">FFIType</span>::<span class="ident">ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
         }
     }
 }
