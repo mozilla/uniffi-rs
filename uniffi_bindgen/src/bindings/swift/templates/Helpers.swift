@@ -8,6 +8,7 @@ fileprivate enum UniffiInternalError: LocalizedError {
     case unexpectedNullPointer
     case unexpectedRustCallStatusCode
     case unexpectedRustCallError
+    case unexpectedStaleHandle
     case rustPanic(_ message: String)
 
     public var errorDescription: String? {
@@ -19,6 +20,7 @@ fileprivate enum UniffiInternalError: LocalizedError {
         case .unexpectedNullPointer: return "Raw pointer value was null"
         case .unexpectedRustCallStatusCode: return "Unexpected RustCallStatus code"
         case .unexpectedRustCallError: return "CALL_ERROR but no errorClass specified"
+        case .unexpectedStaleHandle: return "The object in the handle map has been dropped already"
         case let .rustPanic(message): return message
         }
     }

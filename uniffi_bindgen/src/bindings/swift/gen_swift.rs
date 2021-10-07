@@ -358,7 +358,7 @@ impl CodeOracle for SwiftCodeOracle {
             FFIType::RustArcPtr => "void*_Nonnull".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
-            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
+            FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
         }
     }
 }

@@ -1,6 +1,12 @@
 {% import "macros.kt" as kt %}
 {%- let cbi = self.inner() %}
-{% let type_name = cbi.name()|class_name_kt %}
+{%- let type_name = cbi.type_()|type_kt %}
+{%- let canonical_type_name = cbi.type_()|canonical_name %}
+{%- let ffi_converter = format!("FfiConverter{}", canonical_type_name) %}
+{%- let foreign_callback = format!("ForeignCallback{}", canonical_type_name) %}
+
+// Declaration and FfiConverters for {{ type_name }} Callback Interface
+
 public interface {{ type_name }} {
     {% for meth in cbi.methods() -%}
     fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %})
@@ -11,25 +17,21 @@ public interface {{ type_name }} {
     {% endfor %}
 }
 
-{% let canonical_type_name = cbi.type_().canonical_name()|class_name_kt %}
-{% let callback_internals = format!("{}Internals", canonical_type_name) -%}
-{% let callback_interface_impl = format!("{}FFI", canonical_type_name) -%}
-
-internal class {{ callback_interface_impl }} : ForeignCallback {
+// The ForeignCallback that is passed to Rust.
+internal class {{ foreign_callback }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
-    override fun invoke(handle: Long, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue {
-        return {{ callback_internals }}.handleMap.callWithResult(handle) { cb ->
-            when (method) {
-                IDX_CALLBACK_FREE -> {{ callback_internals }}.drop(handle)
-                {% for meth in cbi.methods() -%}
-                {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt -%}
-                {{ loop.index }} -> this.{{ method_name }}(cb, args)
-                {% endfor %}
-                // This should never happen, because an out of bounds method index won't
-                // ever be used. Once we can catch errors, we should return an InternalException.
-                // https://github.com/mozilla/uniffi-rs/issues/351
-                else -> RustBuffer.ByValue()
-            }
+    override fun invoke(handle: Handle, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue {
+        val cb = {{ ffi_converter }}.lift(handle) ?: throw InternalException("No callback in handlemap; this is a Uniffi bug")
+        return when (method) {
+            IDX_CALLBACK_FREE -> {{ ffi_converter }}.drop(handle)
+            {% for meth in cbi.methods() -%}
+            {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt -%}
+            {{ loop.index }} -> this.{{ method_name }}(cb, args)
+            {% endfor %}
+            // This should never happen, because an out of bounds method index won't
+            // ever be used. Once we can catch errors, we should return an InternalException.
+            // https://github.com/mozilla/uniffi-rs/issues/351
+            else -> RustBuffer.ByValue()
         }
     }
 
@@ -71,8 +73,9 @@ internal class {{ callback_interface_impl }} : ForeignCallback {
     {% endfor %}
 }
 
-internal object {{ callback_internals }}: CallbackInternals<{{ type_name }}>(
-    foreignCallback = {{ callback_interface_impl }}()
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+internal object {{ ffi_converter }}: FfiConverterCallbackInterface<{{ type_name }}>(
+    foreignCallback = {{ foreign_callback }}()
 ) {
     override fun register(lib: _UniFFILib) {
         rustCall() { status ->

@@ -28,6 +28,8 @@ typedef struct RustBuffer
     uint8_t *_Nullable data;
 } RustBuffer;
 
+typedef RustBuffer (*ForeignCallback)(uint64_t, int32_t, RustBuffer);
+
 typedef struct ForeignBytes
 {
     int32_t len;
