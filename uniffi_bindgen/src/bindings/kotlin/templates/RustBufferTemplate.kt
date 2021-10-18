@@ -83,8 +83,12 @@ class RustBufferBuilder() {
     }
 
     fun discard() {
-        val rbuf = this.finalize()
-        RustBuffer.free(rbuf)
+        if(this.rbuf.data != null) {
+            // Free the current `RustBuffer`
+            RustBuffer.free(this.rbuf)
+            // Replace it with an empty RustBuffer.
+            this.setRustBuffer(RustBuffer.ByValue())
+        }
     }
 
     internal fun reserve(size: Int, write: (ByteBuffer) -> Unit) {
