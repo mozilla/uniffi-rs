@@ -5,10 +5,10 @@
 # E.g. we might start by looking for the named component in `libuniffi.so` and if
 # that fails, fall back to loading it separately from `lib${componentName}.so`.
 
+from pathlib import Path
+
 def loadIndirect():
-    if sys.platform == "linux":
-        libname = "lib{}.so"
-    elif sys.platform == "darwin":
+    if sys.platform == "darwin":
         libname = "lib{}.dylib"
     elif sys.platform.startswith("win"):
         # As of python3.8, ctypes does not seem to search $PATH when loading DLLs.
@@ -19,7 +19,13 @@ def loadIndirect():
             os.path.dirname(__file__),
             "{}.dll",
         )
-    return getattr(ctypes.cdll, libname.format("{{ config.cdylib_name() }}"))
+    else:
+        # Anything else must be an ELF platform - Linux, *BSD, Solaris/illumos
+        libname = "lib{}.so"
+
+    lib = libname.format("{{ config.cdylib_name() }}")
+    path = str(Path(__file__).parent / lib)
+    return ctypes.cdll.LoadLibrary(path)
 
 # A ctypes library to expose the extern-C FFI definitions.
 # This is an implementation detail which will be called internally by the public API.
