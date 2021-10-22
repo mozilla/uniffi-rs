@@ -1,44 +1,32 @@
-class InternalError(Exception):
-    pass
-
-class RustCallStatus(ctypes.Structure):
-    _fields_ = [
-        ("code", ctypes.c_int8),
-        ("error_buf", RustBuffer),
-    ]
-
-    # These match the values from the uniffi::rustcalls module
-    CALL_SUCCESS = 0
-    CALL_ERROR = 1
-    CALL_PANIC = 2
-
-    def __str__(self):
-        if self.code == RustCallStatus.CALL_SUCCESS:
-            return "RustCallStatus(CALL_SUCCESS)"
-        elif self.code == RustCallStatus.CALL_ERROR:
-            return "RustCallStatus(CALL_ERROR)"
-        elif self.code == RustCallStatus.CALL_PANIC:
-            return "RustCallStatus(CALL_SUCCESS)"
-        else:
-            return "RustCallStatus(<invalid code>)"
-{%- for e in ci.iter_error_definitions() %}
-
-class {{ e.name()|class_name_py }}:
+{%- let e = self.inner() %}
+class {{ e.name()|class_name_py }}(ViaFfiUsingByteBuffer):
 
     {%- if e.is_flat() %}
 
     # Each variant is a nested class of the error itself.
     # It just carries a string error message, so no special implementation is necessary.
     {%- for variant in e.variants() %}
-    class {{ variant.name()|class_name_py }}(Exception):
-        pass
+    class {{ variant.name()|class_name_py }}(ViaFfiUsingByteBuffer, Exception):
+        def _write(self, buf):
+            buf.writeI32({{ loop.index }})
+            message = str(self)
+            {{ "message"|write_py("buf", Type::String) }}
     {%- endfor %}
+
+    @classmethod
+    def _read(cls, buf):
+        variant = buf.readI32()
+        {% for variant in e.variants() -%}
+        if variant == {{ loop.index }}:
+            return cls.{{ variant.name()|class_name_py }}({{ "buf"|read_py(Type::String) }})
+        {% endfor %}
+        raise InternalError("Raw enum value doesn't match any cases")
 
     {%- else %}
 
     # Each variant is a nested class of the error itself.
     {%- for variant in e.variants() %}
-    class {{ variant.name()|class_name_py }}(Exception):
+    class {{ variant.name()|class_name_py }}(ViaFfiUsingByteBuffer, Exception):
         def __init__(self{% for field in variant.fields() %}, {{ field.name()|var_name_py }}{% endfor %}):
             {%- if variant.has_fields() %}
             {%- for field in variant.fields() %}
@@ -59,55 +47,25 @@ class {{ e.name()|class_name_py }}:
             {%- else %}
             return "{{ e.name()|class_name_py }}.{{ variant.name()|class_name_py }}"
             {%- endif %}
+
+        def _write(self, buf):
+            buf.writeI32({{ loop.index }})
+            {%- for field in variant.fields() %}
+            {{ "self.{}"|format(field.name()) |write_py("buf", field.type_()) }}
+            {%- endfor %}
     {%- endfor %}
 
+    @classmethod
+    def _read(cls, buf):
+        variant = buf.readI32()
+        {% for variant in e.variants() -%}
+        if variant == {{ loop.index }}:
+            return cls.{{ variant.name()|class_name_py }}(
+                {% for field in variant.fields() -%}
+                {{ field.name()|var_name_py }}={{ "buf"|read_py(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                {% endfor -%}
+            )
+        {% endfor %}
+        raise InternalError("Raw enum value doesn't match any cases")
+
     {%- endif %}
-{%- endfor %}
-
-# Map error classes to the RustBufferTypeBuilder method to read them
-_error_class_to_reader_method = {
-{%- for e in ci.iter_error_definitions() %}
-{%- let typ=ci.get_type(e.name()).unwrap() %}
-{%- let canonical_type_name = typ.canonical_name()|class_name_py %}
-    {{ e.name()|class_name_py }}: RustBufferTypeReader.read{{ canonical_type_name }},
-{%- endfor %}
-}
-
-def consume_buffer_into_error(error_class, rust_buffer):
-    reader_method = _error_class_to_reader_method[error_class]
-    with rust_buffer.consumeWithStream() as stream:
-        return reader_method(stream)
-
-def rust_call(fn, *args):
-    # Call a rust function
-    return rust_call_with_error(None, fn, *args)
-
-def rust_call_with_error(error_class, fn, *args):
-    # Call a rust function and handle any errors
-    #
-    # This function is used for rust calls that return Result<> and therefore can set the CALL_ERROR status code.
-    # error_class must be set to the error class that corresponds to the result.
-    call_status = RustCallStatus(code=0, error_buf=RustBuffer(0, 0, None))
-
-    args_with_error = args + (ctypes.byref(call_status),)
-    result = fn(*args_with_error)
-    if call_status.code == RustCallStatus.CALL_SUCCESS:
-        return result
-    elif call_status.code == RustCallStatus.CALL_ERROR:
-        if error_class is None:
-            call_status.err_buf.contents.free()
-            raise InternalError("rust_call_with_error: CALL_ERROR, but no error class set")
-        else:
-            raise consume_buffer_into_error(error_class, call_status.error_buf)
-    elif call_status.code == RustCallStatus.CALL_PANIC:
-        # When the rust code sees a panic, it tries to construct a RustBuffer
-        # with the message.  But if that code panics, then it just sends back
-        # an empty buffer.
-        if call_status.error_buf.len > 0:
-            msg = call_status.error_buf.consumeIntoString()
-        else:
-            msg = "Unknown rust panic"
-        raise InternalError(msg)
-    else:
-        raise InternalError("Invalid RustCallStatus code: {}".format(
-            call_status.code))

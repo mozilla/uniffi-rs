@@ -1,3 +1,6 @@
+{% import "macros.py" as py %}
+{%- let obj = self.inner() %}
+
 class {{ obj.name()|class_name_py }}(object):
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
@@ -46,3 +49,23 @@ class {{ obj.name()|class_name_py }}(object):
         {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
     {% endmatch %}
     {% endfor %}
+
+    @classmethod
+    def _read(cls, buf):
+        ptr = buf.readU64()
+        if ptr == 0:
+            raise InternalError("Raw pointer value was null")
+        return cls._lift(ptr)
+
+    @classmethod
+    def _write(cls, value, buf):
+        if not isinstance(value, {{ obj.name()|class_name_py }}):
+            raise TypeError("Expected {{ obj.name()|class_name_py }} instance, {} found".format(value.__class__.__name__))
+        buf.writeU64(value._lower())
+
+    @classmethod
+    def _lift(cls, pointer):
+        return cls._make_instance_(pointer)
+
+    def _lower(self):
+        return self._pointer
