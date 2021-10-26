@@ -21,6 +21,7 @@ import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
+import com.sun.jna.ptr.ByReference
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 

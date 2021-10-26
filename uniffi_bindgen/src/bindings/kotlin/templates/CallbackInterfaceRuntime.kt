@@ -35,7 +35,7 @@ internal class ConcurrentHandleMap<T>(
 }
 
 interface ForeignCallback : com.sun.jna.Callback {
-    public fun invoke(handle: Handle, method: Int, args: RustBuffer.ByValue): RustBuffer.ByValue
+    public fun invoke(handle: Handle, method: Int, args: RustBuffer.ByValue, outBuf: RustBufferByReference): Int
 }
 
 // Magic number for the Rust proxy to call using the same mechanism as every other method,

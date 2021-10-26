@@ -14,6 +14,7 @@ use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
 use crate::interface::*;
 use crate::MergeWith;
 
+mod callback_interface;
 mod compounds;
 mod enum_;
 mod error;
@@ -77,24 +78,39 @@ impl<'a> PythonWrapper<'a> {
 
     pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
         let ci = self.ci;
-        vec![]
-            .into_iter()
-            .chain(ci.iter_enum_definitions().into_iter().map(|inner| {
+        vec![
+            Box::new(callback_interface::PythonCallbackInterfaceRuntime::new(ci))
+                as Box<dyn CodeDeclaration>,
+        ]
+        .into_iter()
+        .chain(
+            ci.iter_enum_definitions().into_iter().map(|inner| {
                 Box::new(enum_::PythonEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
-            .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-                Box::new(function::PythonFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
-            .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-                Box::new(object::PythonObject::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
-            .chain(ci.iter_record_definitions().into_iter().map(|inner| {
-                Box::new(record::PythonRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
-            .chain(ci.iter_error_definitions().into_iter().map(|inner| {
+            }),
+        )
+        .chain(ci.iter_function_definitions().into_iter().map(|inner| {
+            Box::new(function::PythonFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
+        }))
+        .chain(ci.iter_object_definitions().into_iter().map(|inner| {
+            Box::new(object::PythonObject::new(inner, ci)) as Box<dyn CodeDeclaration>
+        }))
+        .chain(ci.iter_record_definitions().into_iter().map(|inner| {
+            Box::new(record::PythonRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
+        }))
+        .chain(
+            ci.iter_error_definitions().into_iter().map(|inner| {
                 Box::new(error::PythonError::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
-            .collect()
+            }),
+        )
+        .chain(
+            ci.iter_callback_interface_definitions()
+                .into_iter()
+                .map(|inner| {
+                    Box::new(callback_interface::PythonCallbackInterface::new(inner, ci))
+                        as Box<dyn CodeDeclaration>
+                }),
+        )
+        .collect()
     }
 
     pub fn initialization_code(&self) -> Vec<String> {
@@ -172,8 +188,8 @@ impl PythonCodeOracle {
             Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
             Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
             Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
-            Type::CallbackInterface(_id) => {
-                unimplemented!("Callback interfaces are not implemented")
+            Type::CallbackInterface(id) => {
+                Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
 
             Type::Optional(ref inner) => {
@@ -260,7 +276,7 @@ impl CodeOracle for PythonCodeOracle {
             FFIType::RustArcPtr => "ctypes.c_void_p".to_string(),
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
-            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
+            FFIType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
         }
     }
 }

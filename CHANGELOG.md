@@ -14,6 +14,10 @@
   function returns an `Err`, in some cases it now [may not panic but instead
   return the error declared by the function](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html#error-handling-during-conversion).
 
+### What's Changed
+
+- Python: Added Callback Interface support
+
 ## v0.15.2 - (_2021-11-25_)
 
 ### What's Changed

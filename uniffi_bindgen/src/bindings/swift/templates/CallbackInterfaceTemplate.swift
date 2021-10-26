@@ -19,7 +19,7 @@ public protocol {{ type_name }} : AnyObject {
 
 // The ForeignCallback that is passed to Rust.
 fileprivate let {{ foreign_callback }} : ForeignCallback =
-    { (handle: Handle, method: Int32, args: RustBuffer) -> RustBuffer in
+    { (handle: Handle, method: Int32, args: RustBuffer, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
         {% for meth in cbi.methods() -%}
     {%- let method_name = format!("invoke_{}", meth.name())|fn_name -%}
 
@@ -63,15 +63,25 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
         switch method {
             case IDX_CALLBACK_FREE:
                 {{ ffi_converter }}.drop(handle: handle)
-                return RustBuffer()
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0
             {% for meth in cbi.methods() -%}
             {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
-            case {{ loop.index }}: return try! {{ method_name }}(cb, args)
+            case {{ loop.index }}:
+                let buffer = try! {{ method_name }}(cb, args)
+                out_buf.pointee = buffer
+                // Value written to out buffer.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 1
             {% endfor %}
             // This should never happen, because an out of bounds method index won't
             // ever be used. Once we can catch errors, we should return an InternalError.
             // https://github.com/mozilla/uniffi-rs/issues/351
-            default: return RustBuffer()
+            default:
+                // An unexpected error happened.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return -1
         }
     }
 
