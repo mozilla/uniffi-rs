@@ -17,11 +17,13 @@ use crate::MergeWith;
 mod compounds;
 mod enum_;
 mod error;
+mod external;
 mod function;
 mod miscellany;
 mod object;
 mod primitives;
 mod record;
+mod wrapped;
 
 // Some config options for it the caller wants to customize the generated python.
 // Note that this can only be used to control details of the python *that do not affect the underlying component*,
@@ -189,8 +191,14 @@ impl PythonCodeOracle {
                 let inner = *inner.to_owned();
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
-            Type::External { .. } => panic!("no support for external types yet"),
-            Type::Wrapped { .. } => panic!("no support for wrapped types yet"),
+            Type::External { name, crate_name } => {
+                Box::new(external::ExternalCodeType::new(name, crate_name))
+            }
+            Type::Wrapped { ref prim, .. } => {
+                let outer = type_.clone();
+                let inner = *prim.to_owned();
+                Box::new(wrapped::WrappedCodeType::new(inner, outer))
+            }
         }
     }
 }
