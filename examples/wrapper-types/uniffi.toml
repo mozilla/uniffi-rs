@@ -6,3 +6,6 @@ cdylib_name = "wrapper_types"
 
 [bindings.swift]
 cdylib_name = "wrapper_types"
+
+[bindings.kotlin]
+cdylib_name = "wrapper_types"

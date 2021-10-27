@@ -25,6 +25,7 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
+mod wrapped;
 
 /// Config options for the caller to customize the generated Swift.
 ///
@@ -308,7 +309,10 @@ impl SwiftCodeOracle {
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
             Type::External { .. } => panic!("no support for external types yet"),
-            Type::Wrapped { .. } => panic!("no support for wrapped types yet"),
+            Type::Wrapped { name, prim } => Box::new(wrapped::WrappedCodeType::new(
+                name,
+                self.create_code_type(prim.as_ref().clone()),
+            )),
         }
     }
 }

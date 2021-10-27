@@ -25,6 +25,7 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
+mod wrapped;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
@@ -220,7 +221,10 @@ impl KotlinCodeOracle {
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
             Type::External { .. } => panic!("no support for external types yet"),
-            Type::Wrapped { .. } => panic!("no support for wrapped types yet"),
+            Type::Wrapped { name, prim } => Box::new(wrapped::WrappedCodeType::new(
+                name,
+                self.create_code_type(prim.as_ref().clone()),
+            )),
         }
     }
 }
