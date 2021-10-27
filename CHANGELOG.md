@@ -1,4 +1,4 @@
-  <!-- The sections in this file are intended to be managed automatically by `cargo release` -->
+<!-- The sections in this file are intended to be managed automatically by `cargo release` -->
 <!-- See https://github.com/sunng87/cargo-release/blob/master/docs/faq.md#maintaining-changelog for details -->
 <!-- Unfortunately that doesn't currently work in a workspace, so for now we update it by hand: -->
 <!--   * Replace `[[UnreleasedVersion]]` with `vX.Y.Z` -->
@@ -10,6 +10,8 @@
 
 ## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
+## v0.14.1 (_2021-10-27_)
+
 ### ⚠️ Breaking Changes ⚠️
 - The `build_foreign_language_testcases!` macro now takes an array of UDL files as the
   first argument.
@@ -20,7 +22,7 @@
 - Swift: Refactored codegen to better match Kotlin / Unit of Code
 - Kotlin: Added some defensive programming around `RustBufferBuilder.discard()`
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.0...v0.14.1).
 
 ## v0.14.0 (_2021-08-17_)
 
