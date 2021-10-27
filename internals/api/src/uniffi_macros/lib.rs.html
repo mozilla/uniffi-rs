@@ -1,7 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uniffi_macros/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uniffi_macros/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -185,7 +184,7 @@
 <span id="182">182</span>
 <span id="183">183</span>
 <span id="184">184</span>
-</pre><div class="example-wrap"><pre class="rust ">
+</pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -196,9 +195,9 @@
 <span class="doccomment">//! we&#39;ll put some other code-annotation helper macros in here at some point.</span>
 
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">env</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
-<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">bracketed</span>, <span class="ident">punctuated</span>::<span class="ident">Punctuated</span>, <span class="ident">LitStr</span>, <span class="ident">Token</span>};
+<span class="kw">use</span> <span class="ident">std::env</span>;
+<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
+<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">bracketed</span>, <span class="ident">punctuated::Punctuated</span>, <span class="ident">LitStr</span>, <span class="ident">Token</span>};
 
 <span class="doccomment">/// A macro to build testcases for a component&#39;s generated bindings.</span>
 <span class="doccomment">///</span>
@@ -215,10 +214,10 @@
 <span class="doccomment">/// It will produce one `#[test]` function per file, in a manner designed to</span>
 <span class="doccomment">/// play nicely with `cargo test` and its test filtering options.</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build_foreign_language_testcases</span>(<span class="ident">paths</span>: <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">paths</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="macro">parse_macro_input</span><span class="macro">!</span>(<span class="ident">paths</span> <span class="kw">as</span> <span class="ident">FilePaths</span>);
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build_foreign_language_testcases</span>(<span class="ident">paths</span>: <span class="ident">proc_macro::TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proc_macro::TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">paths</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">paths</span> <span class="kw">as</span> <span class="ident">FilePaths</span>);
     <span class="comment">// We resolve each path relative to the crate root directory.</span>
-    <span class="kw">let</span> <span class="ident">pkg_dir</span> <span class="op">=</span> <span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>)
+    <span class="kw">let</span> <span class="ident">pkg_dir</span> <span class="op">=</span> <span class="ident">env::var</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>)
         .<span class="ident">expect</span>(<span class="string">&quot;Missing $CARGO_MANIFEST_DIR, cannot build tests for generated bindings&quot;</span>);
 
     <span class="comment">// Create an array of UDL files.</span>
@@ -228,9 +227,9 @@
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">file_path</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">pathbuf</span>: <span class="ident">PathBuf</span> <span class="op">=</span> [<span class="kw-2">&amp;</span><span class="ident">pkg_dir</span>, <span class="ident">file_path</span>].<span class="ident">iter</span>().<span class="ident">collect</span>();
             <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">pathbuf</span>.<span class="ident">to_string_lossy</span>();
-            <span class="macro">quote</span><span class="macro">!</span> { #<span class="ident">path</span> }
+            <span class="macro">quote!</span> { #<span class="ident">path</span> }
         })
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proc_macro2</span>::<span class="ident">TokenStream</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proc_macro2::TokenStream</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
     <span class="comment">// For each test file found, generate a matching testcase.</span>
     <span class="kw">let</span> <span class="ident">test_functions</span> <span class="op">=</span> <span class="ident">paths</span>.<span class="ident">test_scripts</span>
@@ -242,34 +241,34 @@
                 .<span class="ident">file_name</span>()
                 .<span class="ident">expect</span>(<span class="string">&quot;Test file has no name, cannot build tests for generated bindings&quot;</span>)
                 .<span class="ident">to_string_lossy</span>();
-            <span class="kw">let</span> <span class="ident">test_name</span> <span class="op">=</span> <span class="macro">format_ident</span><span class="macro">!</span>(
+            <span class="kw">let</span> <span class="ident">test_name</span> <span class="op">=</span> <span class="macro">format_ident!</span>(
                 <span class="string">&quot;uniffi_foreign_language_testcase_{}&quot;</span>,
                 <span class="ident">test_file_name</span>.<span class="ident">replace</span>(<span class="op">|</span><span class="ident">c</span>: <span class="ident">char</span><span class="op">|</span> <span class="op">!</span><span class="ident">c</span>.<span class="ident">is_alphanumeric</span>(), <span class="string">&quot;_&quot;</span>)
             );
             <span class="kw">let</span> <span class="ident">maybe_ignore</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">should_skip_path</span>(<span class="kw-2">&amp;</span><span class="ident">test_file_pathbuf</span>) {
-                <span class="macro">quote</span><span class="macro">!</span> { <span class="attribute">#[<span class="ident">ignore</span>]</span> }
+                <span class="macro">quote!</span> { <span class="attribute">#[<span class="ident">ignore</span>]</span> }
             } <span class="kw">else</span> {
-                <span class="macro">quote</span><span class="macro">!</span> { }
+                <span class="macro">quote!</span> { }
             };
-            <span class="macro">quote</span><span class="macro">!</span> {
+            <span class="macro">quote!</span> {
                 #<span class="ident">maybe_ignore</span>
                 <span class="attribute">#[<span class="ident">test</span>]</span>
-                <span class="kw">fn</span> #<span class="ident">test_name</span> () <span class="op">-</span><span class="op">&gt;</span> <span class="ident">uniffi</span>::<span class="ident">deps</span>::<span class="ident">anyhow</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-                    <span class="ident">uniffi</span>::<span class="ident">testing</span>::<span class="ident">run_foreign_language_testcase</span>(#<span class="ident">pkg_dir</span>, <span class="kw-2">&amp;</span>[ #(#<span class="ident">udl_files</span>),<span class="op">*</span> ], #<span class="ident">test_file_path</span>)
+                <span class="kw">fn</span> #<span class="ident">test_name</span> () <span class="op">-</span><span class="op">&gt;</span> <span class="ident">uniffi::deps::anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+                    <span class="ident">uniffi::testing::run_foreign_language_testcase</span>(#<span class="ident">pkg_dir</span>, <span class="kw-2">&amp;</span>[ #(#<span class="ident">udl_files</span>),<span class="op">*</span> ], #<span class="ident">test_file_path</span>)
                 }
             }
         })
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proc_macro2</span>::<span class="ident">TokenStream</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-    <span class="kw">let</span> <span class="ident">test_module</span> <span class="op">=</span> <span class="macro">quote</span><span class="macro">!</span> {
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proc_macro2::TokenStream</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+    <span class="kw">let</span> <span class="ident">test_module</span> <span class="op">=</span> <span class="macro">quote!</span> {
         #(#<span class="ident">test_functions</span>)<span class="op">*</span>
     };
-    <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span>::<span class="ident">from</span>(<span class="ident">test_module</span>)
+    <span class="ident">proc_macro::TokenStream::from</span>(<span class="ident">test_module</span>)
 }
 
 <span class="comment">// UNIFFI_TESTS_DISABLE_EXTENSIONS contains a comma-sep&#39;d list of extensions (without leading `.`)</span>
 <span class="kw">fn</span> <span class="ident">should_skip_path</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">let</span> <span class="ident">ext</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">extension</span>().<span class="ident">expect</span>(<span class="string">&quot;File has no extension!&quot;</span>);
-    <span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;UNIFFI_TESTS_DISABLE_EXTENSIONS&quot;</span>)
+    <span class="ident">env::var</span>(<span class="string">&quot;UNIFFI_TESTS_DISABLE_EXTENSIONS&quot;</span>)
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>).<span class="ident">any</span>(<span class="op">|</span><span class="ident">look</span><span class="op">|</span> <span class="ident">look</span> <span class="op">=</span><span class="op">=</span> <span class="ident">ext</span>))
         .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
 }
@@ -281,20 +280,20 @@
     <span class="ident">test_scripts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">syn</span>::<span class="ident">parse</span>::<span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">FilePaths</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">syn</span>::<span class="ident">parse</span>::<span class="ident">ParseStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">syn</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">syn::parse::Parse</span> <span class="kw">for</span> <span class="ident">FilePaths</span> {
+    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">syn::parse::ParseStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">udl_array</span>;
-        <span class="macro">bracketed</span><span class="macro">!</span>(<span class="ident">udl_array</span> <span class="kw">in</span> <span class="ident">input</span>);
-        <span class="kw">let</span> <span class="ident">udl_files</span> <span class="op">=</span> <span class="ident">Punctuated</span>::<span class="op">&lt;</span><span class="ident">LitStr</span>, <span class="macro">Token</span><span class="macro">!</span>[,]<span class="op">&gt;</span>::<span class="ident">parse_terminated</span>(<span class="kw-2">&amp;</span><span class="ident">udl_array</span>)<span class="question-mark">?</span>
+        <span class="macro">bracketed!</span>(<span class="ident">udl_array</span> <span class="kw">in</span> <span class="ident">input</span>);
+        <span class="kw">let</span> <span class="ident">udl_files</span> <span class="op">=</span> <span class="ident">Punctuated</span>::<span class="op">&lt;</span><span class="ident">LitStr</span>, <span class="macro">Token!</span>[,]<span class="op">&gt;</span><span class="ident">::parse_terminated</span>(<span class="kw-2">&amp;</span><span class="ident">udl_array</span>)<span class="question-mark">?</span>
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">value</span>())
             .<span class="ident">collect</span>();
 
-        <span class="kw">let</span> <span class="ident">_comma</span>: <span class="macro">Token</span><span class="macro">!</span>[,] <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">_comma</span>: <span class="macro">Token!</span>[,] <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">scripts_array</span>;
-        <span class="macro">bracketed</span><span class="macro">!</span>(<span class="ident">scripts_array</span> <span class="kw">in</span> <span class="ident">input</span>);
-        <span class="kw">let</span> <span class="ident">test_scripts</span> <span class="op">=</span> <span class="ident">Punctuated</span>::<span class="op">&lt;</span><span class="ident">LitStr</span>, <span class="macro">Token</span><span class="macro">!</span>[,]<span class="op">&gt;</span>::<span class="ident">parse_terminated</span>(<span class="kw-2">&amp;</span><span class="ident">scripts_array</span>)<span class="question-mark">?</span>
+        <span class="macro">bracketed!</span>(<span class="ident">scripts_array</span> <span class="kw">in</span> <span class="ident">input</span>);
+        <span class="kw">let</span> <span class="ident">test_scripts</span> <span class="op">=</span> <span class="ident">Punctuated</span>::<span class="op">&lt;</span><span class="ident">LitStr</span>, <span class="macro">Token!</span>[,]<span class="op">&gt;</span><span class="ident">::parse_terminated</span>(<span class="kw-2">&amp;</span><span class="ident">scripts_array</span>)<span class="question-mark">?</span>
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">value</span>())
             .<span class="ident">collect</span>();
@@ -321,15 +320,15 @@
 <span class="doccomment">/// been successfully built by your crate&#39;s `build.rs` script).</span>
 <span class="doccomment">///</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_scaffolding</span>(<span class="ident">component_name</span>: <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="macro">parse_macro_input</span><span class="macro">!</span>(<span class="ident">component_name</span> <span class="kw">as</span> <span class="ident">syn</span>::<span class="ident">LitStr</span>);
-    <span class="kw">if</span> <span class="ident">std</span>::<span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">is_err</span>() {
-        <span class="macro">quote</span><span class="macro">!</span> {
-            <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_scaffolding</span>(<span class="ident">component_name</span>: <span class="ident">proc_macro::TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proc_macro::TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">component_name</span> <span class="kw">as</span> <span class="ident">syn::LitStr</span>);
+    <span class="kw">if</span> <span class="ident">std::env::var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">is_err</span>() {
+        <span class="macro">quote!</span> {
+            <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
         }
     } <span class="kw">else</span> {
-        <span class="macro">quote</span><span class="macro">!</span> {
-            <span class="macro">include</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/&quot;</span>, #<span class="ident">name</span>, <span class="string">&quot;.uniffi.rs&quot;</span>));
+        <span class="macro">quote!</span> {
+            <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/&quot;</span>, #<span class="ident">name</span>, <span class="string">&quot;.uniffi.rs&quot;</span>));
         }
     }.<span class="ident">into</span>()
 }
@@ -347,29 +346,28 @@
 <span class="doccomment">///</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_and_include_scaffolding</span>(
-    <span class="ident">udl_file</span>: <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="macro">parse_macro_input</span><span class="macro">!</span>(<span class="ident">udl_file</span> <span class="kw">as</span> <span class="ident">syn</span>::<span class="ident">LitStr</span>);
+    <span class="ident">udl_file</span>: <span class="ident">proc_macro::TokenStream</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proc_macro::TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">udl_file</span> <span class="kw">as</span> <span class="ident">syn::LitStr</span>);
     <span class="kw">let</span> <span class="ident">udl_file_string</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">value</span>();
-    <span class="kw">let</span> <span class="ident">udl_file_path</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="ident">udl_file_string</span>.<span class="ident">as_str</span>());
-    <span class="kw">if</span> <span class="ident">std</span>::<span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">is_err</span>() {
-        <span class="macro">quote</span><span class="macro">!</span> {
-            <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
+    <span class="kw">let</span> <span class="ident">udl_file_path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="ident">udl_file_string</span>.<span class="ident">as_str</span>());
+    <span class="kw">if</span> <span class="ident">std::env::var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">is_err</span>() {
+        <span class="macro">quote!</span> {
+            <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
         }
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">uniffi_build</span>::<span class="ident">generate_scaffolding</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file_path</span>.<span class="ident">to_string_lossy</span>()).<span class="ident">is_err</span>() {
-        <span class="macro">quote</span><span class="macro">!</span> {
-            <span class="macro">compile_error</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="string">&quot;Failed to generate scaffolding from UDL file at &quot;</span>, #<span class="ident">udl_file</span>));
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">uniffi_build::generate_scaffolding</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file_path</span>.<span class="ident">to_string_lossy</span>()).<span class="ident">is_err</span>() {
+        <span class="macro">quote!</span> {
+            <span class="macro">compile_error!</span>(<span class="macro">concat!</span>(<span class="string">&quot;Failed to generate scaffolding from UDL file at &quot;</span>, #<span class="ident">udl_file</span>));
         }
     } <span class="kw">else</span> {
         <span class="comment">// We know the filename is good because `generate_scaffolding` succeeded,</span>
         <span class="comment">// so this `unwrap` will never fail.</span>
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">udl_file_path</span>.<span class="ident">file_stem</span>().<span class="ident">unwrap</span>().<span class="ident">to_os_string</span>();
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">LitStr</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>.<span class="ident">to_string_lossy</span>(), <span class="ident">udl_file</span>.<span class="ident">span</span>());
-        <span class="macro">quote</span><span class="macro">!</span> {
-            <span class="ident">uniffi_macros</span>::<span class="macro">include_scaffolding</span><span class="macro">!</span>(#<span class="ident">name</span>);
+        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">LitStr::new</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>.<span class="ident">to_string_lossy</span>(), <span class="ident">udl_file</span>.<span class="ident">span</span>());
+        <span class="macro">quote!</span> {
+            <span class="macro">uniffi_macros::include_scaffolding!</span>(#<span class="ident">name</span>);
         }
     }.<span class="ident">into</span>()
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-search-js="../../search-index.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>

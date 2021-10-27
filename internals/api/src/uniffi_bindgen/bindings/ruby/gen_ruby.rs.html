@@ -1,7 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/ruby/gen_ruby.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gen_ruby.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../settings.html" title="settings"><img src="../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -266,18 +265,18 @@
 <span id="263">263</span>
 <span id="264">264</span>
 <span id="265">265</span>
-</pre><div class="example-wrap"><pre class="rust ">
+</pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::<span class="prelude-ty">Result</span>;
-<span class="kw">use</span> <span class="ident">askama</span>::<span class="ident">Template</span>;
+<span class="kw">use</span> <span class="ident">anyhow::Result</span>;
+<span class="kw">use</span> <span class="ident">askama::Template</span>;
 <span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">CamelCase</span>, <span class="ident">ShoutySnakeCase</span>, <span class="ident">SnakeCase</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">interface</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">MergeWith</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::interface</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::MergeWith</span>;
 
 <span class="kw">const</span> <span class="ident">RESERVED_WORDS</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[
     <span class="string">&quot;alias&quot;</span>, <span class="string">&quot;and&quot;</span>, <span class="string">&quot;BEGIN&quot;</span>, <span class="string">&quot;begin&quot;</span>, <span class="string">&quot;break&quot;</span>, <span class="string">&quot;case&quot;</span>, <span class="string">&quot;class&quot;</span>, <span class="string">&quot;def&quot;</span>, <span class="string">&quot;defined?&quot;</span>, <span class="string">&quot;do&quot;</span>, <span class="string">&quot;else&quot;</span>,
@@ -318,7 +317,7 @@
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Config</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Config</span> {
-            <span class="ident">cdylib_name</span>: <span class="prelude-val">Some</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>())),
+            <span class="ident">cdylib_name</span>: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>())),
             <span class="ident">cdylib_path</span>: <span class="prelude-val">None</span>,
         }
     }
@@ -347,30 +346,30 @@
 
 <span class="kw">mod</span> <span class="ident">filters</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+    <span class="kw">use</span> <span class="ident">std::fmt</span>;
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">FFIType</span>::<span class="ident">Int8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:int8&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">UInt8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:uint8&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">Int16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:int16&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">UInt16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:uint16&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">Int32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:int32&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">UInt32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:uint32&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:int64&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:uint64&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:float&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:double&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:pointer&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer.by_value&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType</span>::<span class="ident">ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
+            <span class="ident">FFIType::Int8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:int8&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::UInt8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:uint8&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::Int16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:int16&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::UInt16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:uint16&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::Int32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:int32&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::UInt32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:uint32&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:int64&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:uint64&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:float&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:double&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;:pointer&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer.by_value&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">literal_rb</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">literal_rb</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">literal</span> {
-            <span class="ident">Literal</span>::<span class="ident">Boolean</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">Literal::Boolean</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">v</span> {
                     <span class="string">&quot;true&quot;</span>.<span class="ident">into</span>()
                 } <span class="kw">else</span> {
@@ -378,154 +377,154 @@
                 }
             }
             <span class="comment">// use the double-quote form to match with the other languages, and quote escapes.</span>
-            <span class="ident">Literal</span>::<span class="ident">String</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;\&quot;{}\&quot;&quot;</span>, <span class="ident">s</span>),
-            <span class="ident">Literal</span>::<span class="ident">Null</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;nil&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Literal</span>::<span class="ident">EmptySequence</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;[]&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Literal</span>::<span class="ident">EmptyMap</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;{}&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Literal</span>::<span class="ident">Enum</span>(<span class="ident">v</span>, <span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">type_</span> {
-                <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}::{}&quot;</span>, <span class="ident">class_name_rb</span>(<span class="ident">name</span>)<span class="question-mark">?</span>, <span class="ident">enum_name_rb</span>(<span class="ident">v</span>)<span class="question-mark">?</span>),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Unexpected type in enum literal: {:?}&quot;</span>, <span class="ident">type_</span>),
+            <span class="ident">Literal::String</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;\&quot;{}\&quot;&quot;</span>, <span class="ident">s</span>),
+            <span class="ident">Literal::Null</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;nil&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">Literal::EmptySequence</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;[]&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">Literal::EmptyMap</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;{}&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">Literal::Enum</span>(<span class="ident">v</span>, <span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">type_</span> {
+                <span class="ident">Type::Enum</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}::{}&quot;</span>, <span class="ident">class_name_rb</span>(<span class="ident">name</span>)<span class="question-mark">?</span>, <span class="ident">enum_name_rb</span>(<span class="ident">v</span>)<span class="question-mark">?</span>),
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;Unexpected type in enum literal: {:?}&quot;</span>, <span class="ident">type_</span>),
             },
             <span class="comment">// https://docs.ruby-lang.org/en/2.0.0/syntax/literals_rdoc.html</span>
-            <span class="ident">Literal</span>::<span class="ident">Int</span>(<span class="ident">i</span>, <span class="ident">radix</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">radix</span> {
-                <span class="ident">Radix</span>::<span class="ident">Octal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;0o{:o}&quot;</span>, <span class="ident">i</span>),
-                <span class="ident">Radix</span>::<span class="ident">Decimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>),
-                <span class="ident">Radix</span>::<span class="ident">Hexadecimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
+            <span class="ident">Literal::Int</span>(<span class="ident">i</span>, <span class="ident">radix</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">radix</span> {
+                <span class="ident">Radix::Octal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;0o{:o}&quot;</span>, <span class="ident">i</span>),
+                <span class="ident">Radix::Decimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>),
+                <span class="ident">Radix::Hexadecimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
             },
-            <span class="ident">Literal</span>::<span class="ident">UInt</span>(<span class="ident">i</span>, <span class="ident">radix</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">radix</span> {
-                <span class="ident">Radix</span>::<span class="ident">Octal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;0o{:o}&quot;</span>, <span class="ident">i</span>),
-                <span class="ident">Radix</span>::<span class="ident">Decimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>),
-                <span class="ident">Radix</span>::<span class="ident">Hexadecimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
+            <span class="ident">Literal::UInt</span>(<span class="ident">i</span>, <span class="ident">radix</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">radix</span> {
+                <span class="ident">Radix::Octal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;0o{:o}&quot;</span>, <span class="ident">i</span>),
+                <span class="ident">Radix::Decimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>),
+                <span class="ident">Radix::Hexadecimal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
             },
-            <span class="ident">Literal</span>::<span class="ident">Float</span>(<span class="ident">string</span>, <span class="ident">_type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">string</span>.<span class="ident">clone</span>(),
+            <span class="ident">Literal::Float</span>(<span class="ident">string</span>, <span class="ident">_type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">string</span>.<span class="ident">clone</span>(),
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">class_name_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">class_name_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_camel_case</span>())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fn_name_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fn_name_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_snake_case</span>())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">var_name_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">var_name_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">nm</span> <span class="op">=</span> <span class="ident">nm</span>.<span class="ident">to_string</span>();
         <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_reserved_word</span>(<span class="kw-2">&amp;</span><span class="ident">nm</span>) { <span class="string">&quot;_&quot;</span> } <span class="kw">else</span> { <span class="string">&quot;&quot;</span> };
 
-        <span class="prelude-val">Ok</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">prefix</span>, <span class="ident">nm</span>.<span class="ident">to_snake_case</span>()))
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">prefix</span>, <span class="ident">nm</span>.<span class="ident">to_snake_case</span>()))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_name_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_name_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_shouty_snake_case</span>())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">coerce_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">coerce_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type</span>::<span class="ident">Int8</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt8</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int16</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt16</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int32</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt32</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int64</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.to_i&quot;</span>, <span class="ident">nm</span>), <span class="comment">// TODO: check max/min value</span>
-            <span class="ident">Type</span>::<span class="ident">Float32</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.to_f&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Boolean</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{} ? true : false&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nm</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.to_s&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for timestamps in Ruby, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for durations in Ruby, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for coercing callback interfaces yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;({} ? {} : nil)&quot;</span>, <span class="ident">nm</span>, <span class="ident">coerce_rb</span>(<span class="ident">nm</span>, <span class="ident">t</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">Type::Int8</span>
+            <span class="op">|</span> <span class="ident">Type::UInt8</span>
+            <span class="op">|</span> <span class="ident">Type::Int16</span>
+            <span class="op">|</span> <span class="ident">Type::UInt16</span>
+            <span class="op">|</span> <span class="ident">Type::Int32</span>
+            <span class="op">|</span> <span class="ident">Type::UInt32</span>
+            <span class="op">|</span> <span class="ident">Type::Int64</span>
+            <span class="op">|</span> <span class="ident">Type::UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}.to_i&quot;</span>, <span class="ident">nm</span>), <span class="comment">// TODO: check max/min value</span>
+            <span class="ident">Type::Float32</span> <span class="op">|</span> <span class="ident">Type::Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}.to_f&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::Boolean</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{} ? true : false&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::Object</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Enum</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Error</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nm</span>.<span class="ident">to_string</span>(),
+            <span class="ident">Type::String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}.to_s&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for timestamps in Ruby, yet&quot;</span>),
+            <span class="ident">Type::Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for durations in Ruby, yet&quot;</span>),
+            <span class="ident">Type::CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for coercing callback interfaces yet&quot;</span>),
+            <span class="ident">Type::Optional</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;({} ? {} : nil)&quot;</span>, <span class="ident">nm</span>, <span class="ident">coerce_rb</span>(<span class="ident">nm</span>, <span class="ident">t</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">coerce_code</span> <span class="op">=</span> <span class="ident">coerce_rb</span>(<span class="kw-2">&amp;</span><span class="string">&quot;v&quot;</span>, <span class="ident">t</span>)<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">coerce_code</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;v&quot;</span> {
                     <span class="ident">nm</span>.<span class="ident">to_string</span>()
                 } <span class="kw">else</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.map {{ |v| {} }}&quot;</span>, <span class="ident">nm</span>, <span class="ident">coerce_code</span>)
+                    <span class="macro">format!</span>(<span class="string">&quot;{}.map {{ |v| {} }}&quot;</span>, <span class="ident">nm</span>, <span class="ident">coerce_code</span>)
                 }
             }
-            <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">k_coerce_code</span> <span class="op">=</span> <span class="ident">coerce_rb</span>(<span class="kw-2">&amp;</span><span class="string">&quot;k&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">Type</span>::<span class="ident">String</span>)<span class="question-mark">?</span>;
+            <span class="ident">Type::Map</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">k_coerce_code</span> <span class="op">=</span> <span class="ident">coerce_rb</span>(<span class="kw-2">&amp;</span><span class="string">&quot;k&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">Type::String</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">v_coerce_code</span> <span class="op">=</span> <span class="ident">coerce_rb</span>(<span class="kw-2">&amp;</span><span class="string">&quot;v&quot;</span>, <span class="ident">t</span>)<span class="question-mark">?</span>;
 
                 <span class="kw">if</span> <span class="ident">k_coerce_code</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;k&quot;</span> <span class="op">&amp;&amp;</span> <span class="ident">v_coerce_code</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;v&quot;</span> {
                     <span class="ident">nm</span>.<span class="ident">to_string</span>()
                 } <span class="kw">else</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(
+                    <span class="macro">format!</span>(
                         <span class="string">&quot;{}.each.with_object({{}}) {{ |(k, v), res| res[{}] = {} }}&quot;</span>,
                         <span class="ident">nm</span>, <span class="ident">k_coerce_code</span>, <span class="ident">v_coerce_code</span>,
                     )
                 }
             }
-            <span class="ident">Type</span>::<span class="ident">External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for external types, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for wrapped types, yet&quot;</span>),
+            <span class="ident">Type::External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for external types, yet&quot;</span>),
+            <span class="ident">Type::Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for wrapped types, yet&quot;</span>),
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type</span>::<span class="ident">Int8</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt8</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int16</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt16</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int32</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt32</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int64</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt64</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Float32</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nm</span>.<span class="ident">to_string</span>(),
-            <span class="ident">Type</span>::<span class="ident">Boolean</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;({} ? 1 : 0)&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;RustBuffer.allocFromString({})&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for timestamps in Ruby, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for durations in Ruby, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;({}._uniffi_lower {})&quot;</span>, <span class="ident">class_name_rb</span>(<span class="ident">name</span>)<span class="question-mark">?</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lowering callback interfaces yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(
+            <span class="ident">Type::Int8</span>
+            <span class="op">|</span> <span class="ident">Type::UInt8</span>
+            <span class="op">|</span> <span class="ident">Type::Int16</span>
+            <span class="op">|</span> <span class="ident">Type::UInt16</span>
+            <span class="op">|</span> <span class="ident">Type::Int32</span>
+            <span class="op">|</span> <span class="ident">Type::UInt32</span>
+            <span class="op">|</span> <span class="ident">Type::Int64</span>
+            <span class="op">|</span> <span class="ident">Type::UInt64</span>
+            <span class="op">|</span> <span class="ident">Type::Float32</span>
+            <span class="op">|</span> <span class="ident">Type::Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">nm</span>.<span class="ident">to_string</span>(),
+            <span class="ident">Type::Boolean</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;({} ? 1 : 0)&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;RustBuffer.allocFromString({})&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for timestamps in Ruby, yet&quot;</span>),
+            <span class="ident">Type::Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for durations in Ruby, yet&quot;</span>),
+            <span class="ident">Type::Object</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;({}._uniffi_lower {})&quot;</span>, <span class="ident">class_name_rb</span>(<span class="ident">name</span>)<span class="question-mark">?</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering callback interfaces yet&quot;</span>),
+            <span class="ident">Type::Error</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
+            <span class="ident">Type::Enum</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Optional</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Sequence</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Map</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(
                 <span class="string">&quot;RustBuffer.alloc_from_{}({})&quot;</span>,
                 <span class="ident">class_name_rb</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>,
                 <span class="ident">nm</span>
             ),
-            <span class="ident">Type</span>::<span class="ident">External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lowering external types, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lowering wrapped types, yet&quot;</span>),
+            <span class="ident">Type::External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering external types, yet&quot;</span>),
+            <span class="ident">Type::Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering wrapped types, yet&quot;</span>),
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_rb</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type</span>::<span class="ident">Int8</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt8</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int16</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt16</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int32</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt32</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Int64</span>
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.to_i&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Float32</span> <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.to_f&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Boolean</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;1 == {}&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.consumeIntoString&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for timestamps in Ruby, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for durations in Ruby, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}._uniffi_allocate({})&quot;</span>, <span class="ident">class_name_rb</span>(<span class="ident">name</span>)<span class="question-mark">?</span>, <span class="ident">nm</span>),
-            <span class="ident">Type</span>::<span class="ident">CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lifting callback interfaces, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Error</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Enum</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type</span>::<span class="ident">Map</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format</span><span class="macro">!</span>(
+            <span class="ident">Type::Int8</span>
+            <span class="op">|</span> <span class="ident">Type::UInt8</span>
+            <span class="op">|</span> <span class="ident">Type::Int16</span>
+            <span class="op">|</span> <span class="ident">Type::UInt16</span>
+            <span class="op">|</span> <span class="ident">Type::Int32</span>
+            <span class="op">|</span> <span class="ident">Type::UInt32</span>
+            <span class="op">|</span> <span class="ident">Type::Int64</span>
+            <span class="op">|</span> <span class="ident">Type::UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}.to_i&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::Float32</span> <span class="op">|</span> <span class="ident">Type::Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}.to_f&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::Boolean</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;1 == {}&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}.consumeIntoString&quot;</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for timestamps in Ruby, yet&quot;</span>),
+            <span class="ident">Type::Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for durations in Ruby, yet&quot;</span>),
+            <span class="ident">Type::Object</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}._uniffi_allocate({})&quot;</span>, <span class="ident">class_name_rb</span>(<span class="ident">name</span>)<span class="question-mark">?</span>, <span class="ident">nm</span>),
+            <span class="ident">Type::CallbackInterface</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting callback interfaces, yet&quot;</span>),
+            <span class="ident">Type::Error</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
+            <span class="ident">Type::Enum</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Optional</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Sequence</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Map</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(
                 <span class="string">&quot;{}.consumeInto{}&quot;</span>,
                 <span class="ident">nm</span>,
                 <span class="ident">class_name_rb</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>
             ),
-            <span class="ident">Type</span>::<span class="ident">External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lifting external types, yet&quot;</span>),
-            <span class="ident">Type</span>::<span class="ident">Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;No support for lifting wrapped types, yet&quot;</span>),
+            <span class="ident">Type::External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting external types, yet&quot;</span>),
+            <span class="ident">Type::Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting wrapped types, yet&quot;</span>),
         })
     }
 }
@@ -533,5 +532,4 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span>;
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-search-js="../../../../search-index.js"></div>
-    <script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-search-index-js="../../../../search-index.js" data-search-js="../../../../search.js"></div><script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script></body></html>

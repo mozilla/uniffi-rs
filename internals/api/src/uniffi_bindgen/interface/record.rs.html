@@ -1,7 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/record.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>record.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -239,7 +238,7 @@
 <span id="236">236</span>
 <span id="237">237</span>
 <span id="238">238</span>
-</pre><div class="example-wrap"><pre class="rust ">
+</pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -288,8 +287,8 @@
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
 
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">literal</span>::{<span class="ident">convert_default_value</span>, <span class="ident">Literal</span>};
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">types</span>::{<span class="ident">IterTypes</span>, <span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
+<span class="kw">use</span> <span class="kw">super</span><span class="ident">::literal</span>::{<span class="ident">convert_default_value</span>, <span class="ident">Literal</span>};
+<span class="kw">use</span> <span class="kw">super</span><span class="ident">::types</span>::{<span class="ident">IterTypes</span>, <span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
 
 <span class="doccomment">/// Represents a &quot;data class&quot; style object, for passing around complex values.</span>
@@ -311,7 +310,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Type</span> {
         <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterace</span>
         <span class="comment">// and its contained types could use a bit of a cleanup.</span>
-        <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>())
+        <span class="ident">Type::Record</span>(<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>())
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Field</span><span class="op">&gt;</span> {
@@ -321,17 +320,17 @@
 
 <span class="kw">impl</span> <span class="ident">IterTypes</span> <span class="kw">for</span> <span class="ident">Record</span> {
     <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="ident">Box</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">IterTypes</span>::<span class="ident">iter_types</span>).<span class="ident">flatten</span>())
+        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">IterTypes::iter_types</span>).<span class="ident">flatten</span>())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Record</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">DictionaryDefinition</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Record</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::DictionaryDefinition</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Record</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;dictionary attributes are not supported yet&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;dictionary attributes are not supported yet&quot;</span>);
         }
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inheritance</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;dictionary inheritence is not supported&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;dictionary inheritence is not supported&quot;</span>);
         }
         <span class="prelude-val">Ok</span>(<span class="ident">Record</span> {
             <span class="ident">name</span>: <span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
@@ -367,14 +366,14 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">dictionary</span>::<span class="ident">DictionaryMember</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::dictionary::DictionaryMember</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;dictionary member attributes are not supported yet&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;dictionary member attributes are not supported yet&quot;</span>);
         }
         <span class="kw">let</span> <span class="ident">type_</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Type</span>::<span class="ident">Object</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">type_</span> {
-            <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Objects cannot currently appear in record fields&quot;</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Type::Object</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">type_</span> {
+            <span class="macro">bail!</span>(<span class="string">&quot;Objects cannot currently appear in record fields&quot;</span>);
         }
         <span class="kw">let</span> <span class="ident">default</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">default</span> {
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
@@ -391,7 +390,7 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">literal</span>::<span class="ident">Radix</span>;
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span><span class="ident">::literal::Radix</span>;
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -408,42 +407,42 @@
                 required boolean spin;
             };
         &quot;#</span>;
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface</span>::<span class="ident">from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">iter_record_definitions</span>().<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_record_definitions</span>().<span class="ident">len</span>(), <span class="number">3</span>);
 
         <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_record_definition</span>(<span class="string">&quot;Empty&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">name</span>(), <span class="string">&quot;Empty&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">name</span>(), <span class="string">&quot;Empty&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">0</span>);
 
         <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_record_definition</span>(<span class="string">&quot;Simple&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">name</span>(), <span class="string">&quot;Simple&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;field&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;u32&quot;</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">required</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">name</span>(), <span class="string">&quot;Simple&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;field&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;u32&quot;</span>);
+        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">required</span>);
+        <span class="macro">assert!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
 
         <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_record_definition</span>(<span class="string">&quot;Complex&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">name</span>(), <span class="string">&quot;Complex&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">3</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;key&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">name</span>(), <span class="string">&quot;Complex&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;key&quot;</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(),
             <span class="string">&quot;Optionalstring&quot;</span>
         );
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">required</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">name</span>(), <span class="string">&quot;value&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;u32&quot;</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">required</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">required</span>);
+        <span class="macro">assert!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">name</span>(), <span class="string">&quot;value&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;u32&quot;</span>);
+        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">required</span>);
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             <span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">default_value</span>(),
-            <span class="prelude-val">Some</span>(<span class="ident">Literal</span>::<span class="ident">UInt</span>(<span class="number">0</span>, <span class="ident">Radix</span>::<span class="ident">Decimal</span>, <span class="ident">Type</span>::<span class="ident">UInt32</span>))
+            <span class="prelude-val">Some</span>(<span class="ident">Literal::UInt</span>(<span class="number">0</span>, <span class="ident">Radix::Decimal</span>, <span class="ident">Type::UInt32</span>))
         ));
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">name</span>(), <span class="string">&quot;spin&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;bool&quot;</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">required</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">name</span>(), <span class="string">&quot;spin&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;bool&quot;</span>);
+        <span class="macro">assert!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">required</span>);
+        <span class="macro">assert!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -455,29 +454,28 @@
                 u32 value;
             };
         &quot;#</span>;
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface</span>::<span class="ident">from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">iter_record_definitions</span>().<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_record_definitions</span>().<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_record_definition</span>(<span class="string">&quot;Testing&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;maybe_name&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">name</span>(), <span class="string">&quot;value&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;maybe_name&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">name</span>(), <span class="string">&quot;value&quot;</span>);
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">iter_types</span>().<span class="ident">len</span>(), <span class="number">4</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">ci</span>.<span class="ident">iter_types</span>().<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;u32&quot;</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">ci</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_types</span>().<span class="ident">len</span>(), <span class="number">4</span>);
+        <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">iter_types</span>().<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;u32&quot;</span>));
+        <span class="macro">assert!</span>(<span class="ident">ci</span>
             .<span class="ident">iter_types</span>()
             .<span class="ident">iter</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;string&quot;</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">ci</span>
+        <span class="macro">assert!</span>(<span class="ident">ci</span>
             .<span class="ident">iter_types</span>()
             .<span class="ident">iter</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;Optionalstring&quot;</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">ci</span>
+        <span class="macro">assert!</span>(<span class="ident">ci</span>
             .<span class="ident">iter_types</span>()
             .<span class="ident">iter</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TypeTesting&quot;</span>));
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-search-js="../../../search-index.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>

@@ -1,7 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/swift/gen_swift/compounds.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>compounds.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../../storage.js"></script><script src="../../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../../settings.html" title="settings"><img src="../../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -108,34 +107,34 @@
 <span id="105">105</span>
 <span id="106">106</span>
 <span id="107">107</span>
-</pre><div class="example-wrap"><pre class="rust ">
+</pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">bindings</span>::<span class="ident">backend</span>::{<span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">Literal</span>, <span class="ident">TypeIdentifier</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">interface</span>::<span class="ident">types</span>::<span class="ident">Type</span>;
-<span class="kw">use</span> <span class="ident">askama</span>::<span class="ident">Template</span>;
-<span class="kw">use</span> <span class="ident">paste</span>::<span class="ident">paste</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::bindings::backend</span>::{<span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">Literal</span>, <span class="ident">TypeIdentifier</span>};
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::interface::types::Type</span>;
+<span class="kw">use</span> <span class="ident">askama::Template</span>;
+<span class="kw">use</span> <span class="ident">paste::paste</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
 
 <span class="comment">// Used in template files.</span>
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">filters</span>;
+<span class="kw">use</span> <span class="kw">super</span><span class="ident">::filters</span>;
 
 <span class="kw">fn</span> <span class="ident">render_literal</span>(<span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>, <span class="ident">inner</span>: <span class="kw-2">&amp;</span><span class="ident">TypeIdentifier</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
     <span class="kw">match</span> <span class="ident">literal</span> {
-        <span class="ident">Literal</span>::<span class="ident">Null</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;nil&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">Literal</span>::<span class="ident">EmptySequence</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;[]&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">Literal</span>::<span class="ident">EmptyMap</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;[:]&quot;</span>.<span class="ident">into</span>(),
+        <span class="ident">Literal::Null</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;nil&quot;</span>.<span class="ident">into</span>(),
+        <span class="ident">Literal::EmptySequence</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;[]&quot;</span>.<span class="ident">into</span>(),
+        <span class="ident">Literal::EmptyMap</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;[:]&quot;</span>.<span class="ident">into</span>(),
 
         <span class="comment">// For optionals</span>
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">inner</span>).<span class="ident">literal</span>(<span class="ident">oracle</span>, <span class="ident">literal</span>),
     }
 }
 
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_code_type_for_compound</span> {
+<span class="macro">macro_rules!</span> <span class="ident">impl_code_type_for_compound</span> {
      (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">type_label_pattern</span>:<span class="ident">literal</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">canonical_name_pattern</span>:<span class="ident">literal</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">template_file</span>:<span class="ident">literal</span>) <span class="op">=</span><span class="op">&gt;</span> {
-        <span class="macro">paste</span><span class="macro">!</span> {
+        <span class="macro">paste!</span> {
             <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
             <span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;swift&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">template_file</span>)]</span>
             <span class="kw">pub</span> <span class="kw">struct</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
@@ -155,37 +154,37 @@
                 }
 
                 <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>))
+                    <span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>))
                 }
             }
 
             <span class="kw">impl</span> <span class="ident">CodeType</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>  {
                 <span class="kw">fn</span> <span class="ident">type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">type_label_pattern</span>, <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="self">self</span>.<span class="ident">inner</span>()).<span class="ident">type_label</span>(<span class="ident">oracle</span>))
+                    <span class="macro">format!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">type_label_pattern</span>, <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="self">self</span>.<span class="ident">inner</span>()).<span class="ident">type_label</span>(<span class="ident">oracle</span>))
                 }
 
                 <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">canonical_name_pattern</span>, <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="self">self</span>.<span class="ident">inner</span>()).<span class="ident">canonical_name</span>(<span class="ident">oracle</span>))
+                    <span class="macro">format!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">canonical_name_pattern</span>, <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="self">self</span>.<span class="ident">inner</span>()).<span class="ident">canonical_name</span>(<span class="ident">oracle</span>))
                 }
 
                 <span class="kw">fn</span> <span class="ident">literal</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
                     <span class="ident">render_literal</span>(<span class="ident">oracle</span>, <span class="kw-2">&amp;</span><span class="ident">literal</span>, <span class="self">self</span>.<span class="ident">inner</span>())
                 }
 
-                <span class="kw">fn</span> <span class="ident">lower</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.lower({})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">oracle</span>.<span class="ident">var_name</span>(<span class="ident">nm</span>))
+                <span class="kw">fn</span> <span class="ident">lower</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+                    <span class="macro">format!</span>(<span class="string">&quot;{}.lower({})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">oracle</span>.<span class="ident">var_name</span>(<span class="ident">nm</span>))
                 }
 
-                <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>, <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.write({}, into: {})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">oracle</span>.<span class="ident">var_name</span>(<span class="ident">nm</span>), <span class="ident">target</span>)
+                <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>, <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+                    <span class="macro">format!</span>(<span class="string">&quot;{}.write({}, into: {})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">oracle</span>.<span class="ident">var_name</span>(<span class="ident">nm</span>), <span class="ident">target</span>)
                 }
 
-                <span class="kw">fn</span> <span class="ident">lift</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.lift({})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">nm</span>)
+                <span class="kw">fn</span> <span class="ident">lift</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+                    <span class="macro">format!</span>(<span class="string">&quot;{}.lift({})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">nm</span>)
                 }
 
-                <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt</span>::<span class="ident">Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}.read(from: {})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">nm</span>)
+                <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+                    <span class="macro">format!</span>(<span class="string">&quot;{}.read(from: {})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">nm</span>)
                 }
 
                 <span class="kw">fn</span> <span class="ident">helper_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
@@ -196,26 +195,25 @@
     }
  }
 
-<span class="macro">impl_code_type_for_compound</span><span class="macro">!</span>(
+<span class="macro">impl_code_type_for_compound!</span>(
     <span class="ident">OptionalCodeType</span>,
     <span class="string">&quot;{}?&quot;</span>,
     <span class="string">&quot;Option{}&quot;</span>,
     <span class="string">&quot;OptionalTemplate.swift&quot;</span>
 );
 
-<span class="macro">impl_code_type_for_compound</span><span class="macro">!</span>(
+<span class="macro">impl_code_type_for_compound!</span>(
     <span class="ident">SequenceCodeType</span>,
     <span class="string">&quot;[{}]&quot;</span>,
     <span class="string">&quot;Sequence{}&quot;</span>,
     <span class="string">&quot;SequenceTemplate.swift&quot;</span>
 );
 
-<span class="macro">impl_code_type_for_compound</span><span class="macro">!</span>(
+<span class="macro">impl_code_type_for_compound!</span>(
     <span class="ident">MapCodeType</span>,
     <span class="string">&quot;[String: {}]&quot;</span>,
     <span class="string">&quot;Dictionary{}&quot;</span>,
     <span class="string">&quot;MapTemplate.swift&quot;</span>
 );
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi_bindgen" data-search-js="../../../../../search-index.js"></div>
-    <script src="../../../../../main.js"></script><script src="../../../../../source-script.js"></script><script src="../../../../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi_bindgen" data-search-index-js="../../../../../search-index.js" data-search-js="../../../../../search.js"></div><script src="../../../../../main.js"></script><script src="../../../../../source-script.js"></script><script src="../../../../../source-files.js"></script></body></html>

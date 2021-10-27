@@ -1,7 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/types/resolver.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>resolver.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../settings.html" title="settings"><img src="../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -316,7 +315,7 @@
 <span id="313">313</span>
 <span id="314">314</span>
 <span id="315">315</span>
-</pre><div class="example-wrap"><pre class="rust ">
+</pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -353,133 +352,133 @@
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>;
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">weedle::types::Type</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         (<span class="kw-2">*</span><span class="self">self</span>).<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::types::Type</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span>::<span class="ident">Single</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">t</span> {
-                <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">SingleType</span>::<span class="ident">Any</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;no support for `any` types&quot;</span>),
-                <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">SingleType</span>::<span class="ident">NonAny</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
+            <span class="ident">weedle::types::Type::Single</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">t</span> {
+                <span class="ident">weedle::types::SingleType::Any</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;no support for `any` types&quot;</span>),
+                <span class="ident">weedle::types::SingleType::NonAny</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
             },
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span>::<span class="ident">Union</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;no support for union types yet&quot;</span>),
+            <span class="ident">weedle::types::Type::Union</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;no support for union types yet&quot;</span>),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">NonAnyType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::types::NonAnyType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">NonAnyType</span>::<span class="ident">Boolean</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">NonAnyType</span>::<span class="ident">Identifier</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">NonAnyType</span>::<span class="ident">Integer</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">NonAnyType</span>::<span class="ident">FloatingPoint</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">NonAnyType</span>::<span class="ident">Sequence</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">NonAnyType</span>::<span class="ident">RecordType</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;no support for type {:?}&quot;</span>, <span class="self">self</span>),
+            <span class="ident">weedle::types::NonAnyType::Boolean</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
+            <span class="ident">weedle::types::NonAnyType::Identifier</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
+            <span class="ident">weedle::types::NonAnyType::Integer</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
+            <span class="ident">weedle::types::NonAnyType::FloatingPoint</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
+            <span class="ident">weedle::types::NonAnyType::Sequence</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
+            <span class="ident">weedle::types::NonAnyType::RecordType</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;no support for type {:?}&quot;</span>, <span class="self">self</span>),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">AttributedNonAnyType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">weedle::types::AttributedNonAnyType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;type attributes are not supported yet&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;type attributes are not supported yet&quot;</span>);
         }
         (<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>).<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">AttributedType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">weedle::types::AttributedType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;type attributes are not supported yet&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;type attributes are not supported yet&quot;</span>);
         }
         (<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>).<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TypeResolver</span><span class="op">&gt;</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">MayBeNull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TypeResolver</span><span class="op">&gt;</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::types::MayBeNull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">type_</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">type_</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>)<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">q_mark</span> {
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">type_</span>),
-            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">type_</span>))),
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type::Optional</span>(<span class="ident">Box::new</span>(<span class="ident">type_</span>))),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">IntegerType</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::types::IntegerType</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-        <span class="macro">bail</span><span class="macro">!</span>(
+        <span class="macro">bail!</span>(
             <span class="string">&quot;WebIDL integer types not implemented ({:?}); consider using u8, u16, u32 or u64&quot;</span>,
             <span class="self">self</span>
         )
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">FloatingPointType</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::types::FloatingPointType</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">FloatingPointType</span>::<span class="ident">Float</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
-            <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">FloatingPointType</span>::<span class="ident">Double</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
+            <span class="ident">weedle::types::FloatingPointType::Float</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
+            <span class="ident">weedle::types::FloatingPointType::Double</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">SequenceType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::types::SequenceType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">generics</span>.<span class="ident">body</span>.<span class="ident">as_ref</span>().<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>)<span class="question-mark">?</span>;
-        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type</span>::<span class="ident">Sequence</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">t</span>)))
+        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type::Sequence</span>(<span class="ident">Box::new</span>(<span class="ident">t</span>)))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">RecordType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::types::RecordType</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">generics</span>.<span class="ident">body</span>.<span class="number">2</span>).<span class="ident">resolve_type_expression</span>(<span class="ident">types</span>)<span class="question-mark">?</span>;
         <span class="comment">// Maps always have string keys, make sure the `String` type is known.</span>
-        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type</span>::<span class="ident">String</span>)<span class="question-mark">?</span>;
-        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type</span>::<span class="ident">Map</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">t</span>)))
+        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type::String</span>)<span class="question-mark">?</span>;
+        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type::Map</span>(<span class="ident">Box::new</span>(<span class="ident">t</span>)))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">common</span>::<span class="ident">Identifier</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::common::Identifier</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">resolve_builtin_type</span>(<span class="self">self</span>.<span class="number">0</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">type_</span>),
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="self">self</span>.<span class="number">0</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">type_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">type_</span>),
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;unknown type reference: {}&quot;</span>, <span class="self">self</span>.<span class="number">0</span>),
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;unknown type reference: {}&quot;</span>, <span class="self">self</span>.<span class="number">0</span>),
             },
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">term</span>::<span class="ident">Boolean</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::term::Boolean</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type</span>::<span class="ident">Boolean</span>)
+        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type::Boolean</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">FloatType</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::types::FloatType</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">unrestricted</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;we don&#39;t support `unrestricted float`&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;we don&#39;t support `unrestricted float`&quot;</span>);
         }
-        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type</span>::<span class="ident">Float32</span>)
+        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type::Float32</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">DoubleType</span> {
+<span class="kw">impl</span> <span class="ident">TypeResolver</span> <span class="kw">for</span> <span class="ident">weedle::types::DoubleType</span> {
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">types</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TypeUniverse</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">unrestricted</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;we don&#39;t support `unrestricted double`&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;we don&#39;t support `unrestricted double`&quot;</span>);
         }
-        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type</span>::<span class="ident">Float64</span>)
+        <span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type::Float64</span>)
     }
 }
 
@@ -489,19 +488,19 @@
 <span class="doccomment">/// built-in primitive types or `None` if it names something else.</span>
 <span class="kw">pub</span>(<span class="kw">in</span> <span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">resolve_builtin_type</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">name</span> {
-        <span class="string">&quot;string&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">String</span>),
-        <span class="string">&quot;u8&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">UInt8</span>),
-        <span class="string">&quot;i8&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Int8</span>),
-        <span class="string">&quot;u16&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">UInt16</span>),
-        <span class="string">&quot;i16&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Int16</span>),
-        <span class="string">&quot;u32&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">UInt32</span>),
-        <span class="string">&quot;i32&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Int32</span>),
-        <span class="string">&quot;u64&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">UInt64</span>),
-        <span class="string">&quot;i64&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Int64</span>),
-        <span class="string">&quot;f32&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Float32</span>),
-        <span class="string">&quot;f64&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Float64</span>),
-        <span class="string">&quot;timestamp&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Timestamp</span>),
-        <span class="string">&quot;duration&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Duration</span>),
+        <span class="string">&quot;string&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::String</span>),
+        <span class="string">&quot;u8&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::UInt8</span>),
+        <span class="string">&quot;i8&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::Int8</span>),
+        <span class="string">&quot;u16&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::UInt16</span>),
+        <span class="string">&quot;i16&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::Int16</span>),
+        <span class="string">&quot;u32&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::UInt32</span>),
+        <span class="string">&quot;i32&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::Int32</span>),
+        <span class="string">&quot;u64&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::UInt64</span>),
+        <span class="string">&quot;i64&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::Int64</span>),
+        <span class="string">&quot;f32&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::Float32</span>),
+        <span class="string">&quot;f64&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::Float64</span>),
+        <span class="string">&quot;timestamp&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::Timestamp</span>),
+        <span class="string">&quot;duration&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Type::Duration</span>),
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
     }
 }
@@ -509,98 +508,98 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">test</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">weedle</span>::<span class="ident">Parse</span>;
+    <span class="kw">use</span> <span class="ident">weedle::Parse</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_named_type_resolution</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse</span>::<span class="ident">default</span>();
-        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>, <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">1</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse::default</span>();
+        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>, <span class="ident">Type::Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">1</span>);
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span>::<span class="ident">parse</span>(<span class="string">&quot;TestRecord&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle::types::Type::parse</span>(<span class="string">&quot;TestRecord&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">expr</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestRecord&quot;</span>));
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">1</span>);
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">t</span>, <span class="ident">Type::Record</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TestRecord&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">1</span>);
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span>::<span class="ident">parse</span>(<span class="string">&quot;TestRecord?&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle::types::Type::parse</span>(<span class="string">&quot;TestRecord?&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">expr</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">t</span>, <span class="ident">Type</span>::<span class="ident">Optional</span>(<span class="kw">_</span>)));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">t</span>, <span class="ident">Type::Optional</span>(<span class="kw">_</span>)));
         <span class="comment">// Matching the Box&lt;T&gt; is hard, use names as a convenient workaround.</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;OptionalTypeTestRecord&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;OptionalTypeTestRecord&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">2</span>);
 
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_resolving_optional_type_adds_inner_type</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse</span>::<span class="ident">default</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">0</span>);
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span>::<span class="ident">parse</span>(<span class="string">&quot;u32?&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse::default</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">0</span>);
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle::types::Type::parse</span>(<span class="string">&quot;u32?&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">expr</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;Optionalu32&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">2</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">types</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;Optionalu32&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">2</span>);
+        <span class="macro">assert!</span>(<span class="ident">types</span>
             .<span class="ident">iter_known_types</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;u32&quot;</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">types</span>
+        <span class="macro">assert!</span>(<span class="ident">types</span>
             .<span class="ident">iter_known_types</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;Optionalu32&quot;</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_resolving_sequence_type_adds_inner_type</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse</span>::<span class="ident">default</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">0</span>);
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span>::<span class="ident">parse</span>(<span class="string">&quot;sequence&lt;string&gt;&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse::default</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">0</span>);
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle::types::Type::parse</span>(<span class="string">&quot;sequence&lt;string&gt;&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">expr</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;Sequencestring&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">2</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">types</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;Sequencestring&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">2</span>);
+        <span class="macro">assert!</span>(<span class="ident">types</span>
             .<span class="ident">iter_known_types</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;Sequencestring&quot;</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">types</span>
+        <span class="macro">assert!</span>(<span class="ident">types</span>
             .<span class="ident">iter_known_types</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;string&quot;</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_resolving_map_type_adds_string_and_inner_type</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse</span>::<span class="ident">default</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">0</span>);
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span>::<span class="ident">parse</span>(<span class="string">&quot;record&lt;DOMString, float&gt;&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse::default</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">0</span>);
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle::types::Type::parse</span>(<span class="string">&quot;record&lt;DOMString, float&gt;&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">expr</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;Mapf32&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">3</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">types</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">t</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;Mapf32&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">3</span>);
+        <span class="macro">assert!</span>(<span class="ident">types</span>
             .<span class="ident">iter_known_types</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;Mapf32&quot;</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">types</span>
+        <span class="macro">assert!</span>(<span class="ident">types</span>
             .<span class="ident">iter_known_types</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;string&quot;</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">types</span>
+        <span class="macro">assert!</span>(<span class="ident">types</span>
             .<span class="ident">iter_known_types</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&quot;f32&quot;</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_error_on_unknown_type</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse</span>::<span class="ident">default</span>();
-        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>, <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse::default</span>();
+        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>, <span class="ident">Type::Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
         <span class="comment">// Oh no, someone made a typo in the type-o...</span>
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span>::<span class="ident">parse</span>(<span class="string">&quot;TestRecrd&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle::types::Type::parse</span>(<span class="string">&quot;TestRecrd&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">expr</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;unknown type reference: TestRecrd&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;unknown type reference: TestRecrd&quot;</span>);
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_error_on_union_type</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse</span>::<span class="ident">default</span>();
-        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>, <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle</span>::<span class="ident">types</span>::<span class="ident">Type</span>::<span class="ident">parse</span>(<span class="string">&quot;(TestRecord or u32)&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse::default</span>();
+        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>, <span class="ident">Type::Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">expr</span>) <span class="op">=</span> <span class="ident">weedle::types::Type::parse</span>(<span class="string">&quot;(TestRecord or u32)&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">expr</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;no support for union types yet&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;no support for union types yet&quot;</span>);
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -612,26 +611,25 @@
         <span class="comment">// deterministic, and the compiled binary file may not be reproducible. We</span>
         <span class="comment">// avoid this issue by using an implementation that defines the order of its</span>
         <span class="comment">// elements. This test verifies that the elements are sorted as expected.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse</span>::<span class="ident">default</span>();
-        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>, <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">1</span>);
-        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord2&quot;</span>, <span class="ident">Type</span>::<span class="ident">Record</span>(<span class="string">&quot;TestRecord2&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">2</span>);
-        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestInt64&quot;</span>, <span class="ident">Type</span>::<span class="ident">Int64</span>)<span class="question-mark">?</span>;
-        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestInt8&quot;</span>, <span class="ident">Type</span>::<span class="ident">Int8</span>)<span class="question-mark">?</span>;
-        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestUInt8&quot;</span>, <span class="ident">Type</span>::<span class="ident">UInt8</span>)<span class="question-mark">?</span>;
-        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestBoolean&quot;</span>, <span class="ident">Type</span>::<span class="ident">Boolean</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">6</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">TypeUniverse::default</span>();
+        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord&quot;</span>, <span class="ident">Type::Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">1</span>);
+        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestRecord2&quot;</span>, <span class="ident">Type::Record</span>(<span class="string">&quot;TestRecord2&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">2</span>);
+        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestInt64&quot;</span>, <span class="ident">Type::Int64</span>)<span class="question-mark">?</span>;
+        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestInt8&quot;</span>, <span class="ident">Type::Int8</span>)<span class="question-mark">?</span>;
+        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestUInt8&quot;</span>, <span class="ident">Type::UInt8</span>)<span class="question-mark">?</span>;
+        <span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="string">&quot;TestBoolean&quot;</span>, <span class="ident">Type::Boolean</span>)<span class="question-mark">?</span>;
+        <span class="macro">assert_eq!</span>(<span class="ident">types</span>.<span class="ident">iter_known_types</span>().<span class="ident">count</span>(), <span class="number">6</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">iter_known_types</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">UInt8</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Int8</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Int64</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Boolean</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>())), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type</span>::<span class="ident">Record</span>(<span class="string">&quot;TestRecord2&quot;</span>.<span class="ident">into</span>())), <span class="ident">iter</span>.<span class="ident">next</span>());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type::UInt8</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type::Int8</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type::Int64</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type::Boolean</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type::Record</span>(<span class="string">&quot;TestRecord&quot;</span>.<span class="ident">into</span>())), <span class="ident">iter</span>.<span class="ident">next</span>());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">Type::Record</span>(<span class="string">&quot;TestRecord2&quot;</span>.<span class="ident">into</span>())), <span class="ident">iter</span>.<span class="ident">next</span>());
         <span class="prelude-val">Ok</span>(())
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-search-js="../../../../search-index.js"></div>
-    <script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-search-index-js="../../../../search-index.js" data-search-js="../../../../search.js"></div><script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script></body></html>
