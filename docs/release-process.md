@@ -13,10 +13,10 @@ It's not (yet) quite an ideal fit for our workflow, but it helps! Steps:
    so it should be named something like `release-v0.6.x`:
     * `git checkout -b release-v{MAJOR}.{MINOR}.x`
     * `git push -u origin release-v{MAJOR}.{MINOR}.x`
-1. Run `cargo release --dry-run -vv {MAJOR}.{MINOR}.{PATCH}` and check that the things
+1. Run `cargo release {MAJOR}.{MINOR}.{PATCH}` to perform a dry-run and check that the things
    it is proposing to do seem reasonable.
-1. Run `cargo release {MAJOR}.{MINOR}.{PATCH}` to bump version numbers and
-   publish the release to crates.io.
+1. Run `cargo release -x {MAJOR}.{MINOR}.{PATCH}` to perform real run and to
+   bump version numbers and publish the release to crates.io.
 1. Manually update the section header in `CHANGELOG.md` following the instructions
    at the top of the file.
     * This is a limitation of using `cargo release` in a workspace, possibly related
