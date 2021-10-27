@@ -660,19 +660,13 @@ impl<'a> RecursiveTypeIterator<'a> {
             // to a non-existent type, we just leave the existing iterator in place and allow the recursive
             // call to `next()` to try again with the next pending type.
             let next_iter = match next_type {
-                Type::Record(nm) => self
-                    .ci
-                    .get_record_definition(&nm)
-                    .map(IterTypes::iter_types),
-                Type::Enum(nm) => self.ci.get_enum_definition(&nm).map(IterTypes::iter_types),
-                Type::Error(nm) => self.ci.get_error_definition(&nm).map(IterTypes::iter_types),
-                Type::Object(nm) => self
-                    .ci
-                    .get_object_definition(&nm)
-                    .map(IterTypes::iter_types),
+                Type::Record(nm) => self.ci.get_record_definition(nm).map(IterTypes::iter_types),
+                Type::Enum(nm) => self.ci.get_enum_definition(nm).map(IterTypes::iter_types),
+                Type::Error(nm) => self.ci.get_error_definition(nm).map(IterTypes::iter_types),
+                Type::Object(nm) => self.ci.get_object_definition(nm).map(IterTypes::iter_types),
                 Type::CallbackInterface(nm) => self
                     .ci
-                    .get_callback_interface_definition(&nm)
+                    .get_callback_interface_definition(nm)
                     .map(IterTypes::iter_types),
                 _ => None,
             };
@@ -922,14 +916,14 @@ mod test {
         };
 
         // check that `contains_optional_types` returns false when there is no Optional type in the interface
-        assert_eq!(ci.contains_optional_types(), false);
+        assert!(!ci.contains_optional_types());
 
         // check that `contains_optional_types` returns true when there is an Optional type in the interface
         assert!(ci
             .types
             .add_type_definition("TestOptional{}", Type::Optional(Box::new(Type::String)))
             .is_ok());
-        assert_eq!(ci.contains_optional_types(), true);
+        assert!(ci.contains_optional_types());
     }
 
     #[test]
@@ -939,14 +933,14 @@ mod test {
         };
 
         // check that `contains_sequence_types` returns false when there is no Sequence type in the interface
-        assert_eq!(ci.contains_sequence_types(), false);
+        assert!(!ci.contains_sequence_types());
 
         // check that `contains_sequence_types` returns true when there is a Sequence type in the interface
         assert!(ci
             .types
             .add_type_definition("TestSequence{}", Type::Sequence(Box::new(Type::UInt64)))
             .is_ok());
-        assert_eq!(ci.contains_sequence_types(), true);
+        assert!(ci.contains_sequence_types());
     }
 
     #[test]
@@ -956,14 +950,14 @@ mod test {
         };
 
         // check that `contains_map_types` returns false when there is no Map type in the interface
-        assert_eq!(ci.contains_map_types(), false);
+        assert!(!ci.contains_map_types());
 
         // check that `contains_map_types` returns true when there is a Map type in the interface
         assert!(ci
             .types
             .add_type_definition("Map{}", Type::Map(Box::new(Type::Boolean)))
             .is_ok());
-        assert_eq!(ci.contains_map_types(), true);
+        assert!(ci.contains_map_types());
     }
 
     #[test]
