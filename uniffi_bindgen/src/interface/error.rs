@@ -87,6 +87,7 @@ use anyhow::Result;
 use super::enum_::{Enum, Variant};
 use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
+use crate::CIString;
 
 /// Represents an Error that might be thrown by functions/methods in the component interface.
 ///
@@ -96,7 +97,7 @@ use super::{APIConverter, ComponentInterface};
 /// struct and assign an integer error code to each variant.
 #[derive(Debug, Clone, Hash)]
 pub struct Error {
-    pub name: String,
+    pub name: CIString,
     enum_: Enum,
 }
 

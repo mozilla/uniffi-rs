@@ -18,6 +18,8 @@
 /// For the types that involve memory allocation, we make a distinction between
 /// "owned" types (the recipient must free it, or pass it to someone else) and
 /// "borrowed" types (the sender must keep it alive for the duration of the call).
+use crate::CIString;
+
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum FFIType {
     // N.B. there are no booleans at this layer, since they cause problems for JNA.
@@ -57,7 +59,7 @@ pub enum FFIType {
 /// some built-in `FFIFunction` helpers for use in the foreign language bindings.
 #[derive(Debug, Default, Clone)]
 pub struct FFIFunction {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) arguments: Vec<FFIArgument>,
     pub(super) return_type: Option<FFIType>,
 }
@@ -79,7 +81,7 @@ impl FFIFunction {
 /// Each argument has a name and a type.
 #[derive(Debug, Clone)]
 pub struct FFIArgument {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) type_: FFIType,
 }
 

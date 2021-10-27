@@ -53,6 +53,8 @@ use std::{
 
 use anyhow::{bail, Result};
 
+mod cistring;
+pub(crate) use cistring::CIString;
 pub mod types;
 pub use types::Type;
 use types::{IterTypes, TypeIterator, TypeUniverse};
@@ -207,7 +209,7 @@ impl<'ci> ComponentInterface {
     }
 
     /// Get details about all `Type::External` types
-    pub fn iter_external_types(&self) -> Vec<(String, String)> {
+    pub fn iter_external_types(&self) -> Vec<(CIString, CIString)> {
         self.types
             .iter_known_types()
             .filter_map(|t| match t {
@@ -218,7 +220,7 @@ impl<'ci> ComponentInterface {
     }
 
     /// Get details about all `Type::Wrapped` types
-    pub fn iter_wrapped_types(&self) -> Vec<(String, Type)> {
+    pub fn iter_wrapped_types(&self) -> Vec<(CIString, Type)> {
         self.types
             .iter_known_types()
             .filter_map(|t| match t {
@@ -341,9 +343,9 @@ impl<'ci> ComponentInterface {
     /// complex data types across the FFI.
     pub fn ffi_rustbuffer_alloc(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("ffi_{}_rustbuffer_alloc", self.ffi_namespace()),
+            name: format!("ffi_{}_rustbuffer_alloc", self.ffi_namespace()).into(),
             arguments: vec![FFIArgument {
-                name: "size".to_string(),
+                name: "size".into(),
                 type_: FFIType::Int32,
             }],
             return_type: Some(FFIType::RustBuffer),
@@ -355,9 +357,9 @@ impl<'ci> ComponentInterface {
     /// complex data types across the FFI.
     pub fn ffi_rustbuffer_from_bytes(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("ffi_{}_rustbuffer_from_bytes", self.ffi_namespace()),
+            name: format!("ffi_{}_rustbuffer_from_bytes", self.ffi_namespace()).into(),
             arguments: vec![FFIArgument {
-                name: "bytes".to_string(),
+                name: "bytes".into(),
                 type_: FFIType::ForeignBytes,
             }],
             return_type: Some(FFIType::RustBuffer),
@@ -369,9 +371,9 @@ impl<'ci> ComponentInterface {
     /// complex data types returned across the FFI.
     pub fn ffi_rustbuffer_free(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("ffi_{}_rustbuffer_free", self.ffi_namespace()),
+            name: format!("ffi_{}_rustbuffer_free", self.ffi_namespace()).into(),
             arguments: vec![FFIArgument {
-                name: "buf".to_string(),
+                name: "buf".into(),
                 type_: FFIType::RustBuffer,
             }],
             return_type: None,
@@ -383,14 +385,14 @@ impl<'ci> ComponentInterface {
     /// complex data types across the FFI.
     pub fn ffi_rustbuffer_reserve(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("ffi_{}_rustbuffer_reserve", self.ffi_namespace()),
+            name: format!("ffi_{}_rustbuffer_reserve", self.ffi_namespace()).into(),
             arguments: vec![
                 FFIArgument {
-                    name: "buf".to_string(),
+                    name: "buf".into(),
                     type_: FFIType::RustBuffer,
                 },
                 FFIArgument {
-                    name: "additional".to_string(),
+                    name: "additional".into(),
                     type_: FFIType::Int32,
                 },
             ],
@@ -614,7 +616,7 @@ struct RecursiveTypeIterator<'a> {
     /// The currently-active iterator from which we're yielding.
     current: TypeIterator<'a>,
     /// A set of names of user-defined types that we have already seen.
-    seen: HashSet<&'a str>,
+    seen: HashSet<CIString>,
     /// A queue of user-defined types that we need to recurse into.
     pending: Vec<&'a Type>,
 }
@@ -639,9 +641,9 @@ impl<'a> RecursiveTypeIterator<'a> {
             | Type::Error(nm)
             | Type::Object(nm)
             | Type::CallbackInterface(nm) => {
-                if !self.seen.contains(nm.as_str()) {
+                if !self.seen.contains(nm) {
                     self.pending.push(type_);
-                    self.seen.insert(nm.as_str());
+                    self.seen.insert(nm.clone());
                 }
             }
             _ => (),

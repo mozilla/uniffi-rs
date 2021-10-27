@@ -81,6 +81,7 @@ use anyhow::{bail, Result};
 use super::record::Field;
 use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
+use crate::CIString;
 
 /// Represents an enum with named variants, each of which may have named
 /// and typed fields.
@@ -89,7 +90,7 @@ use super::{APIConverter, ComponentInterface};
 /// i32 indicating the variant followed by the serialization of each field.
 #[derive(Debug, Clone, Hash)]
 pub struct Enum {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) variants: Vec<Variant>,
     // "Flat" enums do not have, and will never have, variants with associated data.
     pub(super) flat: bool,
@@ -127,7 +128,7 @@ impl IterTypes for Enum {
 impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
     fn convert(&self, _ci: &mut ComponentInterface) -> Result<Enum> {
         Ok(Enum {
-            name: self.identifier.0.to_string(),
+            name: self.identifier.0.into(),
             variants: self
                 .values
                 .body
@@ -135,7 +136,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
                 .iter()
                 .map::<Result<_>, _>(|v| {
                     Ok(Variant {
-                        name: v.0.to_string(),
+                        name: v.0.into(),
                         ..Default::default()
                     })
                 })
@@ -154,7 +155,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
         // We don't need to check `self.attributes` here; if calling code has dispatched
         // to this impl then we already know there was an `[Enum]` attribute.
         Ok(Enum {
-            name: self.identifier.0.to_string(),
+            name: self.identifier.0.into(),
             variants: self
                 .members
                 .body
@@ -178,7 +179,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 /// Each variant has a name and zero or more fields.
 #[derive(Debug, Clone, Default, Hash)]
 pub struct Variant {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) fields: Vec<Field>,
 }
 
@@ -226,7 +227,7 @@ impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
             }
         };
         Ok(Variant {
-            name,
+            name: name.into(),
             fields: self
                 .args
                 .body
@@ -262,7 +263,7 @@ impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
         // TODO: maybe we should use our own `Field` type here with just name and type,
         // rather than appropriating record::Field..?
         Ok(Field {
-            name: self.identifier.0.to_string(),
+            name: self.identifier.0.into(),
             type_,
             required: false,
             default: None,

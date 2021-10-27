@@ -41,16 +41,17 @@ use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::object::Method;
 use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
+use crate::CIString;
 
 #[derive(Debug, Clone)]
 pub struct CallbackInterface {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) methods: Vec<Method>,
     pub(super) ffi_init_callback: FFIFunction,
 }
 
 impl CallbackInterface {
-    fn new(name: String) -> CallbackInterface {
+    fn new(name: CIString) -> CallbackInterface {
         CallbackInterface {
             name,
             methods: Default::default(),
@@ -79,9 +80,10 @@ impl CallbackInterface {
     }
 
     pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) {
-        self.ffi_init_callback.name = format!("ffi_{}_{}_init_callback", ci_prefix, self.name);
+        self.ffi_init_callback.name =
+            format!("ffi_{}_{}_init_callback", ci_prefix, self.name).into();
         self.ffi_init_callback.arguments = vec![FFIArgument {
-            name: "callback_stub".to_string(),
+            name: "callback_stub".into(),
             type_: FFIType::ForeignCallback,
         }];
         self.ffi_init_callback.return_type = None;
@@ -115,12 +117,12 @@ impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_>
         if self.inheritance.is_some() {
             bail!("callback interface inheritence is not supported");
         }
-        let mut object = CallbackInterface::new(self.identifier.0.to_string());
+        let mut object = CallbackInterface::new(self.identifier.0.into());
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Operation(t) => {
                     let mut method: Method = t.convert(ci)?;
-                    method.object_name.push_str(object.name.as_str());
+                    method.object_name = object.name.clone();
                     object.methods.push(method);
                 }
                 _ => bail!(

@@ -6,15 +6,16 @@ use std::fmt;
 
 use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Error};
+use crate::CIString;
 use askama::Template;
 
 use super::filters;
 pub struct ErrorCodeType {
-    id: String,
+    id: CIString,
 }
 
 impl ErrorCodeType {
-    pub fn new(id: String) -> Self {
+    pub fn new(id: CIString) -> Self {
         Self { id }
     }
 }

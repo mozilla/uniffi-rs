@@ -26,6 +26,7 @@ use std::{collections::hash_map::Entry, collections::BTreeSet, collections::Hash
 use anyhow::{bail, Result};
 
 use super::ffi::FFIType;
+use crate::CIString;
 
 mod finder;
 pub(super) use finder::TypeFinder;
@@ -53,19 +54,25 @@ pub enum Type {
     Timestamp,
     Duration,
     // Types defined in the component API, each of which has a string name.
-    Object(String),
-    Record(String),
-    Enum(String),
-    Error(String),
-    CallbackInterface(String),
+    Object(CIString),
+    Record(CIString),
+    Enum(CIString),
+    Error(CIString),
+    CallbackInterface(CIString),
     // Structurally recursive types.
     Optional(Box<Type>),
     Sequence(Box<Type>),
     Map(/* String, */ Box<Type>),
     // An FfiConverter we `use` from an external crate
-    External { name: String, crate_name: String },
+    External {
+        name: CIString,
+        crate_name: CIString,
+    },
     // A local type we will generate an FfiConverter via wrapping a primitive.
-    Wrapped { name: String, prim: Box<Type> },
+    Wrapped {
+        name: CIString,
+        prim: Box<Type>,
+    },
 }
 
 impl Type {

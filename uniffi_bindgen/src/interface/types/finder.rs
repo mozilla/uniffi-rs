@@ -60,11 +60,11 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
         let name = self.identifier.0.to_string();
         // Some enum types are defined using an `interface` with a special attribute.
         if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_enum_attr() {
-            types.add_type_definition(self.identifier.0, Type::Enum(name))
+            types.add_type_definition(self.identifier.0, Type::Enum(name.into()))
         } else if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_error_attr() {
-            types.add_type_definition(self.identifier.0, Type::Error(name))
+            types.add_type_definition(self.identifier.0, Type::Error(name.into()))
         } else {
-            types.add_type_definition(self.identifier.0, Type::Object(name))
+            types.add_type_definition(self.identifier.0, Type::Object(name.into()))
         }
     }
 }
@@ -72,7 +72,7 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
 impl TypeFinder for weedle::DictionaryDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
-        types.add_type_definition(self.identifier.0, Type::Record(name))
+        types.add_type_definition(self.identifier.0, Type::Record(name.into()))
     }
 }
 
@@ -81,9 +81,9 @@ impl TypeFinder for weedle::EnumDefinition<'_> {
         let name = self.identifier.0.to_string();
         // Our error types are defined using an `enum` with a special attribute.
         if EnumAttributes::try_from(self.attributes.as_ref())?.contains_error_attr() {
-            types.add_type_definition(self.identifier.0, Type::Error(name))
+            types.add_type_definition(self.identifier.0, Type::Error(name.into()))
         } else {
-            types.add_type_definition(self.identifier.0, Type::Enum(name))
+            types.add_type_definition(self.identifier.0, Type::Enum(name.into()))
         }
     }
 }
@@ -103,7 +103,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
             types.add_type_definition(
                 name,
                 Type::Wrapped {
-                    name: name.to_string(),
+                    name: name.into(),
                     prim: prim.into(),
                 },
             )
@@ -114,8 +114,8 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
             types.add_type_definition(
                 name,
                 Type::External {
-                    name: name.to_string(),
-                    crate_name: attrs.get_crate_name(),
+                    name: name.into(),
+                    crate_name: attrs.get_crate_name().into(),
                 },
             )
         }
@@ -128,7 +128,7 @@ impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
             bail!("no typedef attributes are currently supported");
         }
         let name = self.identifier.0.to_string();
-        types.add_type_definition(self.identifier.0, Type::CallbackInterface(name))
+        types.add_type_definition(self.identifier.0, Type::CallbackInterface(name.into()))
     }
 }
 

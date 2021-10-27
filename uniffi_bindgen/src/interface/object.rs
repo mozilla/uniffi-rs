@@ -56,6 +56,7 @@ use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::function::Argument;
 use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
+use crate::CIString;
 
 /// An "object" is an opaque type that can be instantiated and passed around by reference,
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
@@ -73,7 +74,7 @@ use super::{APIConverter, ComponentInterface};
 ///  - maybe "Class" would be a better name than "Object" here?
 #[derive(Debug, Clone)]
 pub struct Object {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     pub(super) ffi_func_free: FFIFunction,
@@ -81,7 +82,7 @@ pub struct Object {
 }
 
 impl Object {
-    fn new(name: String) -> Object {
+    fn new(name: CIString) -> Object {
         Object {
             name,
             constructors: Default::default(),
@@ -137,9 +138,9 @@ impl Object {
     }
 
     pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
-        self.ffi_func_free.name = format!("ffi_{}_{}_object_free", ci_prefix, self.name);
+        self.ffi_func_free.name = format!("ffi_{}_{}_object_free", ci_prefix, self.name).into();
         self.ffi_func_free.arguments = vec![FFIArgument {
-            name: "ptr".to_string(),
+            name: "ptr".into(),
             type_: FFIType::RustArcPtr,
         }];
         self.ffi_func_free.return_type = None;
@@ -184,7 +185,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         if self.inheritance.is_some() {
             bail!("interface inheritence is not supported");
         }
-        let mut object = Object::new(self.identifier.0.to_string());
+        let mut object = Object::new(self.identifier.0.into());
         let attributes = match &self.attributes {
             Some(attrs) => InterfaceAttributes::try_from(attrs)?,
             None => Default::default(),
@@ -206,7 +207,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                     if !member_names.insert(method.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", method.name())
                     }
-                    method.object_name.push_str(object.name.as_str());
+                    method.object_name = object.name.clone();
                     object.methods.push(method);
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
@@ -226,7 +227,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 // of the corresponding object type.
 #[derive(Debug, Clone)]
 pub struct Constructor {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) arguments: Vec<Argument>,
     pub(super) ffi_func: FFIFunction,
     pub(super) attributes: ConstructorAttributes,
@@ -256,15 +257,11 @@ impl Constructor {
     pub fn throws_type(&self) -> Option<Type> {
         self.attributes
             .get_throws_err()
-            .map(|name| Type::Error(name.to_owned()))
+            .map(|name| Type::Error(name.into()))
     }
 
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) {
-        self.ffi_func.name.push_str(ci_prefix);
-        self.ffi_func.name.push('_');
-        self.ffi_func.name.push_str(obj_prefix);
-        self.ffi_func.name.push('_');
-        self.ffi_func.name.push_str(&self.name);
+        self.ffi_func.name = CIString::from_parts(vec![ci_prefix, obj_prefix, &self.name]);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
         self.ffi_func.return_type = Some(FFIType::RustArcPtr);
     }
@@ -297,7 +294,7 @@ impl Hash for Constructor {
 impl Default for Constructor {
     fn default() -> Self {
         Constructor {
-            name: String::from("new"),
+            name: "new".into(),
             arguments: Vec::new(),
             ffi_func: Default::default(),
             attributes: Default::default(),
@@ -312,7 +309,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             None => Default::default(),
         };
         Ok(Constructor {
-            name: String::from(attributes.get_name().unwrap_or("new")),
+            name: attributes.get_name().unwrap_or("new").into(),
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
             attributes,
@@ -326,8 +323,8 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 // `FFIType::RustArcPtr` to the instance.
 #[derive(Debug, Clone)]
 pub struct Method {
-    pub(super) name: String,
-    pub(super) object_name: String,
+    pub(super) name: CIString,
+    pub(super) object_name: CIString,
     pub(super) return_type: Option<Type>,
     pub(super) arguments: Vec<Argument>,
     pub(super) ffi_func: FFIFunction,
@@ -347,7 +344,7 @@ impl Method {
     // hence `arguments` and `full_arguments` are different.
     pub fn full_arguments(&self) -> Vec<Argument> {
         vec![Argument {
-            name: "ptr".to_string(),
+            name: "ptr".into(),
             // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
             // is contained in the proper `TypeUniverse`, but this works for now.
             type_: Type::Object(self.object_name.clone()),
@@ -375,7 +372,7 @@ impl Method {
     pub fn throws_type(&self) -> Option<Type> {
         self.attributes
             .get_throws_err()
-            .map(|name| Type::Error(name.to_owned()))
+            .map(|name| Type::Error(name.into()))
     }
 
     pub fn takes_self_by_arc(&self) -> bool {
@@ -383,11 +380,7 @@ impl Method {
     }
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
-        self.ffi_func.name.push_str(ci_prefix);
-        self.ffi_func.name.push('_');
-        self.ffi_func.name.push_str(obj_prefix);
-        self.ffi_func.name.push('_');
-        self.ffi_func.name.push_str(&self.name);
+        self.ffi_func.name = CIString::from_parts(vec![ci_prefix, obj_prefix, &self.name]);
         self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
         Ok(())
@@ -435,7 +428,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             name: match self.identifier {
                 None => bail!("anonymous methods are not supported {:?}", self),
                 Some(id) => {
-                    let name = id.0.to_string();
+                    let name = id.0.into();
                     if name == "new" {
                         bail!("the method name \"new\" is reserved for the default constructor");
                     }

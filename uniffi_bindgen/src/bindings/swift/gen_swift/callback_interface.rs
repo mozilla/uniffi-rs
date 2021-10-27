@@ -6,15 +6,16 @@ use std::fmt;
 
 use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{CallbackInterface, ComponentInterface};
+use crate::CIString;
 use askama::Template;
 
 use super::filters;
 pub struct CallbackInterfaceCodeType {
-    id: String,
+    id: CIString,
 }
 
 impl CallbackInterfaceCodeType {
-    pub fn new(id: String) -> Self {
+    pub fn new(id: CIString) -> Self {
         Self { id }
     }
 

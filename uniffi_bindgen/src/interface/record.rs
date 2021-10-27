@@ -49,6 +49,7 @@ use anyhow::{bail, Result};
 use super::literal::{convert_default_value, Literal};
 use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
+use crate::CIString;
 
 /// Represents a "data class" style object, for passing around complex values.
 ///
@@ -57,7 +58,7 @@ use super::{APIConverter, ComponentInterface};
 /// kind of like "pass by clone" values.
 #[derive(Debug, Clone, Hash)]
 pub struct Record {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) fields: Vec<Field>,
 }
 
@@ -92,7 +93,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
             bail!("dictionary inheritence is not supported");
         }
         Ok(Record {
-            name: self.identifier.0.to_string(),
+            name: self.identifier.0.into(),
             fields: self.members.body.convert(ci)?,
         })
     }
@@ -101,7 +102,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
 // Represents an individual field on a Record.
 #[derive(Debug, Clone, Hash)]
 pub struct Field {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) type_: Type,
     pub(super) required: bool,
     pub(super) default: Option<Literal>,
@@ -139,7 +140,7 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
             Some(v) => Some(convert_default_value(&v.value, &type_)?),
         };
         Ok(Field {
-            name: self.identifier.0.to_string(),
+            name: self.identifier.0.into(),
             type_,
             required: self.required.is_some(),
             default,

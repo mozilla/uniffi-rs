@@ -41,6 +41,7 @@ use super::ffi::{FFIArgument, FFIFunction};
 use super::literal::{convert_default_value, Literal};
 use super::types::{IterTypes, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
+use crate::CIString;
 
 /// Represents a standalone function.
 ///
@@ -50,7 +51,7 @@ use super::{APIConverter, ComponentInterface};
 /// In the FFI, this will be a standalone function with appropriately lowered types.
 #[derive(Debug, Clone)]
 pub struct Function {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     pub(super) ffi_func: FFIFunction,
@@ -85,13 +86,11 @@ impl Function {
     pub fn throws_type(&self) -> Option<Type> {
         self.attributes
             .get_throws_err()
-            .map(|name| Type::Error(name.to_owned()))
+            .map(|name| Type::Error(name.into()))
     }
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
-        self.ffi_func.name.push_str(ci_prefix);
-        self.ffi_func.name.push('_');
-        self.ffi_func.name.push_str(&self.name);
+        self.ffi_func.name = CIString::from_parts(vec![ci_prefix, &self.name]);
         self.ffi_func.arguments = self.arguments.iter().map(|arg| arg.into()).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(|rt| rt.into());
         Ok(())
@@ -140,7 +139,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
         Ok(Function {
             name: match self.identifier {
                 None => bail!("anonymous functions are not supported {:?}", self),
-                Some(id) => id.0.to_string(),
+                Some(id) => id.0.into(),
             },
             return_type,
             arguments: self.args.body.list.convert(ci)?,
@@ -155,7 +154,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
 /// Each argument has a name and a type, along with some optional metadata.
 #[derive(Debug, Clone, Hash)]
 pub struct Argument {
-    pub(super) name: String,
+    pub(super) name: CIString,
     pub(super) type_: Type,
     pub(super) by_ref: bool,
     pub(super) optional: bool,
@@ -210,7 +209,7 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
         };
         let by_ref = ArgumentAttributes::try_from(self.attributes.as_ref())?.by_ref();
         Ok(Argument {
-            name: self.identifier.0.to_string(),
+            name: self.identifier.0.into(),
             type_,
             by_ref,
             optional: self.optional.is_some(),
