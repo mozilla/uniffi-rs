@@ -12,7 +12,7 @@
 //! can be provided by a template file.
 //!
 //! A `CodeDeclaration` is needed for each type that is declared in the UDL file. This has access to
-//! the [ComponentInterface], which is the closest thing to an Intermediate Representation.
+//! the [crate::interface::ComponentInterface], which is the closest thing to an Intermediate Representation.
 //!
 //! `CodeDeclaration`s provide the target language's version of the UDL type, including forwarding method calls
 //! into Rust. It is likely if you're implementing a `CodeDeclaration` for this purpose, it will also need to cross
@@ -30,40 +30,8 @@
 //! Each backend will have its own `filter` module, which is used by the askama templates used in all `CodeType`s and `CodeDeclaration`s.
 //! This filter provides methods to generate expressions and identifiers in the target language. These are all forwarded to the oracle.
 
-use crate::interface::*;
+use super::{CodeOracle, Literal};
 use std::fmt;
-
-pub type TypeIdentifier = Type;
-pub type Literal = crate::interface::Literal;
-
-/// An object to look up a foreign language code specific renderer for a given type used.
-/// Every `Type` referred to in the `ComponentInterface` should map to a corresponding
-/// `CodeType`.
-///
-/// The mapping may be opaque, but the oracle always knows the answer.
-///
-/// In adddition, the oracle knows how to render identifiers (function names,
-/// class names, variable names etc).
-pub trait CodeOracle {
-    fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType>;
-
-    /// Get the idiomatic rendering of a class name (for enums, records, errors, etc).
-    fn class_name(&self, nm: &dyn fmt::Display) -> String;
-
-    /// Get the idiomatic rendering of a function name.
-    fn fn_name(&self, nm: &dyn fmt::Display) -> String;
-
-    /// Get the idiomatic rendering of a variable name.
-    fn var_name(&self, nm: &dyn fmt::Display) -> String;
-
-    /// Get the idiomatic rendering of an individual enum variant.
-    fn enum_variant_name(&self, nm: &dyn fmt::Display) -> String;
-
-    /// Get the idiomatic rendering of an error name.
-    fn error_name(&self, nm: &dyn fmt::Display) -> String;
-
-    fn ffi_type_label(&self, ffi_type: &FFIType) -> String;
-}
 
 /// A Trait to emit foreign language code to handle referenced types.
 /// A type which is specified in the UDL (i.e. a member of the component interface)
@@ -134,32 +102,6 @@ pub trait CodeType {
     /// A list of imports that are needed if this type is in use.
     /// Classes are imported exactly once.
     fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        None
-    }
-}
-
-/// A trait that is able to render a declaration about a particular member declared in
-/// the `ComponentInterface`.
-/// Like `CodeType`, it can render declaration code and imports. It also is able to render
-/// code at start-up of the FFI.
-/// All methods are optional, and there is no requirement that the trait be used for a particular
-/// `interface::` member. Thus, it can also be useful for conditionally rendering code.
-pub trait CodeDeclaration {
-    /// A list of imports that are needed if this type is in use.
-    /// Classes are imported exactly once.
-    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        None
-    }
-
-    /// Code (one or more statements) that is run on start-up of the library,
-    /// but before the client code has access to it.
-    fn initialization_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        None
-    }
-
-    /// Code which represents this member. e.g. the foreign language class definition for
-    /// a given Object type.
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         None
     }
 }

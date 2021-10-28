@@ -10,11 +10,9 @@ use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
-use crate::bindings::backend::CodeDeclaration;
+use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
 use crate::interface::*;
 use crate::MergeWith;
-
-use crate::bindings::backend::{CodeOracle, CodeType, TypeIdentifier};
 
 mod callback_interface;
 mod compounds;

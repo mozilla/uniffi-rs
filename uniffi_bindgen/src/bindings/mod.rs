@@ -20,8 +20,6 @@ pub mod python;
 pub mod ruby;
 pub mod swift;
 
-pub mod backend;
-
 /// Enumeration of all foreign language targets currently supported by this crate.
 ///
 /// The functions in this module will delegate to a language-specific backend based
