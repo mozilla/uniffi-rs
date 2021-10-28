@@ -635,7 +635,7 @@
         <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>,
         <span class="ident">config_file_override</span>,
     )<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
     <span class="kw">for</span> <span class="ident">language</span> <span class="kw">in</span> <span class="ident">target_languages</span> {
         <span class="ident">bindings::write_bindings</span>(
             <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>,
