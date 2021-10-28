@@ -31,7 +31,7 @@ fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
         Literal::Boolean(v) => format!("{}", v),
         Literal::String(s) => format!("\"{}\"", s),
         Literal::Int(i, radix, type_) => typed_number(
-            &type_,
+            type_,
             match radix {
                 Radix::Octal => format!("{:#x}", i),
                 Radix::Decimal => format!("{}", i),
@@ -39,14 +39,14 @@ fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
             },
         ),
         Literal::UInt(i, radix, type_) => typed_number(
-            &type_,
+            type_,
             match radix {
                 Radix::Octal => format!("{:#x}", i),
                 Radix::Decimal => format!("{}", i),
                 Radix::Hexadecimal => format!("{:#x}", i),
             },
         ),
-        Literal::Float(string, type_) => typed_number(&type_, string.clone()),
+        Literal::Float(string, type_) => typed_number(type_, string.clone()),
 
         _ => unreachable!("Literal"),
     }

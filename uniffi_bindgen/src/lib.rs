@@ -167,7 +167,7 @@ pub fn generate_bindings<P: AsRef<Path>>(
         guess_crate_root(udl_file)?,
         config_file_override,
     )?;
-    let out_dir = get_out_dir(&udl_file, out_dir_override)?;
+    let out_dir = get_out_dir(udl_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
             &config.bindings,
