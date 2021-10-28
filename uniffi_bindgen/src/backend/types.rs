@@ -31,6 +31,7 @@
 //! This filter provides methods to generate expressions and identifiers in the target language. These are all forwarded to the oracle.
 
 use super::{CodeOracle, Literal};
+use crate::interface::*;
 use std::fmt;
 
 /// A Trait to emit foreign language code to handle referenced types.
@@ -103,5 +104,117 @@ pub trait CodeType {
     /// Classes are imported exactly once.
     fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         None
+    }
+}
+
+/// This trait is used to implement `CodeType` for `Type` and type-like structs (`Record`, `Enum`, `Field`,
+/// etc).  We forward all method calls to a `Box<dyn CodeType>`, which we get by calling
+/// `CodeOracle.find()`.
+pub trait CodeTypeDispatch {
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType>;
+}
+
+impl CodeTypeDispatch for Type {
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
+        oracle.find(self)
+    }
+}
+
+impl CodeTypeDispatch for Record {
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
+        oracle.find(&self.type_())
+    }
+}
+
+impl CodeTypeDispatch for Enum {
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
+        oracle.find(&self.type_())
+    }
+}
+
+impl CodeTypeDispatch for Error {
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
+        oracle.find(&self.type_())
+    }
+}
+
+impl CodeTypeDispatch for Object {
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
+        oracle.find(&self.type_())
+    }
+}
+
+impl CodeTypeDispatch for CallbackInterface {
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
+        oracle.find(&self.type_())
+    }
+}
+
+impl CodeTypeDispatch for Field {
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
+        oracle.find(&self.type_())
+    }
+}
+
+impl CodeTypeDispatch for Argument {
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
+        oracle.find(&self.type_())
+    }
+}
+
+// Needed to handle &&Type and &&&Type values, which we sometimes end up with in the template code
+impl<T, C> CodeTypeDispatch for T
+where
+    T: std::ops::Deref<Target = C>,
+    C: CodeTypeDispatch,
+{
+    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
+        self.deref().code_type_impl(oracle)
+    }
+}
+
+impl<T: CodeTypeDispatch> CodeType for T {
+    // The above code implements `CodeTypeDispatch` for `Type` and type-like structs (`Record`,
+    // `Enum`, `Field`, etc).  Now we can leverage that to implement `CodeType` for all of them.
+    // This allows for simpler template code (`field|lower` instead of `field.type_()|lower`)
+    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
+        self.code_type_impl(oracle).type_label(oracle)
+    }
+
+    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
+        self.code_type_impl(oracle).canonical_name(oracle)
+    }
+
+    fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
+        self.code_type_impl(oracle).literal(oracle, literal)
+    }
+
+    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+        self.code_type_impl(oracle).lower(oracle, nm)
+    }
+
+    fn write(
+        &self,
+        oracle: &dyn CodeOracle,
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+    ) -> String {
+        self.code_type_impl(oracle).write(oracle, nm, target)
+    }
+
+    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+        self.code_type_impl(oracle).lift(oracle, nm)
+    }
+
+    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+        self.code_type_impl(oracle).read(oracle, nm)
+    }
+
+    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
+        self.code_type_impl(oracle).helper_code(oracle)
+    }
+
+    fn imports(&self, oracle: &dyn CodeOracle) -> Option<Vec<String>> {
+        self.code_type_impl(oracle).imports(oracle)
     }
 }

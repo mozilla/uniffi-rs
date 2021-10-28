@@ -29,7 +29,7 @@
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_kt(arg.type_()) }}
+        {{- arg.name()|lower_kt(arg) }}
         {%- if !loop.last %}, {% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -41,10 +41,9 @@
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {% let arg_type = arg.type_() -%}
-        {{ arg.name()|var_name_kt }}: {{ arg_type|type_kt -}}
+        {{ arg.name()|var_name_kt }}: {{ arg|type_kt -}}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_kt(arg_type) }}
+        {%- when Some with(literal) %} = {{ literal|literal_kt(arg) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
@@ -53,7 +52,7 @@
 
 {% macro arg_list_protocol(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name_kt }}: {{ arg.type_()|type_kt -}}
+        {{ arg.name()|var_name_kt }}: {{ arg|type_kt -}}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro %}

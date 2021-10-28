@@ -20,7 +20,7 @@ sealed class {{ toplevel_name }}: Exception(){% if self.contains_object_referenc
     {% else %}
     class {{ variant.name()|exception_name_kt }}(
         {% for field in variant.fields() -%}
-        val {{ field.name()|var_name_kt }}: {{ field.type_()|type_kt}}{% if loop.last %}{% else %}, {% endif %}
+        val {{ field.name()|var_name_kt }}: {{ field|type_kt}}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ toplevel_name }}()
     {%- endif %}
@@ -47,7 +47,7 @@ sealed class {{ toplevel_name }}: Exception(){% if self.contains_object_referenc
                 {%- for variant in e.variants() %}
                 {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}({% if variant.has_fields() %}
                     {% for field in variant.fields() -%}
-                    {{ "error_buf"|read_kt(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                    {{ "error_buf"|read_kt(field) }}{% if loop.last %}{% else %},{% endif %}
                     {% endfor -%}
                 {%- endif -%})
                 {%- endfor %}
