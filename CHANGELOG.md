@@ -10,6 +10,13 @@
 
 ## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+- Previously, an interface which didn't declare a constructor got a default one anyway, making it
+  impossible to decline to provide one. This is no longer true, so if your interface wants a
+  constructor, you must add one explicitly.
+
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.1...main).
+
 ## v0.14.1 (_2021-10-27_)
 
 ### ⚠️ Breaking Changes ⚠️
@@ -22,7 +29,7 @@
 - Swift: Refactored codegen to better match Kotlin / Unit of Code
 - Kotlin: Added some defensive programming around `RustBufferBuilder.discard()`
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.0...v0.14.1).
+[All changes in v0.14.1](https://github.com/mozilla/uniffi-rs/compare/v0.14.0...v0.14.1).
 
 ## v0.14.0 (_2021-08-17_)
 

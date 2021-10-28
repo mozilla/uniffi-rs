@@ -44,6 +44,18 @@
 //! assert_eq!(obj.methods()[0].name(), "my_name");
 //! # Ok::<(), anyhow::Error>(())
 //! ```
+//!
+//! It's not necessary for all interfaces to have constructors.
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
+//! # namespace example {};
+//! # interface Example {};
+//! # "##)?;
+//! let obj = ci.get_object_definition("Example").unwrap();
+//! assert_eq!(obj.name(), "Example");
+//! assert_eq!(obj.constructors().len(), 0);
+//! # Ok::<(), anyhow::Error>(())
+//! ```
 
 use std::collections::HashSet;
 use std::convert::TryFrom;
@@ -211,10 +223,6 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
             }
-        }
-        // Everyone gets a primary constructor, even if not declared explicitly.
-        if object.primary_constructor().is_none() {
-            object.constructors.push(Default::default());
         }
         Ok(object)
     }

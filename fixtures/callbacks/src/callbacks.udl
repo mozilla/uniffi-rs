@@ -12,6 +12,7 @@ callback interface ForeignGetters {
 /// These objects are implemented in Rust, and call out to `ForeignGetters`
 /// to get the value.
 interface RustGetters {
+  constructor();
   boolean get_bool(ForeignGetters callback, boolean v, boolean arg2);
   string get_string(ForeignGetters callback, string v, boolean arg2);
   string? get_option(ForeignGetters callback, string? v, boolean arg2);

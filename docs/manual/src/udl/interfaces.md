@@ -40,7 +40,7 @@ interface TodoList {
 
 By convention, the `constructor()` calls the Rust's `new()` method.
 
-Conceptually, these `interface` objects are live Rust structs that have a proxy object on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being called in Rust.
+Conceptually, these `interface` objects are live Rust structs that have a proxy object on the foreign language side; calling any methods on them, including a constructor or destructor results in the corresponding methods being called in Rust. If you do not specify a constructor the bindings will be unable to create the interface directly.
 
 UniFFI will generate these proxies with an interface or protocol to help with testing in the foreign-language code. For example in Kotlin, the `TodoList` would generate:
 
