@@ -446,6 +446,10 @@
 <span id="444">444</span>
 <span id="445">445</span>
 <span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -474,6 +478,7 @@
 <span class="kw">mod</span> <span class="ident">object</span>;
 <span class="kw">mod</span> <span class="ident">primitives</span>;
 <span class="kw">mod</span> <span class="ident">record</span>;
+<span class="kw">mod</span> <span class="ident">wrapped</span>;
 
 <span class="doccomment">/// Config options for the caller to customize the generated Swift.</span>
 <span class="doccomment">///</span>
@@ -757,7 +762,10 @@
                 <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
             }
             <span class="ident">Type::External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;no support for external types yet&quot;</span>),
-            <span class="ident">Type::Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;no support for wrapped types yet&quot;</span>),
+            <span class="ident">Type::Wrapped</span> { <span class="ident">name</span>, <span class="ident">prim</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">wrapped::WrappedCodeType::new</span>(
+                <span class="ident">name</span>,
+                <span class="self">self</span>.<span class="ident">create_code_type</span>(<span class="ident">prim</span>.<span class="ident">as_ref</span>().<span class="ident">clone</span>()),
+            )),
         }
     }
 }
