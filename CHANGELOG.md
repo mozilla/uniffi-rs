@@ -15,6 +15,9 @@
   impossible to decline to provide one. This is no longer true, so if your interface wants a
   constructor, you must add one explicitly.
 
+### What's Changed
+- Kotlin and Swift, like Python, now support [simple "wrapped" types](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html).
+
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.1...main).
 
 ## v0.14.1 (_2021-10-27_)
