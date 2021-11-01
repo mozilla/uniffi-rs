@@ -1,0 +1,22 @@
+namespace decorators {
+    // The Decorator attribute says that this function may be wrapped by a
+    // decorator named "io".  We define what that means in uniffi.toml
+    [Decorator=io]
+    void sync_all_users();
+};
+
+record User {
+    id: string,
+    name: string,
+}
+
+interface UserDatabase {
+    // Another use of the decorator from above
+    [Decorator=io]
+    User lookup();
+
+    // A different decorator
+    [Decorator=log-errors]
+    [Throws=RustyError]
+    void import_legacy_data(string: data);
+}

@@ -1,0 +1,43 @@
+[bindings.python]
+cdylib_name = "wrapper_types"
+
+[bindings.ruby]
+cdylib_name = "wrapper_types"
+
+[bindings.swift]
+cdylib_name = "wrapper_types"
+
+[bindings.kotlin]
+cdylib_name = "wrapper_types"
+
+# Defining the log-errors decorator for the Python bindings
+[decorators.log-errors.python]
+imports = ["logging"]
+code = """
+error_logger = logging.getLogger("errors")
+
+def logErrors(func):
+  try:
+    return func()
+  except:
+    error_logger.error("Error calling {}".format(func), exc_info=True)
+    raise
+"""
+decorator = "logErrors"
+
+# Defining the io decorator for the Python bindings
+[decorators.io.kotlin]
+imports = [
+    "kotlinx.coroutines.Dispatchers",
+    "kotlinx.coroutines.CoroutineScope"
+]
+code = """
+ioScope = CoroutineScope(Dispatchers.IO)
+"""
+decorator = "ioScope.launch"
+
+# I think the return type can be inferred and we don't need the next line.  But
+# this is an example of how the return type could be specified.  Swift might
+# need something like this.
+return_type = "Deferred<{}>" # "{}" will be replaced with the decorated function's return type
+
