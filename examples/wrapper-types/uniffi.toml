@@ -9,3 +9,30 @@ cdylib_name = "wrapper_types"
 
 [bindings.kotlin]
 cdylib_name = "wrapper_types"
+
+# Python wrapper implementation for JsonObject
+[wrappers.JsonObject.python]
+
+code = """
+class JsonWrapper:
+    fn from_wrapped(string):
+        json.loads(string)
+
+    fn into_wrapped(obj):
+        json.dumps(obj)
+}
+"""
+imports = ["json"]
+wrapper_class = "JsonWrapper()"
+
+# Kotlin wrapper implementation for JsonObject
+[wrappers.JsonObject.python]
+
+code = """
+class JsonWrapper:
+    fn from_wrapped(value: string) = JSONObject(value)
+    fn into_wrapped(value: JSONObject) = value.toString()
+}
+"""
+imports = ["org.json.JSONObject"]
+wrapper_class = "JsonWrapper()"
