@@ -87,27 +87,3 @@ impl CodeDeclaration for PythonObject {
         Some(self.render().unwrap())
     }
 }
-
-#[derive(Template)]
-#[template(syntax = "py", escape = "none", path = "ObjectRuntime.py")]
-pub struct PythonObjectRuntime {
-    is_needed: bool,
-}
-
-impl PythonObjectRuntime {
-    pub fn new(ci: &ComponentInterface) -> Self {
-        Self {
-            is_needed: !ci.iter_object_definitions().is_empty(),
-        }
-    }
-}
-
-impl CodeDeclaration for PythonObjectRuntime {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        if self.is_needed {
-            Some(self.render().unwrap())
-        } else {
-            None
-        }
-    }
-}

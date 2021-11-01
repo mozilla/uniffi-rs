@@ -77,7 +77,7 @@ impl<'a> PythonWrapper<'a> {
 
     pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
         let ci = self.ci;
-        vec![Box::new(object::PythonObjectRuntime::new(ci)) as Box<dyn CodeDeclaration>]
+        vec![]
             .into_iter()
             .chain(ci.iter_enum_definitions().into_iter().map(|inner| {
                 Box::new(enum_::PythonEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
