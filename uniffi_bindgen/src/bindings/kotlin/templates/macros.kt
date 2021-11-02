@@ -1,13 +1,13 @@
 {#
 // Template to call into rust. Used in several places.
 // Variable names in `arg_list_decl` should match up with arg lists
-// passed to rust via `_arg_list_ffi_call` (we use  `var_name_kt` in `lower_kt`)
+// passed to rust via `_arg_list_ffi_call` (we use  `var_name` in `lower_var`)
 #}
 
 {%- macro to_ffi_call(func) -%}
     {%- match func.throws() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|exception_name_kt}})
+    rustCallWithError({{ e|exception_name}})
     {%- else %}
     rustCall()
     {%- endmatch %} { status ->
@@ -18,7 +18,7 @@
 {%- macro to_ffi_call_with_prefix(prefix, func) %}
     {%- match func.throws() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|exception_name_kt}})
+    rustCallWithError({{ e|exception_name}})
     {%- else %}
     rustCall()
     {%- endmatch %} { status ->
@@ -29,21 +29,21 @@
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_kt(arg) }}
+        {{- arg.name()|lower_var(arg) }}
         {%- if !loop.last %}, {% endif %}
     {%- endfor %}
 {%- endmacro -%}
 
 {#-
 // Arglist as used in kotlin declarations of methods, functions and constructors.
-// Note the var_name_kt and type_kt filters.
+// Note the var_name and type_name filters.
 -#}
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name_kt }}: {{ arg|type_kt -}}
+        {{ arg.name()|var_name }}: {{ arg|type_name -}}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_kt(arg) }}
+        {%- when Some with(literal) %} = {{ literal|render_literal(arg) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
@@ -52,17 +52,17 @@
 
 {% macro arg_list_protocol(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name_kt }}: {{ arg|type_kt -}}
+        {{ arg.name()|var_name }}: {{ arg|type_name -}}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro %}
 {#-
 // Arglist as used in the _UniFFILib function declations.
-// Note unfiltered name but type_ffi filters.
+// Note unfiltered name but ffi_type_name filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name() }}: {{ arg.type_()|type_ffi -}},
+        {{- arg.name() }}: {{ arg.type_()|ffi_type_name -}},
     {%- endfor %}
     uniffi_out_err: RustCallStatus
 {%- endmacro -%}
@@ -71,12 +71,12 @@
 {%- macro destroy_fields(member) %}
     Disposable.destroy(
     {%- for field in member.fields() %}
-        this.{{ field.name()|var_name_kt }}{%- if !loop.last %}, {% endif -%}
+        this.{{ field.name()|var_name }}{%- if !loop.last %}, {% endif -%}
     {% endfor -%})
 {%- endmacro -%}
 
 {%- macro ffi_function_definition(func) %}
 fun {{ func.name() }}(
     {%- call arg_list_ffi_decl(func) %}
-){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|type_ffi }}{% when None %}: Unit{% endmatch %}
+){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|ffi_type_name }}{% when None %}: Unit{% endmatch %}
 {% endmacro %}

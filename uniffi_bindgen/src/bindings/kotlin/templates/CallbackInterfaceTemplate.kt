@@ -1,6 +1,6 @@
 {% import "macros.kt" as kt %}
 {%- let cbi = self.inner() %}
-{%- let type_name = cbi|type_kt %}
+{%- let type_name = cbi|type_name %}
 {%- let canonical_type_name = cbi|canonical_name %}
 {%- let ffi_converter = format!("FfiConverter{}", canonical_type_name) %}
 {%- let foreign_callback = format!("ForeignCallback{}", canonical_type_name) %}
@@ -9,9 +9,9 @@
 
 public interface {{ type_name }} {
     {% for meth in cbi.methods() -%}
-    fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %})
+    fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %})
     {%- match meth.return_type() -%}
-    {%- when Some with (return_type) %}: {{ return_type|type_kt -}}
+    {%- when Some with (return_type) %}: {{ return_type|type_name -}}
     {%- else -%}
     {%- endmatch %}
     {% endfor %}
@@ -25,7 +25,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
         return when (method) {
             IDX_CALLBACK_FREE -> {{ ffi_converter }}.drop(handle)
             {% for meth in cbi.methods() -%}
-            {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt -%}
+            {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
             {{ loop.index }} -> this.{{ method_name }}(cb, args)
             {% endfor %}
             // This should never happen, because an out of bounds method index won't
@@ -36,21 +36,21 @@ internal class {{ foreign_callback }} : ForeignCallback {
     }
 
     {% for meth in cbi.methods() -%}
-    {% let method_name = format!("invoke_{}", meth.name())|fn_name_kt %}
+    {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
     private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue): RustBuffer.ByValue =
         try {
         {#- Unpacking args from the RustBuffer #}
             {%- if meth.arguments().len() != 0 -%}
             {#- Calling the concrete callback object #}
             val buf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
-            kotlinCallbackInterface.{{ meth.name()|fn_name_kt }}(
+            kotlinCallbackInterface.{{ meth.name()|fn_name }}(
                     {% for arg in meth.arguments() -%}
-                    {{ "buf"|read_kt(arg) }}
+                    {{ "buf"|read_var(arg) }}
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
             {% else %}
-            kotlinCallbackInterface.{{ meth.name()|fn_name_kt }}()
+            kotlinCallbackInterface.{{ meth.name()|fn_name }}()
             {% endif -%}
 
         {#- Packing up the return value into a RustBuffer #}
@@ -58,7 +58,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
                 {%- when Some with (return_type) -%}
                 .let { rval ->
                     val rbuf = RustBufferBuilder()
-                    {{ "rval"|write_kt("rbuf", return_type) }}
+                    {{ "rval"|write_var("rbuf", return_type) }}
                     rbuf.finalize()
                 }
                 {%- else -%}

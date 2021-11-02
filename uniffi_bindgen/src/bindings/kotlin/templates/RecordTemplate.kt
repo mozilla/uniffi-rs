@@ -1,24 +1,24 @@
 {% import "macros.kt" as kt %}
 {%- let rec = self.inner() %}
-data class {{ rec.name()|class_name_kt }} (
+data class {{ rec.name()|class_name }} (
     {%- for field in rec.fields() %}
-    var {{ field.name()|var_name_kt }}: {{ field|type_kt -}}
+    var {{ field.name()|var_name }}: {{ field|type_name -}}
     {%- match field.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_kt(field) }}
+        {%- when Some with(literal) %} = {{ literal|render_literal(field) }}
         {%- else %}
     {%- endmatch -%}
     {% if !loop.last %}, {% endif %}
     {%- endfor %}
 ) {% if self.contains_object_references() %}: Disposable {% endif %}{
     companion object {
-        internal fun lift(rbuf: RustBuffer.ByValue): {{ rec.name()|class_name_kt }} {
-            return liftFromRustBuffer(rbuf) { buf -> {{ rec.name()|class_name_kt }}.read(buf) }
+        internal fun lift(rbuf: RustBuffer.ByValue): {{ rec.name()|class_name }} {
+            return liftFromRustBuffer(rbuf) { buf -> {{ rec.name()|class_name }}.read(buf) }
         }
 
-        internal fun read(buf: ByteBuffer): {{ rec.name()|class_name_kt }} {
-            return {{ rec.name()|class_name_kt }}(
+        internal fun read(buf: ByteBuffer): {{ rec.name()|class_name }} {
+            return {{ rec.name()|class_name }}(
             {%- for field in rec.fields() %}
-            {{ "buf"|read_kt(field) }}{% if loop.last %}{% else %},{% endif %}
+            {{ "buf"|read_var(field) }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
             )
         }
@@ -30,7 +30,7 @@ data class {{ rec.name()|class_name_kt }} (
 
     internal fun write(buf: RustBufferBuilder) {
         {%- for field in rec.fields() %}
-            {{ "this.{}"|format(field.name())|write_kt("buf", field) }}
+            {{ "this.{}"|format(field.name())|write_var("buf", field) }}
         {% endfor %}
     }
 

@@ -2,13 +2,13 @@
 {%- let e = self.inner() %}
 
 // Error {{ e.name() }}
-{%- let toplevel_name=e.name()|exception_name_kt %}
+{%- let toplevel_name=e.name()|exception_name %}
 {% if e.is_flat() %}
 sealed class {{ toplevel_name }}(message: String): Exception(message){% if self.contains_object_references() %}, Disposable {% endif %} {
         // Each variant is a nested class
         // Flat enums carries a string error message, so no special implementation is necessary.
         {% for variant in e.variants() -%}
-        class {{ variant.name()|exception_name_kt }}(message: String) : {{ toplevel_name }}(message)
+        class {{ variant.name()|exception_name }}(message: String) : {{ toplevel_name }}(message)
         {% endfor %}
 
 {%- else %}
@@ -16,11 +16,11 @@ sealed class {{ toplevel_name }}: Exception(){% if self.contains_object_referenc
     // Each variant is a nested class
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
-    class {{ variant.name()|exception_name_kt }} : {{ toplevel_name }}()
+    class {{ variant.name()|exception_name }} : {{ toplevel_name }}()
     {% else %}
-    class {{ variant.name()|exception_name_kt }}(
+    class {{ variant.name()|exception_name }}(
         {% for field in variant.fields() -%}
-        val {{ field.name()|var_name_kt }}: {{ field|type_kt}}{% if loop.last %}{% else %}, {% endif %}
+        val {{ field.name()|var_name }}: {{ field|type_name}}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ toplevel_name }}()
     {%- endif %}
@@ -37,7 +37,7 @@ sealed class {{ toplevel_name }}: Exception(){% if self.contains_object_referenc
             {% if e.is_flat() %}
                 return when(error_buf.getInt()) {
                 {%- for variant in e.variants() %}
-                {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}(String.read(error_buf))
+                {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name }}(String.read(error_buf))
                 {%- endfor %}
                 else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
             }
@@ -45,9 +45,9 @@ sealed class {{ toplevel_name }}: Exception(){% if self.contains_object_referenc
 
             return when(error_buf.getInt()) {
                 {%- for variant in e.variants() %}
-                {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name_kt }}({% if variant.has_fields() %}
+                {{ loop.index }} -> {{ toplevel_name }}.{{ variant.name()|exception_name }}({% if variant.has_fields() %}
                     {% for field in variant.fields() -%}
-                    {{ "error_buf"|read_kt(field) }}{% if loop.last %}{% else %},{% endif %}
+                    {{ "error_buf"|read_var(field) }}{% if loop.last %}{% else %},{% endif %}
                     {% endfor -%}
                 {%- endif -%})
                 {%- endfor %}
@@ -62,7 +62,7 @@ sealed class {{ toplevel_name }}: Exception(){% if self.contains_object_referenc
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
-            is {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }} -> {
+            is {{ e.name()|class_name }}.{{ variant.name()|class_name }} -> {
                 {%- if variant.has_fields() %}
                 {% call kt::destroy_fields(variant) %}
                 {% else -%}

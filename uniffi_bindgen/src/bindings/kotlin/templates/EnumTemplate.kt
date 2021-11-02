@@ -8,14 +8,14 @@
 {%- let e = self.inner() %}
 {%- if e.is_flat() %}
 
-enum class {{ e.name()|class_name_kt }} {
+enum class {{ e.name()|class_name }} {
     {% for variant in e.variants() -%}
-    {{ variant.name()|enum_variant_kt }}{% if loop.last %};{% else %},{% endif %}
+    {{ variant.name()|enum_variant }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
 
     companion object {
-        internal fun lift(rbuf: RustBuffer.ByValue): {{ e.name()|class_name_kt }} {
-            return liftFromRustBuffer(rbuf) { buf -> {{ e.name()|class_name_kt }}.read(buf) }
+        internal fun lift(rbuf: RustBuffer.ByValue): {{ e.name()|class_name }} {
+            return liftFromRustBuffer(rbuf) { buf -> {{ e.name()|class_name }}.read(buf) }
         }
 
         internal fun read(buf: ByteBuffer) =
@@ -36,30 +36,30 @@ enum class {{ e.name()|class_name_kt }} {
 
 {% else %}
 
-sealed class {{ e.name()|class_name_kt }}{% if self.contains_object_references() %}: Disposable {% endif %} {
+sealed class {{ e.name()|class_name }}{% if self.contains_object_references() %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
-    object {{ variant.name()|class_name_kt }} : {{ e.name()|class_name_kt }}()
+    object {{ variant.name()|class_name }} : {{ e.name()|class_name }}()
     {% else -%}
-    data class {{ variant.name()|class_name_kt }}(
+    data class {{ variant.name()|class_name }}(
         {% for field in variant.fields() -%}
-        val {{ field.name()|var_name_kt }}: {{ field|type_kt}}{% if loop.last %}{% else %}, {% endif %}
+        val {{ field.name()|var_name }}: {{ field|type_name}}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
-    ) : {{ e.name()|class_name_kt }}()
+    ) : {{ e.name()|class_name }}()
     {%- endif %}
     {% endfor %}
 
     companion object {
-        internal fun lift(rbuf: RustBuffer.ByValue): {{ e.name()|class_name_kt }} {
-            return liftFromRustBuffer(rbuf) { buf -> {{ e.name()|class_name_kt }}.read(buf) }
+        internal fun lift(rbuf: RustBuffer.ByValue): {{ e.name()|class_name }} {
+            return liftFromRustBuffer(rbuf) { buf -> {{ e.name()|class_name }}.read(buf) }
         }
 
-        internal fun read(buf: ByteBuffer): {{ e.name()|class_name_kt }} {
+        internal fun read(buf: ByteBuffer): {{ e.name()|class_name }} {
             return when(buf.getInt()) {
                 {%- for variant in e.variants() %}
-                {{ loop.index }} -> {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }}{% if variant.has_fields() %}(
+                {{ loop.index }} -> {{ e.name()|class_name }}.{{ variant.name()|class_name }}{% if variant.has_fields() %}(
                     {% for field in variant.fields() -%}
-                    {{ "buf"|read_kt(field) }}{% if loop.last %}{% else %},{% endif %}
+                    {{ "buf"|read_var(field) }}{% if loop.last %}{% else %},{% endif %}
                     {% endfor -%}
                 ){%- endif -%}
                 {%- endfor %}
@@ -75,10 +75,10 @@ sealed class {{ e.name()|class_name_kt }}{% if self.contains_object_references()
     internal fun write(buf: RustBufferBuilder) {
         when(this) {
             {%- for variant in e.variants() %}
-            is {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }} -> {
+            is {{ e.name()|class_name }}.{{ variant.name()|class_name }} -> {
                 buf.putInt({{ loop.index }})
                 {% for field in variant.fields() -%}
-                {{ "(this.{})"|format(field.name())|write_kt("buf", field) }}
+                {{ "(this.{})"|format(field.name())|write_var("buf", field) }}
                 {% endfor %}
             }
             {%- endfor %}
@@ -90,7 +90,7 @@ sealed class {{ e.name()|class_name_kt }}{% if self.contains_object_references()
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
-            is {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }} -> {
+            is {{ e.name()|class_name }}.{{ variant.name()|class_name }} -> {
                 {%- if variant.has_fields() %}
                 {% call kt::destroy_fields(variant) %}
                 {% else -%}
