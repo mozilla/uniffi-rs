@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["CodeOracle","An object to look up a foreign language code specific renderer for a given type used. Every `Type` referred to in the `ComponentInterface` should map to a corresponding `CodeType`."]]});
