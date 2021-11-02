@@ -43,7 +43,7 @@ sealed class {{ e.name()|class_name_kt }}{% if self.contains_object_references()
     {% else -%}
     data class {{ variant.name()|class_name_kt }}(
         {% for field in variant.fields() -%}
-        val {{ field.name()|var_name_kt }}: {{ field.type_()|type_kt}}{% if loop.last %}{% else %}, {% endif %}
+        val {{ field.name()|var_name_kt }}: {{ field|type_kt}}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ e.name()|class_name_kt }}()
     {%- endif %}
@@ -59,7 +59,7 @@ sealed class {{ e.name()|class_name_kt }}{% if self.contains_object_references()
                 {%- for variant in e.variants() %}
                 {{ loop.index }} -> {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }}{% if variant.has_fields() %}(
                     {% for field in variant.fields() -%}
-                    {{ "buf"|read_kt(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+                    {{ "buf"|read_kt(field) }}{% if loop.last %}{% else %},{% endif %}
                     {% endfor -%}
                 ){%- endif -%}
                 {%- endfor %}
@@ -78,7 +78,7 @@ sealed class {{ e.name()|class_name_kt }}{% if self.contains_object_references()
             is {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }} -> {
                 buf.putInt({{ loop.index }})
                 {% for field in variant.fields() -%}
-                {{ "(this.{})"|format(field.name())|write_kt("buf", field.type_()) }}
+                {{ "(this.{})"|format(field.name())|write_kt("buf", field) }}
                 {% endfor %}
             }
             {%- endfor %}

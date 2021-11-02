@@ -296,43 +296,48 @@ pub mod filters {
         KotlinCodeOracle
     }
 
-    pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).type_label(&oracle))
+    pub fn type_kt(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(codetype.type_label(&oracle()))
     }
 
-    pub fn canonical_name(type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).canonical_name(&oracle))
+    pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(codetype.canonical_name(&oracle()))
     }
 
-    pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).lower(&oracle, nm))
+    pub fn lower_kt(
+        nm: &dyn fmt::Display,
+        codetype: &impl CodeType,
+    ) -> Result<String, askama::Error> {
+        Ok(codetype.lower(&oracle(), nm))
     }
 
     pub fn write_kt(
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
-        type_: &Type,
+        codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).write(&oracle, nm, target))
+        Ok(codetype.write(&oracle(), nm, target))
     }
 
-    pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).lift(&oracle, nm))
+    pub fn lift_kt(
+        nm: &dyn fmt::Display,
+        codetype: &impl CodeType,
+    ) -> Result<String, askama::Error> {
+        Ok(codetype.lift(&oracle(), nm))
     }
 
-    pub fn literal_kt(literal: &Literal, type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).literal(&oracle, literal))
+    pub fn literal_kt(
+        literal: &Literal,
+        codetype: &impl CodeType,
+    ) -> Result<String, askama::Error> {
+        Ok(codetype.literal(&oracle(), literal))
     }
 
-    pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).read(&oracle, nm))
+    pub fn read_kt(
+        nm: &dyn fmt::Display,
+        codetype: &impl CodeType,
+    ) -> Result<String, askama::Error> {
+        Ok(codetype.read(&oracle(), nm))
     }
 
     /// Get the Kotlin syntax for representing a given low-level `FFIType`.

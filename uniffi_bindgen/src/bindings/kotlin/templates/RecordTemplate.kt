@@ -2,10 +2,9 @@
 {%- let rec = self.inner() %}
 data class {{ rec.name()|class_name_kt }} (
     {%- for field in rec.fields() %}
-    {%- let field_type = field.type_() %}
-    var {{ field.name()|var_name_kt }}: {{ field_type|type_kt -}}
+    var {{ field.name()|var_name_kt }}: {{ field|type_kt -}}
     {%- match field.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_kt(field_type) }}
+        {%- when Some with(literal) %} = {{ literal|literal_kt(field) }}
         {%- else %}
     {%- endmatch -%}
     {% if !loop.last %}, {% endif %}
@@ -19,7 +18,7 @@ data class {{ rec.name()|class_name_kt }} (
         internal fun read(buf: ByteBuffer): {{ rec.name()|class_name_kt }} {
             return {{ rec.name()|class_name_kt }}(
             {%- for field in rec.fields() %}
-            {{ "buf"|read_kt(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {{ "buf"|read_kt(field) }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
             )
         }
@@ -31,7 +30,7 @@ data class {{ rec.name()|class_name_kt }} (
 
     internal fun write(buf: RustBufferBuilder) {
         {%- for field in rec.fields() %}
-            {{ "this.{}"|format(field.name())|write_kt("buf", field.type_()) }}
+            {{ "this.{}"|format(field.name())|write_kt("buf", field) }}
         {% endfor %}
     }
 

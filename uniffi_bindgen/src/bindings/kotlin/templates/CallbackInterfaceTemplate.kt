@@ -1,7 +1,7 @@
 {% import "macros.kt" as kt %}
 {%- let cbi = self.inner() %}
-{%- let type_name = cbi.type_()|type_kt %}
-{%- let canonical_type_name = cbi.type_()|canonical_name %}
+{%- let type_name = cbi|type_kt %}
+{%- let canonical_type_name = cbi|canonical_name %}
 {%- let ffi_converter = format!("FfiConverter{}", canonical_type_name) %}
 {%- let foreign_callback = format!("ForeignCallback{}", canonical_type_name) %}
 
@@ -45,7 +45,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
             val buf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
             kotlinCallbackInterface.{{ meth.name()|fn_name_kt }}(
                     {% for arg in meth.arguments() -%}
-                    {{ "buf"|read_kt(arg.type_()) }}
+                    {{ "buf"|read_kt(arg) }}
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
