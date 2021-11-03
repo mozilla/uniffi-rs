@@ -144,7 +144,7 @@ fn run_uniffi_bindgen_test(out_dir: &str, udl_files: &[&str], test_file: &str) -
         .args(&["test", out_dir, &udl_files, test_file])
         .status()?;
     if !status.success() {
-        bail!("Error while running tests: {}",);
+        bail!("Error while running tests: {}", status);
     }
     Ok(())
 }
