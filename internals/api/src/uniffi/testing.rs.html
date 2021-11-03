@@ -302,7 +302,7 @@
         .<span class="ident">args</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;test&quot;</span>, <span class="ident">out_dir</span>, <span class="kw-2">&amp;</span><span class="ident">udl_files</span>, <span class="ident">test_file</span>])
         .<span class="ident">status</span>()<span class="question-mark">?</span>;
     <span class="kw">if</span> <span class="op">!</span><span class="ident">status</span>.<span class="ident">success</span>() {
-        <span class="macro">bail!</span>(<span class="string">&quot;Error while running tests: {}&quot;</span>,);
+        <span class="macro">bail!</span>(<span class="string">&quot;Error while running tests: {}&quot;</span>, <span class="ident">status</span>);
     }
     <span class="prelude-val">Ok</span>(())
 }
