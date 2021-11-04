@@ -2,6 +2,11 @@
 {%- let obj = self.inner() %}
 public interface {{ obj.name()|class_name_kt }}Interface {
     {% for meth in obj.methods() -%}
+    {%- match meth.throws() -%}
+    {%- when Some with (throwable) %} 
+    @Throws({{ throwable|exception_name_kt }}::class)
+    {%- else -%}
+    {%- endmatch %}
     fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %})
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) %}: {{ return_type|type_kt -}}
@@ -44,6 +49,11 @@ class {{ obj.name()|class_name_kt }}(
     }
 
     {% for meth in obj.methods() -%}
+    {%- match meth.throws() -%}
+    {%- when Some with (throwable) %} 
+    @Throws({{ throwable|exception_name_kt }}::class)
+    {%- else -%}
+    {%- endmatch %}
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
