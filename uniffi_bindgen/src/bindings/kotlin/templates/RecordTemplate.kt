@@ -1,6 +1,6 @@
 {% import "macros.kt" as kt %}
 {%- let rec = self.inner() %}
-data class {{ rec.name()|class_name }} (
+data class {{ rec|type_name }} (
     {%- for field in rec.fields() %}
     var {{ field.name()|var_name }}: {{ field|type_name -}}
     {%- match field.default_value() %}
@@ -11,12 +11,12 @@ data class {{ rec.name()|class_name }} (
     {%- endfor %}
 ) {% if self.contains_object_references() %}: Disposable {% endif %}{
     companion object {
-        internal fun lift(rbuf: RustBuffer.ByValue): {{ rec.name()|class_name }} {
-            return liftFromRustBuffer(rbuf) { buf -> {{ rec.name()|class_name }}.read(buf) }
+        internal fun lift(rbuf: RustBuffer.ByValue): {{ rec|type_name }} {
+            return liftFromRustBuffer(rbuf) { buf -> {{ rec|type_name }}.read(buf) }
         }
 
-        internal fun read(buf: ByteBuffer): {{ rec.name()|class_name }} {
-            return {{ rec.name()|class_name }}(
+        internal fun read(buf: ByteBuffer): {{ rec|type_name }} {
+            return {{ rec|type_name }}(
             {%- for field in rec.fields() %}
             {{ "buf"|read_var(field) }}{% if loop.last %}{% else %},{% endif %}
             {%- endfor %}

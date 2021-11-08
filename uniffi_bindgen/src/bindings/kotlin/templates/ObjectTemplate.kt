@@ -1,6 +1,6 @@
 {% import "macros.kt" as kt %}
 {%- let obj = self.inner() %}
-public interface {{ obj.name()|class_name }}Interface {
+public interface {{ obj|type_name }}Interface {
     {% for meth in obj.methods() -%}
     fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %})
     {%- match meth.return_type() -%}
@@ -10,9 +10,9 @@ public interface {{ obj.name()|class_name }}Interface {
     {% endfor %}
 }
 
-class {{ obj.name()|class_name }}(
+class {{ obj|type_name }}(
     pointer: Pointer
-) : FFIObject(pointer), {{ obj.name()|class_name }}Interface {
+) : FFIObject(pointer), {{ obj|type_name }}Interface {
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
@@ -63,19 +63,19 @@ class {{ obj.name()|class_name }}(
     {% endfor %}
 
     companion object {
-        internal fun lift(ptr: Pointer): {{ obj.name()|class_name }} {
-            return {{ obj.name()|class_name }}(ptr)
+        internal fun lift(ptr: Pointer): {{ obj|type_name }} {
+            return {{ obj|type_name }}(ptr)
         }
 
-        internal fun read(buf: ByteBuffer): {{ obj.name()|class_name }} {
+        internal fun read(buf: ByteBuffer): {{ obj|type_name }} {
             // The Rust code always writes pointers as 8 bytes, and will
             // fail to compile if they don't fit.
-            return {{ obj.name()|class_name }}.lift(Pointer(buf.getLong()))
+            return {{ obj|type_name }}.lift(Pointer(buf.getLong()))
         }
 
         {% for cons in obj.alternate_constructors() -%}
-        fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ obj.name()|class_name }} =
-            {{ obj.name()|class_name }}({% call kt::to_ffi_call(cons) %})
+        fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ obj|type_name }} =
+            {{ obj|type_name }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}
     }
 }

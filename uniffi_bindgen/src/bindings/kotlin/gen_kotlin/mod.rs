@@ -340,7 +340,6 @@ pub mod filters {
         Ok(codetype.literal(&oracle(), literal))
     }
 
-
     /// Get the Kotlin syntax for representing a given low-level `FFIType`.
     pub fn ffi_type_name(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
