@@ -201,7 +201,6 @@ impl KotlinCodeOracle {
             Type::Duration => Box::new(miscellany::DurationCodeType),
 
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
-            Type::DecoratorObject(s) => Box::new(decorator::DecoratorObjectCodeType::new(s)),
             Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
             Type::Generic => Box::new(generic::GenericCodeType::new()),
             Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
@@ -209,7 +208,7 @@ impl KotlinCodeOracle {
             Type::CallbackInterface(id) => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
-
+            Type::DecoratorObject(s) => Box::new(decorator::DecoratorObjectCodeType::new(s)),
             Type::Optional(ref inner) => {
                 let outer = type_.clone();
                 let inner = *inner.to_owned();
@@ -230,7 +229,6 @@ impl KotlinCodeOracle {
                 name,
                 self.create_code_type(prim.as_ref().clone()),
             )),
-            Type::DelegateObject(s) => Box::new(delegate::DelegateObjectCodeType::new(s)),
         }
     }
 }
@@ -308,12 +306,14 @@ pub mod filters {
         Ok(codetype.type_label(&oracle()))
     }
 
-    pub fn type_t_kt(type_: &Type, t: &dyn fmt::Display) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).type_t_label(&oracle, &t.to_string()))
+    pub fn type_t_kt(
+        codetype: &impl CodeType,
+        t: &dyn fmt::Display,
+    ) -> Result<String, askama::Error> {
+        Ok(codetype.type_t_label(&oracle(), &t.to_string()))
     }
 
-    pub fn canonical_name(type_: &Type) -> Result<String, askama::Error> {
+    pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         Ok(codetype.canonical_name(&oracle()))
     }
 

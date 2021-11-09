@@ -187,6 +187,10 @@ impl<T: CodeTypeDispatch> CodeType for T {
         self.code_type_impl(oracle).type_label(oracle)
     }
 
+    fn type_t_label(&self, oracle: &dyn CodeOracle, t: &str) -> String {
+        self.code_type_impl(oracle).type_t_label(oracle, t)
+    }
+
     fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
         self.code_type_impl(oracle).canonical_name(oracle)
     }

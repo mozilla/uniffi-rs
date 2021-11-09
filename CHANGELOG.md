@@ -16,7 +16,15 @@
   constructor, you must add one explicitly.
 
 ### What's Changed
+
 - Kotlin and Swift, like Python, now support [simple "wrapped" types](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html).
+
+### What's New
+
+- [Decorator objects](docs/manual/src/udl/decorators.md) reduce boiler plate in Foreign Language bindings.
+  - `[Decorator]` declares an `interface` of decorator functions
+  - `[Decorator=]` adds a decorator to an `interface`
+  - `[CallsWith=]` directs method calls through a decorator function.
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.1...main).
 
@@ -33,13 +41,6 @@
 - Kotlin: Added some defensive programming around `RustBufferBuilder.discard()`
 
 [All changes in v0.14.1](https://github.com/mozilla/uniffi-rs/compare/v0.14.0...v0.14.1).
-
-### What's Changed
-
-- [Decorator objects](docs/manual/src/udl/decorators.md) reduce boiler plate in Foreign Language bindings.
-  - `[Decorator]` declares an `interface` of decorator functions
-  - `[Decorator=]` adds a decorator to an `interface`
-  - `[CallsWith=]` directs method calls through a decorator function.
 
 ## v0.14.0 (_2021-08-17_)
 

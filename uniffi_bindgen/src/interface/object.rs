@@ -230,11 +230,6 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                 _ => bail!("no support for interface member type {:?} yet", member),
             }
         }
-        // Everyone gets a primary constructor, even if not declared explicitly.
-        if object.primary_constructor().is_none() {
-            object.constructors.push(Default::default());
-        }
-
         // Finally, add the decorator object.
         if let Some(nm) = attributes.get_decorator_object() {
             object.decorator_type = ci
@@ -437,7 +432,7 @@ impl Method {
         &self,
         decorator_object: &Option<&DecoratorObject>,
     ) -> Option<Type> {
-        if let Some(dm) = self.decorator_method(&decorator_object) {
+        if let Some(dm) = self.decorator_method(decorator_object) {
             dm.throws_type()
         } else {
             self.throws_type()
