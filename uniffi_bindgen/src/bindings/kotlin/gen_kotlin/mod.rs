@@ -296,7 +296,7 @@ pub mod filters {
         KotlinCodeOracle
     }
 
-    pub fn type_kt(codetype: &impl CodeType) -> Result<String, askama::Error> {
+    pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         Ok(codetype.type_label(&oracle()))
     }
 
@@ -304,14 +304,14 @@ pub mod filters {
         Ok(codetype.canonical_name(&oracle()))
     }
 
-    pub fn lower_kt(
+    pub fn lower_var(
         nm: &dyn fmt::Display,
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         Ok(codetype.lower(&oracle(), nm))
     }
 
-    pub fn write_kt(
+    pub fn write_var(
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
         codetype: &impl CodeType,
@@ -319,49 +319,49 @@ pub mod filters {
         Ok(codetype.write(&oracle(), nm, target))
     }
 
-    pub fn lift_kt(
+    pub fn lift_var(
         nm: &dyn fmt::Display,
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         Ok(codetype.lift(&oracle(), nm))
     }
 
-    pub fn literal_kt(
-        literal: &Literal,
-        codetype: &impl CodeType,
-    ) -> Result<String, askama::Error> {
-        Ok(codetype.literal(&oracle(), literal))
-    }
-
-    pub fn read_kt(
+    pub fn read_var(
         nm: &dyn fmt::Display,
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         Ok(codetype.read(&oracle(), nm))
     }
 
+    pub fn render_literal(
+        literal: &Literal,
+        codetype: &impl CodeType,
+    ) -> Result<String, askama::Error> {
+        Ok(codetype.literal(&oracle(), literal))
+    }
+
     /// Get the Kotlin syntax for representing a given low-level `FFIType`.
-    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
+    pub fn ffi_type_name(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
     }
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn class_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(oracle().class_name(nm))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
-    pub fn fn_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn fn_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(oracle().fn_name(nm))
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
-    pub fn var_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn var_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(oracle().var_name(nm))
     }
 
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
-    pub fn enum_variant_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn enum_variant(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(oracle().enum_variant_name(nm))
     }
 
@@ -370,7 +370,7 @@ pub mod filters {
     /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
     /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
     /// and is distinguished from an "Exception".
-    pub fn exception_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn exception_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(oracle().error_name(nm))
     }
 }

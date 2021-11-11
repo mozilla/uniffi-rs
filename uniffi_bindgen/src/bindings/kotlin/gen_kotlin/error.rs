@@ -21,7 +21,7 @@ impl ErrorCodeType {
 
 impl CodeType for ErrorCodeType {
     fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.class_name(&self.id)
+        oracle.error_name(&self.id)
     }
 
     fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
