@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["filters",""]],"struct":[["Config",""],["PythonWrapper",""]]});
+initSidebarItems({"mod":[["compounds",""],["enum_",""],["error",""],["external",""],["filters",""],["function",""],["miscellany",""],["object",""],["primitives",""],["record",""],["wrapped",""]],"struct":[["Config",""],["PythonCodeOracle",""],["PythonWrapper",""]]});
