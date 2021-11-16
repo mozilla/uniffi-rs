@@ -22,31 +22,17 @@ import contextlib
 import datetime
 
 {% include "RustBufferTemplate.py" %}
-{% include "RustBufferStream.py" %}
-{% include "RustBufferBuilder.py" %}
+{% include "Helpers.py" %}
+{% include "RustBufferHelper.py" %}
 
-# Error definitions
-{% include "ErrorTemplate.py" %}
-
+# Contains loading, initialization code,
+# and the FFI Function declarations in a com.sun.jna.Library.
 {% include "NamespaceLibraryTemplate.py" %}
 
 # Public interface members begin here.
-
-{% for e in ci.iter_enum_definitions() %}
-{% include "EnumTemplate.py" %}
-{%- endfor -%}
-
-{%- for rec in ci.iter_record_definitions() %}
-{% include "RecordTemplate.py" %}
-{% endfor %}
-
-{% for func in ci.iter_function_definitions() %}
-{% include "TopLevelFunctionTemplate.py" %}
-{% endfor %}
-
-{% for obj in ci.iter_object_definitions() %}
-{% include "ObjectTemplate.py" %}
-{% endfor %}
+{% for code in self.declaration_code() %}
+{{ code }}
+{%- endfor %}
 
 __all__ = [
     "InternalError",
