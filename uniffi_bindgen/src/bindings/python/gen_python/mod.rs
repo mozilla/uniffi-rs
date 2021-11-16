@@ -359,35 +359,7 @@ pub mod filters {
     }
 
     pub fn coerce_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            Type::Int8
-            | Type::UInt8
-            | Type::Int16
-            | Type::UInt16
-            | Type::Int32
-            | Type::UInt32
-            | Type::Int64
-            | Type::UInt64 => format!("int({})", nm), // TODO: check max/min value
-            Type::Float32 | Type::Float64 => format!("float({})", nm),
-            Type::Boolean => format!("bool({})", nm),
-            Type::String
-            | Type::Object(_)
-            | Type::Enum(_)
-            | Type::Error(_)
-            | Type::Record(_)
-            | Type::Timestamp
-            | Type::Duration => nm.to_string(),
-            Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
-            Type::Optional(t) => format!("(None if {} is None else {})", nm, coerce_py(nm, t)?),
-            Type::Sequence(t) => format!("list({} for x in {})", coerce_py(&"x", t)?, nm),
-            Type::Map(t) => format!(
-                "dict(({},{}) for (k, v) in {}.items())",
-                coerce_py(&"k", &Type::String)?,
-                coerce_py(&"v", t)?,
-                nm
-            ),
-            Type::Wrapped { prim, .. } => coerce_py(nm, prim.as_ref())?,
-            Type::External { .. } => panic!("should not be necessary to coerce External types"),
-        })
+        let oracle = oracle();
+        Ok(oracle.find(type_).coerce(&oracle, nm))
     }
 }

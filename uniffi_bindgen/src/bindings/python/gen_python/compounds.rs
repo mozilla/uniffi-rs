@@ -22,7 +22,7 @@ fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdenti
 }
 
 macro_rules! impl_code_type_for_compound {
-     ($T:ty, $canonical_name_pattern: literal, $template_file:literal) => {
+     ($T:ty, $canonical_name_pattern: literal, $template_file:literal, $coerce_code:expr) => {
         paste! {
             #[derive(Template)]
             #[template(syntax = "py", escape = "none", path = $template_file)]
@@ -81,11 +81,56 @@ macro_rules! impl_code_type_for_compound {
                 fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
                     Some(self.render().unwrap())
                 }
+
+                fn coerce(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+                    $coerce_code(self, oracle, nm)
+                }
             }
         }
     }
  }
 
-impl_code_type_for_compound!(OptionalCodeType, "Optional{}", "OptionalTemplate.py");
-impl_code_type_for_compound!(SequenceCodeType, "Sequence{}", "SequenceTemplate.py");
-impl_code_type_for_compound!(MapCodeType, "Map{}", "MapTemplate.py");
+impl_code_type_for_compound!(
+    OptionalCodeType,
+    "Optional{}",
+    "OptionalTemplate.py",
+    optional_coerce
+);
+fn optional_coerce(
+    this: &OptionalCodeType,
+    oracle: &dyn CodeOracle,
+    nm: &dyn fmt::Display,
+) -> String {
+    format!(
+        "(None if {} is None else {})",
+        nm,
+        oracle.find(this.inner()).coerce(oracle, nm)
+    )
+}
+
+impl_code_type_for_compound!(
+    SequenceCodeType,
+    "Sequence{}",
+    "SequenceTemplate.py",
+    sequence_coerce
+);
+fn sequence_coerce(
+    this: &SequenceCodeType,
+    oracle: &dyn CodeOracle,
+    nm: &dyn fmt::Display,
+) -> String {
+    format!(
+        "list({} for x in {})",
+        oracle.find(this.inner()).coerce(oracle, &"x".to_string()),
+        nm
+    )
+}
+impl_code_type_for_compound!(MapCodeType, "Map{}", "MapTemplate.py", map_coerce);
+fn map_coerce(this: &MapCodeType, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+    format!(
+        "dict(({}, {}) for (k, v) in {}.items())",
+        oracle.find(&Type::String).coerce(oracle, &"k".to_string()),
+        oracle.find(this.inner()).coerce(oracle, &"v".to_string()),
+        nm
+    )
+}

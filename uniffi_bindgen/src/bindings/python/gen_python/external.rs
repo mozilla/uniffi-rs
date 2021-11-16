@@ -75,4 +75,8 @@ impl CodeType for ExternalCodeType {
     fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
+
+    fn coerce(&self, _oracle: &dyn CodeOracle, _nm: &dyn fmt::Display) -> String {
+        panic!("should not be necessary to coerce External types");
+    }
 }

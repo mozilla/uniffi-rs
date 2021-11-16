@@ -52,9 +52,13 @@ macro_rules! impl_code_type_for_miscellany {
                     format!("{}._read({})", self.ffi_converter_name(oracle), nm)
                 }
 
-                 fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-                     Some(self.render().unwrap())
-                 }
+                fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
+                    Some(self.render().unwrap())
+                }
+
+                fn coerce(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+                    nm.to_string()
+                }
              }
          }
      }
