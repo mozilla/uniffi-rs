@@ -10,7 +10,7 @@ use askama::Template;
 use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
 use serde::{Deserialize, Serialize};
 
-use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
+use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
 use crate::interface::*;
 use crate::MergeWith;
 

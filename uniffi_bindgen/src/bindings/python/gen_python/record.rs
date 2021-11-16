@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Record};
 use askama::Template;
 
