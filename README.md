@@ -1,6 +1,5 @@
 # UniFFI - a multi-language bindings generator for Rust
 
-
 UniFFI is a toolkit for building cross-platform software components in Rust.
 
 By writing your core business logic in Rust and describing its interface in a special
@@ -23,6 +22,14 @@ Please be aware that UniFFI is being developed concurrently with its initial con
 are a number of sharp edges to the user experience. Still, we consider is developed enough for production use in Mozilla
 products and we welcome any feedback you may have about making it more broadly useful.
 
+### Etymology and Pronunciation
+
+ˈjuːnɪfaɪ. Pronounced to rhyme with "unify".
+
+A portmanteau word that also puns with "unify", to signify the joining of one codebase accessed from many languages.
+
+uni - [Latin ūni-, from ūnus, one]
+FFI - [Abbreviation, Foreign Function Interface]
 
 ## Contributing
 
