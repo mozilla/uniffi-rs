@@ -1,10 +1,6 @@
-<!-- The sections in this file are intended to be managed automatically by `cargo release` -->
-<!-- See https://github.com/sunng87/cargo-release/blob/master/docs/faq.md#maintaining-changelog for details -->
-<!-- Unfortunately that doesn't currently work in a workspace, so for now we update it by hand: -->
-<!--   * Replace `[[UnreleasedVersion]]` with `vX.Y.Z` -->
-<!--   * Replace `[[ReleaseDate]]` with `YYYY-MM-DD` -->
-<!--   * Replace `...HEAD` with `...vX.Y.Z` -->
-<!--   * Insert a fresh copy of the templated bits under the `next-header` comment  -->
+<!-- The sections in this file are managed automatically by `cargo release` -->
+<!-- See our [internal release process docs](docs/release-process.md) and for more general -->
+<!-- guidance, see https://github.com/sunng87/cargo-release/blob/master/docs/faq.md#maintaining-changelog -->
 
 <!-- next-header -->
 
@@ -18,7 +14,7 @@
 ### What's Changed
 - Kotlin and Swift, like Python, now support [simple "wrapped" types](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html).
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.1...main).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.1...HEAD).
 
 ## v0.14.1 (_2021-10-27_)
 

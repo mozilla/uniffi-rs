@@ -1,18 +1,16 @@
 tag-name = "v{{version}}"
-no-dev-version = true
+dev-version = false
 consolidate-commits = true
+consolidate-pushes = true
 
-# Our branching/tagging setup isn't supported by the tool just yet.
-# It wants to do one tag per crate, whereas we want a single unified tag.
-# So we have to tag manually for now.
-disable-tag = true
-disable-push = true
+shared-version=true
 
-# This is how we'd *like* to manage the sections in CHANGELOG.md, but it doesn't
-# currently work that way when doing a consolidated commit in a workspace.
-#pre-release-replacements = [
-#  {file="CHANGELOG.md", search="\\[\\[UnreleasedVersion\\]\\]", replace="v{{version}}", exactly=2},
-#  {file="CHANGELOG.md", search="\\[\\[ReleaseDate\\]\\]", replace="{{date}}", exactly=1},
-#  {file="CHANGELOG.md", search="\\.\\.\\.HEAD)", replace="...{{tag_name}})", exactly=1},
-#  {file="CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n\n## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)\n\n[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).", exactly=1},
-#]
+# Disabling auto pushing for now to avoid accidents (although we can still "accidentally" publish
+# to crates.io, so it's not clear this is saving us anything?)
+push = false
+
+# Note that some things need to be done exactly once for the workspace.
+# This includes updating CHANGELOG.md and creating the .git tag.
+# So we arrange for the `uniffi` crate to do this work, and disable it here.
+tag = false
+# Note that `pre-release-replacements` is also in [uniffi/release.toml](uniffi/release.toml)

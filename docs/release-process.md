@@ -2,6 +2,8 @@
 ## Release Process
 
 We use [cargo-release](https://crates.io/crates/cargo-release) to simplify the release process.
+(We rely on v0.18 or later because it has support for workspaces. Install this with
+`cargo install cargo-release`, not to be confused with the different `cargo install release`!)
 It's not (yet) quite an ideal fit for our workflow, but it helps! Steps:
 
 1. Take a look over `CHANGELOG.md` and make sure the "unreleased" section accurately reflects the
@@ -16,18 +18,8 @@ It's not (yet) quite an ideal fit for our workflow, but it helps! Steps:
 1. Run `cargo release {MAJOR}.{MINOR}.{PATCH}` to perform a dry-run and check that the things
    it is proposing to do seem reasonable.
 1. Run `cargo release -x {MAJOR}.{MINOR}.{PATCH}` to perform real run and to
-   bump version numbers and publish the release to crates.io.
-1. Manually update the section header in `CHANGELOG.md` following the instructions
-   at the top of the file.
-    * This is a limitation of using `cargo release` in a workspace, possibly related
-      to [sunng87/cargo-release#222](https://github.com/sunng87/cargo-release/issues/222)
-1. Run `git commit -a --amend` to include the changelog fixes and fix up the version number
-   in the commit message.
-    * Manually replace `{{version}}` with `v{MAJOR}.{MINOR}.{PATCH}`.
-    * This is a limitation of using `cargo release` in a workspace,
-      ref [sunng87/cargo-release#222](https://github.com/sunng87/cargo-release/issues/222)
-1. Tag the release commit in github.
-    * `git tag v{MAJOR}.{MINOR}.{PATCH}`
-    * `git push origin v{MAJOR}.{MINOR}.{PATCH}`
+   bump version numbers and *publish the release to crates.io* and *create the tag*.
+   It does not push the tag or branch to github, but it will publish to crates.io, so
+   take care!
 1. Push your branch, and make a PR to request it be merged to the main branch.
-    * `git push origin`
+    * `git push origin --tags`
