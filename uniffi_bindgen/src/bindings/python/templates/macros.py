@@ -46,7 +46,7 @@ rust_call(
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name_py }}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_py }}
+        {%- when Some with(literal) %} = {{ literal|literal_py(arg.type_()) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %},{% endif -%}

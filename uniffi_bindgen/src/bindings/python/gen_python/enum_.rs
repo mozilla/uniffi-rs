@@ -5,35 +5,43 @@
 use std::fmt;
 
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Error};
+use crate::interface::{ComponentInterface, Enum};
 use askama::Template;
 
 use super::filters;
-pub struct ErrorCodeType {
+pub struct EnumCodeType {
     id: String,
 }
 
-impl ErrorCodeType {
+impl EnumCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
 }
 
-impl CodeType for ErrorCodeType {
+impl CodeType for EnumCodeType {
     fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.error_name(&self.id)
+        oracle.class_name(&self.id)
     }
 
     fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("Error{}", self.type_label(oracle))
+        format!("Enum{}", self.type_label(oracle))
     }
 
-    fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
-        unreachable!();
+    fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
+        if let Literal::Enum(v, _) = literal {
+            format!(
+                "{}.{}",
+                self.type_label(oracle),
+                oracle.enum_variant_name(v)
+            )
+        } else {
+            unreachable!();
+        }
     }
 
     fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower()", oracle.var_name(nm))
+        format!("{}._lower()", oracle.var_name(nm))
     }
 
     fn write(
@@ -42,48 +50,42 @@ impl CodeType for ErrorCodeType {
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
     ) -> String {
-        format!("{}.write({})", oracle.var_name(nm), target)
+        format!("{}._write({})", oracle.var_name(nm), target)
     }
 
     fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.type_label(oracle), nm)
+        format!("{}._lift({})", self.type_label(oracle), nm)
     }
 
     fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.type_label(oracle), nm)
+        format!("{}._read({})", self.type_label(oracle), nm)
     }
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
-            "// Helper code for {} error is found in ErrorTemplate.kt",
+            "# Helper code for {} enum is found in EnumTemplate.py",
             self.type_label(oracle)
         ))
     }
 }
 
 #[derive(Template)]
-#[template(syntax = "kt", escape = "none", path = "ErrorTemplate.kt")]
-pub struct KotlinError {
-    inner: Error,
-    contains_object_references: bool,
+#[template(syntax = "py", escape = "none", path = "EnumTemplate.py")]
+pub struct PythonEnum {
+    inner: Enum,
 }
 
-impl KotlinError {
-    pub fn new(inner: Error, ci: &ComponentInterface) -> Self {
-        Self {
-            contains_object_references: ci.item_contains_object_references(&inner),
-            inner,
-        }
+impl PythonEnum {
+    pub fn new(inner: Enum, _ci: &ComponentInterface) -> Self {
+        Self { inner }
     }
-    pub fn inner(&self) -> &Error {
+
+    pub fn inner(&self) -> &Enum {
         &self.inner
     }
-    pub fn contains_object_references(&self) -> bool {
-        self.contains_object_references
-    }
 }
 
-impl CodeDeclaration for KotlinError {
+impl CodeDeclaration for PythonEnum {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }

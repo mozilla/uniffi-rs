@@ -1,23 +1,23 @@
 {% import "macros.kt" as kt %}
 {%- let obj = self.inner() %}
-public interface {{ obj.name()|class_name_kt }}Interface {
+public interface {{ obj|type_name }}Interface {
     {% for meth in obj.methods() -%}
     {%- match meth.throws() -%}
     {%- when Some with (throwable) %} 
     @Throws({{ throwable|exception_name_kt }}::class)
     {%- else -%}
     {%- endmatch %}
-    fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_decl(meth) %})
+    fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %})
     {%- match meth.return_type() -%}
-    {%- when Some with (return_type) %}: {{ return_type|type_kt -}}
+    {%- when Some with (return_type) %}: {{ return_type|type_name -}}
     {%- else -%}
     {%- endmatch %}
     {% endfor %}
 }
 
-class {{ obj.name()|class_name_kt }}(
+class {{ obj|type_name }}(
     pointer: Pointer
-) : FFIObject(pointer), {{ obj.name()|class_name_kt }}Interface {
+) : FFIObject(pointer), {{ obj|type_name }}Interface {
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
@@ -57,15 +57,15 @@ class {{ obj.name()|class_name_kt }}(
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
-    override fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_protocol(meth) %}): {{ return_type|type_kt }} =
+    override fun {{ meth.name()|fn_name }}({% call kt::arg_list_protocol(meth) %}): {{ return_type|type_name }} =
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
-            {{ "it"|lift_kt(return_type) }}
+            {{ "it"|lift_var(return_type) }}
         }
 
     {%- when None -%}
-    override fun {{ meth.name()|fn_name_kt }}({% call kt::arg_list_protocol(meth) %}) =
+    override fun {{ meth.name()|fn_name }}({% call kt::arg_list_protocol(meth) %}) =
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }
@@ -73,19 +73,19 @@ class {{ obj.name()|class_name_kt }}(
     {% endfor %}
 
     companion object {
-        internal fun lift(ptr: Pointer): {{ obj.name()|class_name_kt }} {
-            return {{ obj.name()|class_name_kt }}(ptr)
+        internal fun lift(ptr: Pointer): {{ obj|type_name }} {
+            return {{ obj|type_name }}(ptr)
         }
 
-        internal fun read(buf: ByteBuffer): {{ obj.name()|class_name_kt }} {
+        internal fun read(buf: ByteBuffer): {{ obj|type_name }} {
             // The Rust code always writes pointers as 8 bytes, and will
             // fail to compile if they don't fit.
-            return {{ obj.name()|class_name_kt }}.lift(Pointer(buf.getLong()))
+            return {{ obj|type_name }}.lift(Pointer(buf.getLong()))
         }
 
         {% for cons in obj.alternate_constructors() -%}
-        fun {{ cons.name()|fn_name_kt }}({% call kt::arg_list_decl(cons) %}): {{ obj.name()|class_name_kt }} =
-            {{ obj.name()|class_name_kt }}({% call kt::to_ffi_call(cons) %})
+        fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ obj|type_name }} =
+            {{ obj|type_name }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}
     }
 }

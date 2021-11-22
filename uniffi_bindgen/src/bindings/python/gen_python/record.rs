@@ -5,27 +5,28 @@
 use std::fmt;
 
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Error};
+use crate::interface::{ComponentInterface, Record};
 use askama::Template;
 
 use super::filters;
-pub struct ErrorCodeType {
+
+pub struct RecordCodeType {
     id: String,
 }
 
-impl ErrorCodeType {
+impl RecordCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
 }
 
-impl CodeType for ErrorCodeType {
+impl CodeType for RecordCodeType {
     fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.error_name(&self.id)
+        oracle.class_name(&self.id)
     }
 
     fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("Error{}", self.type_label(oracle))
+        format!("Record{}", self.type_label(oracle))
     }
 
     fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
@@ -33,7 +34,7 @@ impl CodeType for ErrorCodeType {
     }
 
     fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lower()", oracle.var_name(nm))
+        format!("{}._lower()", oracle.var_name(nm))
     }
 
     fn write(
@@ -42,48 +43,42 @@ impl CodeType for ErrorCodeType {
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
     ) -> String {
-        format!("{}.write({})", oracle.var_name(nm), target)
+        format!("{}._write({})", oracle.var_name(nm), target)
     }
 
     fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.type_label(oracle), nm)
+        format!("{}._lift({})", self.type_label(oracle), nm)
     }
 
     fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.type_label(oracle), nm)
+        format!("{}._read({})", self.type_label(oracle), nm)
     }
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
-            "// Helper code for {} error is found in ErrorTemplate.kt",
+            "# Helper code for {} record is found in RecordTemplate.py",
             self.type_label(oracle)
         ))
     }
 }
 
 #[derive(Template)]
-#[template(syntax = "kt", escape = "none", path = "ErrorTemplate.kt")]
-pub struct KotlinError {
-    inner: Error,
-    contains_object_references: bool,
+#[template(syntax = "py", escape = "none", path = "RecordTemplate.py")]
+pub struct PythonRecord {
+    inner: Record,
 }
 
-impl KotlinError {
-    pub fn new(inner: Error, ci: &ComponentInterface) -> Self {
-        Self {
-            contains_object_references: ci.item_contains_object_references(&inner),
-            inner,
-        }
+impl PythonRecord {
+    pub fn new(inner: Record, _ci: &ComponentInterface) -> Self {
+        Self { inner }
     }
-    pub fn inner(&self) -> &Error {
+
+    pub fn inner(&self) -> &Record {
         &self.inner
     }
-    pub fn contains_object_references(&self) -> bool {
-        self.contains_object_references
-    }
 }
 
-impl CodeDeclaration for KotlinError {
+impl CodeDeclaration for PythonRecord {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
