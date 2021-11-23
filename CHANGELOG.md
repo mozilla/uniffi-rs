@@ -6,6 +6,8 @@
 
 ## [[UnreleasedVersion]] (_[[ReleaseDate]]_)
 
+(Note that v0.15.0 was accidentally published, then yanked. v0.15.1 should be used instead)
+
 ### ⚠️ Breaking Changes ⚠️
 - Previously, an interface which didn't declare a constructor got a default one anyway, making it
   impossible to decline to provide one. This is no longer true, so if your interface wants a
@@ -13,6 +15,14 @@
 
 ### What's Changed
 - Kotlin and Swift, like Python, now support [simple "wrapped" types](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html).
+
+- The Python backend has been refactored to more closely match the other backends, but this
+  should be invisible to consumers.
+
+- The Swift and Kotlin backends have had minor tweaks.
+
+- The kotlin backend now explicitly checks for a null pointer in cases where it
+  should be impossible to help us diagnose issues seen in the wild. See #1108.
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.14.1...HEAD).
 
