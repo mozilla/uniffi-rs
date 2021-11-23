@@ -1,6 +1,6 @@
 [package]
 name = "callbacks"
-version = "0.14.1"
+version = "0.15.1"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2018"
 publish = false
