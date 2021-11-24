@@ -58,7 +58,7 @@ macro_rules! impl_code_type_for_miscellany {
 
 impl_code_type_for_miscellany!(
     TimestampCodeType,
-    "java.time.Instant",
+    "Instant",
     "Timestamp",
     vec!["java.time.Instant", "java.time.DateTimeException"],
     "TimestampHelper.kt"
@@ -66,7 +66,7 @@ impl_code_type_for_miscellany!(
 
 impl_code_type_for_miscellany!(
     DurationCodeType,
-    "java.time.Duration",
+    "Duration",
     "Duration",
     vec!["java.time.Duration", "java.time.DateTimeException"],
     "DurationHelper.kt"

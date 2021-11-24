@@ -373,62 +373,74 @@ pub mod filters {
         SwiftCodeOracle
     }
 
-    pub fn type_swift(type_: &Type) -> Result<String, askama::Error> {
+    pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_).type_label(&oracle))
+        Ok(codetype.type_label(&oracle))
     }
 
-    pub fn canonical_name(type_: &Type) -> Result<String, askama::Error> {
+    pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_).canonical_name(&oracle))
+        Ok(codetype.canonical_name(&oracle))
     }
 
-    pub fn lower_swift(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).lower(&oracle, nm))
-    }
-
-    pub fn write_swift(
+    pub fn lower_var(
         nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-        type_: &Type,
+        codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_).write(&oracle, nm, target))
+        Ok(codetype.lower(&oracle, nm))
     }
 
-    pub fn lift_swift(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn write_var(
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+        codetype: &impl CodeType,
+    ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_).lift(&oracle, nm))
+        Ok(codetype.write(&oracle, nm, target))
     }
 
-    pub fn literal_swift(literal: &Literal, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_var(
+        nm: &dyn fmt::Display,
+        codetype: &impl CodeType,
+    ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_).literal(&oracle, literal))
+        Ok(codetype.lift(&oracle, nm))
     }
 
-    pub fn read_swift(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn literal_swift(
+        literal: &Literal,
+        codetype: &impl CodeType,
+    ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_).read(&oracle, nm))
+        Ok(codetype.literal(&oracle, literal))
+    }
+
+    pub fn read_var(
+        nm: &dyn fmt::Display,
+        codetype: &impl CodeType,
+    ) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(codetype.read(&oracle, nm))
     }
 
     /// Get the Swift syntax for representing a given low-level `FFIType`.
-    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
+    pub fn ffi_type_name(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
     }
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn class_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(oracle().class_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of a function name.
-    pub fn fn_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn fn_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(oracle().fn_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
-    pub fn var_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn var_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(oracle().var_name(nm))
     }
 
@@ -442,7 +454,7 @@ pub mod filters {
     /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
     /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
     /// and is distinguished from an "Exception".
-    pub fn exception_name_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn exception_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
         Ok(oracle().error_name(nm))
     }
 }
