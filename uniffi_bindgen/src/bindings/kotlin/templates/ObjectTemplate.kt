@@ -51,7 +51,7 @@ class {{ obj|type_name }}(
     {% for meth in obj.methods() -%}
     {%- match meth.throws() -%}
     {%- when Some with (throwable) %}
-    @Throws({{ throwable|exception_name_kt }}::class)
+    @Throws({{ throwable|exception_name }}::class)
     {%- else -%}
     {%- endmatch %}
     {%- match meth.return_type() -%}
