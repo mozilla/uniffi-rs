@@ -45,3 +45,8 @@ Thread.sleep(10)
 val kotlinAfter = Instant.now()
 assert(kotlinBefore.isBefore(rustNow))
 assert(kotlinAfter.isAfter(rustNow))
+
+// Test optional values work
+assert(optional(Instant.MAX, Duration.ofSeconds(0)))
+assert(optional(null, Duration.ofSeconds(0)) == false)
+assert(optional(Instant.MAX, null) == false)

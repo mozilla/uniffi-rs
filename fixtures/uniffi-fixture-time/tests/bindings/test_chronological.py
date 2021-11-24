@@ -40,3 +40,8 @@ assert pythonBefore <= rustNow <= pythonAfter
 # Test that uniffi returns UTC times
 assert now().tzinfo is timezone.utc
 assert abs(datetime.now(timezone.utc) - now()) <= timedelta(seconds=1)
+
+# Test that optionals work.
+assert(optional(now(), timedelta(seconds=0)))
+assert(not optional(None, timedelta(seconds=0)))
+assert(not optional(now(), None))
