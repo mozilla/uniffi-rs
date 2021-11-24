@@ -30,6 +30,10 @@ fn equal(a: SystemTime, b: SystemTime) -> bool {
     a == b
 }
 
+fn optional(a: Option<SystemTime>, b: Option<Duration>) -> bool {
+    a.is_some() && b.is_some()
+}
+
 type Result<T, E = ChronologicalError> = std::result::Result<T, E>;
 
 include!(concat!(env!("OUT_DIR"), "/chronological.uniffi.rs"));
