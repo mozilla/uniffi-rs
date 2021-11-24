@@ -1,13 +1,13 @@
 {#
 // Template to call into rust. Used in several places.
 // Variable names in `arg_list_decl` should match up with arg lists
-// passed to rust via `_arg_list_ffi_call` (we use  `var_name_py` in `lower_py`)
+// passed to rust via `_arg_list_ffi_call` (we use  `var_name` in `lower_var`)
 #}
 
 {%- macro to_ffi_call(func) -%}
     {%- match func.throws() -%}
     {%- when Some with (e) -%}
-rust_call_with_error({{ e|class_name_py }},
+rust_call_with_error({{ e|class_name }},
     {%- else -%}
 rust_call(
     {%- endmatch -%}
@@ -20,7 +20,7 @@ rust_call(
     {%- match func.throws() -%}
     {%- when Some with (e) -%}
 rust_call_with_error(
-    {{ e|class_name_py }},
+    {{ e|class_name }},
     {%- else -%}
 rust_call(
     {%- endmatch -%}
@@ -32,19 +32,19 @@ rust_call(
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_py(arg.type_()) }}
+        {{- arg.name()|lower_var(arg.type_()) }}
         {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}
 
 {#-
 // Arglist as used in Python declarations of methods, functions and constructors.
-// Note the var_name_py and type_py filters.
+// Note the var_name and type_name filters.
 -#}
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name_py }}
+        {{ arg.name()|var_name }}
         {%- match arg.default_value() %}
         {%- when Some with(literal) %} = {{ literal|literal_py(arg.type_()) }}
         {%- else %}
@@ -55,11 +55,11 @@ rust_call(
 
 {#-
 // Arglist as used in the _UniFFILib function declations.
-// Note unfiltered name but type_ffi filters.
+// Note unfiltered name but ffi_type_name filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.type_()|type_ffi }},
+    {{ arg.type_()|ffi_type_name }},
     {%- endfor %}
     ctypes.POINTER(RustCallStatus),
 {% endmacro -%}

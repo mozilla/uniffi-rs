@@ -7,7 +7,7 @@
 {%- let e = self.inner() %}
 {% if e.is_flat() %}
 
-class {{ e.name()|class_name_py }}(ViaFfiUsingByteBuffer, enum.Enum):
+class {{ e|type_name }}(ViaFfiUsingByteBuffer, enum.Enum):
     {% for variant in e.variants() -%}
     {{ variant.name()|enum_variant_py }} = {{ loop.index }}
     {% endfor %}
@@ -17,42 +17,42 @@ class {{ e.name()|class_name_py }}(ViaFfiUsingByteBuffer, enum.Enum):
         variant = buf.readI32()
         {% for variant in e.variants() -%}
         if variant == {{ loop.index }}:
-            return {{ e.name()|class_name_py }}.{{ variant.name()|enum_variant_py }}
+            return {{ e|type_name }}.{{ variant.name()|enum_variant_py }}
         {% endfor %}
         raise InternalError("Raw enum value doesn't match any cases")
 
     def _write(self, buf):
         {% for variant in e.variants() -%}
-        if self is {{ e.name()|class_name_py }}.{{ variant.name()|enum_variant_py }}:
+        if self is {{ e|type_name }}.{{ variant.name()|enum_variant_py }}:
             i = {{loop.index}}
             buf.writeI32({{ loop.index }})
         {% endfor %}
 {% else %}
 
-class {{ e.name()|class_name_py }}(ViaFfiUsingByteBuffer, object):
+class {{ e|type_name }}(ViaFfiUsingByteBuffer, object):
     def __init__(self):
-        raise RuntimeError("{{ e.name()|class_name_py }} cannot be instantiated directly")
+        raise RuntimeError("{{ e|type_name }} cannot be instantiated directly")
 
     # Each enum variant is a nested class of the enum itself.
     {% for variant in e.variants() -%}
     class {{ variant.name()|enum_variant_py }}(object):
-        def __init__(self,{% for field in variant.fields() %}{{ field.name()|var_name_py }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
+        def __init__(self,{% for field in variant.fields() %}{{ field.name()|var_name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
             {% if variant.has_fields() %}
             {%- for field in variant.fields() %}
-            self.{{ field.name()|var_name_py }} = {{ field.name()|var_name_py }}
+            self.{{ field.name()|var_name }} = {{ field.name()|var_name }}
             {%- endfor %}
             {% else %}
             pass
             {% endif %}
 
         def __str__(self):
-            return "{{ e.name()|class_name_py }}.{{ variant.name()|enum_variant_py }}({% for field in variant.fields() %}{{ field.name() }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields() %}self.{{ field.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
+            return "{{ e|type_name }}.{{ variant.name()|enum_variant_py }}({% for field in variant.fields() %}{{ field.name() }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields() %}self.{{ field.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
 
         def __eq__(self, other):
-            if not other.is_{{ variant.name()|var_name_py }}():
+            if not other.is_{{ variant.name()|var_name }}():
                 return False
             {%- for field in variant.fields() %}
-            if self.{{ field.name()|var_name_py }} != other.{{ field.name()|var_name_py }}:
+            if self.{{ field.name()|var_name }} != other.{{ field.name()|var_name }}:
                 return False
             {%- endfor %}
             return True
@@ -61,8 +61,8 @@ class {{ e.name()|class_name_py }}(ViaFfiUsingByteBuffer, object):
     # For each variant, we have an `is_NAME` method for easily checking
     # whether an instance is that variant.
     {% for variant in e.variants() -%}
-    def is_{{ variant.name()|var_name_py }}(self):
-        return isinstance(self, {{ e.name()|class_name_py }}.{{ variant.name()|enum_variant_py }})
+    def is_{{ variant.name()|var_name }}(self):
+        return isinstance(self, {{ e|type_name }}.{{ variant.name()|enum_variant_py }})
     {% endfor %}
 
     @classmethod
@@ -73,7 +73,7 @@ class {{ e.name()|class_name_py }}(ViaFfiUsingByteBuffer, object):
         if variant == {{ loop.index }}:
             return cls.{{variant.name()|enum_variant_py}}(
                 {%- for field in variant.fields() %}
-                {{ field.name()|var_name_py }}={{ "buf"|read_py(field.type_()) }},
+                {{ field.name()|var_name }}={{ "buf"|read_var(field.type_()) }},
                 {%- endfor %}
             )
         {% endfor %}
@@ -81,10 +81,10 @@ class {{ e.name()|class_name_py }}(ViaFfiUsingByteBuffer, object):
 
     def _write(self, buf):
         {% for variant in e.variants() -%}
-        if self.is_{{ variant.name()|var_name_py }}():
+        if self.is_{{ variant.name()|var_name }}():
             buf.writeI32({{ loop.index }})
             {%- for field in variant.fields() %}
-            {{ "self.{}"|format(field.name())|write_py("buf", field.type_()) }}
+            {{ "self.{}"|format(field.name())|write_var("buf", field.type_()) }}
             {%- endfor %}
         {% endfor %}
 
@@ -92,7 +92,7 @@ class {{ e.name()|class_name_py }}(ViaFfiUsingByteBuffer, object):
 # enum class, so that method calls and instance checks etc will work intuitively.
 # We might be able to do this a little more neatly with a metaclass, but this'll do.
 {% for variant in e.variants() -%}
-{{ e.name()|class_name_py }}.{{ variant.name()|enum_variant_py }} = type("{{ e.name()|class_name_py }}.{{ variant.name()|enum_variant_py }}", ({{ e.name()|class_name_py }}.{{variant.name()|enum_variant_py}}, {{ e.name()|class_name_py }},), {})
+{{ e|type_name }}.{{ variant.name()|enum_variant_py }} = type("{{ e|type_name }}.{{ variant.name()|enum_variant_py }}", ({{ e|type_name }}.{{variant.name()|enum_variant_py}}, {{ e|type_name }},), {})
 {% endfor %}
 
 {% endif %}

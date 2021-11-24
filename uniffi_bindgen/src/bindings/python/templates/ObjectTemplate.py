@@ -1,7 +1,7 @@
 {% import "macros.py" as py %}
 {%- let obj = self.inner() %}
 
-class {{ obj.name()|class_name_py }}(object):
+class {{ obj|type_name }}(object):
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
     def __init__(self, {% call py::arg_list_decl(cons) -%}):
@@ -27,7 +27,7 @@ class {{ obj.name()|class_name_py }}(object):
 
     {% for cons in obj.alternate_constructors() -%}
     @classmethod
-    def {{ cons.name()|fn_name_py }}(cls, {% call py::arg_list_decl(cons) %}):
+    def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
         {%- call py::coerce_args_extra_indent(cons) %}
         # Call the (fallible) function before creating any half-baked object instances.
         pointer = {% call py::to_ffi_call(cons) %}
@@ -38,13 +38,13 @@ class {{ obj.name()|class_name_py }}(object):
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
-    def {{ meth.name()|fn_name_py }}(self, {% call py::arg_list_decl(meth) %}):
+    def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
         {%- call py::coerce_args_extra_indent(meth) %}
         _retval = {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
-        return {{ "_retval"|lift_py(return_type) }}
+        return {{ "_retval"|lift_var(return_type) }}
 
     {%- when None -%}
-    def {{ meth.name()|fn_name_py }}(self, {% call py::arg_list_decl(meth) %}):
+    def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
         {%- call py::coerce_args_extra_indent(meth) %}
         {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
     {% endmatch %}
@@ -59,8 +59,8 @@ class {{ obj.name()|class_name_py }}(object):
 
     @classmethod
     def _write(cls, value, buf):
-        if not isinstance(value, {{ obj.name()|class_name_py }}):
-            raise TypeError("Expected {{ obj.name()|class_name_py }} instance, {} found".format(value.__class__.__name__))
+        if not isinstance(value, {{ obj|type_name }}):
+            raise TypeError("Expected {{ obj|type_name }} instance, {} found".format(value.__class__.__name__))
         buf.writeU64(value._lower())
 
     @classmethod
