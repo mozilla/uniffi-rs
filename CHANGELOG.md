@@ -6,10 +6,14 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).
+
+## v0.15.2 - (_2021-11-25_)
+
 ### What's Changed
 - Kotlin now generates valid code for optional timestamps/durations.
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).
+[All changes in v0.15.2](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...v0.15.2).
 
 ## v0.15.1 (_2021-11-23_)
 
