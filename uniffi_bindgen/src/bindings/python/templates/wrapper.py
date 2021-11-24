@@ -37,19 +37,19 @@ import datetime
 __all__ = [
     "InternalError",
     {%- for e in ci.iter_enum_definitions() %}
-    "{{ e.name()|class_name_py }}",
+    "{{ e|type_name }}",
     {%- endfor %}
     {%- for record in ci.iter_record_definitions() %}
-    "{{ record.name()|class_name_py }}",
+    "{{ record|type_name }}",
     {%- endfor %}
     {%- for func in ci.iter_function_definitions() %}
-    "{{ func.name()|fn_name_py }}",
+    "{{ func.name()|fn_name }}",
     {%- endfor %}
     {%- for obj in ci.iter_object_definitions() %}
-    "{{ obj.name()|class_name_py }}",
+    "{{ obj|type_name }}",
     {%- endfor %}
     {%- for e in ci.iter_error_definitions() %}
-    "{{ e.name()|class_name_py }}",
+    "{{ e|type_name }}",
     {%- endfor %}
 ]
 

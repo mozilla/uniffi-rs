@@ -5,16 +5,16 @@
 class {{ canonical_type_name }}:
     @staticmethod
     def _write(value, buf):
-        {{ "value"|write_py("buf", inner_type) }}
+        {{ "value"|write_var("buf", inner_type) }}
 
     @staticmethod
     def _read(buf):
-        return {{ "buf"|read_py(inner_type) }}
+        return {{ "buf"|read_var(inner_type) }}
 
     @staticmethod
     def _lift(buf):
-        return {{ "buf"|lift_py(inner_type) }}
+        return {{ "buf"|lift_var(inner_type) }}
 
     @staticmethod
     def _lower(value):
-        return {{ "value"|lower_py(inner_type) }}
+        return {{ "value"|lower_var(inner_type) }}

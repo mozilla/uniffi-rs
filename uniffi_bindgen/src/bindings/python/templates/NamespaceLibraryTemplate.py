@@ -29,5 +29,5 @@ _UniFFILib = loadIndirect()
 _UniFFILib.{{ func.name() }}.argtypes = (
     {%- call py::arg_list_ffi_decl(func) -%}
 )
-_UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|type_ffi }}{% when None %}None{% endmatch %}
+_UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
 {%- endfor %}

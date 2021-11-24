@@ -3,15 +3,15 @@
 {%- let obj = self.inner() %}
 public protocol {{ obj.name() }}Protocol {
     {% for meth in obj.methods() -%}
-    func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_protocol(meth) %}) {% call swift::throws(meth) -%}
+    func {{ meth.name()|fn_name }}({% call swift::arg_list_protocol(meth) %}) {% call swift::throws(meth) -%}
     {%- match meth.return_type() -%}
-    {%- when Some with (return_type) %} -> {{ return_type|type_swift -}}
+    {%- when Some with (return_type) %} -> {{ return_type|type_name -}}
     {%- else -%}
     {%- endmatch %}
     {% endfor %}
 }
 
-public class {{ obj.name()|class_name_swift }}: {{ obj.name() }}Protocol {
+public class {{ obj|type_name }}: {{ obj.name() }}Protocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -34,8 +34,8 @@ public class {{ obj.name()|class_name_swift }}: {{ obj.name() }}Protocol {
     }
 
     {% for cons in obj.alternate_constructors() %}
-    public static func {{ cons.name()|fn_name_swift }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ obj.name()|class_name_swift }} {
-        return {{ obj.name()|class_name_swift }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
+    public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ obj|type_name }} {
+        return {{ obj|type_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
     }
     {% endfor %}
 
@@ -44,13 +44,13 @@ public class {{ obj.name()|class_name_swift }}: {{ obj.name() }}Protocol {
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
-    public func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_swift }} {
+    public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
         let _retval = {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
-        return {% call swift::try(meth) %} {{ "_retval"|lift_swift(return_type) }}
+        return {% call swift::try(meth) %} {{ "_retval"|lift_var(return_type) }}
     }
 
     {%- when None -%}
-    public func {{ meth.name()|fn_name_swift }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
+    public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
         {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
     }
     {%- endmatch %}
@@ -58,7 +58,7 @@ public class {{ obj.name()|class_name_swift }}: {{ obj.name() }}Protocol {
 }
 
 
-fileprivate extension {{ obj.name()|class_name_swift }} {
+fileprivate extension {{ obj|type_name }} {
     fileprivate typealias FfiType = UnsafeMutableRawPointer
 
     fileprivate static func read(from buf: Reader) throws -> Self {
@@ -91,4 +91,4 @@ fileprivate extension {{ obj.name()|class_name_swift }} {
 // """
 // 'private' modifier cannot be used with extensions that declare protocol conformances
 // """
-extension {{ obj.name()|class_name_swift }} : ViaFfi, Serializable {}
+extension {{ obj|type_name }} : ViaFfi, Serializable {}

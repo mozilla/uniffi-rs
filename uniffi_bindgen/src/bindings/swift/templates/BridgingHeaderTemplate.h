@@ -47,7 +47,7 @@ typedef struct RustCallStatus {
 #endif // def UNIFFI_SHARED_H
 
 {% for func in ci.iter_ffi_function_definitions() -%}
-    {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|type_ffi }}{% when None %}void{% endmatch %} {{ func.name() }}(
+    {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
       {% call swift::arg_list_ffi_decl(func) %}
     );
 {% endfor -%}
