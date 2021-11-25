@@ -261,11 +261,11 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("record<DOMString, float>").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "Mapf32");
+        assert_eq!(t.canonical_name(), "MapStringF32");
         assert_eq!(types.iter_known_types().count(), 3);
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "Mapf32"));
+            .any(|t| t.canonical_name() == "MapStringF32"));
         assert!(types
             .iter_known_types()
             .any(|t| t.canonical_name() == "string"));
@@ -280,11 +280,11 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("record<u64, float>").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "Mapf32");
+        assert_eq!(t.canonical_name(), "MapU64F32");
         assert_eq!(types.iter_known_types().count(), 3);
         assert!(types
             .iter_known_types()
-            .any(|t| t.canonical_name() == "Mapf32"));
+            .any(|t| t.canonical_name() == "MapU64F32"));
         assert!(types
             .iter_known_types()
             .any(|t| t.canonical_name() == "u64"));

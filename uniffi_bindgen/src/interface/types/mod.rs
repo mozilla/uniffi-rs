@@ -24,6 +24,7 @@
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
 
 use anyhow::{bail, Result};
+use heck::CamelCase;
 
 use super::ffi::FFIType;
 
@@ -110,7 +111,11 @@ impl Type {
             // acccidentally generating name collisions.
             Type::Optional(t) => format!("Optional{}", t.canonical_name()),
             Type::Sequence(t) => format!("Sequence{}", t.canonical_name()),
-            Type::Map(_k, t) => format!("Map{}", t.canonical_name()),
+            Type::Map(k, v) => format!(
+                "Map{}{}",
+                k.canonical_name().to_camel_case(),
+                v.canonical_name().to_camel_case()
+            ),
             // A type that exists externally.
             Type::External { name, .. } | Type::Custom { name, .. } => format!("Type{}", name),
         }

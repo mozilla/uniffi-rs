@@ -967,7 +967,10 @@ mod test {
         // check that `contains_map_types` returns true when there is a Map type in the interface
         assert!(ci
             .types
-            .add_type_definition("Map{}", Type::Map(Box::new(Type::Boolean)))
+            .add_type_definition(
+                "Map{}",
+                Type::Map(Box::new(Type::String), Box::new(Type::Boolean))
+            )
             .is_ok());
         assert!(ci.contains_map_types());
     }

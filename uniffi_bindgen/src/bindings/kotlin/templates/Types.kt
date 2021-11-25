@@ -71,7 +71,7 @@
 {%- when Type::Sequence(inner_type) %}
 {% include "SequenceTemplate.kt" %}
 
-{%- when Type::Map(inner_type) %}
+{%- when Type::Map(key_type, value_type) %}
 {% include "MapTemplate.kt" %}
 
 {%- when Type::CallbackInterface(name) %}

@@ -42,7 +42,7 @@ macro_rules! impl_code_type_for_compound {
                 }
 
                 fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
-                    render_literal(oracle, &literal, self.inner())
+                    render_literal(oracle, literal, self.inner())
                 }
             }
         }
@@ -51,4 +51,44 @@ macro_rules! impl_code_type_for_compound {
 
 impl_code_type_for_compound!(OptionalCodeType, "{}?", "Optional{}");
 impl_code_type_for_compound!(SequenceCodeType, "List<{}>", "Sequence{}");
-impl_code_type_for_compound!(MapCodeType, "Map<String, {}>", "Map{}");
+
+pub struct MapCodeType {
+    key: TypeIdentifier,
+    value: TypeIdentifier,
+}
+
+impl MapCodeType {
+    pub fn new(key: TypeIdentifier, value: TypeIdentifier) -> Self {
+        Self { key, value }
+    }
+
+    fn key(&self) -> &TypeIdentifier {
+        &self.key
+    }
+
+    fn value(&self) -> &TypeIdentifier {
+        &self.value
+    }
+}
+
+impl CodeType for MapCodeType {
+    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
+        format!(
+            "Map<{}, {}>",
+            self.key().type_label(oracle),
+            self.value().type_label(oracle),
+        )
+    }
+
+    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
+        format!(
+            "Map{}{}",
+            self.key().type_label(oracle),
+            self.value().type_label(oracle),
+        )
+    }
+
+    fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
+        render_literal(oracle, literal, &self.value)
+    }
+}
