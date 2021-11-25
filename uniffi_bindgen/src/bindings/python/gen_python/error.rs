@@ -59,6 +59,10 @@ impl CodeType for ErrorCodeType {
             self.type_label(oracle)
         ))
     }
+
+    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+        nm.to_string()
+    }
 }
 
 #[derive(Template)]

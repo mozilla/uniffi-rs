@@ -71,4 +71,8 @@ impl CodeType for WrappedCodeType {
     fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
+
+    fn coerce(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+        oracle.find(self.inner()).coerce(oracle, nm)
+    }
 }

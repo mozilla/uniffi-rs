@@ -105,6 +105,11 @@ pub trait CodeType {
     fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         None
     }
+
+    /// An expression to coerce the given variable to the expected type.
+    fn coerce(&self, oracle: &dyn CodeOracle, _nm: &dyn fmt::Display) -> String {
+        panic!("Unimplemented for {}", self.type_label(oracle));
+    }
 }
 
 /// This trait is used to implement `CodeType` for `Type` and type-like structs (`Record`, `Enum`, `Field`,
