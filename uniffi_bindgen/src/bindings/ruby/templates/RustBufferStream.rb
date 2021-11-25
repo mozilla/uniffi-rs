@@ -226,7 +226,7 @@ class RustBufferStream
     items
   end
 
-  {% when Type::Map with (inner_type) -%}
+  {% when Type::Map with (k, inner_type) -%}
   # The Map<T> type for {{ inner_type.canonical_name() }}.
 
   def read{{ canonical_type_name }}

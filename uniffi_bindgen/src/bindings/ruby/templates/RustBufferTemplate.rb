@@ -146,7 +146,7 @@ class RustBuffer < FFI::Struct
     end
   end
 
-  {% when Type::Map with (inner_type) -%}
+  {% when Type::Map with (k, inner_type) -%}
   # The Map<T> type for {{ inner_type.canonical_name() }}.
 
   def self.alloc_from_{{ canonical_type_name }}(v)

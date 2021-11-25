@@ -349,7 +349,7 @@ impl SwiftCodeOracle {
                 let inner = *inner.to_owned();
                 Box::new(compounds::SequenceCodeType::new(inner, outer))
             }
-            Type::Map(ref inner) => {
+            Type::Map(ref _key, ref inner) => {
                 let outer = type_.clone();
                 let inner = *inner.to_owned();
                 Box::new(compounds::MapCodeType::new(inner, outer))

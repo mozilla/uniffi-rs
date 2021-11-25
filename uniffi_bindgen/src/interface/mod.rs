@@ -283,7 +283,7 @@ impl<'ci> ComponentInterface {
     pub fn contains_map_types(&self) -> bool {
         self.types
             .iter_known_types()
-            .any(|t| matches!(t, Type::Map(_)))
+            .any(|t| matches!(t, Type::Map(_, _)))
     }
 
     /// Calculate a numeric checksum for this ComponentInterface.
