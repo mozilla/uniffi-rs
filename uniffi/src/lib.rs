@@ -538,15 +538,18 @@ impl<T: FfiConverter> RustBufferFfiConverter for Vec<T> {
 /// We write a `i32` entries count followed by each entry (string
 /// key followed by the value) in turn.
 /// (It's a signed type due to limits of the JVM).
-impl<V: FfiConverter> RustBufferFfiConverter for HashMap<String, V> {
-    type RustType = HashMap<String, V::RustType>;
+impl<K: FfiConverter, V: FfiConverter> RustBufferFfiConverter for HashMap<K, V>
+where
+    K::RustType: std::hash::Hash + Eq,
+{
+    type RustType = HashMap<K::RustType, V::RustType>;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
         let len = i32::try_from(obj.len()).unwrap();
         buf.put_i32(len); // We limit HashMaps to i32::MAX entries
         for (key, value) in obj.into_iter() {
-            <String as FfiConverter>::write(key, buf);
+            <K as FfiConverter>::write(key, buf);
             <V as FfiConverter>::write(value, buf);
         }
     }
@@ -556,7 +559,7 @@ impl<V: FfiConverter> RustBufferFfiConverter for HashMap<String, V> {
         let len = usize::try_from(buf.get_i32())?;
         let mut map = HashMap::with_capacity(len);
         for _ in 0..len {
-            let key = String::try_read(buf)?;
+            let key = <K as FfiConverter>::try_read(buf)?;
             let value = <V as FfiConverter>::try_read(buf)?;
             map.insert(key, value);
         }

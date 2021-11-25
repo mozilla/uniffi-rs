@@ -1,8 +1,8 @@
 {%- import "macros.swift" as swift -%}
 {%- let outer_type = self.outer() %}
 {%- let dict_type = outer_type|type_name %}
-{%- let key_type = Type::String %}
-{%- let value_type = self.inner() %}
+{%- let key_type = self.key() %}
+{%- let value_type = self.value() %}
 
 fileprivate struct {{ outer_type|ffi_converter_name }}: FfiConverterRustBuffer {
     fileprivate static func write(_ value: {{ dict_type }}, into buf: Writer) {
