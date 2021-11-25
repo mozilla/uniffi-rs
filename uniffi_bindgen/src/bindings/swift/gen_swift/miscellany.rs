@@ -22,6 +22,10 @@ macro_rules! impl_code_type_for_miscellany {
                      $class_name.into()
                  }
 
+                 fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
+                    $canonical_name.into()
+                }
+
                  fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
                      unreachable!()
                  }

@@ -22,6 +22,10 @@ macro_rules! impl_code_type_for_miscellany {
                      $class_name.into()
                  }
 
+                 fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
+                    $canonical_name.into()
+                }
+
                  fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
                      unreachable!()
                  }
@@ -58,16 +62,16 @@ macro_rules! impl_code_type_for_miscellany {
 
 impl_code_type_for_miscellany!(
     TimestampCodeType,
-    "Instant",
+    "java.time.Instant",
     "Timestamp",
-    vec!["java.time.Instant", "java.time.DateTimeException"],
+    vec!["java.time.DateTimeException"],
     "TimestampHelper.kt"
 );
 
 impl_code_type_for_miscellany!(
     DurationCodeType,
+    "java.time.Duration",
     "Duration",
-    "Duration",
-    vec!["java.time.Duration", "java.time.DateTimeException"],
+    vec!["java.time.DateTimeException"],
     "DurationHelper.kt"
 );
