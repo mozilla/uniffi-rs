@@ -85,6 +85,10 @@
 <span id="83">83</span>
 <span id="84">84</span>
 <span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -147,6 +151,10 @@
             <span class="string">&quot;# Helper code for {} record is found in RecordTemplate.py&quot;</span>,
             <span class="self">self</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>)
         ))
+    }
+
+    <span class="kw">fn</span> <span class="ident">coerce</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="ident">nm</span>.<span class="ident">to_string</span>()
     }
 }
 

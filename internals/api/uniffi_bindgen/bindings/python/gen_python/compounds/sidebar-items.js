@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["render_literal",""]],"struct":[["MapCodeType",""],["OptionalCodeType",""],["SequenceCodeType",""]]});
+initSidebarItems({"fn":[["map_coerce",""],["optional_coerce",""],["render_literal",""],["sequence_coerce",""]],"struct":[["MapCodeType",""],["OptionalCodeType",""],["SequenceCodeType",""]]});

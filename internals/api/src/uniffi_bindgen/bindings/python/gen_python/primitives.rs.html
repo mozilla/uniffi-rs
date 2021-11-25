@@ -92,6 +92,10 @@
 <span id="90">90</span>
 <span id="91">91</span>
 <span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -134,7 +138,7 @@
 }
 
 <span class="macro">macro_rules!</span> <span class="ident">impl_code_type_for_primitive</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">class_name</span>:<span class="ident">literal</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">template_file</span>:<span class="ident">literal</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">class_name</span>:<span class="ident">literal</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">template_file</span>:<span class="ident">literal</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">coerce_code</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="macro">paste!</span> {
             <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
             <span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;py&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">template_file</span>)]</span>
@@ -168,22 +172,26 @@
                 <span class="kw">fn</span> <span class="ident">helper_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">render</span>().<span class="ident">unwrap</span>())
                 }
+
+                <span class="kw">fn</span> <span class="ident">coerce</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+                    <span class="macro">format!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">coerce_code</span>, <span class="ident">nm</span>)
+                }
             }
         }
     }
 }
 
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">BooleanCodeType</span>, <span class="string">&quot;Bool&quot;</span>, <span class="string">&quot;BooleanHelper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">StringCodeType</span>, <span class="string">&quot;String&quot;</span>, <span class="string">&quot;StringHelper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int8CodeType</span>, <span class="string">&quot;Int8&quot;</span>, <span class="string">&quot;Int8Helper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int16CodeType</span>, <span class="string">&quot;Int16&quot;</span>, <span class="string">&quot;Int16Helper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int32CodeType</span>, <span class="string">&quot;Int32&quot;</span>, <span class="string">&quot;Int32Helper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int64CodeType</span>, <span class="string">&quot;Int64&quot;</span>, <span class="string">&quot;Int64Helper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt8CodeType</span>, <span class="string">&quot;UInt8&quot;</span>, <span class="string">&quot;UInt8Helper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt16CodeType</span>, <span class="string">&quot;UInt16&quot;</span>, <span class="string">&quot;UInt16Helper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt32CodeType</span>, <span class="string">&quot;UInt32&quot;</span>, <span class="string">&quot;UInt32Helper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt64CodeType</span>, <span class="string">&quot;UInt64&quot;</span>, <span class="string">&quot;UInt64Helper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Float32CodeType</span>, <span class="string">&quot;Float&quot;</span>, <span class="string">&quot;Float32Helper.py&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Float64CodeType</span>, <span class="string">&quot;Double&quot;</span>, <span class="string">&quot;Float64Helper.py&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">BooleanCodeType</span>, <span class="string">&quot;Bool&quot;</span>, <span class="string">&quot;BooleanHelper.py&quot;</span>, <span class="string">&quot;bool({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">StringCodeType</span>, <span class="string">&quot;String&quot;</span>, <span class="string">&quot;StringHelper.py&quot;</span>, <span class="string">&quot;{}&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int8CodeType</span>, <span class="string">&quot;Int8&quot;</span>, <span class="string">&quot;Int8Helper.py&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int16CodeType</span>, <span class="string">&quot;Int16&quot;</span>, <span class="string">&quot;Int16Helper.py&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int32CodeType</span>, <span class="string">&quot;Int32&quot;</span>, <span class="string">&quot;Int32Helper.py&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int64CodeType</span>, <span class="string">&quot;Int64&quot;</span>, <span class="string">&quot;Int64Helper.py&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt8CodeType</span>, <span class="string">&quot;UInt8&quot;</span>, <span class="string">&quot;UInt8Helper.py&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt16CodeType</span>, <span class="string">&quot;UInt16&quot;</span>, <span class="string">&quot;UInt16Helper.py&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt32CodeType</span>, <span class="string">&quot;UInt32&quot;</span>, <span class="string">&quot;UInt32Helper.py&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt64CodeType</span>, <span class="string">&quot;UInt64&quot;</span>, <span class="string">&quot;UInt64Helper.py&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Float32CodeType</span>, <span class="string">&quot;Float&quot;</span>, <span class="string">&quot;Float32Helper.py&quot;</span>, <span class="string">&quot;float({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Float64CodeType</span>, <span class="string">&quot;Double&quot;</span>, <span class="string">&quot;Float64Helper.py&quot;</span>, <span class="string">&quot;float({})&quot;</span>);
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi_bindgen" data-search-index-js="../../../../../search-index.js" data-search-js="../../../../../search.js"></div><script src="../../../../../main.js"></script><script src="../../../../../source-script.js"></script><script src="../../../../../source-files.js"></script></body></html>
