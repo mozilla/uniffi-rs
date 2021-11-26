@@ -2,6 +2,9 @@
 
 As stated in the [Overview](../Overview.md), this library and tutorial does not cover *how* to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.
 
+First, make sure you have installed all the [prerequisites](./Prerequisites.md) - particularly,
+installing `uniffi-bindgen` (or alternatively, understanding how to run it from the source tree)
+
 ## Kotlin
 
 Run
