@@ -164,6 +164,16 @@
 <p>Install the <code>uniffi-bindgen</code> binary on your system using:</p>
 <p><code>cargo install uniffi_bindgen</code></p>
 <p>You can see what it can do with <code>uniffi-bindgen --help</code>, but let's leave it aside for now.</p>
+<h3><a class="header" href="#running-from-a-source-checkout" id="running-from-a-source-checkout">Running from a source checkout</a></h3>
+<p>It's also possible to run <code>uniffi-bindgen</code> from a source checkout of uniffi - this might
+be useful if you are experimenting with changes to uniffi and want to test them out.</p>
+<p>In this case, just use <code>cargo run</code> in the <code>uniffi_bindgen</code> crate directory.
+For example, from the root of the <code>uniffi-rs</code> repo, execute:</p>
+<pre><code class="language-shell">% cd uniffi_bindgen/src
+% cargo run -- --help
+</code></pre>
+<p>and you will see the help output from running <code>uniffi-bindgen</code> locally. Refer to
+the docs for <code>cargo run</code> for more information and options.</p>
 <h2><a class="header" href="#build-your-crate-as-a-cdylib" id="build-your-crate-as-a-cdylib">Build your crate as a cdylib</a></h2>
 <p>Ensure your crate builds as a <code>cdylib</code> by adding</p>
 <pre><code class="language-toml">crate-type = [&quot;cdylib&quot;]

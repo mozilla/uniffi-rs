@@ -248,6 +248,16 @@ you decide whether this project is a good fit for your needs.</p>
 <p>Install the <code>uniffi-bindgen</code> binary on your system using:</p>
 <p><code>cargo install uniffi_bindgen</code></p>
 <p>You can see what it can do with <code>uniffi-bindgen --help</code>, but let's leave it aside for now.</p>
+<h3><a class="header" href="#running-from-a-source-checkout" id="running-from-a-source-checkout">Running from a source checkout</a></h3>
+<p>It's also possible to run <code>uniffi-bindgen</code> from a source checkout of uniffi - this might
+be useful if you are experimenting with changes to uniffi and want to test them out.</p>
+<p>In this case, just use <code>cargo run</code> in the <code>uniffi_bindgen</code> crate directory.
+For example, from the root of the <code>uniffi-rs</code> repo, execute:</p>
+<pre><code class="language-shell">% cd uniffi_bindgen/src
+% cargo run -- --help
+</code></pre>
+<p>and you will see the help output from running <code>uniffi-bindgen</code> locally. Refer to
+the docs for <code>cargo run</code> for more information and options.</p>
 <h2><a class="header" href="#build-your-crate-as-a-cdylib" id="build-your-crate-as-a-cdylib">Build your crate as a cdylib</a></h2>
 <p>Ensure your crate builds as a <code>cdylib</code> by adding</p>
 <pre><code class="language-toml">crate-type = [&quot;cdylib&quot;]
@@ -356,6 +366,8 @@ source tree - ie, the 2 path specs above point to different sub-directories
 under the <code>uniffi</code> root.</p>
 <h1><a class="header" href="#foreign-language-bindings" id="foreign-language-bindings">Foreign-language bindings</a></h1>
 <p>As stated in the <a href="tutorial/../Overview.html">Overview</a>, this library and tutorial does not cover <em>how</em> to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.</p>
+<p>First, make sure you have installed all the <a href="tutorial/./Prerequisites.html">prerequisites</a> - particularly,
+installing <code>uniffi-bindgen</code> (or alternatively, understanding how to run it from the source tree)</p>
 <h2><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h2>
 <p>Run</p>
 <pre><code>uniffi-bindgen generate src/math.udl --language kotlin

@@ -161,6 +161,8 @@
                     <main>
                         <h1><a class="header" href="#foreign-language-bindings" id="foreign-language-bindings">Foreign-language bindings</a></h1>
 <p>As stated in the <a href="../Overview.html">Overview</a>, this library and tutorial does not cover <em>how</em> to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.</p>
+<p>First, make sure you have installed all the <a href="./Prerequisites.html">prerequisites</a> - particularly,
+installing <code>uniffi-bindgen</code> (or alternatively, understanding how to run it from the source tree)</p>
 <h2><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h2>
 <p>Run</p>
 <pre><code>uniffi-bindgen generate src/math.udl --language kotlin
