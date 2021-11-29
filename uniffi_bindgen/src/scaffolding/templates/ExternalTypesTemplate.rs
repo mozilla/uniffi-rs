@@ -21,6 +21,7 @@ trait UniffiCustomTypeWrapper {
 {%- endif -%}
 
 // Type `{{ name }}` wraps a `{{ prim.canonical_name() }}`
+#[doc(hidden)]
 pub struct FfiConverterType{{ name }};
 
 unsafe impl uniffi::FfiConverter for FfiConverterType{{ name }} {

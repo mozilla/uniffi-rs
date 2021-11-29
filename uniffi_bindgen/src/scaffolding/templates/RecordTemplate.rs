@@ -7,6 +7,8 @@
 // We define a unit-struct to implement the trait to sidestep Rust's orphan rule (ADR-0006). It's
 // public so other crates can refer to it via an `[External='crate'] typedef`
 #}
+
+#[doc(hidden)]
 pub struct {{ rec.type_()|ffi_converter_name }};
 
 #[doc(hidden)]

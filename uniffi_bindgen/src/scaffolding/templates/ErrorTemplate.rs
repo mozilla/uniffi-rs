@@ -7,6 +7,7 @@
 // public so other crates can refer to it via an `[External='crate'] typedef`
 #}
 
+#[doc(hidden)]
 pub struct {{ e.type_()|ffi_converter_name }};
 
 #[doc(hidden)]
