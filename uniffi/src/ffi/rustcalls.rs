@@ -221,7 +221,7 @@ mod test {
         }
 
         fn try_read(buf: &mut &[u8]) -> Result<Self> {
-            String::try_read(buf).map(TestError)
+            String::try_read(buf).map(TestError).map_err(|_| anyhow::anyhow!("anyhow error"))
         }
     }
 

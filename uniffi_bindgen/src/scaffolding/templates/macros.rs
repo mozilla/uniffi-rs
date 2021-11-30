@@ -16,8 +16,7 @@
         #}
         {%- match func.throws_type() -%}
         {% when Some with (e) %}
-            // XXX - this is wrong and is still failing - need to work out how to lower the error
-            .map_err(Into::into)?
+        .map_err(Into::into).map_err({{e| ffi_converter}}::lower)?
         {% else %}
             .unwrap()
         {% endmatch %}

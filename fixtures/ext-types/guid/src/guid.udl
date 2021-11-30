@@ -3,7 +3,7 @@ typedef string Guid;
 
 [Error]
 enum GuidError {
-    "TooShort"
+    "TooShort",
 };
 
 dictionary GuidHelper {

@@ -30,6 +30,7 @@
 
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
+use error::UniffiConversionError;
 use paste::paste;
 use std::{
     collections::HashMap,
@@ -42,6 +43,8 @@ pub use anyhow::Result;
 
 pub mod ffi;
 pub use ffi::*;
+
+pub mod error;
 
 // It would be nice if this module was behind a cfg(test) guard, but it
 // doesn't work between crates so let's hope LLVM tree-shaking works well.
@@ -166,6 +169,8 @@ pub unsafe trait FfiConverter: Sized {
     /// serialization is simpler and safer as a starting point.
     type FfiType;
 
+    type Error: std::error::Error;
+
     /// Lower a rust value of the target type, into an FFI value of type Self::FfiType.
     ///
     /// This trait method is used for sending data from rust to the foreign language code,
@@ -184,7 +189,7 @@ pub unsafe trait FfiConverter: Sized {
     ///
     /// Since we cannot statically guarantee that the foreign-language code will send valid
     /// values of type Self::FfiType, this method is fallible.
-    fn try_lift(v: Self::FfiType) -> Result<Self::RustType>;
+    fn try_lift(v: Self::FfiType) -> std::result::Result<Self::RustType, Self::Error>;
 
     /// Write a rust value into a buffer, to send over the FFI in serialized form.
     ///
@@ -208,7 +213,7 @@ pub unsafe trait FfiConverter: Sized {
     /// Note the slightly unusual type here - we want a mutable reference to a slice of bytes,
     /// because we want to be able to advance the start of the slice after reading an item
     /// from it (but will not mutate the actual contents of the slice).
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType>;
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error>;
 }
 
 /// A helper function to ensure we don't read past the end of a buffer.
@@ -239,12 +244,13 @@ macro_rules! impl_via_ffi_for_num_primitive {
                     unsafe impl FfiConverter for $T {
                         type RustType = Self;
                         type FfiType = Self;
+                        type Error = crate::error::UniffiConversionError;
 
                         fn lower(obj: Self::RustType) -> Self::FfiType {
                             obj
                         }
 
-                        fn try_lift(v: Self::FfiType) -> Result<Self> {
+                        fn try_lift(v: Self::FfiType) -> std::result::Result<Self, Self::Error> {
                             Ok(v)
                         }
 
@@ -252,8 +258,8 @@ macro_rules! impl_via_ffi_for_num_primitive {
                             buf.[<put_ $T>](obj);
                         }
 
-                        fn try_read(buf: &mut &[u8]) -> Result<Self> {
-                            check_remaining(buf, std::mem::size_of::<$T>())?;
+                        fn try_read(buf: &mut &[u8]) -> std::result::Result<Self, Self::Error> {
+                            check_remaining(buf, std::mem::size_of::<$T>()).map_err(|_| error::UniffiConversionError::ConversionError)?;
                             Ok(buf.[<get_ $T>]())
                         }
                     }
@@ -273,6 +279,7 @@ impl_via_ffi_for_num_primitive! {
 unsafe impl FfiConverter for bool {
     type RustType = Self;
     type FfiType = i8;
+    type Error = error::UniffiConversionError;
 
     fn lower(obj: Self::RustType) -> Self::FfiType {
         if obj {
@@ -282,11 +289,11 @@ unsafe impl FfiConverter for bool {
         }
     }
 
-    fn try_lift(v: Self::FfiType) -> Result<Self::RustType> {
+    fn try_lift(v: Self::FfiType) -> std::result::Result<Self::RustType, Self::Error> {
         Ok(match v {
             0 => false,
             1 => true,
-            _ => bail!("unexpected byte for Boolean"),
+            _ => return Err(UniffiConversionError::ConversionError),
         })
     }
 
@@ -294,8 +301,8 @@ unsafe impl FfiConverter for bool {
         buf.put_i8(<bool as FfiConverter>::lower(obj));
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
-        check_remaining(buf, 1)?;
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error> {
+        check_remaining(buf, 1).map_err(|_| error::UniffiConversionError::ConversionError)?;
         <bool as FfiConverter>::try_lift(buf.get_i8())
     }
 }
@@ -314,6 +321,7 @@ unsafe impl FfiConverter for bool {
 unsafe impl FfiConverter for String {
     type RustType = Self;
     type FfiType = RustBuffer;
+    type Error = error::UniffiConversionError;
 
     // This returns a struct with a raw pointer to the underlying bytes, so it's very
     // important that it consume ownership of the String, which is relinquished to the
@@ -324,7 +332,7 @@ unsafe impl FfiConverter for String {
 
     // The argument here *must* be a uniquely-owned `RustBuffer` previously obtained
     // from `lower` above, and hence must be the bytes of a valid rust string.
-    fn try_lift(v: Self::FfiType) -> Result<Self::RustType> {
+    fn try_lift(v: Self::FfiType) -> std::result::Result<Self::RustType, Self::Error> {
         let v = v.destroy_into_vec();
         // This turns the buffer back into a `String` without copying the data
         // and without re-checking it for validity of the utf8. If the `RustBuffer`
@@ -342,15 +350,15 @@ unsafe impl FfiConverter for String {
         buf.put(obj.as_bytes());
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
-        check_remaining(buf, 4)?;
-        let len = usize::try_from(buf.get_i32())?;
-        check_remaining(buf, len)?;
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error> {
+        check_remaining(buf, 4).map_err(|_| error::UniffiConversionError::ConversionError)?;
+        let len = usize::try_from(buf.get_i32()).map_err(|_| error::UniffiConversionError::ConversionError)?;
+        check_remaining(buf, len).map_err(|_| error::UniffiConversionError::ConversionError)?;
         // N.B: In the general case `Buf::chunk()` may return partial data.
         // But in the specific case of `<&[u8] as Buf>` it returns the full slice,
         // so there is no risk of having less than `len` bytes available here.
         let bytes = &buf.chunk()[..len];
-        let res = String::from_utf8(bytes.to_vec())?;
+        let res = String::from_utf8(bytes.to_vec()).map_err(|_| error::UniffiConversionError::ConversionError)?;
         buf.advance(len);
         Ok(res)
     }
@@ -363,13 +371,16 @@ unsafe impl FfiConverter for String {
 /// `lift` in terms of `read()`.
 pub trait RustBufferFfiConverter: Sized {
     type RustType;
+    type Error: std::error::Error;
+
     fn write(obj: Self::RustType, buf: &mut Vec<u8>);
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType>;
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error>;
 }
 
 unsafe impl<T: RustBufferFfiConverter> FfiConverter for T {
     type RustType = T::RustType;
     type FfiType = RustBuffer;
+    type Error = T::Error;
 
     fn lower(obj: Self::RustType) -> RustBuffer {
         let mut buf = Vec::new();
@@ -377,12 +388,12 @@ unsafe impl<T: RustBufferFfiConverter> FfiConverter for T {
         RustBuffer::from_vec(buf)
     }
 
-    fn try_lift(v: RustBuffer) -> Result<Self::RustType> {
+    fn try_lift(v: RustBuffer) -> std::result::Result<Self::RustType, Self::Error> {
         let vec = v.destroy_into_vec();
         let mut buf = vec.as_slice();
         let value = T::try_read(&mut buf)?;
         if buf.remaining() != 0 {
-            bail!("junk data left in buffer after lifting")
+            panic!("Buffer is empty!");
         }
         Ok(value)
     }
@@ -391,7 +402,7 @@ unsafe impl<T: RustBufferFfiConverter> FfiConverter for T {
         T::write(obj, buf)
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error> {
         T::try_read(buf)
     }
 }
@@ -412,6 +423,7 @@ unsafe impl<T: RustBufferFfiConverter> FfiConverter for T {
 /// if the total offset should be added to or subtracted from the unix epoch.
 impl RustBufferFfiConverter for SystemTime {
     type RustType = Self;
+    type Error = UniffiConversionError;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         let mut sign = 1;
@@ -430,8 +442,8 @@ impl RustBufferFfiConverter for SystemTime {
         buf.put_u32(epoch_offset.subsec_nanos());
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
-        check_remaining(buf, 12)?;
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error> {
+        check_remaining(buf, 12).map_err(|_| UniffiConversionError::ConversionError)?;
         let seconds = buf.get_i64();
         let nanos = buf.get_u32();
         let epoch_offset = Duration::new(seconds.wrapping_abs() as u64, nanos);
@@ -454,14 +466,15 @@ impl RustBufferFfiConverter for SystemTime {
 /// and 999,999,999.
 impl RustBufferFfiConverter for Duration {
     type RustType = Self;
+    type Error = UniffiConversionError;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         buf.put_u64(obj.as_secs());
         buf.put_u32(obj.subsec_nanos());
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
-        check_remaining(buf, 12)?;
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error> {
+        check_remaining(buf, 12).unwrap(); // PANIC!
         Ok(Duration::new(buf.get_u64(), buf.get_u32()))
     }
 }
@@ -477,6 +490,7 @@ impl RustBufferFfiConverter for Duration {
 /// but that seems more fiddly and less safe in the short term, so it can wait.
 impl<T: FfiConverter> RustBufferFfiConverter for Option<T> {
     type RustType = Option<T::RustType>;
+    type Error = T::Error;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         match obj {
@@ -488,12 +502,13 @@ impl<T: FfiConverter> RustBufferFfiConverter for Option<T> {
         }
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
-        check_remaining(buf, 1)?;
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error> {
+        check_remaining(buf, 1).unwrap(); // XX: shouldn't panic on runtime, should
+                                                   // return Self::Error somehow...
         Ok(match buf.get_i8() {
             0 => None,
             1 => Some(<T as FfiConverter>::try_read(buf)?),
-            _ => bail!("unexpected tag byte for Option"),
+            _ => panic!("OH NO!") // TODO: shouldn't panic at runtime, should return Self::Error
         })
     }
 }
@@ -509,6 +524,7 @@ impl<T: FfiConverter> RustBufferFfiConverter for Option<T> {
 /// similar struct. But that's for future work.
 impl<T: FfiConverter> RustBufferFfiConverter for Vec<T> {
     type RustType = Vec<T::RustType>;
+    type Error = T::Error;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
@@ -519,9 +535,9 @@ impl<T: FfiConverter> RustBufferFfiConverter for Vec<T> {
         }
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
-        check_remaining(buf, 4)?;
-        let len = usize::try_from(buf.get_i32())?;
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error> {
+        check_remaining(buf, 4).unwrap(); // PANIC :(
+        let len = usize::try_from(buf.get_i32()).unwrap(); // PANIC :(
         let mut vec = Vec::with_capacity(len);
         for _ in 0..len {
             vec.push(<T as FfiConverter>::try_read(buf)?)
@@ -540,6 +556,7 @@ impl<T: FfiConverter> RustBufferFfiConverter for Vec<T> {
 /// (It's a signed type due to limits of the JVM).
 impl<V: FfiConverter> RustBufferFfiConverter for HashMap<String, V> {
     type RustType = HashMap<String, V::RustType>;
+    type Error = V::Error;
 
     fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
@@ -551,12 +568,12 @@ impl<V: FfiConverter> RustBufferFfiConverter for HashMap<String, V> {
         }
     }
 
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
-        check_remaining(buf, 4)?;
-        let len = usize::try_from(buf.get_i32())?;
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error> {
+        check_remaining(buf, 4).unwrap(); // panic!
+        let len = usize::try_from(buf.get_i32()).unwrap(); // panic!
         let mut map = HashMap::with_capacity(len);
         for _ in 0..len {
-            let key = String::try_read(buf)?;
+            let key = String::try_read(buf).unwrap(); // PANIC!
             let value = <V as FfiConverter>::try_read(buf)?;
             map.insert(key, value);
         }
@@ -573,6 +590,8 @@ unsafe impl<T: Sync + Send> FfiConverter for std::sync::Arc<T> {
     type RustType = Self;
     // Don't use a pointer to <T> as that requires a `pub <T>`
     type FfiType = *const std::os::raw::c_void;
+
+    type Error = UniffiConversionError;
 
     /// When lowering, we have an owned `Arc<T>` and we transfer that ownership
     /// to the foreign-language code, "leaking" it out of Rust's ownership system
@@ -592,7 +611,7 @@ unsafe impl<T: Sync + Send> FfiConverter for std::sync::Arc<T> {
     ///
     /// Safety: the provided value must be a pointer previously obtained by calling
     /// the `lower()` or `write()` method of this impl.
-    fn try_lift(v: Self::FfiType) -> Result<Self::RustType> {
+    fn try_lift(v: Self::FfiType) -> std::result::Result<Self::RustType, Self::Error> {
         let v = v as *const T;
         // We musn't drop the `Arc<T>` that is owned by the foreign-language code.
         let foreign_arc = std::mem::ManuallyDrop::new(unsafe { Self::from_raw(v) });
@@ -618,9 +637,9 @@ unsafe impl<T: Sync + Send> FfiConverter for std::sync::Arc<T> {
     ///
     /// Safety: the buffer must contain a pointer previously obtained by calling
     /// the `lower()` or `write()` method of this impl.
-    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<Self::RustType, Self::Error> {
         static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
-        check_remaining(buf, 8)?;
+        check_remaining(buf, 8).map_err(|_| error::UniffiConversionError::ConversionError)?;
         Self::try_lift(buf.get_u64() as Self::FfiType)
     }
 }

@@ -17,7 +17,9 @@ class TestGuid(unittest.TestCase):
         self.assertEqual(helper.maybe_guid, None)
 
     def test_guid_errors(self):
-        self.assertRaises(GuidError.TooShort, get_guid(""))
+        self.assertRaises(GuidError.TooShort, get_guid, "")
+            
+            
 
     # def test_round_trip(self):
     #     ct = get_combined_type(None)

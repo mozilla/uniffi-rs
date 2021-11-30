@@ -14,6 +14,8 @@ pub struct {{ rec.type_()|ffi_converter_name }};
 #[doc(hidden)]
 impl uniffi::RustBufferFfiConverter for {{ rec.type_()|ffi_converter_name }} {
     type RustType = {{ rec.name() }};
+    type Error = uniffi::error::UniffiConversionError;
+
 
     fn write(obj: {{ rec.name() }}, buf: &mut std::vec::Vec<u8>) {
         // If the provided struct doesn't match the fields declared in the UDL, then
@@ -23,10 +25,10 @@ impl uniffi::RustBufferFfiConverter for {{ rec.type_()|ffi_converter_name }} {
         {%- endfor %}
     }
 
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<{{ rec.name() }}> {
+    fn try_read(buf: &mut &[u8]) -> std::result::Result<{{ rec.name() }}, Self::Error> {
         Ok({{ rec.name() }} {
             {%- for field in rec.fields() %}
-                {{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf)?,
+                {{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf).map_err(|_| uniffi::error::UniffiConversionError::ConversionError)?,
             {%- endfor %}
         })
     }

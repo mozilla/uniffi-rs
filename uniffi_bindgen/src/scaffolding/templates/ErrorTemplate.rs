@@ -13,6 +13,7 @@ pub struct {{ e.type_()|ffi_converter_name }};
 #[doc(hidden)]
 impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
     type RustType = {{ e.name() }};
+    type Error = uniffi::error::UniffiConversionError;
 
     {% if e.is_flat() %}
 
@@ -33,7 +34,7 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
         };
     }
 
-    fn try_read(_buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<{{ e.name() }}> {
+    fn try_read(_buf: &mut &[u8]) -> std::result::Result<{{ e.name() }}, Self::Error> {
         // It's not currently possible to send errors from the foreign language *into* Rust.
         panic!("try_read not supported for flat errors");
     }
@@ -61,20 +62,20 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
         };
     }
 
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<{{ e.name() }}> {
+    fn try_read(buf: &mut &[u8]) ->  std::result::Result<{{ e.name() }}, Self::Error> {
         // It's not currently supported to send errors from the foreign language *into* Rust,
         // but this is what the supporting code might look like...
         use uniffi::deps::bytes::Buf;
-        uniffi::check_remaining(buf, 4)?;
+        uniffi::check_remaining(buf, 4).map_err(|_| uniffi::error::UniffiConversionError::ConversionError)?;
         Ok(match buf.get_i32() {
             {%- for variant in e.variants() %}
             {{ loop.index }} => {{ e.name() }}::{{ variant.name() }}{% if variant.has_fields() %} {
                 {% for field in variant.fields() %}
-                {{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf)?,
+                {{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf).map_err(|_| uniffi::error::UniffiConversionError::ConversionError)?,
                 {%- endfor %}
             }{% endif %},
             {%- endfor %}
-            v => uniffi::deps::anyhow::bail!("Invalid {{ e.name() }} enum value: {}", v),
+            v => return Err(uniffi::error::UniffiConversionError::ConversionError),
         })
     }
     {% endif %}
