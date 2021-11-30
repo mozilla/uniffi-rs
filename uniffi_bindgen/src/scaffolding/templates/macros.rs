@@ -9,7 +9,18 @@
 {%- macro _arg_list_rs_call(func) %}
     {%- for arg in func.full_arguments() %}
         {%- if arg.by_ref() %}&{% endif %}
-        {{- arg.type_()|ffi_converter }}::try_lift({{ arg.name() }}).unwrap()
+        {{- arg.type_()|ffi_converter }}::try_lift({{ arg.name() }})
+        {# If this function returns an error, then we assume the UniffiCustomTypeWrapper
+           implementation returns a compatible result. If this function does not return
+           an error, we unwrap the conversion, so will panic if it fails.
+        #}
+        {%- match func.throws_type() -%}
+        {% when Some with (e) %}
+            // XXX - this is wrong - can't go from anyhow back to the actual error :(
+            .map_err(Into::into).map_err({{ e|ffi_converter }}::lower)?
+        {% else %}
+            .unwrap()
+        {% endmatch %}
         {%- if !loop.last %}, {% endif %}
     {%- endfor %}
 {%- endmacro -%}

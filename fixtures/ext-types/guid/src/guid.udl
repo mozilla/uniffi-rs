@@ -1,6 +1,11 @@
 [Wrapped]
 typedef string Guid;
 
+[Error]
+enum GuidError {
+    "TooShort"
+};
+
 dictionary GuidHelper {
     Guid guid;
     sequence<Guid> guids;
@@ -8,6 +13,9 @@ dictionary GuidHelper {
 };
 
 namespace ext_types_guid {
+    [Throws=GuidError]
     Guid get_guid(optional Guid? val);
+
+    // Note this intentionally does not throw an error - uniffi will need to `unwrap` here.
     GuidHelper get_guid_helper(optional GuidHelper? vals);
 };
