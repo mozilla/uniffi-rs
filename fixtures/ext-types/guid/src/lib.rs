@@ -13,9 +13,12 @@ fn get_guid(guid: Option<Guid>) -> std::result::Result<Guid, GuidError> {
     // turning the string into the Guid.
     Ok(match guid {
         Some(guid) => {
-            assert!(!guid.0.is_empty(), "our UniffiCustomTypeWrapper already checked!");
+            assert!(
+                !guid.0.is_empty(),
+                "our UniffiCustomTypeWrapper already checked!"
+            );
             guid
-        },
+        }
         None => Guid("NewGuid".to_string()),
     })
 }
@@ -42,8 +45,9 @@ fn get_guid_helper(vals: Option<GuidHelper>) -> GuidHelper {
 
 impl UniffiCustomTypeWrapper for Guid {
     type Wrapped = String;
+    type Error = GuidError;
 
-    fn wrap(val: Self::Wrapped) -> uniffi::Result<Self> {
+    fn wrap(val: Self::Wrapped) -> std::result::Result<Self, Self::Error> {
         if val.is_empty() {
             Err(GuidError::TooShort.into())
         } else {

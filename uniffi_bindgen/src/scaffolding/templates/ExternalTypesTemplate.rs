@@ -13,8 +13,9 @@ use {{ crate_name|crate_name_rs }}::FfiConverterType{{ name }};
 // A trait that's in our crate for our external wrapped types to implement.
 trait UniffiCustomTypeWrapper {
     type Wrapped;
+    type Error: Into<anyhow::Error>;
 
-    fn wrap(val: Self::Wrapped) -> uniffi::Result<Self> where Self: Sized;
+    fn wrap(val: Self::Wrapped) -> std::result::Result<Self, Self::Error> where Self: Sized;
     fn unwrap(obj: Self) -> Self::Wrapped;
 }
 
@@ -33,7 +34,7 @@ unsafe impl uniffi::FfiConverter for FfiConverterType{{ name }} {
     }
 
     fn try_lift(v: Self::FfiType) -> uniffi::Result<{{ name }}> {
-        <{{ name }} as UniffiCustomTypeWrapper>::wrap(<{{ prim|type_rs }} as uniffi::FfiConverter>::try_lift(v)?)
+        <{{ name }} as UniffiCustomTypeWrapper>::wrap(<{{ prim|type_rs }} as uniffi::FfiConverter>::try_lift(v)?).map_err(Into::into)
     }
 
     fn write(obj: {{ name }}, buf: &mut Vec<u8>) {
@@ -41,7 +42,7 @@ unsafe impl uniffi::FfiConverter for FfiConverterType{{ name }} {
     }
 
     fn try_read(buf: &mut &[u8]) -> uniffi::Result<{{ name }}> {
-        <{{ name }} as UniffiCustomTypeWrapper>::wrap(<{{ prim|type_rs }} as uniffi::FfiConverter>::try_read(buf)?)
+        <{{ name }} as UniffiCustomTypeWrapper>::wrap(<{{ prim|type_rs }} as uniffi::FfiConverter>::try_read(buf)?).map_err(Into::into)
     }
 }
 {%- endfor -%}
