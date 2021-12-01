@@ -59,9 +59,9 @@ public class {{ obj|type_name }}: {{ obj.name() }}Protocol {
 
 
 fileprivate extension {{ obj|type_name }} {
-    fileprivate typealias FfiType = UnsafeMutableRawPointer
+    typealias FfiType = UnsafeMutableRawPointer
 
-    fileprivate static func read(from buf: Reader) throws -> Self {
+    static func read(from buf: Reader) throws -> Self {
         let v: UInt64 = try buf.readInt()
         // The Rust code won't compile if a pointer won't fit in a UInt64.
         // We have to go via `UInt` because that's the thing that's the size of a pointer.
@@ -72,17 +72,17 @@ fileprivate extension {{ obj|type_name }} {
         return try self.lift(ptr!)
     }
 
-    fileprivate func write(into buf: Writer) {
+    func write(into buf: Writer) {
         // This fiddling is because `Int` is the thing that's the same size as a pointer.
         // The Rust code won't compile if a pointer won't fit in a `UInt64`.
         buf.writeInt(UInt64(bitPattern: Int64(Int(bitPattern: self.lower()))))
     }
 
-    fileprivate static func lift(_ pointer: UnsafeMutableRawPointer) throws -> Self {
+    static func lift(_ pointer: UnsafeMutableRawPointer) throws -> Self {
         return Self(unsafeFromRawPointer: pointer)
     }
 
-    fileprivate func lower() -> UnsafeMutableRawPointer {
+    func lower() -> UnsafeMutableRawPointer {
         return self.pointer
     }
 }
