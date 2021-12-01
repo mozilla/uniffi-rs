@@ -7,6 +7,7 @@ use crate::interface::{ComponentInterface, Function};
 use askama::Template;
 
 use super::filters;
+use super::Config;
 
 #[derive(Template)]
 #[template(
@@ -16,12 +17,14 @@ use super::filters;
 )]
 pub struct SwiftFunction {
     inner: Function,
+    config: Config,
 }
 
 impl SwiftFunction {
-    pub fn new(inner: Function, _ci: &ComponentInterface) -> Self {
-        Self { inner }
+    pub fn new(inner: Function, _ci: &ComponentInterface, config: Config) -> Self {
+        Self { inner, config }
     }
+
     pub fn inner(&self) -> &Function {
         &self.inner
     }

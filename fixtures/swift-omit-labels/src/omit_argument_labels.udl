@@ -1,0 +1,5 @@
+namespace omit_argument_labels {
+    i32 no_args();
+    i32 one_arg(i32 amount);
+    i32 multiple_args(i32 amount, string msg);
+};

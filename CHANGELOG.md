@@ -17,6 +17,7 @@
 ### What's Changed
 
 - Python: Added Callback Interface support
+- Swift bindings can now omit argument labels in generated functions using `omit_argument_labels = true` in the configuration.
 
 ## v0.15.2 - (_2021-11-25_)
 

@@ -36,6 +36,7 @@ pub struct Config {
     ffi_module_name: Option<String>,
     ffi_module_filename: Option<String>,
     generate_module_map: Option<bool>,
+    omit_argument_labels: Option<bool>,
 }
 
 impl Config {
@@ -86,6 +87,11 @@ impl Config {
     pub fn generate_module_map(&self) -> bool {
         self.generate_module_map.unwrap_or(true)
     }
+
+    /// Whether to omit argument labels in Swift function definitions.
+    pub fn omit_argument_labels(&self) -> bool {
+        self.omit_argument_labels.unwrap_or(false)
+    }
 }
 
 impl From<&ComponentInterface> for Config {
@@ -110,6 +116,9 @@ impl MergeWith for Config {
             generate_module_map: self
                 .generate_module_map
                 .merge_with(&other.generate_module_map),
+            omit_argument_labels: self
+                .omit_argument_labels
+                .merge_with(&other.omit_argument_labels),
         }
     }
 }
@@ -184,13 +193,13 @@ impl<'a> SwiftWrapper<'a> {
             }),
         )
         .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-            Box::new(function::SwiftFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
+            Box::new(function::SwiftFunction::new(inner, ci, self.config.clone()))
+                as Box<dyn CodeDeclaration>
         }))
-        .chain(
-            ci.iter_object_definitions().into_iter().map(|inner| {
-                Box::new(object::SwiftObject::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
-        )
+        .chain(ci.iter_object_definitions().into_iter().map(|inner| {
+            Box::new(object::SwiftObject::new(inner, ci, self.config.clone()))
+                as Box<dyn CodeDeclaration>
+        }))
         .chain(
             ci.iter_record_definitions().into_iter().map(|inner| {
                 Box::new(record::SwiftRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
@@ -205,8 +214,11 @@ impl<'a> SwiftWrapper<'a> {
             ci.iter_callback_interface_definitions()
                 .into_iter()
                 .map(|inner| {
-                    Box::new(callback_interface::SwiftCallbackInterface::new(inner, ci))
-                        as Box<dyn CodeDeclaration>
+                    Box::new(callback_interface::SwiftCallbackInterface::new(
+                        inner,
+                        ci,
+                        self.config.clone(),
+                    )) as Box<dyn CodeDeclaration>
                 }),
         )
         .collect()
