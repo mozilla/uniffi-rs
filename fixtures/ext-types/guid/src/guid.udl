@@ -18,7 +18,7 @@ namespace ext_types_guid {
     Guid get_guid(optional Guid? val);
 
     // Uniffi will handle failure converting a string to a Guid correctly if
-    // the conversion returns `Err<GuidError>`, or panic otherwise.
+    // the conversion returns `Err(GuidError)`, or panic otherwise.
     [Throws=GuidError]
     Guid try_get_guid(optional Guid? val);
 

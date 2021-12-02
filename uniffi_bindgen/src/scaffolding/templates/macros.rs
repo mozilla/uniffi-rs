@@ -24,11 +24,11 @@
             Err(err) => {
                 match err.downcast::<{{ e }}>() {
                     Ok(actual_error) => return Err({{ func.throws_type().unwrap()|ffi_converter }}::lower(actual_error)),
-                    Err(ohno) => panic!("Failed to convert arg '{{ arg.name() }}': {}", ohno),
+                    Err(ohno) => panic!("Failed to convert arg '{}': {}", "{{ arg.name() }}", ohno),
                 }
             }
         {% else %}
-            Err(err) => panic!("Failed to convert arg '{{ arg.name() }}': {}", err),
+            Err(err) => panic!("Failed to convert arg '{}': {}", "{{ arg.name() }}", err),
         {% endmatch %}
         }
         {%- if !loop.last %}, {% endif %}

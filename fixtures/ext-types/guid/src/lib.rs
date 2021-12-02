@@ -38,7 +38,7 @@ fn try_get_guid(guid: Option<Guid>) -> std::result::Result<Guid, GuidError> {
         Some(guid) => {
             assert!(
                 !guid.0.is_empty(),
-                "our UniffiCustomTypeWrapper already checked!"
+                "our UniffiCustomTypeWrapper failed to check for an empty GUID"
             );
             guid
         }
