@@ -11,7 +11,7 @@ use std::fmt;
 use super::filters;
 
 macro_rules! impl_code_type_for_miscellany {
-     ($T:ty, $class_name:literal, $canonical_name:literal, $imports:expr, $template_file:literal) => {
+     ($T:ty, $class_name:literal, $canonical_name:literal, $template_file:literal) => {
          paste! {
              #[derive(Template)]
              #[template(syntax = "kt", escape = "none", path = $template_file )]
@@ -49,12 +49,6 @@ macro_rules! impl_code_type_for_miscellany {
                  fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
                      Some(self.render().unwrap())
                  }
-
-                 fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-                    Some(
-                        $imports.into_iter().map(|s| s.into()).collect()
-                    )
-                 }
              }
          }
      }
@@ -64,7 +58,6 @@ impl_code_type_for_miscellany!(
     TimestampCodeType,
     "java.time.Instant",
     "Timestamp",
-    vec!["java.time.DateTimeException"],
     "TimestampHelper.kt"
 );
 
@@ -72,6 +65,5 @@ impl_code_type_for_miscellany!(
     DurationCodeType,
     "java.time.Duration",
     "Duration",
-    vec!["java.time.DateTimeException"],
     "DurationHelper.kt"
 );
