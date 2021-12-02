@@ -1032,6 +1032,77 @@ implemention for <code>Handle</code> would look something like:</p>
 <p>Because <code>UniffiCustomTypeWrapper</code> is defined in each crate, this means you can wrap objects even
 if they are not defined in your crate - see the 'wrapper_types' example which demonstrates
 how <code>serde_json::Value</code> can be wrapped.</p>
+<h2><a class="header" href="#error-handling-during-conversion" id="error-handling-during-conversion">Error handling during conversion</a></h2>
+<p>You might have noticed that the <code>wrap</code> function returns a <code>uniffi::Result&lt;Self&gt;</code> (which is an
+alias for <code>anyhow::Result</code>) and might be wondering what happens if you return an <code>Err</code>.</p>
+<p>It depends on the context. In short:</p>
+<ul>
+<li>
+<p>If the value is being used as an argument to a function/constructor that does not return
+a <code>Result</code> (ie, does not have the <code>throws</code> attribute in the .udl), then the uniffi generated
+scaffolding code will <code>panic!()</code></p>
+</li>
+<li>
+<p>If the value is being used as an argument to a function/constructor that <em>does</em> return a
+<code>Result</code> (ie, does have a <code>throws</code> attribute in the .udl), then the uniffi generated
+scaffolding code will use <code>anyhow::Error::downcast()</code> to try and convert the failure into
+that declared error type and:</p>
+<ul>
+<li>If that conversion succeeds, it will be used as the <code>Err</code> for the function.</li>
+<li>If that conversion fails, it will <code>panic()</code></li>
+</ul>
+</li>
+</ul>
+<h3><a class="header" href="#example" id="example">Example</a></h3>
+<p>For example, consider the following UDL:</p>
+<pre><code class="language-idl">[Wrapped]
+typedef i64 Handle;
+
+[Error]
+enum ExampleErrors {
+    &quot;InvalidHandle&quot;
+};
+
+namespace errors_example {
+    take_handle_1(Handle handle);
+
+    [Throws=ExampleErrors]
+    take_handle_2(Handle handle);
+}
+</code></pre>
+<p>and the following Rust:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, thiserror::Error)]
+pub enum ExampleErrors {
+    #[error(&quot;The handle is invalid&quot;)]
+    InvalidHandle,
+}
+
+impl UniffiCustomTypeWrapper for ExampleHandle {
+    type Wrapped = i64;
+
+    fn wrap(val: Self::Wrapped) -&gt; uniffi::Result&lt;Self&gt; {
+        if (val == 0) {
+            Err(ExampleErrors::InvalidHandle.into())
+        else if (val == -1) {
+            Err(SomeOtherError.into()) // SomeOtherError decl. not shown.
+        } else {
+            Ok(Handle(val))
+        }
+    }
+    ...
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The behavior of the generated scaffolding will be:</p>
+<ul>
+<li>Calling <code>take_handle_1</code> with a value of <code>0</code> or <code>-1</code> will always panic.</li>
+<li>Calling <code>take_handle_2</code> with a value of <code>0</code> will return <code>Err(ExampleErrors)</code> exception</li>
+<li>Calling <code>take_handle_2</code> with a value of <code>-1</code> will always panic.</li>
+<li>All other values will return <code>Ok(ExampleHandle)</code></li>
+</ul>
 <h2><a class="header" href="#custom-foreign-wrappers" id="custom-foreign-wrappers">Custom Foreign Wrappers</a></h2>
 <p>In the example above, the foreign bindings just see the &quot;wrapped&quot; value - eg, the bindings will
 get an integer for the <code>Handle</code>.</p>
