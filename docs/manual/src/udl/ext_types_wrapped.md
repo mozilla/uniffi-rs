@@ -57,6 +57,74 @@ Because `UniffiCustomTypeWrapper` is defined in each crate, this means you can w
 if they are not defined in your crate - see the 'wrapper_types' example which demonstrates
 how `serde_json::Value` can be wrapped.
 
+## Error handling during conversion
+
+You might have noticed that the `wrap` function returns a `uniffi::Result<Self>` (which is an
+alias for `anyhow::Result`) and might be wondering what happens if you return an `Err`.
+
+It depends on the context. In short:
+
+* If the value is being used as an argument to a function/constructor that does not return
+  a `Result` (ie, does not have the `throws` attribute in the .udl), then the uniffi generated
+  scaffolding code will `panic!()`
+
+* If the value is being used as an argument to a function/constructor that *does* return a
+  `Result` (ie, does have a `throws` attribute in the .udl), then the uniffi generated
+  scaffolding code will use `anyhow::Error::downcast()` to try and convert the failure into
+  that declared error type and:
+  * If that conversion succeeds, it will be used as the `Err` for the function.
+  * If that conversion fails, it will `panic()`
+
+### Example
+For example, consider the following UDL:
+```idl
+[Wrapped]
+typedef i64 Handle;
+
+[Error]
+enum ExampleErrors {
+    "InvalidHandle"
+};
+
+namespace errors_example {
+    take_handle_1(Handle handle);
+
+    [Throws=ExampleErrors]
+    take_handle_2(Handle handle);
+}
+```
+
+and the following Rust:
+```rust
+#[derive(Debug, thiserror::Error)]
+pub enum ExampleErrors {
+    #[error("The handle is invalid")]
+    InvalidHandle,
+}
+
+impl UniffiCustomTypeWrapper for ExampleHandle {
+    type Wrapped = i64;
+
+    fn wrap(val: Self::Wrapped) -> uniffi::Result<Self> {
+        if (val == 0) {
+            Err(ExampleErrors::InvalidHandle.into())
+        else if (val == -1) {
+            Err(SomeOtherError.into()) // SomeOtherError decl. not shown.
+        } else {
+            Ok(Handle(val))
+        }
+    }
+    ...
+}
+```
+
+The behavior of the generated scaffolding will be:
+
+* Calling `take_handle_1` with a value of `0` or `-1` will always panic.
+* Calling `take_handle_2` with a value of `0` will return `Err(ExampleErrors)` exception
+* Calling `take_handle_2` with a value of `-1` will always panic.
+* All other values will return `Ok(ExampleHandle)`
+
 ## Custom Foreign Wrappers
 
 In the example above, the foreign bindings just see the "wrapped" value - eg, the bindings will

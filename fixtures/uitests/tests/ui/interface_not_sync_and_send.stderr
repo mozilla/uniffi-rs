@@ -26,10 +26,10 @@ error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
     = note: required by `lower`
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
-   --> $DIR/counter.uniffi.rs:160:14
+   --> $DIR/counter.uniffi.rs:160:19
     |
-160 |             &<std::sync::Arc<Counter> as uniffi::FfiConverter>::try_lift(ptr).unwrap(),
-    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
+160 |             match <std::sync::Arc<Counter> as uniffi::FfiConverter>::try_lift(ptr) {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
     |
     = help: the following implementations were found:
               <Arc<T> as FfiConverter>

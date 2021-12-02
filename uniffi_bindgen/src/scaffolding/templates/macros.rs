@@ -8,8 +8,29 @@
 
 {%- macro _arg_list_rs_call(func) %}
     {%- for arg in func.full_arguments() %}
-        {%- if arg.by_ref() %}&{% endif %}
-        {{- arg.type_()|ffi_converter }}::try_lift({{ arg.name() }}).unwrap()
+        match {{- arg.type_()|ffi_converter }}::try_lift({{ arg.name() }}) {
+        {%- if arg.by_ref() %}
+            Ok(ref val) => val,
+        {% else %}
+            Ok(val) => val,
+        {% endif %}
+
+        {# If this function returns an error, we attempt to downcast errors doing arg
+            conversions to this error. If the downcast fails or the function doesn't
+            return an error, we just panic.
+        #}
+        {%- match func.throws() -%}
+        {% when Some with (e) %}
+            Err(err) => {
+                match err.downcast::<{{ e }}>() {
+                    Ok(actual_error) => return Err({{ func.throws_type().unwrap()|ffi_converter }}::lower(actual_error)),
+                    Err(ohno) => panic!("Failed to convert arg '{}': {}", "{{ arg.name() }}", ohno),
+                }
+            }
+        {% else %}
+            Err(err) => panic!("Failed to convert arg '{}': {}", "{{ arg.name() }}", err),
+        {% endmatch %}
+        }
         {%- if !loop.last %}, {% endif %}
     {%- endfor %}
 {%- endmacro -%}

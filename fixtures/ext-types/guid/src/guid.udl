@@ -1,6 +1,11 @@
 [Wrapped]
 typedef string Guid;
 
+[Error]
+enum GuidError {
+    "TooShort"
+};
+
 dictionary GuidHelper {
     Guid guid;
     sequence<Guid> guids;
@@ -8,6 +13,14 @@ dictionary GuidHelper {
 };
 
 namespace ext_types_guid {
+    // Note this intentionally does not throw an error - uniffi will panic if
+    // a Guid can't be converted.
     Guid get_guid(optional Guid? val);
+
+    // Uniffi will handle failure converting a string to a Guid correctly if
+    // the conversion returns `Err(GuidError)`, or panic otherwise.
+    [Throws=GuidError]
+    Guid try_get_guid(optional Guid? val);
+
     GuidHelper get_guid_helper(optional GuidHelper? vals);
 };

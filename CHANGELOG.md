@@ -6,7 +6,13 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD)
+
+### ⚠️ Breaking Changes ⚠️
+
+- Error handling when converting custom types has been updated. If your `wrap()`
+  function returns an `Err`, in some cases it now [may not panic but instead
+  return the error declared by the function](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html#error-handling-during-conversion).
 
 ## v0.15.2 - (_2021-11-25_)
 
