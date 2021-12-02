@@ -1,7 +1,7 @@
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
-   --> $DIR/counter.uniffi.rs:119:1
+   --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
     |
-119 | uniffi::deps::static_assertions::assert_impl_all!(Counter: Sync, Send);
+    | uniffi::deps::static_assertions::assert_impl_all!(Counter: Sync, Send);
     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     | |
     | `Cell<u32>` cannot be shared between threads safely
@@ -9,16 +9,16 @@ error[E0277]: `Cell<u32>` cannot be shared between threads safely
     |
     = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
 note: required because it appears within the type `Counter`
-   --> $DIR/interface_not_sync_and_send.rs:9:12
+   --> tests/ui/interface_not_sync_and_send.rs:9:12
     |
 9   | pub struct Counter {
     |            ^^^^^^^
     = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
-   --> $DIR/counter.uniffi.rs:145:9
+   --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
     |
-145 |         <std::sync::Arc<Counter> as uniffi::FfiConverter>::lower(_arc)
+    |         <std::sync::Arc<Counter> as uniffi::FfiConverter>::lower(_arc)
     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
     |
     = help: the following implementations were found:
@@ -26,9 +26,9 @@ error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
     = note: required by `lower`
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
-   --> $DIR/counter.uniffi.rs:160:19
+   --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
     |
-160 |             match <std::sync::Arc<Counter> as uniffi::FfiConverter>::try_lift(ptr) {
+    |             match <std::sync::Arc<Counter> as uniffi::FfiConverter>::try_lift(ptr) {
     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
     |
     = help: the following implementations were found:
