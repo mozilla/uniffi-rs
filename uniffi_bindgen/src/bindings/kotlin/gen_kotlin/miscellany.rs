@@ -11,7 +11,7 @@ use std::fmt;
 use super::filters;
 
 macro_rules! impl_code_type_for_miscellany {
-     ($T:ty, $class_name:literal, $canonical_name:literal, $imports:expr, $template_file:literal) => {
+     ($T:ty, $class_name:literal, $canonical_name:literal, $template_file:literal) => {
          paste! {
              #[derive(Template)]
              #[template(syntax = "kt", escape = "none", path = $template_file )]
@@ -21,6 +21,10 @@ macro_rules! impl_code_type_for_miscellany {
                  fn type_label(&self, _oracle: &dyn CodeOracle) -> String {
                      $class_name.into()
                  }
+
+                 fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
+                    $canonical_name.into()
+                }
 
                  fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
                      unreachable!()
@@ -45,12 +49,6 @@ macro_rules! impl_code_type_for_miscellany {
                  fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
                      Some(self.render().unwrap())
                  }
-
-                 fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-                    Some(
-                        $imports.into_iter().map(|s| s.into()).collect()
-                    )
-                 }
              }
          }
      }
@@ -58,16 +56,14 @@ macro_rules! impl_code_type_for_miscellany {
 
 impl_code_type_for_miscellany!(
     TimestampCodeType,
-    "Instant",
+    "java.time.Instant",
     "Timestamp",
-    vec!["java.time.Instant", "java.time.DateTimeException"],
     "TimestampHelper.kt"
 );
 
 impl_code_type_for_miscellany!(
     DurationCodeType,
+    "java.time.Duration",
     "Duration",
-    "Duration",
-    vec!["java.time.Duration", "java.time.DateTimeException"],
     "DurationHelper.kt"
 );
