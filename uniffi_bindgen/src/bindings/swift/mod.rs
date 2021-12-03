@@ -29,7 +29,7 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{bail, Context, Result};
 use std::{
     ffi::OsString,
     fs::File,
@@ -39,7 +39,7 @@ use std::{
 };
 
 pub mod gen_swift;
-pub use gen_swift::{BridgingHeader, Config, ModuleMap, SwiftWrapper};
+pub use gen_swift::{generate_bindings, Config};
 
 use super::super::interface::ComponentInterface;
 
@@ -105,32 +105,6 @@ pub fn write_bindings(
     }
 
     Ok(())
-}
-
-/// Generate UniFFI component bindings for Swift, as strings in memory.
-///
-pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
-    use askama::Template;
-    let header = BridgingHeader::new(config, ci)
-        .render()
-        .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
-    let library = SwiftWrapper::new(config.clone(), ci)
-        .render()
-        .map_err(|_| anyhow!("failed to render Swift library"))?;
-    let modulemap = if config.generate_module_map() {
-        Some(
-            ModuleMap::new(config, ci)
-                .render()
-                .map_err(|_| anyhow!("failed to render Swift modulemap"))?,
-        )
-    } else {
-        None
-    };
-    Ok(Bindings {
-        library,
-        header,
-        modulemap,
-    })
 }
 
 /// Compile UniFFI component bindings for Swift for use from the `swift` command-line.
