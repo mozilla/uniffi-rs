@@ -64,8 +64,8 @@ pub enum Type {
     Map(/* String, */ Box<Type>),
     // An FfiConverter we `use` from an external crate
     External { name: String, crate_name: String },
-    // A local type we will generate an FfiConverter via wrapping a primitive.
-    Wrapped { name: String, prim: Box<Type> },
+    // Custom type on the scaffolding side
+    Custom { name: String, builtin: Box<Type> },
 }
 
 impl Type {
@@ -112,7 +112,7 @@ impl Type {
             Type::Sequence(t) => format!("Sequence{}", t.canonical_name()),
             Type::Map(t) => format!("Map{}", t.canonical_name()),
             // A type that exists externally.
-            Type::External { name, .. } | Type::Wrapped { name, .. } => name.to_owned(),
+            Type::External { name, .. } | Type::Custom { name, .. } => name.to_owned(),
         }
     }
 }
@@ -155,7 +155,7 @@ impl From<&Type> for FFIType {
             | Type::Timestamp
             | Type::Duration
             | Type::External { .. } => FFIType::RustBuffer,
-            Type::Wrapped { prim, .. } => FFIType::from(prim.as_ref()),
+            Type::Custom { builtin, .. } => FFIType::from(builtin.as_ref()),
         }
     }
 }

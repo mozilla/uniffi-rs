@@ -10,7 +10,7 @@ class TestIt(unittest.TestCase):
         ct = get_combined_type(None)
         self.assertEqual(ct.uot.sval, "hello")
         self.assertEqual(ct.guid, "a-guid")
-        self.assertEqual(ct.json, '{"hello":"there"}')
+        self.assertEqual(ct.url, 'http://example.com/')
 
         ct2 = get_combined_type(ct)
         self.assertEqual(ct, ct2)

@@ -217,12 +217,12 @@ impl<'ci> ComponentInterface {
             .collect()
     }
 
-    /// Get details about all `Type::Wrapped` types
-    pub fn iter_wrapped_types(&self) -> Vec<(String, Type)> {
+    /// Get details about all `Type::Custom` types
+    pub fn iter_custom_types(&self) -> Vec<(String, Type)> {
         self.types
             .iter_known_types()
             .filter_map(|t| match t {
-                Type::Wrapped { name, prim } => Some((name, *prim)),
+                Type::Custom { name, builtin } => Some((name, *builtin)),
                 _ => None,
             })
             .collect()

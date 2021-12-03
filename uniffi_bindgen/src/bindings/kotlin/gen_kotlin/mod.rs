@@ -219,9 +219,9 @@ impl KotlinCodeOracle {
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
             Type::External { .. } => panic!("no support for external types yet"),
-            Type::Wrapped { name, prim } => Box::new(wrapped::WrappedCodeType::new(
+            Type::Custom { name, builtin } => Box::new(wrapped::WrappedCodeType::new(
                 name,
-                self.create_code_type(prim.as_ref().clone()),
+                self.create_code_type(builtin.as_ref().clone()),
             )),
         }
     }

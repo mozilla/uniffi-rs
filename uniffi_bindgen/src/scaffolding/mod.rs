@@ -49,7 +49,7 @@ mod filters {
             Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),
             Type::Map(t) => format!("std::collections::HashMap<String, {}>", type_rs(t)?),
             Type::External { .. } => panic!("External types coming to a uniffi near you soon!"),
-            Type::Wrapped { .. } => panic!("Wrapped types coming to a uniffi near you soon!"),
+            Type::Custom { .. } => panic!("Wrapped types coming to a uniffi near you soon!"),
         })
     }
 
@@ -103,7 +103,7 @@ mod filters {
                 ffi_converter_name(inner)?
             ),
             // External and Wrapped bytes have FfiConverters with a predictable name based on the type name.
-            Type::Wrapped { name, .. } | Type::External { name, .. } => {
+            Type::Custom { name, .. } | Type::External { name, .. } => {
                 format!("FfiConverterType{}", name)
             }
             // Primitive types / strings are implemented by their rust type

@@ -1,6 +1,7 @@
 use ext_types_guid::Guid;
 use uniffi_one::UniffiOneType;
-use wrapper_types::Handle;
+use custom_types::Handle;
+use url::Url;
 
 pub struct CombinedType {
     pub uot: UniffiOneType,
@@ -11,9 +12,9 @@ pub struct CombinedType {
     pub guids: Vec<Guid>,
     pub maybe_guid: Option<Guid>,
 
-    pub json: serde_json::Value,
-    pub jsons: Vec<serde_json::Value>,
-    pub maybe_json: Option<serde_json::Value>,
+    pub url: Url,
+    pub urls: Vec<Url>,
+    pub maybe_url: Option<Url>,
 
     pub handle: Handle,
     pub handles: Vec<Handle>,
@@ -39,9 +40,9 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
         guids: vec![Guid("b-guid".into()), Guid("c-guid".into())],
         maybe_guid: None,
 
-        json: serde_json::json!({"hello": "there"}),
-        jsons: vec![],
-        maybe_json: None,
+        url: Url::parse("http://example.com/").unwrap(),
+        urls: vec![],
+        maybe_url: None,
 
         handle: Handle(123),
         handles: vec![Handle(1), Handle(2), Handle(3)],
