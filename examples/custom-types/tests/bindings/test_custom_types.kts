@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import java.util.concurrent.*
+import java.net.URL
 
-import uniffi.wrapper_types.*
-import uniffi.custom_types.*
+import customtypes.*
 
 // TODO: use an actual test runner.
 
 // Get the custom types and check their data
 val demo = getCustomTypesDemo(null)
-assert(demo.url == "http://example.com/")
+assert(demo.url == URL("http://example.com/"))
 assert(demo.handle == 123L)
 
 // Change some data and ensure that the round-trip works
-demo.url = "http://new.example.com/"
+demo.url = URL("http://new.example.com/")
 demo.handle = 456;
 assert(demo == getCustomTypesDemo(demo))

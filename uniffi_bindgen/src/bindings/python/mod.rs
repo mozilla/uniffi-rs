@@ -14,12 +14,11 @@ use std::{
 use anyhow::{bail, Context, Result};
 
 pub mod gen_python;
-pub use gen_python::{Config, PythonWrapper};
+pub use gen_python::{generate_python_bindings, Config};
 
 use super::super::interface::ComponentInterface;
 
 // Generate python bindings for the given ComponentInterface, in the given output directory.
-
 pub fn write_bindings(
     config: &Config,
     ci: &ComponentInterface,
@@ -42,15 +41,6 @@ pub fn write_bindings(
     }
 
     Ok(())
-}
-
-// Generate python bindings for the given ComponentInterface, as a string.
-
-pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    use askama::Template;
-    PythonWrapper::new(config.clone(), ci)
-        .render()
-        .map_err(|_| anyhow::anyhow!("failed to render python bindings"))
 }
 
 /// Execute the specifed python script, with environment based on the generated

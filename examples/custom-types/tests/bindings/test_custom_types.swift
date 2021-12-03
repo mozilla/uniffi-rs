@@ -3,17 +3,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import custom_types
+import Foundation
 
 // TODO: use an actual test runner.
 
 do {
     // Test simple values.
     var demo = getCustomTypesDemo(demo: nil)
-    assert(demo.url == "http://example.com/")
+    assert(demo.url == URL(string: "http://example.com/"))
     assert(demo.handle == 123)
 
     // Change some data and ensure that the round-trip works
-    demo.url = "http://new.example.com/"
+    demo.url = URL(string: "http://new.example.com/")!
     demo.handle = 456
     assert(demo == getCustomTypesDemo(demo: demo))
 }

@@ -333,6 +333,17 @@ impl<T: Clone> MergeWith for Option<T> {
     }
 }
 
+impl<V: Clone> MergeWith for HashMap<String, V> {
+    fn merge_with(&self, other: &Self) -> Self {
+        let mut merged = HashMap::new();
+        // Iterate through other first so our keys override theirs
+        for (key, value) in other.iter().chain(self) {
+            merged.insert(key.clone(), value.clone());
+        }
+        merged
+    }
+}
+
 pub fn run_main() -> Result<()> {
     const POSSIBLE_LANGUAGES: &[&str] = &["kotlin", "python", "swift", "ruby"];
     let matches = clap::App::new("uniffi-bindgen")

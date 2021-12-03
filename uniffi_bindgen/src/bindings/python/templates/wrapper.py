@@ -20,6 +20,9 @@ import enum
 import struct
 import contextlib
 import datetime
+{%- for module_name in self.imports() %}
+import {{ module_name }}
+{%- endfor %}
 
 {% include "RustBufferTemplate.py" %}
 {% include "Helpers.py" %}

@@ -22,7 +22,7 @@ ext-types-guid = {path = "../guid"}
 # Reuse one of our examples.
 custom-types = {path = "../../../examples/custom-types"}
 
-url = "2.0"
+url = "2.2"
 
 [build-dependencies]
 uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}

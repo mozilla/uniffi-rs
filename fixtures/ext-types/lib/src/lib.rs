@@ -1,6 +1,6 @@
+use custom_types::Handle;
 use ext_types_guid::Guid;
 use uniffi_one::UniffiOneType;
-use custom_types::Handle;
 use url::Url;
 
 pub struct CombinedType {

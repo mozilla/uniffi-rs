@@ -1,14 +1,12 @@
 # Custom types
 
-*Note: The facility described in this document is not yet available for all foreign language
-bindings.*
+Custom types allow you to extend the UniFFI type system to support types from your Rust crate or 3rd
+party libraries.  This relies on a [builtin](./builtin_types.md) UDL type move data across the
+FFI, followed by a conversion to your custom type.
 
-It's possible to expose types in your Rust crate to UniFFI, or from 3rd party
-libraries, so long as the type can be converted to/from one of UniFFI's
-[builtin_types](./builtin_types.md).
+## Custom types in the scaffolding code
 
-For example, consider the following trivial Rust abstraction for a "handle" which wraps an
-integer:
+Consider the following trivial Rust abstraction for a "handle" which wraps an integer:
 
 ```rust
 pub struct Handle(i64);
@@ -56,7 +54,7 @@ impl UniffiCustomTypeConverter for Handle {
 
 Because `UniffiCustomTypeConverter` is defined in each crate, this means you can use custom types even
 if they are not defined in your crate - see the 'custom_types' example which demonstrates
-how `url::Url` as a custom type.
+`url::Url` as a custom type.
 
 ## Error handling during conversion
 
@@ -128,9 +126,36 @@ The behavior of the generated scaffolding will be:
 
 ## Custom types in the bindings code
 
-In the example above, the foreign bindings just see the builtin type - eg, the bindings will
-get an integer for the `Handle`.
+*Note: The facility described in this document is not yet available for the Ruby bindings.*
 
+By default, the foreign bindings just see the builtin type - eg, the bindings will get an integer
+for the `Handle`.
+
+However, custom types can also be converted on the bindings side.  If you
+have a custom Kotlin Handle class you can configure UniFFI to use that for the
+`Handle` type by adding code like this to `uniffi.toml`:
+
+```toml
+[bindings.kotlin.custom_types.Handle]
+# Kotlin custom type name
+type_name = "Handle"
+# Expression to convert the builtin type to a Handle.  In this example, `{}` will be replaced with the int value.
+into_custom = "Handle({})
+# Expression to convert a Handle to the builtin type.  In this example, `{}` will be replaced with the Handle value.
+from_custom = "{}.toString()"
+# Modules we need to import
+imports = [
+  "some.package.Handle",
+]
+```
+
+Here's how the configuration works in `uniffi.toml`.
+
+* Create a `[bindings.{language}.custom_types.{CustomTypeName}]` table to enable a custom type on a bindings side.  This has several subkeys:
+  * `type_name` (Optional, Typed languages only): Type/class name for the custom type.  Defaults to the typedef name used in the UDL.
+  * `into_custom`: Expression to convert the UDL type to the custom type.  `{}` will be replaced with the value of the UDL type.
+  * `from_custom`: Expression to convert the custom type to the UDL type.  `{}` will be replaced with the value of the custom type.
+  * `imports` (Optional) list of modules to import for your `into_custom`/`from_custom` functions.
 
 ## Using Custom Types from other crates
 
