@@ -34,8 +34,8 @@ pub(super) enum Attribute {
     Throws(String),
     // `[External="crate_name"]` - We can `use crate_name::...` for the type.
     External(String),
-    // Something hand-written in this crate which wraps a primitive type.
-    Wrapped,
+    // Custom type on the scaffolding side
+    Custom,
 }
 
 impl Attribute {
@@ -61,7 +61,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
                 "Threadsafe" => Ok(Attribute::Threadsafe),
-                "Wrapped" => Ok(Attribute::Wrapped),
+                "Custom" => Ok(Attribute::Custom),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -399,7 +399,7 @@ impl TryFrom<&weedle::attribute::IdentifierOrString<'_>> for SelfType {
 
 /// Represents UDL attributes that might appear on a typedef
 ///
-/// This supports the `[External="crate_name"]` and `[Wrapped]` attributes for types.
+/// This supports the `[External="crate_name"]` and `[Custom]` attributes for types.
 #[derive(Debug, Clone, Hash, Default)]
 pub(super) struct TypedefAttributes(Vec<Attribute>);
 
@@ -414,10 +414,10 @@ impl TypedefAttributes {
             .expect("must have a crate name")
     }
 
-    pub(super) fn is_wrapped(&self) -> bool {
+    pub(super) fn is_custom(&self) -> bool {
         self.0
             .iter()
-            .any(|attr| matches!(attr, Attribute::Wrapped { .. }))
+            .any(|attr| matches!(attr, Attribute::Custom { .. }))
     }
 }
 
@@ -427,7 +427,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for TypedefAttribute
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::External { .. } | Attribute::Wrapped => Ok(()),
+            Attribute::External { .. } | Attribute::Custom => Ok(()),
             _ => bail!(format!("{:?} not supported for typedefs", attr)),
         })?;
         Ok(Self(attrs))
@@ -711,24 +711,24 @@ mod test {
 
     #[test]
     fn test_typedef_attribute() {
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Wrapped]").unwrap();
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Custom]").unwrap();
         let attrs = TypedefAttributes::try_from(&node).unwrap();
-        assert!(attrs.is_wrapped());
+        assert!(attrs.is_custom());
 
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[External=crate_name]").unwrap();
         let attrs = TypedefAttributes::try_from(&node).unwrap();
-        assert!(!attrs.is_wrapped());
+        assert!(!attrs.is_custom());
         assert_eq!(attrs.get_crate_name(), "crate_name");
     }
 
     #[test]
     fn test_typedef_attributes_malformed() {
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Wrapped=foo]").unwrap();
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Custom=foo]").unwrap();
         let err = TypedefAttributes::try_from(&node).unwrap_err();
         assert_eq!(
             err.to_string(),
-            "Attribute identity Identifier not supported: \"Wrapped\""
+            "Attribute identity Identifier not supported: \"Custom\""
         );
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[External]").unwrap();

@@ -210,9 +210,9 @@ impl PythonCodeOracle {
             Type::External { name, crate_name } => {
                 Box::new(external::ExternalCodeType::new(name, crate_name))
             }
-            Type::Wrapped { ref prim, .. } => {
+            Type::Custom { ref builtin, .. } => {
                 let outer = type_.clone();
-                let inner = *prim.to_owned();
+                let inner = *builtin.to_owned();
                 Box::new(wrapped::WrappedCodeType::new(inner, outer))
             }
         }

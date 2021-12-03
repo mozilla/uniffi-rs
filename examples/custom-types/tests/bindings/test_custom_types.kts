@@ -5,13 +5,16 @@
 import java.util.concurrent.*
 
 import uniffi.wrapper_types.*
+import uniffi.custom_types.*
 
 // TODO: use an actual test runner.
 
-val demo = getWrappedTypesDemo(null)
-assert(demo.json == """{"demo":"string"}""")
+// Get the custom types and check their data
+val demo = getCustomTypesDemo(null)
+assert(demo.url == "http://example.com/")
 assert(demo.handle == 123L)
-demo.handle = 456;
 
-val demo2 = getWrappedTypesDemo(demo)
-assert(demo2.handle == 456L)
+// Change some data and ensure that the round-trip works
+demo.url = "http://new.example.com/"
+demo.handle = 456;
+assert(demo == getCustomTypesDemo(demo))

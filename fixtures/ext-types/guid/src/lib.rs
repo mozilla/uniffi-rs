@@ -22,7 +22,7 @@ fn get_guid(guid: Option<Guid>) -> Guid {
         Some(guid) => {
             assert!(
                 !guid.0.is_empty(),
-                "our UniffiCustomTypeWrapper already checked!"
+                "our UniffiCustomTypeConverter already checked!"
             );
             guid
         }
@@ -32,13 +32,13 @@ fn get_guid(guid: Option<Guid>) -> Guid {
 
 fn try_get_guid(guid: Option<Guid>) -> std::result::Result<Guid, GuidError> {
     // This function itself always returns Ok - but it's declared as a Result
-    // because the UniffiCustomTypeWrapper might return the Err as part of
+    // because the UniffiCustomTypeConverter might return the Err as part of
     // turning the string into the Guid.
     Ok(match guid {
         Some(guid) => {
             assert!(
                 !guid.0.is_empty(),
-                "our UniffiCustomTypeWrapper failed to check for an empty GUID"
+                "our UniffiCustomTypeConverter failed to check for an empty GUID"
             );
             guid
         }
@@ -66,12 +66,12 @@ fn get_guid_helper(vals: Option<GuidHelper>) -> GuidHelper {
     }
 }
 
-impl UniffiCustomTypeWrapper for Guid {
-    type Wrapped = String;
+impl UniffiCustomTypeConverter for Guid {
+    type Builtin = String;
 
     // This is a "fixture" rather than an "example", so we are free to do things that don't really
     // make sense for real apps.
-    fn wrap(val: Self::Wrapped) -> uniffi::Result<Self> {
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
         if val.is_empty() {
             Err(GuidError::TooShort.into())
         } else if val == "unexpected" {
@@ -83,7 +83,7 @@ impl UniffiCustomTypeWrapper for Guid {
         }
     }
 
-    fn unwrap(obj: Self) -> Self::Wrapped {
+    fn from_custom(obj: Self) -> Self::Builtin {
         obj.0
     }
 }

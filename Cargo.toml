@@ -10,7 +10,7 @@ members = [
   "examples/rondpoint",
   "examples/sprites",
   "examples/todolist",
-  "examples/wrapper-types",
+  "examples/custom-types",
 
   "fixtures/coverall",
   "fixtures/callbacks",

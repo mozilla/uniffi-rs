@@ -13,11 +13,11 @@ typedef extern UniffiOneType;
 [External="ext-types-guid"]
 typedef extern Guid;
 
-// And re-use the `wrapper-types` example - this exposes `JsonObject` and `Handle`
-[External="wrapper-types"]
-typedef extern JsonObject;
+// And re-use the `custom-types` example - this exposes `Url` and `Handle`
+[External="custom-types"]
+typedef extern Url;
 
-[External="wrapper-types"]
+[External="custom-types"]
 typedef extern Handle;
 
 // And a new type here to tie them all together.
@@ -30,9 +30,9 @@ dictionary CombinedType {
     sequence<Guid> guids;
     Guid? maybe_guid;
 
-    JsonObject json;
-    sequence<JsonObject> jsons;
-    JsonObject? maybe_json;
+    Url url;
+    sequence<Url> urls;
+    Url? maybe_url;
 
     Handle handle;
     sequence<Handle> handles;

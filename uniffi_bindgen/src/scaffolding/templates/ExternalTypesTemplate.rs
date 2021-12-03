@@ -6,42 +6,43 @@
 use {{ crate_name|crate_name_rs }}::FfiConverterType{{ name }};
 {% endfor %}
 
-// More complicated locally `Wrapped` types - we generate FfiConverter.
-{% for (name, prim) in ci.iter_wrapped_types() %}
+// For custom scaffolding types we need to generate an FfiConverterType based on the
+// UniffiCustomTypeConverter implementation that the library supplies
+{% for (name, builtin) in ci.iter_custom_types() %}
 {% if loop.first %}
 
 // A trait that's in our crate for our external wrapped types to implement.
-trait UniffiCustomTypeWrapper {
-    type Wrapped;
+trait UniffiCustomTypeConverter {
+    type Builtin;
 
-    fn wrap(val: Self::Wrapped) -> uniffi::Result<Self> where Self: Sized;
-    fn unwrap(obj: Self) -> Self::Wrapped;
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> where Self: Sized;
+    fn from_custom(obj: Self) -> Self::Builtin;
 }
 
 {%- endif -%}
 
-// Type `{{ name }}` wraps a `{{ prim.canonical_name() }}`
+// Type `{{ name }}` wraps a `{{ builtin.canonical_name() }}`
 #[doc(hidden)]
 pub struct FfiConverterType{{ name }};
 
 unsafe impl uniffi::FfiConverter for FfiConverterType{{ name }} {
     type RustType = {{ name }};
-    type FfiType = {{ prim.into()|type_ffi }};
+    type FfiType = {{ builtin.into()|type_ffi }};
 
     fn lower(obj: {{ name }} ) -> Self::FfiType {
-        <{{ prim|type_rs }} as uniffi::FfiConverter>::lower(<{{ name }} as UniffiCustomTypeWrapper>::unwrap(obj))
+        <{{ builtin|type_rs }} as uniffi::FfiConverter>::lower(<{{ name }} as UniffiCustomTypeConverter>::from_custom(obj))
     }
 
     fn try_lift(v: Self::FfiType) -> uniffi::Result<{{ name }}> {
-        <{{ name }} as UniffiCustomTypeWrapper>::wrap(<{{ prim|type_rs }} as uniffi::FfiConverter>::try_lift(v)?)
+        <{{ name }} as UniffiCustomTypeConverter>::into_custom(<{{ builtin|type_rs }} as uniffi::FfiConverter>::try_lift(v)?)
     }
 
     fn write(obj: {{ name }}, buf: &mut Vec<u8>) {
-        <{{ prim|type_rs }} as uniffi::FfiConverter>::write(<{{ name }} as UniffiCustomTypeWrapper>::unwrap(obj), buf);
+        <{{ builtin|type_rs }} as uniffi::FfiConverter>::write(<{{ name }} as UniffiCustomTypeConverter>::from_custom(obj), buf);
     }
 
     fn try_read(buf: &mut &[u8]) -> uniffi::Result<{{ name }}> {
-        <{{ name }} as UniffiCustomTypeWrapper>::wrap(<{{ prim|type_rs }} as uniffi::FfiConverter>::try_read(buf)?)
+        <{{ name }} as UniffiCustomTypeConverter>::into_custom(<{{ builtin|type_rs }} as uniffi::FfiConverter>::try_read(buf)?)
     }
 }
 {%- endfor -%}

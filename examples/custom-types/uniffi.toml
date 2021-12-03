@@ -1,0 +1,11 @@
+[bindings.python]
+cdylib_name = "custom_types"
+
+[bindings.ruby]
+cdylib_name = "custom_types"
+
+[bindings.swift]
+cdylib_name = "custom_types"
+
+[bindings.kotlin]
+cdylib_name = "custom_types"
