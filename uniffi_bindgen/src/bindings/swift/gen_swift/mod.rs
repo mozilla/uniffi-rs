@@ -179,31 +179,49 @@ impl<'a> SwiftWrapper<'a> {
         ]
         .into_iter()
         .chain(
-            ci.iter_enum_definitions().into_iter().map(|inner| {
-                Box::new(enum_::SwiftEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
-        )
-        .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-            Box::new(function::SwiftFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(
-            ci.iter_object_definitions().into_iter().map(|inner| {
-                Box::new(object::SwiftObject::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
+            ci.iter_enum_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(enum_::SwiftEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
         )
         .chain(
-            ci.iter_record_definitions().into_iter().map(|inner| {
-                Box::new(record::SwiftRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
+            ci.iter_function_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(function::SwiftFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
         )
         .chain(
-            ci.iter_error_definitions().into_iter().map(|inner| {
-                Box::new(error::SwiftError::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
+            ci.iter_object_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(object::SwiftObject::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
+        )
+        .chain(
+            ci.iter_record_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(record::SwiftRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
+        )
+        .chain(
+            ci.iter_error_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(error::SwiftError::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
         )
         .chain(
             ci.iter_callback_interface_definitions()
                 .into_iter()
+                .cloned()
                 .map(|inner| {
                     Box::new(callback_interface::SwiftCallbackInterface::new(inner, ci))
                         as Box<dyn CodeDeclaration>

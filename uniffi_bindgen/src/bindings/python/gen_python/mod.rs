@@ -79,21 +79,47 @@ impl<'a> PythonWrapper<'a> {
         let ci = self.ci;
         vec![]
             .into_iter()
-            .chain(ci.iter_enum_definitions().into_iter().map(|inner| {
-                Box::new(enum_::PythonEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
-            .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-                Box::new(function::PythonFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
-            .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-                Box::new(object::PythonObject::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
-            .chain(ci.iter_record_definitions().into_iter().map(|inner| {
-                Box::new(record::PythonRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
-            .chain(ci.iter_error_definitions().into_iter().map(|inner| {
-                Box::new(error::PythonError::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }))
+            .chain(
+                ci.iter_enum_definitions()
+                    .into_iter()
+                    .cloned()
+                    .map(|inner| {
+                        Box::new(enum_::PythonEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
+                    }),
+            )
+            .chain(
+                ci.iter_function_definitions()
+                    .into_iter()
+                    .cloned()
+                    .map(|inner| {
+                        Box::new(function::PythonFunction::new(inner, ci))
+                            as Box<dyn CodeDeclaration>
+                    }),
+            )
+            .chain(
+                ci.iter_object_definitions()
+                    .into_iter()
+                    .cloned()
+                    .map(|inner| {
+                        Box::new(object::PythonObject::new(inner, ci)) as Box<dyn CodeDeclaration>
+                    }),
+            )
+            .chain(
+                ci.iter_record_definitions()
+                    .into_iter()
+                    .cloned()
+                    .map(|inner| {
+                        Box::new(record::PythonRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
+                    }),
+            )
+            .chain(
+                ci.iter_error_definitions()
+                    .into_iter()
+                    .cloned()
+                    .map(|inner| {
+                        Box::new(error::PythonError::new(inner, ci)) as Box<dyn CodeDeclaration>
+                    }),
+            )
             .collect()
     }
 

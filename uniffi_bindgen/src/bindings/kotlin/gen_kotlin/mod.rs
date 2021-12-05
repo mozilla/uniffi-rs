@@ -95,27 +95,49 @@ impl<'a> KotlinWrapper<'a> {
         ]
         .into_iter()
         .chain(
-            ci.iter_enum_definitions().into_iter().map(|inner| {
-                Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
+            ci.iter_enum_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
         )
-        .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-            Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-            Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(ci.iter_record_definitions().into_iter().map(|inner| {
-            Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
         .chain(
-            ci.iter_error_definitions().into_iter().map(|inner| {
-                Box::new(error::KotlinError::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
+            ci.iter_function_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
+        )
+        .chain(
+            ci.iter_object_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
+        )
+        .chain(
+            ci.iter_record_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
+        )
+        .chain(
+            ci.iter_error_definitions()
+                .into_iter()
+                .cloned()
+                .map(|inner| {
+                    Box::new(error::KotlinError::new(inner, ci)) as Box<dyn CodeDeclaration>
+                }),
         )
         .chain(
             ci.iter_callback_interface_definitions()
                 .into_iter()
+                .cloned()
                 .map(|inner| {
                     Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci))
                         as Box<dyn CodeDeclaration>

@@ -45,7 +45,7 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::{hash_map::DefaultHasher, HashSet},
+    collections::{hash_map::DefaultHasher, BTreeMap, HashSet},
     convert::TryFrom,
     hash::{Hash, Hasher},
     str::FromStr,
@@ -92,12 +92,12 @@ pub struct ComponentInterface {
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
     namespace: String,
     /// The high-level API provided by the component.
-    enums: Vec<Enum>,
-    records: Vec<Record>,
-    functions: Vec<Function>,
-    objects: Vec<Object>,
-    callback_interfaces: Vec<CallbackInterface>,
-    errors: Vec<Error>,
+    enums: BTreeMap<String, Enum>,
+    records: BTreeMap<String, Record>,
+    functions: BTreeMap<String, Function>,
+    objects: BTreeMap<String, Object>,
+    callback_interfaces: BTreeMap<String, CallbackInterface>,
+    errors: BTreeMap<String, Error>,
 }
 
 impl<'ci> ComponentInterface {
@@ -141,69 +141,63 @@ impl<'ci> ComponentInterface {
     }
 
     /// List the definitions for every Enum type in the interface.
-    pub fn iter_enum_definitions(&self) -> Vec<Enum> {
-        self.enums.to_vec()
+    pub fn iter_enum_definitions(&self) -> Vec<&Enum> {
+        self.enums.values().collect()
     }
 
     /// Get an Enum definition by name, or None if no such Enum is defined.
     pub fn get_enum_definition(&self, name: &str) -> Option<&Enum> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.enums.iter().find(|e| e.name == name)
+        self.enums.get(name)
     }
 
     /// List the definitions for every Record type in the interface.
-    pub fn iter_record_definitions(&self) -> Vec<Record> {
-        self.records.to_vec()
+    pub fn iter_record_definitions(&self) -> Vec<&Record> {
+        self.records.values().collect()
     }
 
     /// Get a Record definition by name, or None if no such Record is defined.
     pub fn get_record_definition(&self, name: &str) -> Option<&Record> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.records.iter().find(|r| r.name == name)
+        self.records.get(name)
     }
 
     /// List the definitions for every Function in the interface.
-    pub fn iter_function_definitions(&self) -> Vec<Function> {
-        self.functions.to_vec()
+    pub fn iter_function_definitions(&self) -> Vec<&Function> {
+        self.functions.values().collect()
     }
 
     /// Get a Function definition by name, or None if no such Function is defined.
     pub fn get_function_definition(&self, name: &str) -> Option<&Function> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.functions.iter().find(|f| f.name == name)
+        self.functions.get(name)
     }
 
     /// List the definitions for every Object type in the interface.
-    pub fn iter_object_definitions(&self) -> Vec<Object> {
-        self.objects.to_vec()
+    pub fn iter_object_definitions(&self) -> Vec<&Object> {
+        self.objects.values().collect()
     }
 
     /// Get an Object definition by name, or None if no such Object is defined.
     pub fn get_object_definition(&self, name: &str) -> Option<&Object> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.objects.iter().find(|o| o.name == name)
+        self.objects.get(name)
     }
 
     /// List the definitions for every Callback Interface type in the interface.
-    pub fn iter_callback_interface_definitions(&self) -> Vec<CallbackInterface> {
-        self.callback_interfaces.to_vec()
+    pub fn iter_callback_interface_definitions(&self) -> Vec<&CallbackInterface> {
+        self.callback_interfaces.values().collect()
     }
 
     /// Get a Callback interface definition by name, or None if no such interface is defined.
     pub fn get_callback_interface_definition(&self, name: &str) -> Option<&CallbackInterface> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.callback_interfaces.iter().find(|o| o.name == name)
+        self.callback_interfaces.get(name)
     }
 
     /// List the definitions for every Error type in the interface.
-    pub fn iter_error_definitions(&self) -> Vec<Error> {
-        self.errors.to_vec()
+    pub fn iter_error_definitions(&self) -> Vec<&Error> {
+        self.errors.values().collect()
     }
 
     /// Get an Error definition by name, or None if no such Error is defined.
     pub fn get_error_definition(&self, name: &str) -> Option<&Error> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.errors.iter().find(|e| e.name == name)
+        self.errors.get(name)
     }
 
     /// Get details about all `Type::External` types
@@ -407,15 +401,15 @@ impl<'ci> ComponentInterface {
             .into_iter()
             .chain(
                 self.objects
-                    .iter()
+                    .values()
                     .flat_map(|obj| obj.iter_ffi_function_definitions()),
             )
             .chain(
                 self.callback_interfaces
-                    .iter()
+                    .values()
                     .flat_map(|cb| cb.iter_ffi_function_definitions()),
             )
-            .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
+            .chain(self.functions.values().map(|f| f.ffi_func.clone()))
             .chain(self.iter_rust_buffer_ffi_function_definitions())
             .collect()
     }
@@ -478,45 +472,45 @@ impl<'ci> ComponentInterface {
     /// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.
     fn add_enum_definition(&mut self, defn: Enum) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.enums.push(defn);
+        self.enums.insert(defn.name.clone(), defn);
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed record definition to the `ComponentInterface`.
     fn add_record_definition(&mut self, defn: Record) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.records.push(defn);
+        self.records.insert(defn.name.clone(), defn);
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
     fn add_function_definition(&mut self, defn: Function) -> Result<()> {
         // Since functions are not a first-class type, we have to check for duplicates here
         // rather than relying on the type-finding pass to catch them.
-        if self.functions.iter().any(|f| f.name == defn.name) {
-            bail!("duplicate function definition: \"{}\"", defn.name);
+        if self.functions.contains_key(defn.name()) {
+            bail!("duplicate function definition: \"{}\"", defn.name());
         }
         if !matches!(self.types.get_type_definition(defn.name()), None) {
             bail!("Conflicting type definition for \"{}\"", defn.name());
         }
-        self.functions.push(defn);
+        self.functions.insert(defn.name.clone(), defn);
         Ok(())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
     fn add_object_definition(&mut self, defn: Object) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.objects.push(defn);
+        self.objects.insert(defn.name.clone(), defn);
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
     fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.callback_interfaces.push(defn);
+        self.callback_interfaces.insert(defn.name.clone(), defn);
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed error definition to the `ComponentInterface`.
     fn add_error_definition(&mut self, defn: Error) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.errors.push(defn);
+        self.errors.insert(defn.name.clone(), defn);
     }
 
     /// Perform global consistency checks on the declared interface.
@@ -529,7 +523,7 @@ impl<'ci> ComponentInterface {
             bail!("missing namespace definition");
         }
         // To keep codegen tractable, enum variant names must not shadow type names.
-        for e in self.enums.iter() {
+        for e in self.enums.values() {
             for variant in e.variants.iter() {
                 if self.types.get_type_definition(variant.name()).is_some() {
                     bail!(
@@ -548,13 +542,13 @@ impl<'ci> ComponentInterface {
     /// the resulting set will be missing some entries.
     fn derive_ffi_funcs(&mut self) -> Result<()> {
         let ci_prefix = self.ffi_namespace();
-        for func in self.functions.iter_mut() {
+        for (_, func) in self.functions.iter_mut() {
             func.derive_ffi_func(&ci_prefix)?;
         }
-        for obj in self.objects.iter_mut() {
+        for (_, obj) in self.objects.iter_mut() {
             obj.derive_ffi_funcs(&ci_prefix)?;
         }
-        for callback in self.callback_interfaces.iter_mut() {
+        for (_, callback) in self.callback_interfaces.iter_mut() {
             callback.derive_ffi_funcs(&ci_prefix);
         }
         Ok(())
