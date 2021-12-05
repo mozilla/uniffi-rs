@@ -58,7 +58,7 @@ test suite you will need:
   * A `python3` interpreter.
 * Ruby:
   * A `ruby` interpreter.
-  * The [`FFI`](https://github.com/ffi/ffi) Ruby gem, installable via `gem install FFI`.
+  * The [`FFI`](https://github.com/ffi/ffi) Ruby gem, installable via `gem install ffi`.
 
 We also support an environment variable `UNIFFI_TESTS_DISABLE_EXTENSIONS`;
 It is a set of file extensions, without a leading period and separated by commas.
