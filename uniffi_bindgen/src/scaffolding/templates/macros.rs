@@ -19,17 +19,12 @@
             conversions to this error. If the downcast fails or the function doesn't
             return an error, we just panic.
         #}
-        {%- match func.throws() -%}
-        {% when Some with (e) %}
-            Err(err) => {
-                match err.downcast::<{{ e }}>() {
-                    Ok(actual_error) => return Err({{ func.throws_type().unwrap()|ffi_converter }}::lower(actual_error)),
-                    Err(ohno) => panic!("Failed to convert arg '{}': {}", "{{ arg.name() }}", ohno),
-                }
-            }
-        {% else %}
+        {%- match func.throws_type() -%}
+        {%- when Some with (e) %}
+            Err(err) => return Err(uniffi::lower_anyhow_error_or_panic::<{{ e|ffi_converter_name }}>(err, "{{ arg.name() }}")),
+        {%- else %}
             Err(err) => panic!("Failed to convert arg '{}': {}", "{{ arg.name() }}", err),
-        {% endmatch %}
+        {%- endmatch %}
         }
         {%- if !loop.last %}, {% endif %}
     {%- endfor %}

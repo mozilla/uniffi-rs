@@ -625,6 +625,20 @@ unsafe impl<T: Sync + Send> FfiConverter for std::sync::Arc<T> {
     }
 }
 
+pub fn lower_anyhow_error_or_panic<ErrConverter>(
+    err: anyhow::Error,
+    arg_name: &str,
+) -> ErrConverter::FfiType
+where
+    ErrConverter: FfiConverter,
+    ErrConverter::RustType: 'static + Sync + Send + std::fmt::Debug + std::fmt::Display,
+{
+    match err.downcast::<ErrConverter::RustType>() {
+        Ok(actual_error) => ErrConverter::lower(actual_error),
+        Err(ohno) => panic!("Failed to convert arg '{}': {}", arg_name, ohno),
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
