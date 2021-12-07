@@ -36,6 +36,25 @@ open class RustBuffer : Structure() {
         }
 }
 
+/**
+ * The equivalent of the `*mut RustBuffer` type.
+ * Required for callbacks taking in an out pointer.
+ *
+ * Size is the sum of all values in the struct.
+ */
+class RustBufferByReference : ByReference(16) {
+    /**
+     * Set the pointed-to `RustBuffer` to the given value.
+     */
+    fun setValue(value: RustBuffer.ByValue) {
+        // NOTE: The offsets are as they are in the C-like struct.
+        val pointer = getPointer()
+        pointer.setInt(0, value.capacity)
+        pointer.setInt(4, value.len)
+        pointer.setPointer(8, value.data)
+    }
+}
+
 // This is a helper for safely passing byte references into the rust code.
 // It's not actually used at the moment, because there aren't many things that you
 // can take a direct pointer to in the JVM, and if we're going to copy something

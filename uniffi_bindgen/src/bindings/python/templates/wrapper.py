@@ -51,6 +51,9 @@ __all__ = [
     {%- for e in ci.iter_error_definitions() %}
     "{{ e|type_name }}",
     {%- endfor %}
+    {%- for c in ci.iter_callback_interface_definitions() %}
+    "{{ c.name()|class_name }}",
+    {%- endfor %}
 ]
 
 {% import "macros.py" as py %}

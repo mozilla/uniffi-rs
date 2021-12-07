@@ -2,11 +2,11 @@
 // For each Callback Interface definition, we assume that there is a corresponding trait defined in Rust client code.
 // If the UDL callback interface and Rust trait's methods don't match, the Rust compiler will complain.
 // We generate:
-//  * an init function to accept that `ForeignCallback` from the foreign language, and stores it. 
+//  * an init function to accept that `ForeignCallback` from the foreign language, and stores it.
 //  * a holder for a `ForeignCallback`, of type `uniffi::ForeignCallbackInternals`.
-//  * a proxy `struct` which implements the `trait` that the Callback Interface corresponds to. This 
+//  * a proxy `struct` which implements the `trait` that the Callback Interface corresponds to. This
 //    is the object that client code interacts with.
-//    - for each method, arguments will be packed into a `RustBuffer` and sent over the `ForeignCallback` to be 
+//    - for each method, arguments will be packed into a `RustBuffer` and sent over the `ForeignCallback` to be
 //      unpacked and called. The return value is packed into another `RustBuffer` and sent back to Rust.
 //    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
 #}
@@ -34,7 +34,8 @@ struct {{ trait_impl }} {
 impl Drop for {{ trait_impl }} {
     fn drop(&mut self) {
         let callback = {{ foreign_callback_internals }}.get_callback().unwrap();
-        unsafe { callback(self.handle, uniffi::IDX_CALLBACK_FREE, Default::default()) };
+        let mut rbuf = uniffi::RustBuffer::new();
+        unsafe { callback(self.handle, uniffi::IDX_CALLBACK_FREE, Default::default(), &mut rbuf) };
     }
 }
 
@@ -49,7 +50,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
     {%- match meth.return_type() %}
     {%- when Some with (return_type) %} -> {{ return_type|type_rs }}
     {% else -%}
-    {%- endmatch -%} { 
+    {%- endmatch -%} {
     {#- Method body #}
         uniffi::deps::log::debug!("{{ cbi.name() }}.{{ meth.name() }}");
 
@@ -66,7 +67,22 @@ impl {{ trait_name }} for {{ trait_impl }} {
 
     {#- Calling into foreign code. #}
         let callback = {{ foreign_callback_internals }}.get_callback().unwrap();
-        let ret_rbuf = unsafe { callback(self.handle, {{ loop.index }}, args_rbuf) };
+
+        let ret_rbuf = unsafe {
+            // SAFETY:
+            // * We're passing in a pointer to an empty buffer.
+            //   * Nothing allocated, so nothing to drop.
+            // * We expect the callback to write into that a valid allocated instance of a
+            //   RustBuffer.
+            // * A positive return value signals success.
+            let mut ret_rbuf = uniffi::RustBuffer::new();
+            let ret = callback(self.handle, {{ loop.index }}, args_rbuf, &mut ret_rbuf);
+            match ret {
+                0 => uniffi::RustBuffer::new(),
+                _ if ret < 0 => panic!("Callback failed"),
+                _ => ret_rbuf
+            }
+        };
 
     {#- Unpacking the RustBuffer to return to Rust #}
         {% match meth.return_type() -%}
@@ -85,7 +101,7 @@ unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
     // This RustType allows for rust code that inputs this type as a Box<dyn CallbackInterfaceTrait> param
     type RustType = Box<dyn {{ trait_name }}>;
     type FfiType = u64;
-    
+
     // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
     // probably a way to, but this carries lots of thread safety risks, down to impedence
     // mismatches between Rust and foreign languages, and our uncertainty around implementations of
@@ -94,7 +110,7 @@ unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
     // The use case for them is also quite exotic: it's passing a foreign callback back to the foreign
     // language.
     //
-    // Until we have some certainty, and use cases, we shouldn't use them. 
+    // Until we have some certainty, and use cases, we shouldn't use them.
     fn lower(_obj: Self::RustType) -> Self::FfiType {
         panic!("Lowering CallbackInterface not supported")
     }

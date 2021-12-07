@@ -4,3 +4,6 @@ cdylib_name = "callbacks"
 
 [bindings.swift]
 cdylib_name = "callbacks"
+
+[bindings.python]
+cdylib_name = "callbacks"

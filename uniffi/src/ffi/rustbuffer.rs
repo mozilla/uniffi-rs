@@ -63,6 +63,7 @@ pub struct RustBuffer {
 impl RustBuffer {
     /// Creates an empty `RustBuffer`.
     ///
+    /// The buffer will not allocate.
     /// The resulting vector will not be automatically dropped; you must
     /// arrange to call `destroy` or `destroy_into_vec` when finished with it.
     pub fn new() -> Self {

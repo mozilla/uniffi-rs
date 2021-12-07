@@ -61,3 +61,7 @@ def rust_call_with_error(error_class, fn, *args):
     else:
         raise InternalError("Invalid RustCallStatus code: {}".format(
             call_status.code))
+
+# A function pointer for a callback as defined by UniFFI.
+# Rust definition `fn(handle: u64, method: u32, args: RustBuffer, buf_ptr: *mut RustBuffer) -> int`
+FOREIGN_CALLBACK_T = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_ulonglong, ctypes.c_ulong, RustBuffer, ctypes.POINTER(RustBuffer))
