@@ -16,4 +16,4 @@ uniffi_macros = {path = "../../uniffi_macros", features=["builtin-bindgen"]}
 uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}
 
 [dev-dependencies]
-trybuild = "1"
+trybuild = "1.0.53"

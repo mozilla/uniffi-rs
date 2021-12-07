@@ -9,3 +9,7 @@ Ideally these tests would be part of the `uniffi_bindgen` crate, but factoring i
 into a separate crate has made it easier to integrate with `trybuild`. In particular
 it lets us use convenience macros from `uniffi_macros` when writing the tests, without
 having to deal with a circular dependency between `uniffi_macros` and `uniffi_bindgen`.
+
+If the tests here fail because other changes caused stderr output to change, the tool
+will advise that running with `TRYBUILD=overwrite` in the environment can be used to update
+the expected output. As of trybuild 1.0.53, that advice should work here!
