@@ -283,6 +283,7 @@
 <span id="281">281</span>
 <span id="282">282</span>
 <span id="283">283</span>
+<span id="284">284</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -349,6 +350,7 @@
 <span class="kw">impl</span> <span class="ident">RustBuffer</span> {
     <span class="doccomment">/// Creates an empty `RustBuffer`.</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// The buffer will not allocate.</span>
     <span class="doccomment">/// The resulting vector will not be automatically dropped; you must</span>
     <span class="doccomment">/// arrange to call `destroy` or `destroy_into_vec` when finished with it.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {

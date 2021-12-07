@@ -365,6 +365,22 @@
 <span id="363">363</span>
 <span id="364">364</span>
 <span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -382,6 +398,7 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::interface</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::MergeWith</span>;
 
+<span class="kw">mod</span> <span class="ident">callback_interface</span>;
 <span class="kw">mod</span> <span class="ident">compounds</span>;
 <span class="kw">mod</span> <span class="ident">enum_</span>;
 <span class="kw">mod</span> <span class="ident">error</span>;
@@ -445,24 +462,39 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">members</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ci</span>;
-        <span class="macro">vec!</span>[]
-            .<span class="ident">into_iter</span>()
-            .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_enum_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+        <span class="macro">vec!</span>[
+            <span class="ident">Box::new</span>(<span class="ident">callback_interface::PythonCallbackInterfaceRuntime::new</span>(<span class="ident">ci</span>))
+                <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>,
+        ]
+        .<span class="ident">into_iter</span>()
+        .<span class="ident">chain</span>(
+            <span class="ident">ci</span>.<span class="ident">iter_enum_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
                 <span class="ident">Box::new</span>(<span class="ident">enum_::PythonEnum::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-            }))
-            .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_function_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
-                <span class="ident">Box::new</span>(<span class="ident">function::PythonFunction::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-            }))
-            .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_object_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
-                <span class="ident">Box::new</span>(<span class="ident">object::PythonObject::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-            }))
-            .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_record_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
-                <span class="ident">Box::new</span>(<span class="ident">record::PythonRecord::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-            }))
-            .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_error_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+            }),
+        )
+        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_function_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+            <span class="ident">Box::new</span>(<span class="ident">function::PythonFunction::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+        }))
+        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_object_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+            <span class="ident">Box::new</span>(<span class="ident">object::PythonObject::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+        }))
+        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_record_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+            <span class="ident">Box::new</span>(<span class="ident">record::PythonRecord::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+        }))
+        .<span class="ident">chain</span>(
+            <span class="ident">ci</span>.<span class="ident">iter_error_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
                 <span class="ident">Box::new</span>(<span class="ident">error::PythonError::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-            }))
-            .<span class="ident">collect</span>()
+            }),
+        )
+        .<span class="ident">chain</span>(
+            <span class="ident">ci</span>.<span class="ident">iter_callback_interface_definitions</span>()
+                .<span class="ident">into_iter</span>()
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
+                    <span class="ident">Box::new</span>(<span class="ident">callback_interface::PythonCallbackInterface::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>))
+                        <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+                }),
+        )
+        .<span class="ident">collect</span>()
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialization_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
@@ -540,8 +572,8 @@
             <span class="ident">Type::Object</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">object::ObjectCodeType::new</span>(<span class="ident">id</span>)),
             <span class="ident">Type::Record</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">record::RecordCodeType::new</span>(<span class="ident">id</span>)),
             <span class="ident">Type::Error</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">error::ErrorCodeType::new</span>(<span class="ident">id</span>)),
-            <span class="ident">Type::CallbackInterface</span>(<span class="ident">_id</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">unimplemented!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>)
+            <span class="ident">Type::CallbackInterface</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">Box::new</span>(<span class="ident">callback_interface::CallbackInterfaceCodeType::new</span>(<span class="ident">id</span>))
             }
 
             <span class="ident">Type::Optional</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -628,7 +660,7 @@
             <span class="ident">FFIType::RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ctypes.c_void_p&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
+            <span class="ident">FFIType::ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;FOREIGN_CALLBACK_T&quot;</span>.<span class="ident">to_string</span>(),
         }
     }
 }
