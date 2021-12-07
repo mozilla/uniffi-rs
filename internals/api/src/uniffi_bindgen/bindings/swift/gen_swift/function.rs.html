@@ -34,6 +34,9 @@
 <span id="32">32</span>
 <span id="33">33</span>
 <span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -44,6 +47,7 @@
 <span class="kw">use</span> <span class="ident">askama::Template</span>;
 
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::filters</span>;
+<span class="kw">use</span> <span class="kw">super</span><span class="ident">::Config</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
 <span class="attribute">#[<span class="ident">template</span>(
@@ -53,12 +57,14 @@
 )]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SwiftFunction</span> {
     <span class="ident">inner</span>: <span class="ident">Function</span>,
+    <span class="ident">config</span>: <span class="ident">Config</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">SwiftFunction</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">inner</span>: <span class="ident">Function</span>, <span class="ident">_ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">inner</span> }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">inner</span>: <span class="ident">Function</span>, <span class="ident">_ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>, <span class="ident">config</span>: <span class="ident">Config</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">inner</span>, <span class="ident">config</span> }
     }
+
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Function</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>
     }
