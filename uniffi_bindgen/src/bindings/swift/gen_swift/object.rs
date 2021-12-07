@@ -9,6 +9,8 @@ use crate::interface::{ComponentInterface, Object};
 use askama::Template;
 
 use super::filters;
+use super::Config;
+
 pub struct ObjectCodeType {
     id: String,
 }
@@ -64,13 +66,15 @@ impl CodeType for ObjectCodeType {
 #[derive(Template)]
 #[template(syntax = "swift", escape = "none", path = "ObjectTemplate.swift")]
 pub struct SwiftObject {
+    config: Config,
     inner: Object,
 }
 
 impl SwiftObject {
-    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
-        Self { inner }
+    pub fn new(inner: Object, _ci: &ComponentInterface, config: Config) -> Self {
+        Self { inner, config }
     }
+
     pub fn inner(&self) -> &Object {
         &self.inner
     }

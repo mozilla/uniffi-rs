@@ -26,6 +26,7 @@
 # Swift
 
 - [Overview](./swift/overview.md)
+- [Configuration](./swift/configuration.md)
 - [Building a Swift module](./swift/module.md)
 - [Integrating with XCode](./swift/xcode.md)
 

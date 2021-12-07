@@ -9,6 +9,8 @@ use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
 
 use super::filters;
+use super::Config;
+
 pub struct CallbackInterfaceCodeType {
     id: String,
 }
@@ -79,11 +81,12 @@ impl CodeType for CallbackInterfaceCodeType {
 )]
 pub struct SwiftCallbackInterface {
     inner: CallbackInterface,
+    config: Config,
 }
 
 impl SwiftCallbackInterface {
-    pub fn new(inner: CallbackInterface, _ci: &ComponentInterface) -> Self {
-        Self { inner }
+    pub fn new(inner: CallbackInterface, _ci: &ComponentInterface, config: Config) -> Self {
+        Self { inner, config }
     }
     pub fn inner(&self) -> &CallbackInterface {
         &self.inner
