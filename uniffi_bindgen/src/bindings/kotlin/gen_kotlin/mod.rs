@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap};
 use std::fmt;
 
 use anyhow::Result;
@@ -10,7 +10,7 @@ use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use crate::backend::{CodeBuilder, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
 use crate::MergeWith;
 
@@ -85,107 +85,40 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Str
     let oracle = KotlinCodeOracle::new(config.clone());
     filters::set_oracle(oracle.clone());
 
-    KotlinWrapper::new(oracle, config.clone(), ci)
+    KotlinBindings::new(oracle, config.clone(), ci)
         .render()
         .map_err(|_| anyhow::anyhow!("failed to render kotlin bindings"))
 }
 
 #[derive(Template)]
-#[template(syntax = "kt", escape = "none", path = "wrapper.kt")]
-pub struct KotlinWrapper<'a> {
-    oracle: KotlinCodeOracle,
+#[template(syntax = "kt", escape = "none", path = "Bindings.kt")]
+pub struct KotlinBindings<'a> {
     config: Config,
     ci: &'a ComponentInterface,
+    code_blocks: BTreeSet<String>,
+    import_statements: BTreeSet<String>,
+    initialization_code: BTreeSet<String>,
 }
-impl<'a> KotlinWrapper<'a> {
+impl<'a> KotlinBindings<'a> {
     pub fn new(oracle: KotlinCodeOracle, config: Config, ci: &'a ComponentInterface) -> Self {
-        Self { oracle, config, ci }
-    }
+        let mut builder = CodeBuilder::new();
+        // Generate code for all known types.  This handles both primitive types as well as
+        // records, objects, etc.  BTreeSet sorts the types for nicer output.
+        for type_ in ci.iter_types().iter() {
+            type_.build_code(&oracle, &mut builder, ci);
+        }
+        // Also generate code for toplevel-functions
+        for func in ci.iter_function_definitions() {
+            builder.add_code_block(function::KotlinFunction::new(func, ci));
+        }
 
-    pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
-        let ci = self.ci;
-        vec![
-            Box::new(object::KotlinObjectRuntime::new(ci)) as Box<dyn CodeDeclaration>,
-            Box::new(callback_interface::KotlinCallbackInterfaceRuntime::new(ci))
-                as Box<dyn CodeDeclaration>,
-        ]
-        .into_iter()
-        .chain(
-            ci.iter_enum_definitions().into_iter().map(|inner| {
-                Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
-        )
-        .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-            Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-            Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(ci.iter_record_definitions().into_iter().map(|inner| {
-            Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(
-            ci.iter_error_definitions().into_iter().map(|inner| {
-                Box::new(error::KotlinError::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
-        )
-        .chain(
-            ci.iter_callback_interface_definitions()
-                .into_iter()
-                .map(|inner| {
-                    Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci))
-                        as Box<dyn CodeDeclaration>
-                }),
-        )
-        .chain(ci.iter_custom_types().into_iter().map(|(name, type_)| {
-            let config = self.config.custom_types.get(&name).cloned();
-            Box::new(custom::KotlinCustomType::new(name, type_, config)) as Box<dyn CodeDeclaration>
-        }))
-        .collect()
-    }
-
-    pub fn initialization_code(&self) -> Vec<String> {
-        let oracle = &self.oracle;
-        self.members()
-            .into_iter()
-            .filter_map(|member| member.initialization_code(oracle))
-            .collect()
-    }
-
-    pub fn declaration_code(&self) -> Vec<String> {
-        let oracle = &self.oracle;
-        self.members()
-            .into_iter()
-            .filter_map(|member| member.definition_code(oracle))
-            .chain(
-                self.ci
-                    .iter_types()
-                    .into_iter()
-                    .filter_map(|type_| oracle.find(&type_).helper_code(oracle)),
-            )
-            .collect()
-    }
-
-    pub fn imports(&self) -> Vec<String> {
-        let oracle = &self.oracle;
-        let mut imports: Vec<String> = self
-            .members()
-            .into_iter()
-            .filter_map(|member| member.imports(oracle))
-            .flatten()
-            .chain(
-                self.ci
-                    .iter_types()
-                    .into_iter()
-                    .filter_map(|type_| oracle.find(&type_).imports(oracle))
-                    .flatten(),
-            )
-            .collect::<HashSet<String>>()
-            .into_iter()
-            .collect();
-
-        imports.sort();
-        imports
+        Self {
+            config,
+            ci,
+            code_blocks: builder.code_blocks,
+            import_statements: builder.import_statements,
+            initialization_code: builder.initialization_code,
+        }
     }
 }
 

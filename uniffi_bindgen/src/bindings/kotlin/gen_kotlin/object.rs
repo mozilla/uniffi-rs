@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use crate::backend::{CodeBuilder, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Object};
 use askama::Template;
 
@@ -54,11 +54,21 @@ impl CodeType for ObjectCodeType {
         format!("{}.read({})", self.type_label(oracle), nm)
     }
 
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} class is found in ObjectTemplate.kt",
-            self.type_label(oracle)
-        ))
+    fn build_code(
+        &self,
+        _oracle: &dyn CodeOracle,
+        builder: &mut CodeBuilder,
+        ci: &ComponentInterface,
+    ) {
+        builder
+            .add_imports(vec![
+                "import java.util.concurrent.atomic.AtomicLong".to_owned(),
+                "import java.util.concurrent.atomic.AtomicBoolean".to_owned(),
+            ])
+            .add_code_block(KotlinObject::new(
+                ci.get_object_definition(&self.id).unwrap().clone(),
+            ))
+            .add_code_block(KotlinObjectRuntime);
     }
 }
 
@@ -69,7 +79,7 @@ pub struct KotlinObject {
 }
 
 impl KotlinObject {
-    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
+    pub fn new(inner: Object) -> Self {
         Self { inner }
     }
     pub fn inner(&self) -> &Object {
@@ -77,44 +87,6 @@ impl KotlinObject {
     }
 }
 
-impl CodeDeclaration for KotlinObject {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
-    }
-
-    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        Some(
-            vec![
-                "java.util.concurrent.atomic.AtomicLong",
-                "java.util.concurrent.atomic.AtomicBoolean",
-            ]
-            .into_iter()
-            .map(|s| s.into())
-            .collect(),
-        )
-    }
-}
-
 #[derive(Template)]
 #[template(syntax = "kt", escape = "none", path = "ObjectRuntime.kt")]
-pub struct KotlinObjectRuntime {
-    is_needed: bool,
-}
-
-impl KotlinObjectRuntime {
-    pub fn new(ci: &ComponentInterface) -> Self {
-        Self {
-            is_needed: !ci.iter_object_definitions().is_empty(),
-        }
-    }
-}
-
-impl CodeDeclaration for KotlinObjectRuntime {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        if self.is_needed {
-            Some(self.render().unwrap())
-        } else {
-            None
-        }
-    }
-}
+pub struct KotlinObjectRuntime;

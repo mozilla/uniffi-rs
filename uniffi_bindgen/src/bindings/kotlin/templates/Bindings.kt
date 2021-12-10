@@ -24,9 +24,8 @@ import com.sun.jna.Structure
 import com.sun.jna.ptr.ByReference
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-
-{%- for imported_class in self.imports() %}
-import {{ imported_class }}
+{%- for statement in import_statements %}
+{{ statement }}
 {%- endfor %}
 
 // The Rust Buffer and 3 templated methods (alloc, free, reserve).
@@ -39,8 +38,8 @@ import {{ imported_class }}
 {% include "NamespaceLibraryTemplate.kt" %}
 
 // Public interface members begin here.
-{% for code in self.declaration_code() %}
-{{ code }}
+{%- for code_block in code_blocks %}
+{{ code_block }}
 {%- endfor %}
 
 {% import "macros.kt" as kt %}

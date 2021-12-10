@@ -30,7 +30,7 @@
 //! Each backend will have its own `filter` module, which is used by the askama templates used in all `CodeType`s and `CodeDeclaration`s.
 //! This filter provides methods to generate expressions and identifiers in the target language. These are all forwarded to the oracle.
 
-use super::{CodeOracle, Literal};
+use super::{CodeBuilder, CodeOracle, Literal};
 use crate::interface::*;
 use std::fmt;
 
@@ -91,6 +91,22 @@ pub trait CodeType {
         unimplemented!("Unimplemented for {}", self.type_label(oracle))
     }
 
+    /// An expression to coerce the given variable to the expected type.
+    fn coerce(&self, oracle: &dyn CodeOracle, _nm: &dyn fmt::Display) -> String {
+        panic!("Unimplemented for {}", self.type_label(oracle));
+    }
+
+    // Generate code needed for this type and add it to a `CodeBuilder`
+    fn build_code(
+        &self,
+        _oracle: &dyn CodeOracle,
+        _builder: &mut CodeBuilder,
+        _ci: &ComponentInterface,
+    ) {
+    }
+
+    /// Deprecated code generation methods, the plan is to replace these with `declare_code`
+
     /// The lift/lower/read/write methods above must be producing expressions that
     /// can be part of a larger statement. Most of the time, that is a function call
     /// to do the work for it.
@@ -104,11 +120,6 @@ pub trait CodeType {
     /// Classes are imported exactly once.
     fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         None
-    }
-
-    /// An expression to coerce the given variable to the expected type.
-    fn coerce(&self, oracle: &dyn CodeOracle, _nm: &dyn fmt::Display) -> String {
-        panic!("Unimplemented for {}", self.type_label(oracle));
     }
 }
 
@@ -213,6 +224,15 @@ impl<T: CodeTypeDispatch> CodeType for T {
 
     fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
         self.code_type_impl(oracle).read(oracle, nm)
+    }
+
+    fn build_code(
+        &self,
+        oracle: &dyn CodeOracle,
+        builder: &mut CodeBuilder,
+        ci: &ComponentInterface,
+    ) {
+        self.code_type_impl(oracle).build_code(oracle, builder, ci)
     }
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {

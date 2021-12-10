@@ -2,11 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+mod codebuilder;
 mod config;
 mod declarations;
 mod oracle;
 mod types;
 
+pub use codebuilder::CodeBuilder;
 pub use config::TemplateExpression;
 pub use declarations::CodeDeclaration;
 pub use oracle::CodeOracle;

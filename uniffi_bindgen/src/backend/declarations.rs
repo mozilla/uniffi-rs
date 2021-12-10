@@ -10,6 +10,8 @@ use super::CodeOracle;
 /// code at start-up of the FFI.
 /// All methods are optional, and there is no requirement that the trait be used for a particular
 /// `interface::` member. Thus, it can also be useful for conditionally rendering code.
+///
+/// This trait is deprecated, and will be replaced with `CodeType.declare_code()` method
 pub trait CodeDeclaration {
     /// A list of imports that are needed if this type is in use.
     /// Classes are imported exactly once.

@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use crate::backend::{CodeBuilder, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Record};
 use askama::Template;
 
@@ -53,11 +53,16 @@ impl CodeType for RecordCodeType {
         format!("{}.read({})", self.type_label(oracle), nm)
     }
 
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} record is found in RecordTemplate.kt",
-            self.type_label(oracle)
-        ))
+    fn build_code(
+        &self,
+        _oracle: &dyn CodeOracle,
+        builder: &mut CodeBuilder,
+        ci: &ComponentInterface,
+    ) {
+        builder.add_code_block(KotlinRecord::new(
+            ci.get_record_definition(&self.id).unwrap().clone(),
+            ci,
+        ));
     }
 }
 
@@ -80,11 +85,5 @@ impl KotlinRecord {
     }
     pub fn contains_object_references(&self) -> bool {
         self.contains_object_references
-    }
-}
-
-impl CodeDeclaration for KotlinRecord {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
     }
 }

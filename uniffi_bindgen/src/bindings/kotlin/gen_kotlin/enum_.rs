@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use crate::backend::{CodeBuilder, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Enum};
 use askama::Template;
 
@@ -61,11 +61,16 @@ impl CodeType for EnumCodeType {
         format!("{}.read({})", self.type_label(oracle), nm)
     }
 
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} enum is found in EnumTemplate.kt",
-            self.type_label(oracle)
-        ))
+    fn build_code(
+        &self,
+        _oracle: &dyn CodeOracle,
+        builder: &mut CodeBuilder,
+        ci: &ComponentInterface,
+    ) {
+        builder.add_code_block(KotlinEnum::new(
+            ci.get_enum_definition(&self.id).unwrap().clone(),
+            ci,
+        ));
     }
 }
 
@@ -88,11 +93,5 @@ impl KotlinEnum {
     }
     pub fn contains_object_references(&self) -> bool {
         self.contains_object_references
-    }
-}
-
-impl CodeDeclaration for KotlinEnum {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
     }
 }

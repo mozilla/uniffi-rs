@@ -7,8 +7,8 @@ use std::fmt;
 use askama::Template;
 
 use super::{filters, CustomTypeConfig};
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{FFIType, Type};
+use crate::backend::{CodeBuilder, CodeOracle, CodeType, Literal};
+use crate::interface::{ComponentInterface, FFIType, Type};
 
 pub struct CustomCodeType {
     name: String,
@@ -81,11 +81,25 @@ impl CodeType for CustomCodeType {
         format!("{}.read({})", self.ffi_converter_name(oracle), nm)
     }
 
-    fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} is found in CustomType.kt",
-            self.name,
-        ))
+    fn build_code(
+        &self,
+        _oracle: &dyn CodeOracle,
+        builder: &mut CodeBuilder,
+        _ci: &ComponentInterface,
+    ) {
+        // Complex match that checks if self.config and self.config.imports are both Some
+        if let Some(CustomTypeConfig {
+            imports: Some(ref imports),
+            ..
+        }) = self.config
+        {
+            builder.add_imports(imports.clone());
+        }
+        builder.add_code_block(KotlinCustomType::new(
+            self.name.clone(),
+            self.builtin.clone(),
+            self.config.clone(),
+        ));
     }
 }
 
@@ -115,18 +129,5 @@ impl KotlinCustomType {
 
     fn builtin_ffi_type(&self) -> FFIType {
         (&self.builtin).into()
-    }
-}
-
-impl CodeDeclaration for KotlinCustomType {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
-    }
-
-    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        match &self.config {
-            None => None,
-            Some(custom_type_config) => custom_type_config.imports.clone(),
-        }
     }
 }

@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeOracle, CodeType, Literal};
-use crate::interface::{types::Type, Radix};
+use crate::backend::{CodeBuilder, CodeOracle, CodeType, Literal};
+use crate::interface::{types::Type, ComponentInterface, Radix};
 use askama::Template;
 use paste::paste;
 use std::fmt;
@@ -84,8 +84,8 @@ macro_rules! impl_code_type_for_primitive {
                     format!("{}.read({})", $class_name, nm)
                 }
 
-                fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-                    Some(self.render().unwrap())
+                fn build_code(&self, _oracle: &dyn CodeOracle, builder: &mut CodeBuilder, _ci: &ComponentInterface) {
+                    builder.add_code_block($T);
                 }
             }
         }

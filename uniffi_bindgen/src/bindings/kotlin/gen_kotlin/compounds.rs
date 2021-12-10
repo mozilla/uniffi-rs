@@ -2,7 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
+use crate::backend::{CodeBuilder, CodeOracle, CodeType, Literal, TypeIdentifier};
+use crate::interface::ComponentInterface;
 use askama::Template;
 use paste::paste;
 use std::fmt;
@@ -23,7 +24,7 @@ fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdenti
 macro_rules! impl_code_type_for_compound {
      ($T:ty, $type_label_pattern:literal, $canonical_name_pattern: literal, $template_file:literal) => {
         paste! {
-            #[derive(Template)]
+            #[derive(Clone, Template)]
             #[template(syntax = "kt", escape = "none", path = $template_file)]
             pub struct $T {
                 inner: TypeIdentifier,
@@ -71,8 +72,8 @@ macro_rules! impl_code_type_for_compound {
                     format!("read{}({})", self.canonical_name(oracle), nm)
                 }
 
-                fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-                    Some(self.render().unwrap())
+                fn build_code(&self, _oracle: &dyn CodeOracle, builder: &mut CodeBuilder, _ci: &ComponentInterface) {
+                    builder.add_code_block(self.clone());
                 }
             }
         }

@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use crate::backend::{CodeBuilder, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Error};
 use askama::Template;
 
@@ -53,11 +53,16 @@ impl CodeType for ErrorCodeType {
         format!("{}.read({})", self.type_label(oracle), nm)
     }
 
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} error is found in ErrorTemplate.kt",
-            self.type_label(oracle)
-        ))
+    fn build_code(
+        &self,
+        _oracle: &dyn CodeOracle,
+        builder: &mut CodeBuilder,
+        ci: &ComponentInterface,
+    ) {
+        builder.add_code_block(KotlinError::new(
+            ci.get_error_definition(&self.id).unwrap().clone(),
+            ci,
+        ));
     }
 }
 
@@ -80,11 +85,5 @@ impl KotlinError {
     }
     pub fn contains_object_references(&self) -> bool {
         self.contains_object_references
-    }
-}
-
-impl CodeDeclaration for KotlinError {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
     }
 }

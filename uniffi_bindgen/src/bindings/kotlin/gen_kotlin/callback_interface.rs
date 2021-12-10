@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use crate::backend::{CodeBuilder, CodeOracle, CodeType, Literal};
 use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
 
@@ -66,11 +66,24 @@ impl CodeType for CallbackInterfaceCodeType {
         format!("{}.read({})", self.ffi_converter_name(oracle), nm)
     }
 
-    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!(
-            "// Helper code for {} callback interface is found in CallbackInterfaceTemplate.kt",
-            self.type_label(oracle)
-        ))
+    fn build_code(
+        &self,
+        oracle: &dyn CodeOracle,
+        builder: &mut CodeBuilder,
+        ci: &ComponentInterface,
+    ) {
+        builder
+            .add_imports(vec![
+                "import java.util.concurrent.locks.ReentrantLock".to_owned(),
+                "import kotlin.concurrent.withLock".to_owned(),
+            ])
+            .add_code_block(KotlinCallbackInterface::new(
+                ci.get_callback_interface_definition(&self.id)
+                    .unwrap()
+                    .clone(),
+            ))
+            .add_code_block(KotlinCallbackInterfaceRuntime)
+            .add_initialization_code(format!("{}.register(lib)", self.ffi_converter_name(oracle)));
     }
 }
 
@@ -81,60 +94,15 @@ pub struct KotlinCallbackInterface {
 }
 
 impl KotlinCallbackInterface {
-    pub fn new(inner: CallbackInterface, _ci: &ComponentInterface) -> Self {
+    pub fn new(inner: CallbackInterface) -> Self {
         Self { inner }
     }
+
     pub fn inner(&self) -> &CallbackInterface {
         &self.inner
     }
 }
 
-impl CodeDeclaration for KotlinCallbackInterface {
-    fn initialization_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        let code_type = CallbackInterfaceCodeType::new(self.inner.name().into());
-        Some(format!(
-            "{}.register(lib)",
-            code_type.ffi_converter_name(oracle)
-        ))
-    }
-
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        Some(self.render().unwrap())
-    }
-
-    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        Some(
-            vec![
-                "java.util.concurrent.locks.ReentrantLock",
-                "kotlin.concurrent.withLock",
-            ]
-            .into_iter()
-            .map(|s| s.into())
-            .collect(),
-        )
-    }
-}
-
 #[derive(Template)]
 #[template(syntax = "kt", escape = "none", path = "CallbackInterfaceRuntime.kt")]
-pub struct KotlinCallbackInterfaceRuntime {
-    is_needed: bool,
-}
-
-impl KotlinCallbackInterfaceRuntime {
-    pub fn new(ci: &ComponentInterface) -> Self {
-        Self {
-            is_needed: !ci.iter_callback_interface_definitions().is_empty(),
-        }
-    }
-}
-
-impl CodeDeclaration for KotlinCallbackInterfaceRuntime {
-    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        if !self.is_needed {
-            None
-        } else {
-            Some(self.render().unwrap())
-        }
-    }
-}
+pub struct KotlinCallbackInterfaceRuntime;

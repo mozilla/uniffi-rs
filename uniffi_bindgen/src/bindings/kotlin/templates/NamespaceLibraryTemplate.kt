@@ -20,14 +20,13 @@ internal interface _UniFFILib : Library {
     companion object {
         internal val INSTANCE: _UniFFILib by lazy {
             loadIndirect<_UniFFILib>(componentName = "{{ ci.namespace() }}")
-            {% let initialization_code = self.initialization_code() %}
             {%- if !initialization_code.is_empty() -%}
             .also { lib: _UniFFILib ->
-                {% for code in initialization_code -%}
+                {%- for code in initialization_code -%}
                 {{ code }}
                 {% endfor -%}
             }
-            {% endif %}
+            {%- endif %}
         }
     }
 
