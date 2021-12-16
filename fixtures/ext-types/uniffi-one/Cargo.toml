@@ -2,7 +2,7 @@
 # TODO: modify the crate name to test non-default names.
 name = "uniffi-one"
 edition = "2018"
-version = "0.15.2"
+version = "0.16.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 publish = false
