@@ -1,4 +1,4 @@
-[Wrapped]
+[Custom]
 typedef string Guid;
 
 [Error]

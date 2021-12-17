@@ -2,20 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use askama::Template;
 use heck::{CamelCase, MixedCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
+use super::Bindings;
+use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
 use crate::MergeWith;
 
 mod callback_interface;
 mod compounds;
+mod custom;
 mod enum_;
 mod error;
 mod function;
@@ -23,7 +25,6 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
-mod wrapped;
 
 /// Config options for the caller to customize the generated Swift.
 ///
@@ -37,6 +38,16 @@ pub struct Config {
     ffi_module_filename: Option<String>,
     generate_module_map: Option<bool>,
     omit_argument_labels: Option<bool>,
+    #[serde(default)]
+    custom_types: HashMap<String, CustomTypeConfig>,
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct CustomTypeConfig {
+    imports: Option<Vec<String>>,
+    type_name: Option<String>,
+    into_custom: TemplateExpression,
+    from_custom: TemplateExpression,
 }
 
 impl Config {
@@ -119,8 +130,37 @@ impl MergeWith for Config {
             omit_argument_labels: self
                 .omit_argument_labels
                 .merge_with(&other.omit_argument_labels),
+            custom_types: self.custom_types.merge_with(&other.custom_types),
         }
     }
+}
+
+/// Generate UniFFI component bindings for Swift, as strings in memory.
+///
+pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
+    let oracle = SwiftCodeOracle::new(config.clone());
+    filters::set_oracle(oracle.clone());
+
+    let header = BridgingHeader::new(config, ci)
+        .render()
+        .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
+    let library = SwiftWrapper::new(oracle, config.clone(), ci)
+        .render()
+        .map_err(|_| anyhow!("failed to render Swift library"))?;
+    let modulemap = if config.generate_module_map() {
+        Some(
+            ModuleMap::new(config, ci)
+                .render()
+                .map_err(|_| anyhow!("failed to render Swift modulemap"))?,
+        )
+    } else {
+        None
+    };
+    Ok(Bindings {
+        library,
+        header,
+        modulemap,
+    })
 }
 
 /// Template for generating the `.h` file that defines the low-level C FFI.
@@ -171,12 +211,8 @@ pub struct SwiftWrapper<'a> {
     oracle: SwiftCodeOracle,
 }
 impl<'a> SwiftWrapper<'a> {
-    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
-        Self {
-            config,
-            ci,
-            oracle: Default::default(),
-        }
+    pub fn new(oracle: SwiftCodeOracle, config: Config, ci: &'a ComponentInterface) -> Self {
+        Self { oracle, config, ci }
     }
 
     pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
@@ -221,6 +257,10 @@ impl<'a> SwiftWrapper<'a> {
                     )) as Box<dyn CodeDeclaration>
                 }),
         )
+        .chain(ci.iter_custom_types().into_iter().map(|(name, type_)| {
+            let config = self.config.custom_types.get(&name).cloned();
+            Box::new(custom::SwiftCustomType::new(name, type_, config)) as Box<dyn CodeDeclaration>
+        }))
         .collect()
     }
 
@@ -269,10 +309,16 @@ impl<'a> SwiftWrapper<'a> {
     }
 }
 
-#[derive(Default)]
-pub struct SwiftCodeOracle;
+#[derive(Clone)]
+pub struct SwiftCodeOracle {
+    config: Config,
+}
 
 impl SwiftCodeOracle {
+    fn new(config: Config) -> Self {
+        Self { config }
+    }
+
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
         // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
@@ -319,9 +365,10 @@ impl SwiftCodeOracle {
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
             Type::External { .. } => panic!("no support for external types yet"),
-            Type::Wrapped { name, prim } => Box::new(wrapped::WrappedCodeType::new(
-                name,
-                self.create_code_type(prim.as_ref().clone()),
+            Type::Custom { name, builtin } => Box::new(custom::CustomCodeType::new(
+                name.clone(),
+                builtin.as_ref().clone(),
+                self.config.custom_types.get(&name).cloned(),
             )),
         }
     }
@@ -381,18 +428,33 @@ pub mod filters {
     use super::*;
     use std::fmt;
 
-    fn oracle() -> impl CodeOracle {
-        SwiftCodeOracle
+    // This code is a bit unfortunate.  We want to have a `SwiftCodeOracle` instance available for
+    // the filter functions, so that we don't always need to pass as an argument in the template
+    // code.  However, `SwiftCodeOracle` depends on a `Config` instance.  So we use some dirty,
+    // non-threadsafe, code to set it at the start of `generate_bindings()`.
+    //
+    // If askama supported using a struct instead of a module for the filters we could avoid this.
+
+    static mut ORACLE: Option<SwiftCodeOracle> = None;
+
+    pub(super) fn set_oracle(oracle: SwiftCodeOracle) {
+        unsafe {
+            ORACLE = Some(oracle);
+        }
+    }
+
+    fn oracle() -> &'static SwiftCodeOracle {
+        unsafe { ORACLE.as_ref().unwrap() }
     }
 
     pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.type_label(&oracle))
+        Ok(codetype.type_label(oracle))
     }
 
     pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.canonical_name(&oracle))
+        Ok(codetype.canonical_name(oracle))
     }
 
     pub fn lower_var(
@@ -400,7 +462,7 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.lower(&oracle, nm))
+        Ok(codetype.lower(oracle, nm))
     }
 
     pub fn write_var(
@@ -409,7 +471,7 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.write(&oracle, nm, target))
+        Ok(codetype.write(oracle, nm, target))
     }
 
     pub fn lift_var(
@@ -417,7 +479,7 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.lift(&oracle, nm))
+        Ok(codetype.lift(oracle, nm))
     }
 
     pub fn literal_swift(
@@ -425,7 +487,7 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.literal(&oracle, literal))
+        Ok(codetype.literal(oracle, literal))
     }
 
     pub fn read_var(
@@ -433,12 +495,33 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.read(&oracle, nm))
+        Ok(codetype.read(oracle, nm))
     }
 
     /// Get the Swift syntax for representing a given low-level `FFIType`.
     pub fn ffi_type_name(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
+    }
+
+    /// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see
+    /// #1106 for details
+    pub fn type_ffi_lowered(ffi_type: &FFIType) -> Result<String, askama::Error> {
+        Ok(match ffi_type {
+            FFIType::Int8 => "Int8".into(),
+            FFIType::UInt8 => "UInt8".into(),
+            FFIType::Int16 => "Int16".into(),
+            FFIType::UInt16 => "UInt16".into(),
+            FFIType::Int32 => "Int32".into(),
+            FFIType::UInt32 => "UInt32".into(),
+            FFIType::Int64 => "Int64".into(),
+            FFIType::UInt64 => "UInt64".into(),
+            FFIType::Float32 => "float".into(),
+            FFIType::Float64 => "double".into(),
+            FFIType::RustArcPtr => "void*_Nonnull".into(),
+            FFIType::RustBuffer => "RustBuffer".into(),
+            FFIType::ForeignBytes => "ForeignBytes".into(),
+            FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
+        })
     }
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).

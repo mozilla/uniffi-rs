@@ -13,7 +13,7 @@ use std::{
 };
 
 pub mod gen_kotlin;
-pub use gen_kotlin::{Config, KotlinWrapper};
+pub use gen_kotlin::{generate_bindings, Config};
 
 use super::super::interface::ComponentInterface;
 
@@ -47,14 +47,6 @@ pub fn write_bindings(
 fn full_bindings_path(config: &Config, out_dir: &Path) -> Result<PathBuf> {
     let package_path: PathBuf = config.package_name().split('.').collect();
     Ok(PathBuf::from(out_dir).join(package_path))
-}
-
-// Generate kotlin bindings for the given ComponentInterface, as a string.
-pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    use askama::Template;
-    KotlinWrapper::new(config.clone(), ci)
-        .render()
-        .map_err(|_| anyhow::anyhow!("failed to render kotlin bindings"))
 }
 
 /// Generate kotlin bindings for the given namespace, then use the kotlin

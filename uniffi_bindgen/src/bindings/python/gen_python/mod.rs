@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 use anyhow::Result;
@@ -10,12 +10,13 @@ use askama::Template;
 use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
+use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
 use crate::MergeWith;
 
 mod callback_interface;
 mod compounds;
+mod custom;
 mod enum_;
 mod error;
 mod external;
@@ -24,14 +25,22 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
-mod wrapped;
 
-// Some config options for it the caller wants to customize the generated python.
-// Note that this can only be used to control details of the python *that do not affect the underlying component*,
-// sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+// Config options to customize the generated python.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     cdylib_name: Option<String>,
+    #[serde(default)]
+    custom_types: HashMap<String, CustomTypeConfig>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CustomTypeConfig {
+    // This `CustomTypeConfig` doesn't have a `type_name` like the others -- which is why we have
+    // separate structs rather than a shared one.
+    imports: Option<Vec<String>>,
+    into_custom: TemplateExpression,
+    from_custom: TemplateExpression,
 }
 
 impl Config {
@@ -48,6 +57,7 @@ impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
+            custom_types: HashMap::new(),
         }
     }
 }
@@ -56,24 +66,30 @@ impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
+            custom_types: self.custom_types.merge_with(&other.custom_types),
         }
     }
+}
+
+// Generate python bindings for the given ComponentInterface, as a string.
+pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
+    let oracle = PythonCodeOracle::new(config.clone());
+    filters::set_oracle(oracle.clone());
+    PythonWrapper::new(oracle, config.clone(), ci)
+        .render()
+        .map_err(|_| anyhow::anyhow!("failed to render python bindings"))
 }
 
 #[derive(Template)]
 #[template(syntax = "py", escape = "none", path = "wrapper.py")]
 pub struct PythonWrapper<'a> {
-    config: Config,
     ci: &'a ComponentInterface,
+    config: Config,
     oracle: PythonCodeOracle,
 }
 impl<'a> PythonWrapper<'a> {
-    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
-        Self {
-            config,
-            ci,
-            oracle: Default::default(),
-        }
+    pub fn new(oracle: PythonCodeOracle, config: Config, ci: &'a ComponentInterface) -> Self {
+        Self { oracle, config, ci }
     }
 
     pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
@@ -110,6 +126,10 @@ impl<'a> PythonWrapper<'a> {
                         as Box<dyn CodeDeclaration>
                 }),
         )
+        .chain(ci.iter_custom_types().into_iter().map(|(name, type_)| {
+            let config = self.config.custom_types.get(&name).cloned();
+            Box::new(custom::PythonCustomType::new(name, type_, config)) as Box<dyn CodeDeclaration>
+        }))
         .collect()
     }
 
@@ -158,10 +178,16 @@ impl<'a> PythonWrapper<'a> {
     }
 }
 
-#[derive(Default)]
-pub struct PythonCodeOracle;
+#[derive(Clone, Default)]
+pub struct PythonCodeOracle {
+    config: Config,
+}
 
 impl PythonCodeOracle {
+    fn new(config: Config) -> Self {
+        Self { config }
+    }
+
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
         // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
@@ -210,11 +236,11 @@ impl PythonCodeOracle {
             Type::External { name, crate_name } => {
                 Box::new(external::ExternalCodeType::new(name, crate_name))
             }
-            Type::Wrapped { ref prim, .. } => {
-                let outer = type_.clone();
-                let inner = *prim.to_owned();
-                Box::new(wrapped::WrappedCodeType::new(inner, outer))
-            }
+            Type::Custom { name, builtin } => Box::new(custom::CustomCodeType::new(
+                name.clone(),
+                builtin.as_ref().clone(),
+                self.config.custom_types.get(&name).cloned(),
+            )),
         }
     }
 }
@@ -285,18 +311,33 @@ pub mod filters {
     use super::*;
     use std::fmt;
 
-    fn oracle() -> impl CodeOracle {
-        PythonCodeOracle
+    // This code is a bit unfortunate.  We want to have a `PythonCodeOracle` instance available for
+    // the filter functions, so that we don't always need to pass as an argument in the template
+    // code.  However, `PythonCodeOracle` depends on a `Config` instance.  So we use some dirty,
+    // non-threadsafe, code to set it at the start of `generate_python_bindings()`.
+    //
+    // If askama supported using a struct instead of a module for the filters we could avoid this.
+
+    static mut ORACLE: Option<PythonCodeOracle> = None;
+
+    pub(super) fn set_oracle(oracle: PythonCodeOracle) {
+        unsafe {
+            ORACLE = Some(oracle);
+        }
+    }
+
+    fn oracle() -> &'static PythonCodeOracle {
+        unsafe { ORACLE.as_ref().unwrap() }
     }
 
     pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.type_label(&oracle))
+        Ok(codetype.type_label(oracle))
     }
 
     pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.canonical_name(&oracle))
+        Ok(codetype.canonical_name(oracle))
     }
 
     pub fn lower_var(
@@ -304,7 +345,7 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.lower(&oracle, nm))
+        Ok(codetype.lower(oracle, nm))
     }
 
     pub fn write_var(
@@ -313,7 +354,7 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.write(&oracle, nm, target))
+        Ok(codetype.write(oracle, nm, target))
     }
 
     pub fn lift_var(
@@ -321,7 +362,7 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.lift(&oracle, nm))
+        Ok(codetype.lift(oracle, nm))
     }
 
     pub fn literal_py(
@@ -329,7 +370,7 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.literal(&oracle, literal))
+        Ok(codetype.literal(oracle, literal))
     }
 
     pub fn read_var(
@@ -337,7 +378,7 @@ pub mod filters {
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.read(&oracle, nm))
+        Ok(codetype.read(oracle, nm))
     }
 
     /// Get the Python syntax for representing a given low-level `FFIType`.
@@ -376,6 +417,6 @@ pub mod filters {
 
     pub fn coerce_py(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_).coerce(&oracle, nm))
+        Ok(oracle.find(type_).coerce(oracle, nm))
     }
 }

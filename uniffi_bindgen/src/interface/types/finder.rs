@@ -96,15 +96,15 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
         // > let t = types.resolve_type_expression(&self.type_)?;
         // > types.add_type_definition(name, t)
         // But we don't - `typedef`s are reserved for external types.
-        if attrs.is_wrapped() {
-            // A local type which wraps a primitive and for which we will generate an
+        if attrs.is_custom() {
+            // A local type which wraps a builtin and for which we will generate an
             // `FfiConverter` implementation.
-            let prim = types.resolve_type_expression(&self.type_)?;
+            let builtin = types.resolve_type_expression(&self.type_)?;
             types.add_type_definition(
                 name,
-                Type::Wrapped {
+                Type::Custom {
                     name: name.to_string(),
-                    prim: prim.into(),
+                    builtin: builtin.into(),
                 },
             )
         } else {
@@ -210,8 +210,8 @@ mod test {
             [External="crate-name"]
             typedef extern ExternalType;
 
-            [Wrapped]
-            typedef string ExternalWrapping;
+            [Custom]
+            typedef string CustomType;
         "#,
             |types| {
                 assert!(
@@ -219,8 +219,8 @@ mod test {
                                                                                  if name == "ExternalType" && crate_name == "crate-name")
                 );
                 assert!(
-                    matches!(types.get_type_definition("ExternalWrapping").unwrap(), Type::Wrapped { name, prim }
-                                                                                     if name == "ExternalWrapping" && prim == Box::new(Type::String))
+                    matches!(types.get_type_definition("CustomType").unwrap(), Type::Custom { name, builtin }
+                                                                                     if name == "CustomType" && builtin == Box::new(Type::String))
                 );
             },
         );

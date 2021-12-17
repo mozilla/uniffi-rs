@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 use anyhow::Result;
@@ -10,12 +10,13 @@ use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
+use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
 use crate::MergeWith;
 
 mod callback_interface;
 mod compounds;
+mod custom;
 mod enum_;
 mod error;
 mod function;
@@ -23,15 +24,22 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
-mod wrapped;
 
-// Some config options for it the caller wants to customize the generated Kotlin.
-// Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
-// sine the details of the underlying component are entirely determined by the `ComponentInterface`.
+// config options to customize the generated Kotlin.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
     package_name: Option<String>,
     cdylib_name: Option<String>,
+    #[serde(default)]
+    custom_types: HashMap<String, CustomTypeConfig>,
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct CustomTypeConfig {
+    imports: Option<Vec<String>>,
+    type_name: Option<String>,
+    into_custom: TemplateExpression,
+    from_custom: TemplateExpression,
 }
 
 impl Config {
@@ -57,6 +65,7 @@ impl From<&ComponentInterface> for Config {
         Config {
             package_name: Some(format!("uniffi.{}", ci.namespace())),
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
+            custom_types: HashMap::new(),
         }
     }
 }
@@ -66,24 +75,31 @@ impl MergeWith for Config {
         Config {
             package_name: self.package_name.merge_with(&other.package_name),
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
+            custom_types: self.custom_types.merge_with(&other.custom_types),
         }
     }
+}
+
+// Generate kotlin bindings for the given ComponentInterface, as a string.
+pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
+    let oracle = KotlinCodeOracle::new(config.clone());
+    filters::set_oracle(oracle.clone());
+
+    KotlinWrapper::new(oracle, config.clone(), ci)
+        .render()
+        .map_err(|_| anyhow::anyhow!("failed to render kotlin bindings"))
 }
 
 #[derive(Template)]
 #[template(syntax = "kt", escape = "none", path = "wrapper.kt")]
 pub struct KotlinWrapper<'a> {
+    oracle: KotlinCodeOracle,
     config: Config,
     ci: &'a ComponentInterface,
-    oracle: KotlinCodeOracle,
 }
 impl<'a> KotlinWrapper<'a> {
-    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
-        Self {
-            config,
-            ci,
-            oracle: Default::default(),
-        }
+    pub fn new(oracle: KotlinCodeOracle, config: Config, ci: &'a ComponentInterface) -> Self {
+        Self { oracle, config, ci }
     }
 
     pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
@@ -121,6 +137,10 @@ impl<'a> KotlinWrapper<'a> {
                         as Box<dyn CodeDeclaration>
                 }),
         )
+        .chain(ci.iter_custom_types().into_iter().map(|(name, type_)| {
+            let config = self.config.custom_types.get(&name).cloned();
+            Box::new(custom::KotlinCustomType::new(name, type_, config)) as Box<dyn CodeDeclaration>
+        }))
         .collect()
     }
 
@@ -169,10 +189,16 @@ impl<'a> KotlinWrapper<'a> {
     }
 }
 
-#[derive(Default)]
-pub struct KotlinCodeOracle;
+#[derive(Clone)]
+pub struct KotlinCodeOracle {
+    config: Config,
+}
 
 impl KotlinCodeOracle {
+    fn new(config: Config) -> Self {
+        Self { config }
+    }
+
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
         // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
@@ -219,9 +245,10 @@ impl KotlinCodeOracle {
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
             Type::External { .. } => panic!("no support for external types yet"),
-            Type::Wrapped { name, prim } => Box::new(wrapped::WrappedCodeType::new(
-                name,
-                self.create_code_type(prim.as_ref().clone()),
+            Type::Custom { name, builtin } => Box::new(custom::CustomCodeType::new(
+                name.clone(),
+                builtin.as_ref().clone(),
+                self.config.custom_types.get(&name).cloned(),
             )),
         }
     }
@@ -292,23 +319,38 @@ pub mod filters {
     use super::*;
     use std::fmt;
 
-    fn oracle() -> impl CodeOracle {
-        KotlinCodeOracle
+    // This code is a bit unfortunate.  We want to have a `KotlinCodeOracle` instance available for
+    // the filter functions, so that we don't always need to pass as an argument in the template
+    // code.  However, `KotlinCodeOracle` depends on a `Config` instance.  So we use some dirty,
+    // non-threadsafe, code to set it at the start of `generate_kotlin_bindings()`.
+    //
+    // If askama supported using a struct instead of a module for the filters we could avoid this.
+
+    static mut ORACLE: Option<KotlinCodeOracle> = None;
+
+    pub(super) fn set_oracle(oracle: KotlinCodeOracle) {
+        unsafe {
+            ORACLE = Some(oracle);
+        }
+    }
+
+    fn oracle() -> &'static KotlinCodeOracle {
+        unsafe { ORACLE.as_ref().unwrap() }
     }
 
     pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.type_label(&oracle()))
+        Ok(codetype.type_label(oracle()))
     }
 
     pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.canonical_name(&oracle()))
+        Ok(codetype.canonical_name(oracle()))
     }
 
     pub fn lower_var(
         nm: &dyn fmt::Display,
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
-        Ok(codetype.lower(&oracle(), nm))
+        Ok(codetype.lower(oracle(), nm))
     }
 
     pub fn write_var(
@@ -316,28 +358,28 @@ pub mod filters {
         target: &dyn fmt::Display,
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
-        Ok(codetype.write(&oracle(), nm, target))
+        Ok(codetype.write(oracle(), nm, target))
     }
 
     pub fn lift_var(
         nm: &dyn fmt::Display,
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
-        Ok(codetype.lift(&oracle(), nm))
+        Ok(codetype.lift(oracle(), nm))
     }
 
     pub fn read_var(
         nm: &dyn fmt::Display,
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
-        Ok(codetype.read(&oracle(), nm))
+        Ok(codetype.read(oracle(), nm))
     }
 
     pub fn render_literal(
         literal: &Literal,
         codetype: &impl CodeType,
     ) -> Result<String, askama::Error> {
-        Ok(codetype.literal(&oracle(), literal))
+        Ok(codetype.literal(oracle(), literal))
     }
 
     /// Get the Kotlin syntax for representing a given low-level `FFIType`.
