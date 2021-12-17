@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["TemplateExpression","Config value for template expressions"]]});

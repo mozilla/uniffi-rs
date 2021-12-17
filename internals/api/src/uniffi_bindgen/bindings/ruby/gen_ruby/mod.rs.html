@@ -459,7 +459,7 @@
                 }
             }
             <span class="ident">Type::External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for external types, yet&quot;</span>),
-            <span class="ident">Type::Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for wrapped types, yet&quot;</span>),
+            <span class="ident">Type::Custom</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for custom types, yet&quot;</span>),
         })
     }
 
@@ -492,7 +492,7 @@
                 <span class="ident">nm</span>
             ),
             <span class="ident">Type::External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering external types, yet&quot;</span>),
-            <span class="ident">Type::Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering wrapped types, yet&quot;</span>),
+            <span class="ident">Type::Custom</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering custom types, yet&quot;</span>),
         })
     }
 
@@ -524,7 +524,7 @@
                 <span class="ident">class_name_rb</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>
             ),
             <span class="ident">Type::External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting external types, yet&quot;</span>),
-            <span class="ident">Type::Wrapped</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting wrapped types, yet&quot;</span>),
+            <span class="ident">Type::Custom</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting custom types, yet&quot;</span>),
         })
     }
 }

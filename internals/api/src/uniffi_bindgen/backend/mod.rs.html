@@ -14,15 +14,19 @@
 <span id="12">12</span>
 <span id="13">13</span>
 <span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
+<span class="kw">mod</span> <span class="ident">config</span>;
 <span class="kw">mod</span> <span class="ident">declarations</span>;
 <span class="kw">mod</span> <span class="ident">oracle</span>;
 <span class="kw">mod</span> <span class="ident">types</span>;
 
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">config::TemplateExpression</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">declarations::CodeDeclaration</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">oracle::CodeOracle</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">types::CodeType</span>;

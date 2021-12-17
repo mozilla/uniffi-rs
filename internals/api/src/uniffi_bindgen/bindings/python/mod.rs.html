@@ -66,16 +66,6 @@
 <span id="64">64</span>
 <span id="65">65</span>
 <span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -93,12 +83,11 @@
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gen_python</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gen_python</span>::{<span class="ident">Config</span>, <span class="ident">PythonWrapper</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gen_python</span>::{<span class="ident">generate_python_bindings</span>, <span class="ident">Config</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span><span class="ident">::interface::ComponentInterface</span>;
 
 <span class="comment">// Generate python bindings for the given ComponentInterface, in the given output directory.</span>
-
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_bindings</span>(
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
@@ -121,15 +110,6 @@
     }
 
     <span class="prelude-val">Ok</span>(())
-}
-
-<span class="comment">// Generate python bindings for the given ComponentInterface, as a string.</span>
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_python_bindings</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">use</span> <span class="ident">askama::Template</span>;
-    <span class="ident">PythonWrapper::new</span>(<span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
-        .<span class="ident">render</span>()
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow::anyhow!</span>(<span class="string">&quot;failed to render python bindings&quot;</span>))
 }
 
 <span class="doccomment">/// Execute the specifed python script, with environment based on the generated</span>

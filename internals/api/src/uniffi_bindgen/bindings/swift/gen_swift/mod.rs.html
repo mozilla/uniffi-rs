@@ -472,25 +472,110 @@
 <span id="470">470</span>
 <span id="471">471</span>
 <span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
+<span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 
-<span class="kw">use</span> <span class="ident">anyhow::Result</span>;
+<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">anyhow</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">askama::Template</span>;
 <span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">CamelCase</span>, <span class="ident">MixedCase</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::backend</span>::{<span class="ident">CodeDeclaration</span>, <span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">TypeIdentifier</span>};
+<span class="kw">use</span> <span class="kw">super</span><span class="ident">::Bindings</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::backend</span>::{<span class="ident">CodeDeclaration</span>, <span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">TemplateExpression</span>, <span class="ident">TypeIdentifier</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::interface</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::MergeWith</span>;
 
 <span class="kw">mod</span> <span class="ident">callback_interface</span>;
 <span class="kw">mod</span> <span class="ident">compounds</span>;
+<span class="kw">mod</span> <span class="ident">custom</span>;
 <span class="kw">mod</span> <span class="ident">enum_</span>;
 <span class="kw">mod</span> <span class="ident">error</span>;
 <span class="kw">mod</span> <span class="ident">function</span>;
@@ -498,7 +583,6 @@
 <span class="kw">mod</span> <span class="ident">object</span>;
 <span class="kw">mod</span> <span class="ident">primitives</span>;
 <span class="kw">mod</span> <span class="ident">record</span>;
-<span class="kw">mod</span> <span class="ident">wrapped</span>;
 
 <span class="doccomment">/// Config options for the caller to customize the generated Swift.</span>
 <span class="doccomment">///</span>
@@ -512,6 +596,16 @@
     <span class="ident">ffi_module_filename</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">generate_module_map</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
     <span class="ident">omit_argument_labels</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
+    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
+    <span class="ident">custom_types</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">CustomTypeConfig</span><span class="op">&gt;</span>,
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CustomTypeConfig</span> {
+    <span class="ident">imports</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">type_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="ident">into_custom</span>: <span class="ident">TemplateExpression</span>,
+    <span class="ident">from_custom</span>: <span class="ident">TemplateExpression</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Config</span> {
@@ -594,8 +688,37 @@
             <span class="ident">omit_argument_labels</span>: <span class="self">self</span>
                 .<span class="ident">omit_argument_labels</span>
                 .<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">omit_argument_labels</span>),
+            <span class="ident">custom_types</span>: <span class="self">self</span>.<span class="ident">custom_types</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">custom_types</span>),
         }
     }
+}
+
+<span class="doccomment">/// Generate UniFFI component bindings for Swift, as strings in memory.</span>
+<span class="doccomment">///</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Bindings</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">SwiftCodeOracle::new</span>(<span class="ident">config</span>.<span class="ident">clone</span>());
+    <span class="ident">filters::set_oracle</span>(<span class="ident">oracle</span>.<span class="ident">clone</span>());
+
+    <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">BridgingHeader::new</span>(<span class="ident">config</span>, <span class="ident">ci</span>)
+        .<span class="ident">render</span>()
+        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow!</span>(<span class="string">&quot;failed to render Swift bridging header&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">library</span> <span class="op">=</span> <span class="ident">SwiftWrapper::new</span>(<span class="ident">oracle</span>, <span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
+        .<span class="ident">render</span>()
+        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow!</span>(<span class="string">&quot;failed to render Swift library&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">modulemap</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">generate_module_map</span>() {
+        <span class="prelude-val">Some</span>(
+            <span class="ident">ModuleMap::new</span>(<span class="ident">config</span>, <span class="ident">ci</span>)
+                .<span class="ident">render</span>()
+                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow!</span>(<span class="string">&quot;failed to render Swift modulemap&quot;</span>))<span class="question-mark">?</span>,
+        )
+    } <span class="kw">else</span> {
+        <span class="prelude-val">None</span>
+    };
+    <span class="prelude-val">Ok</span>(<span class="ident">Bindings</span> {
+        <span class="ident">library</span>,
+        <span class="ident">header</span>,
+        <span class="ident">modulemap</span>,
+    })
 }
 
 <span class="doccomment">/// Template for generating the `.h` file that defines the low-level C FFI.</span>
@@ -646,12 +769,8 @@
     <span class="ident">oracle</span>: <span class="ident">SwiftCodeOracle</span>,
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">SwiftWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">config</span>,
-            <span class="ident">ci</span>,
-            <span class="ident">oracle</span>: <span class="ident">Default::default</span>(),
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">oracle</span>: <span class="ident">SwiftCodeOracle</span>, <span class="ident">config</span>: <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">oracle</span>, <span class="ident">config</span>, <span class="ident">ci</span> }
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">members</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
@@ -696,6 +815,10 @@
                     )) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
                 }),
         )
+        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_custom_types</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="ident">type_</span>)<span class="op">|</span> {
+            <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">custom_types</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>).<span class="ident">cloned</span>();
+            <span class="ident">Box::new</span>(<span class="ident">custom::SwiftCustomType::new</span>(<span class="ident">name</span>, <span class="ident">type_</span>, <span class="ident">config</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+        }))
         .<span class="ident">collect</span>()
     }
 
@@ -744,10 +867,16 @@
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SwiftCodeOracle</span>;
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SwiftCodeOracle</span> {
+    <span class="ident">config</span>: <span class="ident">Config</span>,
+}
 
 <span class="kw">impl</span> <span class="ident">SwiftCodeOracle</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="ident">Config</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">config</span> }
+    }
+
     <span class="kw">fn</span> <span class="ident">create_code_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="ident">TypeIdentifier</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
         <span class="comment">// I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}</span>
         <span class="comment">// However, there&#39;s some violence and gore I need to do to (temporarily) make the oracle usable from filters.</span>
@@ -794,9 +923,10 @@
                 <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
             }
             <span class="ident">Type::External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;no support for external types yet&quot;</span>),
-            <span class="ident">Type::Wrapped</span> { <span class="ident">name</span>, <span class="ident">prim</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">wrapped::WrappedCodeType::new</span>(
-                <span class="ident">name</span>,
-                <span class="self">self</span>.<span class="ident">create_code_type</span>(<span class="ident">prim</span>.<span class="ident">as_ref</span>().<span class="ident">clone</span>()),
+            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, <span class="ident">builtin</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">custom::CustomCodeType::new</span>(
+                <span class="ident">name</span>.<span class="ident">clone</span>(),
+                <span class="ident">builtin</span>.<span class="ident">as_ref</span>().<span class="ident">clone</span>(),
+                <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">custom_types</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>).<span class="ident">cloned</span>(),
             )),
         }
     }
@@ -856,18 +986,33 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident">std::fmt</span>;
 
-    <span class="kw">fn</span> <span class="ident">oracle</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">CodeOracle</span> {
-        <span class="ident">SwiftCodeOracle</span>
+    <span class="comment">// This code is a bit unfortunate.  We want to have a `SwiftCodeOracle` instance available for</span>
+    <span class="comment">// the filter functions, so that we don&#39;t always need to pass as an argument in the template</span>
+    <span class="comment">// code.  However, `SwiftCodeOracle` depends on a `Config` instance.  So we use some dirty,</span>
+    <span class="comment">// non-threadsafe, code to set it at the start of `generate_bindings()`.</span>
+    <span class="comment">//</span>
+    <span class="comment">// If askama supported using a struct instead of a module for the filters we could avoid this.</span>
+
+    <span class="kw">static</span> <span class="kw-2">mut</span> <span class="ident">ORACLE</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SwiftCodeOracle</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">set_oracle</span>(<span class="ident">oracle</span>: <span class="ident">SwiftCodeOracle</span>) {
+        <span class="kw">unsafe</span> {
+            <span class="ident">ORACLE</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">oracle</span>);
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">oracle</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">SwiftCodeOracle</span> {
+        <span class="kw">unsafe</span> { <span class="ident">ORACLE</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() }
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">type_label</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>))
+        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">canonical_name</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>))
+        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_var</span>(
@@ -875,7 +1020,7 @@
         <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">lower</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">nm</span>))
+        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">lower</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_var</span>(
@@ -884,7 +1029,7 @@
         <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">nm</span>, <span class="ident">target</span>))
+        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">write</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>, <span class="ident">target</span>))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_var</span>(
@@ -892,7 +1037,7 @@
         <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">lift</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">nm</span>))
+        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">lift</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">literal_swift</span>(
@@ -900,7 +1045,7 @@
         <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">literal</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">literal</span>))
+        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">literal</span>(<span class="ident">oracle</span>, <span class="ident">literal</span>))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_var</span>(
@@ -908,12 +1053,33 @@
         <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="ident">oracle</span>, <span class="ident">nm</span>))
+        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">read</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the Swift syntax for representing a given low-level `FFIType`.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">ffi_type_label</span>(<span class="ident">type_</span>))
+    }
+
+    <span class="doccomment">/// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see</span>
+    <span class="doccomment">/// #1106 for details</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi_lowered</span>(<span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">ffi_type</span> {
+            <span class="ident">FFIType::Int8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Int8&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UInt8&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Int16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Int16&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UInt16&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Int32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Int32&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UInt32&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Int64&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UInt64&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
+        })
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).</span>

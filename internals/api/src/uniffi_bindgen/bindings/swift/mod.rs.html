@@ -211,32 +211,6 @@
 <span id="209">209</span>
 <span id="210">210</span>
 <span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -269,7 +243,7 @@
 <span class="doccomment">//!  * How to read from and write into a byte buffer.</span>
 <span class="doccomment">//!</span>
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">anyhow</span>, <span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">ffi::OsString</span>,
     <span class="ident">fs::File</span>,
@@ -279,7 +253,7 @@
 };
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gen_swift</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gen_swift</span>::{<span class="ident">BridgingHeader</span>, <span class="ident">Config</span>, <span class="ident">ModuleMap</span>, <span class="ident">SwiftWrapper</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gen_swift</span>::{<span class="ident">generate_bindings</span>, <span class="ident">Config</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span><span class="ident">::interface::ComponentInterface</span>;
 
@@ -345,32 +319,6 @@
     }
 
     <span class="prelude-val">Ok</span>(())
-}
-
-<span class="doccomment">/// Generate UniFFI component bindings for Swift, as strings in memory.</span>
-<span class="doccomment">///</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Bindings</span><span class="op">&gt;</span> {
-    <span class="kw">use</span> <span class="ident">askama::Template</span>;
-    <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">BridgingHeader::new</span>(<span class="ident">config</span>, <span class="ident">ci</span>)
-        .<span class="ident">render</span>()
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow!</span>(<span class="string">&quot;failed to render Swift bridging header&quot;</span>))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">library</span> <span class="op">=</span> <span class="ident">SwiftWrapper::new</span>(<span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
-        .<span class="ident">render</span>()
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow!</span>(<span class="string">&quot;failed to render Swift library&quot;</span>))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">modulemap</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">generate_module_map</span>() {
-        <span class="prelude-val">Some</span>(
-            <span class="ident">ModuleMap::new</span>(<span class="ident">config</span>, <span class="ident">ci</span>)
-                .<span class="ident">render</span>()
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow!</span>(<span class="string">&quot;failed to render Swift modulemap&quot;</span>))<span class="question-mark">?</span>,
-        )
-    } <span class="kw">else</span> {
-        <span class="prelude-val">None</span>
-    };
-    <span class="prelude-val">Ok</span>(<span class="ident">Bindings</span> {
-        <span class="ident">library</span>,
-        <span class="ident">header</span>,
-        <span class="ident">modulemap</span>,
-    })
 }
 
 <span class="doccomment">/// Compile UniFFI component bindings for Swift for use from the `swift` command-line.</span>
