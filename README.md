@@ -14,6 +14,10 @@ project to build browser storage and syncing functionality for Firefox mobile br
 written once in Rust, and auto-generated bindings allow that functionality to be called from both Kotlin (for Android apps)
 and Swift (for iOS apps).
 
+Currently supported "foreign" languages include Kotlin, Swift, Python and Ruby.
+In general, we'd welcome contributions of other foreign bindings, but we recommend you contact the team first -
+see [the contributing section below](#contributing).
+
 ## User Guide
 
 You can read more about using the tool in [**the UniFFI user guide**](https://mozilla.github.io/uniffi-rs/).
