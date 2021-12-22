@@ -1,15 +1,17 @@
-internal fun UByte.Companion.lift(v: Byte): UByte {
-    return v.toUByte()
-}
+internal object FfiConverterUByte {
+    fun lift(v: Byte): UByte {
+        return v.toUByte()
+    }
 
-internal fun UByte.Companion.read(buf: ByteBuffer): UByte {
-    return UByte.lift(buf.get())
-}
+    fun read(buf: ByteBuffer): UByte {
+        return lift(buf.get())
+    }
 
-internal fun UByte.lower(): Byte {
-    return this.toByte()
-}
+    fun lower(v: UByte): Byte {
+        return v.toByte()
+    }
 
-internal fun UByte.write(buf: RustBufferBuilder) {
-    buf.putByte(this.toByte())
+    fun write(v: UByte, buf: RustBufferBuilder) {
+        buf.putByte(v.toByte())
+    }
 }

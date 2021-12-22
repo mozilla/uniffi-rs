@@ -2,12 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use super::filters;
 use crate::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
 use askama::Template;
 use paste::paste;
-use std::fmt;
-
-use super::filters;
 
 fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
     match literal {
@@ -53,22 +51,6 @@ macro_rules! impl_code_type_for_compound {
 
                 fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
                     render_literal(oracle, &literal, self.inner())
-                }
-
-                fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("lower{}({})", self.canonical_name(oracle), oracle.var_name(nm))
-                }
-
-                fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
-                    format!("write{}({}, {})", self.canonical_name(oracle), oracle.var_name(nm), target)
-                }
-
-                fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("lift{}({})", self.canonical_name(oracle), nm)
-                }
-
-                fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("read{}({})", self.canonical_name(oracle), nm)
                 }
 
                 fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {

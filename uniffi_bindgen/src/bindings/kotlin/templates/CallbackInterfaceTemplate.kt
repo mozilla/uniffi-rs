@@ -2,7 +2,7 @@
 {%- let cbi = self.inner() %}
 {%- let type_name = cbi|type_name %}
 {%- let canonical_type_name = cbi|canonical_name %}
-{%- let ffi_converter = format!("FfiConverter{}", canonical_type_name) %}
+{%- let ffi_converter = cbi|ffi_converter_name %}
 {%- let foreign_callback = format!("ForeignCallback{}", canonical_type_name) %}
 
 // Declaration and FfiConverters for {{ type_name }} Callback Interface
@@ -60,7 +60,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
             val buf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
             kotlinCallbackInterface.{{ meth.name()|fn_name }}(
                     {% for arg in meth.arguments() -%}
-                    {{ "buf"|read_var(arg) }}
+                    {{ arg|read_fn }}(buf)
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
@@ -73,7 +73,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
                 {%- when Some with (return_type) -%}
                 .let { rval ->
                     val rbuf = RustBufferBuilder()
-                    {{ "rval"|write_var("rbuf", return_type) }}
+                    {{ return_type|write_fn }}(rval, rbuf)
                     rbuf.finalize()
                 }
                 {%- else -%}

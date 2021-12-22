@@ -1,15 +1,17 @@
-internal fun UShort.Companion.lift(v: Short): UShort {
-    return v.toUShort()
-}
+internal object FfiConverterUShort {
+    fun lift(v: Short): UShort {
+        return v.toUShort()
+    }
 
-internal fun UShort.Companion.read(buf: ByteBuffer): UShort {
-    return UShort.lift(buf.getShort())
-}
+    fun read(buf: ByteBuffer): UShort {
+        return lift(buf.getShort())
+    }
 
-internal fun UShort.lower(): Short {
-    return this.toShort()
-}
+    fun lower(v: UShort): Short {
+        return v.toShort()
+    }
 
-internal fun UShort.write(buf: RustBufferBuilder) {
-    buf.putShort(this.toShort())
+    fun write(v: UShort, buf: RustBufferBuilder) {
+        buf.putShort(v.toShort())
+    }
 }

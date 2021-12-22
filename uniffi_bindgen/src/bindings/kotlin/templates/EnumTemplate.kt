@@ -6,91 +6,56 @@
 #}
 {% import "macros.kt" as kt %}
 {%- let e = self.inner() %}
+{%- let type_name = e|type_name -%}
 {%- if e.is_flat() %}
 
-enum class {{ e|type_name }} {
+enum class {{ type_name }} {
     {% for variant in e.variants() -%}
     {{ variant.name()|enum_variant }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
+}
 
-    companion object {
-        internal fun lift(rbuf: RustBuffer.ByValue): {{ e|type_name }} {
-            return liftFromRustBuffer(rbuf) { buf -> {{ e|type_name }}.read(buf) }
-        }
-
-        internal fun read(buf: ByteBuffer) =
-            try { values()[buf.getInt() - 1] }
-            catch (e: IndexOutOfBoundsException) {
-                throw RuntimeException("invalid enum value, something is very wrong!!", e)
-            }
+internal object {{ e|ffi_converter_name }} {
+    fun lift(rbuf: RustBuffer.ByValue): {{ type_name }} {
+        return liftFromRustBuffer(rbuf) { buf -> read(buf) }
     }
 
-    internal fun lower(): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(this, {v, buf -> v.write(buf)})
+    fun read(buf: ByteBuffer) = try {
+        {{ type_name }}.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
     }
 
-    internal fun write(buf: RustBufferBuilder) {
-        buf.putInt(this.ordinal + 1)
+    fun lower(value: {{ type_name }}): RustBuffer.ByValue {
+        return lowerIntoRustBuffer(value, {v, buf -> write(v, buf)})
+    }
+
+    fun write(value: {{ type_name }}, buf: RustBufferBuilder) {
+        buf.putInt(value.ordinal + 1)
     }
 }
 
 {% else %}
 
-sealed class {{ e|type_name }}{% if self.contains_object_references() %}: Disposable {% endif %} {
+sealed class {{ type_name }}{% if self.contains_object_references() %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
-    object {{ variant.name()|class_name }} : {{ e|type_name }}()
+    object {{ variant.name()|class_name }} : {{ type_name }}()
     {% else -%}
     data class {{ variant.name()|class_name }}(
         {% for field in variant.fields() -%}
         val {{ field.name()|var_name }}: {{ field|type_name}}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
-    ) : {{ e|type_name }}()
+    ) : {{ type_name }}()
     {%- endif %}
     {% endfor %}
-
-    companion object {
-        internal fun lift(rbuf: RustBuffer.ByValue): {{ e|type_name }} {
-            return liftFromRustBuffer(rbuf) { buf -> {{ e|type_name }}.read(buf) }
-        }
-
-        internal fun read(buf: ByteBuffer): {{ e|type_name }} {
-            return when(buf.getInt()) {
-                {%- for variant in e.variants() %}
-                {{ loop.index }} -> {{ e|type_name }}.{{ variant.name()|class_name }}{% if variant.has_fields() %}(
-                    {% for field in variant.fields() -%}
-                    {{ "buf"|read_var(field) }}{% if loop.last %}{% else %},{% endif %}
-                    {% endfor -%}
-                ){%- endif -%}
-                {%- endfor %}
-                else -> throw RuntimeException("invalid enum value, something is very wrong!!")
-            }
-        }
-    }
-
-    internal fun lower(): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(this, {v, buf -> v.write(buf)})
-    }
-
-    internal fun write(buf: RustBufferBuilder) {
-        when(this) {
-            {%- for variant in e.variants() %}
-            is {{ e|type_name }}.{{ variant.name()|class_name }} -> {
-                buf.putInt({{ loop.index }})
-                {% for field in variant.fields() -%}
-                {{ "(this.{})"|format(field.name())|write_var("buf", field) }}
-                {% endfor %}
-            }
-            {%- endfor %}
-        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
-    }
 
     {% if self.contains_object_references() %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
-            is {{ e|type_name }}.{{ variant.name()|class_name }} -> {
+            is {{ type_name }}.{{ variant.name()|class_name }} -> {
                 {%- if variant.has_fields() %}
                 {% call kt::destroy_fields(variant) %}
                 {% else -%}
@@ -101,6 +66,42 @@ sealed class {{ e|type_name }}{% if self.contains_object_references() %}: Dispos
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
     {% endif %}
+}
+
+internal object {{ e|ffi_converter_name }} {
+    fun lift(rbuf: RustBuffer.ByValue): {{ type_name }} {
+        return liftFromRustBuffer(rbuf) { buf -> read(buf) }
+    }
+
+    fun read(buf: ByteBuffer): {{ type_name }} {
+        return when(buf.getInt()) {
+            {%- for variant in e.variants() %}
+            {{ loop.index }} -> {{ type_name }}.{{ variant.name()|class_name }}{% if variant.has_fields() %}(
+                {% for field in variant.fields() -%}
+                {{ field|read_fn }}(buf),
+                {% endfor -%}
+            ){%- endif -%}
+            {%- endfor %}
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    fun lower(value: {{ type_name }}): RustBuffer.ByValue {
+        return lowerIntoRustBuffer(value, {v, buf -> write(v, buf)})
+    }
+
+    fun write(value: {{ type_name }}, buf: RustBufferBuilder) {
+        when(value) {
+            {%- for variant in e.variants() %}
+            is {{ type_name }}.{{ variant.name()|class_name }} -> {
+                buf.putInt({{ loop.index }})
+                {% for field in variant.fields() -%}
+                {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
+                {% endfor %}
+            }
+            {%- endfor %}
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
 }
 
 {% endif %}

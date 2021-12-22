@@ -2,13 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::fmt;
-
-use askama::Template;
-
 use super::{filters, CustomTypeConfig};
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{FFIType, Type};
+use askama::Template;
 
 pub struct CustomCodeType {
     name: String,
@@ -23,10 +20,6 @@ impl CustomCodeType {
             builtin,
             config,
         }
-    }
-
-    fn ffi_converter_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("FfiConverter{}", self.canonical_name(oracle))
     }
 }
 
@@ -44,41 +37,11 @@ impl CodeType for CustomCodeType {
     }
 
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
-        format!("Type{}", self.name.clone())
+        format!("Type{}", self.name)
     }
 
     fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
         unreachable!("Can't have a literal of a custom type");
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!(
-            "{}.lower({})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm)
-        )
-    }
-
-    fn write(
-        &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!(
-            "{}.write({}, {})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm),
-            target
-        )
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.ffi_converter_name(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.ffi_converter_name(oracle), nm)
     }
 
     fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
@@ -92,6 +55,7 @@ impl CodeType for CustomCodeType {
 #[derive(Template)]
 #[template(syntax = "kt", escape = "none", path = "CustomTypeTemplate.kt")]
 pub struct KotlinCustomType {
+    outer: Type,
     name: String,
     builtin: Type,
     config: Option<CustomTypeConfig>,
@@ -100,6 +64,10 @@ pub struct KotlinCustomType {
 impl KotlinCustomType {
     pub fn new(name: String, builtin: Type, config: Option<CustomTypeConfig>) -> Self {
         Self {
+            outer: Type::Custom {
+                name: name.clone(),
+                builtin: builtin.clone().into(),
+            },
             name,
             builtin,
             config,

@@ -4,29 +4,30 @@
 {%- let inner_type_name = inner_type|type_name %}
 {%- let canonical_type_name = outer_type|canonical_name %}
 
-// Helper functions for passing values of type {{ outer_type|type_name }}
-internal fun lower{{ canonical_type_name }}(v: List<{{ inner_type_name }}>): RustBuffer.ByValue {
-    return lowerIntoRustBuffer(v) { v, buf ->
-        write{{ canonical_type_name }}(v, buf)
+internal object {{ outer_type|ffi_converter_name }} {
+    internal fun lower(v: List<{{ inner_type_name }}>): RustBuffer.ByValue {
+        return lowerIntoRustBuffer(v) { v, buf ->
+            write(v, buf)
+        }
     }
-}
 
-internal fun write{{ canonical_type_name }}(v: List<{{ inner_type_name }}>, buf: RustBufferBuilder) {
-    buf.putInt(v.size)
-    v.forEach {
-        {{ "it"|write_var("buf", inner_type) }}
+    internal fun write(v: List<{{ inner_type_name }}>, buf: RustBufferBuilder) {
+        buf.putInt(v.size)
+        v.forEach {
+            {{ inner_type|write_fn }}(it, buf)
+        }
     }
-}
 
-internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): List<{{ inner_type_name }}> {
-    return liftFromRustBuffer(rbuf) { buf ->
-        read{{ canonical_type_name }}(buf)
+    internal fun lift(rbuf: RustBuffer.ByValue): List<{{ inner_type_name }}> {
+        return liftFromRustBuffer(rbuf) { buf ->
+            read(buf)
+        }
     }
-}
 
-internal fun read{{ canonical_type_name }}(buf: ByteBuffer): List<{{ inner_type_name }}> {
-    val len = buf.getInt()
-    return List<{{ inner_type_name }}>(len) {
-        {{ "buf"|read_var(inner_type) }}
+    internal fun read(buf: ByteBuffer): List<{{ inner_type_name }}> {
+        val len = buf.getInt()
+        return List<{{ inner_type_name }}>(len) {
+            {{ inner_type|read_fn }}(buf)
+        }
     }
 }
