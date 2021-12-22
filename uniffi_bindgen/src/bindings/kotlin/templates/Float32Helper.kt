@@ -1,15 +1,17 @@
-internal fun Float.Companion.lift(v: Float): Float {
-    return v
-}
+internal object FfiConverterFloat {
+    fun lift(v: Float): Float {
+        return v
+    }
 
-internal fun Float.Companion.read(buf: ByteBuffer): Float {
-    return buf.getFloat()
-}
+    fun read(buf: ByteBuffer): Float {
+        return buf.getFloat()
+    }
 
-internal fun Float.lower(): Float {
-    return this
-}
+    fun lower(v: Float): Float {
+        return v
+    }
 
-internal fun Float.write(buf: RustBufferBuilder) {
-    buf.putFloat(this)
+    fun write(v: Float, buf: RustBufferBuilder) {
+        buf.putFloat(v)
+    }
 }

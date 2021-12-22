@@ -1,16 +1,17 @@
-internal fun Double.Companion.lift(v: Double): Double {
-    return v
-}
+internal object FfiConverterDouble {
+    fun lift(v: Double): Double {
+        return v
+    }
 
-internal fun Double.Companion.read(buf: ByteBuffer): Double {
-    val v = buf.getDouble()
-    return v
-}
+    fun read(buf: ByteBuffer): Double {
+        return buf.getDouble()
+    }
 
-internal fun Double.lower(): Double {
-    return this
-}
+    fun lower(v: Double): Double {
+        return v
+    }
 
-internal fun Double.write(buf: RustBufferBuilder) {
-    buf.putDouble(this)
+    fun write(v: Double, buf: RustBufferBuilder) {
+        buf.putDouble(v)
+    }
 }
