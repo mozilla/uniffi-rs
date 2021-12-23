@@ -1,10 +1,6 @@
-{%- import "macros.kt" as kt -%}
-{%- let inner_type = self.inner() %}
-{%- let outer_type = self.outer() %}
 {%- let inner_type_name = inner_type|type_name %}
-{%- let canonical_type_name = outer_type|canonical_name %}
 
-internal object {{ outer_type|ffi_converter_name }} {
+internal object {{ ffi_converter_name }} {
     fun lift(rbuf: RustBuffer.ByValue): {{ inner_type_name }}? {
         return liftFromRustBuffer(rbuf) { buf ->
             read(buf)

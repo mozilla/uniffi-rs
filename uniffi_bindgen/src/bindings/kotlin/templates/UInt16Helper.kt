@@ -1,4 +1,4 @@
-internal object FfiConverterUShort {
+internal object FfiConverterU16 {
     fun lift(v: Short): UShort {
         return v.toUShort()
     }

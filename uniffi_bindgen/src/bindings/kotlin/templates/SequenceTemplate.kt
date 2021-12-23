@@ -1,10 +1,6 @@
-{%- import "macros.kt" as kt -%}
-{%- let inner_type = self.inner() %}
-{%- let outer_type = self.outer() %}
 {%- let inner_type_name = inner_type|type_name %}
-{%- let canonical_type_name = outer_type|canonical_name %}
 
-internal object {{ outer_type|ffi_converter_name }} {
+internal object {{ ffi_converter_name }} {
     internal fun lower(v: List<{{ inner_type_name }}>): RustBuffer.ByValue {
         return lowerIntoRustBuffer(v) { v, buf ->
             write(v, buf)

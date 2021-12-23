@@ -125,6 +125,12 @@ impl IterTypes for Field {
     }
 }
 
+impl std::convert::AsRef<Type> for Field {
+    fn as_ref(&self) -> &Type {
+        &self.type_
+    }
+}
+
 impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
         if self.attributes.is_some() {

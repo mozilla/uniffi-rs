@@ -1,6 +1,6 @@
-{% import "macros.kt" as kt %}
-{%- let obj = self.inner() %}
-{%- let type_name = obj|type_name -%}
+{%- call kt::add_import("import java.util.concurrent.atomic.AtomicLong") -%}
+{%- call kt::add_import("import java.util.concurrent.atomic.AtomicBoolean") -%}
+{% if self.include_once_check("ObjectRuntime.kt") %}{% include "ObjectRuntime.kt" %}{% endif %}
 
 public interface {{ type_name }}Interface {
     {% for meth in obj.methods() -%}
@@ -76,7 +76,7 @@ class {{ type_name }}(
     {% endif %}
 }
 
-internal object {{ obj|ffi_converter_name }} {
+internal object {{ ffi_converter_name }} {
     fun lower(value: {{ type_name }}): Pointer = value.callWithPointer { it }
 
     fun write(value: {{ type_name }}, buf: RustBufferBuilder) {

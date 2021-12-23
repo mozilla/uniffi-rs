@@ -1,4 +1,4 @@
-internal object FfiConverterFloat {
+internal object FfiConverterF32 {
     fun lift(v: Float): Float {
         return v
     }

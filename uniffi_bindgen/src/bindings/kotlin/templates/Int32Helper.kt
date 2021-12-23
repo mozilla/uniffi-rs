@@ -1,4 +1,4 @@
-internal object FfiConverterInt {
+internal object FfiConverterI32 {
     fun lift(v: Int): Int {
         return v
     }

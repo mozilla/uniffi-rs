@@ -115,6 +115,10 @@ impl Type {
             Type::External { name, .. } | Type::Custom { name, .. } => name.to_owned(),
         }
     }
+
+    pub fn ffi_type(&self) -> FFIType {
+        FFIType::from(self)
+    }
 }
 
 /// When passing data across the FFI, each `Type` value will be lowered into a corresponding
@@ -157,6 +161,12 @@ impl From<&Type> for FFIType {
             | Type::External { .. } => FFIType::RustBuffer,
             Type::Custom { builtin, .. } => FFIType::from(builtin.as_ref()),
         }
+    }
+}
+
+impl std::convert::AsRef<Type> for Type {
+    fn as_ref(&self) -> &Type {
+        self
     }
 }
 

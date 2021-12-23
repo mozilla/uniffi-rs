@@ -18,7 +18,7 @@ package_name = "customtypes"
 # Name of the type in the Kotlin code
 type_name = "URL"
 # Classes that need to be imported
-imports = [ "java.net.URL" ]
+imports = [ "import java.net.URL" ]
 # Functions to convert between strings and URLs
 into_custom = "URL({})"
 from_custom = "{}.toString()"

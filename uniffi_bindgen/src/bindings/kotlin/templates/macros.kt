@@ -43,7 +43,7 @@
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name }}: {{ arg|type_name -}}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|render_literal(arg) }}
+        {%- when Some with(literal) %} = {{ literal|render_literal }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
@@ -80,3 +80,11 @@ fun {{ func.name() }}(
     {%- call arg_list_ffi_decl(func) %}
 ){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|ffi_type_name }}{% when None %}: Unit{% endmatch %}
 {% endmacro %}
+
+{#-
+// These macros don't render any code, they just calling methods on `RenderContext`
+-#}
+
+{%- macro add_import(statement) %}{{ self.add_import(statement) }}{% endmacro %}
+{%- macro add_optional_imports(statement) %}{{ self.add_optional_imports(statement) }}{% endmacro %}
+{%- macro add_initialization_code(statement) %}{{ self.add_initialization_code(statement) }}{% endmacro %}

@@ -1,4 +1,4 @@
-internal object FfiConverterDouble {
+internal object FfiConverterF64 {
     fun lift(v: Double): Double {
         return v
     }

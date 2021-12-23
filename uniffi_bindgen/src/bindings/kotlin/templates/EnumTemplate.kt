@@ -4,18 +4,15 @@
 // So, we switch here, using `enum class` for enums with no associated data
 // and `sealed class` for the general case.
 #}
-{% import "macros.kt" as kt %}
-{%- let e = self.inner() %}
-{%- let type_name = e|type_name -%}
-{%- if e.is_flat() %}
+{%- if enum_.is_flat() %}
 
 enum class {{ type_name }} {
-    {% for variant in e.variants() -%}
+    {% for variant in enum_.variants() -%}
     {{ variant.name()|enum_variant }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
 }
 
-internal object {{ e|ffi_converter_name }} {
+internal object {{ ffi_converter_name }} {
     fun lift(rbuf: RustBuffer.ByValue): {{ type_name }} {
         return liftFromRustBuffer(rbuf) { buf -> read(buf) }
     }
@@ -37,8 +34,8 @@ internal object {{ e|ffi_converter_name }} {
 
 {% else %}
 
-sealed class {{ type_name }}{% if self.contains_object_references() %}: Disposable {% endif %} {
-    {% for variant in e.variants() -%}
+sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %} {
+    {% for variant in enum_.variants() -%}
     {% if !variant.has_fields() -%}
     object {{ variant.name()|class_name }} : {{ type_name }}()
     {% else -%}
@@ -50,11 +47,11 @@ sealed class {{ type_name }}{% if self.contains_object_references() %}: Disposab
     {%- endif %}
     {% endfor %}
 
-    {% if self.contains_object_references() %}
+    {% if contains_object_references %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {
         when(this) {
-            {%- for variant in e.variants() %}
+            {%- for variant in enum_.variants() %}
             is {{ type_name }}.{{ variant.name()|class_name }} -> {
                 {%- if variant.has_fields() %}
                 {% call kt::destroy_fields(variant) %}
@@ -68,14 +65,14 @@ sealed class {{ type_name }}{% if self.contains_object_references() %}: Disposab
     {% endif %}
 }
 
-internal object {{ e|ffi_converter_name }} {
+internal object {{ ffi_converter_name }} {
     fun lift(rbuf: RustBuffer.ByValue): {{ type_name }} {
         return liftFromRustBuffer(rbuf) { buf -> read(buf) }
     }
 
     fun read(buf: ByteBuffer): {{ type_name }} {
         return when(buf.getInt()) {
-            {%- for variant in e.variants() %}
+            {%- for variant in enum_.variants() %}
             {{ loop.index }} -> {{ type_name }}.{{ variant.name()|class_name }}{% if variant.has_fields() %}(
                 {% for field in variant.fields() -%}
                 {{ field|read_fn }}(buf),
@@ -92,7 +89,7 @@ internal object {{ e|ffi_converter_name }} {
 
     fun write(value: {{ type_name }}, buf: RustBufferBuilder) {
         when(value) {
-            {%- for variant in e.variants() %}
+            {%- for variant in enum_.variants() %}
             is {{ type_name }}.{{ variant.name()|class_name }} -> {
                 buf.putInt({{ loop.index }})
                 {% for field in variant.fields() -%}

@@ -192,6 +192,12 @@ impl From<&Argument> for FFIArgument {
     }
 }
 
+impl std::convert::AsRef<Type> for Argument {
+    fn as_ref(&self) -> &Type {
+        &self.type_
+    }
+}
+
 impl APIConverter<Argument> for weedle::argument::Argument<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Argument> {
         match self {

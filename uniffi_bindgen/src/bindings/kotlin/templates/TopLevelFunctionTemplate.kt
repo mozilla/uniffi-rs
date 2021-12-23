@@ -1,5 +1,3 @@
-{% import "macros.kt" as kt %}
-{%- let func = self.inner() %}
 {%- match func.throws() -%}
 {%- when Some with (throwable) %}
 @Throws({{ throwable|exception_name }}::class)

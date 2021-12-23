@@ -1,4 +1,4 @@
-internal object FfiConverterBoolean {
+internal object FfiConverterBool {
     fun lift(v: Byte): Boolean {
         return v.toInt() != 0
     }

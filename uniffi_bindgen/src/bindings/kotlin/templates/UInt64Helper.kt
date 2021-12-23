@@ -1,4 +1,4 @@
-internal object FfiConverterULong {
+internal object FfiConverterU64 {
     fun lift(v: Long): ULong {
         return v.toULong()
     }

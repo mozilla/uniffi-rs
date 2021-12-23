@@ -1,4 +1,4 @@
-internal object FfiConverterUByte {
+internal object FfiConverterU8 {
     fun lift(v: Byte): UByte {
         return v.toUByte()
     }
