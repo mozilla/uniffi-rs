@@ -118,9 +118,14 @@ pub struct MyFFIType {
 }
 ```
 
-Might be enough for the generation of the Rust scaffolding. However, the problems are in the
-foreign bindings, because, eg, those foreign bindings do not know the names and types of the
-struct elements.
+Might be enough for the generation of the Rust scaffolding - in UniFFI's case, all we really need
+is an implementation of `uniffi::RustBufferViaFfi` which is easy to derive, and UniFFI can
+generate code which assumes that exists, much like it does now.
+However, the problems are in the foreign bindings, because, eg, those foreign bindings do not know
+the names and types of the struct elements without re-parsing every bit of Rust code with those
+annotations. As discussed below, re-parsing this code might be an option if we help Uniffi to
+find it, but asking UniFFI to parse this and all dependent crates to auto-discover them
+probably is not going to be viable.
 
 ### Why is this considered a limition for UniFFI but not diplomat?
 
@@ -235,6 +240,9 @@ mod ffi {
 So while we haven't exactly reduced the duplication, we have removed the UDL.
 We probably also haven't helped with documentation, because the natural location for
 the documentation of `MyFFIType` is probably at the *actual* implementation.
+
+While it might not solve all our problems, it is worthy of serious consideration - fewer problems
+is still a worthwhile goal, and needing a UDL file and parser seems like one worth removing.
 
 ## Try and share some definitions with diplomat
 
