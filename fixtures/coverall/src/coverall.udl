@@ -97,6 +97,9 @@ interface Coveralls {
 
     // can't name it `clone` as it conflicts with the Clone trait and ours has a different signature
     Coveralls clone_me();
+
+    // regression test: using a parameter name that was also used by UniFFI runtime code
+    string get_status(string status);
 };
 
 // All coveralls end up with a patch.

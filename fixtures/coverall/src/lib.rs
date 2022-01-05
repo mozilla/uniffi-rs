@@ -227,6 +227,10 @@ impl Coveralls {
             other: new_other,
         })
     }
+
+    fn get_status(&self, status: String) -> String {
+        format!("status: {}", status)
+    }
 }
 
 impl Drop for Coveralls {
