@@ -10,8 +10,8 @@
     rustCallWithError({{ e|exception_name}})
     {%- else %}
     rustCall()
-    {%- endmatch %} { status ->
-    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %}status)
+    {%- endmatch %} { _status ->
+    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %},{% endif %} _status)
 }
 {%- endmacro -%}
 
@@ -21,9 +21,9 @@
     rustCallWithError({{ e|exception_name}})
     {%- else %}
     rustCall()
-    {%- endmatch %} { status ->
+    {%- endmatch %} { _status ->
     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
-        {{- prefix }}, {% call _arg_list_ffi_call(func) %}{% if func.arguments().len() > 0 %}, {% endif %}status)
+        {{- prefix }}, {% call _arg_list_ffi_call(func) %}{% if func.arguments().len() > 0 %}, {% endif %} _status)
 }
 {%- endmacro %}
 
@@ -64,7 +64,7 @@
     {%- for arg in func.arguments() %}
         {{- arg.name() }}: {{ arg.type_()|ffi_type_name -}},
     {%- endfor %}
-    uniffi_out_err: RustCallStatus
+    _uniffi_out_err: RustCallStatus
 {%- endmacro -%}
 
 // Macro for destroying fields
