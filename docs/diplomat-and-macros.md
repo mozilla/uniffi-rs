@@ -53,8 +53,10 @@ files involved. Types can be shared among any of the ffi modules defined in the 
 for example, [this diplomat ffi module](https://github.com/unicode-org/icu4x/blob/7d9f89fcd7df4567e17ddd8c46810b0db287436a/ffi/diplomat/src/pluralrules.rs#L50-L51)
 uses types from a [different ffi module](https://github.com/unicode-org/icu4x/blob/7d9f89fcd7df4567e17ddd8c46810b0db287436a/ffi/diplomat/src/locale.rs#L19).
 
-It also offers better control over the stability of the API, because where the FFI is defined
-is constrained. This is [an explicit design decision](https://github.com/rust-diplomat/diplomat/blob/main/docs/design_doc.md#requirements) of diplomat.
+Restricting the definition of the FFI to a single module instead of allowing that definition
+to appear in any Rust code in the crate also offers better control over the stability of the API,
+because where the FFI is defined is constrained. This is
+[an explicit design decision](https://github.com/rust-diplomat/diplomat/blob/main/docs/design_doc.md#requirements) of diplomat.
 
 While the process for defining the type universe is different, the actual in-memory
 representation of that type universe isn't radically different from UniFFI - for example,
@@ -65,11 +67,11 @@ and its ast representation.
 ## UniFFI's experience with the macro approach.
 
 Ryan tried this same macro approach for UniFFI in [#416](https://github.com/mozilla/uniffi-rs/pull/416) -
-but we struck **what's bad about this** - at least for UniFFI's use-cases: the context in which the
+but we struck a limitation in this approach for UniFFI's use-cases - the context in which the
 macro runs doesn't know about types defined outside of that macro, which are what we need to
 expose.
 
-### Example of these limitations
+### Example of this limitation
 
 Let's look at diplomat's simple example:
 
@@ -118,10 +120,10 @@ pub struct MyFFIType {
 }
 ```
 
-Might be enough for the generation of the Rust scaffolding - in UniFFI's case, all we really need
+might be enough for the generation of the Rust scaffolding - in UniFFI's case, all we really need
 is an implementation of `uniffi::RustBufferViaFfi` which is easy to derive, and UniFFI can
-generate code which assumes that exists, much like it does now.
-However, the problems are in the foreign bindings, because, eg, those foreign bindings do not know
+generate code which assumes that exists much like it does now.
+However, the problems are in the foreign bindings, because those foreign bindings do not know
 the names and types of the struct elements without re-parsing every bit of Rust code with those
 annotations. As discussed below, re-parsing this code might be an option if we help Uniffi to
 find it, but asking UniFFI to parse this and all dependent crates to auto-discover them
@@ -150,7 +152,8 @@ actually *process* the entire crate, just modules tagged as a bridge), but could
 extended to do so.
 
 But in both cases, for our problematic example above, this process never sees the layout of the
-`MyFFIType` struct, so that layout can't be communicated to the foreign bindings.
+`MyFFIType` struct because it's not inside the processed module, so that layout can't be
+communicated to the foreign bindings.
 As noted above, this is considered a feature for diplomat, but a limitation for UniFFI.
 
 This is the problem which caused us to decide to stop working on
@@ -187,7 +190,7 @@ pub struct MyFFIType {
 }
 ```
 
-maybe can made to work, so long as we are happy to help UniFFI discover where such annotations
+maybe can be made to work, so long as we are happy to help UniFFI discover where such annotations
 may exist.
 
 A complication here is that currently UniFFI allows types defined in external crates,
