@@ -35,6 +35,15 @@ A portmanteau word that also puns with "unify", to signify the joining of one co
 uni - [Latin ūni-, from ūnus, one]
 FFI - [Abbreviation, Foreign Function Interface]
 
+## Alternative tools
+
+Other tools we know of which try and solve a similarly shaped problem are:
+
+* [Diplomat](https://github.com/rust-diplomat/diplomat/) - see our [writeup of
+  the different approach taken by that tool](docs/diplomat-and-macros.md)
+
+(Please open a PR if you think other tools should be listed!)
+
 ## Contributing
 
 If this tool sounds interesting to you, please help us develop it! You can:
@@ -47,34 +56,3 @@ If this tool sounds interesting to you, please help us develop it! You can:
 ## Code of Conduct
 
 This project is governed by Mozilla's [Community Participation Guidelines](./CODE_OF_CONDUCT.md).
-
----
-
-(Versions `v0.9.0` though `v0.11.0` include a deprecation notice that links to this README. Once those versions have
-sufficiently aged out, this section can be removed from the top-level README.)
-
-### Thread Safety
-
-It is your responsibility to ensure the structs you expose via UniFFI are
-all `Send+Sync`. This will be enforced by the Rust compiler, likely with an
-inscrutable error from somewhere in UniFFI's generated Rust code.
-
-Early versions of this crate automatically wrapped rust structs in a mutex,
-thus implicitly making the interfaces thread-safe and safe to be called
-over the FFI by any thread. However, in practice we found this to be a
-mis-feature, so version 0.7 first introduced the ability for the component
-author to opt-out of this implicit wrapping and take care of thread-safety
-themselves by adding a `[Threadsafe]` attribute to the interface.
-
-Version 0.9.0 took this further, and interfaces not marked as `[Threadsafe]` 
-started issuing a deprecation warning. If you are seeing these deprecation warnings,
-you should upgrade your component as soon as possible. For an example of what kind of
-effort is required to make your interfaces thread-safe, you might like to see
-[this commit](https://github.com/mozilla/uniffi-rs/commit/454dfff6aa560dffad980a9258853108a44d5985)
-where we made one the examples thread-safe.
-
-As of version 0.11.0, all interfaces will be required to be  `Send+Sync`, and the
-`[Threadsafe]` attribute will be deprecated and ignored.
-
-See also [adr-0004](https://github.com/mozilla/uniffi-rs/blob/main/docs/adr/0004-only-threadsafe-interfaces.md)
-which outlines the reasoning behind this decision.
