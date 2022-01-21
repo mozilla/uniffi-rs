@@ -1,19 +1,19 @@
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
-   --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-    |
-    | uniffi::deps::static_assertions::assert_impl_all!(Counter: Sync, Send);
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    | |
-    | `Cell<u32>` cannot be shared between threads safely
-    | required by this bound in `assert_impl_all`
-    |
-    = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
+  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
+   |
+   | uniffi::deps::static_assertions::assert_impl_all!(Counter: Sync, Send);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | `Cell<u32>` cannot be shared between threads safely
+   | required by this bound in `assert_impl_all`
+   |
+   = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
 note: required because it appears within the type `Counter`
-   --> tests/ui/interface_not_sync_and_send.rs:9:12
-    |
-9   | pub struct Counter {
-    |            ^^^^^^^
-    = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` (in Nightly builds, run with -Z macro-backtrace for more info)
+  --> tests/ui/interface_not_sync_and_send.rs:9:12
+   |
+9  | pub struct Counter {
+   |            ^^^^^^^
+   = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
    --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs

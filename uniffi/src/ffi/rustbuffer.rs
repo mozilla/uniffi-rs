@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use crate::ffi::{call_with_output, ForeignBytes, RustCallStatus};
 use std::convert::{TryFrom, TryInto};
 
 /// Support for passing an allocated-by-Rust buffer of bytes over the FFI.
@@ -185,6 +186,92 @@ impl Default for RustBuffer {
     fn default() -> Self {
         Self::new()
     }
+}
+
+// extern "C" functions for the RustBuffer functionality.
+//
+// These are used in two ways:
+//   1. Code that statically links to UniFFI can use these directly to handle RustBuffer
+//      allocation/destruction. The plan is to use this for the Firefox desktop JS bindings.
+//
+//   2. The scaffolding code re-exports these functions, prefixed with the component name and UDL
+//      hash  This creates a separate set of functions for each UniFFIed component, which is needed
+//      in the case where we create multiple dylib artifacts since each dylib will have its own
+//      allocator.
+
+/// This helper allocates a new byte buffer owned by the Rust code, and returns it
+/// to the foreign-language code as a `RustBuffer` struct. Callers must eventually
+/// free the resulting buffer, either by explicitly calling [`uniffi_rustbuffer_free`] defined
+/// below, or by passing ownership of the buffer back into Rust code.
+#[no_mangle]
+pub extern "C" fn uniffi_rustbuffer_alloc(
+    size: i32,
+    call_status: &mut RustCallStatus,
+) -> RustBuffer {
+    call_with_output(call_status, || {
+        RustBuffer::new_with_size(size.max(0) as usize)
+    })
+}
+
+/// This helper copies bytes owned by the foreign-language code into a new byte buffer owned
+/// by the Rust code, and returns it as a `RustBuffer` struct. Callers must eventually
+/// free the resulting buffer, either by explicitly calling the destructor defined below,
+/// or by passing ownership of the buffer back into Rust code.
+///
+/// # Safety
+/// This function will dereference a provided pointer in order to copy bytes from it, so
+/// make sure the `ForeignBytes` struct contains a valid pointer and length.
+#[no_mangle]
+pub unsafe extern "C" fn uniffi_rustbuffer_from_bytes(
+    bytes: ForeignBytes,
+    call_status: &mut RustCallStatus,
+) -> RustBuffer {
+    call_with_output(call_status, || {
+        let bytes = bytes.as_slice();
+        RustBuffer::from_vec(bytes.to_vec())
+    })
+}
+
+/// Free a byte buffer that had previously been passed to the foreign language code.
+///
+/// # Safety
+/// The argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
+/// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
+/// corrupting the allocator state.
+#[no_mangle]
+pub unsafe extern "C" fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
+    call_with_output(call_status, || RustBuffer::destroy(buf))
+}
+
+/// Reserve additional capacity in a byte buffer that had previously been passed to the
+/// foreign language code.
+///
+/// The first argument *must* be a uniquely-owned `RustBuffer` previously
+/// obtained from a call into the Rust code that returned a buffer. Its underlying data pointer
+/// will be reallocated if necessary and returned in a new `RustBuffer` struct.
+///
+/// The second argument must be the minimum number of *additional* bytes to reserve
+/// capacity for in the buffer; it is likely to reserve additional capacity in practice
+/// due to amortized growth strategy of Rust vectors.
+///
+/// # Safety
+/// The first argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
+/// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
+/// corrupting the allocator state.
+#[no_mangle]
+pub unsafe extern "C" fn uniffi_rustbuffer_reserve(
+    buf: RustBuffer,
+    additional: i32,
+    call_status: &mut RustCallStatus,
+) -> RustBuffer {
+    call_with_output(call_status, || {
+        let additional: usize = additional
+            .try_into()
+            .expect("additional buffer length negative or overflowed");
+        let mut v = buf.destroy_into_vec();
+        v.reserve(additional);
+        RustBuffer::from_vec(v)
+    })
 }
 
 #[cfg(test)]
