@@ -1,17 +1,19 @@
-internal object FfiConverterUInt {
-    fun lift(v: Int): UInt {
-        return v.toUInt()
+internal object FfiConverterUInt: FfiConverter<UInt, Int> {
+    override fun lift(value: Int): UInt {
+        return value.toUInt()
     }
 
-    fun read(buf: ByteBuffer): UInt {
+    override fun read(buf: ByteBuffer): UInt {
         return lift(buf.getInt())
     }
 
-    fun lower(v: UInt): Int {
-        return v.toInt()
+    override fun lower(value: UInt): Int {
+        return value.toInt()
     }
 
-    fun write(v: UInt, buf: RustBufferBuilder) {
-        buf.putInt(v.toInt())
+    override fun allocationSize(value: UInt) = 4
+
+    override fun write(value: UInt, buf: ByteBuffer) {
+        buf.putInt(value.toInt())
     }
 }

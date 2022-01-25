@@ -20,12 +20,8 @@ data class {{ type_name }} (
     {% endif %}
 }
 
-internal object {{ rec|ffi_converter_name }} {
-    fun lift(rbuf: RustBuffer.ByValue): {{ type_name }} {
-        return liftFromRustBuffer(rbuf) { buf -> read(buf) }
-    }
-
-    fun read(buf: ByteBuffer): {{ type_name }} {
+internal object {{ rec|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
+    override fun read(buf: ByteBuffer): {{ type_name }} {
         return {{ type_name }}(
         {%- for field in rec.fields() %}
             {{ field|read_fn }}(buf),
@@ -33,13 +29,15 @@ internal object {{ rec|ffi_converter_name }} {
         )
     }
 
-    fun lower(value: {{ type_name }}): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(value, {v, buf -> write(v, buf)})
-    }
+    override fun allocationSize(value: {{ type_name }}) = (
+        {%- for field in rec.fields() %}
+            {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }}){% if !loop.last %} +{% endif%}
+        {%- endfor %}
+    )
 
-    fun write(value: {{ type_name }}, buf: RustBufferBuilder) {
+    override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         {%- for field in rec.fields() %}
             {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
-        {% endfor %}
+        {%- endfor %}
     }
 }

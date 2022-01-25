@@ -1,17 +1,19 @@
-internal object FfiConverterULong {
-    fun lift(v: Long): ULong {
-        return v.toULong()
+internal object FfiConverterULong: FfiConverter<ULong, Long> {
+    override fun lift(value: Long): ULong {
+        return value.toULong()
     }
 
-    fun read(buf: ByteBuffer): ULong {
+    override fun read(buf: ByteBuffer): ULong {
         return lift(buf.getLong())
     }
 
-    fun lower(v: ULong): Long {
-        return v.toLong()
+    override fun lower(value: ULong): Long {
+        return value.toLong()
     }
 
-    fun write(v: ULong, buf: RustBufferBuilder) {
-        buf.putLong(v.toLong())
+    override fun allocationSize(value: ULong) = 8
+
+    override fun write(value: ULong, buf: ByteBuffer) {
+        buf.putLong(value.toLong())
     }
 }

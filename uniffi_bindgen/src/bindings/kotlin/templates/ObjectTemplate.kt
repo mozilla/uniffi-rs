@@ -76,22 +76,24 @@ class {{ type_name }}(
     {% endif %}
 }
 
-internal object {{ obj|ffi_converter_name }} {
-    fun lower(value: {{ type_name }}): Pointer = value.callWithPointer { it }
+internal object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
+    override fun lower(value: {{ type_name }}): Pointer = value.callWithPointer { it }
 
-    fun write(value: {{ type_name }}, buf: RustBufferBuilder) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(lower(value)))
+    override fun lift(value: Pointer): {{ type_name }} {
+        return {{ type_name }}(value)
     }
 
-    fun lift(ptr: Pointer): {{ type_name }} {
-        return {{ type_name }}(ptr)
-    }
-
-    fun read(buf: ByteBuffer): {{ type_name }} {
+    override fun read(buf: ByteBuffer): {{ type_name }} {
         // The Rust code always writes pointers as 8 bytes, and will
         // fail to compile if they don't fit.
         return lift(Pointer(buf.getLong()))
+    }
+
+    override fun allocationSize(value: {{ type_name }}) = 8
+
+    override fun write(value: {{ type_name }}, buf: ByteBuffer) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(value)))
     }
 }

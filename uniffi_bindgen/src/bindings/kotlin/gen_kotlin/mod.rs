@@ -354,6 +354,13 @@ pub mod filters {
         Ok(format!("{}.lower", codetype.ffi_converter_name(oracle())))
     }
 
+    pub fn allocation_size_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!(
+            "{}.allocationSize",
+            codetype.ffi_converter_name(oracle())
+        ))
+    }
+
     pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
         Ok(format!("{}.write", codetype.ffi_converter_name(oracle())))
     }

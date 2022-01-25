@@ -1,17 +1,19 @@
-internal object FfiConverterByte {
-    fun lift(v: Byte): Byte {
-        return v
+internal object FfiConverterByte: FfiConverter<Byte, Byte> {
+    override fun lift(value: Byte): Byte {
+        return value
     }
 
-    fun read(buf: ByteBuffer): Byte {
+    override fun read(buf: ByteBuffer): Byte {
         return buf.get()
     }
 
-    fun lower(v: Byte): Byte {
-        return v
+    override fun lower(value: Byte): Byte {
+        return value
     }
 
-    fun write(v: Byte, buf: RustBufferBuilder) {
-        buf.putByte(v)
+    override fun allocationSize(value: Byte) = 1
+
+    override fun write(value: Byte, buf: ByteBuffer) {
+        buf.put(value)
     }
 }

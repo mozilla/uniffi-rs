@@ -29,9 +29,8 @@ import java.nio.ByteOrder
 import {{ imported_class }}
 {%- endfor %}
 
-// The Rust Buffer and 3 templated methods (alloc, free, reserve).
 {% include "RustBufferTemplate.kt" %}
-
+{% include "FfiConverterTemplate.kt" %}
 {% include "Helpers.kt" %}
 
 // Contains loading, initialization code,

@@ -1,11 +1,5 @@
-internal object FfiConverterDuration {
-    fun lift(rbuf: RustBuffer.ByValue): java.time.Duration {
-        return liftFromRustBuffer(rbuf) { buf ->
-            read(buf)
-        }
-    }
-
-    fun read(buf: ByteBuffer): java.time.Duration {
+internal object FfiConverterDuration: FfiConverterRustBuffer<java.time.Duration> {
+    override fun read(buf: ByteBuffer): java.time.Duration {
         // Type mismatch (should be u64) but we check for overflow/underflow below
         val seconds = buf.getLong()
         // Type mismatch (should be u32) but we check for overflow/underflow below
@@ -19,27 +13,24 @@ internal object FfiConverterDuration {
         return java.time.Duration.ofSeconds(seconds, nanoseconds)
     }
 
-    fun lower(v: java.time.Duration): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(v) { v, buf ->
-            write(v, buf)
-        }
-    }
+    // 8 bytes for seconds, 4 bytes for nanoseconds
+    override fun allocationSize(value: java.time.Duration) = 12
 
-    fun write(v: java.time.Duration, buf: RustBufferBuilder) {
-        if (v.seconds < 0) {
+    override fun write(value: java.time.Duration, buf: ByteBuffer) {
+        if (value.seconds < 0) {
             // Rust does not support negative Durations
             throw IllegalArgumentException("Invalid duration, must be non-negative")
         }
 
-        if (v.nano < 0) {
+        if (value.nano < 0) {
             // Java docs provide guarantee that nano will always be positive, so this should be impossible
             // See: https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html
             throw IllegalArgumentException("Invalid duration, nano value must be non-negative")
         }
 
         // Type mismatch (should be u64) but since Rust doesn't support negative durations we should be OK
-        buf.putLong(v.seconds)
+        buf.putLong(value.seconds)
         // Type mismatch (should be u32) but since values will always be between 0 and 999,999,999 it should be OK
-        buf.putInt(v.nano)
+        buf.putInt(value.nano)
     }
 }

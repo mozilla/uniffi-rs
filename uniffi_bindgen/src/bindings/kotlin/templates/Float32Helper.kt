@@ -1,17 +1,19 @@
-internal object FfiConverterFloat {
-    fun lift(v: Float): Float {
-        return v
+internal object FfiConverterFloat: FfiConverter<Float, Float> {
+    override fun lift(value: Float): Float {
+        return value
     }
 
-    fun read(buf: ByteBuffer): Float {
+    override fun read(buf: ByteBuffer): Float {
         return buf.getFloat()
     }
 
-    fun lower(v: Float): Float {
-        return v
+    override fun lower(value: Float): Float {
+        return value
     }
 
-    fun write(v: Float, buf: RustBufferBuilder) {
-        buf.putFloat(v)
+    override fun allocationSize(value: Float) = 4
+
+    override fun write(value: Float, buf: ByteBuffer) {
+        buf.putFloat(value)
     }
 }
