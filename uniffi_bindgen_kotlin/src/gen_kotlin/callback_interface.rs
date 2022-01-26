@@ -4,8 +4,8 @@
 
 use std::fmt;
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{CallbackInterface, ComponentInterface};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
 
 use super::filters;

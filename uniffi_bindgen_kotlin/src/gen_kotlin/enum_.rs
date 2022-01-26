@@ -4,32 +4,40 @@
 
 use std::fmt;
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Record};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{ComponentInterface, Enum};
 use askama::Template;
 
 use super::filters;
-pub struct RecordCodeType {
+pub struct EnumCodeType {
     id: String,
 }
 
-impl RecordCodeType {
+impl EnumCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
 }
 
-impl CodeType for RecordCodeType {
+impl CodeType for EnumCodeType {
     fn type_label(&self, oracle: &dyn CodeOracle) -> String {
         oracle.class_name(&self.id)
     }
 
     fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("Record{}", self.type_label(oracle))
+        format!("Enum{}", self.type_label(oracle))
     }
 
-    fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
-        unreachable!();
+    fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
+        if let Literal::Enum(v, _) = literal {
+            format!(
+                "{}.{}",
+                self.type_label(oracle),
+                oracle.enum_variant_name(v)
+            )
+        } else {
+            unreachable!();
+        }
     }
 
     fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
@@ -55,27 +63,27 @@ impl CodeType for RecordCodeType {
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
-            "// Helper code for {} record is found in RecordTemplate.kt",
+            "// Helper code for {} enum is found in EnumTemplate.kt",
             self.type_label(oracle)
         ))
     }
 }
 
 #[derive(Template)]
-#[template(syntax = "kt", escape = "none", path = "RecordTemplate.kt")]
-pub struct KotlinRecord {
-    inner: Record,
+#[template(syntax = "kt", escape = "none", path = "EnumTemplate.kt")]
+pub struct KotlinEnum {
+    inner: Enum,
     contains_object_references: bool,
 }
 
-impl KotlinRecord {
-    pub fn new(inner: Record, ci: &ComponentInterface) -> Self {
+impl KotlinEnum {
+    pub fn new(inner: Enum, ci: &ComponentInterface) -> Self {
         Self {
             contains_object_references: ci.item_contains_object_references(&inner),
             inner,
         }
     }
-    pub fn inner(&self) -> &Record {
+    pub fn inner(&self) -> &Enum {
         &self.inner
     }
     pub fn contains_object_references(&self) -> bool {
@@ -83,7 +91,7 @@ impl KotlinRecord {
     }
 }
 
-impl CodeDeclaration for KotlinRecord {
+impl CodeDeclaration for KotlinEnum {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }

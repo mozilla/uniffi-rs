@@ -10,9 +10,9 @@ use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
-use crate::interface::*;
-use crate::MergeWith;
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use uniffi_bindgen::interface::*;
+use uniffi_bindgen::MergeWith;
 
 mod callback_interface;
 mod compounds;

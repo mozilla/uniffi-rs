@@ -96,8 +96,8 @@ const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 use anyhow::{anyhow, bail, Context, Result};
 use serde::{Deserialize, Serialize};
-use std::convert::TryInto;
-use std::io::prelude::*;
+use std::convert::{TryInto, TryFrom};
+use std::io::{prelude::*, ErrorKind as IoError};
 use std::{
     collections::HashMap,
     env,
@@ -114,6 +114,101 @@ pub mod scaffolding;
 use bindings::TargetLanguage;
 use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
+
+pub trait BindingGeneratorConfig: for<'de> Deserialize<'de> + MergeWith + for<'a> From<&'a ComponentInterface> + Default + std::fmt::Debug {}
+
+/// A trait representing an external binding generator
+/// 
+/// # Example
+/// ```
+/// use uniffi_bindgen::{interface::ComponentInterface, MergeWith, BindingGeneratorConfig, BindingGenerator};
+/// use serde::Deserialize;
+/// use std::path::Path;
+/// 
+/// #[derive(Default, Debug, Deserialize)]
+/// pub struct KotlinConfig {}
+/// 
+/// impl MergeWith for KotlinConfig {
+///     fn merge_with(&self, _other: &KotlinConfig) -> Self {
+///         Self {} // This should implement the merging of two Configs, omitted for example
+///     }
+/// }
+/// 
+/// impl From<&ComponentInterface> for KotlinConfig {
+///     fn from(ci: &ComponentInterface) -> Self {
+///         Self {} // This should implement generating a config from a ComponentInterface,
+///                 // omitted for example
+///     }
+/// }
+/// 
+/// impl BindingGeneratorConfig for KotlinConfig {}
+/// 
+/// struct KotlinBindingGenerator {
+///     config: KotlinConfig
+/// }
+/// 
+/// impl BindingGenerator for KotlinBindingGenerator {
+///     type Config = KotlinConfig;
+///     
+///     fn new(config: KotlinConfig) -> anyhow::Result<Self> {
+///         Ok(Self {
+///             config
+///         })
+///     }
+/// 
+///     fn write_bindings<P: AsRef<Path>>(&self, ci: &ComponentInterface, out_dir: P) -> anyhow::Result<()> {
+///         Ok(()) // implements writing the bindings
+///     }
+///
+///
+///     fn compile_bindings<P: AsRef<Path>>(
+///         &self,
+///          ci: &ComponentInterface,
+///          out_dir: P,
+///      ) -> anyhow::Result<()> {
+///         Ok(()) // implements compiling the bindings
+///     }
+///     fn run_script<P: AsRef<Path>>(&self, out_dir: P, script_file: P) -> anyhow::Result<()> {
+///       Ok(()) // implements running a script  
+///     }
+///
+/// }
+/// ```
+pub trait BindingGenerator: Sized {
+    type Config: BindingGeneratorConfig;
+    // TODO: Use a concrete error type as an associated type
+    fn new(config: Self::Config) -> anyhow::Result<Self>;
+
+    fn write_bindings<P: AsRef<Path>>(&self, ci: &ComponentInterface, out_dir: P) -> anyhow::Result<()>;
+
+   
+    fn compile_bindings<P: AsRef<Path>>(
+        &self,
+        ci: &ComponentInterface,
+        out_dir: P,
+    ) -> anyhow::Result<()>;
+
+    fn run_script<P: AsRef<Path>>(&self, out_dir: P, script_file: P) -> anyhow::Result<()>;
+}
+
+pub fn generate_backend_bindings<B: BindingGenerator, P: AsRef<Path>>(
+    udl_file: P,
+    config_file_override: Option<P>,
+    out_dir_override: Option<P>,
+    _try_format_code: bool, // TODO: approach for formatting? should this be purely backend specific
+) -> Result<()> {
+    let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
+    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+    let udl_file = udl_file.as_ref();
+
+    let component = parse_udl(udl_file)?;
+    let config = get_backend_config::<B::Config>(&component, guess_crate_root(udl_file)?, config_file_override)?;
+    let out_dir = get_out_dir(udl_file, out_dir_override)?;
+    let backend = B::new(config)?;
+    backend.write_bindings(&component, out_dir)?;
+    Ok(())
+}
+
 
 // Generate the infrastructural Rust code for implementing the UDL interface,
 // such as the `extern "C"` function definitions and record data types.
@@ -170,13 +265,40 @@ pub fn generate_bindings<P: AsRef<Path>>(
     )?;
     let out_dir = get_out_dir(udl_file, out_dir_override)?;
     for language in target_languages {
-        bindings::write_bindings(
-            &config.bindings,
-            &component,
-            &out_dir,
-            language.try_into()?,
-            try_format_code,
-        )?;
+        match TargetLanguage::try_from(language) {
+            Ok(language) => bindings::write_bindings(
+                &config.bindings,
+                &component,
+                &out_dir,
+                language,
+                try_format_code,
+            )?,
+            _ => {
+                let command_name = format!("uniffi_bindgen_{}", language);
+                let mut command = Command::new(&command_name);
+                let mut command = command
+                    .arg(BINDGEN_VERSION)
+                    .arg("generate")
+                    .arg(udl_file)
+                    .arg("--out-dir")
+                    .arg(out_dir.clone());
+                if let Some(config_path) = config_file_override {
+                    command = command.arg("--config-path").arg(config_path);
+                }
+                match command.output() {
+                    Ok(output) => std::io::stdout().write_all(&output.stdout),
+                    Err(e) => {
+                        match e.kind() {
+                            IoError::NotFound => {
+                                eprintln!("File not found, this could be because the {} binary is not installed, or the name of the target {} is incorrect.", command_name, language);
+                                Err(e)
+                            },
+                            _ => Err(e)
+                        }
+                    }
+                }?
+            }
+        }
     }
     Ok(())
 }
@@ -268,6 +390,25 @@ fn get_config(
     }
 }
 
+fn get_backend_config<C: BindingGeneratorConfig>(
+    component: &ComponentInterface,
+    crate_root: &Path,
+    config_file_override: Option<&Path>,
+) -> Result<C> {
+    let default_config: BackendConfig<C> = component.into();
+
+    let config_file: Option<PathBuf> = match config_file_override {
+        Some(cfg) => Some(PathBuf::from(cfg)),
+        None => crate_root.join("uniffi.toml").canonicalize().ok(),
+    };
+    match config_file {
+        Some(path) => {
+            BackendConfig::load_config(component, path)
+        }
+        None => Ok(default_config.bindings),
+    }
+}
+
 fn get_out_dir(udl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
     Ok(match out_dir_override {
         Some(s) => {
@@ -298,15 +439,48 @@ fn slurp_file(file_name: &Path) -> Result<String> {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-struct Config {
+pub struct Config {
     #[serde(default)]
     bindings: bindings::Config,
+}
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct BackendConfig<C> {
+    #[serde(default)]
+    bindings: C
 }
 
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
             bindings: ci.into(),
+        }
+    }
+}
+
+impl <'a, C: From<&'a ComponentInterface>> From<&'a ComponentInterface> for BackendConfig<C> {
+    fn from(ci: &'a ComponentInterface) -> Self {
+        BackendConfig {
+            bindings: ci.into(),
+        }
+    }
+}
+
+impl <C: BindingGeneratorConfig> BackendConfig<C> {
+    fn load_config<P: AsRef<Path>>(component: &ComponentInterface, path: P) -> Result<C> {
+        let default_config: Self = component.into();
+        let path = path.as_ref();
+        let contents = slurp_file(&path)
+            .with_context(|| format!("Failed to read config file from {:?}", &path))?;
+        let loaded_config: Self = toml::de::from_str(&contents)
+            .with_context(|| format!("Failed to generate config from file {:?}", &path))?;
+        Ok(loaded_config.merge_with(&default_config).bindings)
+    }
+}
+
+impl<C: MergeWith> MergeWith for BackendConfig<C> {
+    fn merge_with(&self, other: &Self) -> Self {
+        BackendConfig {
+            bindings: self.bindings.merge_with(&other.bindings),
         }
     }
 }

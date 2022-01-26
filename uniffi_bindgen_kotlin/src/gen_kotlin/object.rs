@@ -4,8 +4,8 @@
 
 use std::fmt;
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Object};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{ComponentInterface, Object};
 use askama::Template;
 
 // Filters is used by ObjectTemplate.kt, which looks for the filters module here.

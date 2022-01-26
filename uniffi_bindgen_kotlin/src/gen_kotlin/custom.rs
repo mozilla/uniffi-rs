@@ -7,8 +7,8 @@ use std::fmt;
 use askama::Template;
 
 use super::{filters, CustomTypeConfig};
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{FFIType, Type};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{FFIType, Type};
 
 pub struct CustomCodeType {
     name: String,
