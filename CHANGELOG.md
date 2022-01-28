@@ -8,10 +8,6 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...HEAD).
 
-## v0.16.0 - (_2021-12-15_)
-
-[All changes in v0.16.0](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...v0.16.0)
-
 ### ⚠️ Breaking Changes ⚠️
 
 - Wrapped types have been renamed custom types.
@@ -19,7 +15,20 @@
    - The trait name has been renamed to `UniffiCustomTypeConverter` from `UniffiCustomTypeWrapper`
    - The method names of that trait have been renamed to `into_custom()` / `from_custom()` instead of `wrap()` and `unwrap()`
    - The associated type has been renamed to `Builtin` instead of `Wrapped`
-- Error handling when converting custom types has been updated. If your `into_custom()`
+
+### What's Changed
+
+- Custom types (formerly wrapped) now can be configured on the bindings side as
+  well as the scaffolding side.  See the "Custom Types" section of the manual
+  for details.
+
+## v0.16.0 - (_2021-12-15_)
+
+[All changes in v0.16.0](https://github.com/mozilla/uniffi-rs/compare/v0.9.0...v0.16.0)
+
+### ⚠️ Breaking Changes ⚠️
+
+- Error handling when converting custom types has been updated. If your `wrap()`
   function returns an `Err`, in some cases it now [may not panic but instead
   return the error declared by the function](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html#error-handling-during-conversion).
 
@@ -27,9 +36,6 @@
 
 - Python: Added Callback Interface support
 - Swift bindings can now omit argument labels in generated functions using `omit_argument_labels = true` in the configuration.
-- Custom types (formerly wrapped) now can be configured on the bindings side as
-  well as the scaffolding side.  See the "Custom Types" section of the manual
-  for details.
 
 ## v0.15.2 - (_2021-11-25_)
 
