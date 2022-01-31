@@ -24,7 +24,7 @@ class RustCallStatus(ctypes.Structure):
         elif self.code == RustCallStatus.CALL_ERROR:
             return "RustCallStatus(CALL_ERROR)"
         elif self.code == RustCallStatus.CALL_PANIC:
-            return "RustCallStatus(CALL_SUCCESS)"
+            return "RustCallStatus(CALL_PANIC)"
         else:
             return "RustCallStatus(<invalid code>)"
 
