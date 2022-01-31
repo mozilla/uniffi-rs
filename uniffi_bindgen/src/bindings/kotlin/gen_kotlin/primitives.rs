@@ -6,7 +6,6 @@ use crate::backend::{CodeOracle, CodeType, Literal};
 use crate::interface::{types::Type, Radix};
 use askama::Template;
 use paste::paste;
-use std::fmt;
 
 #[allow(unused_imports)]
 use super::filters;
@@ -68,28 +67,12 @@ macro_rules! impl_code_type_for_primitive {
                     render_literal(oracle, &literal)
                 }
 
-                fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.lower()", oracle.var_name(nm))
-                }
-
-                fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
-                    format!("{}.write({})", oracle.var_name(nm), target)
-                }
-
-                fn lift(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.lift({})", $class_name, nm)
-                }
-
-                fn read(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}.read({})", $class_name, nm)
-                }
-
                 fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
                     Some(self.render().unwrap())
                 }
             }
         }
-    }
+    };
 }
 
 impl_code_type_for_primitive!(BooleanCodeType, "Boolean", "BooleanHelper.kt");

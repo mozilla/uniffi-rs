@@ -1,15 +1,17 @@
-internal fun ULong.Companion.lift(v: Long): ULong {
-    return v.toULong()
-}
+internal object FfiConverterULong {
+    fun lift(v: Long): ULong {
+        return v.toULong()
+    }
 
-internal fun ULong.Companion.read(buf: ByteBuffer): ULong {
-    return ULong.lift(buf.getLong())
-}
+    fun read(buf: ByteBuffer): ULong {
+        return lift(buf.getLong())
+    }
 
-internal fun ULong.lower(): Long {
-    return this.toLong()
-}
+    fun lower(v: ULong): Long {
+        return v.toLong()
+    }
 
-internal fun ULong.write(buf: RustBufferBuilder) {
-    buf.putLong(this.toLong())
+    fun write(v: ULong, buf: RustBufferBuilder) {
+        buf.putLong(v.toLong())
+    }
 }

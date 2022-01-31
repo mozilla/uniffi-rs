@@ -1,15 +1,17 @@
-internal fun UInt.Companion.lift(v: Int): UInt {
-    return v.toUInt()
-}
+internal object FfiConverterUInt {
+    fun lift(v: Int): UInt {
+        return v.toUInt()
+    }
 
-internal fun UInt.Companion.read(buf: ByteBuffer): UInt {
-    return UInt.lift(buf.getInt())
-}
+    fun read(buf: ByteBuffer): UInt {
+        return lift(buf.getInt())
+    }
 
-internal fun UInt.lower(): Int {
-    return this.toInt()
-}
+    fun lower(v: UInt): Int {
+        return v.toInt()
+    }
 
-internal fun UInt.write(buf: RustBufferBuilder) {
-    buf.putInt(this.toInt())
+    fun write(v: UInt, buf: RustBufferBuilder) {
+        buf.putInt(v.toInt())
+    }
 }

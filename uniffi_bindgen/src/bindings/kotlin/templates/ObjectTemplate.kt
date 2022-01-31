@@ -1,6 +1,8 @@
 {% import "macros.kt" as kt %}
 {%- let obj = self.inner() %}
-public interface {{ obj|type_name }}Interface {
+{%- let type_name = obj|type_name -%}
+
+public interface {{ type_name }}Interface {
     {% for meth in obj.methods() -%}
     {%- match meth.throws() -%}
     {%- when Some with (throwable) %}
@@ -15,9 +17,9 @@ public interface {{ obj|type_name }}Interface {
     {% endfor %}
 }
 
-class {{ obj|type_name }}(
+class {{ type_name }}(
     pointer: Pointer
-) : FFIObject(pointer), {{ obj|type_name }}Interface {
+) : FFIObject(pointer), {{ type_name }}Interface {
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
@@ -40,14 +42,6 @@ class {{ obj|type_name }}(
         }
     }
 
-    internal fun lower(): Pointer = callWithPointer { it }
-
-    internal fun write(buf: RustBufferBuilder) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(this.lower()))
-    }
-
     {% for meth in obj.methods() -%}
     {%- match meth.throws() -%}
     {%- when Some with (throwable) %}
@@ -61,7 +55,7 @@ class {{ obj|type_name }}(
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
-            {{ "it"|lift_var(return_type) }}
+            {{ return_type|lift_fn }}(it)
         }
 
     {%- when None -%}
@@ -72,20 +66,32 @@ class {{ obj|type_name }}(
     {% endmatch %}
     {% endfor %}
 
+    {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
-        internal fun lift(ptr: Pointer): {{ obj|type_name }} {
-            return {{ obj|type_name }}(ptr)
-        }
-
-        internal fun read(buf: ByteBuffer): {{ obj|type_name }} {
-            // The Rust code always writes pointers as 8 bytes, and will
-            // fail to compile if they don't fit.
-            return {{ obj|type_name }}.lift(Pointer(buf.getLong()))
-        }
-
         {% for cons in obj.alternate_constructors() -%}
-        fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ obj|type_name }} =
-            {{ obj|type_name }}({% call kt::to_ffi_call(cons) %})
+        fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ type_name }} =
+            {{ type_name }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}
+    }
+    {% endif %}
+}
+
+internal object {{ obj|ffi_converter_name }} {
+    fun lower(value: {{ type_name }}): Pointer = value.callWithPointer { it }
+
+    fun write(value: {{ type_name }}, buf: RustBufferBuilder) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(value)))
+    }
+
+    fun lift(ptr: Pointer): {{ type_name }} {
+        return {{ type_name }}(ptr)
+    }
+
+    fun read(buf: ByteBuffer): {{ type_name }} {
+        // The Rust code always writes pointers as 8 bytes, and will
+        // fail to compile if they don't fit.
+        return lift(Pointer(buf.getLong()))
     }
 }
