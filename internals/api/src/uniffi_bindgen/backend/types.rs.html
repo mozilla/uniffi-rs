@@ -225,6 +225,18 @@
 <span id="223">223</span>
 <span id="224">224</span>
 <span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -284,6 +296,18 @@
     <span class="doccomment">/// N.B. `Literal` is aliased from `interface::Literal`, so may not be whole suited to this task.</span>
     <span class="kw">fn</span> <span class="ident">literal</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">_literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
         <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>))
+    }
+
+    <span class="doccomment">/// Name of the FfiConverter</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is the object that contains the lower, write, lift, and read methods for this type.</span>
+    <span class="doccomment">/// Depending on the binding this will either be a singleton or a class with static methods.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is the newer way of handling these methods and replaces the lower, write, lift, and</span>
+    <span class="doccomment">/// read CodeType methods.  Currently only used by Kotlin, but the plan is to move other</span>
+    <span class="doccomment">/// backends to using this.</span>
+    <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+        <span class="ident">oracle</span>.<span class="ident">class_name</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>)))
     }
 
     <span class="doccomment">/// An expression for lowering a value into something we can pass over the FFI.</span>
