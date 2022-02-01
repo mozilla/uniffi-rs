@@ -6,7 +6,7 @@ bindings.*
 UniFFI supports refering to types defined outside of the UDL file. These types must be
 either:
 
-1) A locally defined type which [wraps a UniFFI primitive type](./ext_types_wrapped.md).
+1) A locally defined type which [wraps a UniFFI primitive type](./custom_types.md).
 2) A "UniFFI compatible" type [in another crate](./ext_types_external.md)
 
 Specifically, "UniFFI compatible" means either a type defined in `udl` in an external crate, or
