@@ -21,6 +21,13 @@
 - Custom types (formerly wrapped) now can be configured on the bindings side as
   well as the scaffolding side.  See the "Custom Types" section of the manual
   for details.
+- Kotlin now prefixes more local UniFFI variables with the `_` char to avoid
+  conflicts with user-defined names.
+- Updated Kotlin to use the `FfiConverter` pattern (#1144)
+- Documentation updates: Added a doc comparing UniFFI to Diplomat.  Added a
+  README note describing the foreign languages we currently support.
+- Fixed `RustCallStatus.__str__` implementation on Python
+- Fixed the version numbers in the CHANGELOG compare links.
 
 ## v0.16.0 - (_2021-12-15_)
 
