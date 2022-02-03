@@ -1,6 +1,7 @@
+{% import "macros.py" as py %}
 {%- let rec = self.inner() %}
 class {{ rec|type_name }}(ViaFfiUsingByteBuffer, object):
-    def __init__(self,{% for field in rec.fields() %}{{ field.name()|var_name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
+    def __init__(self, {% call py::field_list_decl(rec) %}):
         {%- for field in rec.fields() %}
         self.{{ field.name()|var_name }} = {{ field.name()|var_name }}
         {%- endfor %}

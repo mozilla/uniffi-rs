@@ -65,6 +65,13 @@ pub struct SimpleDict {
 }
 
 #[derive(Debug, Clone)]
+pub struct DictWithDefaults {
+    name: String,
+    category: Option<String>,
+    integer: u64,
+}
+
+#[derive(Debug, Clone)]
 pub enum MaybeSimpleDict {
     Yeah { d: SimpleDict },
     Nah,

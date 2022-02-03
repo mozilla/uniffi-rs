@@ -27,6 +27,12 @@ dictionary SimpleDict {
     Coveralls? coveralls;
 };
 
+dictionary DictWithDefaults {
+    string name = "default-value";
+    string? category = null;
+    u64 integer = 31;
+};
+
 [Enum]
 interface MaybeSimpleDict {
     Yeah(SimpleDict d);

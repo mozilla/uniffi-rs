@@ -180,5 +180,18 @@ class TestCoverall(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, "Coveralls.*Patch"):
             coveralls.take_other(patch)
 
+    def test_dict_with_defaults(self):
+        """ This does not call Rust code. """
+
+        d = DictWithDefaults()
+        self.assertEqual("default-value", d.name)
+        self.assertEqual(None, d.category)
+        self.assertEqual(31, d.integer)
+
+        d = DictWithDefaults(name="this", category="that", integer=42)
+        self.assertEqual("this", d.name)
+        self.assertEqual("that", d.category)
+        self.assertEqual(42, d.integer)
+
 if __name__=='__main__':
     unittest.main()
