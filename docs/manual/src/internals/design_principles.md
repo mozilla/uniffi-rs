@@ -44,7 +44,7 @@ towards the winning combination of "simple *and* fast" over time.
 
 **Example:** Initial versions of the tool used opaque integer handles and explicit mutexes to manage
 object references, favouring simplicity (in the "we're confident this works as intended" sense) over
-performance. As we got more experience and confidence with the approach tool we replaced handles with
+performance. As we got more experience and confidence with the approach and tool we replaced handles with
 raw `Arc` pointers, which both simplified the code and removed some runtime overheads.
 
 **Violation:** The tool currently passes structured data over the FFI by serializing it to a byte
