@@ -180,7 +180,7 @@ safety guarantees at runtime.</p>
 so that they're safe to access regardless of the threading model of the calling code. We do not allow
 thread-safety guarantees to be deferred to assumptions about how the code is called.</p>
 <p><strong>Example:</strong> We do not allow returning any borrowed data from function calls, because we can't make
-any guarantees about when or how the foreign-language could would access it.</p>
+any guarantees about when or how the foreign-language could access it.</p>
 <h3><a class="header" href="#performance-is-a-feature-but-not-a-deal-breaker" id="performance-is-a-feature-but-not-a-deal-breaker">Performance is a feature, but not a deal-breaker</a></h3>
 <p>Our initial use-cases are not performance-critical, and our team are not low-level Rust experts,
 so we're highly motivated to favour simplicity and maintainability over performance. Given the choice
@@ -189,7 +189,7 @@ we will pick &quot;simple but slow&quot; over &quot;fast but complicated&quot;.<
 towards the winning combination of &quot;simple <em>and</em> fast&quot; over time.</p>
 <p><strong>Example:</strong> Initial versions of the tool used opaque integer handles and explicit mutexes to manage
 object references, favouring simplicity (in the &quot;we're confident this works as intended&quot; sense) over
-performance. As we got more experience and confidence with the approach tool we replaced handles with
+performance. As we got more experience and confidence with the approach and tool we replaced handles with
 raw <code>Arc</code> pointers, which both simplified the code and removed some runtime overheads.</p>
 <p><strong>Violation:</strong> The tool currently passes structured data over the FFI by serializing it to a byte
 buffer, favouring ease of implementation and understanding over performance. This was fine as a starting
