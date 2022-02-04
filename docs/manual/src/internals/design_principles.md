@@ -30,7 +30,7 @@ so that they're safe to access regardless of the threading model of the calling 
 thread-safety guarantees to be deferred to assumptions about how the code is called.
 
 **Example:** We do not allow returning any borrowed data from function calls, because we can't make
-any guarantees about when or how the foreign-language could would access it.
+any guarantees about when or how the foreign-language could access it.
 
 
 ### Performance is a feature, but not a deal-breaker
