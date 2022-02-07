@@ -52,7 +52,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
     {% else -%}
     {%- endmatch -%} {
     {#- Method body #}
-        uniffi::deps::log::debug!("{{ cbi.name() }}.{{ meth.name() }}");
+        uniffi::deps::log::trace!("{{ cbi.name() }}.{{ meth.name() }}");
 
     {#- Packing args into a RustBuffer #}
         {% if meth.arguments().len() == 0 -%}

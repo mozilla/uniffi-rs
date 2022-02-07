@@ -47,7 +47,7 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_s
     #[no_mangle]
     pub extern "C" fn {{ cons.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> *const std::os::raw::c_void /* *const {{ obj.name() }} */ {
-        uniffi::deps::log::debug!("{{ cons.ffi_func().name() }}");
+        uniffi::deps::log::trace!("{{ cons.ffi_func().name() }}");
         {% if obj.uses_deprecated_threadsafe_attribute() %}
         uniffi_note_threadsafe_deprecation_{{ obj.name() }}();
         {% endif %}
@@ -64,7 +64,7 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_s
     pub extern "C" fn {{ meth.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(meth.ffi_func()) %}
     ) {% call rs::return_signature(meth) %} {
-        uniffi::deps::log::debug!("{{ meth.ffi_func().name() }}");
+        uniffi::deps::log::trace!("{{ meth.ffi_func().name() }}");
         // If the method does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
         {% call rs::to_rs_method_call(obj, meth) %}

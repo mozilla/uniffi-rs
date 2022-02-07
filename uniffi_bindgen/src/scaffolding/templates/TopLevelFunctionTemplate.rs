@@ -11,6 +11,6 @@ pub extern "C" fn {{ func.ffi_func().name() }}(
 ) {% call rs::return_signature(func) %} {
     // If the provided function does not match the signature specified in the UDL
     // then this attempt to call it will not compile, and will give guidance as to why.
-    uniffi::deps::log::debug!("{{ func.ffi_func().name() }}");
+    uniffi::deps::log::trace!("{{ func.ffi_func().name() }}");
     {% call rs::to_rs_function_call(func) %}
 }
