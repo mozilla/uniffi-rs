@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_macros"
-version = "0.16.0"
+version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 description = "a multi-language bindings generator for rust (convenience macros)"
 documentation = "https://mozilla.github.io/uniffi-rs"
@@ -18,7 +18,7 @@ proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "1.0", features = ["extra-traits"] }
 glob = "0.3"
-uniffi_build = { path = "../uniffi_build", version = "=0.16.0"}
+uniffi_build = { path = "../uniffi_build", version = "=0.17.0"}
 
 [features]
 default = []
