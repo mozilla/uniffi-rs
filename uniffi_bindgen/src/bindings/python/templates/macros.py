@@ -54,6 +54,21 @@ rust_call(
 {%- endmacro %}
 
 {#-
+// Field lists as used in Python declarations of Records.
+// Note the var_name.
+-#}
+{%- macro field_list_decl(item) %}
+    {%- for field in item.fields() -%}
+        {{ field.name()|var_name }}
+        {%- match field.default_value() %}
+            {%- when Some with(literal) %} = {{ literal|literal_py(field) }}
+            {%- else %}
+        {%- endmatch -%}
+        {% if !loop.last %}, {% endif %}
+    {%- endfor %}
+{%- endmacro %}
+
+{#-
 // Arglist as used in the _UniFFILib function declations.
 // Note unfiltered name but ffi_type_name filters.
 -#}

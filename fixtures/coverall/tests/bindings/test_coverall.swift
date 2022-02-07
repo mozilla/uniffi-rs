@@ -155,3 +155,17 @@ do {
 }
 // Dropping `coveralls` will kill both.
 assert(getNumAlive() == 0)
+
+// Test a dict with defaults
+// This does not call Rust code.
+do {
+    let d = DictWithDefaults()
+    assert(d.name == "default-value")
+    assert(d.category == nil)
+    assert(d.integer == 31)
+
+    let d2 = DictWithDefaults(name: "this", category: "that", integer: 42)
+    assert(d2.name == "this")
+    assert(d2.category == "that")
+    assert(d2.integer == 42)
+}

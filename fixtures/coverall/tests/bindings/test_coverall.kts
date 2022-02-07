@@ -190,3 +190,14 @@ ThreadsafeCounter().use { counter ->
         executor.shutdown()
     }
 }
+
+// This does not call Rust code.
+var d = DictWithDefaults()
+assert(d.name == "default-value")
+assert(d.category == null)
+assert(d.integer == 31UL)
+
+d = DictWithDefaults(name = "this", category = "that", integer = 42UL)
+assert(d.name == "this")
+assert(d.category == "that")
+assert(d.integer == 42UL)
