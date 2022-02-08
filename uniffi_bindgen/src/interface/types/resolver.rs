@@ -119,13 +119,37 @@ impl TypeResolver for weedle::types::SequenceType<'_> {
     }
 }
 
+/// Validate that the type can be used for record keys.
+///
+/// Every record key type needs to be hashable and comparable.
+/// We therefore only allow integers, string and booleans as keys in a record.
+/// These are guaranteed to be hashable.
+fn validate_record_key_type(typ: Type) -> Result<Type> {
+    match typ {
+        Type::UInt8
+        | Type::Int8
+        | Type::UInt16
+        | Type::Int16
+        | Type::UInt32
+        | Type::Int32
+        | Type::UInt64
+        | Type::Int64
+        | Type::Boolean
+        | Type::String => Ok(typ),
+        _ => bail!(
+            "Hashable & comparable key type required, got {}",
+            typ.canonical_name()
+        ),
+    }
+}
+
 impl TypeResolver for weedle::types::RecordKeyType<'_> {
     fn resolve_type_expression(&self, types: &mut TypeUniverse) -> Result<Type> {
         use weedle::types::RecordKeyType::*;
         match self {
             Byte(_) | USV(_) => bail!("WebIDL Byte or USV string type not implemented ({:?}); consider using DOMString or string", self),
             DOM(_) => types.add_known_type(Type::String),
-            NonAny(t) => t.resolve_type_expression(types)
+            NonAny(t) => validate_record_key_type(t.resolve_type_expression(types)?)
         }
     }
 }
