@@ -1,8 +1,8 @@
-class FfiConverterUInt16(Primitive):
+class FfiConverterUInt16(FfiConverterPrimitive):
     @staticmethod
-    def _read(buf):
-        return FfiConverterUInt16._lift(buf.readU16())
+    def read(buf):
+        return buf.readU16()
 
     @staticmethod
-    def _write(value, buf):
-        buf.writeU16(FfiConverterUInt16._lower(value))
+    def write(value, buf):
+        buf.writeU16(value)

@@ -10,7 +10,9 @@ class TestIt(unittest.TestCase):
         ct = get_combined_type(None)
         self.assertEqual(ct.uot.sval, "hello")
         self.assertEqual(ct.guid, "a-guid")
-        self.assertEqual(ct.url, 'http://example.com/')
+        self.assertEqual(ct.url.scheme, 'http')
+        self.assertEqual(ct.url.netloc, 'example.com')
+        self.assertEqual(ct.url.path, '/')
 
         ct2 = get_combined_type(ct)
         self.assertEqual(ct, ct2)

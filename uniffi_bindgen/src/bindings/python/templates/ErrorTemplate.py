@@ -1,32 +1,19 @@
 {%- let e = self.inner() %}
-class {{ e|type_name }}(ViaFfiUsingByteBuffer):
-
+class {{ e|type_name }}(Exception):
     {%- if e.is_flat() %}
 
     # Each variant is a nested class of the error itself.
     # It just carries a string error message, so no special implementation is necessary.
     {%- for variant in e.variants() %}
-    class {{ variant.name()|class_name }}(ViaFfiUsingByteBuffer, Exception):
-        def _write(self, buf):
-            buf.writeI32({{ loop.index }})
-            message = str(self)
-            {{ "message"|write_var("buf", Type::String) }}
+    class {{ variant.name()|class_name }}(Exception):
+        pass
     {%- endfor %}
-
-    @classmethod
-    def _read(cls, buf):
-        variant = buf.readI32()
-        {% for variant in e.variants() -%}
-        if variant == {{ loop.index }}:
-            return cls.{{ variant.name()|class_name }}({{ "buf"|read_var(Type::String) }})
-        {% endfor %}
-        raise InternalError("Raw enum value doesn't match any cases")
 
     {%- else %}
 
     # Each variant is a nested class of the error itself.
     {%- for variant in e.variants() %}
-    class {{ variant.name()|class_name }}(ViaFfiUsingByteBuffer, Exception):
+    class {{ variant.name()|class_name }}(Exception):
         def __init__(self{% for field in variant.fields() %}, {{ field.name()|var_name }}{% endfor %}):
             {%- if variant.has_fields() %}
             {%- for field in variant.fields() %}
@@ -48,24 +35,33 @@ class {{ e|type_name }}(ViaFfiUsingByteBuffer):
             return "{{ e|type_name }}.{{ variant.name()|class_name }}"
             {%- endif %}
 
-        def _write(self, buf):
-            buf.writeI32({{ loop.index }})
-            {%- for field in variant.fields() %}
-            {{ "self.{}"|format(field.name()) |write_var("buf", field.type_()) }}
-            {%- endfor %}
     {%- endfor %}
+    {%- endif %}
 
-    @classmethod
-    def _read(cls, buf):
+class {{ e|ffi_converter_name }}(FfiConverterRustBuffer):
+    @staticmethod
+    def read(buf):
         variant = buf.readI32()
-        {% for variant in e.variants() -%}
+        {%- for variant in e.variants() %}
         if variant == {{ loop.index }}:
-            return cls.{{ variant.name()|class_name }}(
-                {% for field in variant.fields() -%}
-                {{ field.name()|var_name }}={{ "buf"|read_var(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
-                {% endfor -%}
+            return {{ e|type_name }}.{{ variant.name()|class_name }}(
+                {%- if e.is_flat() %}
+                {{ Type::String|read_fn }}(buf),
+                {%- else %}
+                {%- for field in variant.fields() %}
+                {{ field.name()|var_name }}={{ field|read_fn }}(buf),
+                {%- endfor %}
+                {%- endif %}
             )
-        {% endfor %}
+        {%- endfor %}
         raise InternalError("Raw enum value doesn't match any cases")
 
-    {%- endif %}
+    @staticmethod
+    def write(value, buf):
+        {%- for variant in e.variants() %}
+        if isinstance(value, {{ e|type_name }}.{{ variant.name()|class_name }}):
+            buf.writeI32({{ loop.index }})
+            {%- for field in variant.fields() %}
+            {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
+            {%- endfor %}
+        {%- endfor %}

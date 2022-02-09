@@ -1,13 +1,13 @@
 {#
 // Template to call into rust. Used in several places.
 // Variable names in `arg_list_decl` should match up with arg lists
-// passed to rust via `_arg_list_ffi_call` (we use  `var_name` in `lower_var`)
+// passed to rust via `_arg_list_ffi_call`
 #}
 
 {%- macro to_ffi_call(func) -%}
-    {%- match func.throws() -%}
+    {%- match func.throws_type() -%}
     {%- when Some with (e) -%}
-rust_call_with_error({{ e|class_name }},
+rust_call_with_error({{ e|ffi_converter_name }},
     {%- else -%}
 rust_call(
     {%- endmatch -%}
@@ -17,10 +17,10 @@ rust_call(
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
-    {%- match func.throws() -%}
+    {%- match func.throws_type() -%}
     {%- when Some with (e) -%}
 rust_call_with_error(
-    {{ e|class_name }},
+    {{ e|ffi_converter_name }},
     {%- else -%}
 rust_call(
     {%- endmatch -%}
@@ -32,7 +32,7 @@ rust_call(
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_var(arg.type_()) }}
+        {{ arg|lower_fn }}({{ arg.name() }})
         {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}

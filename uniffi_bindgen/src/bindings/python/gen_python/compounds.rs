@@ -43,10 +43,6 @@ macro_rules! impl_code_type_for_compound {
                 fn outer(&self) -> &TypeIdentifier {
                     &self.outer
                 }
-
-                fn ffi_converter_name(&self, oracle: &dyn CodeOracle) -> String {
-                    format!("FfiConverter{}", self.canonical_name(oracle))
-                }
             }
 
             impl CodeType for $T  {
@@ -60,22 +56,6 @@ macro_rules! impl_code_type_for_compound {
 
                 fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
                     render_literal(oracle, &literal, self.inner())
-                }
-
-                fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}._lower({})", self.ffi_converter_name(oracle), oracle.var_name(nm))
-                }
-
-                fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
-                    format!("{}._write({}, {})", self.ffi_converter_name(oracle), oracle.var_name(nm), target)
-                }
-
-                fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}._lift({})", self.ffi_converter_name(oracle), nm)
-                }
-
-                fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-                    format!("{}._read({})", self.ffi_converter_name(oracle), nm)
                 }
 
                 fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {

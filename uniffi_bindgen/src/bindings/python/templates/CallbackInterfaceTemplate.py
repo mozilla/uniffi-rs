@@ -1,13 +1,12 @@
 {% import "macros.py" as py %}
 {%- let cbi = self.inner() %}
-{%- let type_name = cbi.type_()|type_name %}
-{%- let canonical_type_name = cbi.type_()|canonical_name %}
-{%- let ffi_converter = format!("FfiConverter{}", canonical_type_name) %}
-{%- let foreign_callback = format!("foreignCallback{}", canonical_type_name) %}
+{%- let canonical_name = cbi|canonical_name %}
+{%- let ffi_converter = cbi|ffi_converter_name %}
+{%- let foreign_callback = format!("foreignCallback{}", canonical_name) %}
 
-# Declaration and FfiConverters for {{ type_name }} Callback Interface
+# Declaration and FfiConverters for {{ cbi|type_name }} Callback Interface
 
-class {{ type_name }}:
+class {{ cbi|type_name }}:
     {% for meth in cbi.methods() -%}
     def {{ meth.name()|fn_name }}({% call py::arg_list_decl(meth) %}):
         raise NotImplementedError
@@ -25,7 +24,7 @@ def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
         with args.consumeWithStream() as buf:
             rval = python_callback.{{ meth.name()|fn_name }}(
                 {% for arg in meth.arguments() -%}
-                {{ "buf"|read_var(arg.type_()) }}
+                {{ arg|read_fn }}(buf)
                 {%- if !loop.last %}, {% endif %}
                 {% endfor -%}
             )
@@ -37,7 +36,7 @@ def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
         {%- match meth.return_type() -%}
         {%- when Some with (return_type) -%}
         with RustBuffer.allocWithBuilder() as builder:
-            {{ "rval"|write_var("builder", return_type) }}
+            {{ return_type|write_fn }}(rval, builder)
             return builder.finalize()
         {%- else -%}
         return RustBuffer.alloc(0)
@@ -46,7 +45,7 @@ def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
         # https://github.com/mozilla/uniffi-rs/issues/351
     {% endfor %}
 
-    cb = {{ ffi_converter }}._lift(handle)
+    cb = {{ ffi_converter }}.lift(handle)
     if not cb:
         raise InternalError("No callback in handlemap; this is a Uniffi bug")
 

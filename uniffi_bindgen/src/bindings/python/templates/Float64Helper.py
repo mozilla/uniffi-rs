@@ -1,8 +1,8 @@
-class FfiConverterDouble(Primitive):
+class FfiConverterDouble(FfiConverterPrimitive):
     @staticmethod
-    def _read(buf):
-        return FfiConverterDouble._lift(buf.readDouble())
+    def read(buf):
+        return buf.readDouble()
 
     @staticmethod
-    def _write(value, buf):
-        buf.writeDouble(FfiConverterDouble._lower(value))
+    def write(value, buf):
+        buf.writeDouble(value)

@@ -22,10 +22,6 @@ impl CustomCodeType {
             config,
         }
     }
-
-    fn ffi_converter_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("FfiConverter{}", self.canonical_name(oracle))
-    }
 }
 
 impl CodeType for CustomCodeType {
@@ -41,36 +37,6 @@ impl CodeType for CustomCodeType {
 
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
         format!("Type{}", self.name)
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!(
-            "{}.lower({})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm)
-        )
-    }
-
-    fn write(
-        &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!(
-            "{}.write({}, {})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm),
-            target
-        )
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.ffi_converter_name(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.ffi_converter_name(oracle), nm)
     }
 
     fn coerce(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {

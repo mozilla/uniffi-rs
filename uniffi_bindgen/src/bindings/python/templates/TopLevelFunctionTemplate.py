@@ -5,8 +5,7 @@
 
 def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
     {%- call py::coerce_args(func) %}
-    _retval = {% call py::to_ffi_call(func) %}
-    return {{ "_retval"|lift_var(return_type) }}
+    return {{ return_type|lift_fn }}({% call py::to_ffi_call(func) %})
 
 {% when None -%}
 

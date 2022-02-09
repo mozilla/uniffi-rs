@@ -2,9 +2,9 @@
 # There is a loss of precision when converting from Rust timestamps,
 # which are accurate to the nanosecond,
 # to Python datetimes, which have a variable precision due to the use of float as representation.
-class FfiConverterTimestamp(FfiConverterUsingByteBuffer):
+class FfiConverterTimestamp(FfiConverterRustBuffer):
     @staticmethod
-    def _read(buf):
+    def read(buf):
         seconds = buf.readI64()
         microseconds = buf.readU32() / 1000
         # Use fromtimestamp(0) then add the seconds using a timedelta.  This
@@ -16,7 +16,7 @@ class FfiConverterTimestamp(FfiConverterUsingByteBuffer):
             return datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc) - datetime.timedelta(seconds=-seconds, microseconds=microseconds)
 
     @staticmethod
-    def _write(value, buf):
+    def write(value, buf):
         if value >= datetime.datetime.fromtimestamp(0, datetime.timezone.utc):
             sign = 1
             delta = value - datetime.datetime.fromtimestamp(0, datetime.timezone.utc)

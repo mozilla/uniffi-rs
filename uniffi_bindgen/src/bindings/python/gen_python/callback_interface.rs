@@ -17,10 +17,6 @@ impl CallbackInterfaceCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
-
-    fn ffi_converter_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("FfiConverter{}", &self.canonical_name(oracle))
-    }
 }
 
 impl CodeType for CallbackInterfaceCodeType {
@@ -28,42 +24,12 @@ impl CodeType for CallbackInterfaceCodeType {
         oracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("CallbackInterface{}", self.type_label(oracle))
+    fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
+        format!("CallbackInterface{}", self.id)
     }
 
     fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
         unreachable!();
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!(
-            "{}._lower({})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm)
-        )
-    }
-
-    fn write(
-        &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!(
-            "{}._write({}, {})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm),
-            target
-        )
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}._lift({})", self.ffi_converter_name(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}._read({})", self.ffi_converter_name(oracle), nm)
     }
 
     fn coerce(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {

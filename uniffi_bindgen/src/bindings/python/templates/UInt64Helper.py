@@ -1,8 +1,8 @@
-class FfiConverterUInt64(Primitive):
+class FfiConverterUInt64(FfiConverterPrimitive):
     @staticmethod
-    def _read(buf):
-        return FfiConverterUInt64._lift(buf.readU64())
+    def read(buf):
+        return buf.readU64()
 
     @staticmethod
-    def _write(value, buf):
-        buf.writeU64(FfiConverterUInt64._lower(value))
+    def write(value, buf):
+        buf.writeU64(value)
