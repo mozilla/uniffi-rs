@@ -232,4 +232,8 @@ impl<T: CodeTypeDispatch> CodeType for T {
     fn initialization_fn(&self, oracle: &dyn CodeOracle) -> Option<String> {
         self.code_type_impl(oracle).initialization_fn(oracle)
     }
+
+    fn coerce(&self, oracle: &dyn CodeOracle, nm: &str) -> String {
+        self.code_type_impl(oracle).coerce(oracle, nm)
+    }
 }
