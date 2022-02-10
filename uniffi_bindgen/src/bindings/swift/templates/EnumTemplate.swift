@@ -9,29 +9,32 @@ public enum {{ e|type_name }} {
     {% endfor %}
 }
 
-extension {{ e|type_name }}: ViaFfiUsingByteBuffer, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> {{ e|type_name }} {
+fileprivate struct {{ e|ffi_converter_name }}: FfiConverterRustBuffer {
+    typealias SwiftType = {{ e|type_name }}
+
+    static func read(from buf: Reader) throws -> {{ e|type_name }} {
         let variant: Int32 = try buf.readInt()
         switch variant {
         {% for variant in e.variants() %}
-        case {{ loop.index }}: return .{{ variant.name()|enum_variant_swift }}{% if variant.has_fields() -%}(
-            {% for field in variant.fields() -%}
-            {{ field.name()|var_name }}: try {{ "buf"|read_var(field) }}{% if loop.last %}{% else %},{% endif %}
-            {% endfor -%}
-        ){% endif -%}
+        case {{ loop.index }}: return .{{ variant.name()|enum_variant_swift }}{% if variant.has_fields() %}(
+            {%- for field in variant.fields() %}
+            {{ field.name()|var_name }}: try {{ field|read_fn }}(from: buf)
+            {%- if !loop.last %}, {% endif %}
+            {%- endfor %}
+        ){%- endif %}
         {% endfor %}
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
-    fileprivate func write(into buf: Writer) {
-        switch self {
+    static func write(_ value: {{ e|type_name }}, into buf: Writer) {
+        switch value {
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}
         case let .{{ variant.name()|enum_variant_swift }}({% for field in variant.fields() %}{{ field.name()|var_name }}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             buf.writeInt(Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
-            {{ field.name()|write_var("buf", field) }}
+            {{ field|write_fn }}({{ field.name()|var_name }}, into: buf)
             {% endfor -%}
         {% else %}
         case .{{ variant.name()|enum_variant_swift }}:

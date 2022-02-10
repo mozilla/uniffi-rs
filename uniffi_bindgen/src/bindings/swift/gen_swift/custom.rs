@@ -6,7 +6,6 @@ use super::{filters, CustomTypeConfig};
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{FFIType, Type};
 use askama::Template;
-use std::fmt;
 
 pub struct CustomCodeType {
     name: String,
@@ -22,10 +21,6 @@ impl CustomCodeType {
             config,
         }
     }
-
-    pub fn ffi_converter_name(&self, _oracle: &dyn CodeOracle) -> String {
-        format!("FfiConverterType{}", self.name)
-    }
 }
 
 impl CodeType for CustomCodeType {
@@ -40,42 +35,12 @@ impl CodeType for CustomCodeType {
     }
 
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
-        self.name.clone()
+        format!("Type{}", self.name)
     }
 
     fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
         // No such thing as a literal custom type
         unreachable!("Can't have a literal of a custom type");
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!(
-            "{}.lower({})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm)
-        )
-    }
-
-    fn write(
-        &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!(
-            "{}.write({}, {})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm),
-            target
-        )
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.ffi_converter_name(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read({})", self.ffi_converter_name(oracle), nm)
     }
 
     fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {

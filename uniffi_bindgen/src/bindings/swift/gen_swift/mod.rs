@@ -218,7 +218,6 @@ impl<'a> SwiftWrapper<'a> {
     pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
         let ci = self.ci;
         vec![
-            Box::new(object::SwiftObjectRuntime::new(ci)) as Box<dyn CodeDeclaration>,
             Box::new(callback_interface::SwiftCallbackInterfaceRuntime::new(ci))
                 as Box<dyn CodeDeclaration>,
         ]
@@ -457,29 +456,24 @@ pub mod filters {
         Ok(codetype.canonical_name(oracle))
     }
 
-    pub fn lower_var(
-        nm: &dyn fmt::Display,
-        codetype: &impl CodeType,
-    ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.lower(oracle, nm))
+    pub fn ffi_converter_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(codetype.ffi_converter_name(oracle()))
     }
 
-    pub fn write_var(
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-        codetype: &impl CodeType,
-    ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.write(oracle, nm, target))
+    pub fn lower_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lower", codetype.ffi_converter_name(oracle())))
     }
 
-    pub fn lift_var(
-        nm: &dyn fmt::Display,
-        codetype: &impl CodeType,
-    ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.lift(oracle, nm))
+    pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.write", codetype.ffi_converter_name(oracle())))
+    }
+
+    pub fn lift_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lift", codetype.ffi_converter_name(oracle())))
+    }
+
+    pub fn read_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.read", codetype.ffi_converter_name(oracle())))
     }
 
     pub fn literal_swift(
@@ -488,14 +482,6 @@ pub mod filters {
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
         Ok(codetype.literal(oracle, literal))
-    }
-
-    pub fn read_var(
-        nm: &dyn fmt::Display,
-        codetype: &impl CodeType,
-    ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.read(oracle, nm))
     }
 
     /// Get the Swift syntax for representing a given low-level `FFIType`.

@@ -33,20 +33,19 @@ extension {{ rec|type_name }}: Equatable, Hashable {
 }
 {% endif %}
 
-fileprivate extension {{ rec|type_name }} {
-    static func read(from buf: Reader) throws -> {{ rec|type_name }} {
+fileprivate struct {{ rec|ffi_converter_name }}: FfiConverterRustBuffer {
+    fileprivate static func read(from buf: Reader) throws -> {{ rec|type_name }} {
         return try {{ rec|type_name }}(
             {%- for field in rec.fields() %}
-            {{ field.name()|var_name }}: {{ "buf"|read_var(field) }}{% if loop.last %}{% else %},{% endif %}
+            {{ field.name()|var_name }}: {{ field|read_fn }}(from: buf)
+            {%- if !loop.last %}, {% endif %}
             {%- endfor %}
         )
     }
 
-    func write(into buf: Writer) {
+    fileprivate static func write(_ value: {{ rec|type_name }}, into buf: Writer) {
         {%- for field in rec.fields() %}
-        {{ "self.{}"|format(field.name())|write_var("buf", field) }}
+        {{ field|write_fn }}(value.{{ field.name()|var_name }}, into: buf)
         {%- endfor %}
     }
 }
-
-extension {{ rec|type_name }}: ViaFfiUsingByteBuffer, ViaFfi {}

@@ -1,19 +1,20 @@
-extension Bool: ViaFfi {
-    fileprivate typealias FfiType = Int8
+fileprivate struct FfiConverterBool : FfiConverter {
+    typealias FfiType = Int8
+    typealias SwiftType = Bool
 
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        return try self.lift(buf.readInt())
+    static func lift(_ value: Int8) throws -> Bool {
+        return value != 0
     }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
+    static func lower(_ value: Bool) -> Int8 {
+        return value ? 1 : 0
     }
 
-    fileprivate static func lift(_ v: FfiType) throws -> Self {
-        return v != 0
+    static func read(from buf: Reader) throws -> Bool {
+        return try lift(buf.readInt())
     }
 
-    fileprivate func lower() -> FfiType {
-        return self ? 1 : 0
+    static func write(_ value: Bool, into buf: Writer) {
+        buf.writeInt(lower(value))
     }
 }

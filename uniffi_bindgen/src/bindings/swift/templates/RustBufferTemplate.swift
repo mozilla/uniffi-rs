@@ -136,56 +136,49 @@ fileprivate class Writer {
     }
 }
 
-
-// Types conforming to `Serializable` can be read and written in a bytebuffer.
-fileprivate protocol Serializable {
-    func write(into: Writer)
-    static func read(from: Reader) throws -> Self
-}
-
-// Types confirming to `ViaFfi` can be transferred back-and-for over the FFI.
-// This is analogous to the Rust trait of the same name.
-fileprivate protocol ViaFfi: Serializable {
+// Protocol for types that transfer other types across the FFI. This is
+// analogous go the Rust trait of the same name.
+fileprivate protocol FfiConverter {
     associatedtype FfiType
-    static func lift(_ v: FfiType) throws -> Self
-    func lower() -> FfiType
+    associatedtype SwiftType
+
+    static func lift(_ value: FfiType) throws -> SwiftType
+    static func lower(_ value: SwiftType) -> FfiType
+    static func read(from buf: Reader) throws -> SwiftType
+    static func write(_ value: SwiftType, into buf: Writer)
 }
 
 // Types conforming to `Primitive` pass themselves directly over the FFI.
-fileprivate protocol Primitive {}
+fileprivate protocol FfiConverterPrimitive: FfiConverter where FfiType == SwiftType { }
 
-extension Primitive {
-    fileprivate typealias FfiType = Self
-
-    fileprivate static func lift(_ v: Self) throws -> Self {
-        return v
+extension FfiConverterPrimitive {
+    static func lift(_ value: FfiType) throws -> SwiftType {
+        return value
     }
 
-    fileprivate func lower() -> Self {
-        return self
+    static func lower(_ value: SwiftType) -> FfiType {
+        return value
     }
 }
 
-// Types conforming to `ViaFfiUsingByteBuffer` lift and lower into a bytebuffer.
-// Use this for complex types where it's hard to write a custom lift/lower.
-fileprivate protocol ViaFfiUsingByteBuffer: Serializable {}
+// Types conforming to `FfiConverterRustBuffer` lift and lower into a `RustBuffer`.
+// Used for complex types where it's hard to write a custom lift/lower.
+fileprivate protocol FfiConverterRustBuffer: FfiConverter where FfiType == RustBuffer {}
 
-extension ViaFfiUsingByteBuffer {
-    fileprivate typealias FfiType = RustBuffer
-
-    fileprivate static func lift(_ buf: FfiType) throws -> Self {
-      let reader = Reader(data: Data(rustBuffer: buf))
-      let value = try Self.read(from: reader)
-      if reader.hasRemaining() {
-          throw UniffiInternalError.incompleteData
-      }
-      buf.deallocate()
-      return value
+extension FfiConverterRustBuffer {
+    static func lift(_ buf: RustBuffer) throws -> SwiftType {
+        let reader = Reader(data: Data(rustBuffer: buf))
+        let value = try read(from: reader)
+        if reader.hasRemaining() {
+            throw UniffiInternalError.incompleteData
+        }
+        buf.deallocate()
+        return value
     }
 
-    fileprivate func lower() -> FfiType {
-      let writer = Writer()
-      self.write(into: writer)
-      return RustBuffer(bytes: writer.bytes)
+    static func lower(_ value: SwiftType) -> RustBuffer {
+          let writer = Writer()
+          write(value, into: writer)
+          return RustBuffer(bytes: writer.bytes)
     }
 }

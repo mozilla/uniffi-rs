@@ -1,9 +1,12 @@
-extension UInt32: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        return try self.lift(buf.readInt())
+fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
+    typealias FfiType = UInt32
+    typealias SwiftType = UInt32
+
+    static func read(from buf: Reader) throws -> UInt32 {
+        return try lift(buf.readInt())
     }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
+    static func write(_ value: SwiftType, into buf: Writer) {
+        buf.writeInt(lower(value))
     }
 }

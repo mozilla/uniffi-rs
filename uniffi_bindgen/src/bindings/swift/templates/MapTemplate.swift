@@ -1,22 +1,28 @@
 {%- import "macros.swift" as swift -%}
-{%- let inner_type = self.inner() %}
 {%- let outer_type = self.outer() %}
-{%- let inner_type_name = inner_type|type_name %}
-{%- let canonical_type_name = outer_type|canonical_name %}
-fileprivate enum FfiConverter{{ canonical_type_name }}: FfiConverterUsingByteBuffer {
-    typealias SwiftType = {{ outer_type|type_name }}
+{%- let dict_type = outer_type|type_name %}
+{%- let key_type = Type::String %}
+{%- let value_type = self.inner() %}
 
-    static func write(_ value: SwiftType, into buf: Writer) {
-        FfiConverterDictionary.write(value, into: buf) { (key, value, buf) in
-            {{ "key"|write_var("buf", Type::String) }}
-            {{ "value"|write_var("buf", inner_type) }}
+fileprivate struct {{ outer_type|ffi_converter_name }}: FfiConverterRustBuffer {
+    fileprivate static func write(_ value: {{ dict_type }}, into buf: Writer) {
+        let len = Int32(value.count)
+        buf.writeInt(len)
+        for (key, value) in value {
+            {{ key_type|write_fn }}(key, into: buf)
+            {{ value_type|write_fn }}(value, into: buf)
         }
     }
 
-    static func read(from buf: Reader) throws -> SwiftType {
-        try FfiConverterDictionary.read(from: buf) { buf in
-            (try {{ "buf"|read_var(Type::String) }},
-            try {{ "buf"|read_var(inner_type) }})
+    fileprivate static func read(from buf: Reader) throws -> {{ dict_type }} {
+        let len: Int32 = try buf.readInt()
+        var dict = {{ dict_type }}()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try {{ key_type|read_fn }}(from: buf)
+            let value = try {{ value_type|read_fn }}(from: buf)
+            dict[key] = value
         }
+        return dict
     }
 }
