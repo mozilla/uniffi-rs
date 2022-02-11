@@ -42,14 +42,14 @@ interface ForeignCallback : com.sun.jna.Callback {
 // to free the callback once it's dropped by Rust.
 internal const val IDX_CALLBACK_FREE = 0
 
-internal abstract class FfiConverterCallbackInterface<CallbackInterface>(
+public abstract class FfiConverterCallbackInterface<CallbackInterface>(
     protected val foreignCallback: ForeignCallback
 ): FfiConverter<CallbackInterface, Handle> {
-    val handleMap = ConcurrentHandleMap<CallbackInterface>()
+    private val handleMap = ConcurrentHandleMap<CallbackInterface>()
 
     // Registers the foreign callback with the Rust side.
     // This method is generated for each callback interface.
-    abstract fun register(lib: _UniFFILib)
+    internal abstract fun register(lib: _UniFFILib)
 
     fun drop(handle: Handle): RustBuffer.ByValue {
         return handleMap.remove(handle).let { RustBuffer.ByValue() }

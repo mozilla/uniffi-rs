@@ -59,9 +59,8 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
     let status = Command::new("kotlinc")
         // Our generated bindings should not produce any warnings; fail tests if they do.
         .arg("-Werror")
-        // Reflect $CLASSPATH from the environment, to help find `jna.jar`.
         .arg("-classpath")
-        .arg(env::var("CLASSPATH").unwrap_or_else(|_| "".to_string()))
+        .arg(classpath_for_testing(out_dir)?)
         .arg(&kt_file)
         .arg("-d")
         .arg(jar_file)
@@ -78,26 +77,9 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
 /// Execute the specifed kotlin script, with classpath based on the generated
 // artifacts in the given output directory.
 pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
-    let mut classpath = env::var_os("CLASSPATH").unwrap_or_else(|| OsString::from(""));
-    // This lets java find the compiled library for the rust component.
-    classpath.push(":");
-    classpath.push(out_dir);
-    // This lets java use any generate .jar files containing bindings for the rust component.
-    for entry in PathBuf::from(out_dir)
-        .read_dir()
-        .context("Failed to list target directory when running Kotlin script")?
-    {
-        let entry = entry.context("Directory listing failed while running Kotlin script")?;
-        if let Some(ext) = entry.path().extension() {
-            if ext == "jar" {
-                classpath.push(":");
-                classpath.push(entry.path());
-            }
-        }
-    }
     let mut cmd = Command::new("kotlinc");
     // Make sure it can load the .jar and its dependencies.
-    cmd.arg("-classpath").arg(classpath);
+    cmd.arg("-classpath").arg(classpath_for_testing(out_dir)?);
     // Enable runtime assertions, for easy testing etc.
     cmd.arg("-J-ea");
     // Our test scripts should not produce any warnings.
@@ -112,4 +94,30 @@ pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
         bail!("running `kotlinc` failed")
     }
     Ok(())
+}
+
+// Calculate the classpath string to use for testing
+pub fn classpath_for_testing(out_dir: &Path) -> Result<OsString> {
+    let mut classpath = env::var_os("CLASSPATH").unwrap_or_else(|| OsString::from(""));
+    // This lets java find the compiled library for the rust component.
+    classpath.push(":");
+    classpath.push(out_dir);
+    // This lets java use any generated .jar files from the output directory.
+    //
+    // Including all .jar files is needed for tests like ext-types that use multiple UDL files.
+    // TODO: Instead of including all .jar files, we should only include jar files that we
+    // previously built for this test.
+    for entry in PathBuf::from(out_dir)
+        .read_dir()
+        .context("Failed to list target directory when running Kotlin script")?
+    {
+        let entry = entry.context("Directory listing failed while running Kotlin script")?;
+        if let Some(ext) = entry.path().extension() {
+            if ext == "jar" {
+                classpath.push(":");
+                classpath.push(entry.path());
+            }
+        }
+    }
+    Ok(classpath)
 }

@@ -20,10 +20,10 @@ class TestGuid(unittest.TestCase):
         # This is testing `get_guid` which never returns a result, so everything
         # is InternalError representing a panic.
         # The fixture hard-codes some Guid strings to return specific errors.
-        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'val': The Guid is too short"):
+        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'value': The Guid is too short"):
             get_guid("")
 
-        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'val': Something unexpected went wrong"):
+        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'value': Something unexpected went wrong"):
             get_guid("unexpected")
 
         with self.assertRaisesRegex(InternalError, "guid value caused a panic!"):
@@ -35,7 +35,7 @@ class TestGuid(unittest.TestCase):
         with self.assertRaises(GuidError.TooShort):
             try_get_guid("")
 
-        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'val': Something unexpected went wrong"):
+        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'value': Something unexpected went wrong"):
             try_get_guid("unexpected")
 
         with self.assertRaisesRegex(InternalError, "guid value caused a panic!"):

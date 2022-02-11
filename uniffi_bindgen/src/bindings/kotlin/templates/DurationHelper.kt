@@ -1,4 +1,4 @@
-internal object FfiConverterDuration: FfiConverterRustBuffer<java.time.Duration> {
+public object FfiConverterDuration: FfiConverterRustBuffer<java.time.Duration> {
     override fun read(buf: ByteBuffer): java.time.Duration {
         // Type mismatch (should be u64) but we check for overflow/underflow below
         val seconds = buf.getLong()

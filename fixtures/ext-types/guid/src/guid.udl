@@ -15,12 +15,12 @@ dictionary GuidHelper {
 namespace ext_types_guid {
     // Note this intentionally does not throw an error - uniffi will panic if
     // a Guid can't be converted.
-    Guid get_guid(optional Guid? val);
+    Guid get_guid(optional Guid? value);
 
     // Uniffi will handle failure converting a string to a Guid correctly if
     // the conversion returns `Err(GuidError)`, or panic otherwise.
     [Throws=GuidError]
-    Guid try_get_guid(optional Guid? val);
+    Guid try_get_guid(optional Guid? value);
 
-    GuidHelper get_guid_helper(optional GuidHelper? vals);
+    GuidHelper get_guid_helper(optional GuidHelper? values);
 };

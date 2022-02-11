@@ -1,4 +1,4 @@
-internal object FfiConverterByte: FfiConverter<Byte, Byte> {
+public object FfiConverterByte: FfiConverter<Byte, Byte> {
     override fun lift(value: Byte): Byte {
         return value
     }

@@ -1,2 +1,11 @@
 [bindings.python]
 cdylib_name = "uniffi_ext_types_lib"
+
+[bindings.kotlin]
+cdylib_name = "uniffi_ext_types_lib"
+
+[bindings.kotlin.external_packages]
+# Map the crate names from [External={name}] into Kotlin package names
+custom-types = "customtypes"
+ext-types-guid = "uniffi.ext_types_guid"
+uniffi-one = "uniffi.uniffi_one"

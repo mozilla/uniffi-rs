@@ -1,4 +1,4 @@
-internal object FfiConverterDouble: FfiConverter<Double, Double> {
+public object FfiConverterDouble: FfiConverter<Double, Double> {
     override fun lift(value: Double): Double {
         return value
     }

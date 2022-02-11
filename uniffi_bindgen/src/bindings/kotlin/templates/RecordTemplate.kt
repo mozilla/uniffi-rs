@@ -20,7 +20,7 @@ data class {{ type_name }} (
     {% endif %}
 }
 
-internal object {{ rec|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
+public object {{ rec|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer): {{ type_name }} {
         return {{ type_name }}(
         {%- for field in rec.fields() %}

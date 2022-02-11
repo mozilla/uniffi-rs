@@ -1,12 +1,19 @@
 {%- match config %}
 {%- when None %}
 {#- No custom type config, just forward all methods to our builtin type #}
-internal typealias {{ outer|ffi_converter_name }} = {{ builtin|ffi_converter_name }}
+public typealias {{ outer|ffi_converter_name }} = {{ builtin|ffi_converter_name }}
+
+{#- Create a typealias so that this type can be imported when used as an external type #}
+public typealias {{ name }} = {{ builtin|type_name }}
 
 {%- when Some with (config) %}
 {%- let type_name=self.type_name(config) %}
 {%- let ffi_type_name=self.builtin_ffi_type()|ffi_type_name %}
-object {{ outer|ffi_converter_name }}: FfiConverter<{{ type_name }}, {{ffi_type_name }}> {
+
+{#- Create a typealias so that this type can be imported when used as an external type #}
+public typealias {{ name }} = {{ type_name }}
+
+public object {{ outer|ffi_converter_name }}: FfiConverter<{{ type_name }}, {{ ffi_type_name }}> {
     {#- Custom type config supplied, use it to convert the builtin type #}
     override fun lift(value: {{ ffi_type_name }}): {{ type_name }} {
         val builtinValue = {{ builtin|lift_fn }}(value)
