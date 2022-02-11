@@ -8,6 +8,11 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.17.0...HEAD).
 
+### What's Changed
+
+- Identifiers in generated Swift code are automatically surrounded by backticks (`) when they are
+  the same as Swift reserved words.
+
 ## v0.17.0 - (_2022-02-03_)
 
 [All changes in v0.17.0](https://github.com/mozilla/uniffi-rs/compare/v0.16.0...v0.17.0).

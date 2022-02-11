@@ -424,6 +424,28 @@ impl CodeOracle for SwiftCodeOracle {
     }
 }
 
+/// When using a Swift reserved word as an identifier, one needs to add a backtick (`) before and
+/// after it. This function checks if the given identifier is a reserved word and adds backticks if
+/// necessary.
+pub fn escape_reserved_word_identifier(identifier: String) -> String {
+    match identifier.as_str() {
+        "associatedtype" | "class" | "deinit" | "enum" | "extension" | "fileprivate" | "func"
+        | "import" | "init" | "inout" | "internal" | "let" | "open" | "operator" | "private"
+        | "precedencegroup" | "protocol" | "public" | "rethrows" | "static" | "struct"
+        | "subscript" | "typealias" | "var" | "break" | "case" | "catch" | "continue"
+        | "default" | "defer" | "do" | "else" | "fallthrough" | "for" | "guard" | "if" | "in"
+        | "repeat" | "return" | "throw" | "switch" | "where" | "while" | "Any" | "as" | "false"
+        | "nil" | "self" | "Self" | "super" | "throws" | "true" | "try" | "associativity"
+        | "convenience" | "didSet" | "dynamic" | "final" | "get" | "indirect" | "infix"
+        | "lazy" | "left" | "mutating" | "none" | "nonmutating" | "optional" | "override"
+        | "postfix" | "precedence" | "prefix" | "Protocol" | "required" | "right" | "set"
+        | "some" | "Type" | "unowned" | "weak" | "willSet" => {
+            format!("`{}`", identifier)
+        }
+        _ => identifier,
+    }
+}
+
 pub mod filters {
     use super::*;
     use std::fmt;
@@ -449,7 +471,7 @@ pub mod filters {
 
     pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(codetype.type_label(oracle))
+        Ok(escape_reserved_word_identifier(codetype.type_label(oracle)))
     }
 
     pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
@@ -526,22 +548,24 @@ pub mod filters {
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
     pub fn class_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(oracle().class_name(nm))
+        Ok(escape_reserved_word_identifier(oracle().class_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of a function name.
     pub fn fn_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(oracle().fn_name(nm))
+        Ok(escape_reserved_word_identifier(oracle().fn_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
     pub fn var_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(oracle().var_name(nm))
+        Ok(escape_reserved_word_identifier(oracle().var_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of an individual enum variant.
     pub fn enum_variant_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(oracle().enum_variant_name(nm))
+        Ok(escape_reserved_word_identifier(
+            oracle().enum_variant_name(nm),
+        ))
     }
 
     /// Get the idiomatic Swift rendering of an exception name
@@ -550,6 +574,6 @@ pub mod filters {
     /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
     /// and is distinguished from an "Exception".
     pub fn exception_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(oracle().error_name(nm))
+        Ok(escape_reserved_word_identifier(oracle().error_name(nm)))
     }
 }
