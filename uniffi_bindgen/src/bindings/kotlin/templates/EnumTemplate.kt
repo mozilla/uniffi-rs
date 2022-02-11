@@ -15,22 +15,16 @@ enum class {{ type_name }} {
     {%- endfor %}
 }
 
-internal object {{ e|ffi_converter_name }} {
-    fun lift(rbuf: RustBuffer.ByValue): {{ type_name }} {
-        return liftFromRustBuffer(rbuf) { buf -> read(buf) }
-    }
-
-    fun read(buf: ByteBuffer) = try {
+internal object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
+    override fun read(buf: ByteBuffer) = try {
         {{ type_name }}.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
         throw RuntimeException("invalid enum value, something is very wrong!!", e)
     }
 
-    fun lower(value: {{ type_name }}): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(value, {v, buf -> write(v, buf)})
-    }
+    override fun allocationSize(value: {{ type_name }}) = 4
 
-    fun write(value: {{ type_name }}, buf: RustBufferBuilder) {
+    override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }
@@ -68,12 +62,8 @@ sealed class {{ type_name }}{% if self.contains_object_references() %}: Disposab
     {% endif %}
 }
 
-internal object {{ e|ffi_converter_name }} {
-    fun lift(rbuf: RustBuffer.ByValue): {{ type_name }} {
-        return liftFromRustBuffer(rbuf) { buf -> read(buf) }
-    }
-
-    fun read(buf: ByteBuffer): {{ type_name }} {
+internal object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}>{
+    override fun read(buf: ByteBuffer): {{ type_name }} {
         return when(buf.getInt()) {
             {%- for variant in e.variants() %}
             {{ loop.index }} -> {{ type_name }}.{{ variant.name()|class_name }}{% if variant.has_fields() %}(
@@ -86,18 +76,29 @@ internal object {{ e|ffi_converter_name }} {
         }
     }
 
-    fun lower(value: {{ type_name }}): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(value, {v, buf -> write(v, buf)})
+    override fun allocationSize(value: {{ type_name }}) = when(value) {
+        {%- for variant in e.variants() %}
+        is {{ type_name }}.{{ variant.name()|class_name }} -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4
+                {%- for field in variant.fields() %}
+                + {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }})
+                {%- endfor %}
+            )
+        }
+        {%- endfor %}
     }
 
-    fun write(value: {{ type_name }}, buf: RustBufferBuilder) {
+    override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         when(value) {
             {%- for variant in e.variants() %}
             is {{ type_name }}.{{ variant.name()|class_name }} -> {
                 buf.putInt({{ loop.index }})
-                {% for field in variant.fields() -%}
+                {%- for field in variant.fields() %}
                 {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
-                {% endfor %}
+                {%- endfor %}
+                Unit
             }
             {%- endfor %}
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }

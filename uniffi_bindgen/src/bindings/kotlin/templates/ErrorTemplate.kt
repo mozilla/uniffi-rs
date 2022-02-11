@@ -52,26 +52,22 @@ sealed class {{ type_name }}: Exception(){% if self.contains_object_references()
 }
 {%- endif %}
 
-internal object {{ e|ffi_converter_name }} {
-    fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} {
-        return liftFromRustBuffer(error_buf) { error_buf -> read(error_buf) }
-    }
-
-    fun read(error_buf: ByteBuffer): {{ type_name }} {
+internal object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}> {
+    override fun read(buf: ByteBuffer): {{ type_name }} {
         {% if e.is_flat() %}
-            return when(error_buf.getInt()) {
+            return when(buf.getInt()) {
             {%- for variant in e.variants() %}
-            {{ loop.index }} -> {{ type_name }}.{{ variant.name()|exception_name }}({{ TypeIdentifier::String|read_fn }}(error_buf))
+            {{ loop.index }} -> {{ type_name }}.{{ variant.name()|exception_name }}({{ TypeIdentifier::String|read_fn }}(buf))
             {%- endfor %}
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         {% else %}
 
-        return when(error_buf.getInt()) {
+        return when(buf.getInt()) {
             {%- for variant in e.variants() %}
             {{ loop.index }} -> {{ type_name }}.{{ variant.name()|exception_name }}({% if variant.has_fields() %}
                 {% for field in variant.fields() -%}
-                {{ field|read_fn }}(error_buf),
+                {{ field|read_fn }}(buf),
                 {% endfor -%}
             {%- endif -%})
             {%- endfor %}
@@ -81,12 +77,12 @@ internal object {{ e|ffi_converter_name }} {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun lower(value: {{ type_name }}): RustBuffer.ByValue {
-        throw RuntimeException("Lowering Errors is not supported")
+    override fun allocationSize(value: {{ type_name }}): Int {
+        throw RuntimeException("Writing Errors is not supported")
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun write(value: {{ type_name }}, buf: RustBufferBuilder) {
+    override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         throw RuntimeException("Writing Errors is not supported")
     }
 

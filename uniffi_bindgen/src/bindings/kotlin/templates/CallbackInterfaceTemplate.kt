@@ -21,7 +21,7 @@ public interface {{ type_name }} {
 internal class {{ foreign_callback }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
     override fun invoke(handle: Handle, method: Int, args: RustBuffer.ByValue, outBuf: RustBufferByReference): Int {
-        val cb = {{ ffi_converter }}.lift(handle) ?: throw InternalException("No callback in handlemap; this is a Uniffi bug")
+        val cb = {{ ffi_converter }}.lift(handle)
         return when (method) {
             IDX_CALLBACK_FREE -> {
                 {{ ffi_converter }}.drop(handle)
@@ -71,10 +71,8 @@ internal class {{ foreign_callback }} : ForeignCallback {
         {#- Packing up the return value into a RustBuffer #}
                 {%- match meth.return_type() -%}
                 {%- when Some with (return_type) -%}
-                .let { rval ->
-                    val rbuf = RustBufferBuilder()
-                    {{ return_type|write_fn }}(rval, rbuf)
-                    rbuf.finalize()
+                .let {
+                    {{ return_type|ffi_converter_name }}.lowerIntoRustBuffer(it)
                 }
                 {%- else -%}
                 .let { RustBuffer.ByValue() }

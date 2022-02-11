@@ -1,17 +1,19 @@
-internal object FfiConverterUShort {
-    fun lift(v: Short): UShort {
-        return v.toUShort()
+internal object FfiConverterUShort: FfiConverter<UShort, Short> {
+    override fun lift(value: Short): UShort {
+        return value.toUShort()
     }
 
-    fun read(buf: ByteBuffer): UShort {
+    override fun read(buf: ByteBuffer): UShort {
         return lift(buf.getShort())
     }
 
-    fun lower(v: UShort): Short {
-        return v.toShort()
+    override fun lower(value: UShort): Short {
+        return value.toShort()
     }
 
-    fun write(v: UShort, buf: RustBufferBuilder) {
-        buf.putShort(v.toShort())
+    override fun allocationSize(value: UShort) = 2
+
+    override fun write(value: UShort, buf: ByteBuffer) {
+        buf.putShort(value.toShort())
     }
 }

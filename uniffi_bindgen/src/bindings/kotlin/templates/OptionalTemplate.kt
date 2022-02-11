@@ -4,32 +4,28 @@
 {%- let inner_type_name = inner_type|type_name %}
 {%- let canonical_type_name = outer_type|canonical_name %}
 
-internal object {{ outer_type|ffi_converter_name }} {
-    fun lift(rbuf: RustBuffer.ByValue): {{ inner_type_name }}? {
-        return liftFromRustBuffer(rbuf) { buf ->
-            read(buf)
-        }
-    }
-
-    fun read(buf: ByteBuffer): {{ inner_type_name }}? {
+internal object {{ outer_type|ffi_converter_name }}: FfiConverterRustBuffer<{{ inner_type_name }}?> {
+    override fun read(buf: ByteBuffer): {{ inner_type_name }}? {
         if (buf.get().toInt() == 0) {
             return null
         }
         return {{ inner_type|read_fn }}(buf)
     }
 
-    fun lower(v: {{ inner_type_name }}?): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(v) { v, buf ->
-            write(v, buf)
+    override fun allocationSize(value: {{ inner_type_name }}?): Int {
+        if (value == null) {
+            return 1
+        } else {
+            return 1 + {{ inner_type|allocation_size_fn }}(value)
         }
     }
 
-    fun write(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
-        if (v == null) {
-            buf.putByte(0)
+    override fun write(value: {{ inner_type_name }}?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
         } else {
-            buf.putByte(1)
-            {{ inner_type|write_fn }}(v, buf)
+            buf.put(1)
+            {{ inner_type|write_fn }}(value, buf)
         }
     }
 }

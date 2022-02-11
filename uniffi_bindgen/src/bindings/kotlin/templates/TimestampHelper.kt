@@ -1,11 +1,5 @@
-internal object FfiConverterTimestamp {
-    fun lift(rbuf: RustBuffer.ByValue): java.time.Instant {
-        return liftFromRustBuffer(rbuf) { buf ->
-            read(buf)
-        }
-    }
-
-    fun read(buf: ByteBuffer): java.time.Instant {
+internal object FfiConverterTimestamp: FfiConverterRustBuffer<java.time.Instant> {
+    override fun read(buf: ByteBuffer): java.time.Instant {
         val seconds = buf.getLong()
         // Type mismatch (should be u32) but we check for overflow/underflow below
         val nanoseconds = buf.getInt().toLong()
@@ -19,14 +13,11 @@ internal object FfiConverterTimestamp {
         }
     }
 
-    fun lower(v: java.time.Instant): RustBuffer.ByValue {
-        return lowerIntoRustBuffer(v) { v, buf ->
-            write(v, buf)
-        }
-    }
+    // 8 bytes for seconds, 4 bytes for nanoseconds
+    override fun allocationSize(value: java.time.Instant) = 12
 
-    fun write(v: java.time.Instant, buf: RustBufferBuilder) {
-        var epochOffset = java.time.Duration.between(java.time.Instant.EPOCH, v)
+    override fun write(value: java.time.Instant, buf: ByteBuffer) {
+        var epochOffset = java.time.Duration.between(java.time.Instant.EPOCH, value)
 
         var sign = 1
         if (epochOffset.isNegative()) {

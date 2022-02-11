@@ -1,17 +1,19 @@
-internal object FfiConverterDouble {
-    fun lift(v: Double): Double {
-        return v
+internal object FfiConverterDouble: FfiConverter<Double, Double> {
+    override fun lift(value: Double): Double {
+        return value
     }
 
-    fun read(buf: ByteBuffer): Double {
+    override fun read(buf: ByteBuffer): Double {
         return buf.getDouble()
     }
 
-    fun lower(v: Double): Double {
-        return v
+    override fun lower(value: Double): Double {
+        return value
     }
 
-    fun write(v: Double, buf: RustBufferBuilder) {
-        buf.putDouble(v)
+    override fun allocationSize(value: Double) = 8
+
+    override fun write(value: Double, buf: ByteBuffer) {
+        buf.putDouble(value)
     }
 }

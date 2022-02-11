@@ -1,17 +1,19 @@
-internal object FfiConverterBoolean {
-    fun lift(v: Byte): Boolean {
-        return v.toInt() != 0
+internal object FfiConverterBoolean: FfiConverter<Boolean, Byte> {
+    override fun lift(value: Byte): Boolean {
+        return value.toInt() != 0
     }
 
-    fun read(buf: ByteBuffer): Boolean {
+    override fun read(buf: ByteBuffer): Boolean {
         return lift(buf.get())
     }
 
-    fun lower(v: Boolean): Byte {
-        return if (v) 1.toByte() else 0.toByte()
+    override fun lower(value: Boolean): Byte {
+        return if (value) 1.toByte() else 0.toByte()
     }
 
-    fun write(v: Boolean, buf: RustBufferBuilder) {
-        buf.putByte(lower(v))
+    override fun allocationSize(value: Boolean) = 1
+
+    override fun write(value: Boolean, buf: ByteBuffer) {
+        buf.put(lower(value))
     }
 }

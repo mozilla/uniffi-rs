@@ -44,7 +44,7 @@ internal const val IDX_CALLBACK_FREE = 0
 
 internal abstract class FfiConverterCallbackInterface<CallbackInterface>(
     protected val foreignCallback: ForeignCallback
-) {
+): FfiConverter<CallbackInterface, Handle> {
     val handleMap = ConcurrentHandleMap<CallbackInterface>()
 
     // Registers the foreign callback with the Rust side.
@@ -55,15 +55,20 @@ internal abstract class FfiConverterCallbackInterface<CallbackInterface>(
         return handleMap.remove(handle).let { RustBuffer.ByValue() }
     }
 
-    fun lift(n: Handle) = handleMap.get(n)
+    override fun lift(value: Handle): CallbackInterface {
+        return handleMap.get(value) ?: throw InternalException("No callback in handlemap; this is a Uniffi bug")
+    }
 
-    fun read(buf: ByteBuffer) = lift(buf.getLong())
+    override fun read(buf: ByteBuffer) = lift(buf.getLong())
 
-    fun lower(v: CallbackInterface) =
-        handleMap.insert(v).also {
-            assert(handleMap.get(it) === v) { "Handle map is not returning the object we just placed there. This is a bug in the HandleMap." }
+    override fun lower(value: CallbackInterface) =
+        handleMap.insert(value).also {
+            assert(handleMap.get(it) === value) { "Handle map is not returning the object we just placed there. This is a bug in the HandleMap." }
         }
 
-    fun write(v: CallbackInterface, buf: RustBufferBuilder) =
-        buf.putLong(lower(v))
+    override fun allocationSize(value: CallbackInterface) = 8
+
+    override fun write(value: CallbackInterface, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
 }
