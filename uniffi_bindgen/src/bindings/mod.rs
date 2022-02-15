@@ -126,6 +126,9 @@ where
 }
 
 /// Compile generated foreign language bindings so they're ready for use.
+///
+/// Note: This function is only used for compiling the unit tests. See #1169 for plans to refactor
+/// it.
 pub fn compile_bindings<P>(
     config: &Config,
     ci: &ComponentInterface,
@@ -146,6 +149,9 @@ where
 }
 
 /// Execute the given script via foreign language interpreter/shell.
+///
+/// Note: This function is only used for compiling the unit tests. See #1169 for plans to refactor
+/// it.
 pub fn run_script<P1, P2>(out_dir: P1, script_file: P2, language: TargetLanguage) -> Result<()>
 where
     P1: AsRef<Path>,

@@ -1,4 +1,4 @@
-internal object FfiConverterUShort: FfiConverter<UShort, Short> {
+public object FfiConverterUShort: FfiConverter<UShort, Short> {
     override fun lift(value: Short): UShort {
         return value.toUShort()
     }

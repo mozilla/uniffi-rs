@@ -19,6 +19,7 @@ mod compounds;
 mod custom;
 mod enum_;
 mod error;
+mod external;
 mod function;
 mod miscellany;
 mod object;
@@ -32,6 +33,8 @@ pub struct Config {
     cdylib_name: Option<String>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
+    #[serde(default)]
+    external_packages: HashMap<String, String>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -66,6 +69,7 @@ impl From<&ComponentInterface> for Config {
             package_name: Some(format!("uniffi.{}", ci.namespace())),
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
             custom_types: HashMap::new(),
+            external_packages: HashMap::new(),
         }
     }
 }
@@ -76,6 +80,7 @@ impl MergeWith for Config {
             package_name: self.package_name.merge_with(&other.package_name),
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
             custom_types: self.custom_types.merge_with(&other.custom_types),
+            external_packages: self.external_packages.merge_with(&other.external_packages),
         }
     }
 }
@@ -244,7 +249,13 @@ impl KotlinCodeOracle {
                 let inner = *inner.to_owned();
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
-            Type::External { .. } => panic!("no support for external types yet"),
+            Type::External { crate_name, name } => {
+                let package_name = match self.config.external_packages.get(&crate_name) {
+                    Some(name) => name.clone(),
+                    None => crate_name,
+                };
+                Box::new(external::ExternalCodeType::new(package_name, name))
+            }
             Type::Custom { name, builtin } => Box::new(custom::CustomCodeType::new(
                 name.clone(),
                 builtin.as_ref().clone(),

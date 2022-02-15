@@ -52,7 +52,7 @@ sealed class {{ type_name }}: Exception(){% if self.contains_object_references()
 }
 {%- endif %}
 
-internal object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}> {
+public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer): {{ type_name }} {
         {% if e.is_flat() %}
             return when(buf.getInt()) {

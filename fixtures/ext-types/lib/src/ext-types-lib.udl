@@ -1,5 +1,5 @@
 namespace imported_types_lib {
-    CombinedType get_combined_type(optional CombinedType? val);
+    CombinedType get_combined_type(optional CombinedType? value);
 };
 
 // A type defined in a .udl file in the `uniffi-one` crate (ie, in

@@ -15,7 +15,7 @@ enum class {{ type_name }} {
     {%- endfor %}
 }
 
-internal object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
+public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer) = try {
         {{ type_name }}.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -62,7 +62,7 @@ sealed class {{ type_name }}{% if self.contains_object_references() %}: Disposab
     {% endif %}
 }
 
-internal object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}>{
+public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}>{
     override fun read(buf: ByteBuffer): {{ type_name }} {
         return when(buf.getInt()) {
             {%- for variant in e.variants() %}

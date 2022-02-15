@@ -87,7 +87,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
 }
 
 // The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
-internal object {{ ffi_converter }}: FfiConverterCallbackInterface<{{ type_name }}>(
+public object {{ ffi_converter }}: FfiConverterCallbackInterface<{{ type_name }}>(
     foreignCallback = {{ foreign_callback }}()
 ) {
     override fun register(lib: _UniFFILib) {

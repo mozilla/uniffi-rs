@@ -1,4 +1,4 @@
-internal object FfiConverterLong: FfiConverter<Long, Long> {
+public object FfiConverterLong: FfiConverter<Long, Long> {
     override fun lift(value: Long): Long {
         return value
     }

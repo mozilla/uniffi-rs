@@ -76,7 +76,7 @@ class {{ type_name }}(
     {% endif %}
 }
 
-internal object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
+public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
     override fun lower(value: {{ type_name }}): Pointer = value.callWithPointer { it }
 
     override fun lift(value: Pointer): {{ type_name }} {
