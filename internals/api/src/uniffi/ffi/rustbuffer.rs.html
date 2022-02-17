@@ -284,11 +284,99 @@
 <span id="282">282</span>
 <span id="283">283</span>
 <span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::ffi</span>::{<span class="ident">call_with_output</span>, <span class="ident">ForeignBytes</span>, <span class="ident">RustCallStatus</span>};
 <span class="kw">use</span> <span class="ident">std::convert</span>::{<span class="ident">TryFrom</span>, <span class="ident">TryInto</span>};
 
 <span class="doccomment">/// Support for passing an allocated-by-Rust buffer of bytes over the FFI.</span>
@@ -472,6 +560,92 @@
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span><span class="ident">::new</span>()
     }
+}
+
+<span class="comment">// extern &quot;C&quot; functions for the RustBuffer functionality.</span>
+<span class="comment">//</span>
+<span class="comment">// These are used in two ways:</span>
+<span class="comment">//   1. Code that statically links to UniFFI can use these directly to handle RustBuffer</span>
+<span class="comment">//      allocation/destruction. The plan is to use this for the Firefox desktop JS bindings.</span>
+<span class="comment">//</span>
+<span class="comment">//   2. The scaffolding code re-exports these functions, prefixed with the component name and UDL</span>
+<span class="comment">//      hash  This creates a separate set of functions for each UniFFIed component, which is needed</span>
+<span class="comment">//      in the case where we create multiple dylib artifacts since each dylib will have its own</span>
+<span class="comment">//      allocator.</span>
+
+<span class="doccomment">/// This helper allocates a new byte buffer owned by the Rust code, and returns it</span>
+<span class="doccomment">/// to the foreign-language code as a `RustBuffer` struct. Callers must eventually</span>
+<span class="doccomment">/// free the resulting buffer, either by explicitly calling [`uniffi_rustbuffer_free`] defined</span>
+<span class="doccomment">/// below, or by passing ownership of the buffer back into Rust code.</span>
+<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">uniffi_rustbuffer_alloc</span>(
+    <span class="ident">size</span>: <span class="ident">i32</span>,
+    <span class="ident">call_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RustBuffer</span> {
+    <span class="ident">call_with_output</span>(<span class="ident">call_status</span>, <span class="op">|</span><span class="op">|</span> {
+        <span class="ident">RustBuffer::new_with_size</span>(<span class="ident">size</span>.<span class="ident">max</span>(<span class="number">0</span>) <span class="kw">as</span> <span class="ident">usize</span>)
+    })
+}
+
+<span class="doccomment">/// This helper copies bytes owned by the foreign-language code into a new byte buffer owned</span>
+<span class="doccomment">/// by the Rust code, and returns it as a `RustBuffer` struct. Callers must eventually</span>
+<span class="doccomment">/// free the resulting buffer, either by explicitly calling the destructor defined below,</span>
+<span class="doccomment">/// or by passing ownership of the buffer back into Rust code.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Safety</span>
+<span class="doccomment">/// This function will dereference a provided pointer in order to copy bytes from it, so</span>
+<span class="doccomment">/// make sure the `ForeignBytes` struct contains a valid pointer and length.</span>
+<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">uniffi_rustbuffer_from_bytes</span>(
+    <span class="ident">bytes</span>: <span class="ident">ForeignBytes</span>,
+    <span class="ident">call_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RustBuffer</span> {
+    <span class="ident">call_with_output</span>(<span class="ident">call_status</span>, <span class="op">|</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">bytes</span>.<span class="ident">as_slice</span>();
+        <span class="ident">RustBuffer::from_vec</span>(<span class="ident">bytes</span>.<span class="ident">to_vec</span>())
+    })
+}
+
+<span class="doccomment">/// Free a byte buffer that had previously been passed to the foreign language code.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Safety</span>
+<span class="doccomment">/// The argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call</span>
+<span class="doccomment">/// into the Rust code that returned a buffer, or you&#39;ll risk freeing unowned memory or</span>
+<span class="doccomment">/// corrupting the allocator state.</span>
+<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">uniffi_rustbuffer_free</span>(<span class="ident">buf</span>: <span class="ident">RustBuffer</span>, <span class="ident">call_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>) {
+    <span class="ident">call_with_output</span>(<span class="ident">call_status</span>, <span class="op">|</span><span class="op">|</span> <span class="ident">RustBuffer::destroy</span>(<span class="ident">buf</span>))
+}
+
+<span class="doccomment">/// Reserve additional capacity in a byte buffer that had previously been passed to the</span>
+<span class="doccomment">/// foreign language code.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The first argument *must* be a uniquely-owned `RustBuffer` previously</span>
+<span class="doccomment">/// obtained from a call into the Rust code that returned a buffer. Its underlying data pointer</span>
+<span class="doccomment">/// will be reallocated if necessary and returned in a new `RustBuffer` struct.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The second argument must be the minimum number of *additional* bytes to reserve</span>
+<span class="doccomment">/// capacity for in the buffer; it is likely to reserve additional capacity in practice</span>
+<span class="doccomment">/// due to amortized growth strategy of Rust vectors.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Safety</span>
+<span class="doccomment">/// The first argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call</span>
+<span class="doccomment">/// into the Rust code that returned a buffer, or you&#39;ll risk freeing unowned memory or</span>
+<span class="doccomment">/// corrupting the allocator state.</span>
+<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">uniffi_rustbuffer_reserve</span>(
+    <span class="ident">buf</span>: <span class="ident">RustBuffer</span>,
+    <span class="ident">additional</span>: <span class="ident">i32</span>,
+    <span class="ident">call_status</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RustCallStatus</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RustBuffer</span> {
+    <span class="ident">call_with_output</span>(<span class="ident">call_status</span>, <span class="op">|</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">additional</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">additional</span>
+            .<span class="ident">try_into</span>()
+            .<span class="ident">expect</span>(<span class="string">&quot;additional buffer length negative or overflowed&quot;</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">destroy_into_vec</span>();
+        <span class="ident">v</span>.<span class="ident">reserve</span>(<span class="ident">additional</span>);
+        <span class="ident">RustBuffer::from_vec</span>(<span class="ident">v</span>)
+    })
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
