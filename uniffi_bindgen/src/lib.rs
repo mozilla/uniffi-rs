@@ -113,7 +113,7 @@ pub mod interface;
 pub mod scaffolding;
 
 use bindings::TargetLanguage;
-use interface::ComponentInterface;
+pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
 /// A trait representing a Binding Generator Configuration
@@ -122,8 +122,8 @@ use scaffolding::RustScaffolding;
 /// the `BindingGenerator.config` associated type.  `generate_external_bindings()` then uses it to
 /// generate the config that's passed to `BindingGenerator.write_bindings()`
 pub trait BindingGeneratorConfig: for<'de> Deserialize<'de> {
-    /// Key that specifies this bindings config in the `bindings` table from `uniffi.toml`.
-    fn language_key() -> String;
+    /// Get the entry for this config from the `bindings` table.
+    fn get_entry_from_bindings_table(bindings: &toml::Value) -> Option<toml::Value>;
 
     /// Get default config values from the `ComponentInterface`
     ///
@@ -151,7 +151,35 @@ fn load_bindings_config<BC: BindingGeneratorConfig>(
     }
 
     // Leverage serde to convert toml::Value into the config type
-    Ok(toml::Value::from(config_map).try_into()?)
+    toml::Value::from(config_map)
+        .try_into()
+        .context("Generating bindings config from toml::Value")
+}
+
+/// Binding generator config with no members
+#[derive(Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq)]
+pub struct EmptyBindingGeneratorConfig;
+
+impl BindingGeneratorConfig for EmptyBindingGeneratorConfig {
+    fn get_entry_from_bindings_table(_bindings: &toml::Value) -> Option<toml::Value> {
+        None
+    }
+
+    fn get_config_defaults(_ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
+        Vec::new()
+    }
+}
+
+// EmptyBindingGeneratorConfig is a unit struct, so the `derive(Deserialize)` implementation
+// expects a null value rather than the empty map that we pass it.  So we need to implement
+// `Deserialize` ourselves.
+impl<'de> Deserialize<'de> for EmptyBindingGeneratorConfig {
+    fn deserialize<D>(_deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Ok(EmptyBindingGeneratorConfig)
+    }
 }
 
 // Load the binding-specific config
@@ -167,9 +195,7 @@ fn load_bindings_config_toml<BC: BindingGeneratorConfig>(
 ) -> Result<Option<toml::Value>> {
     let config_path = match config_file_override {
         Some(cfg) => cfg.to_owned(),
-        None => guess_crate_root(udl_file)?
-            .join("uniffi.toml")
-            .canonicalize()?,
+        None => guess_crate_root(udl_file)?.join("uniffi.toml"),
     };
 
     if !config_path.exists() {
@@ -183,9 +209,8 @@ fn load_bindings_config_toml<BC: BindingGeneratorConfig>(
 
     Ok(full_config
         .get("bindings")
-        .map(|c| c.get(&BC::language_key()))
-        .flatten()
-        .cloned())
+        .map(BC::get_entry_from_bindings_table)
+        .flatten())
 }
 
 /// A trait representing a UniFFI Binding Generator
@@ -197,36 +222,18 @@ pub trait BindingGenerator: Sized {
     /// uniffi.toml
     type Config: BindingGeneratorConfig;
 
-    /// A Constructor, allows passing configuration that was
-    /// parsed from the `uniffi.toml` to the type that implements
-    /// BindingGenerator
-    fn new(config: Self::Config) -> Self;
-
     /// Writes the bindings to the output directory
     ///
     /// # Arguments
-    /// - `ci`: A reference to a [`ComponentInterface`] representing the interface
+    /// - `ci`: A [`ComponentInterface`] representing the interface
+    /// - `config`: A instance of the BindingGeneratorConfig associated with this type
     /// - `out_dir`: The path to where the binding generator should write the output bindings
-    fn write_bindings(&self, ci: &ComponentInterface, out_dir: &Path) -> anyhow::Result<()>;
-
-    /// Compiles the bindings that are written by `write_bindings`, this is only relevant to run tests
-    /// and for languages that are compiled
-    ///
-    /// # Arguments
-    /// - `ci`: A reference to a [`ComponentInterface`] representing the interface
-    /// - `out_dir`: The path to where the binding generator should write the output bindings
-    fn compile_bindings(&self, _ci: &ComponentInterface, _out_dir: &Path) -> anyhow::Result<()> {
-        Ok(())
-    }
-
-    /// Runs a script against the written, and compiled bindings. This is only relevant to run tests
-    ///
-    /// # Arguments
-    /// - `out_dir`: The directory where the bindings are located
-    /// - `script_file`: The script file to run against the bindings
-    fn run_script(&self, _out_dir: &Path, _script_file: &Path) -> anyhow::Result<()> {
-        unimplemented!()
-    }
+    fn write_bindings(
+        &self,
+        ci: ComponentInterface,
+        config: Self::Config,
+        out_dir: &Path,
+    ) -> anyhow::Result<()>;
 }
 
 /// Generate bindings for an external binding generator
@@ -239,21 +246,23 @@ pub trait BindingGenerator: Sized {
 /// - Creates an instance of [`BindingGenerator`], based on type argument `B`, and run [`BindingGenerator::write_bindings`] on it
 ///
 /// # Arguments
+/// - `binding_generator`: Type that implements BindingGenerator
 /// - `udl_file`: The path to the UDL file
 /// - `config_file_override`: The path to the configuration toml file, most likely called `uniffi.toml`. If [`None`], the function will try to guess based on the crate's root.
 /// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`
-pub fn generate_external_bindings<B: BindingGenerator, P: AsRef<Path>>(
-    udl_file: P,
-    config_file_override: Option<P>,
-    out_dir_override: Option<P>,
+pub fn generate_external_bindings(
+    binding_generator: impl BindingGenerator,
+    udl_file: impl AsRef<Path>,
+    config_file_override: Option<impl AsRef<Path>>,
+    out_dir_override: Option<impl AsRef<Path>>,
 ) -> Result<()> {
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
     let out_dir = get_out_dir(udl_file.as_ref(), out_dir_override)?;
-    let component = parse_udl(udl_file.as_ref())?;
+    let component = parse_udl(udl_file.as_ref()).context("Error parsing UDL")?;
     let bindings_config =
         load_bindings_config(&component, udl_file.as_ref(), config_file_override)?;
-    B::new(bindings_config).write_bindings(&component, out_dir.as_path())
+    binding_generator.write_bindings(component, bindings_config, out_dir.as_path())
 }
 
 // Generate the infrastructural Rust code for implementing the UDL interface,
