@@ -16,14 +16,14 @@ note: required because it appears within the type `Counter`
    = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
-   --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-    |
-    |         <std::sync::Arc<Counter> as uniffi::FfiConverter>::lower(_arc)
-    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
-    |
-    = help: the following implementations were found:
-              <Arc<T> as FfiConverter>
-    = note: required by `lower`
+  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
+   |
+   |         <std::sync::Arc<Counter> as uniffi::FfiConverter>::lower(_arc)
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
+   |
+   = help: the following implementations were found:
+             <Arc<T> as FfiConverter>
+   = note: required by `lower`
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
    --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
