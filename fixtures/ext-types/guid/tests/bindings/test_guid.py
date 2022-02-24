@@ -5,6 +5,11 @@
 import unittest
 from ext_types_guid import *
 
+class TestCallback(GuidCallback):
+    def run(self, guid):
+        self.saw_guid = guid
+        return guid
+
 class TestGuid(unittest.TestCase):
     def test_get_guid(self):
         self.assertEqual(get_guid(None), "NewGuid")
@@ -41,10 +46,13 @@ class TestGuid(unittest.TestCase):
         with self.assertRaisesRegex(InternalError, "guid value caused a panic!"):
             try_get_guid("panic")
 
-    # def test_round_trip(self):
-    #     ct = get_combined_type(None)
-    #     self.assertEqual(ct.cot.sval, "hello")
-    #     self.assertEqual(ct.ctt.ival, 1)
+    def test_guid_callback(self):
+        # Test that we can passing a guid from run_callback() to TestCallback.run() then back out
+
+        test_callback = TestCallback()
+        guid = run_callback(test_callback)
+        self.assertEquals(guid, "callback-test-payload")
+        self.assertEquals(test_callback.saw_guid, "callback-test-payload")
 
 if __name__=='__main__':
     unittest.main()

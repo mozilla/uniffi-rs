@@ -12,6 +12,10 @@ dictionary GuidHelper {
     Guid? maybe_guid;
 };
 
+callback interface GuidCallback {
+   Guid run(Guid arg);
+};
+
 namespace ext_types_guid {
     // Note this intentionally does not throw an error - uniffi will panic if
     // a Guid can't be converted.
@@ -23,4 +27,5 @@ namespace ext_types_guid {
     Guid try_get_guid(optional Guid? value);
 
     GuidHelper get_guid_helper(optional GuidHelper? values);
+    Guid run_callback(GuidCallback callback);
 };
