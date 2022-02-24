@@ -66,6 +66,14 @@ fn get_guid_helper(vals: Option<GuidHelper>) -> GuidHelper {
     }
 }
 
+pub trait GuidCallback {
+    fn run(&self, arg: Guid) -> Guid;
+}
+
+pub fn run_callback(callback: Box<dyn GuidCallback>) -> Guid {
+    callback.run(Guid("callback-test-payload".into()))
+}
+
 impl UniffiCustomTypeConverter for Guid {
     type Builtin = String;
 
