@@ -48,8 +48,8 @@ mod filters {
             Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
             Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),
             Type::Map(t) => format!("std::collections::HashMap<String, {}>", type_rs(t)?),
+            Type::Custom { name, .. } => name.clone(),
             Type::External { .. } => panic!("External types coming to a uniffi near you soon!"),
-            Type::Custom { .. } => panic!("Wrapped types coming to a uniffi near you soon!"),
         })
     }
 

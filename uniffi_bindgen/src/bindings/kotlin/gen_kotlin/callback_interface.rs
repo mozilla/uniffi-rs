@@ -69,6 +69,7 @@ impl CodeDeclaration for KotlinCallbackInterface {
     fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         Some(
             vec![
+                "java.util.concurrent.atomic.AtomicLong",
                 "java.util.concurrent.locks.ReentrantLock",
                 "kotlin.concurrent.withLock",
             ]
