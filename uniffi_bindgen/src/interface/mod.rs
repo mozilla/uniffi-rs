@@ -403,6 +403,18 @@ impl<'ci> ComponentInterface {
     /// The set of FFI functions is derived automatically from the set of higher-level types
     /// along with the builtin FFI helper functions.
     pub fn iter_ffi_function_definitions(&self) -> Vec<FFIFunction> {
+        let mut functions = self.iter_user_ffi_function_definitions();
+        functions.append(&mut self.iter_rust_buffer_ffi_function_definitions());
+        functions
+    }
+
+    /// List all FFI functions definitions for user-defined interfaces
+    ///
+    /// This includes FFI functions for:
+    ///   - Top-level functions
+    ///   - Object methods
+    ///   - Callback interfaces
+    pub fn iter_user_ffi_function_definitions(&self) -> Vec<FFIFunction> {
         vec![]
             .into_iter()
             .chain(
@@ -416,10 +428,10 @@ impl<'ci> ComponentInterface {
                     .flat_map(|cb| cb.iter_ffi_function_definitions()),
             )
             .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
-            .chain(self.iter_rust_buffer_ffi_function_definitions())
             .collect()
     }
 
+    /// List all FFI functions definitions for RustBuffer functionality
     pub fn iter_rust_buffer_ffi_function_definitions(&self) -> Vec<FFIFunction> {
         vec![
             self.ffi_rustbuffer_alloc(),
