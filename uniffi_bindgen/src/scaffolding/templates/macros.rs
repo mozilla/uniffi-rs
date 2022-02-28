@@ -8,7 +8,7 @@
 
 {%- macro _arg_list_rs_call(func) %}
     {%- for arg in func.full_arguments() %}
-        match {{- arg.type_()|ffi_converter }}::try_lift({{ arg.name() }}) {
+        match {{- arg.type_().borrow()|ffi_converter }}::try_lift({{ arg.name() }}) {
         {%- if arg.by_ref() %}
             Ok(ref val) => val,
         {% else %}
@@ -36,7 +36,7 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name() }}: {{ arg.type_()|type_ffi -}},
+        {{- arg.name() }}: {{ arg.type_().borrow()|type_ffi -}},
     {%- endfor %}
     call_status: &mut uniffi::RustCallStatus
 {%- endmacro -%}
@@ -45,7 +45,7 @@
     {{- prefix -}}
     {%- if meth.arguments().len() > 0 %}, {# whitespace #}
         {%- for arg in meth.arguments() %}
-            {{- arg.name() }}: {{ arg.type_()|type_rs -}}{% if loop.last %}{% else %},{% endif %}
+            {{- arg.name() }}: {{ arg.type_().borrow()|type_rs -}}{% if loop.last %}{% else %},{% endif %}
         {%- endfor %}
     {%- endif %}
 {%- endmacro -%}
@@ -66,13 +66,13 @@
     uniffi::call_with_result(call_status, || {
         let _new = {% call construct(obj, cons) %}.map_err(Into::into).map_err({{ e|ffi_converter }}::lower)?;
         let _arc = std::sync::Arc::new(_new);
-        Ok({{ obj.type_()|ffi_converter }}::lower(_arc))
+        Ok({{ obj.type_().borrow()|ffi_converter }}::lower(_arc))
     })
 {% else %}
     uniffi::call_with_output(call_status, || {
         let _new = {% call construct(obj, cons) %};
         let _arc = std::sync::Arc::new(_new);
-        {{ obj.type_()|ffi_converter }}::lower(_arc)
+        {{ obj.type_().borrow()|ffi_converter }}::lower(_arc)
     })
 {% endmatch %}
 {% endmacro %}

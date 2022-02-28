@@ -10,7 +10,7 @@ public object {{ outer_type|ffi_converter_name }}: FfiConverterRustBuffer<Map<St
         val items : MutableMap<String, {{ inner_type_name }}> = mutableMapOf()
         val len = buf.getInt()
         repeat(len) {
-            val k = {{ TypeIdentifier::String|read_fn }}(buf)
+            val k = {{ TypeIdentifier::String.borrow()|read_fn }}(buf)
             val v = {{ inner_type|read_fn }}(buf)
             items[k] = v
         }
@@ -20,7 +20,7 @@ public object {{ outer_type|ffi_converter_name }}: FfiConverterRustBuffer<Map<St
     override fun allocationSize(value: Map<String, {{ inner_type_name }}>): Int {
         val spaceForMapSize = 4
         val spaceForChildren = value.map { (k, v) ->
-            {{ TypeIdentifier::String|allocation_size_fn }}(k) +
+            {{ TypeIdentifier::String.borrow()|allocation_size_fn }}(k) +
             {{ inner_type|allocation_size_fn }}(v)
         }.sum()
         return spaceForMapSize + spaceForChildren
@@ -32,7 +32,7 @@ public object {{ outer_type|ffi_converter_name }}: FfiConverterRustBuffer<Map<St
         // which is important for compatibility with older android devices.
         // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
         value.forEach { (k, v) ->
-            {{ TypeIdentifier::String|write_fn }}(k, buf)
+            {{ TypeIdentifier::String.borrow()|write_fn }}(k, buf)
             {{ inner_type|write_fn }}(v, buf)
         }
     }

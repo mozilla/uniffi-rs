@@ -6,6 +6,7 @@ use super::{filters, CustomTypeConfig};
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{FFIType, Type};
 use askama::Template;
+use std::borrow::Borrow;
 
 pub struct CustomCodeType {
     name: String,

@@ -6,6 +6,7 @@ use super::filters;
 use crate::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
 use askama::Template;
 use paste::paste;
+use std::borrow::Borrow;
 
 fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
     match literal {

@@ -5,6 +5,7 @@
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Error, Type};
 use askama::Template;
+use std::borrow::Borrow;
 
 use super::filters;
 pub struct ErrorCodeType {

@@ -17,12 +17,12 @@ fileprivate struct FfiConverterType{{ name }} {
         return {{ builtin|write_fn }}(builtinValue, into: buf)
     }
 
-    static func lift(_ value: {{ self.builtin_ffi_type()|type_ffi_lowered }}) throws -> {{ self.type_name(config) }} {
+    static func lift(_ value: {{ self.builtin_ffi_type().borrow()|type_ffi_lowered }}) throws -> {{ self.type_name(config) }} {
         let builtinValue = try {{ builtin|lift_fn }}(value)
         return {{ config.into_custom.render("builtinValue") }}
     }
 
-    static func lower(_ value: {{ self.type_name(config) }}) -> {{ self.builtin_ffi_type()|type_ffi_lowered }} {
+    static func lower(_ value: {{ self.type_name(config) }}) -> {{ self.builtin_ffi_type().borrow()|type_ffi_lowered }} {
         let builtinValue = {{ config.from_custom.render("value") }}
         return {{ builtin|lower_fn }}(builtinValue)
     }

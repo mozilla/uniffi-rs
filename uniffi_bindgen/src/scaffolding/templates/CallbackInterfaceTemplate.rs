@@ -11,7 +11,7 @@
 //    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
 #}
 {% let trait_name = cbi.name() -%}
-{% let trait_impl = cbi.type_()|ffi_converter_name -%}
+{% let trait_impl = cbi.type_().borrow()|ffi_converter_name -%}
 {% let foreign_callback_internals = format!("foreign_callback_{}_internals", trait_name)|upper -%}
 
 // Register a foreign callback for getting across the FFI.
@@ -48,7 +48,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
     fn {{ meth.name() -}}
     ({% call rs::arg_list_decl_with_prefix("&self", meth) %})
     {%- match meth.return_type() %}
-    {%- when Some with (return_type) %} -> {{ return_type|type_rs }}
+    {%- when Some with (return_type) %} -> {{ return_type.borrow()|type_rs }}
     {% else -%}
     {%- endmatch -%} {
     {#- Method body #}
@@ -61,7 +61,7 @@ impl {{ trait_name }} for {{ trait_impl }} {
         let mut args_buf = Vec::new();
         {% endif -%}
         {%- for arg in meth.arguments() %}
-        {{ arg.type_()|ffi_converter }}::write({{ arg.name() }}, &mut args_buf);
+        {{ arg.type_().borrow()|ffi_converter }}::write({{ arg.name() }}, &mut args_buf);
         {%- endfor -%}
         let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
 

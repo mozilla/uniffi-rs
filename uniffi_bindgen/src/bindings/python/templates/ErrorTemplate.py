@@ -46,7 +46,7 @@ class {{ e|ffi_converter_name }}(FfiConverterRustBuffer):
         if variant == {{ loop.index }}:
             return {{ e|type_name }}.{{ variant.name()|class_name }}(
                 {%- if e.is_flat() %}
-                {{ Type::String|read_fn }}(buf),
+                {{ Type::String.borrow()|read_fn }}(buf),
                 {%- else %}
                 {%- for field in variant.fields() %}
                 {{ field.name()|var_name }}={{ field|read_fn }}(buf),

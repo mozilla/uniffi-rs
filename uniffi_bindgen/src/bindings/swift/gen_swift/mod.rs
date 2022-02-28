@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
-use std::fmt;
 
 use anyhow::{anyhow, Result};
 use askama::Template;
@@ -379,27 +379,27 @@ impl CodeOracle for SwiftCodeOracle {
     }
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
-    fn class_name(&self, nm: &dyn fmt::Display) -> String {
+    fn class_name(&self, nm: &str) -> String {
         nm.to_string().to_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of a function name.
-    fn fn_name(&self, nm: &dyn fmt::Display) -> String {
+    fn fn_name(&self, nm: &str) -> String {
         nm.to_string().to_mixed_case()
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
-    fn var_name(&self, nm: &dyn fmt::Display) -> String {
+    fn var_name(&self, nm: &str) -> String {
         nm.to_string().to_mixed_case()
     }
 
     /// Get the idiomatic Swift rendering of an individual enum variant.
-    fn enum_variant_name(&self, nm: &dyn fmt::Display) -> String {
+    fn enum_variant_name(&self, nm: &str) -> String {
         nm.to_string().to_mixed_case()
     }
 
     /// Get the idiomatic Swift rendering of an exception name.
-    fn error_name(&self, nm: &dyn fmt::Display) -> String {
+    fn error_name(&self, nm: &str) -> String {
         self.class_name(nm)
     }
 
@@ -425,7 +425,6 @@ impl CodeOracle for SwiftCodeOracle {
 
 pub mod filters {
     use super::*;
-    use std::fmt;
 
     // This code is a bit unfortunate.  We want to have a `SwiftCodeOracle` instance available for
     // the filter functions, so that we don't always need to pass as an argument in the template
@@ -511,22 +510,22 @@ pub mod filters {
     }
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().class_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of a function name.
-    pub fn fn_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().fn_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
-    pub fn var_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().var_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of an individual enum variant.
-    pub fn enum_variant_swift(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn enum_variant_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().enum_variant_name(nm))
     }
 
@@ -535,7 +534,7 @@ pub mod filters {
     /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
     /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
     /// and is distinguished from an "Exception".
-    pub fn exception_name(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn exception_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().error_name(nm))
     }
 }

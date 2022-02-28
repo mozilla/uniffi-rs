@@ -31,7 +31,7 @@
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_rb(arg.type_()) }}
+        {{- arg.name()|lower_rb(arg.type_().borrow()) }}
         {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -57,17 +57,17 @@
 // Note unfiltered name but type_ffi filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}
-    [{%- for arg in func.arguments() -%}{{ arg.type_()|type_ffi }}, {% endfor -%} RustCallStatus.by_ref]
+    [{%- for arg in func.arguments() -%}{{ arg.type_().borrow()|type_ffi }}, {% endfor -%} RustCallStatus.by_ref]
 {%- endmacro -%}
 
 {%- macro coerce_args(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.name() }} = {{ arg.name()|coerce_rb(arg.type_()) -}}
+    {{ arg.name() }} = {{ arg.name()|coerce_rb(arg.type_().borrow()) -}}
     {% endfor -%}
 {%- endmacro -%}
 
 {%- macro coerce_args_extra_indent(func) %}
         {%- for arg in func.arguments() %}
-        {{ arg.name() }} = {{ arg.name()|coerce_rb(arg.type_()) }}
+        {{ arg.name() }} = {{ arg.name()|coerce_rb(arg.type_().borrow()) }}
         {%- endfor %}
 {%- endmacro -%}

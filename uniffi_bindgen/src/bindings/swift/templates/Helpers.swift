@@ -72,7 +72,7 @@ private func makeRustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) 
             // with the message.  But if that code panics, then it just sends back
             // an empty buffer.
             if callStatus.errorBuf.len > 0 {
-                throw UniffiInternalError.rustPanic(try {{ Type::String|lift_fn }}(callStatus.errorBuf))
+                throw UniffiInternalError.rustPanic(try {{ Type::String.borrow()|lift_fn }}(callStatus.errorBuf))
             } else {
                 callStatus.errorBuf.deallocate()
                 throw UniffiInternalError.rustPanic("Rust panic")

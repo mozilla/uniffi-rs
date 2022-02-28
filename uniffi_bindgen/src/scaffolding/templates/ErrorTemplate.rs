@@ -8,10 +8,10 @@
 #}
 
 #[doc(hidden)]
-pub struct {{ e.type_()|ffi_converter_name }};
+pub struct {{ e.type_().borrow()|ffi_converter_name }};
 
 #[doc(hidden)]
-impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
+impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name }} {
     type RustType = {{ e.name() }};
 
     {% if e.is_flat() %}
@@ -54,7 +54,7 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
             {{ e.name() }}::{{ variant.name() }}{% if variant.has_fields() %} { {% for field in variant.fields() %}{{ field.name() }}, {%- endfor %} }{% else %}{..}{% endif %} => {
                 buf.put_i32({{ loop.index }});
                 {% for field in variant.fields() -%}
-                {{ field.type_()|ffi_converter }}::write({{ field.name() }}, buf);
+                {{ field.type_().borrow()|ffi_converter }}::write({{ field.name() }}, buf);
                 {%- endfor %}
             },
             {%- endfor %}
@@ -70,7 +70,7 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
             {%- for variant in e.variants() %}
             {{ loop.index }} => {{ e.name() }}::{{ variant.name() }}{% if variant.has_fields() %} {
                 {% for field in variant.fields() %}
-                {{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf)?,
+                {{ field.name() }}: {{ field.type_().borrow()|ffi_converter }}::try_read(buf)?,
                 {%- endfor %}
             }{% endif %},
             {%- endfor %}
@@ -80,4 +80,4 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_()|ffi_converter_name }} {
     {% endif %}
 }
 
-impl uniffi::FfiError for {{ e.type_()|ffi_converter_name }} { }
+impl uniffi::FfiError for {{ e.type_().borrow()|ffi_converter_name }} { }
