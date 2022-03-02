@@ -541,20 +541,6 @@
 <span id="539">539</span>
 <span id="540">540</span>
 <span id="541">541</span>
-<span id="542">542</span>
-<span id="543">543</span>
-<span id="544">544</span>
-<span id="545">545</span>
-<span id="546">546</span>
-<span id="547">547</span>
-<span id="548">548</span>
-<span id="549">549</span>
-<span id="550">550</span>
-<span id="551">551</span>
-<span id="552">552</span>
-<span id="553">553</span>
-<span id="554">554</span>
-<span id="555">555</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -776,7 +762,6 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">members</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ci</span>;
         <span class="macro">vec!</span>[
-            <span class="ident">Box::new</span>(<span class="ident">object::SwiftObjectRuntime::new</span>(<span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>,
             <span class="ident">Box::new</span>(<span class="ident">callback_interface::SwiftCallbackInterfaceRuntime::new</span>(<span class="ident">ci</span>))
                 <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>,
         ]
@@ -1015,29 +1000,24 @@
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_var</span>(
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">lower</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>()))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_var</span>(
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">write</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>, <span class="ident">target</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_var</span>(
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">lift</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">literal_swift</span>(
@@ -1046,14 +1026,6 @@
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">literal</span>(<span class="ident">oracle</span>, <span class="ident">literal</span>))
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_var</span>(
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">read</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the Swift syntax for representing a given low-level `FFIType`.</span>

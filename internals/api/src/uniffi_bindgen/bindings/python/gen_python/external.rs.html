@@ -48,40 +48,6 @@
 <span id="46">46</span>
 <span id="47">47</span>
 <span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
-<span id="65">65</span>
-<span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -112,10 +78,6 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">crate_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
         <span class="self">self</span>.<span class="ident">crate_name</span>.<span class="ident">clone</span>()
     }
-
-    <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>))
-    }
 }
 
 <span class="kw">impl</span> <span class="ident">CodeType</span> <span class="kw">for</span> <span class="ident">ExternalCodeType</span> {
@@ -124,37 +86,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format!</span>(
-            <span class="string">&quot;{}._lower({})&quot;</span>,
-            <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>),
-            <span class="ident">oracle</span>.<span class="ident">var_name</span>(<span class="ident">nm</span>)
-        )
-    }
-
-    <span class="kw">fn</span> <span class="ident">write</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>,
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format!</span>(
-            <span class="string">&quot;{}._write({}, {})&quot;</span>,
-            <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>),
-            <span class="ident">oracle</span>.<span class="ident">var_name</span>(<span class="ident">nm</span>),
-            <span class="ident">target</span>
-        )
-    }
-
-    <span class="kw">fn</span> <span class="ident">lift</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;{}._lift({})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">nm</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;{}._read({})&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>), <span class="ident">nm</span>)
+        <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">helper_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {

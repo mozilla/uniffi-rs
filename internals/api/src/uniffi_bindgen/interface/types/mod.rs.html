@@ -440,7 +440,7 @@
             <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;Sequence{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
             <span class="ident">Type::Map</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;Map{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
             <span class="comment">// A type that exists externally.</span>
-            <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>.<span class="ident">to_owned</span>(),
+            <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="ident">name</span>),
         }
     }
 }

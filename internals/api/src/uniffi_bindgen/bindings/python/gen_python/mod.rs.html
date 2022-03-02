@@ -410,18 +410,6 @@
 <span id="408">408</span>
 <span id="409">409</span>
 <span id="410">410</span>
-<span id="411">411</span>
-<span id="412">412</span>
-<span id="413">413</span>
-<span id="414">414</span>
-<span id="415">415</span>
-<span id="416">416</span>
-<span id="417">417</span>
-<span id="418">418</span>
-<span id="419">419</span>
-<span id="420">420</span>
-<span id="421">421</span>
-<span id="422">422</span>
 </pre><pre class="rust">
 <span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -760,34 +748,30 @@
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>))
     }
 
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>))
+    }
+
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_var</span>(
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">lower</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">codetype</span>)<span class="question-mark">?</span>))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_var</span>(
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">write</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>, <span class="ident">target</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">codetype</span>)<span class="question-mark">?</span>))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_var</span>(
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">lift</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">codetype</span>)<span class="question-mark">?</span>))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">codetype</span>)<span class="question-mark">?</span>))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">literal_py</span>(
@@ -796,14 +780,6 @@
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">literal</span>(<span class="ident">oracle</span>, <span class="ident">literal</span>))
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_var</span>(
-        <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">read</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the Python syntax for representing a given low-level `FFIType`.</span>
