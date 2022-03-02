@@ -7,29 +7,13 @@
 {%- let e = self.inner() %}
 {% if e.is_flat() %}
 
-class {{ e|type_name }}(ViaFfiUsingByteBuffer, enum.Enum):
+class {{ e|type_name }}(enum.Enum):
     {% for variant in e.variants() -%}
     {{ variant.name()|enum_variant_py }} = {{ loop.index }}
     {% endfor %}
-
-    @staticmethod
-    def _read(buf):
-        variant = buf.readI32()
-        {% for variant in e.variants() -%}
-        if variant == {{ loop.index }}:
-            return {{ e|type_name }}.{{ variant.name()|enum_variant_py }}
-        {% endfor %}
-        raise InternalError("Raw enum value doesn't match any cases")
-
-    def _write(self, buf):
-        {% for variant in e.variants() -%}
-        if self is {{ e|type_name }}.{{ variant.name()|enum_variant_py }}:
-            i = {{loop.index}}
-            buf.writeI32({{ loop.index }})
-        {% endfor %}
 {% else %}
 
-class {{ e|type_name }}(ViaFfiUsingByteBuffer, object):
+class {{ e|type_name }}:
     def __init__(self):
         raise RuntimeError("{{ e|type_name }} cannot be instantiated directly")
 
@@ -65,29 +49,6 @@ class {{ e|type_name }}(ViaFfiUsingByteBuffer, object):
         return isinstance(self, {{ e|type_name }}.{{ variant.name()|enum_variant_py }})
     {% endfor %}
 
-    @classmethod
-    def _read(cls, buf):
-        variant = buf.readI32()
-
-        {% for variant in e.variants() -%}
-        if variant == {{ loop.index }}:
-            return cls.{{variant.name()|enum_variant_py}}(
-                {%- for field in variant.fields() %}
-                {{ field.name()|var_name }}={{ "buf"|read_var(field.type_()) }},
-                {%- endfor %}
-            )
-        {% endfor %}
-        raise InternalError("Raw enum value doesn't match any cases")
-
-    def _write(self, buf):
-        {% for variant in e.variants() -%}
-        if self.is_{{ variant.name()|var_name }}():
-            buf.writeI32({{ loop.index }})
-            {%- for field in variant.fields() %}
-            {{ "self.{}"|format(field.name())|write_var("buf", field.type_()) }}
-            {%- endfor %}
-        {% endfor %}
-
 # Now, a little trick - we make each nested variant class be a subclass of the main
 # enum class, so that method calls and instance checks etc will work intuitively.
 # We might be able to do this a little more neatly with a metaclass, but this'll do.
@@ -96,3 +57,37 @@ class {{ e|type_name }}(ViaFfiUsingByteBuffer, object):
 {% endfor %}
 
 {% endif %}
+
+class {{ e|ffi_converter_name }}(FfiConverterRustBuffer):
+    @staticmethod
+    def read(buf):
+        variant = buf.readI32()
+
+        {%- for variant in e.variants() %}
+        if variant == {{ loop.index }}:
+            {%- if e.is_flat() %}
+            return {{ e|type_name }}.{{variant.name()|enum_variant_py}}
+            {%- else %}
+            return {{ e|type_name }}.{{variant.name()|enum_variant_py}}(
+                {%- for field in variant.fields() %}
+                {{ field|read_fn }}(buf),
+                {%- endfor %}
+            )
+            {%- endif %}
+        {%- endfor %}
+        raise InternalError("Raw enum value doesn't match any cases")
+
+    def write(value, buf):
+        {%- for variant in e.variants() %}
+        {%- if e.is_flat() %}
+        if value == {{ e|type_name }}.{{ variant.name()|enum_variant_py }}:
+            buf.writeI32({{ loop.index }})
+        {%- else %}
+        if value.is_{{ variant.name()|var_name }}():
+            buf.writeI32({{ loop.index }})
+            {%- for field in variant.fields() %}
+            {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
+            {%- endfor %}
+        {%- endif %}
+        {%- endfor %}
+

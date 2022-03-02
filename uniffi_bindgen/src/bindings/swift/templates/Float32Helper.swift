@@ -1,9 +1,12 @@
-extension Float: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        return try self.lift(buf.readFloat())
+fileprivate struct FfiConverterFloat: FfiConverterPrimitive {
+    typealias FfiType = Float
+    typealias SwiftType = Float
+
+    static func read(from buf: Reader) throws -> Float {
+        return try lift(buf.readFloat())
     }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeFloat(self.lower())
+    static func write(_ value: Float, into buf: Writer) {
+        buf.writeFloat(lower(value))
     }
 }

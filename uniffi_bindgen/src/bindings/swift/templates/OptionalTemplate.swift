@@ -1,20 +1,22 @@
-{%- import "macros.swift" as swift -%}
 {%- let inner_type = self.inner() %}
 {%- let outer_type = self.outer() %}
-{%- let inner_type_name = inner_type|type_name %}
-{%- let canonical_type_name = outer_type|canonical_name %}
-fileprivate enum FfiConverter{{ canonical_type_name }}: FfiConverterUsingByteBuffer {
+fileprivate struct {{ outer_type|ffi_converter_name }}: FfiConverterRustBuffer {
     typealias SwiftType = {{ outer_type|type_name }}
 
     static func write(_ value: SwiftType, into buf: Writer) {
-        FfiConverterOptional.write(value, into: buf) { item, buf in
-            {{ "item"|write_var("buf", inner_type) }}
+        guard let value = value else {
+            buf.writeInt(Int8(0))
+            return
         }
+        buf.writeInt(Int8(1))
+        {{ inner_type|write_fn }}(value, into: buf)
     }
 
     static func read(from buf: Reader) throws -> SwiftType {
-        try FfiConverterOptional.read(from: buf) { buf in
-            try {{ "buf"|read_var(inner_type) }}
+        switch try buf.readInt() as Int8 {
+        case 0: return nil
+        case 1: return try {{ inner_type|read_fn }}(from: buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
 }

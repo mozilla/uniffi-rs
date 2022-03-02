@@ -1,12 +1,21 @@
 {%- let inner_type = self.inner() %}
 {%- let outer_type = self.outer() %}
-{%- let canonical_type_name = outer_type|canonical_name %}
+{%- let inner_ffi_converter = inner_type|ffi_converter_name %}
 
-class FfiConverter{{ canonical_type_name }}(FfiConverterUsingByteBuffer):
-    @staticmethod
-    def _write(value, buf):
-        FfiConverterSequence._write(value, buf, lambda v, buf: {{ "v"|write_var("buf", inner_type) }})
+class {{ outer_type|ffi_converter_name}}(FfiConverterRustBuffer):
+    @classmethod
+    def write(cls, value, buf):
+        items = len(value)
+        buf.writeI32(items)
+        for item in value:
+            {{ inner_ffi_converter }}.write(item, buf)
 
-    @staticmethod
-    def _read(buf):
-        return FfiConverterSequence._read(buf, lambda buf: {{ "buf"|read_var(inner_type) }})
+    @classmethod
+    def read(cls, buf):
+        count = buf.readI32()
+        if count < 0:
+            raise InternalError("Unexpected negative sequence length")
+
+        return [
+            {{ inner_ffi_converter }}.read(buf) for i in range(count)
+        ]

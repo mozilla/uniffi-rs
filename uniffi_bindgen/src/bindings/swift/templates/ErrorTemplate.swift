@@ -16,8 +16,10 @@ public enum {{ e|type_name }} {
     {%- endif %}
 }
 
-extension {{ e|type_name }}: ViaFfiUsingByteBuffer, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> {{ e|type_name }} {
+fileprivate struct {{ e|ffi_converter_name }}: FfiConverterRustBuffer {
+    typealias SwiftType = {{ e|type_name }}
+
+    static func read(from buf: Reader) throws -> {{ e|type_name }} {
         let variant: Int32 = try buf.readInt()
         switch variant {
 
@@ -25,16 +27,17 @@ extension {{ e|type_name }}: ViaFfiUsingByteBuffer, ViaFfi {
 
         {% for variant in e.variants() %}
         case {{ loop.index }}: return .{{ variant.name()|class_name }}(
-            message: try {{ "buf"|read_var(Type::String) }}
+            message: try {{ Type::String|read_fn }}(from: buf)
         )
         {% endfor %}
 
-       {% else %}
+        {% else %}
 
         {% for variant in e.variants() %}
         case {{ loop.index }}: return .{{ variant.name()|class_name }}{% if variant.has_fields() -%}(
             {% for field in variant.fields() -%}
-            {{ field.name()|var_name }}: try {{ "buf"|read_var(field) }}{% if loop.last %}{% else %},{% endif %}
+            {{ field.name()|var_name }}: try {{ field|read_fn }}(from: buf)
+            {%- if !loop.last %}, {% endif %}
             {% endfor -%}
         ){% endif -%}
         {% endfor %}
@@ -44,15 +47,15 @@ extension {{ e|type_name }}: ViaFfiUsingByteBuffer, ViaFfi {
         }
     }
 
-    fileprivate func write(into buf: Writer) {
-        switch self {
+    static func write(_ value: {{ e|type_name }}, into buf: Writer) {
+        switch value {
 
         {% if e.is_flat() %}
 
         {% for variant in e.variants() %}
         case let .{{ variant.name()|class_name }}(message):
             buf.writeInt(Int32({{ loop.index }}))
-            {{ "message"|write_var("buf", Type::String) }}
+            {{ Type::String|write_fn }}(message, into: buf)
         {%- endfor %}
 
         {% else %}
@@ -62,7 +65,7 @@ extension {{ e|type_name }}: ViaFfiUsingByteBuffer, ViaFfi {
         case let .{{ variant.name()|class_name }}({% for field in variant.fields() %}{{ field.name()|var_name }}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             buf.writeInt(Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
-            {{ field.name()|write_var("buf", field) }}
+            {{ field|write_fn }}({{ field.name()|var_name }}, into: buf)
             {% endfor -%}
         {% else %}
         case .{{ variant.name()|class_name }}:

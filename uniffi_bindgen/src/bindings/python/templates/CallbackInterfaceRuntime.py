@@ -51,7 +51,7 @@ class FfiConverterCallbackInterface:
         self.__class__._handle_map.remove(handle)
 
     @classmethod
-    def _lift(cls, handle):
+    def lift(cls, handle):
         obj = cls._handle_map.get(handle)
         if not obj:
             raise InternalError("The object in the handle map has been dropped already")
@@ -59,15 +59,15 @@ class FfiConverterCallbackInterface:
         return obj
 
     @classmethod
-    def _read(cls, buf):
+    def read(cls, buf):
         handle = buf.readU64()
-        cls._lift(handle)
+        cls.lift(handle)
 
     @classmethod
-    def _lower(cls, cb):
+    def lower(cls, cb):
         handle = cls._handle_map.insert(cb)
         return handle
 
     @classmethod
-    def _write(cls, cb, buf):
-        buf.writeU64(cls._lower(cb))
+    def write(cls, cb, buf):
+        buf.writeU64(cls.lower(cb))

@@ -335,34 +335,30 @@ pub mod filters {
         Ok(codetype.type_label(oracle))
     }
 
+    pub fn ffi_converter_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(codetype.ffi_converter_name(oracle))
+    }
+
     pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
         let oracle = oracle();
         Ok(codetype.canonical_name(oracle))
     }
 
-    pub fn lower_var(
-        nm: &dyn fmt::Display,
-        codetype: &impl CodeType,
-    ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.lower(oracle, nm))
+    pub fn lift_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lift", ffi_converter_name(codetype)?))
     }
 
-    pub fn write_var(
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-        codetype: &impl CodeType,
-    ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.write(oracle, nm, target))
+    pub fn lower_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lower", ffi_converter_name(codetype)?))
     }
 
-    pub fn lift_var(
-        nm: &dyn fmt::Display,
-        codetype: &impl CodeType,
-    ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.lift(oracle, nm))
+    pub fn read_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.read", ffi_converter_name(codetype)?))
+    }
+
+    pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.write", ffi_converter_name(codetype)?))
     }
 
     pub fn literal_py(
@@ -371,14 +367,6 @@ pub mod filters {
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
         Ok(codetype.literal(oracle, literal))
-    }
-
-    pub fn read_var(
-        nm: &dyn fmt::Display,
-        codetype: &impl CodeType,
-    ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.read(oracle, nm))
     }
 
     /// Get the Python syntax for representing a given low-level `FFIType`.

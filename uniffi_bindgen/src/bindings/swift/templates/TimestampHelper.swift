@@ -1,5 +1,7 @@
-extension Date: ViaFfiUsingByteBuffer, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Self {
+fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
+    typealias SwiftType = Date
+
+    static func read(from buf: Reader) throws -> Date {
         let seconds: Int64 = try buf.readInt()
         let nanoseconds: UInt32 = try buf.readInt()
         if seconds >= 0 {
@@ -11,8 +13,8 @@ extension Date: ViaFfiUsingByteBuffer, ViaFfi {
         }
     }
 
-    fileprivate func write(into buf: Writer) {
-        var delta = self.timeIntervalSince1970
+    static func write(_ value: Date, into buf: Writer) {
+        var delta = value.timeIntervalSince1970
         var sign: Int64 = 1
         if delta < 0 {
             // The nanoseconds portion of the epoch offset must always be

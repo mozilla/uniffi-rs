@@ -1,12 +1,23 @@
 {%- let inner_type = self.inner() %}
 {%- let outer_type = self.outer() %}
-{%- let canonical_type_name = outer_type|canonical_name %}
+{%- let inner_ffi_converter = inner_type|ffi_converter_name %}
 
-class FfiConverter{{ canonical_type_name }}(FfiConverterUsingByteBuffer):
-    @staticmethod
-    def _write(value, buf):
-        FfiConverterOptional._write(value, buf, lambda v, buf: {{ "v"|write_var("buf", inner_type) }})
+class {{ outer_type|ffi_converter_name }}(FfiConverterRustBuffer):
+    @classmethod
+    def write(cls, value, buf):
+        if value is None:
+            buf.writeU8(0)
+            return
 
-    @staticmethod
-    def _read(buf):
-        return FfiConverterOptional._read(buf, lambda buf: {{ "buf"|read_var(inner_type) }})
+        buf.writeU8(1)
+        {{ inner_ffi_converter }}.write(value, buf)
+
+    @classmethod
+    def read(cls, buf):
+        flag = buf.readU8()
+        if flag == 0:
+            return None
+        elif flag == 1:
+            return {{ inner_ffi_converter }}.read(buf)
+        else:
+            raise InternalError("Unexpected flag byte for optional type")

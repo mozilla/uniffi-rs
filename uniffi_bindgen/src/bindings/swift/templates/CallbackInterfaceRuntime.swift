@@ -58,33 +58,3 @@ fileprivate class ConcurrentHandleMap<T> {
 // Magic number for the Rust proxy to call using the same mechanism as every other method,
 // to free the callback once it's dropped by Rust.
 private let IDX_CALLBACK_FREE: Int32 = 0
-
-fileprivate class FfiConverterCallbackInterface<CallbackInterface> {
-    fileprivate let handleMap = ConcurrentHandleMap<CallbackInterface>()
-
-    func drop(handle: Handle) {
-        handleMap.remove(handle: handle)
-    }
-
-    func lift(_ handle: Handle) throws -> CallbackInterface {
-        guard let callback = handleMap.get(handle: handle) else {
-            throw UniffiInternalError.unexpectedStaleHandle
-        }
-        return callback
-    }
-
-    func read(from buf: Reader) throws -> CallbackInterface {
-        let handle: Handle = try buf.readInt()
-        return try lift(handle)
-    }
-
-    func lower(_ v: CallbackInterface) -> Handle {
-        let handle = handleMap.insert(obj: v)
-        return handle
-        // assert(handleMap.get(handle: obj) == v, "Handle map is not returning the object we just placed there. This is a bug in the HandleMap.")
-    }
-
-    func write(_ v: CallbackInterface, into buf: Writer) {
-        buf.writeInt(lower(v))
-    }
-}

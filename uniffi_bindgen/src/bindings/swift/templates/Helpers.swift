@@ -50,8 +50,11 @@ private func rustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) -> T
     })
 }
 
-private func rustCallWithError<T, E: ViaFfiUsingByteBuffer & Error>(_ errorClass: E.Type, _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T) throws -> T {
-    try makeRustCall(callback, errorHandler: { return try E.lift($0) })
+private func rustCallWithError<T, F: FfiConverter>
+    (_ errorFfiConverter: F.Type, _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T) throws -> T
+    where F.SwiftType: Error, F.FfiType == RustBuffer
+    {
+    try makeRustCall(callback, errorHandler: { return try errorFfiConverter.lift($0) })
 }
 
 private func makeRustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) -> T, errorHandler: (RustBuffer) throws -> Error) throws -> T {
@@ -69,7 +72,7 @@ private func makeRustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) 
             // with the message.  But if that code panics, then it just sends back
             // an empty buffer.
             if callStatus.errorBuf.len > 0 {
-                throw UniffiInternalError.rustPanic(try String.lift(callStatus.errorBuf))
+                throw UniffiInternalError.rustPanic(try {{ Type::String|lift_fn }}(callStatus.errorBuf))
             } else {
                 callStatus.errorBuf.deallocate()
                 throw UniffiInternalError.rustPanic("Rust panic")

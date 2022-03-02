@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::fmt;
-
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
@@ -19,10 +17,6 @@ impl CallbackInterfaceCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
-
-    fn ffi_converter_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("ffiConverter{}", &self.canonical_name(oracle))
-    }
 }
 
 impl CodeType for CallbackInterfaceCodeType {
@@ -36,36 +30,6 @@ impl CodeType for CallbackInterfaceCodeType {
 
     fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
         unreachable!();
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!(
-            "{}.lower({})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm)
-        )
-    }
-
-    fn write(
-        &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!(
-            "{}.write({}, into: {})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm),
-            target
-        )
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.lift({})", self.ffi_converter_name(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}.read(from: {})", self.ffi_converter_name(oracle), nm)
     }
 
     fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {

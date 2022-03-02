@@ -40,8 +40,9 @@ class {{ obj|type_name }}(object):
     {%- when Some with (return_type) -%}
     def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
         {%- call py::coerce_args_extra_indent(meth) %}
-        _retval = {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
-        return {{ "_retval"|lift_var(return_type) }}
+        return {{ return_type|lift_fn }}(
+            {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
+        )
 
     {%- when None -%}
     def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
@@ -50,22 +51,25 @@ class {{ obj|type_name }}(object):
     {% endmatch %}
     {% endfor %}
 
+
+class {{ obj|ffi_converter_name }}:
     @classmethod
-    def _read(cls, buf):
+    def read(cls, buf):
         ptr = buf.readU64()
         if ptr == 0:
             raise InternalError("Raw pointer value was null")
-        return cls._lift(ptr)
+        return cls.lift(ptr)
 
     @classmethod
-    def _write(cls, value, buf):
+    def write(cls, value, buf):
         if not isinstance(value, {{ obj|type_name }}):
             raise TypeError("Expected {{ obj|type_name }} instance, {} found".format(value.__class__.__name__))
-        buf.writeU64(value._lower())
+        buf.writeU64(cls.lower(value))
 
-    @classmethod
-    def _lift(cls, pointer):
-        return cls._make_instance_(pointer)
+    @staticmethod
+    def lift(value):
+        return {{ obj|type_name }}._make_instance_(value)
 
-    def _lower(self):
-        return self._pointer
+    @staticmethod
+    def lower(value):
+        return value._pointer

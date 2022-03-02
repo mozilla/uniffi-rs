@@ -1,8 +1,8 @@
-class FfiConverterUInt32(Primitive):
+class FfiConverterUInt32(FfiConverterPrimitive):
     @staticmethod
-    def _read(buf):
-        return FfiConverterUInt32._lift(buf.readU32())
+    def read(buf):
+        return buf.readU32()
 
     @staticmethod
-    def _write(value, buf):
-        buf.writeU32(FfiConverterUInt32._lower(value))
+    def write(value, buf):
+        buf.writeU32(value)

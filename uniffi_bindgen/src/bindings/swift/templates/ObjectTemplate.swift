@@ -1,4 +1,3 @@
-
 {% import "macros.swift" as swift %}
 {%- let obj = self.inner() %}
 public protocol {{ obj.name() }}Protocol {
@@ -15,7 +14,7 @@ public class {{ obj|type_name }}: {{ obj.name() }}Protocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
-    // we can't implement `ViaFfi` without making this `required` and we can't
+    // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
     required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
@@ -45,8 +44,9 @@ public class {{ obj|type_name }}: {{ obj.name() }}Protocol {
 
     {%- when Some with (return_type) -%}
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
-        let _retval = {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
-        return {% call swift::try(meth) %} {{ "_retval"|lift_var(return_type) }}
+        return {% call swift::try(meth) %} {{ return_type|lift_fn }}(
+            {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
+        )
     }
 
     {%- when None -%}
@@ -58,10 +58,11 @@ public class {{ obj|type_name }}: {{ obj.name() }}Protocol {
 }
 
 
-fileprivate extension {{ obj|type_name }} {
+fileprivate struct {{ obj|ffi_converter_name }}: FfiConverter {
     typealias FfiType = UnsafeMutableRawPointer
+    typealias SwiftType = {{ obj|type_name }}
 
-    static func read(from buf: Reader) throws -> Self {
+    static func read(from buf: Reader) throws -> {{ obj|type_name }} {
         let v: UInt64 = try buf.readInt()
         // The Rust code won't compile if a pointer won't fit in a UInt64.
         // We have to go via `UInt` because that's the thing that's the size of a pointer.
@@ -69,26 +70,20 @@ fileprivate extension {{ obj|type_name }} {
         if (ptr == nil) {
             throw UniffiInternalError.unexpectedNullPointer
         }
-        return try self.lift(ptr!)
+        return try lift(ptr!)
     }
 
-    func write(into buf: Writer) {
+    static func write(_ value: {{ obj|type_name }}, into buf: Writer) {
         // This fiddling is because `Int` is the thing that's the same size as a pointer.
         // The Rust code won't compile if a pointer won't fit in a `UInt64`.
-        buf.writeInt(UInt64(bitPattern: Int64(Int(bitPattern: self.lower()))))
+        buf.writeInt(UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
     }
 
-    static func lift(_ pointer: UnsafeMutableRawPointer) throws -> Self {
-        return Self(unsafeFromRawPointer: pointer)
+    static func lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ obj|type_name }} {
+        return {{ obj|type_name}}(unsafeFromRawPointer: pointer)
     }
 
-    func lower() -> UnsafeMutableRawPointer {
-        return self.pointer
+    static func lower(_ value: {{ obj|type_name }}) -> UnsafeMutableRawPointer {
+        return value.pointer
     }
 }
-
-// Ideally this would be `fileprivate`, but Swift says:
-// """
-// 'private' modifier cannot be used with extensions that declare protocol conformances
-// """
-extension {{ obj|type_name }} : ViaFfi, Serializable {}

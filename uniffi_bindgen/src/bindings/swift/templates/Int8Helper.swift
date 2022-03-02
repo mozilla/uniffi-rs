@@ -1,9 +1,12 @@
-extension Int8: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        return try self.lift(buf.readInt())
+fileprivate struct FfiConverterInt8: FfiConverterPrimitive {
+    typealias FfiType = Int8
+    typealias SwiftType = Int8
+
+    static func read(from buf: Reader) throws -> Int8 {
+        return try lift(buf.readInt())
     }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeInt(self.lower())
+    static func write(_ value: Int8, into buf: Writer) {
+        buf.writeInt(lower(value))
     }
 }

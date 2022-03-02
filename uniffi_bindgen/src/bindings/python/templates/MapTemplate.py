@@ -1,21 +1,22 @@
 {%- let inner_type = self.inner() %}
 {%- let outer_type = self.outer() %}
-{%- let canonical_type_name = outer_type|canonical_name %}
+{%- let key_ffi_converter = Type::String|ffi_converter_name %}
+{%- let value_ffi_converter = inner_type|ffi_converter_name %}
 
-class FfiConverter{{ canonical_type_name }}(FfiConverterUsingByteBuffer):
-    @staticmethod
-    def _write(value, buf):
-        def inner_write(key, value, buf):
-            {{ "key"|write_var("buf", Type::String) }}
-            {{ "value"|write_var("buf", inner_type) }}
+class {{ outer_type|ffi_converter_name }}(FfiConverterRustBuffer):
+    @classmethod
+    def write(cls, items, buf):
+        buf.writeI32(len(items))
+        for (key, value) in items.items():
+            {{ key_ffi_converter }}.write(key, buf)
+            {{ value_ffi_converter }}.write(value, buf)
 
-        FfiConverterDictionary._write(value, buf, inner_write)
-
-    @staticmethod
-    def _read(buf):
-        def inner_read(buf):
-            key = {{ "buf"|read_var(TypeIdentifier::String) }}
-            value = {{ "buf"|read_var(inner_type) }}
-            return (key, value)
-
-        return FfiConverterDictionary._read(buf, inner_read)
+    @classmethod
+    def read(cls, buf):
+        count = buf.readI32()
+        if count < 0:
+            raise InternalError("Unexpected negative map size")
+        return {
+            {{ key_ffi_converter }}.read(buf): {{ value_ffi_converter }}.read(buf)
+            for i in range(count)
+        }

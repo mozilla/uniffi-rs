@@ -27,10 +27,6 @@ impl ExternalCodeType {
     pub fn crate_name(&self) -> String {
         self.crate_name.clone()
     }
-
-    fn ffi_converter_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("FfiConverter{}", self.canonical_name(oracle))
-    }
 }
 
 impl CodeType for ExternalCodeType {
@@ -39,37 +35,7 @@ impl CodeType for ExternalCodeType {
     }
 
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
-        self.name.clone()
-    }
-
-    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!(
-            "{}._lower({})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm)
-        )
-    }
-
-    fn write(
-        &self,
-        oracle: &dyn CodeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> String {
-        format!(
-            "{}._write({}, {})",
-            self.ffi_converter_name(oracle),
-            oracle.var_name(nm),
-            target
-        )
-    }
-
-    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}._lift({})", self.ffi_converter_name(oracle), nm)
-    }
-
-    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
-        format!("{}._read({})", self.ffi_converter_name(oracle), nm)
+        format!("Type{}", self.name)
     }
 
     fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {

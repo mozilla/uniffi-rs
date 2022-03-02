@@ -1,9 +1,12 @@
-extension Double: Primitive, ViaFfi {
-    fileprivate static func read(from buf: Reader) throws -> Self {
-        return try self.lift(buf.readDouble())
+fileprivate struct FfiConverterDouble: FfiConverterPrimitive {
+    typealias FfiType = Double
+    typealias SwiftType = Double
+
+    static func read(from buf: Reader) throws -> Double {
+        return try lift(buf.readDouble())
     }
 
-    fileprivate func write(into buf: Writer) {
-        buf.writeDouble(self.lower())
+    static func write(_ value: Double, into buf: Writer) {
+        buf.writeDouble(lower(value))
     }
 }

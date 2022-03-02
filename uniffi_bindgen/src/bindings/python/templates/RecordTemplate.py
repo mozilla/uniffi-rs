@@ -1,6 +1,6 @@
 {% import "macros.py" as py %}
 {%- let rec = self.inner() %}
-class {{ rec|type_name }}(ViaFfiUsingByteBuffer, object):
+class {{ rec|type_name }}:
     def __init__(self, {% call py::field_list_decl(rec) %}):
         {%- for field in rec.fields() %}
         self.{{ field.name()|var_name }} = {{ field.name()|var_name }}
@@ -16,15 +16,17 @@ class {{ rec|type_name }}(ViaFfiUsingByteBuffer, object):
         {%- endfor %}
         return True
 
+class {{ rec|ffi_converter_name }}(FfiConverterRustBuffer):
     @staticmethod
-    def _read(buf):
+    def read(buf):
         return {{ rec|type_name }}(
             {%- for field in rec.fields() %}
-            {{ field.name()|var_name }}={{ "buf"|read_var(field.type_()) }}{% if loop.last %}{% else %},{% endif %}
+            {{ field.name()|var_name }}={{ field|read_fn }}(buf),
             {%- endfor %}
         )
 
-    def _write(self, buf):
+    @staticmethod
+    def write(value, buf):
         {%- for field in rec.fields() %}
-        {{ "self.{}"|format(field.name())|write_var("buf", field.type_()) }}
+        {{ field|write_fn }}(value.{{ field.name() }}, buf)
         {%- endfor %}

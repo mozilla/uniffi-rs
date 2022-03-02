@@ -1,8 +1,8 @@
-class FfiConverterFloat(Primitive):
+class FfiConverterFloat(FfiConverterPrimitive):
     @staticmethod
-    def _read(buf):
-        return FfiConverterFloat._lift(buf.readFloat())
+    def read(buf):
+        return buf.readFloat()
 
     @staticmethod
-    def _write(value, buf):
-        buf.writeFloat(FfiConverterFloat._lower(value))
+    def write(value, buf):
+        buf.writeFloat(value)

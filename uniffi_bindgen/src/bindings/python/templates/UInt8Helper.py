@@ -1,8 +1,8 @@
-class FfiConverterUInt8(Primitive):
+class FfiConverterUInt8(FfiConverterPrimitive):
     @staticmethod
-    def _read(buf):
-        return FfiConverterUInt8._lift(buf.readU8())
+    def read(buf):
+        return buf.readU8()
 
     @staticmethod
-    def _write(value, buf):
-        buf.writeU8(FfiConverterUInt8._lower(value))
+    def write(value, buf):
+        buf.writeU8(value)

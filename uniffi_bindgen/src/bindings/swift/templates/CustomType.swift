@@ -1,46 +1,32 @@
+{%- match config %}
+{%- when None %}
+{#- No config, just forward all methods to our builtin type #}
+fileprivate typealias FfiConverterType{{ name }} = {{ builtin|ffi_converter_name }}
+
+{%- when Some with (config) %}
 fileprivate struct FfiConverterType{{ name }} {
-    {%- match config %}
-    {%- when None %}
-    {#- No config, just forward all methods to our builtin type #}
-    fileprivate static func read(_ buf: Reader) throws -> {{ builtin|type_name }} {
-        return try {{ "buf"|read_var(builtin) }}
-    }
-
-    fileprivate static func write(_ value: {{ builtin|type_name }}, _ buf: Writer) {
-        return {{ "value"|write_var("buf", builtin) }}
-    }
-
-    fileprivate static func lift(_ value: {{ self.builtin_ffi_type()|type_ffi_lowered }}) throws -> {{ builtin|type_name }} {
-        return try {{ "value"|lift_var(builtin) }}
-    }
-
-    fileprivate static func lower(_ value: {{ builtin|type_name }}) -> {{ self.builtin_ffi_type()|type_ffi_lowered }} {
-        return {{ "value"|lower_var(builtin) }}
-    }
-
-    {%- when Some with (config) %}
     {#- Custom type config supplied, use it to convert the builtin type #}
 
-    fileprivate static func read(_ buf: Reader) throws -> {{ self.type_name(config) }} {
-        let builtinValue = try {{ "buf"|read_var(builtin) }}
+    static func read(from buf: Reader) throws -> {{ self.type_name(config) }} {
+        let builtinValue = try {{ builtin|read_fn }}(from: buf)
         return {{ config.into_custom.render("builtinValue") }}
     }
 
-    fileprivate static func write(_ value: {{ self.type_name(config) }}, _ buf: Writer) {
+    static func write(_ value: {{ self.type_name(config) }}, into buf: Writer) {
         let builtinValue = {{ config.from_custom.render("value") }}
-        return {{ "builtinValue"|write_var("buf", builtin) }}
+        return {{ builtin|write_fn }}(builtinValue, into: buf)
     }
 
-    fileprivate static func lift(_ value: {{ self.builtin_ffi_type()|type_ffi_lowered }}) throws -> {{ self.type_name(config) }} {
-        let builtinValue = try {{ "value"|lift_var(builtin) }}
+    static func lift(_ value: {{ self.builtin_ffi_type()|type_ffi_lowered }}) throws -> {{ self.type_name(config) }} {
+        let builtinValue = try {{ builtin|lift_fn }}(value)
         return {{ config.into_custom.render("builtinValue") }}
     }
 
-    fileprivate static func lower(_ value: {{ self.type_name(config) }}) -> {{ self.builtin_ffi_type()|type_ffi_lowered }} {
+    static func lower(_ value: {{ self.type_name(config) }}) -> {{ self.builtin_ffi_type()|type_ffi_lowered }} {
         let builtinValue = {{ config.from_custom.render("value") }}
-        return {{ "builtinValue"|lower_var(builtin) }}
+        return {{ builtin|lower_fn }}(builtinValue)
     }
 
-    {%- endmatch %}
 }
+{%- endmatch %}
 
