@@ -92,7 +92,7 @@ bash $SRCROOT/xc-universal-binary.sh libuniffi_todolist.a uniffi-example-todolis
 In this case we constructed the command:
 
 ```sh
-xc-univeral-binary.sh <STATIC_LIB_NAME> <FFI_TARGET> <WORKSPACE_PATH> <BUILD_CONFIGURATION>"
+xc-universal-binary.sh <STATIC_LIB_NAME> <FFI_TARGET> <WORKSPACE_PATH> <BUILD_CONFIGURATION>"
 ```
 
 by making:
@@ -111,7 +111,7 @@ This script performs a few steps:
 
 ## Tell Xcode where the universal library is
 
-Finally, we need to tell Xcode to look for the univeral binary `libuniffi_todolist.a` is, so it can tie it together with the header file `todolist-Bridging-Header.h`.
+Finally, we need to tell Xcode to look for the universal binary `libuniffi_todolist.a` is, so it can tie it together with the header file `todolist-Bridging-Header.h`.
 
 1. In Xcode, click on the project in the Project Navigator.
 2. In the main window, select the app's main target, and then select "Build Settings".
