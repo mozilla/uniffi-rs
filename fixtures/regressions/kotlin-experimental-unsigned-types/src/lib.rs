@@ -34,12 +34,12 @@ pub struct RecursivelyUsesU8 {
 
 #[derive(Debug)]
 pub struct InterfaceUsingUnsigned {
-    member: u64,
+    _member: u64,
 }
 
 impl InterfaceUsingUnsigned {
     pub fn new(new: u64) -> Self {
-        Self { member: new }
+        Self { _member: new }
     }
 
     fn uses_unsigned_struct(&self, mut p1: RecursivelyUsesU8) {

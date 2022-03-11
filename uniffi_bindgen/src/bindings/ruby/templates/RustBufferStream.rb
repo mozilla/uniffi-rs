@@ -21,8 +21,8 @@ class RustBufferStream
     data
   end
 
-  {%- for typ in ci.iter_types() -%}
-  {%- let canonical_type_name = typ.canonical_name()|class_name_rb -%}
+  {% for typ in ci.iter_types() -%}
+  {%- let canonical_type_name = typ.canonical_name().borrow()|class_name_rb -%}
   {%- match typ -%}
 
   {% when Type::Int8 -%}
@@ -134,7 +134,7 @@ class RustBufferStream
         {%- if variant.has_fields() %}
         return {{ enum_name|class_name_rb }}::{{ variant.name()|enum_name_rb }}.new(
             {%- for field in variant.fields() %}
-            self.read{{ field.type_().canonical_name()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            self.read{{ field.type_().canonical_name().borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -169,7 +169,7 @@ class RustBufferStream
         {%- if variant.has_fields() %}
         return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}.new(
             {%- for field in variant.fields() %}
-            read{{ field.type_().canonical_name()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            read{{ field.type_().canonical_name().borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -189,7 +189,7 @@ class RustBufferStream
   def read{{ canonical_type_name }}
     {{ rec.name()|class_name_rb }}.new(
       {%- for field in rec.fields() %}
-      read{{ field.type_().canonical_name()|class_name_rb }}{% if loop.last %}{% else %},{% endif %}
+      read{{ field.type_().canonical_name().borrow()|class_name_rb }}{% if loop.last %}{% else %},{% endif %}
       {%- endfor %}
     )
   end
@@ -203,7 +203,7 @@ class RustBufferStream
     if flag == 0
       return nil
     elsif flag == 1
-      return read{{ inner_type.canonical_name()|class_name_rb }}
+      return read{{ inner_type.canonical_name().borrow()|class_name_rb }}
     else
       raise InternalError, 'Unexpected flag byte for {{ canonical_type_name }}'
     end
@@ -220,7 +220,7 @@ class RustBufferStream
     items = []
 
     count.times do
-      items.append read{{ inner_type.canonical_name()|class_name_rb }}
+      items.append read{{ inner_type.canonical_name().borrow()|class_name_rb }}
     end
 
     items
@@ -236,7 +236,7 @@ class RustBufferStream
     items = {}
     count.times do
       key = readString
-      items[key] = read{{ inner_type.canonical_name()|class_name_rb }}
+      items[key] = read{{ inner_type.canonical_name().borrow()|class_name_rb }}
     end
 
     items

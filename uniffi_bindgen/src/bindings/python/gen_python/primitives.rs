@@ -2,14 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#[allow(unused_imports)]
+use super::filters;
 use crate::backend::{CodeOracle, CodeType, Literal};
 use crate::interface::Radix;
 use askama::Template;
 use paste::paste;
-use std::fmt;
-
-#[allow(unused_imports)]
-use super::filters;
 
 fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
     match literal {
@@ -58,7 +56,7 @@ macro_rules! impl_code_type_for_primitive {
                     Some(self.render().unwrap())
                 }
 
-                fn coerce(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+                fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
                     format!($coerce_code, nm)
                 }
             }

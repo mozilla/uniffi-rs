@@ -1,6 +1,6 @@
 {%- let inner_type = self.inner() %}
 {%- let outer_type = self.outer() %}
-{%- let key_ffi_converter = Type::String|ffi_converter_name %}
+{%- let key_ffi_converter = Type::String.borrow()|ffi_converter_name %}
 {%- let value_ffi_converter = inner_type|ffi_converter_name %}
 
 class {{ outer_type|ffi_converter_name }}(FfiConverterRustBuffer):

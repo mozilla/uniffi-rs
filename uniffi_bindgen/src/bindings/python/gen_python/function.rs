@@ -5,6 +5,7 @@
 use crate::backend::{CodeDeclaration, CodeOracle};
 use crate::interface::{ComponentInterface, Function};
 use askama::Template;
+use std::borrow::Borrow;
 
 use super::filters;
 

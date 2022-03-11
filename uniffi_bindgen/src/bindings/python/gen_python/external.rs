@@ -2,11 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use super::filters;
 use crate::backend::{CodeOracle, CodeType};
 use askama::Template;
-use std::fmt;
-
-use super::filters;
 
 #[derive(Template)]
 #[template(syntax = "py", escape = "none", path = "ExternalTemplate.py")]
@@ -18,14 +16,6 @@ pub struct ExternalCodeType {
 impl ExternalCodeType {
     pub fn new(name: String, crate_name: String) -> Self {
         Self { name, crate_name }
-    }
-
-    pub fn name(&self) -> String {
-        self.name.clone()
-    }
-
-    pub fn crate_name(&self) -> String {
-        self.crate_name.clone()
     }
 }
 
@@ -42,7 +32,7 @@ impl CodeType for ExternalCodeType {
         Some(self.render().unwrap())
     }
 
-    fn coerce(&self, _oracle: &dyn CodeOracle, _nm: &dyn fmt::Display) -> String {
+    fn coerce(&self, _oracle: &dyn CodeOracle, _nm: &str) -> String {
         panic!("should not be necessary to coerce External types");
     }
 }

@@ -46,7 +46,7 @@ rust_call(
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name }}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_py(arg.type_()) }}
+        {%- when Some with(literal) %} = {{ literal|literal_py(arg.type_().borrow()) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %},{% endif -%}
@@ -74,19 +74,19 @@ rust_call(
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.type_()|ffi_type_name }},
+    {{ arg.type_().borrow()|ffi_type_name }},
     {%- endfor %}
     ctypes.POINTER(RustCallStatus),
 {% endmacro -%}
 
 {%- macro coerce_args(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_()) -}}
+    {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_().borrow()) -}}
     {% endfor -%}
 {%- endmacro -%}
 
 {%- macro coerce_args_extra_indent(func) %}
         {%- for arg in func.arguments() %}
-        {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_()) }}
+        {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_().borrow()) }}
         {%- endfor %}
 {%- endmacro -%}

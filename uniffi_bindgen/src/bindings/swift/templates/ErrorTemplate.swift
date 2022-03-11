@@ -27,7 +27,7 @@ fileprivate struct {{ e|ffi_converter_name }}: FfiConverterRustBuffer {
 
         {% for variant in e.variants() %}
         case {{ loop.index }}: return .{{ variant.name()|class_name }}(
-            message: try {{ Type::String|read_fn }}(from: buf)
+            message: try {{ Type::String.borrow()|read_fn }}(from: buf)
         )
         {% endfor %}
 
@@ -55,7 +55,7 @@ fileprivate struct {{ e|ffi_converter_name }}: FfiConverterRustBuffer {
         {% for variant in e.variants() %}
         case let .{{ variant.name()|class_name }}(message):
             buf.writeInt(Int32({{ loop.index }}))
-            {{ Type::String|write_fn }}(message, into: buf)
+            {{ Type::String.borrow()|write_fn }}(message, into: buf)
         {%- endfor %}
 
         {% else %}

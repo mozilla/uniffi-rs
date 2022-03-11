@@ -212,9 +212,7 @@ impl Coveralls {
     }
 
     fn get_other(&self) -> Option<Arc<Self>> {
-        (*self.other.lock().unwrap())
-            .as_ref()
-            .map(|other| Arc::clone(other))
+        (*self.other.lock().unwrap()).as_ref().map(Arc::clone)
     }
 
     fn take_other_fallible(self: Arc<Self>) -> Result<()> {

@@ -27,8 +27,8 @@ class RustBufferBuilder
     end
   end
 
-  {%- for typ in ci.iter_types() -%}
-  {%- let canonical_type_name = typ.canonical_name()|class_name_rb -%}
+  {% for typ in ci.iter_types() -%}
+  {%- let canonical_type_name = typ.canonical_name().borrow()|class_name_rb -%}
   {%- match typ -%}
 
   {% when Type::Int8 -%}
@@ -125,7 +125,7 @@ class RustBufferBuilder
     if v.{{ variant.name()|var_name_rb }}?
       pack_into(4, 'l>', {{ loop.index }})
       {%- for field in variant.fields() %}
-      self.write_{{ field.type_().canonical_name()|class_name_rb }}(v.{{ field.name() }})
+      self.write_{{ field.type_().canonical_name().borrow()|class_name_rb }}(v.{{ field.name() }})
       {%- endfor %}
     end
     {%- endfor %}
@@ -138,7 +138,7 @@ class RustBufferBuilder
 
   def write_{{ canonical_type_name }}(v)
     {%- for field in rec.fields() %}
-    self.write_{{ field.type_().canonical_name()|class_name_rb }}(v.{{ field.name()|var_name_rb }})
+    self.write_{{ field.type_().canonical_name().borrow()|class_name_rb }}(v.{{ field.name()|var_name_rb }})
     {%- endfor %}
   end
 
@@ -150,7 +150,7 @@ class RustBufferBuilder
       pack_into(1, 'c', 0)
     else
       pack_into(1, 'c', 1)
-      self.write_{{ inner_type.canonical_name()|class_name_rb }}(v)
+      self.write_{{ inner_type.canonical_name().borrow()|class_name_rb }}(v)
     end
   end
 
@@ -161,7 +161,7 @@ class RustBufferBuilder
     pack_into(4, 'l>', items.size)
 
     items.each do |item|
-      self.write_{{ inner_type.canonical_name()|class_name_rb }}(item)
+      self.write_{{ inner_type.canonical_name().borrow()|class_name_rb }}(item)
     end
   end
 
@@ -173,7 +173,7 @@ class RustBufferBuilder
 
     items.each do |k, v|
       write_String(k)
-      self.write_{{ inner_type.canonical_name()|class_name_rb }}(v)
+      self.write_{{ inner_type.canonical_name().borrow()|class_name_rb }}(v)
     end
   end
 

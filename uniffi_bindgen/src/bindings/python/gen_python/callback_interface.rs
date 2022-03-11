@@ -2,11 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::fmt;
-
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
+use std::borrow::Borrow;
 
 use super::filters;
 pub struct CallbackInterfaceCodeType {
@@ -32,7 +31,7 @@ impl CodeType for CallbackInterfaceCodeType {
         unreachable!();
     }
 
-    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
         nm.to_string()
     }
 }

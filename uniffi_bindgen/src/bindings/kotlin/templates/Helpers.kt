@@ -43,7 +43,7 @@ private inline fun <U, E: Exception> rustCallWithError(errorHandler: CallStatusE
         // with the message.  but if that code panics, then it just sends back
         // an empty buffer.
         if (status.error_buf.len > 0) {
-            throw InternalException({{ TypeIdentifier::String|lift_fn }}(status.error_buf))
+            throw InternalException({{ TypeIdentifier::String.borrow()|lift_fn }}(status.error_buf))
         } else {
             throw InternalException("Rust panic")
         }

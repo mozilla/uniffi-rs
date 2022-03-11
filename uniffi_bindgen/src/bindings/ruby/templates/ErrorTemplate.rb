@@ -49,7 +49,7 @@ end
 ERROR_MODULE_TO_READER_METHOD = {
 {%- for e in ci.iter_error_definitions() %}
 {%- let typ=ci.get_type(e.name()).unwrap() %}
-{%- let canonical_type_name = typ.canonical_name()|class_name_rb %}
+{%- let canonical_type_name = typ.canonical_name().borrow()|class_name_rb %}
   {{ e.name()|class_name_rb }} => :read{{ canonical_type_name }},
 {%- endfor %}
 }

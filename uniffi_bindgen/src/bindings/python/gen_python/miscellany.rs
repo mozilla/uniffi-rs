@@ -2,13 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#[allow(unused_imports)]
+use super::filters;
 use crate::backend::{CodeOracle, CodeType, Literal};
 use askama::Template;
 use paste::paste;
-use std::fmt;
-
-#[allow(unused_imports)]
-use super::filters;
 
 macro_rules! impl_code_type_for_miscellany {
     ($T:ty, $canonical_name:literal, $template_file:literal) => {
@@ -34,7 +32,7 @@ macro_rules! impl_code_type_for_miscellany {
                     Some(self.render().unwrap())
                 }
 
-                fn coerce(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+                fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
                     nm.to_string()
                 }
             }

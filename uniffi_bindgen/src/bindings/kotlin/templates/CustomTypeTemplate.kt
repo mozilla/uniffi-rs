@@ -8,7 +8,7 @@ public typealias {{ name }} = {{ builtin|type_name }}
 
 {%- when Some with (config) %}
 {%- let type_name=self.type_name(config) %}
-{%- let ffi_type_name=self.builtin_ffi_type()|ffi_type_name %}
+{%- let ffi_type_name=self.builtin_ffi_type().borrow()|ffi_type_name %}
 
 {#- Create a typealias so that this type can be imported when used as an external type #}
 public typealias {{ name }} = {{ type_name }}

@@ -6,6 +6,7 @@ use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
 use serde::{Deserialize, Serialize};
+use std::borrow::Borrow;
 
 use crate::interface::*;
 use crate::MergeWith;
@@ -78,7 +79,6 @@ impl<'a> RubyWrapper<'a> {
 
 mod filters {
     use super::*;
-    use std::fmt;
 
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
         Ok(match type_ {
@@ -132,26 +132,26 @@ mod filters {
         })
     }
 
-    pub fn class_name_rb(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn class_name_rb(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_camel_case())
     }
 
-    pub fn fn_name_rb(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn fn_name_rb(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_snake_case())
     }
 
-    pub fn var_name_rb(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn var_name_rb(nm: &str) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         let prefix = if is_reserved_word(&nm) { "_" } else { "" };
 
         Ok(format!("{}{}", prefix, nm.to_snake_case()))
     }
 
-    pub fn enum_name_rb(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+    pub fn enum_name_rb(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
-    pub fn coerce_rb(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn coerce_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -170,7 +170,7 @@ mod filters {
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
             Type::Optional(t) => format!("({} ? {} : nil)", nm, coerce_rb(nm, t)?),
             Type::Sequence(t) => {
-                let coerce_code = coerce_rb(&"v", t)?;
+                let coerce_code = coerce_rb("v", t)?;
                 if coerce_code == "v" {
                     nm.to_string()
                 } else {
@@ -178,8 +178,8 @@ mod filters {
                 }
             }
             Type::Map(t) => {
-                let k_coerce_code = coerce_rb(&"k", &Type::String)?;
-                let v_coerce_code = coerce_rb(&"v", t)?;
+                let k_coerce_code = coerce_rb("k", &Type::String)?;
+                let v_coerce_code = coerce_rb("v", t)?;
 
                 if k_coerce_code == "k" && v_coerce_code == "v" {
                     nm.to_string()
@@ -195,7 +195,7 @@ mod filters {
         })
     }
 
-    pub fn lower_rb(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lower_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -228,7 +228,7 @@ mod filters {
         })
     }
 
-    pub fn lift_rb(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8

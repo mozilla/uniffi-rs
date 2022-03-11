@@ -2,11 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::fmt;
-
 use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Object};
 use askama::Template;
+use std::borrow::Borrow;
 
 // Filters is used by ObjectTemplate.py, which looks for the filters module here.
 use super::filters;
@@ -40,7 +39,7 @@ impl CodeType for ObjectCodeType {
         ))
     }
 
-    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
+    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
         nm.to_string()
     }
 }
