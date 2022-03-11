@@ -1,6 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/literal.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>literal.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen&#x2F;src&#x2F;interface&#x2F;literal.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>literal.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -185,8 +183,7 @@
 <span id="183">183</span>
 <span id="184">184</span>
 <span id="185">185</span>
-</pre><pre class="rust">
-<span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
+</pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
@@ -197,7 +194,7 @@
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
 
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::types::Type</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types::Type</span>;
 
 <span class="comment">// Represents a literal value.</span>
 <span class="comment">// Used for e.g. default argument values.</span>
@@ -233,17 +230,17 @@
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">convert_default_value</span>(
     <span class="ident">default_value</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::literal::DefaultValue</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
     <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert_integer</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::literal::IntegerLit</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">convert_integer</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::literal::IntegerLit</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">string</span>, <span class="ident">radix</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">literal</span> {
-            <span class="ident">weedle::literal::IntegerLit::Dec</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">v</span>.<span class="number">0</span>, <span class="ident">Radix::Decimal</span>),
-            <span class="ident">weedle::literal::IntegerLit::Hex</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">v</span>.<span class="number">0</span>, <span class="ident">Radix::Hexadecimal</span>),
-            <span class="ident">weedle::literal::IntegerLit::Oct</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">v</span>.<span class="number">0</span>, <span class="ident">Radix::Octal</span>),
+            <span class="ident">weedle::literal::IntegerLit::Dec</span>(<span class="ident">v</span>) =&gt; (<span class="ident">v</span>.<span class="number">0</span>, <span class="ident">Radix::Decimal</span>),
+            <span class="ident">weedle::literal::IntegerLit::Hex</span>(<span class="ident">v</span>) =&gt; (<span class="ident">v</span>.<span class="number">0</span>, <span class="ident">Radix::Hexadecimal</span>),
+            <span class="ident">weedle::literal::IntegerLit::Oct</span>(<span class="ident">v</span>) =&gt; (<span class="ident">v</span>.<span class="number">0</span>, <span class="ident">Radix::Octal</span>),
         };
         <span class="comment">// This is the radix of the parsed number, passed to `from_str_radix`.</span>
         <span class="kw">let</span> <span class="ident">src_radix</span> <span class="op">=</span> <span class="ident">radix</span> <span class="kw">as</span> <span class="ident">u32</span>;
         <span class="comment">// This radix tells the backends how to represent the number in the output languages.</span>
-        <span class="kw">let</span> <span class="ident">dest_radix</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">string</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;0&quot;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">string</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) {
+        <span class="kw">let</span> <span class="ident">dest_radix</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">string</span> <span class="op">==</span> <span class="string">&quot;0&quot;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">string</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) {
             <span class="comment">// 1. weedle parses &quot;0&quot; as an octal literal, but we most likely want to treat this as a decimal.</span>
             <span class="comment">// 2. Explicitly negatively signed hex numbers won&#39;t convert via i64 very well if they&#39;re not 64 bit.</span>
             <span class="comment">//    For ease of implementation, output will use decimal.</span>
@@ -262,55 +259,55 @@
         };
 
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type::Int8</span> <span class="op">|</span> <span class="ident">Type::Int16</span> <span class="op">|</span> <span class="ident">Type::Int32</span> <span class="op">|</span> <span class="ident">Type::Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Literal::Int</span>(
+            <span class="ident">Type::Int8</span> <span class="op">|</span> <span class="ident">Type::Int16</span> <span class="op">|</span> <span class="ident">Type::Int32</span> <span class="op">|</span> <span class="ident">Type::Int64</span> =&gt; <span class="ident">Literal::Int</span>(
                 <span class="ident">i64::from_str_radix</span>(<span class="kw-2">&amp;</span><span class="ident">string</span>, <span class="ident">src_radix</span>)<span class="question-mark">?</span>,
                 <span class="ident">dest_radix</span>,
                 <span class="ident">type_</span>.<span class="ident">clone</span>(),
             ),
-            <span class="ident">Type::UInt8</span> <span class="op">|</span> <span class="ident">Type::UInt16</span> <span class="op">|</span> <span class="ident">Type::UInt32</span> <span class="op">|</span> <span class="ident">Type::UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Literal::UInt</span>(
+            <span class="ident">Type::UInt8</span> <span class="op">|</span> <span class="ident">Type::UInt16</span> <span class="op">|</span> <span class="ident">Type::UInt32</span> <span class="op">|</span> <span class="ident">Type::UInt64</span> =&gt; <span class="ident">Literal::UInt</span>(
                 <span class="ident">u64::from_str_radix</span>(<span class="kw-2">&amp;</span><span class="ident">string</span>, <span class="ident">src_radix</span>)<span class="question-mark">?</span>,
                 <span class="ident">dest_radix</span>,
                 <span class="ident">type_</span>.<span class="ident">clone</span>(),
             ),
 
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;Cannot coerce literal {} into a non-integer type&quot;</span>, <span class="ident">string</span>),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;Cannot coerce literal {} into a non-integer type&quot;</span>, <span class="ident">string</span>),
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">convert_float</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::literal::FloatLit</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">convert_float</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::literal::FloatLit</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">literal</span> {
-            <span class="ident">weedle::literal::FloatLit::Value</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="number">0</span>,
+            <span class="ident">weedle::literal::FloatLit::Value</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="number">0</span>,
 
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;Infinity and NaN is not currently supported&quot;</span>),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;Infinity and NaN is not currently supported&quot;</span>),
         };
 
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type::Float32</span> <span class="op">|</span> <span class="ident">Type::Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Literal::Float</span>(<span class="ident">string</span>.<span class="ident">to_string</span>(), <span class="ident">type_</span>.<span class="ident">clone</span>()),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;Cannot coerce literal {} into a non-float type&quot;</span>, <span class="ident">string</span>),
+            <span class="ident">Type::Float32</span> <span class="op">|</span> <span class="ident">Type::Float64</span> =&gt; <span class="ident">Literal::Float</span>(<span class="ident">string</span>.<span class="ident">to_string</span>(), <span class="ident">type_</span>.<span class="ident">clone</span>()),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;Cannot coerce literal {} into a non-float type&quot;</span>, <span class="ident">string</span>),
         })
     }
 
     <span class="prelude-val">Ok</span>(<span class="kw">match</span> (<span class="ident">default_value</span>, <span class="ident">type_</span>) {
-        (<span class="ident">weedle::literal::DefaultValue::Boolean</span>(<span class="ident">b</span>), <span class="ident">Type::Boolean</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Literal::Boolean</span>(<span class="ident">b</span>.<span class="number">0</span>),
-        (<span class="ident">weedle::literal::DefaultValue::String</span>(<span class="ident">s</span>), <span class="ident">Type::String</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        (<span class="ident">weedle::literal::DefaultValue::Boolean</span>(<span class="ident">b</span>), <span class="ident">Type::Boolean</span>) =&gt; <span class="ident">Literal::Boolean</span>(<span class="ident">b</span>.<span class="number">0</span>),
+        (<span class="ident">weedle::literal::DefaultValue::String</span>(<span class="ident">s</span>), <span class="ident">Type::String</span>) =&gt; {
             <span class="comment">// Note that weedle doesn&#39;t parse escaped double quotes.</span>
             <span class="comment">// Keeping backends using double quotes (possible for all to date)</span>
             <span class="comment">// means we don&#39;t need to escape single quotes. But we haven&#39;t spent a lot of time</span>
             <span class="comment">// trying to break default values with weird escapes and quotes.</span>
             <span class="ident">Literal::String</span>(<span class="ident">s</span>.<span class="number">0</span>.<span class="ident">to_string</span>())
         }
-        (<span class="ident">weedle::literal::DefaultValue::EmptyArray</span>(<span class="kw">_</span>), <span class="ident">Type::Sequence</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Literal::EmptySequence</span>,
-        (<span class="ident">weedle::literal::DefaultValue::String</span>(<span class="ident">s</span>), <span class="ident">Type::Enum</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+        (<span class="ident">weedle::literal::DefaultValue::EmptyArray</span>(<span class="kw">_</span>), <span class="ident">Type::Sequence</span>(<span class="kw">_</span>)) =&gt; <span class="ident">Literal::EmptySequence</span>,
+        (<span class="ident">weedle::literal::DefaultValue::String</span>(<span class="ident">s</span>), <span class="ident">Type::Enum</span>(<span class="kw">_</span>)) =&gt; {
             <span class="ident">Literal::Enum</span>(<span class="ident">s</span>.<span class="number">0</span>.<span class="ident">to_string</span>(), <span class="ident">type_</span>.<span class="ident">clone</span>())
         }
-        (<span class="ident">weedle::literal::DefaultValue::Null</span>(<span class="kw">_</span>), <span class="ident">Type::Optional</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Literal::Null</span>,
-        (<span class="kw">_</span>, <span class="ident">Type::Optional</span>(<span class="ident">inner_type</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">convert_default_value</span>(<span class="ident">default_value</span>, <span class="ident">inner_type</span>)<span class="question-mark">?</span>,
+        (<span class="ident">weedle::literal::DefaultValue::Null</span>(<span class="kw">_</span>), <span class="ident">Type::Optional</span>(<span class="kw">_</span>)) =&gt; <span class="ident">Literal::Null</span>,
+        (<span class="kw">_</span>, <span class="ident">Type::Optional</span>(<span class="ident">inner_type</span>)) =&gt; <span class="ident">convert_default_value</span>(<span class="ident">default_value</span>, <span class="ident">inner_type</span>)<span class="question-mark">?</span>,
 
         <span class="comment">// We&#39;ll ensure the type safety in the convert_* number methods.</span>
-        (<span class="ident">weedle::literal::DefaultValue::Integer</span>(<span class="ident">i</span>), <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">convert_integer</span>(<span class="ident">i</span>, <span class="ident">type_</span>)<span class="question-mark">?</span>,
-        (<span class="ident">weedle::literal::DefaultValue::Float</span>(<span class="ident">i</span>), <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">convert_float</span>(<span class="ident">i</span>, <span class="ident">type_</span>)<span class="question-mark">?</span>,
+        (<span class="ident">weedle::literal::DefaultValue::Integer</span>(<span class="ident">i</span>), <span class="kw">_</span>) =&gt; <span class="ident">convert_integer</span>(<span class="ident">i</span>, <span class="ident">type_</span>)<span class="question-mark">?</span>,
+        (<span class="ident">weedle::literal::DefaultValue::Float</span>(<span class="ident">i</span>), <span class="kw">_</span>) =&gt; <span class="ident">convert_float</span>(<span class="ident">i</span>, <span class="ident">type_</span>)<span class="question-mark">?</span>,
 
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;No support for {:?} literal yet&quot;</span>, <span class="ident">default_value</span>),
+        <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;No support for {:?} literal yet&quot;</span>, <span class="ident">default_value</span>),
     })
 }
 
@@ -319,13 +316,13 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident">weedle::Parse</span>;
 
-    <span class="kw">fn</span> <span class="ident">parse_and_convert</span>(<span class="ident">expr</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">t</span>: <span class="ident">Type</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_and_convert</span>(<span class="ident">expr</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">t</span>: <span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::literal::DefaultValue::parse</span>(<span class="ident">expr</span>).<span class="ident">unwrap</span>();
         <span class="ident">convert_default_value</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>, <span class="kw-2">&amp;</span><span class="ident">t</span>)
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_default_value_conversion</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">test_default_value_conversion</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             <span class="ident">parse_and_convert</span>(<span class="string">&quot;0&quot;</span>, <span class="ident">Type::UInt8</span>)<span class="question-mark">?</span>,
             <span class="ident">Literal::UInt</span>(<span class="number">0</span>, <span class="ident">Radix::Decimal</span>, <span class="ident">Type::UInt8</span>)
@@ -335,17 +332,17 @@
             <span class="ident">Literal::Int</span>(<span class="op">-</span><span class="number">12</span>, <span class="ident">Radix::Decimal</span>, <span class="ident">Type::Int32</span>)
         ));
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;3.14&quot;</span>, <span class="ident">Type::Float32</span>)<span class="question-mark">?</span>, <span class="ident">Literal::Float</span>(<span class="ident">v</span>, <span class="ident">Type::Float32</span>) <span class="kw">if</span> <span class="ident">v</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;3.14&quot;</span>)
+            <span class="macro">matches!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;3.14&quot;</span>, <span class="ident">Type::Float32</span>)<span class="question-mark">?</span>, <span class="ident">Literal::Float</span>(<span class="ident">v</span>, <span class="ident">Type::Float32</span>) <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="string">&quot;3.14&quot;</span>)
         );
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             <span class="ident">parse_and_convert</span>(<span class="string">&quot;false&quot;</span>, <span class="ident">Type::Boolean</span>)<span class="question-mark">?</span>,
             <span class="ident">Literal::Boolean</span>(<span class="bool-val">false</span>)
         ));
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;\&quot;TEST\&quot;&quot;</span>, <span class="ident">Type::String</span>)<span class="question-mark">?</span>, <span class="ident">Literal::String</span>(<span class="ident">v</span>) <span class="kw">if</span> <span class="ident">v</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;TEST&quot;</span>)
+            <span class="macro">matches!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;\&quot;TEST\&quot;&quot;</span>, <span class="ident">Type::String</span>)<span class="question-mark">?</span>, <span class="ident">Literal::String</span>(<span class="ident">v</span>) <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="string">&quot;TEST&quot;</span>)
         );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;\&quot;one\&quot;&quot;</span>, <span class="ident">Type::Enum</span>(<span class="string">&quot;E&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>, <span class="ident">Literal::Enum</span>(<span class="ident">v</span>, <span class="ident">Type::Enum</span>(<span class="ident">e</span>)) <span class="kw">if</span> <span class="ident">v</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;one&quot;</span> <span class="op">&amp;&amp;</span> <span class="ident">e</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;E&quot;</span>)
+            <span class="macro">matches!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;\&quot;one\&quot;&quot;</span>, <span class="ident">Type::Enum</span>(<span class="string">&quot;E&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>, <span class="ident">Literal::Enum</span>(<span class="ident">v</span>, <span class="ident">Type::Enum</span>(<span class="ident">e</span>)) <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="string">&quot;one&quot;</span> <span class="op">&amp;&amp;</span> <span class="ident">e</span> <span class="op">==</span> <span class="string">&quot;E&quot;</span>)
         );
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             <span class="ident">parse_and_convert</span>(<span class="string">&quot;[]&quot;</span>, <span class="ident">Type::Sequence</span>(<span class="ident">Box::new</span>(<span class="ident">Type::String</span>)))<span class="question-mark">?</span>,
@@ -371,5 +368,7 @@
             .<span class="ident">starts_with</span>(<span class="string">&quot;No support for&quot;</span>));
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
+    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script>
+</body></html>

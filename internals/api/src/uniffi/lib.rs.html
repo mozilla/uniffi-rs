@@ -1,6 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uniffi/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi&#x2F;src&#x2F;lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../uniffi/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -668,8 +666,7 @@
 <span id="666">666</span>
 <span id="667">667</span>
 <span id="668">668</span>
-</pre><pre class="rust">
-<span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
+</pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
@@ -741,7 +738,7 @@
 <span class="doccomment">/// using a compatible version of the uniffi runtime crate. It&#39;s a `const fn` so that it</span>
 <span class="doccomment">/// can be used to perform such a check at compile time.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::len_zero</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">check_compatible_version</span>(<span class="ident">bindgen_version</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">check_compatible_version</span>(<span class="ident">bindgen_version</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
     <span class="comment">// While UniFFI is still under heavy development, we require that</span>
     <span class="comment">// the runtime support crate be precisely the same version as the</span>
     <span class="comment">// build-time bindgen crate.</span>
@@ -772,17 +769,17 @@
     <span class="comment">//</span>
     <span class="comment">// Yes, I am aware that this is horrific, but the externally-visible</span>
     <span class="comment">// behaviour is quite nice for consumers!</span>
-    <span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>.<span class="ident">len</span>()
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">0</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">0</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">1</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">1</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">2</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">2</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">3</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">3</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">3</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">4</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">4</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">4</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">5</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">5</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">5</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">6</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">6</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">6</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">7</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">7</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">7</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">8</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">8</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">9</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">9</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">bindgen_version</span>[<span class="number">9</span>])
+    <span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="ident">bindgen_version</span>.<span class="ident">len</span>()
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">0</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">0</span>])
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">1</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">1</span>])
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">2</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">2</span>])
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">3</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">3</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">3</span>])
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">4</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">4</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">4</span>])
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">5</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">5</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">5</span>])
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">6</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">6</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">6</span>])
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">7</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">7</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">7</span>])
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">8</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">8</span>])
+        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">9</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">9</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">9</span>])
         <span class="op">&amp;&amp;</span> <span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">10</span>
 }
 
@@ -793,7 +790,7 @@
 <span class="doccomment">/// incompatible with the version of `uniffi` being used at runtime.</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules!</span> <span class="ident">assert_compatible_version</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">v</span>:<span class="ident">expr</span> $(,)<span class="question-mark">?</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">v</span>:<span class="ident">expr</span> $(,)<span class="question-mark">?</span>) =&gt; {
         <span class="macro">uniffi::deps::static_assertions::const_assert!</span>(<span class="ident">uniffi::check_compatible_version</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">v</span>));
     };
 }
@@ -845,7 +842,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note that this method takes an owned `Self::RustType`; this allows it to transfer ownership</span>
     <span class="doccomment">/// in turn to the foreign language code, e.g. by boxing the value and passing a pointer.</span>
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span><span class="ident">::FfiType</span>;
+    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span>;
 
     <span class="doccomment">/// Lift a rust value of the target type, from an FFI value of type Self::FfiType.</span>
     <span class="doccomment">///</span>
@@ -855,7 +852,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Since we cannot statically guarantee that the foreign-language code will send valid</span>
     <span class="doccomment">/// values of type Self::FfiType, this method is fallible.</span>
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="self">Self</span><span class="ident">::FfiType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Write a rust value into a buffer, to send over the FFI in serialized form.</span>
     <span class="doccomment">///</span>
@@ -865,7 +862,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note that this method takes an owned `Self::RustType` because it&#39;s transfering ownership</span>
     <span class="doccomment">/// to the foreign language code via the RustBuffer.</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>);
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>);
 
     <span class="doccomment">/// Read a rust value from a buffer, received over the FFI in serialized form.</span>
     <span class="doccomment">///</span>
@@ -879,7 +876,7 @@
     <span class="doccomment">/// Note the slightly unusual type here - we want a mutable reference to a slice of bytes,</span>
     <span class="doccomment">/// because we want to be able to advance the start of the slice after reading an item</span>
     <span class="doccomment">/// from it (but will not mutate the actual contents of the slice).</span>
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// A helper function to ensure we don&#39;t read past the end of a buffer.</span>
@@ -887,7 +884,7 @@
 <span class="doccomment">/// Rust won&#39;t actually let us read past the end of a buffer, but the `Buf` trait does not support</span>
 <span class="doccomment">/// returning an explicit error in this case, and will instead panic. This is a look-before-you-leap</span>
 <span class="doccomment">/// helper function to instead return an explicit error, to help with debugging.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_remaining</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">num_bytes</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_remaining</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">num_bytes</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">buf</span>.<span class="ident">remaining</span>() <span class="op">&lt;</span> <span class="ident">num_bytes</span> {
         <span class="macro">bail!</span>(<span class="macro">format!</span>(
             <span class="string">&quot;not enough bytes remaining in buffer ({} &lt; {})&quot;</span>,
@@ -903,27 +900,27 @@
 <span class="doccomment">/// Numeric primitives have a straightforward mapping into C-compatible numeric types,</span>
 <span class="doccomment">/// sice they are themselves a C-compatible numeric type!</span>
 <span class="macro">macro_rules!</span> <span class="ident">impl_via_ffi_for_num_primitive</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>,)<span class="op">+</span>) <span class="op">=</span><span class="op">&gt;</span> { <span class="macro">impl_via_ffi_for_num_primitive!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>),<span class="op">+</span>); };
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>,)<span class="op">+</span>) =&gt; { <span class="macro">impl_via_ffi_for_num_primitive!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>),<span class="op">+</span>); };
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="kw-2">*</span>) =&gt; {
             $(
                 <span class="macro">paste!</span> {
                     <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">FfiConverter</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
                         <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
                         <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="self">Self</span>;
 
-                        <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span><span class="ident">::FfiType</span> {
+                        <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
                             <span class="ident">obj</span>
                         }
 
-                        <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="self">Self</span><span class="ident">::FfiType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+                        <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
                             <span class="prelude-val">Ok</span>(<span class="ident">v</span>)
                         }
 
-                        <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+                        <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
                             <span class="ident">buf</span>.[<span class="op">&lt;</span><span class="ident">put_</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span><span class="op">&gt;</span>](<span class="ident">obj</span>);
                         }
 
-                        <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+                        <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
                             <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span><span class="op">&gt;</span>())<span class="question-mark">?</span>;
                             <span class="prelude-val">Ok</span>(<span class="ident">buf</span>.[<span class="op">&lt;</span><span class="ident">get_</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span><span class="op">&gt;</span>]())
                         }
@@ -945,7 +942,7 @@
     <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
     <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="ident">i8</span>;
 
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span><span class="ident">::FfiType</span> {
+    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
         <span class="kw">if</span> <span class="ident">obj</span> {
             <span class="number">1</span>
         } <span class="kw">else</span> {
@@ -953,19 +950,19 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="self">Self</span><span class="ident">::FfiType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">v</span> {
-            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
-            <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;unexpected byte for Boolean&quot;</span>),
+            <span class="number">0</span> =&gt; <span class="bool-val">false</span>,
+            <span class="number">1</span> =&gt; <span class="bool-val">true</span>,
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;unexpected byte for Boolean&quot;</span>),
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="ident">buf</span>.<span class="ident">put_i8</span>(<span class="op">&lt;</span><span class="ident">bool</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::lower</span>(<span class="ident">obj</span>));
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
         <span class="op">&lt;</span><span class="ident">bool</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_lift</span>(<span class="ident">buf</span>.<span class="ident">get_i8</span>())
     }
@@ -989,13 +986,13 @@
     <span class="comment">// This returns a struct with a raw pointer to the underlying bytes, so it&#39;s very</span>
     <span class="comment">// important that it consume ownership of the String, which is relinquished to the</span>
     <span class="comment">// foreign language code (and can be restored by it passing the pointer back).</span>
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span><span class="ident">::FfiType</span> {
+    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
         <span class="ident">RustBuffer::from_vec</span>(<span class="ident">obj</span>.<span class="ident">into_bytes</span>())
     }
 
     <span class="comment">// The argument here *must* be a uniquely-owned `RustBuffer` previously obtained</span>
     <span class="comment">// from `lower` above, and hence must be the bytes of a valid rust string.</span>
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="self">Self</span><span class="ident">::FfiType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">destroy_into_vec</span>();
         <span class="comment">// This turns the buffer back into a `String` without copying the data</span>
         <span class="comment">// and without re-checking it for validity of the utf8. If the `RustBuffer`</span>
@@ -1005,7 +1002,7 @@
         <span class="prelude-val">Ok</span>(<span class="kw">unsafe</span> { <span class="ident">String::from_utf8_unchecked</span>(<span class="ident">v</span>) })
     }
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="comment">// N.B. `len()` gives us the length in bytes, not in chars or graphemes.</span>
         <span class="comment">// TODO: it would be nice not to panic here.</span>
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">i32::try_from</span>(<span class="ident">obj</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
@@ -1013,7 +1010,7 @@
         <span class="ident">buf</span>.<span class="ident">put</span>(<span class="ident">obj</span>.<span class="ident">as_bytes</span>());
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">buf</span>.<span class="ident">get_i32</span>())<span class="question-mark">?</span>;
         <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="ident">len</span>)<span class="question-mark">?</span>;
@@ -1034,21 +1031,21 @@
 <span class="doccomment">/// `lift` in terms of `read()`.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">RustBufferFfiConverter</span>: <span class="ident">Sized</span> {
     <span class="kw">type</span> <span class="ident">RustType</span>;
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>);
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>);
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">RustBufferFfiConverter</span><span class="op">&gt;</span> <span class="ident">FfiConverter</span> <span class="kw">for</span> <span class="ident">T</span> {
     <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="ident">T::RustType</span>;
     <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="ident">RustBuffer</span>;
 
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RustBuffer</span> {
+    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident">RustBuffer</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
         <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">RustBufferFfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">obj</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>);
         <span class="ident">RustBuffer::from_vec</span>(<span class="ident">buf</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident">RustBuffer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident">RustBuffer</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">destroy_into_vec</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">vec</span>.<span class="ident">as_slice</span>();
         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">T::try_read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>)<span class="question-mark">?</span>;
@@ -1058,11 +1055,11 @@
         <span class="prelude-val">Ok</span>(<span class="ident">value</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="ident">T::write</span>(<span class="ident">obj</span>, <span class="ident">buf</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="ident">T::try_read</span>(<span class="ident">buf</span>)
     }
 }
@@ -1084,7 +1081,7 @@
 <span class="kw">impl</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">SystemTime</span> {
     <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sign</span> <span class="op">=</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="ident">epoch_offset</span> <span class="op">=</span> <span class="ident">obj</span>
             .<span class="ident">duration_since</span>(<span class="ident">SystemTime::UNIX_EPOCH</span>)
@@ -1101,7 +1098,7 @@
         <span class="ident">buf</span>.<span class="ident">put_u32</span>(<span class="ident">epoch_offset</span>.<span class="ident">subsec_nanos</span>());
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">12</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">seconds</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">get_i64</span>();
         <span class="kw">let</span> <span class="ident">nanos</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">get_u32</span>();
@@ -1126,12 +1123,12 @@
 <span class="kw">impl</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">Duration</span> {
     <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="ident">buf</span>.<span class="ident">put_u64</span>(<span class="ident">obj</span>.<span class="ident">as_secs</span>());
         <span class="ident">buf</span>.<span class="ident">put_u32</span>(<span class="ident">obj</span>.<span class="ident">subsec_nanos</span>());
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">12</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">Duration::new</span>(<span class="ident">buf</span>.<span class="ident">get_u64</span>(), <span class="ident">buf</span>.<span class="ident">get_u32</span>()))
     }
@@ -1149,22 +1146,22 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">FfiConverter</span><span class="op">&gt;</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T::RustType</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="kw">match</span> <span class="ident">obj</span> {
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">buf</span>.<span class="ident">put_i8</span>(<span class="number">0</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">None</span> =&gt; <span class="ident">buf</span>.<span class="ident">put_i8</span>(<span class="number">0</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; {
                 <span class="ident">buf</span>.<span class="ident">put_i8</span>(<span class="number">1</span>);
                 <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">v</span>, <span class="ident">buf</span>);
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">buf</span>.<span class="ident">get_i8</span>() {
-            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;unexpected tag byte for Option&quot;</span>),
+            <span class="number">0</span> =&gt; <span class="prelude-val">None</span>,
+            <span class="number">1</span> =&gt; <span class="prelude-val">Some</span>(<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;unexpected tag byte for Option&quot;</span>),
         })
     }
 }
@@ -1181,7 +1178,7 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">FfiConverter</span><span class="op">&gt;</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T::RustType</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="comment">// TODO: would be nice not to panic here :-/</span>
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">i32::try_from</span>(<span class="ident">obj</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
         <span class="ident">buf</span>.<span class="ident">put_i32</span>(<span class="ident">len</span>); <span class="comment">// We limit arrays to i32::MAX items</span>
@@ -1190,7 +1187,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">buf</span>.<span class="ident">get_i32</span>())<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">len</span>);
@@ -1212,7 +1209,7 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">V</span>: <span class="ident">FfiConverter</span><span class="op">&gt;</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">V</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">V::RustType</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="comment">// TODO: would be nice not to panic here :-/</span>
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">i32::try_from</span>(<span class="ident">obj</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
         <span class="ident">buf</span>.<span class="ident">put_i32</span>(<span class="ident">len</span>); <span class="comment">// We limit HashMaps to i32::MAX entries</span>
@@ -1222,7 +1219,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">buf</span>.<span class="ident">get_i32</span>())<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="ident">HashMap::with_capacity</span>(<span class="ident">len</span>);
@@ -1254,8 +1251,8 @@
     <span class="doccomment">/// Safety: when freeing the resulting pointer, the foreign-language code must</span>
     <span class="doccomment">/// call the destructor function specific to the type `T`. Calling the destructor</span>
     <span class="doccomment">/// function for other types may lead to undefined behaviour.</span>
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span><span class="ident">::FfiType</span> {
-        <span class="ident">std::sync::Arc::into_raw</span>(<span class="ident">obj</span>) <span class="kw">as</span> <span class="self">Self</span><span class="ident">::FfiType</span>
+    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
+        <span class="ident">std::sync::Arc::into_raw</span>(<span class="ident">obj</span>) <span class="kw">as</span> <span class="ident"><span class="self">Self</span>::FfiType</span>
     }
 
     <span class="doccomment">/// When lifting, we receive a &quot;borrow&quot; of the `Arc&lt;T&gt;` that is owned by</span>
@@ -1263,10 +1260,10 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Safety: the provided value must be a pointer previously obtained by calling</span>
     <span class="doccomment">/// the `lower()` or `write()` method of this impl.</span>
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="self">Self</span><span class="ident">::FfiType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">v</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">T</span>;
         <span class="comment">// We musn&#39;t drop the `Arc&lt;T&gt;` that is owned by the foreign-language code.</span>
-        <span class="kw">let</span> <span class="ident">foreign_arc</span> <span class="op">=</span> <span class="ident">std::mem::ManuallyDrop::new</span>(<span class="kw">unsafe</span> { <span class="self">Self</span><span class="ident">::from_raw</span>(<span class="ident">v</span>) });
+        <span class="kw">let</span> <span class="ident">foreign_arc</span> <span class="op">=</span> <span class="ident">std::mem::ManuallyDrop::new</span>(<span class="kw">unsafe</span> { <span class="ident"><span class="self">Self</span>::from_raw</span>(<span class="ident">v</span>) });
         <span class="comment">// Take a clone for our own use.</span>
         <span class="prelude-val">Ok</span>(<span class="ident">std::sync::Arc::clone</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">foreign_arc</span>))
     }
@@ -1279,9 +1276,9 @@
     <span class="doccomment">/// Safety: when freeing the resulting pointer, the foreign-language code must</span>
     <span class="doccomment">/// call the destructor function specific to the type `T`. Calling the destructor</span>
     <span class="doccomment">/// function for other types may lead to undefined behaviour.</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span><span class="ident">::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="macro">static_assertions::const_assert!</span>(<span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="kw-2">*</span><span class="kw">const</span> <span class="ident">std::ffi::c_void</span><span class="op">&gt;</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span>);
-        <span class="ident">buf</span>.<span class="ident">put_u64</span>(<span class="self">Self</span><span class="ident">::lower</span>(<span class="ident">obj</span>) <span class="kw">as</span> <span class="ident">u64</span>);
+        <span class="ident">buf</span>.<span class="ident">put_u64</span>(<span class="ident"><span class="self">Self</span>::lower</span>(<span class="ident">obj</span>) <span class="kw">as</span> <span class="ident">u64</span>);
     }
 
     <span class="doccomment">/// When reading as a field of a complex structure, we receive a &quot;borrow&quot; of the `Arc&lt;T&gt;`</span>
@@ -1289,24 +1286,24 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Safety: the buffer must contain a pointer previously obtained by calling</span>
     <span class="doccomment">/// the `lower()` or `write()` method of this impl.</span>
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::RustType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
         <span class="macro">static_assertions::const_assert!</span>(<span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="kw-2">*</span><span class="kw">const</span> <span class="ident">std::ffi::c_void</span><span class="op">&gt;</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span>);
         <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">8</span>)<span class="question-mark">?</span>;
-        <span class="self">Self</span><span class="ident">::try_lift</span>(<span class="ident">buf</span>.<span class="ident">get_u64</span>() <span class="kw">as</span> <span class="self">Self</span><span class="ident">::FfiType</span>)
+        <span class="ident"><span class="self">Self</span>::try_lift</span>(<span class="ident">buf</span>.<span class="ident">get_u64</span>() <span class="kw">as</span> <span class="ident"><span class="self">Self</span>::FfiType</span>)
     }
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_anyhow_error_or_panic</span><span class="op">&lt;</span><span class="ident">ErrConverter</span><span class="op">&gt;</span>(
     <span class="ident">err</span>: <span class="ident">anyhow::Error</span>,
     <span class="ident">arg_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ErrConverter::FfiType</span>
+) -&gt; <span class="ident">ErrConverter::FfiType</span>
 <span class="kw">where</span>
     <span class="ident">ErrConverter</span>: <span class="ident">FfiConverter</span>,
     <span class="ident">ErrConverter::RustType</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">std::fmt::Debug</span> <span class="op">+</span> <span class="ident">std::fmt::Display</span>,
 {
     <span class="kw">match</span> <span class="ident">err</span>.<span class="ident">downcast</span>::<span class="op">&lt;</span><span class="ident">ErrConverter::RustType</span><span class="op">&gt;</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">actual_error</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ErrConverter::lower</span>(<span class="ident">actual_error</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">ohno</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert arg &#39;{}&#39;: {}&quot;</span>, <span class="ident">arg_name</span>, <span class="ident">ohno</span>),
+        <span class="prelude-val">Ok</span>(<span class="ident">actual_error</span>) =&gt; <span class="ident">ErrConverter::lower</span>(<span class="ident">actual_error</span>),
+        <span class="prelude-val">Err</span>(<span class="ident">ohno</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert arg &#39;{}&#39;: {}&quot;</span>, <span class="ident">arg_name</span>, <span class="ident">ohno</span>),
     }
 }
 
@@ -1337,5 +1334,7 @@
         )
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
+</body></html>

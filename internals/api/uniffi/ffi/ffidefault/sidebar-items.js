@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["FfiDefault",""]]});
+initSidebarItems({"macro":[["impl_ffi_default_with_default",""]],"trait":[["FfiDefault",""]]});

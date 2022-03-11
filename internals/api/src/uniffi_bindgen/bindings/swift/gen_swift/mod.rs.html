@@ -1,6 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/swift/gen_swift/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../../storage.js"></script><script src="../../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../../settings.html" title="settings"><img src="../../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen&#x2F;src&#x2F;bindings&#x2F;swift&#x2F;gen_swift&#x2F;mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script src="../../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../../uniffi_bindgen/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -540,24 +538,22 @@
 <span id="538">538</span>
 <span id="539">539</span>
 <span id="540">540</span>
-<span id="541">541</span>
-</pre><pre class="rust">
-<span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
+</pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
+<span class="kw">use</span> <span class="ident">std::borrow::Borrow</span>;
 <span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">anyhow</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">askama::Template</span>;
 <span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">CamelCase</span>, <span class="ident">MixedCase</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::Bindings</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::backend</span>::{<span class="ident">CodeDeclaration</span>, <span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">TemplateExpression</span>, <span class="ident">TypeIdentifier</span>};
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::interface</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::MergeWith</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Bindings</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>::{<span class="ident">CodeDeclaration</span>, <span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">TemplateExpression</span>, <span class="ident">TypeIdentifier</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::interface</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::MergeWith</span>;
 
 <span class="kw">mod</span> <span class="ident">callback_interface</span>;
 <span class="kw">mod</span> <span class="ident">compounds</span>;
@@ -596,41 +592,41 @@
 
 <span class="kw">impl</span> <span class="ident">Config</span> {
     <span class="doccomment">/// The name of the Swift module containing the high-level foreign-language bindings.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">module_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">module_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">module_name</span>.<span class="ident">as_ref</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>.<span class="ident">clone</span>(),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;uniffi&quot;</span>.<span class="ident">into</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> =&gt; <span class="string">&quot;uniffi&quot;</span>.<span class="ident">into</span>(),
         }
     }
 
     <span class="doccomment">/// The name of the lower-level C module containing the FFI declarations.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_module_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_module_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">ffi_module_name</span>.<span class="ident">as_ref</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>.<span class="ident">clone</span>(),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{}FFI&quot;</span>, <span class="self">self</span>.<span class="ident">module_name</span>()),
+            <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}FFI&quot;</span>, <span class="self">self</span>.<span class="ident">module_name</span>()),
         }
     }
 
     <span class="doccomment">/// The filename stem for the lower-level C module containing the FFI declarations.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_module_filename</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_module_filename</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">ffi_module_filename</span>.<span class="ident">as_ref</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>.<span class="ident">clone</span>(),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">ffi_module_name</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">ffi_module_name</span>(),
         }
     }
 
     <span class="doccomment">/// The name of the `.modulemap` file for the lower-level C module with FFI declarations.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">modulemap_filename</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">modulemap_filename</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
         <span class="macro">format!</span>(<span class="string">&quot;{}.modulemap&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_module_filename</span>())
     }
 
     <span class="doccomment">/// The name of the `.h` file for the lower-level C module with FFI declarations.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">header_filename</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">header_filename</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
         <span class="macro">format!</span>(<span class="string">&quot;{}.h&quot;</span>, <span class="self">self</span>.<span class="ident">ffi_module_filename</span>())
     }
 
     <span class="doccomment">/// The name of the compiled Rust library containing the FFI implementation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cdylib_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cdylib_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cdylib_name</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cdylib_name</span> {
             <span class="ident">cdylib_name</span>.<span class="ident">clone</span>()
         } <span class="kw">else</span> {
@@ -639,18 +635,18 @@
     }
 
     <span class="doccomment">/// Whether to generate a `.modulemap` file for the lower-level C module with FFI declarations.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_module_map</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_module_map</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">generate_module_map</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>)
     }
 
     <span class="doccomment">/// Whether to omit argument labels in Swift function definitions.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">omit_argument_labels</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">omit_argument_labels</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">omit_argument_labels</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Config</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">Config</span> {
             <span class="ident">module_name</span>: <span class="prelude-val">Some</span>(<span class="ident">ci</span>.<span class="ident">namespace</span>().<span class="ident">into</span>()),
             <span class="ident">cdylib_name</span>: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>())),
@@ -660,7 +656,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">MergeWith</span> <span class="kw">for</span> <span class="ident">Config</span> {
-    <span class="kw">fn</span> <span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">Config</span> {
             <span class="ident">module_name</span>: <span class="self">self</span>.<span class="ident">module_name</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">module_name</span>),
             <span class="ident">ffi_module_name</span>: <span class="self">self</span>.<span class="ident">ffi_module_name</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">ffi_module_name</span>),
@@ -681,7 +677,7 @@
 
 <span class="doccomment">/// Generate UniFFI component bindings for Swift, as strings in memory.</span>
 <span class="doccomment">///</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Bindings</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Bindings</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">SwiftCodeOracle::new</span>(<span class="ident">config</span>.<span class="ident">clone</span>());
     <span class="ident">filters::set_oracle</span>(<span class="ident">oracle</span>.<span class="ident">clone</span>());
 
@@ -720,7 +716,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> <span class="ident">BridgingHeader</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">_config</span>: <span class="ident">config</span>,
             <span class="ident">ci</span>,
@@ -742,7 +738,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> <span class="ident">ModuleMap</span><span class="op">&lt;</span><span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>, <span class="ident">_ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>, <span class="ident">_ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">config</span>, <span class="ident">_ci</span> }
     }
 }
@@ -755,11 +751,11 @@
     <span class="ident">oracle</span>: <span class="ident">SwiftCodeOracle</span>,
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">SwiftWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">oracle</span>: <span class="ident">SwiftCodeOracle</span>, <span class="ident">config</span>: <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">oracle</span>: <span class="ident">SwiftCodeOracle</span>, <span class="ident">config</span>: <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">oracle</span>, <span class="ident">config</span>, <span class="ident">ci</span> }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">members</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">members</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ci</span>;
         <span class="macro">vec!</span>[
             <span class="ident">Box::new</span>(<span class="ident">callback_interface::SwiftCallbackInterfaceRuntime::new</span>(<span class="ident">ci</span>))
@@ -807,7 +803,7 @@
         .<span class="ident">collect</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialization_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialization_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">oracle</span>;
         <span class="self">self</span>.<span class="ident">members</span>()
             .<span class="ident">into_iter</span>()
@@ -815,7 +811,7 @@
             .<span class="ident">collect</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">declaration_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">declaration_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">oracle</span>;
         <span class="self">self</span>.<span class="ident">members</span>()
             .<span class="ident">into_iter</span>()
@@ -829,7 +825,7 @@
             .<span class="ident">collect</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">imports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">imports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">oracle</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">imports</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">members</span>()
@@ -858,57 +854,57 @@
 }
 
 <span class="kw">impl</span> <span class="ident">SwiftCodeOracle</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="ident">Config</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="ident">Config</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">config</span> }
     }
 
-    <span class="kw">fn</span> <span class="ident">create_code_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="ident">TypeIdentifier</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">create_code_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="ident">TypeIdentifier</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
         <span class="comment">// I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}</span>
         <span class="comment">// However, there&#39;s some violence and gore I need to do to (temporarily) make the oracle usable from filters.</span>
 
         <span class="comment">// Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &amp;dyn CodeOracle</span>
         <span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type::UInt8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::UInt8CodeType</span>),
-            <span class="ident">Type::Int8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::Int8CodeType</span>),
-            <span class="ident">Type::UInt16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::UInt16CodeType</span>),
-            <span class="ident">Type::Int16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::Int16CodeType</span>),
-            <span class="ident">Type::UInt32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::UInt32CodeType</span>),
-            <span class="ident">Type::Int32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::Int32CodeType</span>),
-            <span class="ident">Type::UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::UInt64CodeType</span>),
-            <span class="ident">Type::Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::Int64CodeType</span>),
-            <span class="ident">Type::Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::Float32CodeType</span>),
-            <span class="ident">Type::Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::Float64CodeType</span>),
-            <span class="ident">Type::Boolean</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::BooleanCodeType</span>),
-            <span class="ident">Type::String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">primitives::StringCodeType</span>),
+            <span class="ident">Type::UInt8</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt8CodeType</span>),
+            <span class="ident">Type::Int8</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Int8CodeType</span>),
+            <span class="ident">Type::UInt16</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt16CodeType</span>),
+            <span class="ident">Type::Int16</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Int16CodeType</span>),
+            <span class="ident">Type::UInt32</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt32CodeType</span>),
+            <span class="ident">Type::Int32</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Int32CodeType</span>),
+            <span class="ident">Type::UInt64</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt64CodeType</span>),
+            <span class="ident">Type::Int64</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Int64CodeType</span>),
+            <span class="ident">Type::Float32</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Float32CodeType</span>),
+            <span class="ident">Type::Float64</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Float64CodeType</span>),
+            <span class="ident">Type::Boolean</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::BooleanCodeType</span>),
+            <span class="ident">Type::String</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::StringCodeType</span>),
 
-            <span class="ident">Type::Timestamp</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">miscellany::TimestampCodeType</span>),
-            <span class="ident">Type::Duration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">miscellany::DurationCodeType</span>),
+            <span class="ident">Type::Timestamp</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">miscellany::TimestampCodeType</span>),
+            <span class="ident">Type::Duration</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">miscellany::DurationCodeType</span>),
 
-            <span class="ident">Type::Enum</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">enum_::EnumCodeType::new</span>(<span class="ident">id</span>)),
-            <span class="ident">Type::Object</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">object::ObjectCodeType::new</span>(<span class="ident">id</span>)),
-            <span class="ident">Type::Record</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">record::RecordCodeType::new</span>(<span class="ident">id</span>)),
-            <span class="ident">Type::Error</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">error::ErrorCodeType::new</span>(<span class="ident">id</span>)),
-            <span class="ident">Type::CallbackInterface</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">Type::Enum</span>(<span class="ident">id</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">enum_::EnumCodeType::new</span>(<span class="ident">id</span>)),
+            <span class="ident">Type::Object</span>(<span class="ident">id</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">object::ObjectCodeType::new</span>(<span class="ident">id</span>)),
+            <span class="ident">Type::Record</span>(<span class="ident">id</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">record::RecordCodeType::new</span>(<span class="ident">id</span>)),
+            <span class="ident">Type::Error</span>(<span class="ident">id</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">error::ErrorCodeType::new</span>(<span class="ident">id</span>)),
+            <span class="ident">Type::CallbackInterface</span>(<span class="ident">id</span>) =&gt; {
                 <span class="ident">Box::new</span>(<span class="ident">callback_interface::CallbackInterfaceCodeType::new</span>(<span class="ident">id</span>))
             }
 
-            <span class="ident">Type::Optional</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">Type::Optional</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
                 <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
                 <span class="ident">Box::new</span>(<span class="ident">compounds::OptionalCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
             }
-            <span class="ident">Type::Sequence</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">Type::Sequence</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
                 <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
                 <span class="ident">Box::new</span>(<span class="ident">compounds::SequenceCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
             }
-            <span class="ident">Type::Map</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">Type::Map</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
                 <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
                 <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
             }
-            <span class="ident">Type::External</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;no support for external types yet&quot;</span>),
-            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, <span class="ident">builtin</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">custom::CustomCodeType::new</span>(
+            <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;no support for external types yet&quot;</span>),
+            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, <span class="ident">builtin</span> } =&gt; <span class="ident">Box::new</span>(<span class="ident">custom::CustomCodeType::new</span>(
                 <span class="ident">name</span>.<span class="ident">clone</span>(),
                 <span class="ident">builtin</span>.<span class="ident">as_ref</span>().<span class="ident">clone</span>(),
                 <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">custom_types</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>).<span class="ident">cloned</span>(),
@@ -918,58 +914,57 @@
 }
 
 <span class="kw">impl</span> <span class="ident">CodeOracle</span> <span class="kw">for</span> <span class="ident">SwiftCodeOracle</span> {
-    <span class="kw">fn</span> <span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">TypeIdentifier</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">TypeIdentifier</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">create_code_type</span>(<span class="ident">type_</span>.<span class="ident">clone</span>())
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).</span>
-    <span class="kw">fn</span> <span class="ident">class_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">class_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
         <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_camel_case</span>()
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of a function name.</span>
-    <span class="kw">fn</span> <span class="ident">fn_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">fn_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
         <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>()
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of a variable name.</span>
-    <span class="kw">fn</span> <span class="ident">var_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">var_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
         <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>()
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of an individual enum variant.</span>
-    <span class="kw">fn</span> <span class="ident">enum_variant_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">enum_variant_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
         <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_mixed_case</span>()
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of an exception name.</span>
-    <span class="kw">fn</span> <span class="ident">error_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">error_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
         <span class="self">self</span>.<span class="ident">class_name</span>(<span class="ident">nm</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="ident">String</span> {
         <span class="kw">match</span> <span class="ident">ffi_type</span> {
-            <span class="ident">FFIType::Int8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;int8_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;uint8_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;int16_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;uint16_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;int32_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;uint32_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;int64_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;uint64_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::Int8</span> =&gt; <span class="string">&quot;int8_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt8</span> =&gt; <span class="string">&quot;uint8_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Int16</span> =&gt; <span class="string">&quot;int16_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt16</span> =&gt; <span class="string">&quot;uint16_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Int32</span> =&gt; <span class="string">&quot;int32_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt32</span> =&gt; <span class="string">&quot;uint32_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Int64</span> =&gt; <span class="string">&quot;int64_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt64</span> =&gt; <span class="string">&quot;uint64_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Float32</span> =&gt; <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Float64</span> =&gt; <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::RustArcPtr</span> =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
         }
     }
 }
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">filters</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">std::fmt</span>;
 
     <span class="comment">// This code is a bit unfortunate.  We want to have a `SwiftCodeOracle` instance available for</span>
     <span class="comment">// the filter functions, so that we don&#39;t always need to pass as an argument in the template</span>
@@ -986,91 +981,91 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">oracle</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">SwiftCodeOracle</span> {
+    <span class="kw">fn</span> <span class="ident">oracle</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">SwiftCodeOracle</span> {
         <span class="kw">unsafe</span> { <span class="ident">ORACLE</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>()))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">literal_swift</span>(
         <span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>,
         <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">oracle</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">literal</span>(<span class="ident">oracle</span>, <span class="ident">literal</span>))
     }
 
     <span class="doccomment">/// Get the Swift syntax for representing a given low-level `FFIType`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">ffi_type_label</span>(<span class="ident">type_</span>))
     }
 
     <span class="doccomment">/// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see</span>
     <span class="doccomment">/// #1106 for details</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi_lowered</span>(<span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi_lowered</span>(<span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">ffi_type</span> {
-            <span class="ident">FFIType::Int8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Int8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UInt8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Int16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt16</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UInt16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Int32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UInt32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;Int64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;UInt64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Float32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Float64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::RustArcPtr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::RustBuffer</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::ForeignBytes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::ForeignCallback</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::Int8</span> =&gt; <span class="string">&quot;Int8&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt8</span> =&gt; <span class="string">&quot;UInt8&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Int16</span> =&gt; <span class="string">&quot;Int16&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt16</span> =&gt; <span class="string">&quot;UInt16&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Int32</span> =&gt; <span class="string">&quot;Int32&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt32</span> =&gt; <span class="string">&quot;UInt32&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Int64</span> =&gt; <span class="string">&quot;Int64&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::UInt64</span> =&gt; <span class="string">&quot;UInt64&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Float32</span> =&gt; <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::Float64</span> =&gt; <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::RustArcPtr</span> =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FFIType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
         })
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">class_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">class_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">class_name</span>(<span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of a function name.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fn_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fn_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">fn_name</span>(<span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of a variable name.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">var_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">var_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">var_name</span>(<span class="ident">nm</span>))
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of an individual enum variant.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_variant_swift</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_variant_swift</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">enum_variant_name</span>(<span class="ident">nm</span>))
     }
 
@@ -1079,9 +1074,11 @@
     <span class="doccomment">/// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.  Rust code typically uses</span>
     <span class="doccomment">/// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error</span>
     <span class="doccomment">/// and is distinguished from an &quot;Exception&quot;.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exception_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">fmt::Display</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exception_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">error_name</span>(<span class="ident">nm</span>))
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi_bindgen" data-search-index-js="../../../../../search-index.js" data-search-js="../../../../../search.js"></div><script src="../../../../../main.js"></script><script src="../../../../../source-script.js"></script><script src="../../../../../source-files.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi_bindgen" data-search-index-js="../../../../../search-index.js" data-search-js="../../../../../search.js"></div>
+    <script src="../../../../../main.js"></script><script src="../../../../../source-script.js"></script><script src="../../../../../source-files.js"></script>
+</body></html>
