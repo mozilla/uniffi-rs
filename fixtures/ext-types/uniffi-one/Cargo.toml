@@ -1,6 +1,5 @@
 [package]
-# TODO: modify the crate name to test non-default names.
-name = "uniffi-one"
+name = "uniffi-fixture-ext-types-lib-one"
 edition = "2018"
 version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
@@ -9,6 +8,7 @@ publish = false
 
 [lib]
 crate-type = ["cdylib", "lib"]
+name = "uniffi_one"
 
 [dependencies]
 anyhow = "1"

@@ -10,8 +10,8 @@ name = "reexport_scaffolding_macro"
 crate-type = ["cdylib"]
 
 [dependencies]
-callbacks = { path = "../callbacks" }
-coverall = { path = "../coverall" }
+uniffi-fixture-callbacks = { path = "../callbacks" }
+uniffi-fixture-coverall = { path = "../coverall" }
 uniffi = { path = "../../uniffi", features=["builtin-bindgen"] }
 
 [dev-dependencies]

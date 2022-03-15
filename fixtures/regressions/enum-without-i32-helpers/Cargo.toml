@@ -1,5 +1,5 @@
 [package]
-name = "i356-enum-without-int-helpers"
+name = "uniffi-fixture-regression-i356-enum-without-int-helpers"
 edition = "2018"
 version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]

@@ -1,5 +1,5 @@
 [package]
-name = "coverall"
+name = "uniffi-fixture-coverall"
 version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2018"
