@@ -1,5 +1,5 @@
 [package]
-name = "i1015-fully-qualified-types"
+name = "uniffi-fixture-regression-i1015-fully-qualified-types"
 edition = "2018"
 version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
@@ -7,7 +7,7 @@ license = "MPL-2.0"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]
 name = "uniffi_regression_test_i1015"
 
 [dependencies]

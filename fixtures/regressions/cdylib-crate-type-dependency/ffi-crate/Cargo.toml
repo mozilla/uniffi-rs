@@ -1,5 +1,5 @@
 [package]
-name = "ffi-crate"
+name = "uniffi-fixture-regression-cdylib-dependency-ffi-crate"
 edition = "2018"
 version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
@@ -7,13 +7,13 @@ license = "MPL-2.0"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]
 name = "uniffi_empty"
 
 [dependencies]
 uniffi_macros = {path = "../../../../uniffi_macros"}
 uniffi = {path = "../../../../uniffi", features=["builtin-bindgen"]}
-cdylib-dependency = {path = "../cdylib-dependency"}
+uniffi-fixture-regression-cdylib-dependency = {path = "../cdylib-dependency"}
 
 [build-dependencies]
 uniffi_build = {path = "../../../../uniffi_build", features=["builtin-bindgen"]}

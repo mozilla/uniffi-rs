@@ -1,13 +1,20 @@
 [package]
-name = "ext-types-lib"
+name = "uniffi-fixture-ext-types"
 edition = "2018"
 version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 publish = false
 
+[package.metadata.uniffi.testing]
+external-crates = [
+    "uniffi-fixture-ext-types-guid",
+    "uniffi-fixture-ext-types-lib-one",
+    "uniffi-example-custom-types",
+]
+
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]
 name = "uniffi_ext_types_lib"
 
 [dependencies]
@@ -16,13 +23,15 @@ bytes = "1.0"
 uniffi_macros = {path = "../../../uniffi_macros"}
 uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
 
-uniffi-one = {path = "../uniffi-one"}
-ext-types-guid = {path = "../guid"}
+uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
+uniffi-fixture-ext-types-guid = {path = "../guid"}
 
 # Reuse one of our examples.
-custom-types = {path = "../../../examples/custom-types"}
+uniffi-example-custom-types = {path = "../../../examples/custom-types"}
 
 url = "2.2"
 
 [build-dependencies]
 uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
+
+

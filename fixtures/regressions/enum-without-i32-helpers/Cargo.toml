@@ -1,5 +1,5 @@
 [package]
-name = "i356-enum-without-int-helpers"
+name = "uniffi-fixture-regression-i356-enum-without-int-helpers"
 edition = "2018"
 version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
@@ -7,7 +7,7 @@ license = "MPL-2.0"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]
 name = "uniffi_regression_test_i356"
 
 [dependencies]

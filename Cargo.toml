@@ -3,6 +3,7 @@ members = [
   "uniffi_bindgen",
   "uniffi_build",
   "uniffi_macros",
+  "uniffi_testing",
   "uniffi",
   "examples/arithmetic",
   "examples/callbacks",

@@ -1,9 +1,9 @@
 [package]
-name = "cdylib-dependency"
+name = "uniffi-fixture-regression-cdylib-dependency"
 version = "0.17.0"
 authors = ["king6cong <king6cong@gmail.com>"]
 edition = "2018"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]
