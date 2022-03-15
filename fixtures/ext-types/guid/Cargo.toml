@@ -1,5 +1,5 @@
 [package]
-name = "ext-types-guid"
+name = "uniffi-fixture-ext-types-guid"
 edition = "2018"
 version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
