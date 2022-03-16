@@ -10,8 +10,8 @@
 
 ### What's Changed
 
-- Identifiers in generated Swift code are automatically surrounded by backticks (`) when they are
-  the same as Swift reserved words.
+- Identifiers in generated Swift code are automatically surrounded by backticks (`). This is
+  required to handle conflicts with reserved words.
 
 ## v0.17.0 - (_2022-02-03_)
 

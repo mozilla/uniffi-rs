@@ -425,25 +425,10 @@ impl CodeOracle for SwiftCodeOracle {
 }
 
 /// When using a Swift reserved word as an identifier, one needs to add a backtick (`) before and
-/// after it. This function checks if the given identifier is a reserved word and adds backticks if
-/// necessary.
+/// after it. This function adds backticks around an identifier. The intention is to add backticks
+/// around all identifiers. Unnecessary backticks can be removed by `swiftformat` later.
 pub fn escape_reserved_word_identifier(identifier: String) -> String {
-    match identifier.as_str() {
-        "associatedtype" | "class" | "deinit" | "enum" | "extension" | "fileprivate" | "func"
-        | "import" | "init" | "inout" | "internal" | "let" | "open" | "operator" | "private"
-        | "precedencegroup" | "protocol" | "public" | "rethrows" | "static" | "struct"
-        | "subscript" | "typealias" | "var" | "break" | "case" | "catch" | "continue"
-        | "default" | "defer" | "do" | "else" | "fallthrough" | "for" | "guard" | "if" | "in"
-        | "repeat" | "return" | "throw" | "switch" | "where" | "while" | "Any" | "as" | "false"
-        | "nil" | "self" | "Self" | "super" | "throws" | "true" | "try" | "associativity"
-        | "convenience" | "didSet" | "dynamic" | "final" | "get" | "indirect" | "infix"
-        | "lazy" | "left" | "mutating" | "none" | "nonmutating" | "optional" | "override"
-        | "postfix" | "precedence" | "prefix" | "Protocol" | "required" | "right" | "set"
-        | "some" | "Type" | "unowned" | "weak" | "willSet" => {
-            format!("`{}`", identifier)
-        }
-        _ => identifier,
-    }
+    format!("`{}`", identifier)
 }
 
 pub mod filters {
