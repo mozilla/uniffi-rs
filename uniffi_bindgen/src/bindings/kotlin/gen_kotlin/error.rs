@@ -44,13 +44,15 @@ impl CodeType for ErrorCodeType {
 pub struct KotlinError {
     inner: Error,
     contains_object_references: bool,
+    internalize: bool
 }
 
 impl KotlinError {
-    pub fn new(inner: Error, ci: &ComponentInterface) -> Self {
+    pub fn new(inner: Error, ci: &ComponentInterface, internalize: bool) -> Self {
         Self {
             contains_object_references: ci.item_contains_object_references(&inner),
             inner,
+            internalize,
         }
     }
     pub fn inner(&self) -> &Error {

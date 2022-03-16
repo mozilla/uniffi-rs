@@ -42,11 +42,12 @@ impl CodeType for CallbackInterfaceCodeType {
 #[template(syntax = "kt", escape = "none", path = "CallbackInterfaceTemplate.kt")]
 pub struct KotlinCallbackInterface {
     inner: CallbackInterface,
+    internalize: bool
 }
 
 impl KotlinCallbackInterface {
-    pub fn new(inner: CallbackInterface, _ci: &ComponentInterface) -> Self {
-        Self { inner }
+    pub fn new(inner: CallbackInterface, _ci: &ComponentInterface, internalize: bool) -> Self {
+        Self { inner, internalize }
     }
     pub fn inner(&self) -> &CallbackInterface {
         &self.inner

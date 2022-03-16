@@ -1,4 +1,4 @@
-public object FfiConverterTimestamp: FfiConverterRustBuffer<java.time.Instant> {
+internal object FfiConverterTimestamp: FfiConverterRustBuffer<java.time.Instant> {
     override fun read(buf: ByteBuffer): java.time.Instant {
         val seconds = buf.getLong()
         // Type mismatch (should be u32) but we check for overflow/underflow below

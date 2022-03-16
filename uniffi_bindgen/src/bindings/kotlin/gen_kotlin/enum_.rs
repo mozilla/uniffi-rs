@@ -51,13 +51,15 @@ impl CodeType for EnumCodeType {
 pub struct KotlinEnum {
     inner: Enum,
     contains_object_references: bool,
+    internalize: bool
 }
 
 impl KotlinEnum {
-    pub fn new(inner: Enum, ci: &ComponentInterface) -> Self {
+    pub fn new(inner: Enum, ci: &ComponentInterface, internalize: bool) -> Self {
         Self {
             contains_object_references: ci.item_contains_object_references(&inner),
             inner,
+            internalize: internalize
         }
     }
     pub fn inner(&self) -> &Enum {

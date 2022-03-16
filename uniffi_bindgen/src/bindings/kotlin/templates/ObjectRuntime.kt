@@ -6,7 +6,7 @@
 //
 // The easiest way to ensure this method is called is to use the `.use`
 // helper method to execute a block and destroy the object at the end.
-interface Disposable {
+{% if internalize %}internal {% endif %}interface Disposable {
     fun destroy()
     companion object {
         fun destroy(vararg args: Any?) {
@@ -16,7 +16,7 @@ interface Disposable {
     }
 }
 
-inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
+{% if internalize %}internal {% endif %}inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
     try {
         block(this)
     } finally {
@@ -109,7 +109,7 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
 //
 // [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
 //
-abstract class FFIObject(
+{% if internalize %}internal {% endif %}abstract class FFIObject(
     protected val pointer: Pointer
 ): Disposable, AutoCloseable {
 

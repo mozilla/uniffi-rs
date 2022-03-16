@@ -12,11 +12,12 @@ use super::filters;
 #[template(syntax = "kt", escape = "none", path = "TopLevelFunctionTemplate.kt")]
 pub struct KotlinFunction {
     inner: Function,
+    internalize: bool
 }
 
 impl KotlinFunction {
-    pub fn new(inner: Function, _ci: &ComponentInterface) -> Self {
-        Self { inner }
+    pub fn new(inner: Function, _ci: &ComponentInterface, internalize: bool) -> Self {
+        Self { inner, internalize }
     }
     pub fn inner(&self) -> &Function {
         &self.inner

@@ -7,7 +7,7 @@
 
 // Declaration and FfiConverters for {{ type_name }} Callback Interface
 
-public interface {{ type_name }} {
+{% if internalize %}internal {% endif %}interface {{ type_name }} {
     {% for meth in cbi.methods() -%}
     fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %})
     {%- match meth.return_type() -%}
@@ -87,7 +87,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
 }
 
 // The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
-public object {{ ffi_converter }}: FfiConverterCallbackInterface<{{ type_name }}>(
+{% if internalize %}internal {% endif %}object {{ ffi_converter }}: FfiConverterCallbackInterface<{{ type_name }}>(
     foreignCallback = {{ foreign_callback }}()
 ) {
     override fun register(lib: _UniFFILib) {

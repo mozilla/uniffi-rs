@@ -4,7 +4,7 @@
 {%- let inner_type_name = inner_type|type_name %}
 {%- let canonical_type_name = outer_type|canonical_name %}
 
-public object {{ outer_type|ffi_converter_name }}: FfiConverterRustBuffer<List<{{ inner_type_name }}>> {
+{% if internalize %}internal {% endif %}object {{ outer_type|ffi_converter_name }}: FfiConverterRustBuffer<List<{{ inner_type_name }}>> {
     override fun read(buf: ByteBuffer): List<{{ inner_type_name }}> {
         val len = buf.getInt()
         return List<{{ inner_type_name }}>(len) {

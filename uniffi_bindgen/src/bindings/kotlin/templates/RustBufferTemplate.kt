@@ -3,7 +3,7 @@
 // pointer to the underlying data.
 
 @Structure.FieldOrder("capacity", "len", "data")
-open class RustBuffer : Structure() {
+{% if internalize %}internal {% endif %}open class RustBuffer : Structure() {
     @JvmField var capacity: Int = 0
     @JvmField var len: Int = 0
     @JvmField var data: Pointer? = null
@@ -38,7 +38,7 @@ open class RustBuffer : Structure() {
  *
  * Size is the sum of all values in the struct.
  */
-class RustBufferByReference : ByReference(16) {
+ {% if internalize %}internal {% endif %}class RustBufferByReference : ByReference(16) {
     /**
      * Set the pointed-to `RustBuffer` to the given value.
      */
@@ -58,7 +58,7 @@ class RustBufferByReference : ByReference(16) {
 // completeness.
 
 @Structure.FieldOrder("len", "data")
-open class ForeignBytes : Structure() {
+{% if internalize %}internal {% endif %}open class ForeignBytes : Structure() {
     @JvmField var len: Int = 0
     @JvmField var data: Pointer? = null
 

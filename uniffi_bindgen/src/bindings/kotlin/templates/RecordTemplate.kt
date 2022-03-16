@@ -2,7 +2,7 @@
 {%- let rec = self.inner() %}
 {%- let type_name = rec|type_name %}
 
-data class {{ type_name }} (
+{% if internalize %}internal {% endif %}data class {{ type_name }} (
     {%- for field in rec.fields() %}
     var {{ field.name()|var_name }}: {{ field|type_name -}}
     {%- match field.default_value() %}
@@ -20,7 +20,7 @@ data class {{ type_name }} (
     {% endif %}
 }
 
-public object {{ rec|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
+{% if internalize %}internal {% endif %}object {{ rec|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer): {{ type_name }} {
         return {{ type_name }}(
         {%- for field in rec.fields() %}

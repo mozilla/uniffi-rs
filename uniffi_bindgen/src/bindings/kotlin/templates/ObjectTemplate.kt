@@ -2,7 +2,7 @@
 {%- let obj = self.inner() %}
 {%- let type_name = obj|type_name -%}
 
-public interface {{ type_name }}Interface {
+{% if internalize %}internal {% endif %}interface {{ type_name }}Interface {
     {% for meth in obj.methods() -%}
     {%- match meth.throws() -%}
     {%- when Some with (throwable) %}
@@ -17,7 +17,7 @@ public interface {{ type_name }}Interface {
     {% endfor %}
 }
 
-class {{ type_name }}(
+{% if internalize %}internal {% endif %}class {{ type_name }}(
     pointer: Pointer
 ) : FFIObject(pointer), {{ type_name }}Interface {
 
@@ -76,7 +76,7 @@ class {{ type_name }}(
     {% endif %}
 }
 
-public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
+{% if internalize %}internal {% endif %}object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
     override fun lower(value: {{ type_name }}): Pointer = value.callWithPointer { it }
 
     override fun lift(value: Pointer): {{ type_name }} {

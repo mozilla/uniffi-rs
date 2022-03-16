@@ -13,7 +13,7 @@ public typealias {{ name }} = {{ builtin|type_name }}
 {#- Create a typealias so that this type can be imported when used as an external type #}
 public typealias {{ name }} = {{ type_name }}
 
-public object {{ outer|ffi_converter_name }}: FfiConverter<{{ type_name }}, {{ ffi_type_name }}> {
+{% if internalize %}internal {% endif %}object {{ outer|ffi_converter_name }}: FfiConverter<{{ type_name }}, {{ ffi_type_name }}> {
     {#- Custom type config supplied, use it to convert the builtin type #}
     override fun lift(value: {{ ffi_type_name }}): {{ type_name }} {
         val builtinValue = {{ builtin|lift_fn }}(value)

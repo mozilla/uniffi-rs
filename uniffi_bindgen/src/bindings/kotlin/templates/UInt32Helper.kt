@@ -1,4 +1,4 @@
-public object FfiConverterUInt: FfiConverter<UInt, Int> {
+internal object FfiConverterUInt: FfiConverter<UInt, Int> {
     override fun lift(value: Int): UInt {
         return value.toUInt()
     }

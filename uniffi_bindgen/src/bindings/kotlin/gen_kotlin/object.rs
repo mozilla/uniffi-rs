@@ -43,11 +43,12 @@ impl CodeType for ObjectCodeType {
 #[template(syntax = "kt", escape = "none", path = "ObjectTemplate.kt")]
 pub struct KotlinObject {
     inner: Object,
+    internalize: bool
 }
 
 impl KotlinObject {
-    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
-        Self { inner }
+    pub fn new(inner: Object, _ci: &ComponentInterface, internalize: bool) -> Self {
+        Self { inner, internalize }
     }
     pub fn inner(&self) -> &Object {
         &self.inner
@@ -76,12 +77,14 @@ impl CodeDeclaration for KotlinObject {
 #[template(syntax = "kt", escape = "none", path = "ObjectRuntime.kt")]
 pub struct KotlinObjectRuntime {
     is_needed: bool,
+    internalize: bool
 }
 
 impl KotlinObjectRuntime {
-    pub fn new(ci: &ComponentInterface) -> Self {
+    pub fn new(ci: &ComponentInterface, internalize: bool) -> Self {
         Self {
             is_needed: !ci.iter_object_definitions().is_empty(),
+            internalize
         }
     }
 }

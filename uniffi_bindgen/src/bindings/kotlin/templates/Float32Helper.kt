@@ -1,4 +1,4 @@
-public object FfiConverterFloat: FfiConverter<Float, Float> {
+internal object FfiConverterFloat: FfiConverter<Float, Float> {
     override fun lift(value: Float): Float {
         return value
     }
