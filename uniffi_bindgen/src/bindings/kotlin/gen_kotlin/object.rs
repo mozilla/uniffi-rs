@@ -43,7 +43,7 @@ impl CodeType for ObjectCodeType {
 #[template(syntax = "kt", escape = "none", path = "ObjectTemplate.kt")]
 pub struct KotlinObject {
     inner: Object,
-    internalize: bool
+    internalize: bool,
 }
 
 impl KotlinObject {
@@ -77,14 +77,14 @@ impl CodeDeclaration for KotlinObject {
 #[template(syntax = "kt", escape = "none", path = "ObjectRuntime.kt")]
 pub struct KotlinObjectRuntime {
     is_needed: bool,
-    internalize: bool
+    internalize: bool,
 }
 
 impl KotlinObjectRuntime {
     pub fn new(ci: &ComponentInterface, internalize: bool) -> Self {
         Self {
             is_needed: !ci.iter_object_definitions().is_empty(),
-            internalize
+            internalize,
         }
     }
 }

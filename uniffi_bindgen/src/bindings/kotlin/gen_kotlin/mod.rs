@@ -79,7 +79,7 @@ impl From<&ComponentInterface> for Config {
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
             custom_types: HashMap::new(),
             external_packages: HashMap::new(),
-            internalize: Some(false)
+            internalize: Some(false),
         }
     }
 }
@@ -91,7 +91,7 @@ impl MergeWith for Config {
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
             custom_types: self.custom_types.merge_with(&other.custom_types),
             external_packages: self.external_packages.merge_with(&other.external_packages),
-            internalize: self.internalize.merge_with(&other.internalize)
+            internalize: self.internalize.merge_with(&other.internalize),
         }
     }
 }
@@ -112,52 +112,67 @@ pub struct KotlinWrapper<'a> {
     oracle: KotlinCodeOracle,
     config: Config,
     ci: &'a ComponentInterface,
-    internalize: bool
+    internalize: bool,
 }
 impl<'a> KotlinWrapper<'a> {
     pub fn new(oracle: KotlinCodeOracle, config: Config, ci: &'a ComponentInterface) -> Self {
         let internalize = config.internalize();
-        Self { oracle, config, ci, internalize }
+        Self {
+            oracle,
+            config,
+            ci,
+            internalize,
+        }
     }
 
     pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
         let ci = self.ci;
         vec![
-            Box::new(object::KotlinObjectRuntime::new(ci, self.internalize)) as Box<dyn CodeDeclaration>,
+            Box::new(object::KotlinObjectRuntime::new(ci, self.internalize))
+                as Box<dyn CodeDeclaration>,
             Box::new(callback_interface::KotlinCallbackInterfaceRuntime::new(ci))
                 as Box<dyn CodeDeclaration>,
         ]
         .into_iter()
-        .chain(
-            ci.iter_enum_definitions().into_iter().map(|inner| {
-                Box::new(enum_::KotlinEnum::new(inner, ci, self.internalize)) as Box<dyn CodeDeclaration>
-            }),
-        )
+        .chain(ci.iter_enum_definitions().into_iter().map(|inner| {
+            Box::new(enum_::KotlinEnum::new(inner, ci, self.internalize))
+                as Box<dyn CodeDeclaration>
+        }))
         .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-            Box::new(function::KotlinFunction::new(inner, ci, self.internalize)) as Box<dyn CodeDeclaration>
+            Box::new(function::KotlinFunction::new(inner, ci, self.internalize))
+                as Box<dyn CodeDeclaration>
         }))
         .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-            Box::new(object::KotlinObject::new(inner, ci, self.internalize)) as Box<dyn CodeDeclaration>
+            Box::new(object::KotlinObject::new(inner, ci, self.internalize))
+                as Box<dyn CodeDeclaration>
         }))
         .chain(ci.iter_record_definitions().into_iter().map(|inner| {
-            Box::new(record::KotlinRecord::new(inner, ci, self.internalize)) as Box<dyn CodeDeclaration>
+            Box::new(record::KotlinRecord::new(inner, ci, self.internalize))
+                as Box<dyn CodeDeclaration>
         }))
-        .chain(
-            ci.iter_error_definitions().into_iter().map(|inner| {
-                Box::new(error::KotlinError::new(inner, ci, self.internalize)) as Box<dyn CodeDeclaration>
-            }),
-        )
+        .chain(ci.iter_error_definitions().into_iter().map(|inner| {
+            Box::new(error::KotlinError::new(inner, ci, self.internalize))
+                as Box<dyn CodeDeclaration>
+        }))
         .chain(
             ci.iter_callback_interface_definitions()
                 .into_iter()
                 .map(|inner| {
-                    Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci, self.internalize))
-                        as Box<dyn CodeDeclaration>
+                    Box::new(callback_interface::KotlinCallbackInterface::new(
+                        inner,
+                        ci,
+                        self.internalize,
+                    )) as Box<dyn CodeDeclaration>
                 }),
         )
         .chain(ci.iter_custom_types().into_iter().map(|(name, type_)| {
             let config = self.config.custom_types.get(&name).cloned();
-            Box::new(custom::KotlinCustomType::new(name, type_, config, self.internalize)) as Box<dyn CodeDeclaration>
+            Box::new(custom::KotlinCustomType::new(
+                name,
+                type_,
+                config,
+                self.internalize,
+            )) as Box<dyn CodeDeclaration>
         }))
         .collect()
     }
@@ -250,17 +265,29 @@ impl KotlinCodeOracle {
             Type::Optional(ref inner) => {
                 let outer = type_.clone();
                 let inner = *inner.to_owned();
-                Box::new(compounds::OptionalCodeType::new(inner, outer, self.config.internalize()))
+                Box::new(compounds::OptionalCodeType::new(
+                    inner,
+                    outer,
+                    self.config.internalize(),
+                ))
             }
             Type::Sequence(ref inner) => {
                 let outer = type_.clone();
                 let inner = *inner.to_owned();
-                Box::new(compounds::SequenceCodeType::new(inner, outer, self.config.internalize()))
+                Box::new(compounds::SequenceCodeType::new(
+                    inner,
+                    outer,
+                    self.config.internalize(),
+                ))
             }
             Type::Map(ref inner) => {
                 let outer = type_.clone();
                 let inner = *inner.to_owned();
-                Box::new(compounds::MapCodeType::new(inner, outer, self.config.internalize()))
+                Box::new(compounds::MapCodeType::new(
+                    inner,
+                    outer,
+                    self.config.internalize(),
+                ))
             }
             Type::External { crate_name, name } => {
                 let package_name = match self.config.external_packages.get(&crate_name) {

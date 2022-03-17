@@ -12,7 +12,7 @@ use super::filters;
 #[template(syntax = "kt", escape = "none", path = "TopLevelFunctionTemplate.kt")]
 pub struct KotlinFunction {
     inner: Function,
-    internalize: bool
+    internalize: bool,
 }
 
 impl KotlinFunction {

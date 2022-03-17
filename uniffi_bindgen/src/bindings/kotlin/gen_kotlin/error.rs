@@ -44,7 +44,7 @@ impl CodeType for ErrorCodeType {
 pub struct KotlinError {
     inner: Error,
     contains_object_references: bool,
-    internalize: bool
+    internalize: bool,
 }
 
 impl KotlinError {

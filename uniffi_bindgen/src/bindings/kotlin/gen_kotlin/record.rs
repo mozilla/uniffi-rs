@@ -43,7 +43,7 @@ impl CodeType for RecordCodeType {
 pub struct KotlinRecord {
     inner: Record,
     contains_object_references: bool,
-    internalize: bool
+    internalize: bool,
 }
 
 impl KotlinRecord {
@@ -51,7 +51,7 @@ impl KotlinRecord {
         Self {
             contains_object_references: ci.item_contains_object_references(&inner),
             inner,
-            internalize: internalize
+            internalize,
         }
     }
     pub fn inner(&self) -> &Record {

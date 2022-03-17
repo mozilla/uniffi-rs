@@ -42,7 +42,7 @@ impl CodeType for CallbackInterfaceCodeType {
 #[template(syntax = "kt", escape = "none", path = "CallbackInterfaceTemplate.kt")]
 pub struct KotlinCallbackInterface {
     inner: CallbackInterface,
-    internalize: bool
+    internalize: bool,
 }
 
 impl KotlinCallbackInterface {
