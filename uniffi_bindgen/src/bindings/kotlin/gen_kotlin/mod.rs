@@ -87,10 +87,7 @@ impl MergeWith for Config {
 
 // Generate kotlin bindings for the given ComponentInterface, as a string.
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    let oracle = KotlinCodeOracle::new(config.clone());
-    filters::set_oracle(oracle.clone());
-
-    KotlinWrapper::new(oracle, config.clone(), ci)
+    KotlinWrapper::new(KotlinCodeOracle, config.clone(), ci)
         .render()
         .map_err(|_| anyhow::anyhow!("failed to render kotlin bindings"))
 }
@@ -146,6 +143,18 @@ impl<'a> KotlinWrapper<'a> {
             let config = self.config.custom_types.get(&name).cloned();
             Box::new(custom::KotlinCustomType::new(name, type_, config)) as Box<dyn CodeDeclaration>
         }))
+        .chain(
+            ci.iter_external_types()
+                .into_iter()
+                .map(|(name, crate_name)| {
+                    let package_name = match self.config.external_packages.get(&crate_name) {
+                        Some(name) => name.clone(),
+                        None => crate_name,
+                    };
+                    Box::new(external::KotlinExternalType::new(package_name, name))
+                        as Box<dyn CodeDeclaration>
+                }),
+        )
         .collect()
     }
 
@@ -195,15 +204,9 @@ impl<'a> KotlinWrapper<'a> {
 }
 
 #[derive(Clone)]
-pub struct KotlinCodeOracle {
-    config: Config,
-}
+pub struct KotlinCodeOracle;
 
 impl KotlinCodeOracle {
-    fn new(config: Config) -> Self {
-        Self { config }
-    }
-
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
         // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
@@ -249,18 +252,8 @@ impl KotlinCodeOracle {
                 let inner = *inner.to_owned();
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
-            Type::External { crate_name, name } => {
-                let package_name = match self.config.external_packages.get(&crate_name) {
-                    Some(name) => name.clone(),
-                    None => crate_name,
-                };
-                Box::new(external::ExternalCodeType::new(package_name, name))
-            }
-            Type::Custom { name, builtin } => Box::new(custom::CustomCodeType::new(
-                name.clone(),
-                builtin.as_ref().clone(),
-                self.config.custom_types.get(&name).cloned(),
-            )),
+            Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
+            Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }
     }
 }
@@ -329,23 +322,8 @@ impl CodeOracle for KotlinCodeOracle {
 pub mod filters {
     use super::*;
 
-    // This code is a bit unfortunate.  We want to have a `KotlinCodeOracle` instance available for
-    // the filter functions, so that we don't always need to pass as an argument in the template
-    // code.  However, `KotlinCodeOracle` depends on a `Config` instance.  So we use some dirty,
-    // non-threadsafe, code to set it at the start of `generate_kotlin_bindings()`.
-    //
-    // If askama supported using a struct instead of a module for the filters we could avoid this.
-
-    static mut ORACLE: Option<KotlinCodeOracle> = None;
-
-    pub(super) fn set_oracle(oracle: KotlinCodeOracle) {
-        unsafe {
-            ORACLE = Some(oracle);
-        }
-    }
-
     fn oracle() -> &'static KotlinCodeOracle {
-        unsafe { ORACLE.as_ref().unwrap() }
+        &KotlinCodeOracle
     }
 
     pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
