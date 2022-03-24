@@ -138,13 +138,10 @@ impl MergeWith for Config {
 /// Generate UniFFI component bindings for Swift, as strings in memory.
 ///
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
-    let oracle = SwiftCodeOracle::new(config.clone());
-    filters::set_oracle(oracle.clone());
-
     let header = BridgingHeader::new(config, ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
-    let library = SwiftWrapper::new(oracle, config.clone(), ci)
+    let library = SwiftWrapper::new(SwiftCodeOracle, config.clone(), ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift library"))?;
     let modulemap = if config.generate_module_map() {
@@ -309,15 +306,9 @@ impl<'a> SwiftWrapper<'a> {
 }
 
 #[derive(Clone)]
-pub struct SwiftCodeOracle {
-    config: Config,
-}
+pub struct SwiftCodeOracle;
 
 impl SwiftCodeOracle {
-    fn new(config: Config) -> Self {
-        Self { config }
-    }
-
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
         // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
@@ -364,11 +355,7 @@ impl SwiftCodeOracle {
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
             Type::External { .. } => panic!("no support for external types yet"),
-            Type::Custom { name, builtin } => Box::new(custom::CustomCodeType::new(
-                name.clone(),
-                builtin.as_ref().clone(),
-                self.config.custom_types.get(&name).cloned(),
-            )),
+            Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }
     }
 }
@@ -426,23 +413,8 @@ impl CodeOracle for SwiftCodeOracle {
 pub mod filters {
     use super::*;
 
-    // This code is a bit unfortunate.  We want to have a `SwiftCodeOracle` instance available for
-    // the filter functions, so that we don't always need to pass as an argument in the template
-    // code.  However, `SwiftCodeOracle` depends on a `Config` instance.  So we use some dirty,
-    // non-threadsafe, code to set it at the start of `generate_bindings()`.
-    //
-    // If askama supported using a struct instead of a module for the filters we could avoid this.
-
-    static mut ORACLE: Option<SwiftCodeOracle> = None;
-
-    pub(super) fn set_oracle(oracle: SwiftCodeOracle) {
-        unsafe {
-            ORACLE = Some(oracle);
-        }
-    }
-
     fn oracle() -> &'static SwiftCodeOracle {
-        unsafe { ORACLE.as_ref().unwrap() }
+        &SwiftCodeOracle
     }
 
     pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {

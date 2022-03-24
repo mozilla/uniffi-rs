@@ -8,29 +8,17 @@ use askama::Template;
 
 pub struct CustomCodeType {
     name: String,
-    builtin: TypeIdentifier,
-    config: Option<CustomTypeConfig>,
 }
 
 impl CustomCodeType {
-    pub fn new(name: String, builtin: TypeIdentifier, config: Option<CustomTypeConfig>) -> Self {
-        Self {
-            name,
-            builtin,
-            config,
-        }
+    pub fn new(name: String) -> Self {
+        Self { name }
     }
 }
 
 impl CodeType for CustomCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        match self.config {
-            // The consumer provided custom type config, which means we don't know our exact type.  This
-            // is fine for python though, let's just use "object" as a placeholder.
-            Some(_) => "object".to_string(),
-            // No custom type config provided.  We're just an alias for our builtin type.
-            None => self.builtin.type_label(oracle),
-        }
+    fn type_label(&self, _oracle: &dyn CodeOracle) -> String {
+        self.name.clone()
     }
 
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {

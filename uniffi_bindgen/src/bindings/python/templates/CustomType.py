@@ -17,7 +17,7 @@ class FfiConverterType{{ name }}:
     @staticmethod
     def lower(value):
         return {{ builtin|ffi_converter_name }}.lower(value)
-    
+
 {%- when Some with (config) %}
 {#- Custom type config supplied, use it to convert the builtin type #}
 class FfiConverterType{{ name }}:

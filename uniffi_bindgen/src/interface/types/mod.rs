@@ -115,6 +115,10 @@ impl Type {
             Type::External { name, .. } | Type::Custom { name, .. } => format!("Type{}", name),
         }
     }
+
+    pub fn ffi_type(&self) -> FFIType {
+        self.into()
+    }
 }
 
 /// When passing data across the FFI, each `Type` value will be lowered into a corresponding

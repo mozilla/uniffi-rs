@@ -10,29 +10,17 @@ use std::borrow::Borrow;
 
 pub struct CustomCodeType {
     name: String,
-    builtin: Type,
-    config: Option<CustomTypeConfig>,
 }
 
 impl CustomCodeType {
-    pub fn new(name: String, builtin: Type, config: Option<CustomTypeConfig>) -> Self {
-        CustomCodeType {
-            name,
-            builtin,
-            config,
-        }
+    pub fn new(name: String) -> Self {
+        CustomCodeType { name }
     }
 }
 
 impl CodeType for CustomCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        match &self.config {
-            None => self.builtin.type_label(oracle),
-            Some(custom_type_config) => custom_type_config
-                .type_name
-                .clone()
-                .unwrap_or_else(|| self.name.clone()),
-        }
+    fn type_label(&self, _oracle: &dyn CodeOracle) -> String {
+        self.name.clone()
     }
 
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
@@ -49,13 +37,6 @@ impl CodeType for CustomCodeType {
             "// Helper code for {} is found in CustomType.py",
             self.name,
         ))
-    }
-
-    fn imports(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        match &self.config {
-            None => None,
-            Some(custom_type_config) => custom_type_config.imports.clone(),
-        }
     }
 }
 
@@ -74,13 +55,6 @@ impl SwiftCustomType {
             builtin,
             config,
         }
-    }
-
-    fn type_name(&self, config: &CustomTypeConfig) -> String {
-        config
-            .type_name
-            .clone()
-            .unwrap_or_else(|| self.name.clone())
     }
 
     fn builtin_ffi_type(&self) -> FFIType {

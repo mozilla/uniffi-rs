@@ -72,9 +72,7 @@ impl MergeWith for Config {
 
 // Generate python bindings for the given ComponentInterface, as a string.
 pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    let oracle = PythonCodeOracle::new(config.clone());
-    filters::set_oracle(oracle.clone());
-    PythonWrapper::new(oracle, config.clone(), ci)
+    PythonWrapper::new(PythonCodeOracle, config.clone(), ci)
         .render()
         .map_err(|_| anyhow::anyhow!("failed to render python bindings"))
 }
@@ -178,15 +176,9 @@ impl<'a> PythonWrapper<'a> {
 }
 
 #[derive(Clone, Default)]
-pub struct PythonCodeOracle {
-    config: Config,
-}
+pub struct PythonCodeOracle;
 
 impl PythonCodeOracle {
-    fn new(config: Config) -> Self {
-        Self { config }
-    }
-
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
         // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
@@ -235,11 +227,7 @@ impl PythonCodeOracle {
             Type::External { name, crate_name } => {
                 Box::new(external::ExternalCodeType::new(name, crate_name))
             }
-            Type::Custom { name, builtin } => Box::new(custom::CustomCodeType::new(
-                name.clone(),
-                builtin.as_ref().clone(),
-                self.config.custom_types.get(&name).cloned(),
-            )),
+            Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }
     }
 }
@@ -309,23 +297,8 @@ impl CodeOracle for PythonCodeOracle {
 pub mod filters {
     use super::*;
 
-    // This code is a bit unfortunate.  We want to have a `PythonCodeOracle` instance available for
-    // the filter functions, so that we don't always need to pass as an argument in the template
-    // code.  However, `PythonCodeOracle` depends on a `Config` instance.  So we use some dirty,
-    // non-threadsafe, code to set it at the start of `generate_python_bindings()`.
-    //
-    // If askama supported using a struct instead of a module for the filters we could avoid this.
-
-    static mut ORACLE: Option<PythonCodeOracle> = None;
-
-    pub(super) fn set_oracle(oracle: PythonCodeOracle) {
-        unsafe {
-            ORACLE = Some(oracle);
-        }
-    }
-
     fn oracle() -> &'static PythonCodeOracle {
-        unsafe { ORACLE.as_ref().unwrap() }
+        &PythonCodeOracle
     }
 
     pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
