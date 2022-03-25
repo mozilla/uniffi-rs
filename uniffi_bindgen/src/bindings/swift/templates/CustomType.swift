@@ -1,14 +1,18 @@
 {%- match config %}
 {%- when None %}
 {#- No config, just forward all methods to our builtin type #}
-fileprivate typealias FfiConverterType{{ name }} = {{ builtin|ffi_converter_name }}
+// Typealias from the type name used in the UDL file to the builtin type.  This
+// is needed because the UDL type name is used in function/method signatures.
 public typealias {{ name }} = {{ builtin|type_name }}
+fileprivate typealias FfiConverterType{{ name }} = {{ builtin|ffi_converter_name }}
 
 {%- when Some with (config) %}
 
 {# When the config specifies a different type name, create a typealias for it #}
 {%- match config.type_name %}
 {%- when Some with (concrete_type_name) %}
+// Typealias from the type name used in the UDL file to the custom type.  This
+// is needed because the UDL type name is used in function/method signatures.
 public typealias {{ name }} = {{ concrete_type_name }}
 {%- else %}
 {%- endmatch %}

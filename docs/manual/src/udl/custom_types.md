@@ -149,7 +149,10 @@ from_custom = "{}.toString()"
 Here's how the configuration works in `uniffi.toml`.
 
 * Create a `[bindings.{language}.custom_types.{CustomTypeName}]` table to enable a custom type on a bindings side.  This has several subkeys:
-  * `type_name` (Optional, Typed languages only): Type/class name for the custom type.  Defaults to the typedef name used in the UDL.
+  * `type_name` (Optional, Typed languages only): Type/class name for the
+    custom type.  Defaults to the type name used in the UDL.  Note: The UDL
+    type name will still be used in generated function signatures, however it
+    will be defined as a typealias to this type.
   * `into_custom`: Expression to convert the UDL type to the custom type.  `{}` will be replaced with the value of the UDL type.
   * `from_custom`: Expression to convert the custom type to the UDL type.  `{}` will be replaced with the value of the custom type.
   * `imports` (Optional) list of modules to import for your `into_custom`/`from_custom` functions.

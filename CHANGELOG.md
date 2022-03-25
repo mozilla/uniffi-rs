@@ -8,6 +8,15 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.17.0...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+
+- When custom types are used in function/method signatures UniFFI will now use
+  the UDL name for that type and create a typealias to the concrete type.  In the
+  [URL example](https://mozilla.github.io/uniffi-rs/udl/custom_types.html#custom-types-in-the-bindings-code),
+  this means the type will be now appear on Kotlin as `Url` rather than `URL`.
+  Any existing code should continue to work because of the typealias, but this
+  might affect your generated documentation and/or code completion.
+
 ## v0.17.0 - (_2022-02-03_)
 
 [All changes in v0.17.0](https://github.com/mozilla/uniffi-rs/compare/v0.16.0...v0.17.0).
