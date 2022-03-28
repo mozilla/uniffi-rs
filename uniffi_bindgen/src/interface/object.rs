@@ -132,6 +132,14 @@ impl Object {
         self.methods.iter().collect()
     }
 
+    pub fn get_method(&self, name: &str) -> Method {
+        let matches: Vec<_> = self.methods.iter().filter(|m| m.name() == name).collect();
+        match matches.len() {
+            1 => matches[0].clone(),
+            n => panic!("{} methods named {}", n, name),
+        }
+    }
+
     pub fn ffi_object_free(&self) -> &FFIFunction {
         &self.ffi_func_free
     }

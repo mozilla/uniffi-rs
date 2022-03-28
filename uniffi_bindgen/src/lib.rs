@@ -112,7 +112,7 @@ pub mod interface;
 pub mod scaffolding;
 
 use bindings::TargetLanguage;
-use interface::ComponentInterface;
+pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
 // Generate the infrastructural Rust code for implementing the UDL interface,

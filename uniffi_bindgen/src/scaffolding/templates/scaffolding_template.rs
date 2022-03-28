@@ -43,4 +43,7 @@ uniffi::assert_compatible_version!("{{ uniffi_version }}"); // Please check that
 // External and Wrapped types
 {% include "ExternalTypesTemplate.rs" %}
 
+// The `reexport_uniffi_scaffolding` macro
+{% include "ReexportUniFFIScaffolding.rs" %}
+
 {%- import "macros.rs" as rs -%}
