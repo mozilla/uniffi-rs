@@ -6,7 +6,7 @@ edition = "2018"
 publish = false
 
 [lib]
-crate-type = ["staticlib", "cdylib"]
+crate-type = ["lib", "cdylib"]
 name = "uniffi_coverall"
 
 [dependencies]

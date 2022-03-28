@@ -66,6 +66,15 @@ pub struct RustCallStatus {
     // leak the first `RustBuffer`.
 }
 
+impl Default for RustCallStatus {
+    fn default() -> Self {
+        Self {
+            code: 0,
+            error_buf: MaybeUninit::uninit(),
+        }
+    }
+}
+
 #[allow(dead_code)]
 const CALL_SUCCESS: i8 = 0; // CALL_SUCCESS is set by the calling code
 const CALL_ERROR: i8 = 1;
