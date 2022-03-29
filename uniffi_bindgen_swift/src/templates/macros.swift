@@ -44,7 +44,7 @@
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name -}}
+        {% if config.omit_argument_labels %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name -}}
         {%- match arg.default_value() %}
         {%- when Some with(literal) %} = {{ literal|literal_swift(arg) }}
         {%- else %}
@@ -71,7 +71,7 @@
 
 {% macro arg_list_protocol(func) %}
     {%- for arg in func.arguments() -%}
-        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name -}}
+        {% if config.omit_argument_labels %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name -}}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro %}

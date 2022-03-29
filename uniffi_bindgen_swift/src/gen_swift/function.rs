@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeDeclaration, CodeOracle};
-use crate::interface::{ComponentInterface, Function};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle};
+use uniffi_bindgen::interface::{ComponentInterface, Function};
 use askama::Template;
 
 use super::filters;

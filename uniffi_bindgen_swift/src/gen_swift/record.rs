@@ -2,23 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Error, Type};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{ComponentInterface, Record};
 use askama::Template;
-use std::borrow::Borrow;
 
 use super::filters;
-pub struct ErrorCodeType {
+pub struct RecordCodeType {
     id: String,
 }
 
-impl ErrorCodeType {
+impl RecordCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
 }
 
-impl CodeType for ErrorCodeType {
+impl CodeType for RecordCodeType {
     fn type_label(&self, oracle: &dyn CodeOracle) -> String {
         oracle.class_name(&self.id)
     }
@@ -33,27 +32,27 @@ impl CodeType for ErrorCodeType {
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
-            "// Helper code for {} error is found in ErrorTemplate.swift",
+            "// Helper code for {} record is found in RecordTemplate.swift",
             self.type_label(oracle)
         ))
     }
 }
 
 #[derive(Template)]
-#[template(syntax = "swift", escape = "none", path = "ErrorTemplate.swift")]
-pub struct SwiftError {
-    inner: Error,
+#[template(syntax = "swift", escape = "none", path = "RecordTemplate.swift")]
+pub struct SwiftRecord {
+    inner: Record,
     contains_object_references: bool,
 }
 
-impl SwiftError {
-    pub fn new(inner: Error, ci: &ComponentInterface) -> Self {
+impl SwiftRecord {
+    pub fn new(inner: Record, ci: &ComponentInterface) -> Self {
         Self {
             contains_object_references: ci.item_contains_object_references(&inner),
             inner,
         }
     }
-    pub fn inner(&self) -> &Error {
+    pub fn inner(&self) -> &Record {
         &self.inner
     }
     pub fn contains_object_references(&self) -> bool {
@@ -61,7 +60,7 @@ impl SwiftError {
     }
 }
 
-impl CodeDeclaration for SwiftError {
+impl CodeDeclaration for SwiftRecord {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }

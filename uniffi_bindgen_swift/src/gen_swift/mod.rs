@@ -11,9 +11,8 @@ use heck::{CamelCase, MixedCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
-use crate::interface::*;
-use crate::MergeWith;
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use uniffi_bindgen::interface::*;
 
 mod callback_interface;
 mod compounds;
@@ -32,14 +31,19 @@ mod record;
 /// since the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    cdylib_name: Option<String>,
-    module_name: Option<String>,
-    ffi_module_name: Option<String>,
-    ffi_module_filename: Option<String>,
-    generate_module_map: Option<bool>,
-    omit_argument_labels: Option<bool>,
+    pub cdylib_name: String,
+    /// The name of the Swift module containing the high-level foreign-language bindings.
+    pub module_name: String,
+    /// The name of the lower-level C module containing the FFI declarations.
+    pub ffi_module_name: String,
+    /// The filename stem for the lower-level C module containing the FFI declarations.
+    pub ffi_module_filename: String,
+    /// Whether to generate a `.modulemap` file for the lower-level C module with FFI declarations.
+    pub generate_module_map: bool,
+    /// Whether to omit argument labels in Swift function definitions.
+    pub omit_argument_labels: bool,
     #[serde(default)]
-    custom_types: HashMap<String, CustomTypeConfig>,
+    pub custom_types: HashMap<String, CustomTypeConfig>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -50,88 +54,32 @@ pub struct CustomTypeConfig {
     from_custom: TemplateExpression,
 }
 
+impl uniffi_bindgen::BindingGeneratorConfig for Config {
+    fn get_entry_from_bindings_table(bindings: &toml::Value) -> Option<toml::Value> {
+        bindings.get("swift").cloned()
+    }
+
+    fn get_config_defaults(ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
+        vec![
+            ("cdylib_name".into(), format!("uniffi_{}", ci.namespace()).into()),
+            ("module_name".into(), ci.namespace().into()),
+            ("ffi_module_name".into(), format!("{}FFI", ci.namespace()).into()),
+            ("ffi_module_filename".into(), format!("{}FFI", ci.namespace()).into()),
+            ("generate_module_map".into(), true.into()),
+            ("omit_argument_labels".into(), false.into()),
+        ]
+    }
+}
+
 impl Config {
-    /// The name of the Swift module containing the high-level foreign-language bindings.
-    pub fn module_name(&self) -> String {
-        match self.module_name.as_ref() {
-            Some(name) => name.clone(),
-            None => "uniffi".into(),
-        }
-    }
-
-    /// The name of the lower-level C module containing the FFI declarations.
-    pub fn ffi_module_name(&self) -> String {
-        match self.ffi_module_name.as_ref() {
-            Some(name) => name.clone(),
-            None => format!("{}FFI", self.module_name()),
-        }
-    }
-
-    /// The filename stem for the lower-level C module containing the FFI declarations.
-    pub fn ffi_module_filename(&self) -> String {
-        match self.ffi_module_filename.as_ref() {
-            Some(name) => name.clone(),
-            None => self.ffi_module_name(),
-        }
-    }
-
     /// The name of the `.modulemap` file for the lower-level C module with FFI declarations.
     pub fn modulemap_filename(&self) -> String {
-        format!("{}.modulemap", self.ffi_module_filename())
+        format!("{}.modulemap", self.ffi_module_filename)
     }
 
     /// The name of the `.h` file for the lower-level C module with FFI declarations.
     pub fn header_filename(&self) -> String {
-        format!("{}.h", self.ffi_module_filename())
-    }
-
-    /// The name of the compiled Rust library containing the FFI implementation.
-    pub fn cdylib_name(&self) -> String {
-        if let Some(cdylib_name) = &self.cdylib_name {
-            cdylib_name.clone()
-        } else {
-            "uniffi".into()
-        }
-    }
-
-    /// Whether to generate a `.modulemap` file for the lower-level C module with FFI declarations.
-    pub fn generate_module_map(&self) -> bool {
-        self.generate_module_map.unwrap_or(true)
-    }
-
-    /// Whether to omit argument labels in Swift function definitions.
-    pub fn omit_argument_labels(&self) -> bool {
-        self.omit_argument_labels.unwrap_or(false)
-    }
-}
-
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            module_name: Some(ci.namespace().into()),
-            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
-            ..Default::default()
-        }
-    }
-}
-
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            module_name: self.module_name.merge_with(&other.module_name),
-            ffi_module_name: self.ffi_module_name.merge_with(&other.ffi_module_name),
-            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
-            ffi_module_filename: self
-                .ffi_module_filename
-                .merge_with(&other.ffi_module_filename),
-            generate_module_map: self
-                .generate_module_map
-                .merge_with(&other.generate_module_map),
-            omit_argument_labels: self
-                .omit_argument_labels
-                .merge_with(&other.omit_argument_labels),
-            custom_types: self.custom_types.merge_with(&other.custom_types),
-        }
+        format!("{}.h", self.ffi_module_filename)
     }
 }
 
@@ -144,7 +92,7 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bin
     let library = SwiftWrapper::new(SwiftCodeOracle, config.clone(), ci)
         .render()
         .map_err(|_| anyhow!("failed to render Swift library"))?;
-    let modulemap = if config.generate_module_map() {
+    let modulemap = if config.generate_module_map {
         Some(
             ModuleMap::new(config, ci)
                 .render()
@@ -499,14 +447,5 @@ pub mod filters {
     /// Get the idiomatic Swift rendering of an individual enum variant.
     pub fn enum_variant_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().enum_variant_name(nm))
-    }
-
-    /// Get the idiomatic Swift rendering of an exception name
-    ///
-    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
-    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
-    /// and is distinguished from an "Exception".
-    pub fn exception_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().error_name(nm))
     }
 }
