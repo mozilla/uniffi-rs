@@ -31,7 +31,6 @@ mod record;
 /// since the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    pub cdylib_name: String,
     /// The name of the Swift module containing the high-level foreign-language bindings.
     pub module_name: String,
     /// The name of the lower-level C module containing the FFI declarations.
@@ -61,7 +60,6 @@ impl uniffi_bindgen::BindingGeneratorConfig for Config {
 
     fn get_config_defaults(ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
         vec![
-            ("cdylib_name".into(), format!("uniffi_{}", ci.namespace()).into()),
             ("module_name".into(), ci.namespace().into()),
             ("ffi_module_name".into(), format!("{}FFI", ci.namespace()).into()),
             ("ffi_module_filename".into(), format!("{}FFI", ci.namespace()).into()),
