@@ -21,6 +21,7 @@ toml = "0.5"
 glob = "0.3"
 uniffi_testing = { path = "../uniffi_testing" }
 uniffi-example-arithmetic = { path = "../examples/arithmetic" }
+uniffi-example-callbacks = { path = "../examples/callbacks" }
 uniffi-example-geometry = { path = "../examples/geometry" }
 uniffi-example-rondpoint = { path = "../examples/rondpoint" }
 uniffi-example-todolist = { path = "../examples/todolist" }
@@ -30,3 +31,6 @@ uniffi-fixture-callbacks = { path = "../fixtures/callbacks" }
 uniffi-fixture-ext-types = { path = "../fixtures/ext-types/lib" }
 uniffi-fixture-coverall = { path = "../fixtures/coverall" }
 uniffi-fixture-time = { path = "../fixtures/uniffi-fixture-time" }
+uniffi-fixture-regression-cdylib-dependency-ffi-crate = { path = "../fixtures/regressions/cdylib-crate-type-dependency/ffi-crate"}
+uniffi-fixture-regression-i356-enum-without-int-helpers = { path = "../fixtures/regressions/enum-without-i32-helpers"}
+uniffi-fixture-regression-kotlin-experimental-unsigned-types = { path = "../fixtures/regressions/kotlin-experimental-unsigned-types"}

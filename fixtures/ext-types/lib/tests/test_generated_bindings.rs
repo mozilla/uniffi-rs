@@ -6,7 +6,6 @@ uniffi_macros::build_foreign_language_testcases!(
         "src/ext-types-lib.udl",
     ],
     [
-        "tests/bindings/test_imported_types.kts",
         //"tests/bindings/test_imported_types.py",
     ]
 );
