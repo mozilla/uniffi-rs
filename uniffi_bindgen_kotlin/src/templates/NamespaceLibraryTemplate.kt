@@ -4,7 +4,7 @@ private fun findLibraryName(componentName: String): String {
     if (libOverride != null) {
         return libOverride
     }
-    return "{{ config.cdylib_name() }}"
+    return "{{ config.cdylib_name }}"
 }
 
 private inline fun <reified Lib : Library> loadIndirect(

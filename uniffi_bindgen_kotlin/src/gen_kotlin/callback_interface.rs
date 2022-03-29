@@ -2,23 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Object};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
 
-// Filters is used by ObjectTemplate.kt, which looks for the filters module here.
 use super::filters;
-pub struct ObjectCodeType {
+pub struct CallbackInterfaceCodeType {
     id: String,
 }
 
-impl ObjectCodeType {
+impl CallbackInterfaceCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
 }
 
-impl CodeType for ObjectCodeType {
+impl CodeType for CallbackInterfaceCodeType {
     fn type_label(&self, oracle: &dyn CodeOracle) -> String {
         oracle.class_name(&self.id)
     }
@@ -33,28 +32,36 @@ impl CodeType for ObjectCodeType {
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
-            "// Helper code for {} class is found in ObjectTemplate.kt",
+            "// Helper code for {} callback interface is found in CallbackInterfaceTemplate.kt",
             self.type_label(oracle)
         ))
     }
 }
 
 #[derive(Template)]
-#[template(syntax = "kt", escape = "none", path = "ObjectTemplate.kt")]
-pub struct KotlinObject {
-    inner: Object,
+#[template(syntax = "kt", escape = "none", path = "CallbackInterfaceTemplate.kt")]
+pub struct KotlinCallbackInterface {
+    inner: CallbackInterface,
 }
 
-impl KotlinObject {
-    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
+impl KotlinCallbackInterface {
+    pub fn new(inner: CallbackInterface, _ci: &ComponentInterface) -> Self {
         Self { inner }
     }
-    pub fn inner(&self) -> &Object {
+    pub fn inner(&self) -> &CallbackInterface {
         &self.inner
     }
 }
 
-impl CodeDeclaration for KotlinObject {
+impl CodeDeclaration for KotlinCallbackInterface {
+    fn initialization_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
+        let code_type = CallbackInterfaceCodeType::new(self.inner.name().into());
+        Some(format!(
+            "{}.register(lib)",
+            code_type.ffi_converter_name(oracle)
+        ))
+    }
+
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
@@ -63,7 +70,8 @@ impl CodeDeclaration for KotlinObject {
         Some(
             vec![
                 "java.util.concurrent.atomic.AtomicLong",
-                "java.util.concurrent.atomic.AtomicBoolean",
+                "java.util.concurrent.locks.ReentrantLock",
+                "kotlin.concurrent.withLock",
             ]
             .into_iter()
             .map(|s| s.into())
@@ -73,25 +81,25 @@ impl CodeDeclaration for KotlinObject {
 }
 
 #[derive(Template)]
-#[template(syntax = "kt", escape = "none", path = "ObjectRuntime.kt")]
-pub struct KotlinObjectRuntime {
+#[template(syntax = "kt", escape = "none", path = "CallbackInterfaceRuntime.kt")]
+pub struct KotlinCallbackInterfaceRuntime {
     is_needed: bool,
 }
 
-impl KotlinObjectRuntime {
+impl KotlinCallbackInterfaceRuntime {
     pub fn new(ci: &ComponentInterface) -> Self {
         Self {
-            is_needed: !ci.iter_object_definitions().is_empty(),
+            is_needed: !ci.iter_callback_interface_definitions().is_empty(),
         }
     }
 }
 
-impl CodeDeclaration for KotlinObjectRuntime {
+impl CodeDeclaration for KotlinCallbackInterfaceRuntime {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        if self.is_needed {
-            Some(self.render().unwrap())
-        } else {
+        if !self.is_needed {
             None
+        } else {
+            Some(self.render().unwrap())
         }
     }
 }

@@ -15,7 +15,6 @@ use std::path::Path;
 use crate::interface::ComponentInterface;
 use crate::MergeWith;
 
-pub mod kotlin;
 pub mod python;
 pub mod ruby;
 pub mod swift;
@@ -28,7 +27,6 @@ pub mod swift;
 /// e.g. a file extension of command-line argument.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub enum TargetLanguage {
-    Kotlin,
     Swift,
     Python,
     Ruby,
@@ -38,7 +36,6 @@ impl TryFrom<&str> for TargetLanguage {
     type Error = anyhow::Error;
     fn try_from(value: &str) -> Result<Self> {
         Ok(match value.to_ascii_lowercase().as_str() {
-            "kotlin" | "kt" | "kts" => TargetLanguage::Kotlin,
             "swift" => TargetLanguage::Swift,
             "python" | "py" => TargetLanguage::Python,
             "ruby" | "rb" => TargetLanguage::Ruby,
@@ -67,8 +64,6 @@ impl TryFrom<String> for TargetLanguage {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
-    kotlin: kotlin::Config,
-    #[serde(default)]
     swift: swift::Config,
     #[serde(default)]
     python: python::Config,
@@ -79,7 +74,6 @@ pub struct Config {
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
-            kotlin: ci.into(),
             swift: ci.into(),
             python: ci.into(),
             ruby: ci.into(),
@@ -90,7 +84,6 @@ impl From<&ComponentInterface> for Config {
 impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
-            kotlin: self.kotlin.merge_with(&other.kotlin),
             swift: self.swift.merge_with(&other.swift),
             python: self.python.merge_with(&other.python),
             ruby: self.ruby.merge_with(&other.ruby),
@@ -111,9 +104,6 @@ where
 {
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Kotlin => {
-            kotlin::write_bindings(&config.kotlin, ci, out_dir, try_format_code)?
-        }
         TargetLanguage::Swift => {
             swift::write_bindings(&config.swift, ci, out_dir, try_format_code)?
         }
@@ -140,7 +130,6 @@ where
 {
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Kotlin => kotlin::compile_bindings(&config.kotlin, ci, out_dir)?,
         TargetLanguage::Swift => swift::compile_bindings(&config.swift, ci, out_dir)?,
         TargetLanguage::Python => (),
         TargetLanguage::Ruby => (),
@@ -160,7 +149,6 @@ where
     let out_dir = out_dir.as_ref();
     let script_file = script_file.as_ref();
     match language {
-        TargetLanguage::Kotlin => kotlin::run_script(out_dir, script_file)?,
         TargetLanguage::Swift => swift::run_script(out_dir, script_file)?,
         TargetLanguage::Python => python::run_script(out_dir, script_file)?,
         TargetLanguage::Ruby => ruby::run_script(out_dir, script_file)?,

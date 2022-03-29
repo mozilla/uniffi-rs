@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "uniffi_bindgen",
+  "uniffi_bindgen_kotlin",
   "uniffi_build",
   "uniffi_macros",
   "uniffi_testing",

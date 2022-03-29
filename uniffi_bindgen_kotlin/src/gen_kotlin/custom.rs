@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::{filters, CustomTypeConfig};
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::Type;
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::Type;
 use askama::Template;
 use std::borrow::Borrow;
 

@@ -3,7 +3,7 @@
 
 @file:Suppress("NAME_SHADOWING")
 
-package {{ config.package_name() }};
+package {{ config.package_name }};
 
 // Common helper code.
 //

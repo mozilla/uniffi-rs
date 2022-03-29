@@ -10,9 +10,8 @@ use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
-use crate::interface::*;
-use crate::MergeWith;
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use uniffi_bindgen::interface::*;
 
 mod callback_interface;
 mod compounds;
@@ -29,8 +28,8 @@ mod record;
 // config options to customize the generated Kotlin.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
-    package_name: Option<String>,
-    cdylib_name: Option<String>,
+    package_name: String,
+    cdylib_name: String,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
@@ -45,43 +44,16 @@ pub struct CustomTypeConfig {
     from_custom: TemplateExpression,
 }
 
-impl Config {
-    pub fn package_name(&self) -> String {
-        if let Some(package_name) = &self.package_name {
-            package_name.clone()
-        } else {
-            "uniffi".into()
-        }
+impl uniffi_bindgen::BindingGeneratorConfig for Config {
+    fn get_entry_from_bindings_table(bindings: &toml::Value) -> Option<toml::Value> {
+        bindings.get("kotlin").cloned()
     }
 
-    pub fn cdylib_name(&self) -> String {
-        if let Some(cdylib_name) = &self.cdylib_name {
-            cdylib_name.clone()
-        } else {
-            "uniffi".into()
-        }
-    }
-}
-
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            package_name: Some(format!("uniffi.{}", ci.namespace())),
-            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
-            custom_types: HashMap::new(),
-            external_packages: HashMap::new(),
-        }
-    }
-}
-
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            package_name: self.package_name.merge_with(&other.package_name),
-            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
-            custom_types: self.custom_types.merge_with(&other.custom_types),
-            external_packages: self.external_packages.merge_with(&other.external_packages),
-        }
+    fn get_config_defaults(ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
+        vec![
+            ("package_name".into(), format!("uniffi.{}", ci.namespace()).into()),
+            ("cdylib_name".into(), format!("uniffi_{}", ci.namespace()).into()),
+        ]
     }
 }
 
