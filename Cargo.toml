@@ -2,6 +2,7 @@
 members = [
   "uniffi_bindgen",
   "uniffi_bindgen_kotlin",
+  "uniffi_bindgen_python",
   "uniffi_bindgen_swift",
   "uniffi_build",
   "uniffi_macros",

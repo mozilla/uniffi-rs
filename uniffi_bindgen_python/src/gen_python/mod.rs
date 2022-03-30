@@ -9,9 +9,8 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
-use crate::interface::*;
-use crate::MergeWith;
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use uniffi_bindgen::interface::*;
 
 mod callback_interface;
 mod compounds;
@@ -28,7 +27,7 @@ mod record;
 // Config options to customize the generated python.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    cdylib_name: Option<String>,
+    cdylib_name: String,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
 }
@@ -42,31 +41,15 @@ pub struct CustomTypeConfig {
     from_custom: TemplateExpression,
 }
 
-impl Config {
-    pub fn cdylib_name(&self) -> String {
-        if let Some(cdylib_name) = &self.cdylib_name {
-            cdylib_name.clone()
-        } else {
-            "uniffi".into()
-        }
+impl uniffi_bindgen::BindingGeneratorConfig for Config {
+    fn get_entry_from_bindings_table(bindings: &toml::Value) -> Option<toml::Value> {
+        bindings.get("python").cloned()
     }
-}
 
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
-            custom_types: HashMap::new(),
-        }
-    }
-}
-
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
-            custom_types: self.custom_types.merge_with(&other.custom_types),
-        }
+    fn get_config_defaults(ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
+        vec![
+            ("cdylib_name".into(), format!("uniffi_{}", ci.namespace()).into()),
+        ]
     }
 }
 
@@ -128,14 +111,6 @@ impl<'a> PythonWrapper<'a> {
             Box::new(custom::PythonCustomType::new(name, type_, config)) as Box<dyn CodeDeclaration>
         }))
         .collect()
-    }
-
-    pub fn initialization_code(&self) -> Vec<String> {
-        let oracle = &self.oracle;
-        self.members()
-            .into_iter()
-            .filter_map(|member| member.initialization_code(oracle))
-            .collect()
     }
 
     pub fn declaration_code(&self) -> Vec<String> {
@@ -363,15 +338,6 @@ pub mod filters {
     /// Get the idiomatic Python rendering of an individual enum variant.
     pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().enum_variant_name(nm))
-    }
-
-    /// Get the idiomatic Python rendering of an exception name
-    ///
-    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
-    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
-    /// and is distinguished from an "Exception".
-    pub fn exception_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().error_name(nm))
     }
 
     pub fn coerce_py(nm: &str, type_: &Type) -> Result<String, askama::Error> {

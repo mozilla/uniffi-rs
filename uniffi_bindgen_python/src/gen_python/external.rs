@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::filters;
-use crate::backend::{CodeOracle, CodeType};
+use uniffi_bindgen::backend::{CodeOracle, CodeType};
 use askama::Template;
 
 #[derive(Template)]

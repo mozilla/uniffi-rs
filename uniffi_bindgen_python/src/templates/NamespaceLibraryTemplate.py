@@ -23,7 +23,7 @@ def loadIndirect():
         # Anything else must be an ELF platform - Linux, *BSD, Solaris/illumos
         libname = "lib{}.so"
 
-    lib = libname.format("{{ config.cdylib_name() }}")
+    lib = libname.format("{{ config.cdylib_name }}")
     path = str(Path(__file__).parent / lib)
     return ctypes.cdll.LoadLibrary(path)
 

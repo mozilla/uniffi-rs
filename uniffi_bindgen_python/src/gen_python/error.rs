@@ -2,23 +2,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Record};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{ComponentInterface, Error, Type};
 use askama::Template;
+use std::borrow::Borrow;
 
 use super::filters;
-
-pub struct RecordCodeType {
+pub struct ErrorCodeType {
     id: String,
 }
 
-impl RecordCodeType {
+impl ErrorCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
 }
 
-impl CodeType for RecordCodeType {
+impl CodeType for ErrorCodeType {
     fn type_label(&self, oracle: &dyn CodeOracle) -> String {
         oracle.class_name(&self.id)
     }
@@ -33,7 +33,7 @@ impl CodeType for RecordCodeType {
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
-            "# Helper code for {} record is found in RecordTemplate.py",
+            "# Helper code for {} error is found in ErrorTemplate.py",
             self.type_label(oracle)
         ))
     }
@@ -44,22 +44,22 @@ impl CodeType for RecordCodeType {
 }
 
 #[derive(Template)]
-#[template(syntax = "py", escape = "none", path = "RecordTemplate.py")]
-pub struct PythonRecord {
-    inner: Record,
+#[template(syntax = "py", escape = "none", path = "ErrorTemplate.py")]
+pub struct PythonError {
+    inner: Error,
 }
 
-impl PythonRecord {
-    pub fn new(inner: Record, _ci: &ComponentInterface) -> Self {
+impl PythonError {
+    pub fn new(inner: Error, _ci: &ComponentInterface) -> Self {
         Self { inner }
     }
 
-    pub fn inner(&self) -> &Record {
+    pub fn inner(&self) -> &Error {
         &self.inner
     }
 }
 
-impl CodeDeclaration for PythonRecord {
+impl CodeDeclaration for PythonError {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }

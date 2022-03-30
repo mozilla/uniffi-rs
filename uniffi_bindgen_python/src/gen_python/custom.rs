@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::{filters, CustomTypeConfig};
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
 use askama::Template;
 
 pub struct CustomCodeType {

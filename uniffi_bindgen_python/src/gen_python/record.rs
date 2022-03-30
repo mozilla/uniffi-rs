@@ -2,24 +2,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Object};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{ComponentInterface, Record};
 use askama::Template;
-use std::borrow::Borrow;
 
-// Filters is used by ObjectTemplate.py, which looks for the filters module here.
 use super::filters;
-pub struct ObjectCodeType {
+
+pub struct RecordCodeType {
     id: String,
 }
 
-impl ObjectCodeType {
+impl RecordCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
 }
 
-impl CodeType for ObjectCodeType {
+impl CodeType for RecordCodeType {
     fn type_label(&self, oracle: &dyn CodeOracle) -> String {
         oracle.class_name(&self.id)
     }
@@ -34,7 +33,7 @@ impl CodeType for ObjectCodeType {
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
-            "# Helper code for {} class is found in ObjectTemplate.py",
+            "# Helper code for {} record is found in RecordTemplate.py",
             self.type_label(oracle)
         ))
     }
@@ -45,21 +44,22 @@ impl CodeType for ObjectCodeType {
 }
 
 #[derive(Template)]
-#[template(syntax = "py", escape = "none", path = "ObjectTemplate.py")]
-pub struct PythonObject {
-    inner: Object,
+#[template(syntax = "py", escape = "none", path = "RecordTemplate.py")]
+pub struct PythonRecord {
+    inner: Record,
 }
 
-impl PythonObject {
-    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
+impl PythonRecord {
+    pub fn new(inner: Record, _ci: &ComponentInterface) -> Self {
         Self { inner }
     }
-    pub fn inner(&self) -> &Object {
+
+    pub fn inner(&self) -> &Record {
         &self.inner
     }
 }
 
-impl CodeDeclaration for PythonObject {
+impl CodeDeclaration for PythonRecord {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }

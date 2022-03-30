@@ -4,7 +4,7 @@
 
 #[allow(unused_imports)]
 use super::filters;
-use crate::backend::{CodeOracle, CodeType, Literal};
+use uniffi_bindgen::backend::{CodeOracle, CodeType, Literal};
 use askama::Template;
 use paste::paste;
 

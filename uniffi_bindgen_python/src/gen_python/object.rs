@@ -2,23 +2,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use crate::interface::{ComponentInterface, Error, Type};
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{ComponentInterface, Object};
 use askama::Template;
 use std::borrow::Borrow;
 
+// Filters is used by ObjectTemplate.py, which looks for the filters module here.
 use super::filters;
-pub struct ErrorCodeType {
+pub struct ObjectCodeType {
     id: String,
 }
 
-impl ErrorCodeType {
+impl ObjectCodeType {
     pub fn new(id: String) -> Self {
         Self { id }
     }
 }
 
-impl CodeType for ErrorCodeType {
+impl CodeType for ObjectCodeType {
     fn type_label(&self, oracle: &dyn CodeOracle) -> String {
         oracle.class_name(&self.id)
     }
@@ -33,7 +34,7 @@ impl CodeType for ErrorCodeType {
 
     fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
-            "# Helper code for {} error is found in ErrorTemplate.py",
+            "# Helper code for {} class is found in ObjectTemplate.py",
             self.type_label(oracle)
         ))
     }
@@ -44,22 +45,21 @@ impl CodeType for ErrorCodeType {
 }
 
 #[derive(Template)]
-#[template(syntax = "py", escape = "none", path = "ErrorTemplate.py")]
-pub struct PythonError {
-    inner: Error,
+#[template(syntax = "py", escape = "none", path = "ObjectTemplate.py")]
+pub struct PythonObject {
+    inner: Object,
 }
 
-impl PythonError {
-    pub fn new(inner: Error, _ci: &ComponentInterface) -> Self {
+impl PythonObject {
+    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
         Self { inner }
     }
-
-    pub fn inner(&self) -> &Error {
+    pub fn inner(&self) -> &Object {
         &self.inner
     }
 }
 
-impl CodeDeclaration for PythonError {
+impl CodeDeclaration for PythonObject {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }

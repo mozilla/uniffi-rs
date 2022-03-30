@@ -15,7 +15,6 @@ use std::path::Path;
 use crate::interface::ComponentInterface;
 use crate::MergeWith;
 
-pub mod python;
 pub mod ruby;
 
 /// Enumeration of all foreign language targets currently supported by this crate.
@@ -26,7 +25,6 @@ pub mod ruby;
 /// e.g. a file extension of command-line argument.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub enum TargetLanguage {
-    Python,
     Ruby,
 }
 
@@ -34,7 +32,6 @@ impl TryFrom<&str> for TargetLanguage {
     type Error = anyhow::Error;
     fn try_from(value: &str) -> Result<Self> {
         Ok(match value.to_ascii_lowercase().as_str() {
-            "python" | "py" => TargetLanguage::Python,
             "ruby" | "rb" => TargetLanguage::Ruby,
             _ => bail!("Unknown or unsupported target language: \"{}\"", value),
         })
@@ -61,15 +58,12 @@ impl TryFrom<String> for TargetLanguage {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
-    python: python::Config,
-    #[serde(default)]
     ruby: ruby::Config,
 }
 
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
-            python: ci.into(),
             ruby: ci.into(),
         }
     }
@@ -78,7 +72,6 @@ impl From<&ComponentInterface> for Config {
 impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
-            python: self.python.merge_with(&other.python),
             ruby: self.ruby.merge_with(&other.ruby),
         }
     }
@@ -97,9 +90,6 @@ where
 {
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Python => {
-            python::write_bindings(&config.python, ci, out_dir, try_format_code)?
-        }
         TargetLanguage::Ruby => ruby::write_bindings(&config.ruby, ci, out_dir, try_format_code)?,
     }
     Ok(())
@@ -120,7 +110,6 @@ where
 {
     let out_dir = out_dir.as_ref();
     match language {
-        TargetLanguage::Python => (),
         TargetLanguage::Ruby => (),
     }
     Ok(())
@@ -138,7 +127,6 @@ where
     let out_dir = out_dir.as_ref();
     let script_file = script_file.as_ref();
     match language {
-        TargetLanguage::Python => python::run_script(out_dir, script_file)?,
         TargetLanguage::Ruby => ruby::run_script(out_dir, script_file)?,
     }
     Ok(())
