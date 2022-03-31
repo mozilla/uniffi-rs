@@ -58,7 +58,7 @@ impl BindingGenerator for PythonBindingGenerator {
                     bindings = String::from_utf8(output.stdout).expect("Error decoded yaph output");
                 },
                 Err(e) => println!(
-                    "Warning: Unable to auto-format Python using yapf: {:?}", e
+                    "Warning: Unable to auto-format Python using yaph: {:?}", e
                 ),
             }
         }

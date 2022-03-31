@@ -15,7 +15,7 @@ fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
     let script_path = Path::new(".").join("tests").join(script_file);
     let test_helper = UniFFITestHelper::new(fixture_name).context("UniFFITestHelper::new")?;
     let out_dir = test_helper.create_out_dir(env!("CARGO_TARGET_TMPDIR"), &script_path).context("create_out_dir")?;
-    test_helper.copy_fixture_library_to_out_dir(&out_dir).context("copy_fixture_library_to_out_dir")?;
+    test_helper.copy_cdylibs_to_out_dir(&out_dir).context("copy_cdylibs_to_out_dir")?;
     generate_sources(&out_dir, &test_helper).context("generate_sources")?;
     let jar_file = build_jar(&fixture_name, &out_dir).context("build_jar")?;
 

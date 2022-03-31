@@ -16,7 +16,7 @@ fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
     let script_path = Path::new(".").join("tests").join(script_file).canonicalize().context("script_path canonicalize")?;
     let test_helper = UniFFITestHelper::new(fixture_name).context("UniFFITestHelper::new")?;
     let out_dir = test_helper.create_out_dir(env!("CARGO_TARGET_TMPDIR"), &script_path).context("create_out_dir()")?;
-    test_helper.copy_fixture_library_to_out_dir(&out_dir).context("copy_fixture_library_to_out_dir()")?;
+    test_helper.copy_cdylibs_to_out_dir(&out_dir).context("copy_cdylibs_to_out_dir()")?;
     let library_name = calc_library_name(&out_dir)?;
     let generated_sources = GeneratedSources::new(&out_dir, &test_helper).context("generate_sources()")?;
 

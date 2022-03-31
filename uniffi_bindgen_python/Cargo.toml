@@ -28,6 +28,10 @@ uniffi-example-todolist = { path = "../examples/todolist" }
 uniffi-example-sprites = { path = "../examples/sprites" }
 uniffi-example-custom-types = { path = "../examples/custom-types" }
 uniffi-fixture-callbacks = { path = "../fixtures/callbacks" }
+uniffi-fixture-external-types = { path = "../fixtures/external-types/lib" }
 uniffi-fixture-ext-types = { path = "../fixtures/ext-types/lib" }
+uniffi-fixture-ext-types-guid = { path = "../fixtures/ext-types/guid" }
 uniffi-fixture-coverall = { path = "../fixtures/coverall" }
 uniffi-fixture-time = { path = "../fixtures/uniffi-fixture-time" }
+uniffi-fixture-regression-cdylib-dependency-ffi-crate = { path = "../fixtures/regressions/cdylib-crate-type-dependency/ffi-crate"}
+uniffi-fixture-regression-i356-enum-without-int-helpers = { path = "../fixtures/regressions/enum-without-i32-helpers"}
