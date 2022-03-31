@@ -43,10 +43,6 @@ pub use anyhow::Result;
 pub mod ffi;
 pub use ffi::*;
 
-// It would be nice if this module was behind a cfg(test) guard, but it
-// doesn't work between crates so let's hope LLVM tree-shaking works well.
-pub mod testing;
-
 // Re-export the libs that we use in the generated code,
 // so the consumer doesn't have to depend on them directly.
 pub mod deps {
