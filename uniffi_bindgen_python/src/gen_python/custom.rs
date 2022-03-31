@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::{filters, CustomTypeConfig};
-use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
 use askama::Template;
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TypeIdentifier};
 
 pub struct CustomCodeType {
     name: String,

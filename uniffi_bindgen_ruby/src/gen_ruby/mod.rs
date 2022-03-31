@@ -36,12 +36,12 @@ impl uniffi_bindgen::BindingGeneratorConfig for Config {
     }
 
     fn get_config_defaults(ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
-        vec![
-            ("cdylib_name".into(), format!("uniffi_{}", ci.namespace()).into()),
-        ]
+        vec![(
+            "cdylib_name".into(),
+            format!("uniffi_{}", ci.namespace()).into(),
+        )]
     }
 }
-
 
 #[derive(Template)]
 #[template(syntax = "rb", escape = "none", path = "wrapper.rb")]

@@ -14,18 +14,24 @@ use uniffi_testing::UniFFITestHelper;
 fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
     let script_path = Path::new(".").join("tests").join(script_file);
     let test_helper = UniFFITestHelper::new(fixture_name).context("UniFFITestHelper::new")?;
-    let out_dir = test_helper.create_out_dir(env!("CARGO_TARGET_TMPDIR"), &script_path).context("create_out_dir")?;
-    test_helper.copy_cdylibs_to_out_dir(&out_dir).context("copy_cdylibs_to_out_dir")?;
+    let out_dir = test_helper
+        .create_out_dir(env!("CARGO_TARGET_TMPDIR"), &script_path)
+        .context("create_out_dir")?;
+    test_helper
+        .copy_cdylibs_to_out_dir(&out_dir)
+        .context("copy_cdylibs_to_out_dir")?;
     generate_sources(&out_dir, &test_helper).context("generate_sources")?;
-    let jar_file = build_jar(&fixture_name, &out_dir).context("build_jar")?;
+    let jar_file = build_jar(fixture_name, &out_dir).context("build_jar")?;
 
     let status = Command::new("kotlinc")
-        .arg("-classpath").arg(calc_classpath(vec![&out_dir, &jar_file]))
+        .arg("-classpath")
+        .arg(calc_classpath(vec![&out_dir, &jar_file]))
         // Enable runtime assertions, for easy testing etc.
         .arg("-J-ea")
         // Our test scripts should not produce any warnings.
         .arg("-Werror")
-        .arg("-script").arg(script_path)
+        .arg("-script")
+        .arg(script_path)
         .spawn()
         .context("Failed to spawn `kotlinc` to run Kotlin script")?
         .wait()
@@ -38,7 +44,11 @@ fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
 
 fn generate_sources(out_dir: &Path, test_helper: &UniFFITestHelper) -> Result<()> {
     for source in test_helper.get_compile_sources()? {
-        let mut cmd_line = vec!["uniffi-bindgen-kotlin".to_string(), "--out-dir".to_string(), out_dir.to_string_lossy().to_string()];
+        let mut cmd_line = vec![
+            "uniffi-bindgen-kotlin".to_string(),
+            "--out-dir".to_string(),
+            out_dir.to_string_lossy().to_string(),
+        ];
         if let Some(path) = source.config_path {
             cmd_line.push("--config-path".to_string());
             cmd_line.push(path.to_string_lossy().to_string())
@@ -64,7 +74,9 @@ fn build_jar(fixture_name: &str, out_dir: &Path) -> Result<PathBuf> {
         .arg("-classpath")
         .arg(calc_classpath(vec![]))
         .args(
-            glob::glob(&out_dir.join("*.kt").to_string_lossy())?.flatten().map(|p| String::from(p.to_string_lossy()))
+            glob::glob(&out_dir.join("*.kt").to_string_lossy())?
+                .flatten()
+                .map(|p| String::from(p.to_string_lossy())),
         )
         .spawn()
         .context("Failed to spawn `kotlinc` to compile the bindings")?

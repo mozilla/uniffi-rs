@@ -1,6 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
- License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::{Context, Result};
 use std::fs::File;
@@ -18,7 +18,10 @@ struct RubyBindingGenerator {
 
 impl RubyBindingGenerator {
     fn new(stdout: bool, try_format_code: bool) -> Self {
-        Self { stdout, try_format_code }
+        Self {
+            stdout,
+            try_format_code,
+        }
     }
 
     fn create_writer(
@@ -51,15 +54,22 @@ impl BindingGenerator for RubyBindingGenerator {
         let mut bindings = gen_ruby::generate_ruby_bindings(&config, &ci)?;
 
         if self.try_format_code {
-            match Command::new("rubocop").stdin(Stdio::piped()).stdout(Stdio::piped()).spawn() {
+            match Command::new("rubocop")
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .spawn()
+            {
                 Ok(mut child) => {
-                    child.stdin.take().expect("Failed to open stdin").write_all(bindings.as_bytes())?;
+                    child
+                        .stdin
+                        .take()
+                        .expect("Failed to open stdin")
+                        .write_all(bindings.as_bytes())?;
                     let output = child.wait_with_output().expect("Failed to read stdout");
-                    bindings = String::from_utf8(output.stdout).expect("Error decoded rubocop output");
-                },
-                Err(e) => println!(
-                    "Warning: Unable to auto-format Ruby using rubocop: {:?}", e
-                ),
+                    bindings =
+                        String::from_utf8(output.stdout).expect("Error decoded rubocop output");
+                }
+                Err(e) => println!("Warning: Unable to auto-format Ruby using rubocop: {:?}", e),
             }
         }
         write!(writer, "{}", bindings)?;
@@ -101,7 +111,10 @@ where
         )
         .get_matches_from(args);
 
-    let binding_generator = RubyBindingGenerator::new(matches.is_present("stdout"), !matches.is_present("no_format"));
+    let binding_generator = RubyBindingGenerator::new(
+        matches.is_present("stdout"),
+        !matches.is_present("no_format"),
+    );
     generate_external_bindings(
         binding_generator,
         matches.value_of_os("udl_file").unwrap(), // Required

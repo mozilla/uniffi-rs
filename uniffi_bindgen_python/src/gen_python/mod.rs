@@ -9,7 +9,9 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
 
-use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use uniffi_bindgen::backend::{
+    CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier,
+};
 use uniffi_bindgen::interface::*;
 
 mod callback_interface;
@@ -47,9 +49,10 @@ impl uniffi_bindgen::BindingGeneratorConfig for Config {
     }
 
     fn get_config_defaults(ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
-        vec![
-            ("cdylib_name".into(), format!("uniffi_{}", ci.namespace()).into()),
-        ]
+        vec![(
+            "cdylib_name".into(),
+            format!("uniffi_{}", ci.namespace()).into(),
+        )]
     }
 }
 

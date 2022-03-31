@@ -4,10 +4,10 @@
 
 #[allow(unused_imports)]
 use super::filters;
-use uniffi_bindgen::backend::{CodeOracle, CodeType, Literal};
-use uniffi_bindgen::interface::Radix;
 use askama::Template;
 use paste::paste;
+use uniffi_bindgen::backend::{CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::Radix;
 
 fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
     match literal {

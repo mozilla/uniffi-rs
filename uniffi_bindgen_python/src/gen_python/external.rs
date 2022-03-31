@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::filters;
-use uniffi_bindgen::backend::{CodeOracle, CodeType};
 use askama::Template;
+use uniffi_bindgen::backend::{CodeOracle, CodeType};
 
 #[derive(Template)]
 #[template(syntax = "py", escape = "none", path = "ExternalTemplate.py")]

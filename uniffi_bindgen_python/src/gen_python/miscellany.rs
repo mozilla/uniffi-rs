@@ -4,9 +4,9 @@
 
 #[allow(unused_imports)]
 use super::filters;
-use uniffi_bindgen::backend::{CodeOracle, CodeType, Literal};
 use askama::Template;
 use paste::paste;
+use uniffi_bindgen::backend::{CodeOracle, CodeType, Literal};
 
 macro_rules! impl_code_type_for_miscellany {
     ($T:ty, $canonical_name:literal, $template_file:literal) => {

@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
-use uniffi_bindgen::interface::{ComponentInterface, Object};
 use askama::Template;
 use std::borrow::Borrow;
+use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
+use uniffi_bindgen::interface::{ComponentInterface, Object};
 
 // Filters is used by ObjectTemplate.py, which looks for the filters module here.
 use super::filters;

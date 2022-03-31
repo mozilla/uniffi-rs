@@ -11,7 +11,9 @@ use heck::{CamelCase, MixedCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
-use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use uniffi_bindgen::backend::{
+    CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier,
+};
 use uniffi_bindgen::interface::*;
 
 mod callback_interface;
@@ -61,8 +63,14 @@ impl uniffi_bindgen::BindingGeneratorConfig for Config {
     fn get_config_defaults(ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
         vec![
             ("module_name".into(), ci.namespace().into()),
-            ("ffi_module_name".into(), format!("{}FFI", ci.namespace()).into()),
-            ("ffi_module_filename".into(), format!("{}FFI", ci.namespace()).into()),
+            (
+                "ffi_module_name".into(),
+                format!("{}FFI", ci.namespace()).into(),
+            ),
+            (
+                "ffi_module_filename".into(),
+                format!("{}FFI", ci.namespace()).into(),
+            ),
             ("generate_module_map".into(), true.into()),
             ("omit_argument_labels".into(), false.into()),
         ]

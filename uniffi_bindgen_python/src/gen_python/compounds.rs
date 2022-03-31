@@ -3,11 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::filters;
-use uniffi_bindgen::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
-use uniffi_bindgen::interface::types::Type;
 use askama::Template;
 use paste::paste;
 use std::borrow::Borrow;
+use uniffi_bindgen::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
+use uniffi_bindgen::interface::types::Type;
 
 fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
     match literal {

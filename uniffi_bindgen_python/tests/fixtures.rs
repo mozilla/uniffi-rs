@@ -2,26 +2,32 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use std::env;
+use std::ffi::OsString;
 use std::path::Path;
 use std::process::{Command, Stdio};
-use std::ffi::OsString;
 use uniffi_testing::UniFFITestHelper;
 
 /// Run the test fixtures from UniFFI
 
 fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
-    let script_path = Path::new(".").join("tests").join(script_file).canonicalize()?;
+    let script_path = Path::new(".")
+        .join("tests")
+        .join(script_file)
+        .canonicalize()?;
     let test_helper = UniFFITestHelper::new(fixture_name).context("UniFFITestHelper::new")?;
-    let out_dir = test_helper.create_out_dir(env!("CARGO_TARGET_TMPDIR"), &script_path).context("create_out_dir")?;
-    test_helper.copy_cdylibs_to_out_dir(&out_dir).context("copy_cdylibs_to_out_dir")?;
+    let out_dir = test_helper
+        .create_out_dir(env!("CARGO_TARGET_TMPDIR"), &script_path)
+        .context("create_out_dir")?;
+    test_helper
+        .copy_cdylibs_to_out_dir(&out_dir)
+        .context("copy_cdylibs_to_out_dir")?;
     generate_sources(&out_dir, &test_helper).context("generate_sources")?;
 
     let pythonpath = env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
-    let pythonpath = env::join_paths(
-        env::split_paths(&pythonpath).chain(vec![out_dir.to_path_buf()])
-    )?;
+    let pythonpath =
+        env::join_paths(env::split_paths(&pythonpath).chain(std::iter::once(out_dir.clone())))?;
 
     let status = Command::new("python3")
         .current_dir(out_dir)
@@ -41,7 +47,12 @@ fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
 
 fn generate_sources(out_dir: &Path, test_helper: &UniFFITestHelper) -> Result<()> {
     for source in test_helper.get_compile_sources()? {
-        let mut cmd_line = vec!["uniffi-bindgen-python".to_string(), "--out-dir".to_string(), out_dir.to_string_lossy().to_string(), "--no-format".to_string()];
+        let mut cmd_line = vec![
+            "uniffi-bindgen-python".to_string(),
+            "--out-dir".to_string(),
+            out_dir.to_string_lossy().to_string(),
+            "--no-format".to_string(),
+        ];
         if let Some(path) = source.config_path {
             cmd_line.push("--config-path".to_string());
             cmd_line.push(path.to_string_lossy().to_string())

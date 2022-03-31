@@ -10,7 +10,9 @@ use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
-use uniffi_bindgen::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use uniffi_bindgen::backend::{
+    CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier,
+};
 use uniffi_bindgen::interface::*;
 
 mod callback_interface;
@@ -51,8 +53,14 @@ impl uniffi_bindgen::BindingGeneratorConfig for Config {
 
     fn get_config_defaults(ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
         vec![
-            ("package_name".into(), format!("uniffi.{}", ci.namespace()).into()),
-            ("cdylib_name".into(), format!("uniffi_{}", ci.namespace()).into()),
+            (
+                "package_name".into(),
+                format!("uniffi.{}", ci.namespace()).into(),
+            ),
+            (
+                "cdylib_name".into(),
+                format!("uniffi_{}", ci.namespace()).into(),
+            ),
         ]
     }
 }

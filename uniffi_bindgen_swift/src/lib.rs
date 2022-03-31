@@ -1,6 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
- License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 //! # Swift bindings backend for UniFFI
 //!
@@ -68,7 +68,8 @@ impl BindingGenerator for SwiftBindingGenerator {
 
         let mut source_file = out_path.clone();
         source_file.push(format!("{}.swift", config.module_name));
-        let mut l = File::create(&source_file).context("Failed to create .swift file for bindings")?;
+        let mut l =
+            File::create(&source_file).context("Failed to create .swift file for bindings")?;
         write!(l, "{}", library)?;
 
         let mut header_file = out_path.clone();

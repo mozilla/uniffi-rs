@@ -13,12 +13,21 @@ use uniffi_testing::UniFFITestHelper;
 /// Run the test fixtures from UniFFI
 
 fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
-    let script_path = Path::new(".").join("tests").join(script_file).canonicalize().context("script_path canonicalize")?;
+    let script_path = Path::new(".")
+        .join("tests")
+        .join(script_file)
+        .canonicalize()
+        .context("script_path canonicalize")?;
     let test_helper = UniFFITestHelper::new(fixture_name).context("UniFFITestHelper::new")?;
-    let out_dir = test_helper.create_out_dir(env!("CARGO_TARGET_TMPDIR"), &script_path).context("create_out_dir()")?;
-    test_helper.copy_cdylibs_to_out_dir(&out_dir).context("copy_cdylibs_to_out_dir()")?;
+    let out_dir = test_helper
+        .create_out_dir(env!("CARGO_TARGET_TMPDIR"), &script_path)
+        .context("create_out_dir()")?;
+    test_helper
+        .copy_cdylibs_to_out_dir(&out_dir)
+        .context("copy_cdylibs_to_out_dir()")?;
     let library_name = calc_library_name(&out_dir)?;
-    let generated_sources = GeneratedSources::new(&out_dir, &test_helper).context("generate_sources()")?;
+    let generated_sources =
+        GeneratedSources::new(&out_dir, &test_helper).context("generate_sources()")?;
 
     // Compile the generated sources together to create the swift module as a .so file
     let bindings_mod = generated_sources.bindings_module_name()?;
@@ -42,7 +51,10 @@ fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
         .arg(&bindings_filename)
         .arg("-emit-library")
         .arg("-Xcc")
-        .arg(format!("-fmodule-map-file={}", generated_sources.module_map.to_string_lossy()))
+        .arg(format!(
+            "-fmodule-map-file={}",
+            generated_sources.module_map.to_string_lossy()
+        ))
         .arg(generated_sources.swift_module);
     let status = command
         .spawn()
@@ -50,7 +62,10 @@ fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
         .wait()
         .context("Failed to wait for `swiftc` when compiling bindings")?;
     if !status.success() {
-        bail!("running `swiftc` to compile bindings failed ({:?})", command)
+        bail!(
+            "running `swiftc` to compile bindings failed ({:?})",
+            command
+        )
     }
 
     // Run the test script against compiled bindings
@@ -65,7 +80,10 @@ fn run_test(fixture_name: &str, script_file: &str) -> Result<()> {
         .arg(format!("-l{}", &bindings_filename))
         .arg(format!("-l{}", &library_name))
         .arg("-Xcc")
-        .arg(format!("-fmodule-map-file={}", generated_sources.module_map.to_string_lossy()))
+        .arg(format!(
+            "-fmodule-map-file={}",
+            generated_sources.module_map.to_string_lossy()
+        ))
         .arg(&script_path);
     let status = command
         .spawn()
@@ -107,7 +125,7 @@ impl GeneratedSources {
     }
 
     pub fn bindings_module_name(&self) -> Result<String> {
-         Ok(self
+        Ok(self
             .swift_module
             .file_name()
             .unwrap()
@@ -121,9 +139,14 @@ impl GeneratedSources {
 // Get a single path from a globspec
 fn glob1(globspec: PathBuf) -> Result<PathBuf> {
     let mut paths = glob::glob(&globspec.to_string_lossy())?;
-    let first = paths.next().expect(&format!("globspec {:?} returned 0 results", &globspec));
+    let first = paths
+        .next()
+        .unwrap_or_else(|| panic!("globspec {:?} returned 0 results", &globspec));
     if paths.next().is_some() {
-        bail!(format!("globspec {:?} returned multiple results", &globspec));
+        bail!(format!(
+            "globspec {:?} returned multiple results",
+            &globspec
+        ));
     }
     Ok(first?.canonicalize()?)
 }
