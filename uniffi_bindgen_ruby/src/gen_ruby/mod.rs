@@ -8,8 +8,7 @@ use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 
-use crate::interface::*;
-use crate::MergeWith;
+use uniffi_bindgen::interface::*;
 
 const RESERVED_WORDS: &[&str] = &[
     "alias", "and", "BEGIN", "begin", "break", "case", "class", "def", "defined?", "do", "else",
@@ -27,43 +26,22 @@ fn is_reserved_word(word: &str) -> bool {
 // since the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    cdylib_name: Option<String>,
+    cdylib_name: String,
     cdylib_path: Option<String>,
 }
 
-impl Config {
-    pub fn cdylib_name(&self) -> String {
-        self.cdylib_name
-            .clone()
-            .unwrap_or_else(|| "uniffi".to_string())
+impl uniffi_bindgen::BindingGeneratorConfig for Config {
+    fn get_entry_from_bindings_table(bindings: &toml::Value) -> Option<toml::Value> {
+        bindings.get("ruby").cloned()
     }
 
-    pub fn custom_cdylib_path(&self) -> bool {
-        self.cdylib_path.is_some()
-    }
-
-    pub fn cdylib_path(&self) -> String {
-        self.cdylib_path.clone().unwrap_or_default()
+    fn get_config_defaults(ci: &ComponentInterface) -> Vec<(String, toml::Value)> {
+        vec![
+            ("cdylib_name".into(), format!("uniffi_{}", ci.namespace()).into()),
+        ]
     }
 }
 
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
-            cdylib_path: None,
-        }
-    }
-}
-
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
-            cdylib_path: self.cdylib_path.merge_with(&other.cdylib_path),
-        }
-    }
-}
 
 #[derive(Template)]
 #[template(syntax = "rb", escape = "none", path = "wrapper.rb")]
@@ -75,6 +53,12 @@ impl<'a> RubyWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
         Self { config, ci }
     }
+}
+
+pub fn generate_ruby_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
+    RubyWrapper::new(config.clone(), ci)
+        .render()
+        .map_err(|_| anyhow::anyhow!("failed to render ruby bindings"))
 }
 
 mod filters {

@@ -1,0 +1,28 @@
+[package]
+name = "uniffi_bindgen_ruby"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "uniffi-bindgen-ruby"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+askama = { version = "0.11", default-features = false, features = ["config"] }
+clap = { version = "2", default-features = false }
+heck = "0.3"
+uniffi_bindgen = { path = "../uniffi_bindgen" }
+serde = "1"
+toml = "0.5"
+
+[dev-dependencies]
+glob = "0.3"
+uniffi_testing = { path = "../uniffi_testing" }
+uniffi-example-arithmetic = { path = "../examples/arithmetic" }
+uniffi-example-geometry = { path = "../examples/geometry" }
+uniffi-example-rondpoint = { path = "../examples/rondpoint" }
+uniffi-example-todolist = { path = "../examples/todolist" }
+uniffi-example-sprites = { path = "../examples/sprites" }
+uniffi-fixture-coverall = { path = "../fixtures/coverall" }
+uniffi-fixture-external-types = { path = "../fixtures/external-types/lib" }

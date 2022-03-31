@@ -3,11 +3,12 @@
 module UniFFILib
   extend FFI::Library
 
-  {% if config.custom_cdylib_path() %}
-  ffi_lib {{ config.cdylib_path() }}
+  {% match config.cdylib_path %}
+  {% when Some(cdylib_path) %}
+  ffi_lib {{ cdylib_path }}
   {% else %}
-  ffi_lib '{{ config.cdylib_name() }}'
-  {% endif %}
+  ffi_lib '{{ config.cdylib_name }}'
+  {% endmatch %}
 
   {% for func in ci.iter_ffi_function_definitions() -%}
   attach_function :{{ func.name() }},

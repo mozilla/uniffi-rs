@@ -95,11 +95,9 @@
 const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 use anyhow::{anyhow, bail, Context, Result};
-use serde::{Deserialize, Serialize};
-use std::convert::TryInto;
+use serde::Deserialize;
 use std::io::prelude::*;
 use std::{
-    collections::HashMap,
     env,
     fs::File,
     path::{Path, PathBuf},
@@ -108,11 +106,9 @@ use std::{
 };
 
 pub mod backend;
-pub mod bindings;
 pub mod interface;
 pub mod scaffolding;
 
-use bindings::TargetLanguage;
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
@@ -269,19 +265,13 @@ pub fn generate_external_bindings(
 // such as the `extern "C"` function definitions and record data types.
 pub fn generate_component_scaffolding<P: AsRef<Path>>(
     udl_file: P,
-    config_file_override: Option<P>,
+    _config_file_override: Option<P>,
     out_dir_override: Option<P>,
     format_code: bool,
 ) -> Result<()> {
-    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let udl_file = udl_file.as_ref();
     let component = parse_udl(udl_file)?;
-    let _config = get_config(
-        &component,
-        guess_crate_root(udl_file)?,
-        config_file_override,
-    );
     let mut filename = Path::new(&udl_file)
         .file_stem()
         .ok_or_else(|| anyhow!("not a file"))?
@@ -308,72 +298,7 @@ pub fn generate_bindings<P: AsRef<Path>>(
     out_dir_override: Option<P>,
     try_format_code: bool,
 ) -> Result<()> {
-    let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
-    let udl_file = udl_file.as_ref();
-
-    let component = parse_udl(udl_file)?;
-    let config = get_config(
-        &component,
-        guess_crate_root(udl_file)?,
-        config_file_override,
-    )?;
-    let out_dir = get_out_dir(udl_file, out_dir_override)?;
-    for language in target_languages {
-        bindings::write_bindings(
-            &config.bindings,
-            &component,
-            &out_dir,
-            language.try_into()?,
-            try_format_code,
-        )?;
-    }
-    Ok(())
-}
-
-// Run tests against the foreign language bindings (generated and compiled at the same time).
-// Note that the cdylib we're testing against must be built already.
-pub fn run_tests<P: AsRef<Path>>(
-    cdylib_dir: P,
-    udl_files: &[&str],
-    test_scripts: Vec<&str>,
-    config_file_override: Option<P>,
-) -> Result<()> {
-    // XXX - this is just for tests, so one config_file_override for all .udl files doesn't really
-    // make sense, so we don't let tests do this.
-    // "Real" apps will build the .udl files one at a file and can therefore do whatever they want
-    // with overrides, so don't have this problem.
-    assert!(udl_files.len() == 1 || config_file_override.is_none());
-
-    let cdylib_dir = cdylib_dir.as_ref();
-    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
-
-    // Group the test scripts by language first.
-    let mut language_tests: HashMap<TargetLanguage, Vec<String>> = HashMap::new();
-
-    for test_script in test_scripts {
-        let lang: TargetLanguage = PathBuf::from(test_script)
-            .extension()
-            .ok_or_else(|| anyhow!("File has no extension!"))?
-            .try_into()?;
-        language_tests
-            .entry(lang)
-            .or_default()
-            .push(test_script.to_owned());
-    }
-
-    for (lang, test_scripts) in language_tests {
-        for udl_file in udl_files {
-            let crate_root = guess_crate_root(Path::new(udl_file))?;
-            let component = parse_udl(Path::new(udl_file))?;
-            let config = get_config(&component, crate_root, config_file_override)?;
-            bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
-            bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
-        }
-        for test_script in test_scripts {
-            bindings::run_script(cdylib_dir, &test_script, lang)?;
-        }
-    }
+    // TODO: rework this
     Ok(())
 }
 
@@ -392,30 +317,6 @@ fn guess_crate_root(udl_file: &Path) -> Result<&Path> {
         bail!("UDL file does not appear to be inside a crate")
     }
     Ok(path_guess)
-}
-
-fn get_config(
-    component: &ComponentInterface,
-    crate_root: &Path,
-    config_file_override: Option<&Path>,
-) -> Result<Config> {
-    let default_config: Config = component.into();
-
-    let config_file: Option<PathBuf> = match config_file_override {
-        Some(cfg) => Some(PathBuf::from(cfg)),
-        None => crate_root.join("uniffi.toml").canonicalize().ok(),
-    };
-
-    match config_file {
-        Some(path) => {
-            let contents = slurp_file(&path)
-                .with_context(|| format!("Failed to read config file from {:?}", &path))?;
-            let loaded_config: Config = toml::de::from_str(&contents)
-                .with_context(|| format!("Failed to generate config from file {:?}", &path))?;
-            Ok(loaded_config.merge_with(&default_config))
-        }
-        None => Ok(default_config),
-    }
 }
 
 fn get_out_dir(udl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathBuf> {
@@ -445,53 +346,6 @@ fn slurp_file(file_name: &Path) -> Result<String> {
     let mut f = File::open(file_name)?;
     f.read_to_string(&mut contents)?;
     Ok(contents)
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-struct Config {
-    #[serde(default)]
-    bindings: bindings::Config,
-}
-
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            bindings: ci.into(),
-        }
-    }
-}
-
-pub trait MergeWith {
-    fn merge_with(&self, other: &Self) -> Self;
-}
-
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            bindings: self.bindings.merge_with(&other.bindings),
-        }
-    }
-}
-
-impl<T: Clone> MergeWith for Option<T> {
-    fn merge_with(&self, other: &Self) -> Self {
-        match (self, other) {
-            (Some(_), _) => self.clone(),
-            (None, Some(_)) => other.clone(),
-            (None, None) => None,
-        }
-    }
-}
-
-impl<V: Clone> MergeWith for HashMap<String, V> {
-    fn merge_with(&self, other: &Self) -> Self {
-        let mut merged = HashMap::new();
-        // Iterate through other first so our keys override theirs
-        for (key, value) in other.iter().chain(self) {
-            merged.insert(key.clone(), value.clone());
-        }
-        merged
-    }
 }
 
 pub fn run_main() -> Result<()> {
@@ -590,14 +444,6 @@ pub fn run_main() -> Result<()> {
             m.value_of_os("out_dir"),
             !m.is_present("no_format"),
         )?,
-        ("test", Some(m)) => {
-            crate::run_tests(
-                m.value_of_os("cdylib_dir").unwrap(), // Required
-                &[&m.value_of_os("udl_file").unwrap().to_string_lossy()], // Required
-                m.values_of("test_scripts").unwrap().collect(), // Required
-                m.value_of_os("config"),
-            )?
-        }
         _ => bail!("No command specified; try `--help` for some help."),
     }
     Ok(())
