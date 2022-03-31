@@ -268,6 +268,15 @@
 <span id="268">268</span>
 <span id="269">269</span>
 <span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -334,6 +343,15 @@
     <span class="comment">// `MaybeUninit` requires unsafe code, since we are preventing rust from dropping the value.</span>
     <span class="comment">// To use this safely we need to make sure that no code paths set this twice, since that will</span>
     <span class="comment">// leak the first `RustBuffer`.</span>
+}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">RustCallStatus</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> {
+            <span class="ident">code</span>: <span class="number">0</span>,
+            <span class="ident">error_buf</span>: <span class="ident">MaybeUninit::uninit</span>(),
+        }
+    }
 }
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
