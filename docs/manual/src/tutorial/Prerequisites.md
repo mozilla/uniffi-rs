@@ -1,28 +1,19 @@
 # Prerequisites
 
-## The uniffi-bindgen cli tool
+## Bindgen CLI tools
 
 Install the `uniffi-bindgen` binary on your system using:
 
 `cargo install uniffi_bindgen`
 
-You can see what it can do with `uniffi-bindgen --help`, but let's leave it aside for now.
+Install one or more binaries for the foreign languages you need bindings for.
+  - `cargo install uniffi_bindgen_kotlin` for `uniffi-bindgen-kotlin`
+  - `cargo install uniffi_bindgen_swift` for `uniffi-bindgen-swift`
+  - `cargo install uniffi_bindgen_python` for `uniffi-bindgen-python`
+  - `cargo install uniffi_bindgen_ruby` for `uniffi-bindgen-ruby`
+  - Search crates.io for other bindings generators.
 
-### Running from a source checkout
-
-It's also possible to run `uniffi-bindgen` from a source checkout of uniffi - this might
-be useful if you are experimenting with changes to uniffi and want to test them out.
-
-In this case, just use `cargo run` in the `uniffi_bindgen` crate directory.
-For example, from the root of the `uniffi-rs` repo, execute:
-
-```shell
-% cd uniffi_bindgen/src
-% cargo run -- --help
-```
-
-and you will see the help output from running `uniffi-bindgen` locally. Refer to
-the docs for `cargo run` for more information and options.
+You can see what these can do with `uniffi-bindgen --help`, but let's leave it aside for now.
 
 ## Build your crate as a cdylib
 

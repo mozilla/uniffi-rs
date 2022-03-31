@@ -100,6 +100,7 @@ use std::io::prelude::*;
 use std::{
     env,
     fs::File,
+    io::ErrorKind,
     path::{Path, PathBuf},
     process::Command,
     str::FromStr,
@@ -233,7 +234,6 @@ pub trait BindingGenerator: Sized {
 }
 
 /// Generate bindings for an external binding generator
-/// Ideally, this should replace the [`generate_bindings`] function below
 ///
 /// Implements an entry point for external binding generators.
 /// The function does the following:
@@ -298,7 +298,36 @@ pub fn generate_bindings<P: AsRef<Path>>(
     out_dir_override: Option<P>,
     try_format_code: bool,
 ) -> Result<()> {
-    // TODO: rework this
+    for language in target_languages {
+        let command_name = format!("uniffi-bindgen-{}", language);
+        let mut cmd = Command::new(&command_name);
+        cmd.arg(udl_file.as_ref());
+        if let Some(ref path) = config_file_override {
+            cmd.arg("--config-path").arg(path.as_ref());
+        }
+        if let Some(ref path) = out_dir_override {
+            cmd.arg("--out-dir").arg(path.as_ref());
+        }
+        if !try_format_code {
+            cmd.arg("--no-format");
+        }
+
+        let status = match cmd.spawn() {
+            Ok(mut child) => child.wait()?,
+            Err(e) => match e.kind() {
+                ErrorKind::NotFound => bail!(
+                    "{} not found, do you need to run `cargo install {}`?",
+                    &command_name,
+                    command_name.replace("-", "_")
+                ),
+                _ => bail!("Error runnning {:?}", cmd),
+            },
+        };
+
+        if !status.success() {
+            bail!("Error runnning {:?}", cmd);
+        }
+    }
     Ok(())
 }
 

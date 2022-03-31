@@ -11,7 +11,10 @@ First, add `uniffi` to your crate dependencies; this is the runtime support code
 uniffi = "0.8"
 ```
 
-Important note: the `uniffi` version must be the same as the `uniffi-bindgen` command-line tool installed on your system.
+Important note: the versions of all 3 of these tools must match:
+  - The `uniffi` dependency of your Rust crate
+  - The `uniffi-bindgen` used to generate your Rust scaffolding code
+  - The `uniffi-bindgen-[language]` used to generate the foreign language bindings code
 
 Then let's add `uniffi_build` to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C-compatible FFI layer.
 

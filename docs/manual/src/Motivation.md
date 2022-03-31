@@ -32,7 +32,7 @@ Using UniFFI, you can:
 * Run `uniffi-bindgen scaffolding ./src/lib.udl` to generate a bunch of boilerplate rust code that exposes this API as a C-compatible FFI layer,
   and include it as part of your crate.
 * `cargo build` your crate as normal to produce a shared library.
-* Run `uniffi-bindgen generate ./src/lib.udl -l kotlin` to generate a Kotlin library that can load your shared library
+* Run `uniffi-bindgen-kotlin ./src/lib.udl` to generate a Kotlin library that can load your shared library
   and expose it to Kotlin code using your nice high-level component API!
   * Or `-l swift` or `-l python` to produce bindings for other languages.
 

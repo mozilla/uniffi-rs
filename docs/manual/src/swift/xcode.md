@@ -6,7 +6,7 @@ Broadly, you will need to:
 
 1. Add a build phase to compile the Rust crate into a static lib and link it
    into your framework.
-2. Add a build phase to run `uniffi-bindgen ` and generate the Swift bindings.
+2. Add a build phase to run `uniffi-bindgen-swift` and generate the Swift bindings.
 3. Include the generated bridging header into your overall bridging header.
 
 There is also an example app in the UniFFI project repo that may be helpful.
@@ -26,14 +26,14 @@ static library of Rust code.
 ## Generating the bindings
 
 In the "Build Rules" section of your config, add a rule to process `.udl` files
-using `uniffi-bindgen`. We recommend having it generate the output files
+using `uniffi-bindgen-swift`. We recommend having it generate the output files
 somewhere in your source tree, rather than in XCode's default `$DERIVED_FILE_DIR`;
 this both helps with debugging the build output, and makes it easier to configure
 how the generated files are used.
 
 * Add a build rule processing files with names matching `*.udl`.
     * Use something like the following as the custom script:
-        * `$HOME/.cargo/bin/uniffi-bindgen generate $INPUT_FILE_PATH --language swift --out-dir $INPUT_FILE_DIR/Generated`
+        * `$HOME/.cargo/bin/uniffi-bindgen-swift $INPUT_FILE_PATH --out-dir $INPUT_FILE_DIR/Generated`
     * Add both the `.swift` file and the generated bridging header as output files:
         * `$(INPUT_FILE_DIR)/Generated/$(INPUT_FILE_BASE).swift`
         * `$(INPUT_FILE_DIR)/Generated/$(INPUT_FILE_BASE)FFI.h`

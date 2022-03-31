@@ -2,8 +2,8 @@
 
 The code for UniFFI is organized into the following crates:
 
-- **[`./uniffi_bindgen`](./api/uniffi_bindgen/index.html):** This is the source for the `uniffi-bindgen` executable and is where
-  most of the logic for the UniFFI tool lives. Its contents include:
+- **[`./uniffi_bindgen`](./api/uniffi_bindgen/index.html):** This contains shared code for bindings generation, as well as the
+  scaffolding generation code. Its contents include:
     - **[`./uniffi_bindgen/src/interface/`](./api/uniffi_bindgen/interface/index.html):** The logic for parsing `.udl` files
       into an in-memory representation called [`ComponentInterface`](./api/uniffi_bindgen/interface/struct.ComponentInterface.html),
       from which we can generate code for different languages.

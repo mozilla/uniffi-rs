@@ -73,15 +73,16 @@ subdirectory of each example to see how its generated API can be used from diffe
 
 Other directories of interest include:
 
-- **[`./uniffi_bindgen`](../uniffi_bindgen):** This is the source for the `uniffi-bindgen` executable and is where
+- **[`./uniffi_bindgen`](../uniffi_bindgen) and friends:** This is the source for the `uniffi-bindgen` executable and is where
   most of the logic for the UniFFI tool lives. Its contents include:
     - **[`./uniffi_bindgen/src/interface/`](../uniffi_bindgen/src/interface):** The logic for parsing `.udl` files
       into an in-memory representation called `ComponentInterface`, from which we can generate code for different languages.
     - **[`./uniffi_bindgen/src/scaffolding`](../uniffi_bindgen/src/scaffolding):** This module turns a `ComponentInterface`
       into *Rust scaffolding*, the code that wraps the user-provided Rust code and exposes it via a C-compatible FFI layer.
-    - **[`./uniffi_bindgen/src/bindings/`](../uniffi_bindgen/src/bindings):** This module turns a `ComponentInterface` into
-      *foreign-language bindings*, the code that can load the FFI layer exposed by the scaffolding and expose it as a
-      higher-level API in a target language. There is a sub-module for each supported language.
+    - **[`./uniffi_bindgen-kotlin/`](../uniffi_bindgen_kotlin/src/):** Turns a `ComponentInterface` into Kotlin bindings.
+    - **[`./uniffi_bindgen-swift/`](../uniffi_bindgen_swift/src/):** Turns a `ComponentInterface` into Swift bindings.
+    - **[`./uniffi_bindgen-python/`](../uniffi_bindgen_python/src/):** Turns a `ComponentInterface` into Python bindings.
+    - **[`./uniffi_bindgen-ruby/`](../uniffi_bindgen_ruby/src/):** Turns a `ComponentInterface` into ruby bindings.
 - **[`./uniffi`](../uniffi):** This is a run-time support crate that is used by the generated Rust scaffolding. It
   controls how values of various types are passed back-and-forth over the FFI layer, by means of the `FfiConverter` trait.
 - **[`./uniffi_build`](../uniffi_build):** This is a small hook to run `uniffi-bindgen` from the `build.rs` script

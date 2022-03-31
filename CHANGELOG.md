@@ -10,6 +10,15 @@
 
 ### ⚠️ Breaking Changes ⚠️
 
+- `uniffi-bindgen` has been split into separate crates for each language.
+  `uniffi-bindgen` will continue to generate the scaffolding code (for now at
+  least), but you will need to install a separate crate for your foreign
+  language bindings (`uniffi-bindgen-(kotlin|swift|python|ruby)`).
+- For backwards compatability `uniffi-bindgen generate` will still work by running
+  the tool specific to your language, however this is deprecated and you should
+  update your build system by replacing calls to
+  `uniffi-bindgen generate --langauge [lang]` with `uniffi-bindgen-[lang]`.
+- Removed support for `uniffi-bindgen test`, which was only used for internal testing.
 - When custom types are used in function/method signatures UniFFI will now use
   the UDL name for that type and create a typealias to the concrete type.  In the
   [URL example](https://mozilla.github.io/uniffi-rs/udl/custom_types.html#custom-types-in-the-bindings-code),
