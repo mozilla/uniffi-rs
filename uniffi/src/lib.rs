@@ -639,16 +639,6 @@ where
     }
 }
 
-// This function is not intended to be called, but can be used as for the to workaround
-// https://github.com/rust-lang/rust/issues/50007
-//
-// Basically, if another library adds uniffi as an external crate, then builds into a dylib, that
-// library normally won't have the symbols from uniffi.  However, if that library calls a uniffi
-// function, then it *will* have the symbols.  So as a workaround to 50007, we create a dummy
-// function here, and call it from a dummy function in the library,.
-#[no_mangle]
-pub extern "C" fn extern_symbol_hack() {}
-
 #[cfg(test)]
 mod test {
     use super::*;
