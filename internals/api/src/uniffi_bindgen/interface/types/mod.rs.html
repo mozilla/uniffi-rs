@@ -323,6 +323,10 @@
 <span id="323">323</span>
 <span id="324">324</span>
 <span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -439,6 +443,10 @@
             <span class="comment">// A type that exists externally.</span>
             <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="ident">name</span>),
         }
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">FFIType</span> {
+        <span class="self">self</span>.<span class="ident">into</span>()
     }
 }
 

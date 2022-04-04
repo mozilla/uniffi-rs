@@ -402,28 +402,6 @@
 <span id="402">402</span>
 <span id="403">403</span>
 <span id="404">404</span>
-<span id="405">405</span>
-<span id="406">406</span>
-<span id="407">407</span>
-<span id="408">408</span>
-<span id="409">409</span>
-<span id="410">410</span>
-<span id="411">411</span>
-<span id="412">412</span>
-<span id="413">413</span>
-<span id="414">414</span>
-<span id="415">415</span>
-<span id="416">416</span>
-<span id="417">417</span>
-<span id="418">418</span>
-<span id="419">419</span>
-<span id="420">420</span>
-<span id="421">421</span>
-<span id="422">422</span>
-<span id="423">423</span>
-<span id="424">424</span>
-<span id="425">425</span>
-<span id="426">426</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -513,10 +491,7 @@
 
 <span class="comment">// Generate kotlin bindings for the given ComponentInterface, as a string.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="ident">KotlinCodeOracle::new</span>(<span class="ident">config</span>.<span class="ident">clone</span>());
-    <span class="ident">filters::set_oracle</span>(<span class="ident">oracle</span>.<span class="ident">clone</span>());
-
-    <span class="ident">KotlinWrapper::new</span>(<span class="ident">oracle</span>, <span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
+    <span class="ident">KotlinWrapper::new</span>(<span class="ident">KotlinCodeOracle</span>, <span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
         .<span class="ident">render</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow::anyhow!</span>(<span class="string">&quot;failed to render kotlin bindings&quot;</span>))
 }
@@ -572,6 +547,18 @@
             <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">custom_types</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>).<span class="ident">cloned</span>();
             <span class="ident">Box::new</span>(<span class="ident">custom::KotlinCustomType::new</span>(<span class="ident">name</span>, <span class="ident">type_</span>, <span class="ident">config</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
         }))
+        .<span class="ident">chain</span>(
+            <span class="ident">ci</span>.<span class="ident">iter_external_types</span>()
+                .<span class="ident">into_iter</span>()
+                .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="ident">crate_name</span>)<span class="op">|</span> {
+                    <span class="kw">let</span> <span class="ident">package_name</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">external_packages</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">crate_name</span>) {
+                        <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
+                        <span class="prelude-val">None</span> =&gt; <span class="ident">crate_name</span>,
+                    };
+                    <span class="ident">Box::new</span>(<span class="ident">external::KotlinExternalType::new</span>(<span class="ident">package_name</span>, <span class="ident">name</span>))
+                        <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
+                }),
+        )
         .<span class="ident">collect</span>()
     }
 
@@ -621,15 +608,9 @@
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KotlinCodeOracle</span> {
-    <span class="ident">config</span>: <span class="ident">Config</span>,
-}
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KotlinCodeOracle</span>;
 
 <span class="kw">impl</span> <span class="ident">KotlinCodeOracle</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="ident">Config</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">config</span> }
-    }
-
     <span class="kw">fn</span> <span class="ident">create_code_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="ident">TypeIdentifier</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
         <span class="comment">// I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}</span>
         <span class="comment">// However, there&#39;s some violence and gore I need to do to (temporarily) make the oracle usable from filters.</span>
@@ -675,18 +656,8 @@
                 <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
                 <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
             }
-            <span class="ident">Type::External</span> { <span class="ident">crate_name</span>, <span class="ident">name</span> } =&gt; {
-                <span class="kw">let</span> <span class="ident">package_name</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">external_packages</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">crate_name</span>) {
-                    <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
-                    <span class="prelude-val">None</span> =&gt; <span class="ident">crate_name</span>,
-                };
-                <span class="ident">Box::new</span>(<span class="ident">external::ExternalCodeType::new</span>(<span class="ident">package_name</span>, <span class="ident">name</span>))
-            }
-            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, <span class="ident">builtin</span> } =&gt; <span class="ident">Box::new</span>(<span class="ident">custom::CustomCodeType::new</span>(
-                <span class="ident">name</span>.<span class="ident">clone</span>(),
-                <span class="ident">builtin</span>.<span class="ident">as_ref</span>().<span class="ident">clone</span>(),
-                <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">custom_types</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>).<span class="ident">cloned</span>(),
-            )),
+            <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">Box::new</span>(<span class="ident">external::ExternalCodeType::new</span>(<span class="ident">name</span>)),
+            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">Box::new</span>(<span class="ident">custom::CustomCodeType::new</span>(<span class="ident">name</span>)),
         }
     }
 }
@@ -755,23 +726,8 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">filters</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
-    <span class="comment">// This code is a bit unfortunate.  We want to have a `KotlinCodeOracle` instance available for</span>
-    <span class="comment">// the filter functions, so that we don&#39;t always need to pass as an argument in the template</span>
-    <span class="comment">// code.  However, `KotlinCodeOracle` depends on a `Config` instance.  So we use some dirty,</span>
-    <span class="comment">// non-threadsafe, code to set it at the start of `generate_kotlin_bindings()`.</span>
-    <span class="comment">//</span>
-    <span class="comment">// If askama supported using a struct instead of a module for the filters we could avoid this.</span>
-
-    <span class="kw">static</span> <span class="kw-2">mut</span> <span class="ident">ORACLE</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">KotlinCodeOracle</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">set_oracle</span>(<span class="ident">oracle</span>: <span class="ident">KotlinCodeOracle</span>) {
-        <span class="kw">unsafe</span> {
-            <span class="ident">ORACLE</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">oracle</span>);
-        }
-    }
-
     <span class="kw">fn</span> <span class="ident">oracle</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">KotlinCodeOracle</span> {
-        <span class="kw">unsafe</span> { <span class="ident">ORACLE</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() }
+        <span class="kw-2">&amp;</span><span class="ident">KotlinCodeOracle</span>
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {

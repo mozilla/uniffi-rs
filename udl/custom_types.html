@@ -300,7 +300,10 @@ from_custom = &quot;{}.toString()&quot;
 <ul>
 <li>Create a <code>[bindings.{language}.custom_types.{CustomTypeName}]</code> table to enable a custom type on a bindings side.  This has several subkeys:
 <ul>
-<li><code>type_name</code> (Optional, Typed languages only): Type/class name for the custom type.  Defaults to the typedef name used in the UDL.</li>
+<li><code>type_name</code> (Optional, Typed languages only): Type/class name for the
+custom type.  Defaults to the type name used in the UDL.  Note: The UDL
+type name will still be used in generated function signatures, however it
+will be defined as a typealias to this type.</li>
 <li><code>into_custom</code>: Expression to convert the UDL type to the custom type.  <code>{}</code> will be replaced with the value of the UDL type.</li>
 <li><code>from_custom</code>: Expression to convert the custom type to the UDL type.  <code>{}</code> will be replaced with the value of the custom type.</li>
 <li><code>imports</code> (Optional) list of modules to import for your <code>into_custom</code>/<code>from_custom</code> functions.</li>

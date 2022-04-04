@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ExternalCodeType",""]]});
+initSidebarItems({"struct":[["ExternalCodeType",""],["KotlinExternalType",""]]});

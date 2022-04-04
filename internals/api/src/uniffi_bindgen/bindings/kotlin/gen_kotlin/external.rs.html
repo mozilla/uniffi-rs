@@ -41,20 +41,31 @@
 <span id="41">41</span>
 <span id="42">42</span>
 <span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>::{<span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">Literal</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>::{<span class="ident">CodeDeclaration</span>, <span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">Literal</span>};
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ExternalCodeType</span> {
-    <span class="ident">package_name</span>: <span class="ident">String</span>,
     <span class="ident">name</span>: <span class="ident">String</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ExternalCodeType</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">package_name</span>: <span class="ident">String</span>, <span class="ident">name</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">package_name</span>, <span class="ident">name</span> }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">name</span> }
     }
 }
 
@@ -71,6 +82,23 @@
         <span class="macro">unreachable!</span>(<span class="string">&quot;Can&#39;t have a literal of an external type&quot;</span>);
     }
 
+    <span class="kw">fn</span> <span class="ident">helper_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="prelude-val">None</span>
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KotlinExternalType</span> {
+    <span class="ident">package_name</span>: <span class="ident">String</span>,
+    <span class="ident">name</span>: <span class="ident">String</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">KotlinExternalType</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">package_name</span>: <span class="ident">String</span>, <span class="ident">name</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">package_name</span>, <span class="ident">name</span> }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">CodeDeclaration</span> <span class="kw">for</span> <span class="ident">KotlinExternalType</span> {
     <span class="doccomment">/// A list of imports that are needed if this type is in use.</span>
     <span class="doccomment">/// Classes are imported exactly once.</span>
     <span class="kw">fn</span> <span class="ident">imports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
@@ -78,10 +106,6 @@
             <span class="macro">format!</span>(<span class="string">&quot;{}.{}&quot;</span>, <span class="self">self</span>.<span class="ident">package_name</span>, <span class="self">self</span>.<span class="ident">name</span>),
             <span class="macro">format!</span>(<span class="string">&quot;{}.FfiConverterType{}&quot;</span>, <span class="self">self</span>.<span class="ident">package_name</span>, <span class="self">self</span>.<span class="ident">name</span>),
         ])
-    }
-
-    <span class="kw">fn</span> <span class="ident">helper_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
     }
 }
 </code></pre></div>
