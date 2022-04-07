@@ -1,8 +1,8 @@
-# Allow implementing bindings in separate crates.
+# Enable implementing bindings in separate crates.
 
 * Status: Accepted
 * Deciders: teshaq, bdk, mhammond
-* Date: 2022-01-16
+* Date: 2022-04-7
 
 Technical Story: [Issue 299](https://github.com/mozilla/uniffi-rs/issues/299)
 
@@ -13,15 +13,14 @@ Testing Implementation: [PR 1206](https://github.com/mozilla/uniffi-rs/pull/1206
 ## Context and Problem Statement
 All the binding generators currently live in the [`uniffi_bindgen`](../../uniffi_bindgen/src/bindings) crate. This creates the following difficulties:
 
-- All the bindings live in the `uniffi` repository, so the `uniffi` team has to maintain them (or at the very least review changes to them).
+- All the bindings live in the `uniffi` repository, so the `uniffi` team has to maintain them (or at the very least review changes to them). This makes it difficult to support third-party developers writing bindings for languages the core team does not wish to maintain.
 - Any change to a specific binding generator requires a new `uniffi_bindgen` release for it to be accessible by consumers. Even if it doesn't impact any of the other bindings.
 - Some bindings require complex build systems to test. Including those build systems in `uniffi` would require developers to install those build systems, and CI to do the same. For example, any type of `gecko-js` bindings would require the mozilla-central build system to build and test.
 - We currently run all the tests for the bindings in our CI and through `cargo test`. This means that if one binding target gets outdated and fails, or if a developer doesn't have the needed libraries installed for one of the targets, the tests would fail.
-- It's currently difficult to support third-party developers writing bindings for languages the core team does not wish to maintain.
 
 Before [PR 1201](https://github.com/mozilla/uniffi-rs/pull/1201), it was also impossible to write new bindings that did not live in the [`uniffi_bindgen`](../../uniffi_bindgen/src/bindings) crate.
 
-This ADR proposes allowing third-party crates to implement binding generators. 
+This ADR proposes enabling third-party crates to implement binding generators, and describes the necessary uniffi changes to enable this.
 ## Decision Drivers
 
 * Support Firefox Desktop JavaScript binding generation
@@ -39,13 +38,7 @@ This ADR proposes allowing third-party crates to implement binding generators.
 
 * **[Option 2] Create a public API for external crates to implement their own bindings.**
 
-    Developers would have traits exposed they can leverage to implement binding generators that do not live in `uniffi_bindgen`. `uniffi_bindgen` would still handle generic tasks related to binding generation. This includes:
-
-    1. Parsing the UDL, and passing the `ComponentInterface` to the specific binding generator.
-    1. Parsing the `uniffi.toml` and passing the language specific configuration down to the binding generator.
-    1. Calling a generic `BindingGenerator::write_bindings` function that is implemented by the specific binding generator.
-    1. `uniffi_bindgen` would also expose its `CodeOracle`, `CodeType` and `CodeDeclaration` types to help developers create a standard way to interact with code generation. It shouldn't however, restrict developers to use those concepts if they don't fit a specific binding.
-
+    Developers would have traits exposed they can leverage to implement binding generators that do not live in `uniffi_bindgen`. `uniffi_bindgen` would still handle generic tasks related to binding generation.
 ## Pros and Cons of the Options
 
 ### **[Option 1] Do nothing**
@@ -61,14 +54,14 @@ This ADR proposes allowing third-party crates to implement binding generators.
 * Good, because ownership will be clear, and members of the community can opt to maintain their own binding generators.
 * Good, because our CI would only need to test the core bindings we maintain, and others can be tested by their own maintainers (for example, a `gecko-js` binding generator should be tested in `mozilla-central` and not here).
 * Good, because a release in external bindings wouldn't have an impact on any internal ones unless it changes internal `uniffi` behavior.
-* Bad, because it's easier to accidentally have a version mismatch. (see ADR https://github.com/mozilla/uniffi-rs/pull/1203).
-* Bad, because testability increases in complexity. We are required to publish fixtures and examples we have. (see https://github.com/mozilla/uniffi-rs/pull/1206)
+* Bad, because it's easier to accidentally have a version mismatch. (see [this ADR](https://github.com/mozilla/uniffi-rs/pull/1203)).
+* Bad, because testability increases in complexity. We are required to publish fixtures and examples we have. (see [PR 1206](https://github.com/mozilla/uniffi-rs/pull/1206))
 
 Overall this option is preferred because:
 
 - It's a requirement to implement bindings for gecko-js, which can't be tested end-to-end without a complex build system.
 - It creates the possibility of community contributors writing and maintaining their own binding generators in their own repositories.
-- The increased risk of version mismatch can be dealt with (see ADR https://github.com/mozilla/uniffi-rs/pull/1203).
+- The increased risk of version mismatch can be dealt with (see [this ADR](https://github.com/mozilla/uniffi-rs/pull/1203)).
 
 
 ## Decision Outcome
@@ -93,6 +86,6 @@ The trait would have the following:
 See [PR 1201](https://github.com/mozilla/uniffi-rs/pull/1201) for implementation of the above changes.
 
 ### Expose fixtures for testings
-To allow external binding generators to implement tests, we would publish our fixtures and a new `uniffi_testing` crate that is a helper for consumers to build and consume the fixture crates.
+To enable external binding generators to implement tests, we would publish our fixtures and a new `uniffi_testing` crate that is a helper for consumers to build and consume the fixture crates.
 
 See [PR 1206](https://github.com/mozilla/uniffi-rs/pull/1206) for implementation of the testing changes.
