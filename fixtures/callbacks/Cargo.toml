@@ -3,6 +3,7 @@ name = "uniffi-fixture-callbacks"
 version = "0.17.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2018"
+license = "MPL-2.0"
 publish = false
 
 [lib]
