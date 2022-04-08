@@ -1,6 +1,7 @@
 # UniFFI
 
-UniFFI is a tool that automatically generates foreign-language bindings targeting Rust libraries.  
+UniFFI is a tool that automatically generates foreign-language bindings targeting Rust libraries.
+The repository can be found on [github](https://github.com/mozilla/uniffi-rs/).
 It fits in the practice of consolidating business logic in a single Rust library while targeting multiple platforms, making it simpler to develop and maintain a cross-platform codebase.  
 Note that this tool will not help you ship a Rust library to these platforms, but simply not have to write bindings code by hand [[0]](https://i.kym-cdn.com/photos/images/newsfeed/000/572/078/d6d.jpg).
 
