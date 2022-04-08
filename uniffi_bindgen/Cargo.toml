@@ -20,7 +20,7 @@ weedle = "0.12"
 anyhow = "1"
 askama = { version = "0.11", default-features = false, features = ["config"] }
 heck = "0.3"
-clap = { version = "2", default-features = false }
+clap = { version = "3", features = ["cargo"] }
 paste = "1.0"
 serde = "1"
 toml = "0.5"
