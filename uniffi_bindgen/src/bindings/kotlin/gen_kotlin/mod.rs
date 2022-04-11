@@ -3,14 +3,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use std::borrow::Borrow;
-use std::collections::{HashMap, HashSet};
+use std::cell::RefCell;
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeDeclaration, CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use crate::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
 use crate::MergeWith;
 
@@ -20,7 +21,6 @@ mod custom;
 mod enum_;
 mod error;
 mod external;
-mod function;
 mod miscellany;
 mod object;
 mod primitives;
@@ -87,119 +87,100 @@ impl MergeWith for Config {
 
 // Generate kotlin bindings for the given ComponentInterface, as a string.
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    KotlinWrapper::new(KotlinCodeOracle, config.clone(), ci)
+    KotlinWrapper::new(config.clone(), ci)
         .render()
         .map_err(|_| anyhow::anyhow!("failed to render kotlin bindings"))
+}
+
+/// Renders Kotlin helper code for all types
+///
+/// This template is a bit different than others in that it stores internal state from the render
+/// process.  Make sure to only call `render()` once.
+#[derive(Template)]
+#[template(syntax = "kt", escape = "none", path = "Types.kt")]
+pub struct TypeRenderer<'a> {
+    kotlin_config: &'a Config,
+    ci: &'a ComponentInterface,
+    // Track included modules for the `include_once()` macro
+    include_once_names: RefCell<HashSet<String>>,
+    // Track imports added with the `add_import()` macro
+    imports: RefCell<BTreeSet<String>>,
+}
+
+impl<'a> TypeRenderer<'a> {
+    fn new(kotlin_config: &'a Config, ci: &'a ComponentInterface) -> Self {
+        Self {
+            kotlin_config,
+            ci,
+            include_once_names: RefCell::new(HashSet::new()),
+            imports: RefCell::new(BTreeSet::new()),
+        }
+    }
+
+    // Get the package name for an external type
+    fn external_type_package_name(&self, crate_name: &str) -> String {
+        match self.kotlin_config.external_packages.get(crate_name) {
+            Some(name) => name.clone(),
+            None => crate_name.to_string(),
+        }
+    }
+
+    // The following methods are used by the `Types.kt` macros.
+
+    // Helper for the including a template, but only once.
+    //
+    // The first time this is called with a name it will return true, indicating that we should
+    // include the template.  Subsequent calls will return false.
+    fn include_once_check(&self, name: &str) -> bool {
+        self.include_once_names
+            .borrow_mut()
+            .insert(name.to_string())
+    }
+
+    // Helper to add an import statement
+    //
+    // Call this inside your template to cause an import statement to be added at the top of the
+    // file.  Imports will be sorted and de-deuped.
+    //
+    // Returns an empty string so that it can be used inside an askama `{{ }}` block.
+    fn add_import(&self, name: &str) -> &str {
+        self.imports.borrow_mut().insert(name.to_owned());
+        ""
+    }
 }
 
 #[derive(Template)]
 #[template(syntax = "kt", escape = "none", path = "wrapper.kt")]
 pub struct KotlinWrapper<'a> {
-    oracle: KotlinCodeOracle,
     config: Config,
     ci: &'a ComponentInterface,
+    type_helper_code: String,
+    type_imports: BTreeSet<String>,
 }
+
 impl<'a> KotlinWrapper<'a> {
-    pub fn new(oracle: KotlinCodeOracle, config: Config, ci: &'a ComponentInterface) -> Self {
-        Self { oracle, config, ci }
+    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
+        let type_renderer = TypeRenderer::new(&config, ci);
+        let type_helper_code = type_renderer.render().unwrap();
+        let type_imports = type_renderer.imports.into_inner();
+        Self {
+            config,
+            ci,
+            type_helper_code,
+            type_imports,
+        }
     }
 
-    pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
-        let ci = self.ci;
-        vec![
-            Box::new(object::KotlinObjectRuntime::new(ci)) as Box<dyn CodeDeclaration>,
-            Box::new(callback_interface::KotlinCallbackInterfaceRuntime::new(ci))
-                as Box<dyn CodeDeclaration>,
-        ]
-        .into_iter()
-        .chain(
-            ci.iter_enum_definitions().into_iter().map(|inner| {
-                Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
-        )
-        .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-            Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-            Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(ci.iter_record_definitions().into_iter().map(|inner| {
-            Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(
-            ci.iter_error_definitions().into_iter().map(|inner| {
-                Box::new(error::KotlinError::new(inner, ci)) as Box<dyn CodeDeclaration>
-            }),
-        )
-        .chain(
-            ci.iter_callback_interface_definitions()
-                .into_iter()
-                .map(|inner| {
-                    Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci))
-                        as Box<dyn CodeDeclaration>
-                }),
-        )
-        .chain(ci.iter_custom_types().into_iter().map(|(name, type_)| {
-            let config = self.config.custom_types.get(&name).cloned();
-            Box::new(custom::KotlinCustomType::new(name, type_, config)) as Box<dyn CodeDeclaration>
-        }))
-        .chain(
-            ci.iter_external_types()
-                .into_iter()
-                .map(|(name, crate_name)| {
-                    let package_name = match self.config.external_packages.get(&crate_name) {
-                        Some(name) => name.clone(),
-                        None => crate_name,
-                    };
-                    Box::new(external::KotlinExternalType::new(package_name, name))
-                        as Box<dyn CodeDeclaration>
-                }),
-        )
-        .collect()
-    }
-
-    pub fn initialization_code(&self) -> Vec<String> {
-        let oracle = &self.oracle;
-        self.members()
+    pub fn initialization_fns(&self) -> Vec<String> {
+        self.ci
+            .iter_types()
             .into_iter()
-            .filter_map(|member| member.initialization_code(oracle))
-            .collect()
-    }
-
-    pub fn declaration_code(&self) -> Vec<String> {
-        let oracle = &self.oracle;
-        self.members()
-            .into_iter()
-            .filter_map(|member| member.definition_code(oracle))
-            .chain(
-                self.ci
-                    .iter_types()
-                    .into_iter()
-                    .filter_map(|type_| oracle.find(&type_).helper_code(oracle)),
-            )
+            .filter_map(|t| t.initialization_fn(&KotlinCodeOracle))
             .collect()
     }
 
     pub fn imports(&self) -> Vec<String> {
-        let oracle = &self.oracle;
-        let mut imports: Vec<String> = self
-            .members()
-            .into_iter()
-            .filter_map(|member| member.imports(oracle))
-            .flatten()
-            .chain(
-                self.ci
-                    .iter_types()
-                    .into_iter()
-                    .filter_map(|type_| oracle.find(&type_).imports(oracle))
-                    .flatten(),
-            )
-            .collect::<HashSet<String>>()
-            .into_iter()
-            .collect();
-
-        imports.sort();
-        imports
+        self.type_imports.iter().cloned().collect()
     }
 }
 
@@ -207,11 +188,14 @@ impl<'a> KotlinWrapper<'a> {
 pub struct KotlinCodeOracle;
 
 impl KotlinCodeOracle {
+    // Map `Type` instances to a `Box<dyn CodeType>` for that type.
+    //
+    // There is a companion match in `templates/Types.kt` which performs a similar function for the
+    // template code.
+    //
+    //   - When adding additional types here, make sure to also add a match arm to the `Types.kt` template.
+    //   - To keep things managable, let's try to limit ourselves to these 2 mega-matches
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
-        // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
-        // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
-
-        // Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &dyn CodeOracle
         match type_ {
             Type::UInt8 => Box::new(primitives::UInt8CodeType),
             Type::Int8 => Box::new(primitives::Int8CodeType),
@@ -236,22 +220,9 @@ impl KotlinCodeOracle {
             Type::CallbackInterface(id) => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
-
-            Type::Optional(ref inner) => {
-                let outer = type_.clone();
-                let inner = *inner.to_owned();
-                Box::new(compounds::OptionalCodeType::new(inner, outer))
-            }
-            Type::Sequence(ref inner) => {
-                let outer = type_.clone();
-                let inner = *inner.to_owned();
-                Box::new(compounds::SequenceCodeType::new(inner, outer))
-            }
-            Type::Map(ref inner) => {
-                let outer = type_.clone();
-                let inner = *inner.to_owned();
-                Box::new(compounds::MapCodeType::new(inner, outer))
-            }
+            Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
+            Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
+            Type::Map(inner) => Box::new(compounds::MapCodeType::new(*inner)),
             Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }

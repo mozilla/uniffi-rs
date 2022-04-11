@@ -112,6 +112,11 @@ pub trait CodeType {
         None
     }
 
+    /// Function to run at startup
+    fn initialization_fn(&self, _oracle: &dyn CodeOracle) -> Option<String> {
+        None
+    }
+
     /// An expression to coerce the given variable to the expected type.
     fn coerce(&self, oracle: &dyn CodeOracle, _nm: &str) -> String {
         panic!("Unimplemented for {}", self.type_label(oracle));
@@ -222,5 +227,9 @@ impl<T: CodeTypeDispatch> CodeType for T {
 
     fn imports(&self, oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         self.code_type_impl(oracle).imports(oracle)
+    }
+
+    fn initialization_fn(&self, oracle: &dyn CodeOracle) -> Option<String> {
+        self.code_type_impl(oracle).initialization_fn(oracle)
     }
 }

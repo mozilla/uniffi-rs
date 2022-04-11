@@ -3,17 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::backend::{CodeOracle, CodeType, Literal};
-use askama::Template;
 use paste::paste;
 
-#[allow(unused_imports)]
-use super::filters;
-
 macro_rules! impl_code_type_for_miscellany {
-    ($T:ty, $class_name:literal, $canonical_name:literal, $template_file:literal) => {
+    ($T:ty, $class_name:literal, $canonical_name:literal) => {
         paste! {
-            #[derive(Template)]
-            #[template(syntax = "kt", escape = "none", path = $template_file )]
             pub struct $T;
 
             impl CodeType for $T  {
@@ -28,25 +22,11 @@ macro_rules! impl_code_type_for_miscellany {
                 fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
                     unreachable!()
                 }
-
-                fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-                    Some(self.render().unwrap())
-                }
             }
         }
     };
 }
 
-impl_code_type_for_miscellany!(
-    TimestampCodeType,
-    "java.time.Instant",
-    "Timestamp",
-    "TimestampHelper.kt"
-);
+impl_code_type_for_miscellany!(TimestampCodeType, "java.time.Instant", "Timestamp");
 
-impl_code_type_for_miscellany!(
-    DurationCodeType,
-    "java.time.Duration",
-    "Duration",
-    "DurationHelper.kt"
-);
+impl_code_type_for_miscellany!(DurationCodeType, "java.time.Duration", "Duration");

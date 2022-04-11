@@ -4,9 +4,8 @@
 // So, we switch here, using `enum class` for enums with no associated data
 // and `sealed class` for the general case.
 #}
-{% import "macros.kt" as kt %}
-{%- let e = self.inner() %}
-{%- let type_name = e|type_name -%}
+{%- let e = ci.get_enum_definition(name).unwrap() %}
+
 {%- if e.is_flat() %}
 
 enum class {{ type_name }} {
@@ -31,7 +30,7 @@ public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}
 
 {% else %}
 
-sealed class {{ type_name }}{% if self.contains_object_references() %}: Disposable {% endif %} {
+sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
     object {{ variant.name()|class_name }} : {{ type_name }}()
@@ -44,7 +43,7 @@ sealed class {{ type_name }}{% if self.contains_object_references() %}: Disposab
     {%- endif %}
     {% endfor %}
 
-    {% if self.contains_object_references() %}
+    {% if contains_object_references %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {
         when(this) {

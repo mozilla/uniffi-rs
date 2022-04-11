@@ -1,6 +1,7 @@
-{% import "macros.kt" as kt %}
-{%- let obj = self.inner() %}
-{%- let type_name = obj|type_name -%}
+{%- let obj = ci.get_object_definition(name).unwrap() %}
+{%- if self.include_once_check("ObjectRuntime.kt") %}{% include "ObjectRuntime.kt" %}{% endif %}
+{{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
+{{- self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
 
 public interface {{ type_name }}Interface {
     {% for meth in obj.methods() -%}

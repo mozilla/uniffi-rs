@@ -1,9 +1,7 @@
-{% import "macros.kt" as kt %}
-{%- let e = self.inner() %}
-{%- let type_name = e|type_name -%}
+{%- let e = ci.get_error_definition(name).unwrap() %}
 
 {% if e.is_flat() %}
-sealed class {{ type_name }}(message: String): Exception(message){% if self.contains_object_references() %}, Disposable {% endif %} {
+sealed class {{ type_name }}(message: String): Exception(message){% if contains_object_references %}, Disposable {% endif %} {
         // Each variant is a nested class
         // Flat enums carries a string error message, so no special implementation is necessary.
         {% for variant in e.variants() -%}
@@ -15,7 +13,7 @@ sealed class {{ type_name }}(message: String): Exception(message){% if self.cont
     }
 }
 {%- else %}
-sealed class {{ type_name }}: Exception(){% if self.contains_object_references() %}, Disposable {% endif %} {
+sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Disposable {% endif %} {
     // Each variant is a nested class
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
@@ -33,7 +31,7 @@ sealed class {{ type_name }}: Exception(){% if self.contains_object_references()
         override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ e|lift_fn }}(error_buf)
     }
 
-    {% if self.contains_object_references() %}
+    {% if contains_object_references %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {
         when(this) {

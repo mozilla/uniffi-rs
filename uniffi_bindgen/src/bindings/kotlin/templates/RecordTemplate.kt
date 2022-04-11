@@ -1,6 +1,4 @@
-{% import "macros.kt" as kt %}
-{%- let rec = self.inner() %}
-{%- let type_name = rec|type_name %}
+{%- let rec = ci.get_record_definition(name).unwrap() %}
 
 data class {{ type_name }} (
     {%- for field in rec.fields() %}
@@ -11,8 +9,8 @@ data class {{ type_name }} (
     {%- endmatch -%}
     {% if !loop.last %}, {% endif %}
     {%- endfor %}
-) {% if self.contains_object_references() %}: Disposable {% endif %}{
-    {% if self.contains_object_references() %}
+) {% if contains_object_references %}: Disposable {% endif %}{
+    {% if contains_object_references %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {
         {% call kt::destroy_fields(rec) %}
