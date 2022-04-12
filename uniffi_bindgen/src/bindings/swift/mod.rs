@@ -178,7 +178,7 @@ pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
     // Swift to load only the module(s) for the component under test, but the way we're calling
     // this test function doesn't allow us to pass that name in to the call.
 
-    cmd.arg("-I").arg(out_dir).arg("-L").arg(out_dir);
+    cmd.arg("-I").arg(out_dir);
     for entry in PathBuf::from(out_dir)
         .read_dir()
         .context("Failed to list target directory when running script")?
