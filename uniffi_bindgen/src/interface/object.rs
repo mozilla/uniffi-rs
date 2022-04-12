@@ -275,6 +275,10 @@ impl Constructor {
             .map(|name| Type::Error(name.to_owned()))
     }
 
+    pub fn is_primary_constructor(&self) -> bool {
+        self.name == "new"
+    }
+
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) {
         self.ffi_func.name.push_str(ci_prefix);
         self.ffi_func.name.push('_');
@@ -283,10 +287,6 @@ impl Constructor {
         self.ffi_func.name.push_str(&self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
         self.ffi_func.return_type = Some(FFIType::RustArcPtr);
-    }
-
-    fn is_primary_constructor(&self) -> bool {
-        self.name == "new"
     }
 }
 
