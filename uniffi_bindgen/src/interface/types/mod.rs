@@ -288,7 +288,7 @@ impl<T: IterTypes> IterTypes for Box<T> {
 
 impl<T: IterTypes> IterTypes for Option<T> {
     fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(self.iter().map(IterTypes::iter_types).flatten())
+        Box::new(self.iter().flat_map(IterTypes::iter_types))
     }
 }
 

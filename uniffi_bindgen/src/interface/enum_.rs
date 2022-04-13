@@ -117,7 +117,7 @@ impl Enum {
 
 impl IterTypes for Enum {
     fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(self.variants.iter().map(IterTypes::iter_types).flatten())
+        Box::new(self.variants.iter().flat_map(IterTypes::iter_types))
     }
 }
 
@@ -197,7 +197,7 @@ impl Variant {
 
 impl IterTypes for Variant {
     fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(self.fields.iter().map(IterTypes::iter_types).flatten())
+        Box::new(self.fields.iter().flat_map(IterTypes::iter_types))
     }
 }
 

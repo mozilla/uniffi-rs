@@ -90,7 +90,7 @@ impl_code_type_for_compound!(
 fn sequence_coerce(this: &SequenceCodeType, oracle: &dyn CodeOracle, nm: &str) -> String {
     format!(
         "list({} for x in {})",
-        oracle.find(this.inner()).coerce(oracle, &"x".to_string()),
+        oracle.find(this.inner()).coerce(oracle, "x"),
         nm
     )
 }
@@ -149,8 +149,8 @@ impl CodeType for MapCodeType {
     fn coerce(&self, oracle: &dyn CodeOracle, nm: &str) -> String {
         format!(
             "dict(({}, {}) for (k, v) in {}.items())",
-            self.key().coerce(oracle, &"k".to_string()),
-            self.value().coerce(oracle, &"v".to_string()),
+            self.key().coerce(oracle, "k"),
+            self.value().coerce(oracle, "v"),
             nm
         )
     }
