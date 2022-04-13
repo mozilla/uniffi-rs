@@ -625,6 +625,29 @@
 <span id="625">625</span>
 <span id="626">626</span>
 <span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -722,12 +745,14 @@
 <span class="kw">const</span> <span class="ident">BINDGEN_VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">anyhow</span>, <span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Parser</span>, <span class="ident">Subcommand</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std::convert::TryInto</span>;
 <span class="kw">use</span> <span class="ident">std::io::prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">collections::HashMap</span>,
     <span class="ident">env</span>,
+    <span class="ident">ffi::OsString</span>,
     <span class="ident">fs::File</span>,
     <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
     <span class="ident">process::Command</span>,
@@ -1121,112 +1146,133 @@
     }
 }
 
+<span class="comment">// structs to help our cmdline parsing.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Parser</span>)]</span>
+<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;uniffi-bindgen&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">version</span> <span class="op">=</span> <span class="macro">clap::crate_version!</span>())]</span>
+<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">about</span> <span class="op">=</span> <span class="string">&quot;Scaffolding and bindings generator for Rust&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">propagate_version</span> <span class="op">=</span> <span class="bool-val">true</span>)]</span>
+<span class="kw">struct</span> <span class="ident">Cli</span> {
+    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">subcommand</span>)]</span>
+    <span class="ident">command</span>: <span class="ident">Commands</span>,
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Subcommand</span>)]</span>
+<span class="kw">enum</span> <span class="ident">Commands</span> {
+    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;generate&quot;</span>, <span class="ident">about</span> <span class="op">=</span> <span class="string">&quot;Generate foreign language bindings&quot;</span>)]</span>
+    <span class="ident">Generate</span> {
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>, <span class="ident">possible_values</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;kotlin&quot;</span>, <span class="string">&quot;python&quot;</span>, <span class="string">&quot;swift&quot;</span>, <span class="string">&quot;ruby&quot;</span>]</span>)]
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Foreign language(s) for which to build bindings.&quot;</span>)]</span>
+        <span class="ident">language</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(
+            <span class="ident">long</span>,
+            <span class="ident">short</span>,
+            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Directory in which to write generated files. Default is same folder as .udl file.&quot;</span>
+        )]</span>
+        <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>, <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Do not try to format the generated bindings.&quot;</span>)]</span>
+        <span class="ident">no_format</span>: <span class="ident">bool</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(
+            <span class="ident">long</span>,
+            <span class="ident">short</span>,
+            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>
+        )]</span>
+        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the UDL file.&quot;</span>)]</span>
+        <span class="ident">udl_file</span>: <span class="ident">OsString</span>,
+    },
+
+    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;scaffolding&quot;</span>, <span class="ident">about</span> <span class="op">=</span> <span class="string">&quot;Generate Rust scaffolding code&quot;</span>)]</span>
+    <span class="ident">Scaffolding</span> {
+        <span class="attribute">#[<span class="ident">clap</span>(
+            <span class="ident">long</span>,
+            <span class="ident">short</span>,
+            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Directory in which to write generated files. Default is same folder as .udl file.&quot;</span>
+        )]</span>
+        <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(
+            <span class="ident">long</span>,
+            <span class="ident">short</span>,
+            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>
+        )]</span>
+        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>, <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Do not try to format the generated bindings.&quot;</span>)]</span>
+        <span class="ident">no_format</span>: <span class="ident">bool</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the UDL file.&quot;</span>)]</span>
+        <span class="ident">udl_file</span>: <span class="ident">OsString</span>,
+    },
+
+    <span class="attribute">#[<span class="ident">clap</span>(
+        <span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;test&quot;</span>,
+        <span class="ident">about</span> <span class="op">=</span> <span class="string">&quot;Run test scripts against foreign language bindings.&quot;</span>
+    )]</span>
+    <span class="ident">Test</span> {
+        <span class="attribute">#[<span class="ident">clap</span>(
+            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the directory containing the cdylib the scripts will be testing against.&quot;</span>
+        )]</span>
+        <span class="ident">cdylib_dir</span>: <span class="ident">OsString</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the UDL file.&quot;</span>)]</span>
+        <span class="ident">udl_file</span>: <span class="ident">OsString</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Foreign language(s) test scripts to run.&quot;</span>)]</span>
+        <span class="ident">test_scripts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+
+        <span class="attribute">#[<span class="ident">clap</span>(
+            <span class="ident">long</span>,
+            <span class="ident">short</span>,
+            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>
+        )]</span>
+        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">OsString</span><span class="op">&gt;</span>,
+    },
+}
+
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_main</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">POSSIBLE_LANGUAGES</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;kotlin&quot;</span>, <span class="string">&quot;python&quot;</span>, <span class="string">&quot;swift&quot;</span>, <span class="string">&quot;ruby&quot;</span>];
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">clap::App::new</span>(<span class="string">&quot;uniffi-bindgen&quot;</span>)
-        .<span class="ident">about</span>(<span class="string">&quot;Scaffolding and bindings generator for Rust&quot;</span>)
-        .<span class="ident">version</span>(<span class="macro">clap::crate_version!</span>())
-        .<span class="ident">subcommand</span>(
-            <span class="ident">clap::SubCommand::with_name</span>(<span class="string">&quot;generate&quot;</span>)
-                .<span class="ident">about</span>(<span class="string">&quot;Generate foreign language bindings&quot;</span>)
-                .<span class="ident">arg</span>(
-                    <span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;language&quot;</span>)
-                        .<span class="ident">required</span>(<span class="bool-val">true</span>)
-                        .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                        .<span class="ident">long</span>(<span class="string">&quot;--language&quot;</span>)
-                        .<span class="ident">short</span>(<span class="string">&quot;-l&quot;</span>)
-                        .<span class="ident">multiple</span>(<span class="bool-val">true</span>)
-                        .<span class="ident">number_of_values</span>(<span class="number">1</span>)
-                        .<span class="ident">possible_values</span>(<span class="ident">POSSIBLE_LANGUAGES</span>)
-                        .<span class="ident">help</span>(<span class="string">&quot;Foreign language(s) for which to build bindings&quot;</span>),
-                )
-                .<span class="ident">arg</span>(
-                    <span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;out_dir&quot;</span>)
-                        .<span class="ident">long</span>(<span class="string">&quot;--out-dir&quot;</span>)
-                        .<span class="ident">short</span>(<span class="string">&quot;-o&quot;</span>)
-                        .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                        .<span class="ident">help</span>(<span class="string">&quot;Directory in which to write generated files. Default is same folder as .udl file.&quot;</span>),
-                )
-                .<span class="ident">arg</span>(
-                    <span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;no_format&quot;</span>)
-                        .<span class="ident">long</span>(<span class="string">&quot;--no-format&quot;</span>)
-                        .<span class="ident">help</span>(<span class="string">&quot;Do not try to format the generated bindings&quot;</span>),
-                )
-                .<span class="ident">arg</span>(<span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;udl_file&quot;</span>).<span class="ident">required</span>(<span class="bool-val">true</span>))
-                .<span class="ident">arg</span>(
-                    <span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;config&quot;</span>)
-                    .<span class="ident">long</span>(<span class="string">&quot;--config-path&quot;</span>)
-                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                    .<span class="ident">help</span>(<span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>)
-                ),
-        )
-        .<span class="ident">subcommand</span>(
-            <span class="ident">clap::SubCommand::with_name</span>(<span class="string">&quot;scaffolding&quot;</span>)
-                .<span class="ident">about</span>(<span class="string">&quot;Generate Rust scaffolding code&quot;</span>)
-                .<span class="ident">arg</span>(
-                    <span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;out_dir&quot;</span>)
-                        .<span class="ident">long</span>(<span class="string">&quot;--out-dir&quot;</span>)
-                        .<span class="ident">short</span>(<span class="string">&quot;-o&quot;</span>)
-                        .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                        .<span class="ident">help</span>(<span class="string">&quot;Directory in which to write generated files. Default is same folder as .udl file.&quot;</span>),
-                )
-                .<span class="ident">arg</span>(
-                    <span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;manifest&quot;</span>)
-                    .<span class="ident">long</span>(<span class="string">&quot;--manifest-path&quot;</span>)
-                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                    .<span class="ident">help</span>(<span class="string">&quot;Path to crate&#39;s Cargo.toml. If not provided, Cargo.toml is assumed to be in the UDL&#39;s file parent folder.&quot;</span>)
-                )
-                .<span class="ident">arg</span>(
-                    <span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;config&quot;</span>)
-                    .<span class="ident">long</span>(<span class="string">&quot;--config-path&quot;</span>)
-                    .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                    .<span class="ident">help</span>(<span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>)
-                )
-                .<span class="ident">arg</span>(
-                    <span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;no_format&quot;</span>)
-                        .<span class="ident">long</span>(<span class="string">&quot;--no-format&quot;</span>)
-                        .<span class="ident">help</span>(<span class="string">&quot;Do not format the generated code with rustfmt (useful for maintainers)&quot;</span>),
-                )
-                .<span class="ident">arg</span>(<span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;udl_file&quot;</span>).<span class="ident">required</span>(<span class="bool-val">true</span>)),
-        )
-        .<span class="ident">subcommand</span>(
-            <span class="ident">clap::SubCommand::with_name</span>(<span class="string">&quot;test&quot;</span>)
-            .<span class="ident">about</span>(<span class="string">&quot;Run test scripts against foreign language bindings&quot;</span>)
-            .<span class="ident">arg</span>(<span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;cdylib_dir&quot;</span>).<span class="ident">required</span>(<span class="bool-val">true</span>).<span class="ident">help</span>(<span class="string">&quot;Path to the directory containing the cdylib the scripts will be testing against.&quot;</span>))
-            .<span class="ident">arg</span>(<span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;udl_file&quot;</span>).<span class="ident">required</span>(<span class="bool-val">true</span>))
-            .<span class="ident">arg</span>(<span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;test_scripts&quot;</span>).<span class="ident">required</span>(<span class="bool-val">true</span>).<span class="ident">multiple</span>(<span class="bool-val">true</span>).<span class="ident">help</span>(<span class="string">&quot;Foreign language(s) test scripts to run&quot;</span>))
-            .<span class="ident">arg</span>(
-                <span class="ident">clap::Arg::with_name</span>(<span class="string">&quot;config&quot;</span>)
-                .<span class="ident">long</span>(<span class="string">&quot;--config-path&quot;</span>)
-                .<span class="ident">takes_value</span>(<span class="bool-val">true</span>)
-                .<span class="ident">help</span>(<span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess from the UDL&#39;s file location.&quot;</span>)
-            )
-        )
-        .<span class="ident">get_matches</span>();
-    <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">subcommand</span>() {
-        (<span class="string">&quot;generate&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">m</span>)) =&gt; <span class="ident"><span class="kw">crate</span>::generate_bindings</span>(
-            <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;udl_file&quot;</span>).<span class="ident">unwrap</span>(), <span class="comment">// Required</span>
-            <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;config&quot;</span>),
-            <span class="ident">m</span>.<span class="ident">values_of</span>(<span class="string">&quot;language&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">collect</span>(), <span class="comment">// Required</span>
-            <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;out_dir&quot;</span>),
-            <span class="op">!</span><span class="ident">m</span>.<span class="ident">is_present</span>(<span class="string">&quot;no_format&quot;</span>),
-        )<span class="question-mark">?</span>,
-        (<span class="string">&quot;scaffolding&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">m</span>)) =&gt; <span class="ident"><span class="kw">crate</span>::generate_component_scaffolding</span>(
-            <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;udl_file&quot;</span>).<span class="ident">unwrap</span>(), <span class="comment">// Required</span>
-            <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;config&quot;</span>),
-            <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;out_dir&quot;</span>),
-            <span class="op">!</span><span class="ident">m</span>.<span class="ident">is_present</span>(<span class="string">&quot;no_format&quot;</span>),
-        )<span class="question-mark">?</span>,
-        (<span class="string">&quot;test&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">m</span>)) =&gt; {
-            <span class="ident"><span class="kw">crate</span>::run_tests</span>(
-                <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;cdylib_dir&quot;</span>).<span class="ident">unwrap</span>(), <span class="comment">// Required</span>
-                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;udl_file&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">to_string_lossy</span>()], <span class="comment">// Required</span>
-                <span class="ident">m</span>.<span class="ident">values_of</span>(<span class="string">&quot;test_scripts&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">collect</span>(), <span class="comment">// Required</span>
-                <span class="ident">m</span>.<span class="ident">value_of_os</span>(<span class="string">&quot;config&quot;</span>),
-            )<span class="question-mark">?</span>
-        }
-        <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;No command specified; try `--help` for some help.&quot;</span>),
-    }
+    <span class="kw">let</span> <span class="ident">cli</span> <span class="op">=</span> <span class="ident">Cli::parse</span>();
+    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">cli</span>.<span class="ident">command</span> {
+        <span class="ident">Commands::Generate</span> {
+            <span class="ident">language</span>,
+            <span class="ident">out_dir</span>,
+            <span class="ident">no_format</span>,
+            <span class="ident">config</span>,
+            <span class="ident">udl_file</span>,
+        } =&gt; <span class="ident"><span class="kw">crate</span>::generate_bindings</span>(
+            <span class="ident">udl_file</span>,
+            <span class="ident">config</span>.<span class="ident">as_ref</span>(),
+            <span class="ident">language</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">String::as_str</span>).<span class="ident">collect</span>(),
+            <span class="ident">out_dir</span>.<span class="ident">as_ref</span>(),
+            <span class="op">!</span><span class="ident">no_format</span>,
+        ),
+        <span class="ident">Commands::Scaffolding</span> {
+            <span class="ident">out_dir</span>,
+            <span class="ident">config</span>,
+            <span class="ident">no_format</span>,
+            <span class="ident">udl_file</span>,
+        } =&gt; <span class="ident"><span class="kw">crate</span>::generate_component_scaffolding</span>(
+            <span class="ident">udl_file</span>,
+            <span class="ident">config</span>.<span class="ident">as_ref</span>(),
+            <span class="ident">out_dir</span>.<span class="ident">as_ref</span>(),
+            <span class="op">!</span><span class="ident">no_format</span>,
+        ),
+        <span class="ident">Commands::Test</span> {
+            <span class="ident">cdylib_dir</span>,
+            <span class="ident">udl_file</span>,
+            <span class="ident">test_scripts</span>,
+            <span class="ident">config</span>,
+        } =&gt; <span class="ident"><span class="kw">crate</span>::run_tests</span>(
+            <span class="ident">cdylib_dir</span>,
+            <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">udl_file</span>.<span class="ident">to_string_lossy</span>()], <span class="comment">// XXX - kinda defeats the purpose of OsString?</span>
+            <span class="ident">test_scripts</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">String::as_str</span>).<span class="ident">collect</span>(),
+            <span class="ident">config</span>.<span class="ident">as_ref</span>(),
+        ),
+    }<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
