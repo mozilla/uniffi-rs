@@ -351,21 +351,4 @@ mod test {
         let rbuf = unsafe { RustBuffer::from_raw_parts(v.as_mut_ptr(), 3, 2) };
         rbuf.destroy_into_vec();
     }
-
-    #[test]
-    #[should_panic]
-    fn test_rustbuffer_vec_capacity_must_fit_in_i32() {
-        RustBuffer::from_vec(Vec::with_capacity((i32::MAX as usize) + 1));
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_rustbuffer_vec_len_must_fit_in_i32() {
-        let mut v = Vec::new();
-        // We don't want to actually materialize a huge vec, so unsafety it is!
-        // This won't cause problems because the contained items are Plain Old Data.
-        // (And also we expect to panic without accessing them).
-        unsafe { v.set_len((i32::MAX as usize) + 1) }
-        RustBuffer::from_vec(v);
-    }
 }
