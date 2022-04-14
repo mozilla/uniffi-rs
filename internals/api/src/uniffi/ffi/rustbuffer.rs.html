@@ -352,23 +352,6 @@
 <span id="352">352</span>
 <span id="353">353</span>
 <span id="354">354</span>
-<span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
-<span id="358">358</span>
-<span id="359">359</span>
-<span id="360">360</span>
-<span id="361">361</span>
-<span id="362">362</span>
-<span id="363">363</span>
-<span id="364">364</span>
-<span id="365">365</span>
-<span id="366">366</span>
-<span id="367">367</span>
-<span id="368">368</span>
-<span id="369">369</span>
-<span id="370">370</span>
-<span id="371">371</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -721,23 +704,6 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0u8</span>, <span class="number">1</span>, <span class="number">2</span>];
         <span class="kw">let</span> <span class="ident">rbuf</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">RustBuffer::from_raw_parts</span>(<span class="ident">v</span>.<span class="ident">as_mut_ptr</span>(), <span class="number">3</span>, <span class="number">2</span>) };
         <span class="ident">rbuf</span>.<span class="ident">destroy_into_vec</span>();
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_rustbuffer_vec_capacity_must_fit_in_i32</span>() {
-        <span class="ident">RustBuffer::from_vec</span>(<span class="ident">Vec::with_capacity</span>((<span class="ident">i32::MAX</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">+</span> <span class="number">1</span>));
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_rustbuffer_vec_len_must_fit_in_i32</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-        <span class="comment">// We don&#39;t want to actually materialize a huge vec, so unsafety it is!</span>
-        <span class="comment">// This won&#39;t cause problems because the contained items are Plain Old Data.</span>
-        <span class="comment">// (And also we expect to panic without accessing them).</span>
-        <span class="kw">unsafe</span> { <span class="ident">v</span>.<span class="ident">set_len</span>((<span class="ident">i32::MAX</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">+</span> <span class="number">1</span>) }
-        <span class="ident">RustBuffer::from_vec</span>(<span class="ident">v</span>);
     }
 }
 </code></pre></div>
