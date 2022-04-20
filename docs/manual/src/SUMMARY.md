@@ -32,6 +32,7 @@
 
 # Internals
 - [Design Principles](./internals/design_principles.md)
-- [Navigating the code](./internals/crates.md)
+- [Navigating the Code](./internals/crates.md)
 - [Lifting, Lowering, and Serialization](./internals/lifting_and_lowering.md)
-- [Managing object references](./internals/object_references.md)
+- [Managing Object References](./internals/object_references.md)
+- [Rendering Foreign Bindings](./internals/rendering_foreign_bindings.md)
