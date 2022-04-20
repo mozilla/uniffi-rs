@@ -4,11 +4,7 @@
 
 use crate::backend::{CodeOracle, CodeType, Literal};
 use crate::interface::{types::Type, Radix};
-use askama::Template;
 use paste::paste;
-
-#[allow(unused_imports)]
-use super::filters;
 
 fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
     fn typed_number(type_: &Type, num_str: String) -> String {
@@ -52,10 +48,8 @@ fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
 }
 
 macro_rules! impl_code_type_for_primitive {
-    ($T:ty, $class_name:literal, $template_file:literal) => {
+    ($T:ty, $class_name:literal) => {
         paste! {
-            #[derive(Template)]
-            #[template(syntax = "kt", escape = "none", path = $template_file )]
             pub struct $T;
 
             impl CodeType for $T  {
@@ -66,24 +60,20 @@ macro_rules! impl_code_type_for_primitive {
                 fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
                     render_literal(oracle, &literal)
                 }
-
-                fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-                    Some(self.render().unwrap())
-                }
             }
         }
     };
 }
 
-impl_code_type_for_primitive!(BooleanCodeType, "Boolean", "BooleanHelper.kt");
-impl_code_type_for_primitive!(StringCodeType, "String", "StringHelper.kt");
-impl_code_type_for_primitive!(Int8CodeType, "Byte", "Int8Helper.kt");
-impl_code_type_for_primitive!(Int16CodeType, "Short", "Int16Helper.kt");
-impl_code_type_for_primitive!(Int32CodeType, "Int", "Int32Helper.kt");
-impl_code_type_for_primitive!(Int64CodeType, "Long", "Int64Helper.kt");
-impl_code_type_for_primitive!(UInt8CodeType, "UByte", "UInt8Helper.kt");
-impl_code_type_for_primitive!(UInt16CodeType, "UShort", "UInt16Helper.kt");
-impl_code_type_for_primitive!(UInt32CodeType, "UInt", "UInt32Helper.kt");
-impl_code_type_for_primitive!(UInt64CodeType, "ULong", "UInt64Helper.kt");
-impl_code_type_for_primitive!(Float32CodeType, "Float", "Float32Helper.kt");
-impl_code_type_for_primitive!(Float64CodeType, "Double", "Float64Helper.kt");
+impl_code_type_for_primitive!(BooleanCodeType, "Boolean");
+impl_code_type_for_primitive!(StringCodeType, "String");
+impl_code_type_for_primitive!(Int8CodeType, "Byte");
+impl_code_type_for_primitive!(Int16CodeType, "Short");
+impl_code_type_for_primitive!(Int32CodeType, "Int");
+impl_code_type_for_primitive!(Int64CodeType, "Long");
+impl_code_type_for_primitive!(UInt8CodeType, "UByte");
+impl_code_type_for_primitive!(UInt16CodeType, "UShort");
+impl_code_type_for_primitive!(UInt32CodeType, "UInt");
+impl_code_type_for_primitive!(UInt64CodeType, "ULong");
+impl_code_type_for_primitive!(Float32CodeType, "Float");
+impl_code_type_for_primitive!(Float64CodeType, "Double");

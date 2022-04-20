@@ -1,9 +1,11 @@
-{% import "macros.kt" as kt %}
-{%- let cbi = self.inner() %}
+{%- let cbi = ci.get_callback_interface_definition(name).unwrap() %}
 {%- let type_name = cbi|type_name %}
-{%- let canonical_type_name = cbi|canonical_name %}
-{%- let ffi_converter = cbi|ffi_converter_name %}
 {%- let foreign_callback = format!("ForeignCallback{}", canonical_type_name) %}
+
+{% if self.include_once_check("CallbackInterfaceRuntime.kt") %}{% include "CallbackInterfaceRuntime.kt" %}{% endif %}
+{{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
+{{- self.add_import("java.util.concurrent.locks.ReentrantLock") }}
+{{- self.add_import("kotlin.concurrent.withLock") }}
 
 // Declaration and FfiConverters for {{ type_name }} Callback Interface
 
@@ -21,10 +23,10 @@ public interface {{ type_name }} {
 internal class {{ foreign_callback }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
     override fun invoke(handle: Handle, method: Int, args: RustBuffer.ByValue, outBuf: RustBufferByReference): Int {
-        val cb = {{ ffi_converter }}.lift(handle)
+        val cb = {{ ffi_converter_name }}.lift(handle)
         return when (method) {
             IDX_CALLBACK_FREE -> {
-                {{ ffi_converter }}.drop(handle)
+                {{ ffi_converter_name }}.drop(handle)
                 // No return value.
                 // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
                 0
@@ -87,7 +89,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
 }
 
 // The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
-public object {{ ffi_converter }}: FfiConverterCallbackInterface<{{ type_name }}>(
+public object {{ ffi_converter_name }}: FfiConverterCallbackInterface<{{ type_name }}>(
     foreignCallback = {{ foreign_callback }}()
 ) {
     override fun register(lib: _UniFFILib) {

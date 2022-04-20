@@ -38,8 +38,11 @@ import {{ imported_class }}
 {% include "NamespaceLibraryTemplate.kt" %}
 
 // Public interface members begin here.
-{% for code in self.declaration_code() %}
-{{ code }}
+{{ type_helper_code }}
+
+{%- for func in ci.iter_function_definitions() %}
+{%- include "TopLevelFunctionTemplate.kt" %}
 {%- endfor %}
+
 
 {% import "macros.kt" as kt %}
