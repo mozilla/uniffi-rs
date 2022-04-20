@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["CallbackInterfaceCodeType",""],["KotlinCallbackInterface",""],["KotlinCallbackInterfaceRuntime",""]]});
+initSidebarItems({"struct":[["CallbackInterfaceCodeType",""]]});

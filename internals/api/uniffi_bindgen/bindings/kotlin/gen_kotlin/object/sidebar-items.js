@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["KotlinObject",""],["KotlinObjectRuntime",""],["ObjectCodeType",""]]});
+initSidebarItems({"struct":[["ObjectCodeType",""]]});

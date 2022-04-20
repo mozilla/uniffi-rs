@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["EnumCodeType",""],["KotlinEnum",""]]});
+initSidebarItems({"struct":[["EnumCodeType",""]]});

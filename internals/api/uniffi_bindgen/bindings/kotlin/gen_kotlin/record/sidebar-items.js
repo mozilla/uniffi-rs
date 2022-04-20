@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["KotlinRecord",""],["RecordCodeType",""]]});
+initSidebarItems({"struct":[["RecordCodeType",""]]});

@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ErrorCodeType",""],["KotlinError",""]]});
+initSidebarItems({"struct":[["ErrorCodeType",""]]});

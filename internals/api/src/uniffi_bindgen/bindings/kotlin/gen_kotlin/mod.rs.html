@@ -373,48 +373,20 @@
 <span id="373">373</span>
 <span id="374">374</span>
 <span id="375">375</span>
-<span id="376">376</span>
-<span id="377">377</span>
-<span id="378">378</span>
-<span id="379">379</span>
-<span id="380">380</span>
-<span id="381">381</span>
-<span id="382">382</span>
-<span id="383">383</span>
-<span id="384">384</span>
-<span id="385">385</span>
-<span id="386">386</span>
-<span id="387">387</span>
-<span id="388">388</span>
-<span id="389">389</span>
-<span id="390">390</span>
-<span id="391">391</span>
-<span id="392">392</span>
-<span id="393">393</span>
-<span id="394">394</span>
-<span id="395">395</span>
-<span id="396">396</span>
-<span id="397">397</span>
-<span id="398">398</span>
-<span id="399">399</span>
-<span id="400">400</span>
-<span id="401">401</span>
-<span id="402">402</span>
-<span id="403">403</span>
-<span id="404">404</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
 <span class="kw">use</span> <span class="ident">std::borrow::Borrow</span>;
-<span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
+<span class="kw">use</span> <span class="ident">std::cell::RefCell</span>;
+<span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">BTreeSet</span>, <span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
 
 <span class="kw">use</span> <span class="ident">anyhow::Result</span>;
 <span class="kw">use</span> <span class="ident">askama::Template</span>;
 <span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">CamelCase</span>, <span class="ident">MixedCase</span>, <span class="ident">ShoutySnakeCase</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>::{<span class="ident">CodeDeclaration</span>, <span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">TemplateExpression</span>, <span class="ident">TypeIdentifier</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>::{<span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">TemplateExpression</span>, <span class="ident">TypeIdentifier</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::interface</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::MergeWith</span>;
 
@@ -424,7 +396,6 @@
 <span class="kw">mod</span> <span class="ident">enum_</span>;
 <span class="kw">mod</span> <span class="ident">error</span>;
 <span class="kw">mod</span> <span class="ident">external</span>;
-<span class="kw">mod</span> <span class="ident">function</span>;
 <span class="kw">mod</span> <span class="ident">miscellany</span>;
 <span class="kw">mod</span> <span class="ident">object</span>;
 <span class="kw">mod</span> <span class="ident">primitives</span>;
@@ -491,119 +462,100 @@
 
 <span class="comment">// Generate kotlin bindings for the given ComponentInterface, as a string.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">KotlinWrapper::new</span>(<span class="ident">KotlinCodeOracle</span>, <span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
+    <span class="ident">KotlinWrapper::new</span>(<span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
         .<span class="ident">render</span>()
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow::anyhow!</span>(<span class="string">&quot;failed to render kotlin bindings&quot;</span>))
+}
+
+<span class="doccomment">/// Renders Kotlin helper code for all types</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This template is a bit different than others in that it stores internal state from the render</span>
+<span class="doccomment">/// process.  Make sure to only call `render()` once.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
+<span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;kt&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;Types.kt&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TypeRenderer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">kotlin_config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Config</span>,
+    <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>,
+    <span class="comment">// Track included modules for the `include_once()` macro</span>
+    <span class="ident">include_once_names</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="comment">// Track imports added with the `add_import()` macro</span>
+    <span class="ident">imports</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TypeRenderer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">kotlin_config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> {
+            <span class="ident">kotlin_config</span>,
+            <span class="ident">ci</span>,
+            <span class="ident">include_once_names</span>: <span class="ident">RefCell::new</span>(<span class="ident">HashSet::new</span>()),
+            <span class="ident">imports</span>: <span class="ident">RefCell::new</span>(<span class="ident">BTreeSet::new</span>()),
+        }
+    }
+
+    <span class="comment">// Get the package name for an external type</span>
+    <span class="kw">fn</span> <span class="ident">external_type_package_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">crate_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">kotlin_config</span>.<span class="ident">external_packages</span>.<span class="ident">get</span>(<span class="ident">crate_name</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> =&gt; <span class="ident">crate_name</span>.<span class="ident">to_string</span>(),
+        }
+    }
+
+    <span class="comment">// The following methods are used by the `Types.kt` macros.</span>
+
+    <span class="comment">// Helper for the including a template, but only once.</span>
+    <span class="comment">//</span>
+    <span class="comment">// The first time this is called with a name it will return true, indicating that we should</span>
+    <span class="comment">// include the template.  Subsequent calls will return false.</span>
+    <span class="kw">fn</span> <span class="ident">include_once_check</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">include_once_names</span>
+            .<span class="ident">borrow_mut</span>()
+            .<span class="ident">insert</span>(<span class="ident">name</span>.<span class="ident">to_string</span>())
+    }
+
+    <span class="comment">// Helper to add an import statement</span>
+    <span class="comment">//</span>
+    <span class="comment">// Call this inside your template to cause an import statement to be added at the top of the</span>
+    <span class="comment">// file.  Imports will be sorted and de-deuped.</span>
+    <span class="comment">//</span>
+    <span class="comment">// Returns an empty string so that it can be used inside an askama `{{ }}` block.</span>
+    <span class="kw">fn</span> <span class="ident">add_import</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
+        <span class="self">self</span>.<span class="ident">imports</span>.<span class="ident">borrow_mut</span>().<span class="ident">insert</span>(<span class="ident">name</span>.<span class="ident">to_owned</span>());
+        <span class="string">&quot;&quot;</span>
+    }
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
 <span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;kt&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;wrapper.kt&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KotlinWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">oracle</span>: <span class="ident">KotlinCodeOracle</span>,
     <span class="ident">config</span>: <span class="ident">Config</span>,
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>,
+    <span class="ident">type_helper_code</span>: <span class="ident">String</span>,
+    <span class="ident">type_imports</span>: <span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
+
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">KotlinWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">oracle</span>: <span class="ident">KotlinCodeOracle</span>, <span class="ident">config</span>: <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">oracle</span>, <span class="ident">config</span>, <span class="ident">ci</span> }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">type_renderer</span> <span class="op">=</span> <span class="ident">TypeRenderer::new</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>, <span class="ident">ci</span>);
+        <span class="kw">let</span> <span class="ident">type_helper_code</span> <span class="op">=</span> <span class="ident">type_renderer</span>.<span class="ident">render</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">type_imports</span> <span class="op">=</span> <span class="ident">type_renderer</span>.<span class="ident">imports</span>.<span class="ident">into_inner</span>();
+        <span class="self">Self</span> {
+            <span class="ident">config</span>,
+            <span class="ident">ci</span>,
+            <span class="ident">type_helper_code</span>,
+            <span class="ident">type_imports</span>,
+        }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">members</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ci</span>;
-        <span class="macro">vec!</span>[
-            <span class="ident">Box::new</span>(<span class="ident">object::KotlinObjectRuntime::new</span>(<span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>,
-            <span class="ident">Box::new</span>(<span class="ident">callback_interface::KotlinCallbackInterfaceRuntime::new</span>(<span class="ident">ci</span>))
-                <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>,
-        ]
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">chain</span>(
-            <span class="ident">ci</span>.<span class="ident">iter_enum_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
-                <span class="ident">Box::new</span>(<span class="ident">enum_::KotlinEnum::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-            }),
-        )
-        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_function_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
-            <span class="ident">Box::new</span>(<span class="ident">function::KotlinFunction::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-        }))
-        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_object_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
-            <span class="ident">Box::new</span>(<span class="ident">object::KotlinObject::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-        }))
-        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_record_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
-            <span class="ident">Box::new</span>(<span class="ident">record::KotlinRecord::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-        }))
-        .<span class="ident">chain</span>(
-            <span class="ident">ci</span>.<span class="ident">iter_error_definitions</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
-                <span class="ident">Box::new</span>(<span class="ident">error::KotlinError::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-            }),
-        )
-        .<span class="ident">chain</span>(
-            <span class="ident">ci</span>.<span class="ident">iter_callback_interface_definitions</span>()
-                .<span class="ident">into_iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> {
-                    <span class="ident">Box::new</span>(<span class="ident">callback_interface::KotlinCallbackInterface::new</span>(<span class="ident">inner</span>, <span class="ident">ci</span>))
-                        <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-                }),
-        )
-        .<span class="ident">chain</span>(<span class="ident">ci</span>.<span class="ident">iter_custom_types</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="ident">type_</span>)<span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">custom_types</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>).<span class="ident">cloned</span>();
-            <span class="ident">Box::new</span>(<span class="ident">custom::KotlinCustomType::new</span>(<span class="ident">name</span>, <span class="ident">type_</span>, <span class="ident">config</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-        }))
-        .<span class="ident">chain</span>(
-            <span class="ident">ci</span>.<span class="ident">iter_external_types</span>()
-                .<span class="ident">into_iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="ident">crate_name</span>)<span class="op">|</span> {
-                    <span class="kw">let</span> <span class="ident">package_name</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">external_packages</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">crate_name</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
-                        <span class="prelude-val">None</span> =&gt; <span class="ident">crate_name</span>,
-                    };
-                    <span class="ident">Box::new</span>(<span class="ident">external::KotlinExternalType::new</span>(<span class="ident">package_name</span>, <span class="ident">name</span>))
-                        <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeDeclaration</span><span class="op">&gt;</span>
-                }),
-        )
-        .<span class="ident">collect</span>()
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialization_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">oracle</span>;
-        <span class="self">self</span>.<span class="ident">members</span>()
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialization_fns</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">ci</span>
+            .<span class="ident">iter_types</span>()
             .<span class="ident">into_iter</span>()
-            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">member</span><span class="op">|</span> <span class="ident">member</span>.<span class="ident">initialization_code</span>(<span class="ident">oracle</span>))
-            .<span class="ident">collect</span>()
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">declaration_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">oracle</span>;
-        <span class="self">self</span>.<span class="ident">members</span>()
-            .<span class="ident">into_iter</span>()
-            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">member</span><span class="op">|</span> <span class="ident">member</span>.<span class="ident">definition_code</span>(<span class="ident">oracle</span>))
-            .<span class="ident">chain</span>(
-                <span class="self">self</span>.<span class="ident">ci</span>
-                    .<span class="ident">iter_types</span>()
-                    .<span class="ident">into_iter</span>()
-                    .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">type_</span><span class="op">|</span> <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>).<span class="ident">helper_code</span>(<span class="ident">oracle</span>)),
-            )
+            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">initialization_fn</span>(<span class="kw-2">&amp;</span><span class="ident">KotlinCodeOracle</span>))
             .<span class="ident">collect</span>()
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">imports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">oracle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">oracle</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">imports</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">members</span>()
-            .<span class="ident">into_iter</span>()
-            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">member</span><span class="op">|</span> <span class="ident">member</span>.<span class="ident">imports</span>(<span class="ident">oracle</span>))
-            .<span class="ident">flatten</span>()
-            .<span class="ident">chain</span>(
-                <span class="self">self</span>.<span class="ident">ci</span>
-                    .<span class="ident">iter_types</span>()
-                    .<span class="ident">into_iter</span>()
-                    .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">type_</span><span class="op">|</span> <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>).<span class="ident">imports</span>(<span class="ident">oracle</span>))
-                    .<span class="ident">flatten</span>(),
-            )
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-            .<span class="ident">into_iter</span>()
-            .<span class="ident">collect</span>();
-
-        <span class="ident">imports</span>.<span class="ident">sort</span>();
-        <span class="ident">imports</span>
+        <span class="self">self</span>.<span class="ident">type_imports</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>()
     }
 }
 
@@ -611,11 +563,14 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KotlinCodeOracle</span>;
 
 <span class="kw">impl</span> <span class="ident">KotlinCodeOracle</span> {
+    <span class="comment">// Map `Type` instances to a `Box&lt;dyn CodeType&gt;` for that type.</span>
+    <span class="comment">//</span>
+    <span class="comment">// There is a companion match in `templates/Types.kt` which performs a similar function for the</span>
+    <span class="comment">// template code.</span>
+    <span class="comment">//</span>
+    <span class="comment">//   - When adding additional types here, make sure to also add a match arm to the `Types.kt` template.</span>
+    <span class="comment">//   - To keep things managable, let&#39;s try to limit ourselves to these 2 mega-matches</span>
     <span class="kw">fn</span> <span class="ident">create_code_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="ident">TypeIdentifier</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="comment">// I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}</span>
-        <span class="comment">// However, there&#39;s some violence and gore I need to do to (temporarily) make the oracle usable from filters.</span>
-
-        <span class="comment">// Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &amp;dyn CodeOracle</span>
         <span class="kw">match</span> <span class="ident">type_</span> {
             <span class="ident">Type::UInt8</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt8CodeType</span>),
             <span class="ident">Type::Int8</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Int8CodeType</span>),
@@ -640,22 +595,9 @@
             <span class="ident">Type::CallbackInterface</span>(<span class="ident">id</span>) =&gt; {
                 <span class="ident">Box::new</span>(<span class="ident">callback_interface::CallbackInterfaceCodeType::new</span>(<span class="ident">id</span>))
             }
-
-            <span class="ident">Type::Optional</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
-                <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
-                <span class="ident">Box::new</span>(<span class="ident">compounds::OptionalCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
-            }
-            <span class="ident">Type::Sequence</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
-                <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
-                <span class="ident">Box::new</span>(<span class="ident">compounds::SequenceCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
-            }
-            <span class="ident">Type::Map</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
-                <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
-                <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
-            }
+            <span class="ident">Type::Optional</span>(<span class="ident">inner</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">compounds::OptionalCodeType::new</span>(<span class="kw-2">*</span><span class="ident">inner</span>)),
+            <span class="ident">Type::Sequence</span>(<span class="ident">inner</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">compounds::SequenceCodeType::new</span>(<span class="kw-2">*</span><span class="ident">inner</span>)),
+            <span class="ident">Type::Map</span>(<span class="ident">inner</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="kw-2">*</span><span class="ident">inner</span>)),
             <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">Box::new</span>(<span class="ident">external::ExternalCodeType::new</span>(<span class="ident">name</span>)),
             <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">Box::new</span>(<span class="ident">custom::CustomCodeType::new</span>(<span class="ident">name</span>)),
         }
