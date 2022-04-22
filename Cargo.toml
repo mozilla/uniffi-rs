@@ -5,6 +5,7 @@ members = [
   "uniffi_macros",
   "uniffi_testing",
   "uniffi",
+  "weedle2",
   "examples/arithmetic",
   "examples/callbacks",
   "examples/geometry",
