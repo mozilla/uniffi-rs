@@ -1,0 +1,17 @@
+[package]
+name = "weedle2"
+version = "2.0.0"
+authors = ["Sharad Chand <sharad.d.chand@gmail.com>"]
+description = "A WebIDL Parser"
+license = "MIT"
+documentation = "https://docs.rs/weedle2"
+homepage = "https://github.com/badboy/weedle"
+repository = "https://github.com/badboy/weedle"
+readme = "./README.md"
+edition = "2018"
+
+[lib]
+name = "weedle"
+
+[dependencies]
+nom = { version = "5.0.0", default-features = false, features = ["std"] }
