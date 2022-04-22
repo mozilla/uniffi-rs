@@ -359,7 +359,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::hash_map::Entry</span>, <span class="ident">collections::BTreeSet</span>, <span class="ident">collections::HashMap</span>};
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">heck::CamelCase</span>;
+<span class="kw">use</span> <span class="ident">heck::ToUpperCamelCase</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi::FFIType</span>;
 
@@ -448,8 +448,8 @@
             <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Sequence{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
             <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;Map{}{}&quot;</span>,
-                <span class="ident">k</span>.<span class="ident">canonical_name</span>().<span class="ident">to_camel_case</span>(),
-                <span class="ident">v</span>.<span class="ident">canonical_name</span>().<span class="ident">to_camel_case</span>()
+                <span class="ident">k</span>.<span class="ident">canonical_name</span>().<span class="ident">to_upper_camel_case</span>(),
+                <span class="ident">v</span>.<span class="ident">canonical_name</span>().<span class="ident">to_upper_camel_case</span>()
             ),
             <span class="comment">// A type that exists externally.</span>
             <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="ident">name</span>),
