@@ -8,6 +8,15 @@
 // seems to show that single line as context for the user.
 uniffi::assert_compatible_version!("{{ uniffi_version }}"); // Please check that you depend on version {{ uniffi_version }} of the `uniffi` crate.
 
+{% for ty in ci.iter_types() %}
+{%- match ty %}
+{%- when Type::Map with (k, v) -%}
+{# Next comment MUST be after the line to be in the compiler output #}
+uniffi::deps::static_assertions::assert_impl_all!({{ k|type_rs }}: ::std::cmp::Eq, ::std::hash::Hash); // record<{{ k|type_rs }}, {{ v|type_rs }}>
+{%- else %}
+{%- endmatch %}
+{% endfor %}
+
 {% include "RustBuffer.rs" %}
 
 // Error definitions, corresponding to `error` in the UDL.
