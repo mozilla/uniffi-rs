@@ -666,6 +666,9 @@
 <span id="666">666</span>
 <span id="667">667</span>
 <span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -1206,15 +1209,18 @@
 <span class="doccomment">/// We write a `i32` entries count followed by each entry (string</span>
 <span class="doccomment">/// key followed by the value) in turn.</span>
 <span class="doccomment">/// (It&#39;s a signed type due to limits of the JVM).</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">V</span>: <span class="ident">FfiConverter</span><span class="op">&gt;</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">V</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">V::RustType</span><span class="op">&gt;</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">FfiConverter</span>, <span class="ident">V</span>: <span class="ident">FfiConverter</span><span class="op">&gt;</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">K::RustType</span>: <span class="ident">std::hash::Hash</span> <span class="op">+</span> <span class="ident">Eq</span>,
+{
+    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">K::RustType</span>, <span class="ident">V::RustType</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="comment">// TODO: would be nice not to panic here :-/</span>
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">i32::try_from</span>(<span class="ident">obj</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
         <span class="ident">buf</span>.<span class="ident">put_i32</span>(<span class="ident">len</span>); <span class="comment">// We limit HashMaps to i32::MAX entries</span>
         <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">obj</span>.<span class="ident">into_iter</span>() {
-            <span class="op">&lt;</span><span class="ident">String</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">key</span>, <span class="ident">buf</span>);
+            <span class="op">&lt;</span><span class="ident">K</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">key</span>, <span class="ident">buf</span>);
             <span class="op">&lt;</span><span class="ident">V</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">value</span>, <span class="ident">buf</span>);
         }
     }
@@ -1224,7 +1230,7 @@
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">buf</span>.<span class="ident">get_i32</span>())<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="ident">HashMap::with_capacity</span>(<span class="ident">len</span>);
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">len</span> {
-            <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">String::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">K</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">V</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>;
             <span class="ident">map</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">value</span>);
         }

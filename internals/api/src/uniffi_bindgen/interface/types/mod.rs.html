@@ -327,6 +327,12 @@
 <span id="327">327</span>
 <span id="328">328</span>
 <span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -353,6 +359,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::hash_map::Entry</span>, <span class="ident">collections::BTreeSet</span>, <span class="ident">collections::HashMap</span>};
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">heck::CamelCase</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi::FFIType</span>;
 
@@ -390,7 +397,7 @@
     <span class="comment">// Structurally recursive types.</span>
     <span class="ident">Optional</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
     <span class="ident">Sequence</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
-    <span class="ident">Map</span>(<span class="comment">/* String, */</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
+    <span class="ident">Map</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
     <span class="comment">// An FfiConverter we `use` from an external crate</span>
     <span class="ident">External</span> { <span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">crate_name</span>: <span class="ident">String</span> },
     <span class="comment">// Custom type on the scaffolding side</span>
@@ -439,7 +446,11 @@
             <span class="comment">// acccidentally generating name collisions.</span>
             <span class="ident">Type::Optional</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Optional{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
             <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Sequence{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
-            <span class="ident">Type::Map</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Map{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
+            <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
+                <span class="string">&quot;Map{}{}&quot;</span>,
+                <span class="ident">k</span>.<span class="ident">canonical_name</span>().<span class="ident">to_camel_case</span>(),
+                <span class="ident">v</span>.<span class="ident">canonical_name</span>().<span class="ident">to_camel_case</span>()
+            ),
             <span class="comment">// A type that exists externally.</span>
             <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="ident">name</span>),
         }
@@ -484,7 +495,7 @@
             <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type::Optional</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type::Sequence</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type::Map</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Map</span>(<span class="kw">_</span>, <span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type::Timestamp</span>
             <span class="op">|</span> <span class="ident">Type::Duration</span>
             <span class="op">|</span> <span class="ident">Type::External</span> { .. } =&gt; <span class="ident">FFIType::RustBuffer</span>,
@@ -619,7 +630,8 @@
 <span class="kw">impl</span> <span class="ident">IterTypes</span> <span class="kw">for</span> <span class="ident">Type</span> {
     <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">nested_types</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Type::Optional</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type::Map</span>(<span class="ident">t</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">t</span>.<span class="ident">iter_types</span>()),
+            <span class="ident">Type::Optional</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">t</span>.<span class="ident">iter_types</span>()),
+            <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">Box::new</span>(<span class="ident">k</span>.<span class="ident">iter_types</span>().<span class="ident">chain</span>(<span class="ident">v</span>.<span class="ident">iter_types</span>())) <span class="kw">as</span> <span class="kw">_</span>),
             <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         };
         <span class="ident">Box::new</span>(<span class="ident">std::iter::once</span>(<span class="self">self</span>).<span class="ident">chain</span>(<span class="ident">nested_types</span>.<span class="ident">into_iter</span>().<span class="ident">flatten</span>()))

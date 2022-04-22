@@ -379,6 +379,7 @@
 <span id="379">379</span>
 <span id="380">380</span>
 <span id="381">381</span>
+<span id="382">382</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -600,10 +601,11 @@
                 <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
                 <span class="ident">Box::new</span>(<span class="ident">compounds::SequenceCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
             }
-            <span class="ident">Type::Map</span>(<span class="kw-2">ref</span> <span class="ident">inner</span>) =&gt; {
+            <span class="ident">Type::Map</span>(<span class="kw-2">ref</span> <span class="ident">key</span>, <span class="kw-2">ref</span> <span class="ident">value</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">type_</span>.<span class="ident">clone</span>();
-                <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">inner</span>.<span class="ident">to_owned</span>();
-                <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="ident">inner</span>, <span class="ident">outer</span>))
+                <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">key</span>.<span class="ident">to_owned</span>();
+                <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">value</span>.<span class="ident">to_owned</span>();
+                <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">outer</span>))
             }
             <span class="ident">Type::External</span> { <span class="ident">name</span>, <span class="ident">crate_name</span> } =&gt; {
                 <span class="ident">Box::new</span>(<span class="ident">external::ExternalCodeType::new</span>(<span class="ident">name</span>, <span class="ident">crate_name</span>))

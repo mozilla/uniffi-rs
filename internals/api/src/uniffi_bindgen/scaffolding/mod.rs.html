@@ -137,6 +137,11 @@
 <span id="137">137</span>
 <span id="138">138</span>
 <span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -186,7 +191,11 @@
             <span class="ident">Type::CallbackInterface</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Box&lt;dyn {}&gt;&quot;</span>, <span class="ident">name</span>),
             <span class="ident">Type::Optional</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
             <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type::Map</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::collections::HashMap&lt;String, {}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
+                <span class="string">&quot;std::collections::HashMap&lt;{}, {}&gt;&quot;</span>,
+                <span class="ident">type_rs</span>(<span class="ident">k</span>)<span class="question-mark">?</span>,
+                <span class="ident">type_rs</span>(<span class="ident">v</span>)<span class="question-mark">?</span>
+            ),
             <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;External types coming to a uniffi near you soon!&quot;</span>),
         })
@@ -237,9 +246,10 @@
             <span class="comment">// inner type.</span>
             <span class="ident">Type::Optional</span>(<span class="ident">inner</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
             <span class="ident">Type::Sequence</span>(<span class="ident">inner</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type::Map</span>(<span class="ident">inner</span>) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;std::collections::HashMap&lt;String, {}&gt;&quot;</span>,
-                <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>
+            <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
+                <span class="string">&quot;std::collections::HashMap&lt;{}, {}&gt;&quot;</span>,
+                <span class="ident">ffi_converter_name</span>(<span class="ident">k</span>)<span class="question-mark">?</span>,
+                <span class="ident">ffi_converter_name</span>(<span class="ident">v</span>)<span class="question-mark">?</span>
             ),
             <span class="comment">// External and Wrapped bytes have FfiConverters with a predictable name based on the type name.</span>
             <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } =&gt; {
