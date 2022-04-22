@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use askama::Template;
-use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
+use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
@@ -240,7 +240,7 @@ impl CodeOracle for PythonCodeOracle {
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String {
-        nm.to_string().to_camel_case()
+        nm.to_string().to_upper_camel_case()
     }
 
     /// Get the idiomatic Python rendering of a function name.

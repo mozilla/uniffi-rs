@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use askama::Template;
-use heck::{CamelCase, ShoutySnakeCase, SnakeCase};
+use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 
@@ -133,7 +133,7 @@ mod filters {
     }
 
     pub fn class_name_rb(nm: &str) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_camel_case())
+        Ok(nm.to_string().to_upper_camel_case())
     }
 
     pub fn fn_name_rb(nm: &str) -> Result<String, askama::Error> {

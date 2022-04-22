@@ -7,7 +7,7 @@ use askama::Template;
 use std::borrow::Borrow;
 
 use super::interface::*;
-use heck::SnakeCase;
+use heck::ToSnakeCase;
 
 #[derive(Template)]
 #[template(syntax = "rs", escape = "none", path = "scaffolding_template.rs")]

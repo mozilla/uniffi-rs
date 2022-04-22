@@ -7,7 +7,7 @@ use std::collections::{HashMap, HashSet};
 
 use anyhow::{anyhow, Result};
 use askama::Template;
-use heck::{CamelCase, MixedCase};
+use heck::{ToLowerCamelCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
@@ -368,22 +368,22 @@ impl CodeOracle for SwiftCodeOracle {
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String {
-        nm.to_string().to_camel_case()
+        nm.to_string().to_upper_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of a function name.
     fn fn_name(&self, nm: &str) -> String {
-        nm.to_string().to_mixed_case()
+        nm.to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
     fn var_name(&self, nm: &str) -> String {
-        nm.to_string().to_mixed_case()
+        nm.to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &str) -> String {
-        nm.to_string().to_mixed_case()
+        nm.to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of an exception name.
