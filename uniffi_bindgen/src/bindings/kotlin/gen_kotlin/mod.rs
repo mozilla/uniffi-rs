@@ -8,7 +8,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 use anyhow::Result;
 use askama::Template;
-use heck::{CamelCase, MixedCase, ShoutySnakeCase};
+use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use crate::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
@@ -236,17 +236,17 @@ impl CodeOracle for KotlinCodeOracle {
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String {
-        nm.to_string().to_camel_case()
+        nm.to_string().to_upper_camel_case()
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
     fn fn_name(&self, nm: &str) -> String {
-        nm.to_string().to_mixed_case()
+        nm.to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
     fn var_name(&self, nm: &str) -> String {
-        nm.to_string().to_mixed_case()
+        nm.to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
