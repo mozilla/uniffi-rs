@@ -177,7 +177,7 @@ mod filters {
                     format!("{}.map {{ |v| {} }}", nm, coerce_code)
                 }
             }
-            Type::Map(t) => {
+            Type::Map(_k, t) => {
                 let k_coerce_code = coerce_rb("k", &Type::String)?;
                 let v_coerce_code = coerce_rb("v", t)?;
 
@@ -218,7 +218,7 @@ mod filters {
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
-            | Type::Map(_) => format!(
+            | Type::Map(_, _) => format!(
                 "RustBuffer.alloc_from_{}({})",
                 class_name_rb(&type_.canonical_name())?,
                 nm
@@ -250,7 +250,7 @@ mod filters {
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
-            | Type::Map(_) => format!(
+            | Type::Map(_, _) => format!(
                 "{}.consumeInto{}",
                 nm,
                 class_name_rb(&type_.canonical_name())?

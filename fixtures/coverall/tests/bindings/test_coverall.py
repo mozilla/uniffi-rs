@@ -193,5 +193,17 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual("that", d.category)
         self.assertEqual(42, d.integer)
 
+    def test_dict_with_non_string_keys(self):
+        coveralls = Coveralls("test_dict")
+
+        dict1 = coveralls.get_dict(key="answer", value=42)
+        assert dict1["answer"] == 42
+
+        dict2 = coveralls.get_dict2(key="answer", value=42)
+        assert dict2["answer"] == 42
+
+        dict3 = coveralls.get_dict3(key=31, value=42)
+        assert dict3[31] == 42
+
 if __name__=='__main__':
     unittest.main()

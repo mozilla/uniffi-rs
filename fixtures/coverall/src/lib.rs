@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -235,6 +236,24 @@ impl Coveralls {
 
     fn get_status(&self, status: String) -> String {
         format!("status: {}", status)
+    }
+
+    fn get_dict(&self, key: String, value: u64) -> HashMap<String, u64> {
+        let mut map = HashMap::new();
+        map.insert(key, value);
+        map
+    }
+
+    fn get_dict2(&self, key: String, value: u64) -> HashMap<String, u64> {
+        let mut map = HashMap::new();
+        map.insert(key, value);
+        map
+    }
+
+    fn get_dict3(&self, key: u32, value: u64) -> HashMap<u32, u64> {
+        let mut map = HashMap::new();
+        map.insert(key, value);
+        map
     }
 }
 

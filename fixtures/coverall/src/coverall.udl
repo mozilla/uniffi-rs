@@ -106,6 +106,15 @@ interface Coveralls {
 
     // regression test: using a parameter name that was also used by UniFFI runtime code
     string get_status(string status);
+
+    /// Simple string->integer dictionary, using the legacy `DOMString` type.
+    record<DOMString, u64> get_dict(string key, u64 value);
+
+    /// Simple string->integer dictionary, using the classic string type
+    record<string, u64> get_dict2(string key, u64 value);
+
+    /// integer->integer dictionary
+    record<u32, u64> get_dict3(u32 key, u64 value);
 };
 
 // All coveralls end up with a patch.

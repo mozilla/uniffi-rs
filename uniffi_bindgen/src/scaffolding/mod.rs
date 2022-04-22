@@ -47,7 +47,11 @@ mod filters {
             Type::CallbackInterface(name) => format!("Box<dyn {}>", name),
             Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
             Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),
-            Type::Map(t) => format!("std::collections::HashMap<String, {}>", type_rs(t)?),
+            Type::Map(k, v) => format!(
+                "std::collections::HashMap<{}, {}>",
+                type_rs(k)?,
+                type_rs(v)?
+            ),
             Type::Custom { name, .. } => name.clone(),
             Type::External { .. } => panic!("External types coming to a uniffi near you soon!"),
         })
@@ -98,9 +102,10 @@ mod filters {
             // inner type.
             Type::Optional(inner) => format!("std::option::Option<{}>", ffi_converter_name(inner)?),
             Type::Sequence(inner) => format!("std::vec::Vec<{}>", ffi_converter_name(inner)?),
-            Type::Map(inner) => format!(
-                "std::collections::HashMap<String, {}>",
-                ffi_converter_name(inner)?
+            Type::Map(k, v) => format!(
+                "std::collections::HashMap<{}, {}>",
+                ffi_converter_name(k)?,
+                ffi_converter_name(v)?
             ),
             // External and Wrapped bytes have FfiConverters with a predictable name based on the type name.
             Type::Custom { name, .. } | Type::External { name, .. } => {

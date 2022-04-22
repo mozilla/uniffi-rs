@@ -4,10 +4,8 @@
 
 use super::filters;
 use crate::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
-use crate::interface::types::Type;
 use askama::Template;
 use paste::paste;
-use std::borrow::Borrow;
 
 fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
     match literal {
@@ -96,12 +94,64 @@ fn sequence_coerce(this: &SequenceCodeType, oracle: &dyn CodeOracle, nm: &str) -
         nm
     )
 }
-impl_code_type_for_compound!(MapCodeType, "Map{}", "MapTemplate.py", map_coerce);
-fn map_coerce(this: &MapCodeType, oracle: &dyn CodeOracle, nm: &str) -> String {
-    format!(
-        "dict(({}, {}) for (k, v) in {}.items())",
-        oracle.find(&Type::String).coerce(oracle, &"k".to_string()),
-        oracle.find(this.inner()).coerce(oracle, &"v".to_string()),
-        nm
-    )
+
+#[derive(Template)]
+#[template(syntax = "py", escape = "none", path = "MapTemplate.py")]
+pub struct MapCodeType {
+    key: TypeIdentifier,
+    value: TypeIdentifier,
+    outer: TypeIdentifier,
+}
+
+impl MapCodeType {
+    pub fn new(key: TypeIdentifier, value: TypeIdentifier, outer: TypeIdentifier) -> Self {
+        Self { key, value, outer }
+    }
+
+    fn key(&self) -> &TypeIdentifier {
+        &self.key
+    }
+
+    fn value(&self) -> &TypeIdentifier {
+        &self.value
+    }
+
+    fn outer(&self) -> &TypeIdentifier {
+        &self.outer
+    }
+}
+
+impl CodeType for MapCodeType {
+    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
+        format!(
+            "Map<{}, {}>",
+            self.key().type_label(oracle),
+            self.value().type_label(oracle),
+        )
+    }
+
+    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
+        format!(
+            "Map{}{}",
+            self.key().type_label(oracle),
+            self.value().type_label(oracle),
+        )
+    }
+
+    fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
+        render_literal(oracle, literal, self.value())
+    }
+
+    fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
+        Some(self.render().unwrap())
+    }
+
+    fn coerce(&self, oracle: &dyn CodeOracle, nm: &str) -> String {
+        format!(
+            "dict(({}, {}) for (k, v) in {}.items())",
+            self.key().coerce(oracle, &"k".to_string()),
+            self.value().coerce(oracle, &"v".to_string()),
+            nm
+        )
+    }
 }

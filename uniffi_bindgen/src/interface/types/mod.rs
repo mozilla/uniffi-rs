@@ -24,6 +24,7 @@
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
 
 use anyhow::{bail, Result};
+use heck::CamelCase;
 
 use super::ffi::FFIType;
 
@@ -61,7 +62,7 @@ pub enum Type {
     // Structurally recursive types.
     Optional(Box<Type>),
     Sequence(Box<Type>),
-    Map(/* String, */ Box<Type>),
+    Map(Box<Type>, Box<Type>),
     // An FfiConverter we `use` from an external crate
     External { name: String, crate_name: String },
     // Custom type on the scaffolding side
@@ -110,7 +111,11 @@ impl Type {
             // acccidentally generating name collisions.
             Type::Optional(t) => format!("Optional{}", t.canonical_name()),
             Type::Sequence(t) => format!("Sequence{}", t.canonical_name()),
-            Type::Map(t) => format!("Map{}", t.canonical_name()),
+            Type::Map(k, v) => format!(
+                "Map{}{}",
+                k.canonical_name().to_camel_case(),
+                v.canonical_name().to_camel_case()
+            ),
             // A type that exists externally.
             Type::External { name, .. } | Type::Custom { name, .. } => format!("Type{}", name),
         }
@@ -155,7 +160,7 @@ impl From<&Type> for FFIType {
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
-            | Type::Map(_)
+            | Type::Map(_, _)
             | Type::Timestamp
             | Type::Duration
             | Type::External { .. } => FFIType::RustBuffer,
@@ -290,7 +295,8 @@ impl<T: IterTypes> IterTypes for Option<T> {
 impl IterTypes for Type {
     fn iter_types(&self) -> TypeIterator<'_> {
         let nested_types = match self {
-            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => Some(t.iter_types()),
+            Type::Optional(t) | Type::Sequence(t) => Some(t.iter_types()),
+            Type::Map(k, v) => Some(Box::new(k.iter_types().chain(v.iter_types())) as _),
             _ => None,
         };
         Box::new(std::iter::once(self).chain(nested_types.into_iter().flatten()))

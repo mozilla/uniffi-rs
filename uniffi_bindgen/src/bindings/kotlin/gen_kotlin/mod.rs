@@ -222,7 +222,7 @@ impl KotlinCodeOracle {
             }
             Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
             Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
-            Type::Map(inner) => Box::new(compounds::MapCodeType::new(*inner)),
+            Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
             Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }

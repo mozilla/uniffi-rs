@@ -219,10 +219,11 @@ impl PythonCodeOracle {
                 let inner = *inner.to_owned();
                 Box::new(compounds::SequenceCodeType::new(inner, outer))
             }
-            Type::Map(ref inner) => {
+            Type::Map(ref key, ref value) => {
                 let outer = type_.clone();
-                let inner = *inner.to_owned();
-                Box::new(compounds::MapCodeType::new(inner, outer))
+                let key = *key.to_owned();
+                let value = *value.to_owned();
+                Box::new(compounds::MapCodeType::new(key, value, outer))
             }
             Type::External { name, crate_name } => {
                 Box::new(external::ExternalCodeType::new(name, crate_name))

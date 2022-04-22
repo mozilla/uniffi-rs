@@ -153,6 +153,7 @@ do {
     // be dropped as coveralls hold an `Arc<>` to it.
     assert(getNumAlive() == 2)
 }
+
 // Dropping `coveralls` will kill both.
 assert(getNumAlive() == 0)
 
@@ -168,4 +169,17 @@ do {
     assert(d2.name == "this")
     assert(d2.category == "that")
     assert(d2.integer == 42)
+}
+
+do {
+    let coveralls = Coveralls(name: "test_dicts")
+
+    let dict1 = coveralls.getDict(key: "answer", value: 42)
+    assert(dict1["answer"] == 42)
+
+    let dict2 = coveralls.getDict2(key: "answer", value: 42)
+    assert(dict2["answer"] == 42)
+
+    let dict3 = coveralls.getDict3(key: 31, value: 42)
+    assert(dict3[31] == 42)
 }

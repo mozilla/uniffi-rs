@@ -1,0 +1,4 @@
+namespace uitests {
+    // f32 is not allowed as a key
+    record<f32, u64> get_dict();
+};

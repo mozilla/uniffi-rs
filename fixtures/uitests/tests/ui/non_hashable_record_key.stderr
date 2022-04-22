@@ -1,0 +1,7 @@
+error: Failed to generate scaffolding from UDL file at ../../../fixtures/uitests/src/records.udl
+ --> tests/ui/non_hashable_record_key.rs:2:1
+  |
+2 | uniffi_macros::generate_and_include_scaffolding!("../../../fixtures/uitests/src/records.udl");
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `uniffi_macros::generate_and_include_scaffolding` (in Nightly builds, run with -Z macro-backtrace for more info)

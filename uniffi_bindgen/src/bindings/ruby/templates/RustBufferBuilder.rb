@@ -165,7 +165,7 @@ class RustBufferBuilder
     end
   end
 
-  {% when Type::Map with (inner_type) -%}
+  {% when Type::Map with (k, inner_type) -%}
   # The Map<T> type for {{ inner_type.canonical_name() }}.
 
   def write_{{ canonical_type_name }}(items)
