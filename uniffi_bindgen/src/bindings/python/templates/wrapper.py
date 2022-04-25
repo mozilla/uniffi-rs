@@ -40,8 +40,10 @@ DEFAULT = object()
 {% include "NamespaceLibraryTemplate.py" %}
 
 # Public interface members begin here.
-{% for code in self.declaration_code() %}
-{{ code }}
+{{ type_helper_code }}
+
+{%- for func in ci.iter_function_definitions() %}
+{%- include "TopLevelFunctionTemplate.py" %}
 {%- endfor %}
 
 __all__ = [

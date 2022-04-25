@@ -1,7 +1,6 @@
-{% import "macros.py" as py %}
-{%- let obj = self.inner() %}
+{%- let obj = ci.get_object_definition(name).unwrap() %}
 
-class {{ obj|type_name }}(object):
+class {{ type_name }}(object):
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
     def __init__(self, {% call py::arg_list_decl(cons) -%}):
@@ -52,7 +51,7 @@ class {{ obj|type_name }}(object):
     {% endfor %}
 
 
-class {{ obj|ffi_converter_name }}:
+class {{ ffi_converter_name }}:
     @classmethod
     def read(cls, buf):
         ptr = buf.readU64()
@@ -62,13 +61,13 @@ class {{ obj|ffi_converter_name }}:
 
     @classmethod
     def write(cls, value, buf):
-        if not isinstance(value, {{ obj|type_name }}):
-            raise TypeError("Expected {{ obj|type_name }} instance, {} found".format(value.__class__.__name__))
+        if not isinstance(value, {{ type_name }}):
+            raise TypeError("Expected {{ type_name }} instance, {} found".format(value.__class__.__name__))
         buf.writeU64(cls.lower(value))
 
     @staticmethod
     def lift(value):
-        return {{ obj|type_name }}._make_instance_(value)
+        return {{ type_name }}._make_instance_(value)
 
     @staticmethod
     def lower(value):

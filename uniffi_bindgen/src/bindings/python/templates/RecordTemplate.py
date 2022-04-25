@@ -1,6 +1,6 @@
-{% import "macros.py" as py %}
-{%- let rec = self.inner() %}
-class {{ rec|type_name }}:
+{%- let rec = ci.get_record_definition(name).unwrap() %}
+class {{ type_name }}:
+
     def __init__(self, {% for field in rec.fields() %}
     {{- field.name()|var_name }}
     {%- if field.default_value().is_some() %} = DEFAULT{% endif %}
@@ -20,7 +20,7 @@ class {{ rec|type_name }}:
         {%- endfor %}
 
     def __str__(self):
-        return "{{ rec|type_name }}({% for field in rec.fields() %}{{ field.name() }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in rec.fields() %}self.{{ field.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
+        return "{{ type_name }}({% for field in rec.fields() %}{{ field.name() }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in rec.fields() %}self.{{ field.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
 
     def __eq__(self, other):
         {%- for field in rec.fields() %}
@@ -29,10 +29,10 @@ class {{ rec|type_name }}:
         {%- endfor %}
         return True
 
-class {{ rec|ffi_converter_name }}(FfiConverterRustBuffer):
+class {{ ffi_converter_name }}(FfiConverterRustBuffer):
     @staticmethod
     def read(buf):
-        return {{ rec|type_name }}(
+        return {{ type_name }}(
             {%- for field in rec.fields() %}
             {{ field.name()|var_name }}={{ field|read_fn }}(buf),
             {%- endfor %}
