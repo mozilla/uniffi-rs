@@ -1,9 +1,22 @@
 {% import "macros.py" as py %}
 {%- let rec = self.inner() %}
 class {{ rec|type_name }}:
-    def __init__(self, {% call py::field_list_decl(rec) %}):
+    def __init__(self, {% for field in rec.fields() %}
+    {{- field.name()|var_name }}
+    {%- if field.default_value().is_some() %} = DEFAULT{% endif %}
+    {%- if !loop.last %}, {% endif %}
+    {%- endfor %}):
         {%- for field in rec.fields() %}
-        self.{{ field.name()|var_name }} = {{ field.name()|var_name }}
+        {%- let field_name = field.name()|var_name %}
+        {%- match field.default_value() %}
+        {%- when None %}
+        self.{{ field_name }} = {{ field_name }}
+        {%- when Some with(literal) %}
+        if {{ field_name }} is DEFAULT:
+            self.{{ field_name }} = {{ literal|literal_py(field) }}
+        else:
+            self.{{ field_name }} = {{ field_name }}
+        {%- endmatch %}
         {%- endfor %}
 
     def __str__(self):
