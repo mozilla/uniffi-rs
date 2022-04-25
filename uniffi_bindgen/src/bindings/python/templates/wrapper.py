@@ -28,6 +28,9 @@ import datetime
 import {{ module_name }}
 {%- endfor %}
 
+# Used for default argument values
+DEFAULT = object()
+
 {% include "RustBufferTemplate.py" %}
 {% include "Helpers.py" %}
 {% include "RustBufferHelper.py" %}
