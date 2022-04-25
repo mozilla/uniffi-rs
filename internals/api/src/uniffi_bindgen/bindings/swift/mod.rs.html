@@ -389,7 +389,7 @@
     <span class="comment">// Swift to load only the module(s) for the component under test, but the way we&#39;re calling</span>
     <span class="comment">// this test function doesn&#39;t allow us to pass that name in to the call.</span>
 
-    <span class="ident">cmd</span>.<span class="ident">arg</span>(<span class="string">&quot;-I&quot;</span>).<span class="ident">arg</span>(<span class="ident">out_dir</span>).<span class="ident">arg</span>(<span class="string">&quot;-L&quot;</span>).<span class="ident">arg</span>(<span class="ident">out_dir</span>);
+    <span class="ident">cmd</span>.<span class="ident">arg</span>(<span class="string">&quot;-I&quot;</span>).<span class="ident">arg</span>(<span class="ident">out_dir</span>);
     <span class="kw">for</span> <span class="ident">entry</span> <span class="kw">in</span> <span class="ident">PathBuf::from</span>(<span class="ident">out_dir</span>)
         .<span class="ident">read_dir</span>()
         .<span class="ident">context</span>(<span class="string">&quot;Failed to list target directory when running script&quot;</span>)<span class="question-mark">?</span>
