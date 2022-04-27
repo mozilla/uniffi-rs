@@ -211,8 +211,7 @@ fn load_bindings_config_toml<BC: BindingGeneratorConfig>(
 
     Ok(full_config
         .get("bindings")
-        .map(BC::get_entry_from_bindings_table)
-        .flatten())
+        .and_then(BC::get_entry_from_bindings_table))
 }
 
 /// A trait representing a UniFFI Binding Generator

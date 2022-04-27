@@ -103,8 +103,7 @@ impl IterTypes for Function {
         Box::new(
             self.arguments
                 .iter()
-                .map(IterTypes::iter_types)
-                .flatten()
+                .flat_map(IterTypes::iter_types)
                 .chain(self.return_type.iter_types()),
         )
     }

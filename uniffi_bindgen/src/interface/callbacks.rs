@@ -90,7 +90,7 @@ impl CallbackInterface {
 
 impl IterTypes for CallbackInterface {
     fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(self.methods.iter().map(IterTypes::iter_types).flatten())
+        Box::new(self.methods.iter().flat_map(IterTypes::iter_types))
     }
 }
 

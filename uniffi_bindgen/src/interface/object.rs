@@ -292,7 +292,7 @@ impl Constructor {
 
 impl IterTypes for Constructor {
     fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(self.arguments.iter().map(IterTypes::iter_types).flatten())
+        Box::new(self.arguments.iter().flat_map(IterTypes::iter_types))
     }
 }
 
@@ -415,8 +415,7 @@ impl IterTypes for Method {
         Box::new(
             self.arguments
                 .iter()
-                .map(IterTypes::iter_types)
-                .flatten()
+                .flat_map(IterTypes::iter_types)
                 .chain(self.return_type.iter_types()),
         )
     }

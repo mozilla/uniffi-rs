@@ -52,6 +52,7 @@ impl Default for RustGetters {
 
 // Use `Send+Send` because we want to store the callback in an exposed
 // `Send+Sync` object.
+#[allow(clippy::wrong_self_convention)]
 trait StoredForeignStringifier: Send + Sync + std::fmt::Debug {
     fn from_simple_type(&self, value: i32) -> String;
     fn from_complex_type(&self, values: Option<Vec<Option<f64>>>) -> String;
@@ -67,6 +68,7 @@ impl RustStringifier {
         RustStringifier { callback }
     }
 
+    #[allow(clippy::wrong_self_convention)]
     fn from_simple_type(&self, value: i32) -> String {
         self.callback.from_simple_type(value)
     }

@@ -79,7 +79,7 @@ impl Record {
 
 impl IterTypes for Record {
     fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(self.fields.iter().map(IterTypes::iter_types).flatten())
+        Box::new(self.fields.iter().flat_map(IterTypes::iter_types))
     }
 }
 
