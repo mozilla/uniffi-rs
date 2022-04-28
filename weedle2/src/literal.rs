@@ -29,7 +29,7 @@ ast_types! {
             &'a str = ws!(recognize!(do_parse!(
                 opt!(char!('-')) >>
                 char!('0') >>
-                take_while!(|c| '0' <= c && c <= '7') >>
+                take_while!(|c| ('0'..='7').contains(&c)) >>
                 (())
             ))),
         )),
