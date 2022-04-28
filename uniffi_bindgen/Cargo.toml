@@ -16,7 +16,7 @@ path = "src/main.rs"
 
 [dependencies]
 cargo_metadata = "0.13"
-weedle2 = "2.0.0"
+weedle2 = { version = "2.0.0", path = "../weedle2" }
 anyhow = "1"
 askama = { version = "0.11", default-features = false, features = ["config"] }
 heck = "0.4"
