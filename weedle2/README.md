@@ -7,7 +7,7 @@
   <p>
     <a href="https://crates.io/crates/weedle2"><img src="https://img.shields.io/crates/v/weedle2.svg?style=flat-square" alt="Crates.io version" /></a>
     <a href="https://docs.rs/weedle2"><img src="https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square" alt="Documentation" /></a>
-    <a href="LICENSE"><img src="https://img.shields.io/github/license/badboy/signify-rs?style=flat-square" alt="MIT License" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/crates/l/weedle2/2.0.0?style=flat-square" alt="MIT License" /></a>
   </p>
 
   <sub>
