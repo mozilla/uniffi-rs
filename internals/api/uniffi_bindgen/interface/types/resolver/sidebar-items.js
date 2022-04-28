@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["resolve_builtin_type","Resolve built-in API types by name."],["validate_record_key_type","Validate that the type can be used for record keys."]],"trait":[["TypeResolver","Trait to help resolving an UDL type node to a [`Type`]."]]});
+initSidebarItems({"fn":[["resolve_builtin_type","Resolve built-in API types by name."]],"trait":[["TypeResolver","Trait to help resolving an UDL type node to a [`Type`]."]]});
