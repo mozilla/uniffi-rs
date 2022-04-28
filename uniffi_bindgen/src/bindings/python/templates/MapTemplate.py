@@ -17,7 +17,14 @@ class {{ outer_type|ffi_converter_name }}(FfiConverterRustBuffer):
         count = buf.readI32()
         if count < 0:
             raise InternalError("Unexpected negative map size")
-        return {
-            {{ key_ffi_converter }}.read(buf): {{ value_ffi_converter }}.read(buf)
-            for i in range(count)
-        }
+
+        # It would be nice to use a dict comprehension,
+        # but in Python 3.7 and before the evaluation order is not according to spec,
+        # so we we're reading the value before the key.
+        # This loop makes the order explicit: first reading the key, then the value.
+        d = {}
+        for i in range(count):
+            key = {{ key_ffi_converter }}.read(buf)
+            val = {{ value_ffi_converter }}.read(buf)
+            d[key] = val
+        return d
