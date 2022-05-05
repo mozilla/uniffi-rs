@@ -16,6 +16,19 @@
   this means the type will be now appear on Kotlin as `Url` rather than `URL`.
   Any existing code should continue to work because of the typealias, but this
   might affect your generated documentation and/or code completion.
+- For Python libraries the native library is now loaded from an absolute path. The shared library (`*.dll` on Windows, `*.dylib` on macOS and `.so` on other platforms) must be placed next to the Python rapper code.
+
+### What's changed
+
+- Allow record types with arbitrary key types
+  - Record types can now contain any hashable type as its key. This is implemented for Kotlin, Python and Swift
+- Python
+  - Added support for default values in dictionaries
+  - Generated Python code is now annotated to avoid mypy type checking
+- Kotlin
+  - Added external type support
+- Swift
+  - Fix test helper code to work with Swift 5.6
 
 ## v0.17.0 - (_2022-02-03_)
 
