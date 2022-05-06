@@ -20,7 +20,7 @@
   this means the type will be now appear on Kotlin as `Url` rather than `URL`.
   Any existing code should continue to work because of the typealias, but this
   might affect your generated documentation and/or code completion.
-- For Python libraries the native library is now loaded from an absolute path. The shared library (`*.dll` on Windows, `*.dylib` on macOS and `.so` on other platforms) must be placed next to the Python rapper code.
+- For Python libraries the native library is now loaded from an absolute path. The shared library (`*.dll` on Windows, `*.dylib` on macOS and `.so` on other platforms) must be placed next to the Python wrapper code.
 
 ### What's changed
 
