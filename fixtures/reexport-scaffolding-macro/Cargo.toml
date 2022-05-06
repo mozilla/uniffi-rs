@@ -1,9 +1,10 @@
 [package]
 name = "uniffi-fixture-reexport-scaffolding-macro"
-version = "0.17.0"
+version = "0.18.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 license = "MPL-2.0"
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

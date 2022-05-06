@@ -6,7 +6,11 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.17.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.18.0...HEAD).
+
+## v0.18.0 - (_2022-05-05_)
+
+[All changes in v0.18.0](https://github.com/mozilla/uniffi-rs/compare/v0.17.0...v0.18.0).
 
 ### ⚠️ Breaking Changes ⚠️
 
