@@ -98,7 +98,7 @@ pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
 
 // Calculate the classpath string to use for testing
 pub fn classpath_for_testing(out_dir: &Path) -> Result<OsString> {
-    let mut classpath = env::var_os("CLASSPATH").unwrap_or_else(|| OsString::from(""));
+    let mut classpath = env::var_os("CLASSPATH").unwrap_or_default();
     // This lets java find the compiled library for the rust component.
     classpath.push(":");
     classpath.push(out_dir);

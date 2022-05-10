@@ -4,7 +4,6 @@
 
 use std::{
     env,
-    ffi::OsString,
     fs::File,
     io::Write,
     path::{Path, PathBuf},
@@ -48,7 +47,7 @@ pub fn write_bindings(
 pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
     let mut cmd = Command::new("python3");
     // This helps python find the generated .py wrapper for rust component.
-    let pythonpath = env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
+    let pythonpath = env::var_os("PYTHONPATH").unwrap_or_default();
     let pythonpath =
         env::join_paths(env::split_paths(&pythonpath).chain(vec![out_dir.to_path_buf()]))?;
     cmd.env("PYTHONPATH", pythonpath);

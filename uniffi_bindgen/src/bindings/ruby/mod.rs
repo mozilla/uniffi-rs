@@ -4,7 +4,6 @@
 
 use std::{
     env,
-    ffi::OsString,
     fs::File,
     io::Write,
     path::{Path, PathBuf},
@@ -62,7 +61,7 @@ pub fn generate_ruby_bindings(config: &Config, ci: &ComponentInterface) -> Resul
 pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
     let mut cmd = Command::new("ruby");
     // This helps ruby find the generated .rb wrapper for rust component.
-    let rubypath = env::var_os("RUBYLIB").unwrap_or_else(|| OsString::from(""));
+    let rubypath = env::var_os("RUBYLIB").unwrap_or_default();
     let rubypath = env::join_paths(env::split_paths(&rubypath).chain(vec![out_dir.to_path_buf()]))?;
 
     cmd.env("RUBYLIB", rubypath);
