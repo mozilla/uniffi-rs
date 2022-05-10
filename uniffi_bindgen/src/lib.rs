@@ -284,15 +284,13 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
     );
     let mut filename = Path::new(&udl_file)
         .file_stem()
-        .ok_or_else(|| anyhow!("not a file"))?
+        .context("not a file")?
         .to_os_string();
     filename.push(".uniffi.rs");
     let mut out_dir = get_out_dir(udl_file, out_dir_override)?;
     out_dir.push(filename);
-    let mut f =
-        File::create(&out_dir).map_err(|e| anyhow!("Failed to create output file: {:?}", e))?;
-    write!(f, "{}", RustScaffolding::new(&component))
-        .map_err(|e| anyhow!("Failed to write output file: {:?}", e))?;
+    let mut f = File::create(&out_dir).context("Failed to create output file")?;
+    write!(f, "{}", RustScaffolding::new(&component)).context("Failed to write output file")?;
     if format_code {
         Command::new("rustfmt").arg(&out_dir).status()?;
     }
@@ -354,7 +352,7 @@ pub fn run_tests<P: AsRef<Path>>(
     for test_script in test_scripts {
         let lang: TargetLanguage = PathBuf::from(test_script)
             .extension()
-            .ok_or_else(|| anyhow!("File has no extension!"))?
+            .context("File has no extension!")?
             .try_into()?;
         language_tests
             .entry(lang)
@@ -386,9 +384,9 @@ pub fn run_tests<P: AsRef<Path>>(
 fn guess_crate_root(udl_file: &Path) -> Result<&Path> {
     let path_guess = udl_file
         .parent()
-        .ok_or_else(|| anyhow!("UDL file has no parent folder!"))?
+        .context("UDL file has no parent folder!")?
         .parent()
-        .ok_or_else(|| anyhow!("UDL file has no grand-parent folder!"))?;
+        .context("UDL file has no grand-parent folder!")?;
     if !path_guess.join("Cargo.toml").is_file() {
         bail!("UDL file does not appear to be inside a crate")
     }
@@ -424,12 +422,11 @@ fn get_out_dir(udl_file: &Path, out_dir_override: Option<&Path>) -> Result<PathB
         Some(s) => {
             // Create the directory if it doesn't exist yet.
             std::fs::create_dir_all(&s)?;
-            s.canonicalize()
-                .map_err(|e| anyhow!("Unable to find out-dir: {:?}", e))?
+            s.canonicalize().context("Unable to find out-dir")?
         }
         None => udl_file
             .parent()
-            .ok_or_else(|| anyhow!("File has no parent directory"))?
+            .context("File has no parent directory")?
             .to_owned(),
     })
 }
@@ -438,7 +435,7 @@ fn parse_udl(udl_file: &Path) -> Result<ComponentInterface> {
     let udl =
         slurp_file(udl_file).map_err(|_| anyhow!("Failed to read UDL from {:?}", &udl_file))?;
     udl.parse::<interface::ComponentInterface>()
-        .map_err(|e| anyhow!("Failed to parse UDL: {}", e))
+        .context("Failed to parse UDL")
 }
 
 fn slurp_file(file_name: &Path) -> Result<String> {

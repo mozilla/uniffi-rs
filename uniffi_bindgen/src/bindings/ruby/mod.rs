@@ -54,7 +54,7 @@ pub fn generate_ruby_bindings(config: &Config, ci: &ComponentInterface) -> Resul
     use askama::Template;
     RubyWrapper::new(config.clone(), ci)
         .render()
-        .map_err(|_| anyhow::anyhow!("failed to render ruby bindings"))
+        .context("failed to render ruby bindings")
 }
 
 /// Execute the specifed ruby script, with environment based on the generated

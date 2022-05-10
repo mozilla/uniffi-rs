@@ -9,7 +9,7 @@
 //! and should instead use the `build_foreign_language_testcases!` macro provided by
 //! the `uniffi_macros` crate.
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use cargo_metadata::Message;
 use lazy_static::lazy_static;
@@ -43,7 +43,7 @@ pub fn run_foreign_language_testcase(
     let cdylib_file = ensure_compiled_cdylib(pkg_dir)?;
     let out_dir = cdylib_file
         .parent()
-        .ok_or_else(|| anyhow::anyhow!("Generated cdylib has no parent directory"))?
+        .context("Generated cdylib has no parent directory")?
         .as_str();
     let _lock = UNIFFI_BINDGEN.lock();
     run_uniffi_bindgen_test(out_dir, udl_files, test_file)?;

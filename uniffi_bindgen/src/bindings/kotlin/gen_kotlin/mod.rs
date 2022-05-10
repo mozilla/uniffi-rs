@@ -6,7 +6,7 @@ use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
@@ -89,7 +89,7 @@ impl MergeWith for Config {
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
     KotlinWrapper::new(config.clone(), ci)
         .render()
-        .map_err(|_| anyhow::anyhow!("failed to render kotlin bindings"))
+        .context("failed to render kotlin bindings")
 }
 
 /// Renders Kotlin helper code for all types
