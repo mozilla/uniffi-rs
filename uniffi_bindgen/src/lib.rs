@@ -102,7 +102,6 @@ use std::io::prelude::*;
 use std::{
     collections::HashMap,
     env,
-    ffi::OsString,
     fs::File,
     path::{Path, PathBuf},
     process::Command,
@@ -519,7 +518,7 @@ enum Commands {
             short,
             help = "Directory in which to write generated files. Default is same folder as .udl file."
         )]
-        out_dir: Option<OsString>,
+        out_dir: Option<PathBuf>,
 
         #[clap(long, short, help = "Do not try to format the generated bindings.")]
         no_format: bool,
@@ -529,10 +528,10 @@ enum Commands {
             short,
             help = "Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location."
         )]
-        config: Option<OsString>,
+        config: Option<PathBuf>,
 
         #[clap(help = "Path to the UDL file.")]
-        udl_file: OsString,
+        udl_file: PathBuf,
     },
 
     #[clap(name = "scaffolding", about = "Generate Rust scaffolding code")]
@@ -542,20 +541,20 @@ enum Commands {
             short,
             help = "Directory in which to write generated files. Default is same folder as .udl file."
         )]
-        out_dir: Option<OsString>,
+        out_dir: Option<PathBuf>,
 
         #[clap(
             long,
             short,
             help = "Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location."
         )]
-        config: Option<OsString>,
+        config: Option<PathBuf>,
 
         #[clap(long, short, help = "Do not try to format the generated bindings.")]
         no_format: bool,
 
         #[clap(help = "Path to the UDL file.")]
-        udl_file: OsString,
+        udl_file: PathBuf,
     },
 
     #[clap(
@@ -566,10 +565,10 @@ enum Commands {
         #[clap(
             help = "Path to the directory containing the cdylib the scripts will be testing against."
         )]
-        cdylib_dir: OsString,
+        cdylib_dir: PathBuf,
 
         #[clap(help = "Path to the UDL file.")]
-        udl_file: OsString,
+        udl_file: PathBuf,
 
         #[clap(help = "Foreign language(s) test scripts to run.")]
         test_scripts: Vec<String>,
@@ -579,7 +578,7 @@ enum Commands {
             short,
             help = "Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location."
         )]
-        config: Option<OsString>,
+        config: Option<PathBuf>,
     },
 }
 
