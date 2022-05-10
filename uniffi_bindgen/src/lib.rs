@@ -335,7 +335,7 @@ pub fn generate_bindings<P: AsRef<Path>>(
 // Note that the cdylib we're testing against must be built already.
 pub fn run_tests<P: AsRef<Path>>(
     cdylib_dir: P,
-    udl_files: &[&str],
+    udl_files: &[impl AsRef<Path>],
     test_scripts: Vec<&str>,
     config_file_override: Option<P>,
 ) -> Result<()> {
@@ -364,8 +364,9 @@ pub fn run_tests<P: AsRef<Path>>(
 
     for (lang, test_scripts) in language_tests {
         for udl_file in udl_files {
-            let crate_root = guess_crate_root(Path::new(udl_file))?;
-            let component = parse_udl(Path::new(udl_file))?;
+            let udl_file = udl_file.as_ref();
+            let crate_root = guess_crate_root(udl_file)?;
+            let component = parse_udl(udl_file)?;
             let config = get_config(&component, crate_root, config_file_override)?;
             bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
             bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
@@ -616,7 +617,7 @@ pub fn run_main() -> Result<()> {
             config,
         } => crate::run_tests(
             cdylib_dir,
-            &[&udl_file.to_string_lossy()], // XXX - kinda defeats the purpose of OsString?
+            &[udl_file],
             test_scripts.iter().map(String::as_str).collect(),
             config.as_ref(),
         ),
