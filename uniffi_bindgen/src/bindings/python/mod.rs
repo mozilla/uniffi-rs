@@ -2,13 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{
-    env,
-    fs::File,
-    io::Write,
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::{env, fs::File, io::Write, path::Path, process::Command};
 
 use anyhow::{bail, Context, Result};
 
@@ -24,8 +18,7 @@ pub fn write_bindings(
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
-    let mut py_file = PathBuf::from(out_dir);
-    py_file.push(format!("{}.py", ci.namespace()));
+    let py_file = out_dir.join(format!("{}.py", ci.namespace()));
     let mut f = File::create(&py_file).context("Failed to create .py file for bindings")?;
     write!(f, "{}", generate_python_bindings(config, ci)?)?;
 

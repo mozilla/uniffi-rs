@@ -267,15 +267,12 @@ pub fn generate_external_bindings(
 
 // Generate the infrastructural Rust code for implementing the UDL interface,
 // such as the `extern "C"` function definitions and record data types.
-pub fn generate_component_scaffolding<P: AsRef<Path>>(
-    udl_file: P,
-    config_file_override: Option<P>,
-    out_dir_override: Option<P>,
+pub fn generate_component_scaffolding(
+    udl_file: &Path,
+    config_file_override: Option<&Path>,
+    out_dir_override: Option<&Path>,
     format_code: bool,
 ) -> Result<()> {
-    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
-    let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let udl_file = udl_file.as_ref();
     let component = parse_udl(udl_file)?;
     let _config = get_config(
         &component,
@@ -299,17 +296,13 @@ pub fn generate_component_scaffolding<P: AsRef<Path>>(
 
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
-pub fn generate_bindings<P: AsRef<Path>>(
-    udl_file: P,
-    config_file_override: Option<P>,
+pub fn generate_bindings(
+    udl_file: &Path,
+    config_file_override: Option<&Path>,
     target_languages: Vec<&str>,
-    out_dir_override: Option<P>,
+    out_dir_override: Option<&Path>,
     try_format_code: bool,
 ) -> Result<()> {
-    let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
-    let udl_file = udl_file.as_ref();
-
     let component = parse_udl(udl_file)?;
     let config = get_config(
         &component,
@@ -331,11 +324,11 @@ pub fn generate_bindings<P: AsRef<Path>>(
 
 // Run tests against the foreign language bindings (generated and compiled at the same time).
 // Note that the cdylib we're testing against must be built already.
-pub fn run_tests<P: AsRef<Path>>(
-    cdylib_dir: P,
+pub fn run_tests(
+    cdylib_dir: impl AsRef<Path>,
     udl_files: &[impl AsRef<Path>],
-    test_scripts: Vec<&str>,
-    config_file_override: Option<P>,
+    test_scripts: &[impl AsRef<Path>],
+    config_file_override: Option<&Path>,
 ) -> Result<()> {
     // XXX - this is just for tests, so one config_file_override for all .udl files doesn't really
     // make sense, so we don't let tests do this.
@@ -344,13 +337,13 @@ pub fn run_tests<P: AsRef<Path>>(
     assert!(udl_files.len() == 1 || config_file_override.is_none());
 
     let cdylib_dir = cdylib_dir.as_ref();
-    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
     // Group the test scripts by language first.
-    let mut language_tests: HashMap<TargetLanguage, Vec<String>> = HashMap::new();
+    let mut language_tests: HashMap<TargetLanguage, Vec<_>> = HashMap::new();
 
     for test_script in test_scripts {
-        let lang: TargetLanguage = PathBuf::from(test_script)
+        let test_script = test_script.as_ref();
+        let lang: TargetLanguage = test_script
             .extension()
             .context("File has no extension!")?
             .try_into()?;
@@ -366,8 +359,8 @@ pub fn run_tests<P: AsRef<Path>>(
             let crate_root = guess_crate_root(udl_file)?;
             let component = parse_udl(udl_file)?;
             let config = get_config(&component, crate_root, config_file_override)?;
-            bindings::write_bindings(&config.bindings, &component, &cdylib_dir, lang, true)?;
-            bindings::compile_bindings(&config.bindings, &component, &cdylib_dir, lang)?;
+            bindings::write_bindings(&config.bindings, &component, cdylib_dir, lang, true)?;
+            bindings::compile_bindings(&config.bindings, &component, cdylib_dir, lang)?;
         }
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;
@@ -400,8 +393,8 @@ fn get_config(
 ) -> Result<Config> {
     let default_config: Config = component.into();
 
-    let config_file: Option<PathBuf> = match config_file_override {
-        Some(cfg) => Some(PathBuf::from(cfg)),
+    let config_file = match config_file_override {
+        Some(cfg) => Some(cfg.to_owned()),
         None => crate_root.join("uniffi.toml").canonicalize().ok(),
     };
 
@@ -569,7 +562,7 @@ enum Commands {
         udl_file: PathBuf,
 
         #[clap(help = "Foreign language(s) test scripts to run.")]
-        test_scripts: Vec<String>,
+        test_scripts: Vec<PathBuf>,
 
         #[clap(
             long,
@@ -591,9 +584,9 @@ pub fn run_main() -> Result<()> {
             udl_file,
         } => crate::generate_bindings(
             udl_file,
-            config.as_ref(),
+            config.as_deref(),
             language.iter().map(String::as_str).collect(),
-            out_dir.as_ref(),
+            out_dir.as_deref(),
             !no_format,
         ),
         Commands::Scaffolding {
@@ -603,8 +596,8 @@ pub fn run_main() -> Result<()> {
             udl_file,
         } => crate::generate_component_scaffolding(
             udl_file,
-            config.as_ref(),
-            out_dir.as_ref(),
+            config.as_deref(),
+            out_dir.as_deref(),
             !no_format,
         ),
         Commands::Test {
@@ -612,12 +605,7 @@ pub fn run_main() -> Result<()> {
             udl_file,
             test_scripts,
             config,
-        } => crate::run_tests(
-            cdylib_dir,
-            &[udl_file],
-            test_scripts.iter().map(String::as_str).collect(),
-            config.as_ref(),
-        ),
+        } => crate::run_tests(cdylib_dir, &[udl_file], test_scripts, config.as_deref()),
     }?;
     Ok(())
 }
