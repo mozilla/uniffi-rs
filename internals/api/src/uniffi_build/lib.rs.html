@@ -58,17 +58,18 @@
 <span id="53">53</span>
 <span id="54">54</span>
 <span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="ident">anyhow::Result</span>;
-<span class="kw">use</span> <span class="ident">std::env</span>;
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;builtin-bindgen&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="ident">Context</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;builtin-bindgen&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident">std::process::Command</span>;
+<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">path::Path</span>};
 
 <span class="doccomment">/// Generate the rust &quot;scaffolding&quot; required to build a uniffi component.</span>
 <span class="doccomment">///</span>
@@ -85,24 +86,35 @@
 <span class="doccomment">/// the `uniffi_bindgen` crate and call its methods directly, rather than using the</span>
 <span class="doccomment">/// command-line tool. This is mostly useful for developers who are working on uniffi</span>
 <span class="doccomment">/// itself and need to test out their changes to the bindings generator.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_scaffolding</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="macro">println!</span>(<span class="string">&quot;cargo:rerun-if-changed={}&quot;</span>, <span class="ident">udl_file</span>);
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_scaffolding</span>(<span class="ident">udl_file</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
+
+    <span class="macro">println!</span>(<span class="string">&quot;cargo:rerun-if-changed={}&quot;</span>, <span class="ident">udl_file</span>.<span class="ident">display</span>());
     <span class="comment">// The UNIFFI_TESTS_DISABLE_EXTENSIONS variable disables some bindings, but it is evaluated</span>
     <span class="comment">// at *build* time, so we need to rebuild when it changes.</span>
     <span class="macro">println!</span>(<span class="string">&quot;cargo:rerun-if-env-changed=UNIFFI_TESTS_DISABLE_EXTENSIONS&quot;</span>);
     <span class="comment">// Why don&#39;t we just depend on uniffi-bindgen and call the public functions?</span>
     <span class="comment">// Calling the command line helps making sure that the generated swift/Kotlin/whatever</span>
     <span class="comment">// bindings were generated with the same version of uniffi as the Rust scaffolding code.</span>
-    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">env::var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow::anyhow!</span>(<span class="string">&quot;$OUT_DIR missing?!&quot;</span>))<span class="question-mark">?</span>;
-    <span class="ident">run_uniffi_bindgen_scaffolding</span>(<span class="kw-2">&amp;</span><span class="ident">out_dir</span>, <span class="ident">udl_file</span>)
+    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">env::var_os</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">context</span>(<span class="string">&quot;$OUT_DIR missing?!&quot;</span>)<span class="question-mark">?</span>;
+    <span class="ident">run_uniffi_bindgen_scaffolding</span>(<span class="ident">out_dir</span>.<span class="ident">as_ref</span>(), <span class="ident">udl_file</span>)
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;builtin-bindgen&quot;</span>))]</span>
-<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_scaffolding</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_scaffolding</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">use</span> <span class="ident">anyhow::bail</span>;
+    <span class="kw">use</span> <span class="ident">std::process::Command</span>;
+
     <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;uniffi-bindgen&quot;</span>)
-        .<span class="ident">args</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;scaffolding&quot;</span>, <span class="string">&quot;--out-dir&quot;</span>, <span class="ident">out_dir</span>, <span class="ident">udl_file</span>])
+        .<span class="ident">arg</span>(<span class="string">&quot;scaffolding&quot;</span>)
+        .<span class="ident">arg</span>(<span class="string">&quot;--out-dir&quot;</span>)
+        .<span class="ident">arg</span>(<span class="ident">out_dir</span>)
+        .<span class="ident">arg</span>(<span class="ident">udl_file</span>)
         .<span class="ident">status</span>()
-        .<span class="ident">context</span>(<span class="string">&quot;failed to run `uniffi-bindgen` - have you installed it via `cargo install uniffi_bindgen`?&quot;</span>)<span class="question-mark">?</span>;
+        .<span class="ident">context</span>(
+            <span class="string">&quot;failed to run `uniffi-bindgen` - \
+             have you installed it via `cargo install uniffi_bindgen`?&quot;</span>,
+        )<span class="question-mark">?</span>;
     <span class="kw">if</span> <span class="op">!</span><span class="ident">status</span>.<span class="ident">success</span>() {
         <span class="macro">bail!</span>(<span class="string">&quot;Error while generating scaffolding code&quot;</span>);
     }
@@ -110,7 +122,7 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;builtin-bindgen&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_scaffolding</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_scaffolding</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="ident">uniffi_bindgen::generate_component_scaffolding</span>(<span class="ident">udl_file</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">out_dir</span>), <span class="bool-val">false</span>)
 }
 </code></pre></div>

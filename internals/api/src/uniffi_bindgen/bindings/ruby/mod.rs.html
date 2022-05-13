@@ -75,26 +75,11 @@
 <span id="70">70</span>
 <span id="71">71</span>
 <span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">env</span>,
-    <span class="ident">ffi::OsString</span>,
-    <span class="ident">fs::File</span>,
-    <span class="ident">io::Write</span>,
-    <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
-    <span class="ident">process::Command</span>,
-};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">fs::File</span>, <span class="ident">io::Write</span>, <span class="ident">path::Path</span>, <span class="ident">process::Command</span>};
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
 
@@ -111,8 +96,7 @@
     <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
     <span class="ident">try_format_code</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rb_file</span> <span class="op">=</span> <span class="ident">PathBuf::from</span>(<span class="ident">out_dir</span>);
-    <span class="ident">rb_file</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.rb&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>()));
+    <span class="kw">let</span> <span class="ident">rb_file</span> <span class="op">=</span> <span class="ident">out_dir</span>.<span class="ident">join</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.rb&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>()));
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">rb_file</span>).<span class="ident">context</span>(<span class="string">&quot;Failed to create .rb file for bindings&quot;</span>)<span class="question-mark">?</span>;
     <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">generate_ruby_bindings</span>(<span class="ident">config</span>, <span class="ident">ci</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
@@ -139,7 +123,7 @@
     <span class="kw">use</span> <span class="ident">askama::Template</span>;
     <span class="ident">RubyWrapper::new</span>(<span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
         .<span class="ident">render</span>()
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow::anyhow!</span>(<span class="string">&quot;failed to render ruby bindings&quot;</span>))
+        .<span class="ident">context</span>(<span class="string">&quot;failed to render ruby bindings&quot;</span>)
 }
 
 <span class="doccomment">/// Execute the specifed ruby script, with environment based on the generated</span>
@@ -147,7 +131,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_script</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">script_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmd</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;ruby&quot;</span>);
     <span class="comment">// This helps ruby find the generated .rb wrapper for rust component.</span>
-    <span class="kw">let</span> <span class="ident">rubypath</span> <span class="op">=</span> <span class="ident">env::var_os</span>(<span class="string">&quot;RUBYLIB&quot;</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">OsString::from</span>(<span class="string">&quot;&quot;</span>));
+    <span class="kw">let</span> <span class="ident">rubypath</span> <span class="op">=</span> <span class="ident">env::var_os</span>(<span class="string">&quot;RUBYLIB&quot;</span>).<span class="ident">unwrap_or_default</span>();
     <span class="kw">let</span> <span class="ident">rubypath</span> <span class="op">=</span> <span class="ident">env::join_paths</span>(<span class="ident">env::split_paths</span>(<span class="kw-2">&amp;</span><span class="ident">rubypath</span>).<span class="ident">chain</span>(<span class="macro">vec!</span>[<span class="ident">out_dir</span>.<span class="ident">to_path_buf</span>()]))<span class="question-mark">?</span>;
 
     <span class="ident">cmd</span>.<span class="ident">env</span>(<span class="string">&quot;RUBYLIB&quot;</span>, <span class="ident">rubypath</span>);

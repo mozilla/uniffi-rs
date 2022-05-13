@@ -386,7 +386,7 @@
 <span class="kw">use</span> <span class="ident">std::cell::RefCell</span>;
 <span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">BTreeSet</span>, <span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
 
-<span class="kw">use</span> <span class="ident">anyhow::Result</span>;
+<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">askama::Template</span>;
 <span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">ToLowerCamelCase</span>, <span class="ident">ToShoutySnakeCase</span>, <span class="ident">ToUpperCamelCase</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
@@ -469,7 +469,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="ident">KotlinWrapper::new</span>(<span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
         .<span class="ident">render</span>()
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow::anyhow!</span>(<span class="string">&quot;failed to render kotlin bindings&quot;</span>))
+        .<span class="ident">context</span>(<span class="string">&quot;failed to render kotlin bindings&quot;</span>)
 }
 
 <span class="doccomment">/// Renders Kotlin helper code for all types</span>
