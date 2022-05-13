@@ -11,6 +11,9 @@
 ###  ⚠️ Breaking Changes ⚠️
 - breaking for external binding generators, the `FFIType::RustArcPtr` now includes an inner `String`. The string represents the name of the object the `RustArcPtr` was derived from.
 
+### What's changed
+- The UDL can contain identifiers which are also keywords in Rust, Python or Kotlin.
+
 ## v0.18.0 - (_2022-05-05_)
 
 [All changes in v0.18.0](https://github.com/mozilla/uniffi-rs/compare/v0.17.0...v0.18.0).

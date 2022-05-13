@@ -1,0 +1,17 @@
+[package]
+name = "uniffi-fixture-keywords-kotlin"
+version = "0.18.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+name = "uniffi_keywords_kotlin"
+
+[dependencies]
+thiserror = "1.0"
+uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+
+[build-dependencies]
+uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
