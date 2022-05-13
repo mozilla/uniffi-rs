@@ -54,8 +54,7 @@ fn full_bindings_path(config: &Config, out_dir: &Path) -> Result<PathBuf> {
 pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
     let mut kt_file = full_bindings_path(config, out_dir)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
-    let mut jar_file = PathBuf::from(out_dir);
-    jar_file.push(format!("{}.jar", ci.namespace()));
+    let jar_file = out_dir.join(format!("{}.jar", ci.namespace()));
     let status = Command::new("kotlinc")
         // Our generated bindings should not produce any warnings; fail tests if they do.
         .arg("-Werror")
@@ -98,7 +97,7 @@ pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
 
 // Calculate the classpath string to use for testing
 pub fn classpath_for_testing(out_dir: &Path) -> Result<OsString> {
-    let mut classpath = env::var_os("CLASSPATH").unwrap_or_else(|| OsString::from(""));
+    let mut classpath = env::var_os("CLASSPATH").unwrap_or_default();
     // This lets java find the compiled library for the rust component.
     classpath.push(":");
     classpath.push(out_dir);
@@ -107,7 +106,7 @@ pub fn classpath_for_testing(out_dir: &Path) -> Result<OsString> {
     // Including all .jar files is needed for tests like ext-types that use multiple UDL files.
     // TODO: Instead of including all .jar files, we should only include jar files that we
     // previously built for this test.
-    for entry in PathBuf::from(out_dir)
+    for entry in out_dir
         .read_dir()
         .context("Failed to list target directory when running Kotlin script")?
     {

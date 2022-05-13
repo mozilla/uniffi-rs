@@ -163,12 +163,12 @@ pub fn generate_and_include_scaffolding(
 ) -> proc_macro::TokenStream {
     let udl_file = syn::parse_macro_input!(udl_file as syn::LitStr);
     let udl_file_string = udl_file.value();
-    let udl_file_path = Path::new(udl_file_string.as_str());
+    let udl_file_path = Path::new(&udl_file_string);
     if std::env::var("OUT_DIR").is_err() {
         quote! {
             compile_error!("This macro assumes the crate has a build.rs script, but $OUT_DIR is not present");
         }
-    } else if uniffi_build::generate_scaffolding(&udl_file_path.to_string_lossy()).is_err() {
+    } else if uniffi_build::generate_scaffolding(udl_file_path).is_err() {
         quote! {
             compile_error!(concat!("Failed to generate scaffolding from UDL file at ", #udl_file));
         }

@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use askama::Template;
 use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
@@ -74,7 +74,7 @@ impl MergeWith for Config {
 pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
     PythonWrapper::new(PythonCodeOracle, config.clone(), ci)
         .render()
-        .map_err(|_| anyhow::anyhow!("failed to render python bindings"))
+        .context("failed to render python bindings")
 }
 
 #[derive(Template)]

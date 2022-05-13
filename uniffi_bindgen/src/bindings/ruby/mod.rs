@@ -2,14 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{
-    env,
-    ffi::OsString,
-    fs::File,
-    io::Write,
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::{env, fs::File, io::Write, path::Path, process::Command};
 
 use anyhow::{bail, Context, Result};
 
@@ -26,8 +19,7 @@ pub fn write_bindings(
     out_dir: &Path,
     try_format_code: bool,
 ) -> Result<()> {
-    let mut rb_file = PathBuf::from(out_dir);
-    rb_file.push(format!("{}.rb", ci.namespace()));
+    let rb_file = out_dir.join(format!("{}.rb", ci.namespace()));
     let mut f = File::create(&rb_file).context("Failed to create .rb file for bindings")?;
     write!(f, "{}", generate_ruby_bindings(config, ci)?)?;
 
@@ -54,7 +46,7 @@ pub fn generate_ruby_bindings(config: &Config, ci: &ComponentInterface) -> Resul
     use askama::Template;
     RubyWrapper::new(config.clone(), ci)
         .render()
-        .map_err(|_| anyhow::anyhow!("failed to render ruby bindings"))
+        .context("failed to render ruby bindings")
 }
 
 /// Execute the specifed ruby script, with environment based on the generated
@@ -62,7 +54,7 @@ pub fn generate_ruby_bindings(config: &Config, ci: &ComponentInterface) -> Resul
 pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
     let mut cmd = Command::new("ruby");
     // This helps ruby find the generated .rb wrapper for rust component.
-    let rubypath = env::var_os("RUBYLIB").unwrap_or_else(|| OsString::from(""));
+    let rubypath = env::var_os("RUBYLIB").unwrap_or_default();
     let rubypath = env::join_paths(env::split_paths(&rubypath).chain(vec![out_dir.to_path_buf()]))?;
 
     cmd.env("RUBYLIB", rubypath);

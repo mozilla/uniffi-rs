@@ -5,7 +5,7 @@
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
 
-use anyhow::{anyhow, Result};
+use anyhow::{Context, Result};
 use askama::Template;
 use heck::{ToLowerCamelCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
@@ -140,15 +140,15 @@ impl MergeWith for Config {
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
     let header = BridgingHeader::new(config, ci)
         .render()
-        .map_err(|_| anyhow!("failed to render Swift bridging header"))?;
+        .context("failed to render Swift bridging header")?;
     let library = SwiftWrapper::new(SwiftCodeOracle, config.clone(), ci)
         .render()
-        .map_err(|_| anyhow!("failed to render Swift library"))?;
+        .context("failed to render Swift library")?;
     let modulemap = if config.generate_module_map() {
         Some(
             ModuleMap::new(config, ci)
                 .render()
-                .map_err(|_| anyhow!("failed to render Swift modulemap"))?,
+                .context("failed to render Swift modulemap")?,
         )
     } else {
         None
