@@ -90,27 +90,13 @@
 <span id="85">85</span>
 <span id="86">86</span>
 <span id="87">87</span>
-<span id="88">88</span>
-<span id="89">89</span>
-<span id="90">90</span>
-<span id="91">91</span>
-<span id="92">92</span>
-<span id="93">93</span>
-<span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>::{<span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">Literal</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::interface</span>::{<span class="ident">types::Type</span>, <span class="ident">Radix</span>};
-<span class="kw">use</span> <span class="ident">askama::Template</span>;
 <span class="kw">use</span> <span class="ident">paste::paste</span>;
-
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::filters</span>;
 
 <span class="kw">fn</span> <span class="ident">render_literal</span>(<span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) -&gt; <span class="ident">String</span> {
     <span class="kw">fn</span> <span class="ident">typed_number</span>(<span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>, <span class="ident">num_str</span>: <span class="ident">String</span>) -&gt; <span class="ident">String</span> {
@@ -162,10 +148,8 @@
 }
 
 <span class="macro">macro_rules!</span> <span class="ident">impl_code_type_for_primitive</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">class_name</span>:<span class="ident">literal</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">template_file</span>:<span class="ident">literal</span>) =&gt; {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">class_name</span>:<span class="ident">literal</span>) =&gt; {
         <span class="macro">paste!</span> {
-            <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
-            <span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;swift&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">template_file</span>)]</span>
             <span class="kw">pub</span> <span class="kw">struct</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>;
 
             <span class="kw">impl</span> <span class="ident">CodeType</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>  {
@@ -176,27 +160,23 @@
                 <span class="kw">fn</span> <span class="ident">literal</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) -&gt; <span class="ident">String</span> {
                     <span class="ident">render_literal</span>(<span class="ident">oracle</span>, <span class="kw-2">&amp;</span><span class="ident">literal</span>)
                 }
-
-                <span class="kw">fn</span> <span class="ident">helper_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-                    <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">render</span>().<span class="ident">unwrap</span>())
-                }
             }
         }
     };
 }
 
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">BooleanCodeType</span>, <span class="string">&quot;Bool&quot;</span>, <span class="string">&quot;BooleanHelper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">StringCodeType</span>, <span class="string">&quot;String&quot;</span>, <span class="string">&quot;StringHelper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int8CodeType</span>, <span class="string">&quot;Int8&quot;</span>, <span class="string">&quot;Int8Helper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int16CodeType</span>, <span class="string">&quot;Int16&quot;</span>, <span class="string">&quot;Int16Helper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int32CodeType</span>, <span class="string">&quot;Int32&quot;</span>, <span class="string">&quot;Int32Helper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int64CodeType</span>, <span class="string">&quot;Int64&quot;</span>, <span class="string">&quot;Int64Helper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt8CodeType</span>, <span class="string">&quot;UInt8&quot;</span>, <span class="string">&quot;UInt8Helper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt16CodeType</span>, <span class="string">&quot;UInt16&quot;</span>, <span class="string">&quot;UInt16Helper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt32CodeType</span>, <span class="string">&quot;UInt32&quot;</span>, <span class="string">&quot;UInt32Helper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt64CodeType</span>, <span class="string">&quot;UInt64&quot;</span>, <span class="string">&quot;UInt64Helper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Float32CodeType</span>, <span class="string">&quot;Float&quot;</span>, <span class="string">&quot;Float32Helper.swift&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Float64CodeType</span>, <span class="string">&quot;Double&quot;</span>, <span class="string">&quot;Float64Helper.swift&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">BooleanCodeType</span>, <span class="string">&quot;Bool&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">StringCodeType</span>, <span class="string">&quot;String&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int8CodeType</span>, <span class="string">&quot;Int8&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int16CodeType</span>, <span class="string">&quot;Int16&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int32CodeType</span>, <span class="string">&quot;Int32&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Int64CodeType</span>, <span class="string">&quot;Int64&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt8CodeType</span>, <span class="string">&quot;UInt8&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt16CodeType</span>, <span class="string">&quot;UInt16&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt32CodeType</span>, <span class="string">&quot;UInt32&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">UInt64CodeType</span>, <span class="string">&quot;UInt64&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Float32CodeType</span>, <span class="string">&quot;Float&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(<span class="ident">Float64CodeType</span>, <span class="string">&quot;Double&quot;</span>);
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
 </body></html>

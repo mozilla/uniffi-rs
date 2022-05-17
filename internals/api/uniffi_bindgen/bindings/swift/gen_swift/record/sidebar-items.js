@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["RecordCodeType",""],["SwiftRecord",""]]});
+initSidebarItems({"struct":[["RecordCodeType",""]]});

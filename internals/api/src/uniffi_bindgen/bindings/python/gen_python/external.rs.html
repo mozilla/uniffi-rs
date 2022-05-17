@@ -32,33 +32,19 @@
 <span id="27">27</span>
 <span id="28">28</span>
 <span id="29">29</span>
-<span id="30">30</span>
-<span id="31">31</span>
-<span id="32">32</span>
-<span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
-<span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::filters</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>::{<span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>};
-<span class="kw">use</span> <span class="ident">askama::Template</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
-<span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;py&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;ExternalTemplate.py&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ExternalCodeType</span> {
     <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="ident">crate_name</span>: <span class="ident">String</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ExternalCodeType</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">crate_name</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">name</span>, <span class="ident">crate_name</span> }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">name</span> }
     }
 }
 
@@ -69,10 +55,6 @@
 
     <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">String</span> {
         <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">helper_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">render</span>().<span class="ident">unwrap</span>())
     }
 
     <span class="kw">fn</span> <span class="ident">coerce</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">_nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {

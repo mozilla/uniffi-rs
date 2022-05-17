@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ObjectCodeType",""],["PythonObject",""]]});
+initSidebarItems({"struct":[["ObjectCodeType",""]]});

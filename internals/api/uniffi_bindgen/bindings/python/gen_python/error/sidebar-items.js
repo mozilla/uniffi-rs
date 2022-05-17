@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ErrorCodeType",""],["PythonError",""]]});
+initSidebarItems({"struct":[["ErrorCodeType",""]]});

@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["PythonRecord",""],["RecordCodeType",""]]});
+initSidebarItems({"struct":[["RecordCodeType",""]]});

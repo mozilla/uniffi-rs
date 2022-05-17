@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ObjectCodeType",""],["SwiftObject",""]]});
+initSidebarItems({"struct":[["ObjectCodeType",""]]});

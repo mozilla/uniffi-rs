@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["CallbackInterfaceCodeType",""],["PythonCallbackInterface",""],["PythonCallbackInterfaceRuntime",""]]});
+initSidebarItems({"struct":[["CallbackInterfaceCodeType",""]]});

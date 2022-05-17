@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ErrorCodeType",""],["SwiftError",""]]});
+initSidebarItems({"struct":[["ErrorCodeType",""]]});

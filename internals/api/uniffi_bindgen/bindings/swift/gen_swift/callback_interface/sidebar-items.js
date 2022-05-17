@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["CallbackInterfaceCodeType",""],["SwiftCallbackInterface",""],["SwiftCallbackInterfaceRuntime",""]]});
+initSidebarItems({"struct":[["CallbackInterfaceCodeType",""]]});

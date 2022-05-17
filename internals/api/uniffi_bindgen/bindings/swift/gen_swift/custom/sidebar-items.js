@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["CustomCodeType",""],["SwiftCustomType",""]]});
+initSidebarItems({"struct":[["CustomCodeType",""]]});

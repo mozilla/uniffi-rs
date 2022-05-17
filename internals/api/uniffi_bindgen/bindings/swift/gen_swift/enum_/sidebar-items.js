@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["EnumCodeType",""],["SwiftEnum",""]]});
+initSidebarItems({"struct":[["EnumCodeType",""]]});

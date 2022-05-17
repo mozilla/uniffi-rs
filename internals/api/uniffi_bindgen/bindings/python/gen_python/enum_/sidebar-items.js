@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["EnumCodeType",""],["PythonEnum",""]]});
+initSidebarItems({"struct":[["EnumCodeType",""]]});

@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["CustomCodeType",""],["PythonCustomType",""]]});
+initSidebarItems({"struct":[["CustomCodeType",""]]});
