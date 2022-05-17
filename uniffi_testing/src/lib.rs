@@ -5,12 +5,12 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 use anyhow::{bail, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use cargo_metadata::{Artifact, Message, Metadata, MetadataCommand, Package, Target};
+use fs_err as fs;
 use serde::Deserialize;
 use std::{
     collections::hash_map::DefaultHasher,
     env,
     env::consts::DLL_EXTENSION,
-    fs::{copy, read_dir},
     hash::{Hash, Hasher},
     process::{Command, Stdio},
 };
@@ -151,9 +151,9 @@ impl UniFFITestHelper {
         let out_dir = temp_dir.as_ref().join(dirname);
         if out_dir.exists() {
             // Clean out any files from previous runs
-            std::fs::remove_dir_all(&out_dir)?;
+            fs::remove_dir_all(&out_dir)?;
         }
-        std::fs::create_dir(&out_dir)?;
+        fs::create_dir(&out_dir)?;
         Ok(out_dir)
     }
 
@@ -170,7 +170,7 @@ impl UniFFITestHelper {
 
         for path in cdylib_paths.into_iter() {
             let dest = out_dir.as_ref().join(path.file_name().unwrap());
-            copy(&path, &dest)?;
+            fs::copy(&path, &dest)?;
         }
         Ok(())
     }
@@ -212,7 +212,7 @@ impl UniFFITestHelper {
 }
 
 fn find_files<F: Fn(&Utf8Path) -> bool>(dir: &Utf8Path, predicate: F) -> Result<Vec<Utf8PathBuf>> {
-    read_dir(&dir)?
+    fs::read_dir(&dir)?
         .flatten()
         .map(|entry| entry.path().try_into())
         .try_fold(Vec::new(), |mut vec, path| {

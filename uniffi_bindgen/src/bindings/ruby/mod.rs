@@ -2,9 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{env, fs::File, io::Write, process::Command};
+use std::{env, io::Write, process::Command};
 
 use anyhow::{bail, Context, Result};
+use fs_err::File;
 
 pub mod gen_ruby;
 use camino::Utf8Path;
@@ -21,7 +22,7 @@ pub fn write_bindings(
     try_format_code: bool,
 ) -> Result<()> {
     let rb_file = out_dir.join(format!("{}.rb", ci.namespace()));
-    let mut f = File::create(&rb_file).context("Failed to create .rb file for bindings")?;
+    let mut f = File::create(&rb_file)?;
     write!(f, "{}", generate_ruby_bindings(config, ci)?)?;
 
     if try_format_code {

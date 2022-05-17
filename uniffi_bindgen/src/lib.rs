@@ -97,10 +97,11 @@ const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::{Parser, Subcommand};
+use fs_err::{self as fs, File};
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::io::prelude::*;
-use std::{collections::HashMap, env, fs::File, process::Command, str::FromStr};
+use std::{collections::HashMap, env, process::Command, str::FromStr};
 
 pub mod backend;
 pub mod bindings;
@@ -276,7 +277,7 @@ pub fn generate_component_scaffolding(
     let file_stem = udl_file.file_stem().context("not a file")?;
     let filename = format!("{}.uniffi.rs", file_stem);
     let out_dir = get_out_dir(udl_file, out_dir_override)?.join(filename);
-    let mut f = File::create(&out_dir).context("Failed to create output file")?;
+    let mut f = File::create(&out_dir)?;
     write!(f, "{}", RustScaffolding::new(&component)).context("Failed to write output file")?;
     if format_code {
         Command::new("rustfmt").arg(&out_dir).status()?;
@@ -404,7 +405,7 @@ fn get_out_dir(udl_file: &Utf8Path, out_dir_override: Option<&Utf8Path>) -> Resu
     Ok(match out_dir_override {
         Some(s) => {
             // Create the directory if it doesn't exist yet.
-            std::fs::create_dir_all(&s)?;
+            fs::create_dir_all(&s)?;
             s.canonicalize_utf8().context("Unable to find out-dir")?
         }
         None => udl_file

@@ -29,9 +29,11 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
+use std::{ffi::OsString, io::Write, process::Command};
+
 use anyhow::{bail, Context, Result};
 use camino::Utf8Path;
-use std::{ffi::OsString, fs::File, io::Write, process::Command};
+use fs_err::File;
 
 pub mod gen_swift;
 pub use gen_swift::{generate_bindings, Config};
@@ -67,17 +69,14 @@ pub fn write_bindings(
     } = generate_bindings(config, ci)?;
 
     let source_file = out_dir.join(format!("{}.swift", config.module_name()));
-    let mut l = File::create(&source_file).context("Failed to create .swift file for bindings")?;
+    let mut l = File::create(&source_file)?;
     write!(l, "{}", library)?;
 
-    let header_file = out_dir.join(config.header_filename());
-    let mut h = File::create(&header_file).context("Failed to create .h file for bindings")?;
+    let mut h = File::create(out_dir.join(config.header_filename()))?;
     write!(h, "{}", header)?;
 
     if let Some(modulemap) = modulemap {
-        let modulemap_file = out_dir.join(config.modulemap_filename());
-        let mut m = File::create(&modulemap_file)
-            .context("Failed to create .modulemap file for bindings")?;
+        let mut m = File::create(out_dir.join(config.modulemap_filename()))?;
         write!(m, "{}", modulemap)?;
     }
 

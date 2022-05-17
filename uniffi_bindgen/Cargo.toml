@@ -20,6 +20,7 @@ askama = { version = "0.11", default-features = false, features = ["config"] }
 cargo_metadata = "0.14"
 camino = "1.0.8"
 clap = { version = "3.1", features = ["cargo", "std", "derive"] }
+fs-err = "2.7.0"
 heck = "0.4"
 paste = "1.0"
 serde = "1"

@@ -2,9 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{env, fs::File, io::Write, process::Command};
+use std::{env, io::Write, process::Command};
 
 use anyhow::{bail, Context, Result};
+use fs_err::File;
 
 pub mod gen_python;
 use camino::Utf8Path;
@@ -20,7 +21,7 @@ pub fn write_bindings(
     try_format_code: bool,
 ) -> Result<()> {
     let py_file = out_dir.join(format!("{}.py", ci.namespace()));
-    let mut f = File::create(&py_file).context("Failed to create .py file for bindings")?;
+    let mut f = File::create(&py_file)?;
     write!(f, "{}", generate_python_bindings(config, ci)?)?;
 
     if try_format_code {

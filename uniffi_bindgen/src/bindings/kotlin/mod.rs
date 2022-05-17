@@ -4,7 +4,8 @@
 
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
-use std::{env, ffi::OsString, fs::File, io::Write, process::Command};
+use fs_err::{self as fs, File};
+use std::{env, ffi::OsString, io::Write, process::Command};
 
 pub mod gen_kotlin;
 pub use gen_kotlin::{generate_bindings, Config};
@@ -18,9 +19,9 @@ pub fn write_bindings(
     try_format_code: bool,
 ) -> Result<()> {
     let mut kt_file = full_bindings_path(config, out_dir)?;
-    std::fs::create_dir_all(&kt_file)?;
+    fs::create_dir_all(&kt_file)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
-    let mut f = File::create(&kt_file).context("Failed to create .kt file for bindings")?;
+    let mut f = File::create(&kt_file)?;
     write!(f, "{}", generate_bindings(config, ci)?)?;
     if try_format_code {
         if let Err(e) = Command::new("ktlint").arg("-F").arg(&kt_file).output() {
