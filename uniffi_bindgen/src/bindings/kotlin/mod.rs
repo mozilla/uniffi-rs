@@ -3,14 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::{bail, Context, Result};
-use std::{
-    env,
-    ffi::OsString,
-    fs::File,
-    io::Write,
-    path::{Path, PathBuf},
-    process::Command,
-};
+use camino::{Utf8Path, Utf8PathBuf};
+use std::{env, ffi::OsString, fs::File, io::Write, process::Command};
 
 pub mod gen_kotlin;
 pub use gen_kotlin::{generate_bindings, Config};
@@ -20,7 +14,7 @@ use super::super::interface::ComponentInterface;
 pub fn write_bindings(
     config: &Config,
     ci: &ComponentInterface,
-    out_dir: &Path,
+    out_dir: &Utf8Path,
     try_format_code: bool,
 ) -> Result<()> {
     let mut kt_file = full_bindings_path(config, out_dir)?;
@@ -29,14 +23,10 @@ pub fn write_bindings(
     let mut f = File::create(&kt_file).context("Failed to create .kt file for bindings")?;
     write!(f, "{}", generate_bindings(config, ci)?)?;
     if try_format_code {
-        if let Err(e) = Command::new("ktlint")
-            .arg("-F")
-            .arg(kt_file.to_str().unwrap())
-            .output()
-        {
+        if let Err(e) = Command::new("ktlint").arg("-F").arg(&kt_file).output() {
             println!(
                 "Warning: Unable to auto-format {} using ktlint: {:?}",
-                kt_file.file_name().unwrap().to_str().unwrap(),
+                kt_file.file_name().unwrap(),
                 e
             )
         }
@@ -44,14 +34,18 @@ pub fn write_bindings(
     Ok(())
 }
 
-fn full_bindings_path(config: &Config, out_dir: &Path) -> Result<PathBuf> {
-    let package_path: PathBuf = config.package_name().split('.').collect();
-    Ok(PathBuf::from(out_dir).join(package_path))
+fn full_bindings_path(config: &Config, out_dir: &Utf8Path) -> Result<Utf8PathBuf> {
+    let package_path: Utf8PathBuf = config.package_name().split('.').collect();
+    Ok(Utf8PathBuf::from(out_dir).join(package_path))
 }
 
 /// Generate kotlin bindings for the given namespace, then use the kotlin
 /// command-line tools to compile them into a .jar file.
-pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
+pub fn compile_bindings(
+    config: &Config,
+    ci: &ComponentInterface,
+    out_dir: &Utf8Path,
+) -> Result<()> {
     let mut kt_file = full_bindings_path(config, out_dir)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
     let jar_file = out_dir.join(format!("{}.jar", ci.namespace()));
@@ -75,7 +69,7 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
 
 /// Execute the specifed kotlin script, with classpath based on the generated
 // artifacts in the given output directory.
-pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
+pub fn run_script(out_dir: &Utf8Path, script_file: &Utf8Path) -> Result<()> {
     let mut cmd = Command::new("kotlinc");
     // Make sure it can load the .jar and its dependencies.
     cmd.arg("-classpath").arg(classpath_for_testing(out_dir)?);
@@ -96,7 +90,7 @@ pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
 }
 
 // Calculate the classpath string to use for testing
-pub fn classpath_for_testing(out_dir: &Path) -> Result<OsString> {
+pub fn classpath_for_testing(out_dir: &Utf8Path) -> Result<OsString> {
     let mut classpath = env::var_os("CLASSPATH").unwrap_or_default();
     // This lets java find the compiled library for the rust component.
     classpath.push(":");

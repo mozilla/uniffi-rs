@@ -3,6 +3,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::{bail, Result};
+use camino::{Utf8Path, Utf8PathBuf};
 use cargo_metadata::{Artifact, Message, Metadata, MetadataCommand, Package, Target};
 use serde::Deserialize;
 use std::{
@@ -11,7 +12,6 @@ use std::{
     env::consts::DLL_EXTENSION,
     fs::{copy, read_dir},
     hash::{Hash, Hasher},
-    path::{Path, PathBuf},
     process::{Command, Stdio},
 };
 
@@ -24,8 +24,8 @@ struct UniFFITestingMetadata {
 // A source to compile for a test
 #[derive(Debug)]
 pub struct CompileSource {
-    pub udl_path: PathBuf,
-    pub config_path: Option<PathBuf>,
+    pub udl_path: Utf8PathBuf,
+    pub config_path: Option<Utf8PathBuf>,
 }
 
 // Store Cargo output to in a lazy_static to avoid calling it more than once.
@@ -90,7 +90,7 @@ impl UniFFITestHelper {
         }
     }
 
-    fn find_cdylib_path(package: &Package) -> Result<PathBuf> {
+    fn find_cdylib_path(package: &Package) -> Result<Utf8PathBuf> {
         let cdylib_targets: Vec<&Target> = package
             .targets
             .iter()
@@ -125,7 +125,7 @@ impl UniFFITestHelper {
             .collect();
 
         match cdylib_files.len() {
-            1 => Ok(cdylib_files[0].as_std_path().to_path_buf()),
+            1 => Ok(cdylib_files[0].to_owned()),
             n => bail!("Found {} cdylib files for {}", n, artifact.target.name),
         }
     }
@@ -144,11 +144,11 @@ impl UniFFITestHelper {
     /// path collutions when 2 scripts run against the same fixture.
     pub fn create_out_dir(
         &self,
-        temp_dir: impl AsRef<Path>,
-        script_path: impl AsRef<Path>,
-    ) -> Result<PathBuf> {
+        temp_dir: impl AsRef<Utf8Path>,
+        script_path: impl AsRef<Utf8Path>,
+    ) -> Result<Utf8PathBuf> {
         let dirname = format!("{}-{}", self.name, hash_path(script_path.as_ref()));
-        let out_dir = Path::new(temp_dir.as_ref()).join(dirname);
+        let out_dir = temp_dir.as_ref().join(dirname);
         if out_dir.exists() {
             // Clean out any files from previous runs
             std::fs::remove_dir_all(&out_dir)?;
@@ -162,7 +162,7 @@ impl UniFFITestHelper {
     /// This is typically needed for the bindings to open it when running the tests
     ///
     /// Returns the path to the copied library
-    pub fn copy_cdylibs_to_out_dir(&self, out_dir: impl AsRef<Path>) -> Result<()> {
+    pub fn copy_cdylibs_to_out_dir(&self, out_dir: impl AsRef<Utf8Path>) -> Result<()> {
         let cdylib_paths = std::iter::once(self.package.clone())
             .chain(self.find_packages_for_external_crates()?)
             .map(|p| Self::find_cdylib_path(&p))
@@ -184,7 +184,7 @@ impl UniFFITestHelper {
     }
 
     fn find_compile_source(&self, package: &Package) -> Result<CompileSource> {
-        let crate_root = package.manifest_path.parent().unwrap().as_std_path();
+        let crate_root = package.manifest_path.parent().unwrap();
         let src_dir = crate_root.join("src");
         let mut udl_paths = find_files(
             &src_dir,
@@ -192,7 +192,7 @@ impl UniFFITestHelper {
         )?;
         let udl_path = match udl_paths.len() {
             1 => udl_paths.remove(0),
-            n => bail!("Found {} UDL files in {:?}", n, src_dir),
+            n => bail!("Found {} UDL files in {}", n, src_dir),
         };
         let mut config_paths = find_files(
             crate_root,
@@ -201,7 +201,7 @@ impl UniFFITestHelper {
         let config_path = match config_paths.len() {
             0 => None,
             1 => Some(config_paths.remove(0)),
-            n => bail!("Found {} UDL files in {:?}", n, crate_root),
+            n => bail!("Found {} UDL files in {}", n, crate_root),
         };
 
         Ok(CompileSource {
@@ -211,12 +211,17 @@ impl UniFFITestHelper {
     }
 }
 
-fn find_files<F: Fn(&Path) -> bool>(dir: &Path, predicate: F) -> Result<Vec<PathBuf>> {
-    Ok(read_dir(&dir)?
+fn find_files<F: Fn(&Utf8Path) -> bool>(dir: &Utf8Path, predicate: F) -> Result<Vec<Utf8PathBuf>> {
+    read_dir(&dir)?
         .flatten()
-        .map(|entry| entry.path())
-        .filter(|p| predicate(p))
-        .collect())
+        .map(|entry| entry.path().try_into())
+        .try_fold(Vec::new(), |mut vec, path| {
+            let path: Utf8PathBuf = path?;
+            if predicate(&path) {
+                vec.push(path);
+            }
+            Ok(vec)
+        })
 }
 
 fn get_cargo_metadata() -> Metadata {
@@ -239,7 +244,7 @@ fn get_cargo_build_messages() -> Vec<Message> {
         .collect()
 }
 
-fn hash_path(path: &Path) -> String {
+fn hash_path(path: &Utf8Path) -> String {
     let mut hasher = DefaultHasher::new();
     path.hash(&mut hasher);
     format!("{:x}", hasher.finish())

@@ -8,6 +8,7 @@ publish = false
 
 [dependencies]
 anyhow = "1"
+camino = "1.0.8"
 cargo_metadata = "0.14"
 lazy_static = "1.4"
 serde = "1"

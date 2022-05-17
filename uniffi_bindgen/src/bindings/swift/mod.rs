@@ -30,7 +30,8 @@
 //!
 
 use anyhow::{bail, Context, Result};
-use std::{ffi::OsString, fs::File, io::Write, path::Path, process::Command};
+use camino::Utf8Path;
+use std::{ffi::OsString, fs::File, io::Write, process::Command};
 
 pub mod gen_swift;
 pub use gen_swift::{generate_bindings, Config};
@@ -56,7 +57,7 @@ pub struct Bindings {
 pub fn write_bindings(
     config: &Config,
     ci: &ComponentInterface,
-    out_dir: &Path,
+    out_dir: &Utf8Path,
     try_format_code: bool,
 ) -> Result<()> {
     let Bindings {
@@ -82,12 +83,12 @@ pub fn write_bindings(
 
     if try_format_code {
         if let Err(e) = Command::new("swiftformat")
-            .arg(source_file.to_str().unwrap())
+            .arg(source_file.as_str())
             .output()
         {
             println!(
                 "Warning: Unable to auto-format {} using swiftformat: {:?}",
-                source_file.file_name().unwrap().to_str().unwrap(),
+                source_file.file_name().unwrap(),
                 e
             )
         }
@@ -104,7 +105,11 @@ pub fn write_bindings(
 /// test scripts need to be able to import the generated bindings, we have to compile them
 /// ahead of time before running the tests.
 ///
-pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path) -> Result<()> {
+pub fn compile_bindings(
+    config: &Config,
+    ci: &ComponentInterface,
+    out_dir: &Utf8Path,
+) -> Result<()> {
     if !config.generate_module_map() {
         bail!("Cannot compile Swift bindings when `generate_module_map` is `false`")
     }
@@ -153,7 +158,7 @@ pub fn compile_bindings(config: &Config, ci: &ComponentInterface, out_dir: &Path
 /// Swift modules in the given output directory. The modules must have been pre-compiled
 /// using the [`compile_bindings`] function.
 ///
-pub fn run_script(out_dir: &Path, script_file: &Path) -> Result<()> {
+pub fn run_script(out_dir: &Utf8Path, script_file: &Utf8Path) -> Result<()> {
     let mut cmd = Command::new("swift");
 
     // Find any module maps and/or dylibs in the target directory, and tell swift to use them.

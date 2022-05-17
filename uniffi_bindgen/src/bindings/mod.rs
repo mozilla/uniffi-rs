@@ -8,9 +8,9 @@
 //! along with some helpers for executing foreign language scripts or tests.
 
 use anyhow::{bail, Result};
+use camino::Utf8Path;
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
-use std::path::Path;
 
 use crate::interface::ComponentInterface;
 use crate::MergeWith;
@@ -102,7 +102,7 @@ impl MergeWith for Config {
 pub fn write_bindings(
     config: &Config,
     ci: &ComponentInterface,
-    out_dir: &Path,
+    out_dir: &Utf8Path,
     language: TargetLanguage,
     try_format_code: bool,
 ) -> Result<()> {
@@ -128,7 +128,7 @@ pub fn write_bindings(
 pub fn compile_bindings(
     config: &Config,
     ci: &ComponentInterface,
-    out_dir: &Path,
+    out_dir: &Utf8Path,
     language: TargetLanguage,
 ) -> Result<()> {
     match language {
@@ -144,7 +144,11 @@ pub fn compile_bindings(
 ///
 /// Note: This function is only used for compiling the unit tests. See #1169 for plans to refactor
 /// it.
-pub fn run_script(out_dir: &Path, script_file: &Path, language: TargetLanguage) -> Result<()> {
+pub fn run_script(
+    out_dir: &Utf8Path,
+    script_file: &Utf8Path,
+    language: TargetLanguage,
+) -> Result<()> {
     match language {
         TargetLanguage::Kotlin => kotlin::run_script(out_dir, script_file)?,
         TargetLanguage::Swift => swift::run_script(out_dir, script_file)?,
