@@ -17,11 +17,18 @@ This toy example defines a way of Rust accessing a key-value store exposed
 by the host operating system (e.g. the key chain).
 
 ```rust,no_run
-trait Keychain: Send {
+trait Keychain: Send + Sync + Debug {
   pub fn get(key: String) -> Option<String>
   pub fn put(key: String, value: String)
 }
 ```
+
+The concrete types that UniFFI generates for callback interfaces implement `Send`, `Sync`, and `Debug`, so it's safe to
+include these as supertraits of your callback interface trait.  This isn't strictly necessary, but it's often useful.  In
+particular, `Sync + Send` is useful when:
+  - Storing `Box<dyn CallbackInterfaceTrait>` types inside a type that needs to be `Send + Send` (for example a UniFFI
+    interface type)
+  - Storing `Box<dyn CallbackInterfaceTrait>` inside a global `Mutex` or `RwLock`
 
 ## 2. Define a callback interface in the UDL.
 
