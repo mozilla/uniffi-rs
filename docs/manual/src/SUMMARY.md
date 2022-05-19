@@ -5,6 +5,7 @@
 - [Tutorial](./Getting_started.md)
   - [Prerequisites](./tutorial/Prerequisites.md)
   - [Describing the interface](./tutorial/udl_file.md)
+  - [Callback Interfaces](./tutorial/callback_interfaces.md)
   - [Generating the Rust scaffolding code](./tutorial/Rust_scaffolding.md)
   - [Generating the foreign-language bindings](./tutorial/foreign_language_bindings.md)
 - [The UDL file](./udl_file_spec.md)
