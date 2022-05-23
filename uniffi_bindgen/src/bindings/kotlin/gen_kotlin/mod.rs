@@ -263,11 +263,7 @@ impl CodeOracle for KotlinCodeOracle {
         let name = nm.to_string();
         match name.strip_suffix("Error") {
             None => name,
-            Some(stripped) => {
-                let mut kt_exc_name = stripped.to_owned();
-                kt_exc_name.push_str("Exception");
-                kt_exc_name
-            }
+            Some(stripped) => format!("{}Exception", stripped),
         }
     }
 

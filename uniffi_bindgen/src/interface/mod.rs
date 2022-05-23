@@ -483,7 +483,7 @@ impl ComponentInterface {
         if !self.namespace.is_empty() {
             bail!("duplicate namespace definition");
         }
-        self.namespace.push_str(&defn.name);
+        self.namespace = defn.name;
         Ok(())
     }
 
