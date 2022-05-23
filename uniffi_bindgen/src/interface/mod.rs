@@ -531,8 +531,8 @@ impl ComponentInterface {
             bail!("missing namespace definition");
         }
         // To keep codegen tractable, enum variant names must not shadow type names.
-        for e in self.enums.iter() {
-            for variant in e.variants.iter() {
+        for e in &self.enums {
+            for variant in &e.variants {
                 if self.types.get_type_definition(variant.name()).is_some() {
                     bail!(
                         "Enum variant names must not shadow type names: \"{}\"",
@@ -704,7 +704,7 @@ trait APIBuilder {
 /// by processing each in turn.
 impl<T: APIBuilder> APIBuilder for Vec<T> {
     fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
-        for item in self.iter() {
+        for item in self {
             item.process(ci)?;
         }
         Ok(())
