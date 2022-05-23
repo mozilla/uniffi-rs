@@ -232,11 +232,7 @@ impl CodeOracle for PythonCodeOracle {
         let name = nm.to_string();
         match name.strip_suffix("Error") {
             None => name,
-            Some(stripped) => {
-                let mut py_exc_name = stripped.to_owned();
-                py_exc_name.push_str("Exception");
-                py_exc_name
-            }
+            Some(stripped) => format!("{}Exception", stripped),
         }
     }
 

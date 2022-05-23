@@ -114,7 +114,7 @@ impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_>
             match member {
                 weedle::interface::InterfaceMember::Operation(t) => {
                     let mut method: Method = t.convert(ci)?;
-                    method.object_name.push_str(object.name.as_str());
+                    method.object_name = object.name.clone();
                     object.methods.push(method);
                 }
                 _ => bail!(

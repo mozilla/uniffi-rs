@@ -222,7 +222,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                     if !member_names.insert(method.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", method.name())
                     }
-                    method.object_name.push_str(object.name.as_str());
+                    method.object_name = object.name.clone();
                     object.methods.push(method);
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
@@ -276,11 +276,7 @@ impl Constructor {
     }
 
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) {
-        self.ffi_func.name.push_str(ci_prefix);
-        self.ffi_func.name.push('_');
-        self.ffi_func.name.push_str(obj_prefix);
-        self.ffi_func.name.push('_');
-        self.ffi_func.name.push_str(&self.name);
+        self.ffi_func.name = format!("{}_{}_{}", ci_prefix, obj_prefix, self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
         self.ffi_func.return_type = Some(FFIType::RustArcPtr);
     }
@@ -393,11 +389,7 @@ impl Method {
     }
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
-        self.ffi_func.name.push_str(ci_prefix);
-        self.ffi_func.name.push('_');
-        self.ffi_func.name.push_str(obj_prefix);
-        self.ffi_func.name.push('_');
-        self.ffi_func.name.push_str(&self.name);
+        self.ffi_func.name = format!("{}_{}_{}", ci_prefix, obj_prefix, self.name);
         self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
         Ok(())
