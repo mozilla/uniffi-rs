@@ -168,7 +168,7 @@ impl UniFFITestHelper {
             .map(|p| Self::find_cdylib_path(&p))
             .collect::<Result<Vec<_>>>()?;
 
-        for path in cdylib_paths.into_iter() {
+        for path in cdylib_paths {
             let dest = out_dir.as_ref().join(path.file_name().unwrap());
             fs::copy(&path, &dest)?;
         }

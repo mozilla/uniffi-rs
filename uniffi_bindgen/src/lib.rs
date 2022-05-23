@@ -142,7 +142,7 @@ fn load_bindings_config<BC: BindingGeneratorConfig>(
         };
 
     // Update it with the defaults from the component interface
-    for (key, value) in BC::get_config_defaults(ci).into_iter() {
+    for (key, value) in BC::get_config_defaults(ci) {
         config_map.entry(key).or_insert(value);
     }
 
