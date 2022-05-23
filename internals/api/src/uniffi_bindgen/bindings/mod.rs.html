@@ -158,6 +158,10 @@
 <span id="153">153</span>
 <span id="154">154</span>
 <span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -168,9 +172,9 @@
 <span class="doccomment">//! along with some helpers for executing foreign language scripts or tests.</span>
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">camino::Utf8Path</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std::convert</span>::{<span class="ident">TryFrom</span>, <span class="ident">TryInto</span>};
-<span class="kw">use</span> <span class="ident">std::path::Path</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::interface::ComponentInterface</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::MergeWith</span>;
@@ -262,7 +266,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_bindings</span>(
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
     <span class="ident">language</span>: <span class="ident">TargetLanguage</span>,
     <span class="ident">try_format_code</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -288,7 +292,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">compile_bindings</span>(
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
     <span class="ident">language</span>: <span class="ident">TargetLanguage</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">language</span> {
@@ -304,7 +308,11 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Note: This function is only used for compiling the unit tests. See #1169 for plans to refactor</span>
 <span class="doccomment">/// it.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_script</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">script_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">language</span>: <span class="ident">TargetLanguage</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_script</span>(
+    <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
+    <span class="ident">script_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
+    <span class="ident">language</span>: <span class="ident">TargetLanguage</span>,
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">language</span> {
         <span class="ident">TargetLanguage::Kotlin</span> =&gt; <span class="ident">kotlin::run_script</span>(<span class="ident">out_dir</span>, <span class="ident">script_file</span>)<span class="question-mark">?</span>,
         <span class="ident">TargetLanguage::Swift</span> =&gt; <span class="ident">swift::run_script</span>(<span class="ident">out_dir</span>, <span class="ident">script_file</span>)<span class="question-mark">?</span>,

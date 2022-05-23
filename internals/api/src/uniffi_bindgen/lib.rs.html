@@ -628,15 +628,6 @@
 <span id="623">623</span>
 <span id="624">624</span>
 <span id="625">625</span>
-<span id="626">626</span>
-<span id="627">627</span>
-<span id="628">628</span>
-<span id="629">629</span>
-<span id="630">630</span>
-<span id="631">631</span>
-<span id="632">632</span>
-<span id="633">633</span>
-<span id="634">634</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -733,19 +724,14 @@
 
 <span class="kw">const</span> <span class="ident">BINDGEN_VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">anyhow</span>, <span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">camino</span>::{<span class="ident">Utf8Path</span>, <span class="ident">Utf8PathBuf</span>};
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Parser</span>, <span class="ident">Subcommand</span>};
+<span class="kw">use</span> <span class="ident">fs_err</span>::{<span class="self">self</span> <span class="kw">as</span> <span class="ident">fs</span>, <span class="ident">File</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std::convert::TryInto</span>;
 <span class="kw">use</span> <span class="ident">std::io::prelude</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">collections::HashMap</span>,
-    <span class="ident">env</span>,
-    <span class="ident">fs::File</span>,
-    <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
-    <span class="ident">process::Command</span>,
-    <span class="ident">str::FromStr</span>,
-};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashMap</span>, <span class="ident">env</span>, <span class="ident">process::Command</span>, <span class="ident">str::FromStr</span>};
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">backend</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bindings</span>;
@@ -773,8 +759,8 @@
 
 <span class="kw">fn</span> <span class="ident">load_bindings_config</span><span class="op">&lt;</span><span class="ident">BC</span>: <span class="ident">BindingGeneratorConfig</span><span class="op">&gt;</span>(
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
+    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BC</span><span class="op">&gt;</span> {
     <span class="comment">// Load the config from the TOML value, falling back to an empty map if it doesn&#39;t exist</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">config_map</span>: <span class="ident">toml::value::Table</span> <span class="op">=</span>
@@ -830,8 +816,8 @@
 <span class="comment">// If there is an error parsing the file then Err will be returned. If the file is missing or the</span>
 <span class="comment">// entry for the bindings is missing, then Ok(None) will be returned.</span>
 <span class="kw">fn</span> <span class="ident">load_bindings_config_toml</span><span class="op">&lt;</span><span class="ident">BC</span>: <span class="ident">BindingGeneratorConfig</span><span class="op">&gt;</span>(
-    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
+    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">toml::Value</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">config_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">config_file_override</span> {
         <span class="prelude-val">Some</span>(<span class="ident">cfg</span>) =&gt; <span class="ident">cfg</span>.<span class="ident">to_owned</span>(),
@@ -843,9 +829,9 @@
     }
 
     <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">slurp_file</span>(<span class="kw-2">&amp;</span><span class="ident">config_path</span>)
-        .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {:?}&quot;</span>, <span class="ident">config_path</span>))<span class="question-mark">?</span>;
+        .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {}&quot;</span>, <span class="ident">config_path</span>))<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">full_config</span> <span class="op">=</span> <span class="ident">toml::Value::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>)
-        .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to parse config file {:?}&quot;</span>, <span class="ident">config_path</span>))<span class="question-mark">?</span>;
+        .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to parse config file {}&quot;</span>, <span class="ident">config_path</span>))<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">full_config</span>
         .<span class="ident">get</span>(<span class="string">&quot;bindings&quot;</span>)
@@ -871,7 +857,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ci</span>: <span class="ident">ComponentInterface</span>,
         <span class="ident">config</span>: <span class="ident"><span class="self">Self</span>::Config</span>,
-        <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+        <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
     ) -&gt; <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 }
 
@@ -891,9 +877,9 @@
 <span class="doccomment">/// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_external_bindings</span>(
     <span class="ident">binding_generator</span>: <span class="kw">impl</span> <span class="ident">BindingGenerator</span>,
-    <span class="ident">udl_file</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">udl_file</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
+    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">out_dir_override</span> <span class="op">=</span> <span class="ident">out_dir_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
     <span class="kw">let</span> <span class="ident">config_file_override</span> <span class="op">=</span> <span class="ident">config_file_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
@@ -901,15 +887,15 @@
     <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>()).<span class="ident">context</span>(<span class="string">&quot;Error parsing UDL&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">bindings_config</span> <span class="op">=</span>
         <span class="ident">load_bindings_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">udl_file</span>.<span class="ident">as_ref</span>(), <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
-    <span class="ident">binding_generator</span>.<span class="ident">write_bindings</span>(<span class="ident">component</span>, <span class="ident">bindings_config</span>, <span class="ident">out_dir</span>.<span class="ident">as_path</span>())
+    <span class="ident">binding_generator</span>.<span class="ident">write_bindings</span>(<span class="ident">component</span>, <span class="ident">bindings_config</span>, <span class="kw-2">&amp;</span><span class="ident">out_dir</span>)
 }
 
 <span class="comment">// Generate the infrastructural Rust code for implementing the UDL interface,</span>
 <span class="comment">// such as the `extern &quot;C&quot;` function definitions and record data types.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_component_scaffolding</span>(
-    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
-    <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
+    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
+    <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
     <span class="ident">format_code</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
@@ -918,14 +904,10 @@
         <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>,
         <span class="ident">config_file_override</span>,
     );
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file</span>)
-        .<span class="ident">file_stem</span>()
-        .<span class="ident">context</span>(<span class="string">&quot;not a file&quot;</span>)<span class="question-mark">?</span>
-        .<span class="ident">to_os_string</span>();
-    <span class="ident">filename</span>.<span class="ident">push</span>(<span class="string">&quot;.uniffi.rs&quot;</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
-    <span class="ident">out_dir</span>.<span class="ident">push</span>(<span class="ident">filename</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">out_dir</span>).<span class="ident">context</span>(<span class="string">&quot;Failed to create output file&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">file_stem</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">file_stem</span>().<span class="ident">context</span>(<span class="string">&quot;not a file&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}.uniffi.rs&quot;</span>, <span class="ident">file_stem</span>);
+    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>.<span class="ident">join</span>(<span class="ident">filename</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">out_dir</span>)<span class="question-mark">?</span>;
     <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">RustScaffolding::new</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>)).<span class="ident">context</span>(<span class="string">&quot;Failed to write output file&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">if</span> <span class="ident">format_code</span> {
         <span class="ident">Command::new</span>(<span class="string">&quot;rustfmt&quot;</span>).<span class="ident">arg</span>(<span class="kw-2">&amp;</span><span class="ident">out_dir</span>).<span class="ident">status</span>()<span class="question-mark">?</span>;
@@ -936,10 +918,10 @@
 <span class="comment">// Generate the bindings in the target languages that call the scaffolding</span>
 <span class="comment">// Rust code.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(
-    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
+    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
     <span class="ident">target_languages</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+    <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
     <span class="ident">try_format_code</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
@@ -964,10 +946,10 @@
 <span class="comment">// Run tests against the foreign language bindings (generated and compiled at the same time).</span>
 <span class="comment">// Note that the cdylib we&#39;re testing against must be built already.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_tests</span>(
-    <span class="ident">cdylib_dir</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>,
-    <span class="ident">udl_files</span>: <span class="kw-2">&amp;</span>[<span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>],
-    <span class="ident">test_scripts</span>: <span class="kw-2">&amp;</span>[<span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>],
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+    <span class="ident">cdylib_dir</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
+    <span class="ident">udl_files</span>: <span class="kw-2">&amp;</span>[<span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>],
+    <span class="ident">test_scripts</span>: <span class="kw-2">&amp;</span>[<span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>],
+    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="comment">// XXX - this is just for tests, so one config_file_override for all .udl files doesn&#39;t really</span>
     <span class="comment">// make sense, so we don&#39;t let tests do this.</span>
@@ -1013,7 +995,7 @@
 <span class="doccomment">/// For now, we assume that the UDL file is in `./src/something.udl` relative</span>
 <span class="doccomment">/// to the crate root. We might consider something more sophisticated in</span>
 <span class="doccomment">/// future.</span>
-<span class="kw">fn</span> <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">path_guess</span> <span class="op">=</span> <span class="ident">udl_file</span>
         .<span class="ident">parent</span>()
         .<span class="ident">context</span>(<span class="string">&quot;UDL file has no parent folder!&quot;</span>)<span class="question-mark">?</span>
@@ -1027,34 +1009,34 @@
 
 <span class="kw">fn</span> <span class="ident">get_config</span>(
     <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>,
+    <span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
+    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Config</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">default_config</span>: <span class="ident">Config</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">into</span>();
 
     <span class="kw">let</span> <span class="ident">config_file</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">config_file_override</span> {
         <span class="prelude-val">Some</span>(<span class="ident">cfg</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">cfg</span>.<span class="ident">to_owned</span>()),
-        <span class="prelude-val">None</span> =&gt; <span class="ident">crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;uniffi.toml&quot;</span>).<span class="ident">canonicalize</span>().<span class="ident">ok</span>(),
+        <span class="prelude-val">None</span> =&gt; <span class="ident">crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;uniffi.toml&quot;</span>).<span class="ident">canonicalize_utf8</span>().<span class="ident">ok</span>(),
     };
 
     <span class="kw">match</span> <span class="ident">config_file</span> {
         <span class="prelude-val">Some</span>(<span class="ident">path</span>) =&gt; {
             <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">slurp_file</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
-                .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {:?}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>))<span class="question-mark">?</span>;
+                .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>))<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="ident">loaded_config</span>: <span class="ident">Config</span> <span class="op">=</span> <span class="ident">toml::de::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>)
-                .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to generate config from file {:?}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>))<span class="question-mark">?</span>;
+                .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to generate config from file {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>))<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="ident">loaded_config</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">default_config</span>))
         }
         <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">default_config</span>),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>, <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">out_dir_override</span> {
         <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; {
             <span class="comment">// Create the directory if it doesn&#39;t exist yet.</span>
-            <span class="ident">std::fs::create_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>)<span class="question-mark">?</span>;
-            <span class="ident">s</span>.<span class="ident">canonicalize</span>().<span class="ident">context</span>(<span class="string">&quot;Unable to find out-dir&quot;</span>)<span class="question-mark">?</span>
+            <span class="ident">fs::create_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>)<span class="question-mark">?</span>;
+            <span class="ident">s</span>.<span class="ident">canonicalize_utf8</span>().<span class="ident">context</span>(<span class="string">&quot;Unable to find out-dir&quot;</span>)<span class="question-mark">?</span>
         }
         <span class="prelude-val">None</span> =&gt; <span class="ident">udl_file</span>
             .<span class="ident">parent</span>()
@@ -1063,14 +1045,14 @@
     })
 }
 
-<span class="kw">fn</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">udl</span> <span class="op">=</span>
-        <span class="ident">slurp_file</span>(<span class="ident">udl_file</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow!</span>(<span class="string">&quot;Failed to read UDL from {:?}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">udl_file</span>))<span class="question-mark">?</span>;
+        <span class="ident">slurp_file</span>(<span class="ident">udl_file</span>).<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read UDL from {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">udl_file</span>))<span class="question-mark">?</span>;
     <span class="ident">udl</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">interface::ComponentInterface</span><span class="op">&gt;</span>()
         .<span class="ident">context</span>(<span class="string">&quot;Failed to parse UDL&quot;</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">slurp_file</span>(<span class="ident">file_name</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">slurp_file</span>(<span class="ident">file_name</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">String::new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">file_name</span>)<span class="question-mark">?</span>;
     <span class="ident">f</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;mut</span> <span class="ident">contents</span>)<span class="question-mark">?</span>;
@@ -1148,7 +1130,7 @@
             <span class="ident">short</span>,
             <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Directory in which to write generated files. Default is same folder as .udl file.&quot;</span>
         )]</span>
-        <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
+        <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>, <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Do not try to format the generated bindings.&quot;</span>)]</span>
         <span class="ident">no_format</span>: <span class="ident">bool</span>,
@@ -1158,10 +1140,10 @@
             <span class="ident">short</span>,
             <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>
         )]</span>
-        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
+        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the UDL file.&quot;</span>)]</span>
-        <span class="ident">udl_file</span>: <span class="ident">PathBuf</span>,
+        <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
     },
 
     <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;scaffolding&quot;</span>, <span class="ident">about</span> <span class="op">=</span> <span class="string">&quot;Generate Rust scaffolding code&quot;</span>)]</span>
@@ -1171,20 +1153,20 @@
             <span class="ident">short</span>,
             <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Directory in which to write generated files. Default is same folder as .udl file.&quot;</span>
         )]</span>
-        <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
+        <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
         <span class="attribute">#[<span class="ident">clap</span>(
             <span class="ident">long</span>,
             <span class="ident">short</span>,
             <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>
         )]</span>
-        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
+        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>, <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Do not try to format the generated bindings.&quot;</span>)]</span>
         <span class="ident">no_format</span>: <span class="ident">bool</span>,
 
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the UDL file.&quot;</span>)]</span>
-        <span class="ident">udl_file</span>: <span class="ident">PathBuf</span>,
+        <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
     },
 
     <span class="attribute">#[<span class="ident">clap</span>(
@@ -1195,20 +1177,20 @@
         <span class="attribute">#[<span class="ident">clap</span>(
             <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the directory containing the cdylib the scripts will be testing against.&quot;</span>
         )]</span>
-        <span class="ident">cdylib_dir</span>: <span class="ident">PathBuf</span>,
+        <span class="ident">cdylib_dir</span>: <span class="ident">Utf8PathBuf</span>,
 
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the UDL file.&quot;</span>)]</span>
-        <span class="ident">udl_file</span>: <span class="ident">PathBuf</span>,
+        <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
 
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Foreign language(s) test scripts to run.&quot;</span>)]</span>
-        <span class="ident">test_scripts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
+        <span class="ident">test_scripts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
         <span class="attribute">#[<span class="ident">clap</span>(
             <span class="ident">long</span>,
             <span class="ident">short</span>,
             <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>
         )]</span>
-        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
+        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
     },
 }
 
@@ -1256,7 +1238,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_guessing_of_crate_root_directory_from_udl_file</span>() {
         <span class="comment">// When running this test, this will be the ./uniffi_bindgen directory.</span>
-        <span class="kw">let</span> <span class="ident">this_crate_root</span> <span class="op">=</span> <span class="ident">PathBuf::from</span>(<span class="ident">std::env::var</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).<span class="ident">unwrap</span>());
+        <span class="kw">let</span> <span class="ident">this_crate_root</span> <span class="op">=</span> <span class="ident">Utf8PathBuf::from</span>(<span class="ident">std::env::var</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).<span class="ident">unwrap</span>());
 
         <span class="kw">let</span> <span class="ident">example_crate_root</span> <span class="op">=</span> <span class="ident">this_crate_root</span>
             .<span class="ident">parent</span>()

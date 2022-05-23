@@ -74,16 +74,17 @@
 <span id="69">69</span>
 <span id="70">70</span>
 <span id="71">71</span>
-<span id="72">72</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">fs::File</span>, <span class="ident">io::Write</span>, <span class="ident">path::Path</span>, <span class="ident">process::Command</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">io::Write</span>, <span class="ident">process::Command</span>};
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">fs_err::File</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gen_ruby</span>;
+<span class="kw">use</span> <span class="ident">camino::Utf8Path</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gen_ruby</span>::{<span class="ident">Config</span>, <span class="ident">RubyWrapper</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span>::interface::ComponentInterface</span>;
@@ -93,22 +94,18 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_bindings</span>(
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
     <span class="ident">try_format_code</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">rb_file</span> <span class="op">=</span> <span class="ident">out_dir</span>.<span class="ident">join</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.rb&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>()));
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">rb_file</span>).<span class="ident">context</span>(<span class="string">&quot;Failed to create .rb file for bindings&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">rb_file</span>)<span class="question-mark">?</span>;
     <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">generate_ruby_bindings</span>(<span class="ident">config</span>, <span class="ident">ci</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
     <span class="kw">if</span> <span class="ident">try_format_code</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;rubocop&quot;</span>)
-            .<span class="ident">arg</span>(<span class="string">&quot;-A&quot;</span>)
-            .<span class="ident">arg</span>(<span class="ident">rb_file</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>())
-            .<span class="ident">output</span>()
-        {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;rubocop&quot;</span>).<span class="ident">arg</span>(<span class="string">&quot;-A&quot;</span>).<span class="ident">arg</span>(<span class="kw-2">&amp;</span><span class="ident">rb_file</span>).<span class="ident">output</span>() {
             <span class="macro">println!</span>(
                 <span class="string">&quot;Warning: Unable to auto-format {} using rubocop: {:?}&quot;</span>,
-                <span class="ident">rb_file</span>.<span class="ident">file_name</span>().<span class="ident">unwrap</span>().<span class="ident">to_str</span>().<span class="ident">unwrap</span>(),
+                <span class="ident">rb_file</span>.<span class="ident">file_name</span>().<span class="ident">unwrap</span>(),
                 <span class="ident">e</span>
             )
         }
@@ -128,11 +125,12 @@
 
 <span class="doccomment">/// Execute the specifed ruby script, with environment based on the generated</span>
 <span class="doccomment">/// artifacts in the given output directory.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_script</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">script_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_script</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>, <span class="ident">script_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmd</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;ruby&quot;</span>);
     <span class="comment">// This helps ruby find the generated .rb wrapper for rust component.</span>
     <span class="kw">let</span> <span class="ident">rubypath</span> <span class="op">=</span> <span class="ident">env::var_os</span>(<span class="string">&quot;RUBYLIB&quot;</span>).<span class="ident">unwrap_or_default</span>();
-    <span class="kw">let</span> <span class="ident">rubypath</span> <span class="op">=</span> <span class="ident">env::join_paths</span>(<span class="ident">env::split_paths</span>(<span class="kw-2">&amp;</span><span class="ident">rubypath</span>).<span class="ident">chain</span>(<span class="macro">vec!</span>[<span class="ident">out_dir</span>.<span class="ident">to_path_buf</span>()]))<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">rubypath</span> <span class="op">=</span>
+        <span class="ident">env::join_paths</span>(<span class="ident">env::split_paths</span>(<span class="kw-2">&amp;</span><span class="ident">rubypath</span>).<span class="ident">chain</span>(<span class="macro">vec!</span>[<span class="ident">out_dir</span>.<span class="ident">as_std_path</span>().<span class="ident">to_owned</span>()]))<span class="question-mark">?</span>;
 
     <span class="ident">cmd</span>.<span class="ident">env</span>(<span class="string">&quot;RUBYLIB&quot;</span>, <span class="ident">rubypath</span>);
     <span class="comment">// We should now be able to execute the tests successfully.</span>

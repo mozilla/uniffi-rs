@@ -185,8 +185,6 @@
 <span id="180">180</span>
 <span id="181">181</span>
 <span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -196,9 +194,9 @@
 <span class="doccomment">//! Currently this is just for easily generating integration tests, but maybe</span>
 <span class="doccomment">//! we&#39;ll put some other code-annotation helper macros in here at some point.</span>
 
+<span class="kw">use</span> <span class="ident">camino</span>::{<span class="ident">Utf8Path</span>, <span class="ident">Utf8PathBuf</span>};
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>};
 <span class="kw">use</span> <span class="ident">std::env</span>;
-<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
 <span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">bracketed</span>, <span class="ident">punctuated::Punctuated</span>, <span class="ident">LitStr</span>, <span class="ident">Token</span>};
 
 <span class="doccomment">/// A macro to build testcases for a component&#39;s generated bindings.</span>
@@ -227,8 +225,8 @@
         .<span class="ident">udl_files</span>
         .<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">file_path</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">pathbuf</span>: <span class="ident">PathBuf</span> <span class="op">=</span> [<span class="kw-2">&amp;</span><span class="ident">pkg_dir</span>, <span class="ident">file_path</span>].<span class="ident">iter</span>().<span class="ident">collect</span>();
-            <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">pathbuf</span>.<span class="ident">to_string_lossy</span>();
+            <span class="kw">let</span> <span class="ident">pathbuf</span>: <span class="ident">Utf8PathBuf</span> <span class="op">=</span> [<span class="kw-2">&amp;</span><span class="ident">pkg_dir</span>, <span class="ident">file_path</span>].<span class="ident">iter</span>().<span class="ident">collect</span>();
+            <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">pathbuf</span>.<span class="ident">to_string</span>();
             <span class="macro">quote!</span> { #<span class="ident">path</span> }
         })
         .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proc_macro2::TokenStream</span><span class="op">&gt;</span><span class="op">&gt;</span>();
@@ -237,12 +235,11 @@
     <span class="kw">let</span> <span class="ident">test_functions</span> <span class="op">=</span> <span class="ident">paths</span>.<span class="ident">test_scripts</span>
         .<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">file_path</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">test_file_pathbuf</span>: <span class="ident">PathBuf</span> <span class="op">=</span> [<span class="kw-2">&amp;</span><span class="ident">pkg_dir</span>, <span class="ident">file_path</span>].<span class="ident">iter</span>().<span class="ident">collect</span>();
-            <span class="kw">let</span> <span class="ident">test_file_path</span> <span class="op">=</span> <span class="ident">test_file_pathbuf</span>.<span class="ident">to_string_lossy</span>();
+            <span class="kw">let</span> <span class="ident">test_file_pathbuf</span>: <span class="ident">Utf8PathBuf</span> <span class="op">=</span> [<span class="kw-2">&amp;</span><span class="ident">pkg_dir</span>, <span class="ident">file_path</span>].<span class="ident">iter</span>().<span class="ident">collect</span>();
+            <span class="kw">let</span> <span class="ident">test_file_path</span> <span class="op">=</span> <span class="ident">test_file_pathbuf</span>.<span class="ident">to_string</span>();
             <span class="kw">let</span> <span class="ident">test_file_name</span> <span class="op">=</span> <span class="ident">test_file_pathbuf</span>
                 .<span class="ident">file_name</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;Test file has no name, cannot build tests for generated bindings&quot;</span>)
-                .<span class="ident">to_string_lossy</span>();
+                .<span class="ident">expect</span>(<span class="string">&quot;Test file has no name, cannot build tests for generated bindings&quot;</span>);
             <span class="kw">let</span> <span class="ident">test_name</span> <span class="op">=</span> <span class="macro">format_ident!</span>(
                 <span class="string">&quot;uniffi_foreign_language_testcase_{}&quot;</span>,
                 <span class="ident">test_file_name</span>.<span class="ident">replace</span>(<span class="op">|</span><span class="ident">c</span>: <span class="ident">char</span><span class="op">|</span> <span class="op">!</span><span class="ident">c</span>.<span class="ident">is_alphanumeric</span>(), <span class="string">&quot;_&quot;</span>)
@@ -268,7 +265,7 @@
 }
 
 <span class="comment">// UNIFFI_TESTS_DISABLE_EXTENSIONS contains a comma-sep&#39;d list of extensions (without leading `.`)</span>
-<span class="kw">fn</span> <span class="ident">should_skip_path</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">bool</span> {
+<span class="kw">fn</span> <span class="ident">should_skip_path</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="ident">bool</span> {
     <span class="kw">let</span> <span class="ident">ext</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">extension</span>().<span class="ident">expect</span>(<span class="string">&quot;File has no extension!&quot;</span>);
     <span class="ident">env::var</span>(<span class="string">&quot;UNIFFI_TESTS_DISABLE_EXTENSIONS&quot;</span>)
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>).<span class="ident">any</span>(<span class="op">|</span><span class="ident">look</span><span class="op">|</span> <span class="ident">look</span> <span class="op">==</span> <span class="ident">ext</span>))
@@ -352,7 +349,7 @@
 ) -&gt; <span class="ident">proc_macro::TokenStream</span> {
     <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">udl_file</span> <span class="kw">as</span> <span class="ident">syn::LitStr</span>);
     <span class="kw">let</span> <span class="ident">udl_file_string</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">value</span>();
-    <span class="kw">let</span> <span class="ident">udl_file_path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file_string</span>);
+    <span class="kw">let</span> <span class="ident">udl_file_path</span> <span class="op">=</span> <span class="ident">Utf8Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file_string</span>);
     <span class="kw">if</span> <span class="ident">std::env::var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">is_err</span>() {
         <span class="macro">quote!</span> {
             <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
@@ -364,8 +361,7 @@
     } <span class="kw">else</span> {
         <span class="comment">// We know the filename is good because `generate_scaffolding` succeeded,</span>
         <span class="comment">// so this `unwrap` will never fail.</span>
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">udl_file_path</span>.<span class="ident">file_stem</span>().<span class="ident">unwrap</span>().<span class="ident">to_os_string</span>();
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">LitStr::new</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>.<span class="ident">to_string_lossy</span>(), <span class="ident">udl_file</span>.<span class="ident">span</span>());
+        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">LitStr::new</span>(<span class="ident">udl_file_path</span>.<span class="ident">file_stem</span>().<span class="ident">unwrap</span>(), <span class="ident">udl_file</span>.<span class="ident">span</span>());
         <span class="macro">quote!</span> {
             <span class="macro">uniffi_macros::include_scaffolding!</span>(#<span class="ident">name</span>);
         }
