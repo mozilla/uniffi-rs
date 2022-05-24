@@ -7,7 +7,7 @@ license = "MPL-2.0"
 publish = false
 
 [lib]
-crate-type = ["lib", "cdylib"]
+crate-type = ["cdylib"]
 name = "uniffi_regression_test_kt_unsigned_types"
 
 [dependencies]
