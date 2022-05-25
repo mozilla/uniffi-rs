@@ -74,10 +74,6 @@ impl CallbackInterface {
         &self.ffi_init_callback
     }
 
-    pub fn iter_ffi_function_definitions(&self) -> Vec<FFIFunction> {
-        vec![self.ffi_init_callback.clone()]
-    }
-
     pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) {
         self.ffi_init_callback.name = format!("ffi_{}_{}_init_callback", ci_prefix, self.name);
         self.ffi_init_callback.arguments = vec![FFIArgument {
