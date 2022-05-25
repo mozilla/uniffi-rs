@@ -243,10 +243,7 @@ impl ComponentInterface {
     /// This method uses `IterTypes::iter_types` to iterate over the types contained within the
     /// given item, but additionally recurses into the definition of user-defined types like records
     /// and enums to yield the types that *they* contain.
-    fn iter_types_in_item<'a, T: IterTypes>(
-        &'a self,
-        item: &'a T,
-    ) -> impl Iterator<Item = &'a Type> + 'a {
+    fn iter_types_in_item<'a>(&'a self, item: &'a Type) -> impl Iterator<Item = &'a Type> + 'a {
         RecursiveTypeIterator::new(self, item)
     }
 
@@ -254,13 +251,13 @@ impl ComponentInterface {
     ///
     /// This is important to know in language bindings that cannot integrate object types
     /// tightly with the host GC, and hence need to perform manual destruction of objects.
-    pub fn item_contains_object_references<T: IterTypes>(&self, item: &T) -> bool {
+    pub fn item_contains_object_references(&self, item: &Type) -> bool {
         self.iter_types_in_item(item)
             .any(|t| matches!(t, Type::Object(_)))
     }
 
     /// Check whether the given item contains any (possibly nested) unsigned types
-    pub fn item_contains_unsigned_types<T: IterTypes>(&self, item: &T) -> bool {
+    pub fn item_contains_unsigned_types(&self, item: &Type) -> bool {
         self.iter_types_in_item(item)
             .any(|t| matches!(t, Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64))
     }
@@ -633,7 +630,7 @@ struct RecursiveTypeIterator<'a> {
 
 impl<'a> RecursiveTypeIterator<'a> {
     /// Allocate a new `RecursiveTypeIterator` over the given item.
-    fn new<T: IterTypes>(ci: &'a ComponentInterface, item: &'a T) -> RecursiveTypeIterator<'a> {
+    fn new(ci: &'a ComponentInterface, item: &'a Type) -> RecursiveTypeIterator<'a> {
         RecursiveTypeIterator {
             ci,
             // We begin by iterating over the types from the item itself.
