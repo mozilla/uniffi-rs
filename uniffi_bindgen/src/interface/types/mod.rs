@@ -21,7 +21,7 @@
 //! about how these API-level types map into the lower-level types of the FFI layer as represented
 //! by the [`ffi::FFIType`](super::ffi::FFIType) enum, but that's a detail that is invisible to end users.
 
-use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
+use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap, iter};
 
 use anyhow::{bail, Result};
 use heck::ToUpperCamelCase;
@@ -127,11 +127,11 @@ impl Type {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         let nested_types = match self {
-            Type::Optional(t) | Type::Sequence(t) => Some(t.iter_types()),
-            Type::Map(k, v) => Some(Box::new(k.iter_types().chain(v.iter_types())) as _),
-            _ => None,
+            Type::Optional(t) | Type::Sequence(t) => t.iter_types(),
+            Type::Map(k, v) => Box::new(k.iter_types().chain(v.iter_types())),
+            _ => Box::new(iter::empty()),
         };
-        Box::new(std::iter::once(self).chain(nested_types.into_iter().flatten()))
+        Box::new(std::iter::once(self).chain(nested_types))
     }
 }
 
