@@ -274,18 +274,6 @@ pub trait IterTypes {
     fn iter_types(&self) -> TypeIterator<'_>;
 }
 
-impl<T: IterTypes> IterTypes for &T {
-    fn iter_types(&self) -> TypeIterator<'_> {
-        (*self).iter_types()
-    }
-}
-
-impl<T: IterTypes> IterTypes for Box<T> {
-    fn iter_types(&self) -> TypeIterator<'_> {
-        self.as_ref().iter_types()
-    }
-}
-
 impl<T: IterTypes> IterTypes for Option<T> {
     fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.iter().flat_map(IterTypes::iter_types))

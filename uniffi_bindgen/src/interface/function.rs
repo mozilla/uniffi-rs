@@ -98,17 +98,6 @@ impl Function {
     }
 }
 
-impl IterTypes for Function {
-    fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(
-            self.arguments
-                .iter()
-                .flat_map(IterTypes::iter_types)
-                .chain(self.return_type.iter_types()),
-        )
-    }
-}
-
 impl Hash for Function {
     fn hash<H: Hasher>(&self, state: &mut H) {
         // We don't include the FFIFunc in the hash calculation, because:
