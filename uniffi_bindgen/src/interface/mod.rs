@@ -595,12 +595,6 @@ impl Hash for ComponentInterface {
     }
 }
 
-impl IterTypes for ComponentInterface {
-    fn iter_types(&self) -> TypeIterator<'_> {
-        self.types.iter_types()
-    }
-}
-
 /// Stateful iterator for yielding all types contained in a given item.
 ///
 /// This struct is the implementation of [`ComponentInterface::iter_types_in_item`] and should be
