@@ -39,7 +39,7 @@ use anyhow::{bail, Result};
 use super::attributes::{ArgumentAttributes, FunctionAttributes};
 use super::ffi::{FFIArgument, FFIFunction};
 use super::literal::{convert_default_value, Literal};
-use super::types::{IterTypes, Type, TypeIterator};
+use super::types::{Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 /// Represents a standalone function.
@@ -154,19 +154,20 @@ impl Argument {
     pub fn name(&self) -> &str {
         &self.name
     }
+
     pub fn type_(&self) -> Type {
         self.type_.clone()
     }
+
     pub fn by_ref(&self) -> bool {
         self.by_ref
     }
+
     pub fn default_value(&self) -> Option<Literal> {
         self.default.clone()
     }
-}
 
-impl IterTypes for Argument {
-    fn iter_types(&self) -> TypeIterator<'_> {
+    pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
     }
 }
