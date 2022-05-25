@@ -57,9 +57,9 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::hash::{Hash, Hasher};
+use std::{collections::HashSet, iter};
 
 use anyhow::{bail, Result};
 
@@ -148,12 +148,10 @@ impl Object {
         self.uses_deprecated_threadsafe_attribute
     }
 
-    pub fn iter_ffi_function_definitions(&self) -> Vec<FFIFunction> {
-        vec![self.ffi_object_free().clone()]
-            .into_iter()
-            .chain(self.constructors.iter().map(|f| f.ffi_func.clone()))
-            .chain(self.methods.iter().map(|f| f.ffi_func.clone()))
-            .collect()
+    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FFIFunction> {
+        iter::once(&self.ffi_func_free)
+            .chain(self.constructors.iter().map(|f| &f.ffi_func))
+            .chain(self.methods.iter().map(|f| &f.ffi_func))
     }
 
     pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {

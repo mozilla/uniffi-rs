@@ -396,6 +396,7 @@ impl ComponentInterface {
     /// along with the builtin FFI helper functions.
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> + '_ {
         self.iter_user_ffi_function_definitions()
+            .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
     }
 
@@ -405,7 +406,7 @@ impl ComponentInterface {
     ///   - Top-level functions
     ///   - Object methods
     ///   - Callback interfaces
-    pub fn iter_user_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> + '_ {
+    pub fn iter_user_ffi_function_definitions(&self) -> impl Iterator<Item = &FFIFunction> + '_ {
         iter::empty()
             .chain(
                 self.objects
@@ -415,9 +416,9 @@ impl ComponentInterface {
             .chain(
                 self.callback_interfaces
                     .iter()
-                    .flat_map(|cb| cb.iter_ffi_function_definitions()),
+                    .map(|cb| cb.ffi_init_callback()),
             )
-            .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
+            .chain(self.functions.iter().map(|f| &f.ffi_func))
     }
 
     /// List all FFI functions definitions for RustBuffer functionality
