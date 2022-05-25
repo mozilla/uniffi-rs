@@ -48,6 +48,7 @@ use std::{
     collections::{hash_map::DefaultHasher, HashSet},
     convert::TryFrom,
     hash::{Hash, Hasher},
+    iter,
     str::FromStr,
 };
 
@@ -207,30 +208,24 @@ impl ComponentInterface {
     }
 
     /// Get details about all `Type::External` types
-    pub fn iter_external_types(&self) -> Vec<(String, String)> {
-        self.types
-            .iter_known_types()
-            .filter_map(|t| match t {
-                Type::External { name, crate_name } => Some((name, crate_name)),
-                _ => None,
-            })
-            .collect()
+    pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, &String)> {
+        self.types.iter_known_types().filter_map(|t| match t {
+            Type::External { name, crate_name } => Some((name, crate_name)),
+            _ => None,
+        })
     }
 
     /// Get details about all `Type::Custom` types
-    pub fn iter_custom_types(&self) -> Vec<(String, Type)> {
-        self.types
-            .iter_known_types()
-            .filter_map(|t| match t {
-                Type::Custom { name, builtin } => Some((name, *builtin)),
-                _ => None,
-            })
-            .collect()
+    pub fn iter_custom_types(&self) -> impl Iterator<Item = (&String, &Type)> {
+        self.types.iter_known_types().filter_map(|t| match t {
+            Type::Custom { name, builtin } => Some((name, &**builtin)),
+            _ => None,
+        })
     }
 
     /// Iterate over all known types in the interface.
-    pub fn iter_types(&self) -> Vec<Type> {
-        self.types.iter_known_types().collect()
+    pub fn iter_types(&self) -> impl Iterator<Item = &Type> {
+        self.types.iter_known_types()
     }
 
     /// Get a specific type
@@ -399,10 +394,9 @@ impl ComponentInterface {
     ///
     /// The set of FFI functions is derived automatically from the set of higher-level types
     /// along with the builtin FFI helper functions.
-    pub fn iter_ffi_function_definitions(&self) -> Vec<FFIFunction> {
-        let mut functions = self.iter_user_ffi_function_definitions();
-        functions.append(&mut self.iter_rust_buffer_ffi_function_definitions());
-        functions
+    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> + '_ {
+        self.iter_user_ffi_function_definitions()
+            .chain(self.iter_rust_buffer_ffi_function_definitions())
     }
 
     /// List all FFI functions definitions for user-defined interfaces
@@ -411,9 +405,8 @@ impl ComponentInterface {
     ///   - Top-level functions
     ///   - Object methods
     ///   - Callback interfaces
-    pub fn iter_user_ffi_function_definitions(&self) -> Vec<FFIFunction> {
-        vec![]
-            .into_iter()
+    pub fn iter_user_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> + '_ {
+        iter::empty()
             .chain(
                 self.objects
                     .iter()
@@ -425,17 +418,16 @@ impl ComponentInterface {
                     .flat_map(|cb| cb.iter_ffi_function_definitions()),
             )
             .chain(self.functions.iter().map(|f| f.ffi_func.clone()))
-            .collect()
     }
 
     /// List all FFI functions definitions for RustBuffer functionality
-    pub fn iter_rust_buffer_ffi_function_definitions(&self) -> Vec<FFIFunction> {
-        vec![
+    pub fn iter_rust_buffer_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> {
+        IntoIterator::into_iter([
             self.ffi_rustbuffer_alloc(),
             self.ffi_rustbuffer_from_bytes(),
             self.ffi_rustbuffer_free(),
             self.ffi_rustbuffer_reserve(),
-        ]
+        ])
     }
 
     //

@@ -478,25 +478,15 @@ mod test {
         assert_eq!(ci.iter_object_definitions().len(), 1);
         ci.get_object_definition("Testing").unwrap();
 
-        assert_eq!(ci.iter_types().len(), 6);
-        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u16"));
-        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u32"));
+        assert_eq!(ci.iter_types().count(), 6);
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "u16"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "u32"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "Sequenceu32"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "string"));
         assert!(ci
             .iter_types()
-            .iter()
-            .any(|t| t.canonical_name() == "Sequenceu32"));
-        assert!(ci
-            .iter_types()
-            .iter()
-            .any(|t| t.canonical_name() == "string"));
-        assert!(ci
-            .iter_types()
-            .iter()
             .any(|t| t.canonical_name() == "Optionalstring"));
-        assert!(ci
-            .iter_types()
-            .iter()
-            .any(|t| t.canonical_name() == "TypeTesting"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "TypeTesting"));
     }
 
     #[test]
