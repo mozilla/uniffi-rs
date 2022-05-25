@@ -7,6 +7,7 @@ members = [
   "uniffi",
   "weedle2",
   "examples/arithmetic",
+  "examples/async-calc",
   "examples/callbacks",
   "examples/geometry",
   "examples/rondpoint",

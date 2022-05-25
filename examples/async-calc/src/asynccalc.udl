@@ -1,0 +1,21 @@
+namespace asynccalc {
+    // Async rust function that awaits on the bindings calcullations
+    void double_then_square(PromiseInt promise, AsyncCalculator calculator, i32 value);
+};
+
+// Promise-like interface for Rust to return an int
+callback interface PromiseInt {
+  void resolve(i32 value);
+};
+
+// Promise-like interface for a callback interface to return an int
+interface BindingsPromiseInt {
+  void resolve(i32 value);
+};
+
+// Interface for doing async calculations on the bindings side.
+callback interface AsyncCalculator {
+  void double(BindingsPromiseInt promise, i32 value);
+  void square(BindingsPromiseInt promise, i32 value);
+};
+
