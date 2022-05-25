@@ -55,7 +55,7 @@ use anyhow::{bail, Result};
 
 pub mod types;
 pub use types::Type;
-use types::{IterTypes, TypeIterator, TypeUniverse};
+use types::{TypeIterator, TypeUniverse};
 
 mod attributes;
 mod callbacks;
@@ -240,9 +240,9 @@ impl ComponentInterface {
 
     /// Iterate over all types contained in the given item.
     ///
-    /// This method uses `IterTypes::iter_types` to iterate over the types contained within the
-    /// given item, but additionally recurses into the definition of user-defined types like records
-    /// and enums to yield the types that *they* contain.
+    /// This method uses `iter_types` to iterate over the types contained within the given type,
+    /// but additionally recurses into the definition of user-defined types like records and enums
+    /// to yield the types that *they* contain.
     fn iter_types_in_item<'a>(&'a self, item: &'a Type) -> impl Iterator<Item = &'a Type> + 'a {
         RecursiveTypeIterator::new(self, item)
     }
@@ -595,16 +595,16 @@ impl Hash for ComponentInterface {
     }
 }
 
-/// Stateful iterator for yielding all types contained in a given item.
+/// Stateful iterator for yielding all types contained in a given type.
 ///
 /// This struct is the implementation of [`ComponentInterface::iter_types_in_item`] and should be
 /// considered an opaque implementation detail. It's a separate struct because I couldn't
 /// figure out a way to implement it using iterators and closures that would make the lifetimes
 /// work out correctly.
 ///
-/// The idea here is that we want to yield all the types from `IterTypes::iter_types` on a
-/// given item, and additionally we want to recurse into the definition of any user-provided
-/// types like records, enums, etc so we can also yield the types contained therein.
+/// The idea here is that we want to yield all the types from `iter_types` on a given type, and
+/// additionally we want to recurse into the definition of any user-provided types like records,
+/// enums, etc so we can also yield the types contained therein.
 ///
 /// To guard against infinite recursion, we maintain a list of previously-seen user-defined
 /// types, ensuring that we recurse into the definition of those types only once. To simplify
@@ -663,14 +663,14 @@ impl<'a> RecursiveTypeIterator<'a> {
             // to a non-existent type, we just leave the existing iterator in place and allow the recursive
             // call to `next()` to try again with the next pending type.
             let next_iter = match next_type {
-                Type::Record(nm) => self.ci.get_record_definition(nm).map(IterTypes::iter_types),
-                Type::Enum(nm) => self.ci.get_enum_definition(nm).map(IterTypes::iter_types),
-                Type::Error(nm) => self.ci.get_error_definition(nm).map(IterTypes::iter_types),
-                Type::Object(nm) => self.ci.get_object_definition(nm).map(IterTypes::iter_types),
+                Type::Record(nm) => self.ci.get_record_definition(nm).map(Record::iter_types),
+                Type::Enum(nm) => self.ci.get_enum_definition(nm).map(Enum::iter_types),
+                Type::Error(nm) => self.ci.get_error_definition(nm).map(Error::iter_types),
+                Type::Object(nm) => self.ci.get_object_definition(nm).map(Object::iter_types),
                 Type::CallbackInterface(nm) => self
                     .ci
                     .get_callback_interface_definition(nm)
-                    .map(IterTypes::iter_types),
+                    .map(CallbackInterface::iter_types),
                 _ => None,
             };
             if let Some(next_iter) = next_iter {

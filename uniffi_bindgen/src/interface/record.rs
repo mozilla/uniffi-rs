@@ -47,7 +47,7 @@
 use anyhow::{bail, Result};
 
 use super::literal::{convert_default_value, Literal};
-use super::types::{IterTypes, Type, TypeIterator};
+use super::types::{Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 /// Represents a "data class" style object, for passing around complex values.
@@ -75,11 +75,9 @@ impl Record {
     pub fn fields(&self) -> Vec<&Field> {
         self.fields.iter().collect()
     }
-}
 
-impl IterTypes for Record {
-    fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(self.fields.iter().flat_map(IterTypes::iter_types))
+    pub fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(self.fields.iter().flat_map(Field::iter_types))
     }
 }
 
@@ -111,16 +109,16 @@ impl Field {
     pub fn name(&self) -> &str {
         &self.name
     }
+
     pub fn type_(&self) -> Type {
         self.type_.clone()
     }
+
     pub fn default_value(&self) -> Option<Literal> {
         self.default.clone()
     }
-}
 
-impl IterTypes for Field {
-    fn iter_types(&self) -> TypeIterator<'_> {
+    pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
     }
 }

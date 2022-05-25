@@ -66,7 +66,7 @@ use anyhow::{bail, Result};
 use super::attributes::{ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::function::Argument;
-use super::types::{IterTypes, Type, TypeIterator};
+use super::types::{Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 /// An "object" is an opaque type that can be instantiated and passed around by reference,
@@ -171,15 +171,13 @@ impl Object {
         }
         Ok(())
     }
-}
 
-impl IterTypes for Object {
-    fn iter_types(&self) -> TypeIterator<'_> {
+    pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(
             self.methods
                 .iter()
-                .map(IterTypes::iter_types)
-                .chain(self.constructors.iter().map(IterTypes::iter_types))
+                .map(Method::iter_types)
+                .chain(self.constructors.iter().map(Constructor::iter_types))
                 .flatten(),
         )
     }
@@ -288,11 +286,9 @@ impl Constructor {
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
         self.ffi_func.return_type = Some(FFIType::RustArcPtr);
     }
-}
 
-impl IterTypes for Constructor {
-    fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(self.arguments.iter().flat_map(IterTypes::iter_types))
+    pub fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(self.arguments.iter().flat_map(Argument::iter_types))
     }
 }
 
@@ -408,15 +404,13 @@ impl Method {
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
         Ok(())
     }
-}
 
-impl IterTypes for Method {
-    fn iter_types(&self) -> TypeIterator<'_> {
+    pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(
             self.arguments
                 .iter()
-                .flat_map(IterTypes::iter_types)
-                .chain(self.return_type.iter_types()),
+                .flat_map(Argument::iter_types)
+                .chain(self.return_type.iter().flat_map(Type::iter_types)),
         )
     }
 }
