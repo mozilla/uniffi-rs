@@ -178,6 +178,13 @@ impl From<&Type> for FFIType {
     }
 }
 
+// Needed for rust scaffolding askama template
+impl From<&&Type> for FFIType {
+    fn from(ty: &&Type) -> Self {
+        (*ty).into()
+    }
+}
+
 /// The set of all possible types used in a particular component interface.
 ///
 /// Every component API uses a finite number of types, including primitive types, API-defined
@@ -251,8 +258,8 @@ impl TypeUniverse {
     }
 
     /// Iterator over all the known types in this universe.
-    pub fn iter_known_types(&self) -> impl Iterator<Item = Type> + '_ {
-        self.all_known_types.iter().cloned()
+    pub fn iter_known_types(&self) -> impl Iterator<Item = &Type> {
+        self.all_known_types.iter()
     }
 }
 

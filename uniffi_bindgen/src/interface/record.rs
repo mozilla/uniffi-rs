@@ -218,19 +218,12 @@ mod test {
         assert_eq!(record.fields()[0].name(), "maybe_name");
         assert_eq!(record.fields()[1].name(), "value");
 
-        assert_eq!(ci.iter_types().len(), 4);
-        assert!(ci.iter_types().iter().any(|t| t.canonical_name() == "u32"));
+        assert_eq!(ci.iter_types().count(), 4);
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "u32"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "string"));
         assert!(ci
             .iter_types()
-            .iter()
-            .any(|t| t.canonical_name() == "string"));
-        assert!(ci
-            .iter_types()
-            .iter()
             .any(|t| t.canonical_name() == "Optionalstring"));
-        assert!(ci
-            .iter_types()
-            .iter()
-            .any(|t| t.canonical_name() == "TypeTesting"));
+        assert!(ci.iter_types().any(|t| t.canonical_name() == "TypeTesting"));
     }
 }
