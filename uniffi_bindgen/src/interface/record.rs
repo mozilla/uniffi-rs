@@ -165,7 +165,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_record_definitions().len(), 3);
+        assert_eq!(ci.record_definitions().len(), 3);
 
         let record = ci.get_record_definition("Empty").unwrap();
         assert_eq!(record.name(), "Empty");
@@ -212,7 +212,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_record_definitions().len(), 1);
+        assert_eq!(ci.record_definitions().len(), 1);
         let record = ci.get_record_definition("Testing").unwrap();
         assert_eq!(record.fields().len(), 2);
         assert_eq!(record.fields()[0].name(), "maybe_name");

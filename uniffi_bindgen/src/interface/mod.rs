@@ -141,9 +141,9 @@ impl ComponentInterface {
         self.namespace.as_str()
     }
 
-    /// List the definitions for every Enum type in the interface.
-    pub fn iter_enum_definitions(&self) -> Vec<Enum> {
-        self.enums.to_vec()
+    /// Get the definitions for every Enum type in the interface.
+    pub fn enum_definitions(&self) -> &[Enum] {
+        &self.enums
     }
 
     /// Get an Enum definition by name, or None if no such Enum is defined.
@@ -152,9 +152,9 @@ impl ComponentInterface {
         self.enums.iter().find(|e| e.name == name)
     }
 
-    /// List the definitions for every Record type in the interface.
-    pub fn iter_record_definitions(&self) -> Vec<Record> {
-        self.records.to_vec()
+    /// Get the definitions for every Record type in the interface.
+    pub fn record_definitions(&self) -> &[Record] {
+        &self.records
     }
 
     /// Get a Record definition by name, or None if no such Record is defined.
@@ -163,9 +163,9 @@ impl ComponentInterface {
         self.records.iter().find(|r| r.name == name)
     }
 
-    /// List the definitions for every Function in the interface.
-    pub fn iter_function_definitions(&self) -> Vec<Function> {
-        self.functions.to_vec()
+    /// Get the definitions for every Function in the interface.
+    pub fn function_definitions(&self) -> &[Function] {
+        &self.functions
     }
 
     /// Get a Function definition by name, or None if no such Function is defined.
@@ -174,9 +174,9 @@ impl ComponentInterface {
         self.functions.iter().find(|f| f.name == name)
     }
 
-    /// List the definitions for every Object type in the interface.
-    pub fn iter_object_definitions(&self) -> Vec<Object> {
-        self.objects.to_vec()
+    /// Get the definitions for every Object type in the interface.
+    pub fn object_definitions(&self) -> &[Object] {
+        &self.objects
     }
 
     /// Get an Object definition by name, or None if no such Object is defined.
@@ -185,9 +185,9 @@ impl ComponentInterface {
         self.objects.iter().find(|o| o.name == name)
     }
 
-    /// List the definitions for every Callback Interface type in the interface.
-    pub fn iter_callback_interface_definitions(&self) -> Vec<CallbackInterface> {
-        self.callback_interfaces.to_vec()
+    /// Get the definitions for every Callback Interface type in the interface.
+    pub fn callback_interface_definitions(&self) -> &[CallbackInterface] {
+        &self.callback_interfaces
     }
 
     /// Get a Callback interface definition by name, or None if no such interface is defined.
@@ -196,9 +196,9 @@ impl ComponentInterface {
         self.callback_interfaces.iter().find(|o| o.name == name)
     }
 
-    /// List the definitions for every Error type in the interface.
-    pub fn iter_error_definitions(&self) -> Vec<Error> {
-        self.errors.to_vec()
+    /// Get the definitions for every Error type in the interface.
+    pub fn error_definitions(&self) -> &[Error] {
+        &self.errors
     }
 
     /// Get an Error definition by name, or None if no such Error is defined.

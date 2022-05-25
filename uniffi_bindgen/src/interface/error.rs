@@ -159,7 +159,7 @@ mod test {
             enum Testing { "one", "two", "three" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_error_definitions().len(), 1);
+        assert_eq!(ci.error_definitions().len(), 1);
         let error = ci.get_error_definition("Testing").unwrap();
         assert_eq!(
             error
@@ -182,7 +182,7 @@ mod test {
             enum Testing { "one", "two", "one" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_error_definitions().len(), 1);
+        assert_eq!(ci.error_definitions().len(), 1);
         assert_eq!(
             ci.get_error_definition("Testing").unwrap().variants().len(),
             3
@@ -201,7 +201,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_error_definitions().len(), 1);
+        assert_eq!(ci.error_definitions().len(), 1);
         let error: &Error = ci.get_error_definition("Testing").unwrap();
         assert_eq!(
             error
