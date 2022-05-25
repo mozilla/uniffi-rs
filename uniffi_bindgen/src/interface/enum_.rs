@@ -280,7 +280,7 @@ mod test {
             enum Testing { "one", "two", "one" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_enum_definitions().len(), 1);
+        assert_eq!(ci.enum_definitions().len(), 1);
         assert_eq!(
             ci.get_enum_definition("Testing").unwrap().variants().len(),
             3
@@ -313,8 +313,8 @@ mod test {
             };
         "##;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_enum_definitions().len(), 3);
-        assert_eq!(ci.iter_function_definitions().len(), 4);
+        assert_eq!(ci.enum_definitions().len(), 3);
+        assert_eq!(ci.function_definitions().len(), 4);
 
         // The "flat" enum with no associated data.
         let e = ci.get_enum_definition("TestEnum").unwrap();

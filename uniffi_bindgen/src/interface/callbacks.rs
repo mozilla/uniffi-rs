@@ -139,7 +139,7 @@ mod test {
             callback interface Testing {};
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_callback_interface_definitions().len(), 1);
+        assert_eq!(ci.callback_interface_definitions().len(), 1);
         assert_eq!(
             ci.get_callback_interface_definition("Testing")
                 .unwrap()
@@ -162,7 +162,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.iter_callback_interface_definitions().len(), 2);
+        assert_eq!(ci.callback_interface_definitions().len(), 2);
 
         let callbacks_one = ci.get_callback_interface_definition("One").unwrap();
         assert_eq!(callbacks_one.methods().len(), 1);
