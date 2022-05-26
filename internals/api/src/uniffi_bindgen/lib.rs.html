@@ -772,7 +772,7 @@
         };
 
     <span class="comment">// Update it with the defaults from the component interface</span>
-    <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">BC::get_config_defaults</span>(<span class="ident">ci</span>).<span class="ident">into_iter</span>() {
+    <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">BC::get_config_defaults</span>(<span class="ident">ci</span>) {
         <span class="ident">config_map</span>.<span class="ident">entry</span>(<span class="ident">key</span>).<span class="ident">or_insert</span>(<span class="ident">value</span>);
     }
 

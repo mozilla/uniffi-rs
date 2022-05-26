@@ -865,7 +865,7 @@
         .<span class="ident">map</span>(<span class="ident">Attribute::try_from</span>)
         .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
-    <span class="kw">for</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="ident">attrs</span>.<span class="ident">iter</span>() {
+    <span class="kw">for</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">attrs</span> {
         <span class="ident">validator</span>(<span class="ident">attr</span>)<span class="question-mark">?</span>;
     }
 

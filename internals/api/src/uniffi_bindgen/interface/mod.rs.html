@@ -1527,8 +1527,8 @@
             <span class="macro">bail!</span>(<span class="string">&quot;missing namespace definition&quot;</span>);
         }
         <span class="comment">// To keep codegen tractable, enum variant names must not shadow type names.</span>
-        <span class="kw">for</span> <span class="ident">e</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">enums</span>.<span class="ident">iter</span>() {
-            <span class="kw">for</span> <span class="ident">variant</span> <span class="kw">in</span> <span class="ident">e</span>.<span class="ident">variants</span>.<span class="ident">iter</span>() {
+        <span class="kw">for</span> <span class="ident">e</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">enums</span> {
+            <span class="kw">for</span> <span class="ident">variant</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">variants</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="ident">variant</span>.<span class="ident">name</span>()).<span class="ident">is_some</span>() {
                     <span class="macro">bail!</span>(
                         <span class="string">&quot;Enum variant names must not shadow type names: \&quot;{}\&quot;&quot;</span>,
@@ -1700,7 +1700,7 @@
 <span class="doccomment">/// by processing each in turn.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">APIBuilder</span><span class="op">&gt;</span> <span class="ident">APIBuilder</span> <span class="kw">for</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">process</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">iter</span>() {
+        <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="self">self</span> {
             <span class="ident">item</span>.<span class="ident">process</span>(<span class="ident">ci</span>)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
