@@ -179,12 +179,6 @@
 <span id="174">174</span>
 <span id="175">175</span>
 <span id="176">176</span>
-<span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -226,7 +220,7 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi</span>::{<span class="ident">FFIArgument</span>, <span class="ident">FFIFunction</span>, <span class="ident">FFIType</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::object::Method</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">IterTypes</span>, <span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
@@ -261,10 +255,6 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ffi_init_callback</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_ffi_function_definitions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FFIFunction</span><span class="op">&gt;</span> {
-        <span class="macro">vec!</span>[<span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">clone</span>()]
-    }
-
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">derive_ffi_funcs</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ci_prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
         <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_{}_init_callback&quot;</span>, <span class="ident">ci_prefix</span>, <span class="self">self</span>.<span class="ident">name</span>);
         <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">arguments</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">FFIArgument</span> {
@@ -273,11 +263,9 @@
         }];
         <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">return_type</span> <span class="op">=</span> <span class="prelude-val">None</span>;
     }
-}
 
-<span class="kw">impl</span> <span class="ident">IterTypes</span> <span class="kw">for</span> <span class="ident">CallbackInterface</span> {
-    <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">methods</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">IterTypes::iter_types</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">methods</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">Method::iter_types</span>))
     }
 }
 
@@ -332,7 +320,7 @@
             callback interface Testing {};
         &quot;#</span>;
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_callback_interface_definitions</span>().<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">callback_interface_definitions</span>().<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">ci</span>.<span class="ident">get_callback_interface_definition</span>(<span class="string">&quot;Testing&quot;</span>)
                 .<span class="ident">unwrap</span>()
@@ -355,7 +343,7 @@
             };
         &quot;#</span>;
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_callback_interface_definitions</span>().<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">callback_interface_definitions</span>().<span class="ident">len</span>(), <span class="number">2</span>);
 
         <span class="kw">let</span> <span class="ident">callbacks_one</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_callback_interface_definition</span>(<span class="string">&quot;One&quot;</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">callbacks_one</span>.<span class="ident">methods</span>().<span class="ident">len</span>(), <span class="number">1</span>);

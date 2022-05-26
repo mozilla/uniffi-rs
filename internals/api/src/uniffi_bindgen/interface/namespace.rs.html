@@ -191,7 +191,7 @@
 <span class="doccomment">//! # namespace example {};</span>
 <span class="doccomment">//! # &quot;##)?;</span>
 <span class="doccomment">//! assert_eq!(ci.namespace(), &quot;example&quot;);</span>
-<span class="doccomment">//! assert_eq!(ci.iter_function_definitions().len(), 0);</span>
+<span class="doccomment">//! assert_eq!(ci.function_definitions().len(), 0);</span>
 <span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
@@ -248,7 +248,7 @@
         &quot;#</span>;
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">namespace</span>(), <span class="string">&quot;foobar&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_function_definitions</span>().<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">function_definitions</span>().<span class="ident">len</span>(), <span class="number">2</span>);
         <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;hello&quot;</span>).<span class="ident">is_some</span>());
         <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;world&quot;</span>).<span class="ident">is_some</span>());
         <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;potato&quot;</span>).<span class="ident">is_none</span>());

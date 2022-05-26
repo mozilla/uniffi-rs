@@ -28,7 +28,7 @@ the component, if any. So something like this:</p>
 <p>Declares a component named “example” with no exported functions:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">namespace</span>(), <span class="string">&quot;example&quot;</span>);
-<span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_function_definitions</span>().<span class="ident">len</span>(), <span class="number">0</span>);</code></pre></div>
+<span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">function_definitions</span>().<span class="ident">len</span>(), <span class="number">0</span>);</code></pre></div>
 <p>Yeah, it’s a bit of an awkward fit syntactically, but it’s enough
 to get us up and running for a first version of this tool.</p>
 </div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2>

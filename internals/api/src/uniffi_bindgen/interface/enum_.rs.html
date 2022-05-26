@@ -417,10 +417,6 @@
 <span id="412">412</span>
 <span id="413">413</span>
 <span id="414">414</span>
-<span id="415">415</span>
-<span id="416">416</span>
-<span id="417">417</span>
-<span id="418">418</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -502,7 +498,7 @@
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::record::Field</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">IterTypes</span>, <span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
 
 <span class="doccomment">/// Represents an enum with named variants, each of which may have named</span>
@@ -536,11 +532,9 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_flat</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">flat</span>
     }
-}
 
-<span class="kw">impl</span> <span class="ident">IterTypes</span> <span class="kw">for</span> <span class="ident">Enum</span> {
-    <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">IterTypes::iter_types</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">Variant::iter_types</span>))
     }
 }
 
@@ -616,11 +610,9 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="op">!</span><span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">is_empty</span>()
     }
-}
 
-<span class="kw">impl</span> <span class="ident">IterTypes</span> <span class="kw">for</span> <span class="ident">Variant</span> {
-    <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">IterTypes::iter_types</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">Field::iter_types</span>))
     }
 }
 
@@ -707,7 +699,7 @@
             enum Testing { &quot;one&quot;, &quot;two&quot;, &quot;one&quot; };
         &quot;#</span>;
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_enum_definitions</span>().<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">enum_definitions</span>().<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">ci</span>.<span class="ident">get_enum_definition</span>(<span class="string">&quot;Testing&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">variants</span>().<span class="ident">len</span>(),
             <span class="number">3</span>
@@ -740,8 +732,8 @@
             };
         &quot;##</span>;
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_enum_definitions</span>().<span class="ident">len</span>(), <span class="number">3</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_function_definitions</span>().<span class="ident">len</span>(), <span class="number">4</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">enum_definitions</span>().<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">function_definitions</span>().<span class="ident">len</span>(), <span class="number">4</span>);
 
         <span class="comment">// The &quot;flat&quot; enum with no associated data.</span>
         <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_enum_definition</span>(<span class="string">&quot;TestEnum&quot;</span>).<span class="ident">unwrap</span>();
