@@ -346,10 +346,6 @@
 <span id="341">341</span>
 <span id="342">342</span>
 <span id="343">343</span>
-<span id="344">344</span>
-<span id="345">345</span>
-<span id="346">346</span>
-<span id="347">347</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -584,11 +580,7 @@
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">nm</span>.<span class="ident">to_string</span>();
         <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">strip_suffix</span>(<span class="string">&quot;Error&quot;</span>) {
             <span class="prelude-val">None</span> =&gt; <span class="ident">name</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">stripped</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">py_exc_name</span> <span class="op">=</span> <span class="ident">stripped</span>.<span class="ident">to_owned</span>();
-                <span class="ident">py_exc_name</span>.<span class="ident">push_str</span>(<span class="string">&quot;Exception&quot;</span>);
-                <span class="ident">py_exc_name</span>
-            }
+            <span class="prelude-val">Some</span>(<span class="ident">stripped</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}Exception&quot;</span>, <span class="ident">stripped</span>),
         }
     }
 

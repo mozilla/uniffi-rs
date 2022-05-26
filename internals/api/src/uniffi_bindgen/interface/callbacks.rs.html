@@ -295,7 +295,7 @@
             <span class="kw">match</span> <span class="ident">member</span> {
                 <span class="ident">weedle::interface::InterfaceMember::Operation</span>(<span class="ident">t</span>) =&gt; {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">method</span>: <span class="ident">Method</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">convert</span>(<span class="ident">ci</span>)<span class="question-mark">?</span>;
-                    <span class="ident">method</span>.<span class="ident">object_name</span>.<span class="ident">push_str</span>(<span class="ident">object</span>.<span class="ident">name</span>.<span class="ident">as_str</span>());
+                    <span class="ident">method</span>.<span class="ident">object_name</span> <span class="op">=</span> <span class="ident">object</span>.<span class="ident">name</span>.<span class="ident">clone</span>();
                     <span class="ident">object</span>.<span class="ident">methods</span>.<span class="ident">push</span>(<span class="ident">method</span>);
                 }
                 <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(
