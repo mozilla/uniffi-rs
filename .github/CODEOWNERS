@@ -1,0 +1,5 @@
+# This CODEOWNERS file defines individuals or teams that are responsible
+# for code in this repository.
+# See https://help.github.com/articles/about-codeowners/ for details.
+
+* @mozilla/uniffi-devs
