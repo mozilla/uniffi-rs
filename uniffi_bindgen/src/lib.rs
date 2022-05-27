@@ -99,7 +99,6 @@ use camino::{Utf8Path, Utf8PathBuf};
 use clap::{Parser, Subcommand};
 use fs_err::{self as fs, File};
 use serde::{Deserialize, Serialize};
-use std::convert::TryInto;
 use std::io::prelude::*;
 use std::{collections::HashMap, env, process::Command, str::FromStr};
 

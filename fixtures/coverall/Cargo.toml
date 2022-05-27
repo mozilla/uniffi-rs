@@ -2,7 +2,7 @@
 name = "uniffi-fixture-coverall"
 version = "0.18.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
-edition = "2018"
+edition = "2021"
 license = "MPL-2.0"
 publish = false
 

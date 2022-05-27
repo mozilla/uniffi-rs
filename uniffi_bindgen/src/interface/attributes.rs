@@ -14,8 +14,6 @@
 //! all handled by a single abstraction. This might need to be refactored in future
 //! if we grow significantly more complicated attribute handling.
 
-use std::convert::{TryFrom, TryInto};
-
 use anyhow::{bail, Result};
 
 /// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.

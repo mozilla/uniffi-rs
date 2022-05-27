@@ -36,3 +36,5 @@ members = [
   "fixtures/uniffi-fixture-time",
   "fixtures/swift-omit-labels",
 ]
+
+resolver = "2"
