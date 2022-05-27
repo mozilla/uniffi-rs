@@ -749,8 +749,6 @@
 <span id="744">744</span>
 <span id="745">745</span>
 <span id="746">746</span>
-<span id="747">747</span>
-<span id="748">748</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -766,8 +764,6 @@
 <span class="doccomment">//! We only support a small number of attributes, so it&#39;s manageable to have them</span>
 <span class="doccomment">//! all handled by a single abstraction. This might need to be refactored in future</span>
 <span class="doccomment">//! if we grow significantly more complicated attribute handling.</span>
-
-<span class="kw">use</span> <span class="ident">std::convert</span>::{<span class="ident">TryFrom</span>, <span class="ident">TryInto</span>};
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
 
