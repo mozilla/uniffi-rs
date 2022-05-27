@@ -132,8 +132,15 @@ When submitting a PR:
 - Please do not include merge commits in pull requests; include only commits with the new relevant code.
 - We encourage you to [GPG sign your commits](https://help.github.com/articles/managing-commit-signature-verification).
 
-## Code Review ##
+### Code Review
 
 This project is production Mozilla code and subject to our [code-review requirements](https://firefox-source-docs.mozilla.org/contributing/Code_Review_FAQ.html).
 Every change must be reviewed and approved by a member with write access to the main `mozilla/uniffi-rs` repository.
 
+### Merging code
+
+Pull requests can be merged if all tests are passing and it got at least one approving review from a member of the `@mozilla/uniffi-devs` team.
+We make use of GitHub's functionality to [automatically merge a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/automatically-merging-a-pull-request).
+Enabling that is the task of the Pull Request author.
+
+For Pull Requests from outside contributors the reviewer should merge the Pull Request upon a successful review or should enable the automatic merge if tests have not yet finished.
