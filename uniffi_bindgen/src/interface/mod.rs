@@ -423,12 +423,13 @@ impl ComponentInterface {
 
     /// List all FFI functions definitions for RustBuffer functionality
     pub fn iter_rust_buffer_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> {
-        IntoIterator::into_iter([
+        [
             self.ffi_rustbuffer_alloc(),
             self.ffi_rustbuffer_from_bytes(),
             self.ffi_rustbuffer_free(),
             self.ffi_rustbuffer_reserve(),
-        ])
+        ]
+        .into_iter()
     }
 
     //

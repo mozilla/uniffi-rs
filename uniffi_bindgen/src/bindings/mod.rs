@@ -10,7 +10,6 @@
 use anyhow::{bail, Result};
 use camino::Utf8Path;
 use serde::{Deserialize, Serialize};
-use std::convert::{TryFrom, TryInto};
 
 use crate::interface::ComponentInterface;
 use crate::MergeWith;
