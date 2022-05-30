@@ -197,7 +197,7 @@ fn load_bindings_config_toml<BC: BindingGeneratorConfig>(
         return Ok(None);
     }
 
-    let contents = slurp_file(&config_path)
+    let contents = fs::read_to_string(&config_path)
         .with_context(|| format!("Failed to read config file from {}", config_path))?;
     let full_config = toml::Value::from_str(&contents)
         .with_context(|| format!("Failed to parse config file {}", config_path))?;
@@ -391,7 +391,7 @@ fn get_config(
 
     match config_file {
         Some(path) => {
-            let contents = slurp_file(&path)
+            let contents = fs::read_to_string(&path)
                 .with_context(|| format!("Failed to read config file from {}", &path))?;
             let loaded_config: Config = toml::de::from_str(&contents)
                 .with_context(|| format!("Failed to generate config from file {}", &path))?;
@@ -416,17 +416,10 @@ fn get_out_dir(udl_file: &Utf8Path, out_dir_override: Option<&Utf8Path>) -> Resu
 }
 
 fn parse_udl(udl_file: &Utf8Path) -> Result<ComponentInterface> {
-    let udl =
-        slurp_file(udl_file).with_context(|| format!("Failed to read UDL from {}", &udl_file))?;
+    let udl = fs::read_to_string(udl_file)
+        .with_context(|| format!("Failed to read UDL from {}", &udl_file))?;
     udl.parse::<interface::ComponentInterface>()
         .context("Failed to parse UDL")
-}
-
-fn slurp_file(file_name: &Utf8Path) -> Result<String> {
-    let mut contents = String::new();
-    let mut f = File::open(file_name)?;
-    f.read_to_string(&mut contents)?;
-    Ok(contents)
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
