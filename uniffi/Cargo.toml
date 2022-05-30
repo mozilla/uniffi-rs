@@ -21,6 +21,7 @@ log = "0.4"
 cargo_metadata = "0.14"
 paste = "1.0"
 uniffi_bindgen = { path = "../uniffi_bindgen", optional = true, version = "=0.18.0" }
+uniffi_macros = { path = "../uniffi_macros", version = "=0.18.0" }
 static_assertions = "1.1.0"
 
 [features]
