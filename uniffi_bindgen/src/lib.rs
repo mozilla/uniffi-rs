@@ -128,12 +128,12 @@ pub trait BindingGeneratorConfig: for<'de> Deserialize<'de> {
 
 fn load_bindings_config<BC: BindingGeneratorConfig>(
     ci: &ComponentInterface,
-    udl_file: &Utf8Path,
+    crate_root: &Utf8Path,
     config_file_override: Option<&Utf8Path>,
 ) -> Result<BC> {
     // Load the config from the TOML value, falling back to an empty map if it doesn't exist
     let mut config_map: toml::value::Table =
-        match load_bindings_config_toml::<BC>(udl_file, config_file_override)? {
+        match load_bindings_config_toml::<BC>(crate_root, config_file_override)? {
             Some(value) => value
                 .try_into()
                 .context("Bindings config must be a TOML table")?,
@@ -185,12 +185,12 @@ impl<'de> Deserialize<'de> for EmptyBindingGeneratorConfig {
 // If there is an error parsing the file then Err will be returned. If the file is missing or the
 // entry for the bindings is missing, then Ok(None) will be returned.
 fn load_bindings_config_toml<BC: BindingGeneratorConfig>(
-    udl_file: &Utf8Path,
+    crate_root: &Utf8Path,
     config_file_override: Option<&Utf8Path>,
 ) -> Result<Option<toml::Value>> {
     let config_path = match config_file_override {
         Some(cfg) => cfg.to_owned(),
-        None => guess_crate_root(udl_file)?.join("uniffi.toml"),
+        None => crate_root.join("uniffi.toml"),
     };
 
     if !config_path.exists() {
@@ -252,10 +252,11 @@ pub fn generate_external_bindings(
 ) -> Result<()> {
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+
+    let crate_root = guess_crate_root(udl_file.as_ref())?;
     let out_dir = get_out_dir(udl_file.as_ref(), out_dir_override)?;
     let component = parse_udl(udl_file.as_ref()).context("Error parsing UDL")?;
-    let bindings_config =
-        load_bindings_config(&component, udl_file.as_ref(), config_file_override)?;
+    let bindings_config = load_bindings_config(&component, crate_root, config_file_override)?;
     binding_generator.write_bindings(component, bindings_config, &out_dir)
 }
 
