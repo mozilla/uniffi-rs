@@ -18,7 +18,7 @@ pub fn write_bindings(
     out_dir: &Utf8Path,
     try_format_code: bool,
 ) -> Result<()> {
-    let mut kt_file = full_bindings_path(config, out_dir)?;
+    let mut kt_file = full_bindings_path(config, out_dir);
     fs::create_dir_all(&kt_file)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
     let mut f = File::create(&kt_file)?;
@@ -35,9 +35,9 @@ pub fn write_bindings(
     Ok(())
 }
 
-fn full_bindings_path(config: &Config, out_dir: &Utf8Path) -> Result<Utf8PathBuf> {
+fn full_bindings_path(config: &Config, out_dir: &Utf8Path) -> Utf8PathBuf {
     let package_path: Utf8PathBuf = config.package_name().split('.').collect();
-    Ok(Utf8PathBuf::from(out_dir).join(package_path))
+    Utf8PathBuf::from(out_dir).join(package_path)
 }
 
 /// Generate kotlin bindings for the given namespace, then use the kotlin
@@ -47,7 +47,7 @@ pub fn compile_bindings(
     ci: &ComponentInterface,
     out_dir: &Utf8Path,
 ) -> Result<()> {
-    let mut kt_file = full_bindings_path(config, out_dir)?;
+    let mut kt_file = full_bindings_path(config, out_dir);
     kt_file.push(format!("{}.kt", ci.namespace()));
     let jar_file = out_dir.join(format!("{}.jar", ci.namespace()));
     let status = Command::new("kotlinc")
