@@ -1,0 +1,9 @@
+[bindings.kotlin]
+package_name = "uniffi.fixture.simple_fns"
+cdylib_name = "uniffi_simple_fns"
+
+[bindings.python]
+cdylib_name = "uniffi_simple_fns"
+
+[bindings.swift]
+cdylib_name = "uniffi_simple_fns"
