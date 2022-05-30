@@ -49,7 +49,6 @@ use std::{
     convert::TryFrom,
     hash::{Hash, Hasher},
     iter,
-    str::FromStr,
 };
 
 use anyhow::{bail, Result};
@@ -561,14 +560,6 @@ impl ComponentInterface {
             callback.derive_ffi_funcs(&ci_prefix);
         }
         Ok(())
-    }
-}
-
-/// Convenience implementation for parsing a `ComponentInterface` from a string.
-impl FromStr for ComponentInterface {
-    type Err = anyhow::Error;
-    fn from_str(s: &str) -> Result<Self> {
-        ComponentInterface::from_webidl(s)
     }
 }
 
