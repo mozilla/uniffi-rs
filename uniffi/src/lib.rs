@@ -56,6 +56,8 @@ pub mod deps {
     pub use static_assertions;
 }
 
+pub use uniffi_macros::export;
+
 mod panichook;
 
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");

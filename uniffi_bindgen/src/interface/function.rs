@@ -89,10 +89,73 @@ impl Function {
     }
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
-        self.ffi_func.name = format!("{}_{}", ci_prefix, self.name);
+        // The name is already set if the function is defined in a proc-macro-generated JSON file
+        // rather than in UDL. Don't overwrite it in that case.
+        if self.ffi_func.name.is_empty() {
+            self.ffi_func.name = format!("{}_{}", ci_prefix, self.name);
+        }
+
         self.ffi_func.arguments = self.arguments.iter().map(|arg| arg.into()).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(|rt| rt.into());
         Ok(())
+    }
+}
+
+impl From<uniffi_meta::FnParamMetadata> for Argument {
+    fn from(meta: uniffi_meta::FnParamMetadata) -> Self {
+        Argument {
+            name: meta.name,
+            type_: convert_type(&meta.ty),
+            by_ref: false,
+            optional: false,
+            default: None,
+        }
+    }
+}
+
+impl From<uniffi_meta::FnMetadata> for Function {
+    fn from(meta: uniffi_meta::FnMetadata) -> Self {
+        let checksum = uniffi_meta::checksum(&meta);
+
+        let return_type = meta.output.map(|out| convert_type(&out));
+        let arguments = meta.inputs.into_iter().map(Into::into).collect();
+
+        let ffi_func = FFIFunction {
+            name: format!(
+                "__uniffi_{}_{}_{:x}",
+                meta.module_path.join("__"),
+                meta.name,
+                checksum,
+            ),
+            ..FFIFunction::default()
+        };
+
+        Self {
+            name: meta.name,
+            arguments,
+            return_type,
+            ffi_func,
+            attributes: Default::default(),
+        }
+    }
+}
+
+fn convert_type(s: &uniffi_meta::Type) -> Type {
+    use uniffi_meta::Type as T;
+
+    match s {
+        T::U8 => Type::UInt8,
+        T::U16 => Type::UInt16,
+        T::U32 => Type::UInt32,
+        T::U64 => Type::UInt64,
+        T::I8 => Type::Int8,
+        T::I16 => Type::Int16,
+        T::I32 => Type::Int32,
+        T::I64 => Type::Int64,
+        T::F32 => Type::Float32,
+        T::F64 => Type::Float64,
+        T::Bool => Type::Boolean,
+        T::String => Type::String,
     }
 }
 

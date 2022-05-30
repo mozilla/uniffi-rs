@@ -8,3 +8,4 @@ xcuserdata
 docs/manual/src/internals/api
 examples/app/ios/Generated
 examples/app/ios/IOSApp.xcodeproj/project.xcworkspace/xcshareddata/
+**/.uniffi/metadata

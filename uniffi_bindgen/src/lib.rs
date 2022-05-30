@@ -94,10 +94,12 @@
 
 const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-use anyhow::{bail, Context, Result};
+use anyhow::{anyhow, bail, ensure, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
+use cargo_metadata::{Metadata, MetadataCommand};
 use clap::{Parser, Subcommand};
 use fs_err::{self as fs, File};
+use macro_metadata::add_macro_metadata;
 use serde::{Deserialize, Serialize};
 use std::io::prelude::*;
 use std::{collections::HashMap, env, process::Command, str::FromStr};
@@ -105,6 +107,7 @@ use std::{collections::HashMap, env, process::Command, str::FromStr};
 pub mod backend;
 pub mod bindings;
 pub mod interface;
+mod macro_metadata;
 pub mod scaffolding;
 
 use bindings::TargetLanguage;
@@ -255,7 +258,15 @@ pub fn generate_external_bindings(
 
     let crate_root = guess_crate_root(udl_file.as_ref())?;
     let out_dir = get_out_dir(udl_file.as_ref(), out_dir_override)?;
-    let component = parse_udl(udl_file.as_ref()).context("Error parsing UDL")?;
+    let mut component = parse_udl(udl_file.as_ref()).context("Error parsing UDL")?;
+
+    let metadata = get_pkg_metadata(crate_root)?;
+    let lib_name = lib_name(&metadata)?;
+    if component.namespace() == lib_name {
+        rebuild_metadata(crate_root)?;
+        add_macro_metadata(&mut component, crate_root)?;
+    }
+
     let bindings_config = load_bindings_config(&component, crate_root, config_file_override)?;
     binding_generator.write_bindings(component, bindings_config, &out_dir)
 }
@@ -294,12 +305,17 @@ pub fn generate_bindings(
     out_dir_override: Option<&Utf8Path>,
     try_format_code: bool,
 ) -> Result<()> {
-    let component = parse_udl(udl_file)?;
-    let config = get_config(
-        &component,
-        guess_crate_root(udl_file)?,
-        config_file_override,
-    )?;
+    let mut component = parse_udl(udl_file)?;
+    let crate_root = &guess_crate_root(udl_file)?;
+
+    let metadata = get_pkg_metadata(crate_root)?;
+    let lib_name = lib_name(&metadata)?;
+    if component.namespace() == lib_name {
+        rebuild_metadata(crate_root)?;
+        add_macro_metadata(&mut component, crate_root)?;
+    }
+
+    let config = get_config(&component, crate_root, config_file_override)?;
     let out_dir = get_out_dir(udl_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
@@ -310,6 +326,7 @@ pub fn generate_bindings(
             try_format_code,
         )?;
     }
+
     Ok(())
 }
 
@@ -348,11 +365,20 @@ pub fn run_tests(
         for udl_file in udl_files {
             let udl_file = udl_file.as_ref();
             let crate_root = guess_crate_root(udl_file)?;
-            let component = parse_udl(udl_file)?;
+            let mut component = parse_udl(udl_file)?;
+
+            let metadata = get_pkg_metadata(crate_root)?;
+            let lib_name = lib_name(&metadata)?;
+            if component.namespace() == lib_name {
+                rebuild_metadata(crate_root)?;
+                add_macro_metadata(&mut component, crate_root)?;
+            }
+
             let config = get_config(&component, crate_root, config_file_override)?;
             bindings::write_bindings(&config.bindings, &component, cdylib_dir, lang, true)?;
             bindings::compile_bindings(&config.bindings, &component, cdylib_dir, lang)?;
         }
+
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;
         }
@@ -419,6 +445,64 @@ fn parse_udl(udl_file: &Utf8Path) -> Result<ComponentInterface> {
     let udl = fs::read_to_string(udl_file)
         .with_context(|| format!("Failed to read UDL from {}", &udl_file))?;
     ComponentInterface::from_webidl(&udl).context("Failed to parse UDL")
+}
+
+fn get_pkg_metadata(crate_root: &Utf8Path) -> anyhow::Result<Metadata> {
+    Ok(MetadataCommand::new().current_dir(crate_root).exec()?)
+}
+
+fn lib_name(metadata: &Metadata) -> Result<&String, anyhow::Error> {
+    Ok(&metadata
+        .root_package()
+        .expect("metadata has a root package")
+        .targets
+        .iter()
+        .find(|t| t.kind.contains(&"cdylib".to_owned()))
+        .context("package has no cdylib target")?
+        .name)
+}
+
+fn rebuild_metadata(crate_root: &Utf8Path) -> anyhow::Result<()> {
+    // First, delete all files from `.uniffi/metadata`, to get rid of stale ones
+    //
+    // FIXME(jplatte): Delete metadata for path dependencies as well
+    let metadata_dir = &crate_root.join(".uniffi").join("metadata");
+    if metadata_dir.is_dir() {
+        for entry in fs::read_dir(metadata_dir)? {
+            let entry = entry?;
+            let path = entry.path();
+
+            let filename = path
+                .file_name()
+                .context("directory entry must have a filename")?
+                .to_string_lossy();
+            ensure!(
+                filename.ends_with(".json"),
+                "all files in `{}` must have `.json` file endings, found `{}`",
+                metadata_dir,
+                filename,
+            );
+
+            fs::remove_file(path)?;
+        }
+    }
+
+    // Then, re-`check` the project.
+    //
+    // Since the proc-macro invocations are set up to be re-run when their own output file(s)
+    // change, the deletion triggers a re-expansion even if none of the source files changed since
+    // the last `cargo check`.
+    let cargo = env::var_os("CARGO").unwrap_or_else(|| "cargo".into());
+    let status = Command::new(cargo)
+        .current_dir(crate_root)
+        .arg("check")
+        .status()?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err(anyhow!("`cargo check` failed, aborting"))
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

@@ -1,0 +1,7 @@
+[package]
+name = "uniffi_meta"
+version = "0.18.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0.136", features = ["derive"] }

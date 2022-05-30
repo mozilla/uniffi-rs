@@ -3,9 +3,11 @@ members = [
   "uniffi_bindgen",
   "uniffi_build",
   "uniffi_macros",
+  "uniffi_meta",
   "uniffi_testing",
   "uniffi",
   "weedle2",
+
   "examples/arithmetic",
   "examples/callbacks",
   "examples/geometry",
