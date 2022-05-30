@@ -36,6 +36,7 @@ members = [
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
+  "fixtures/simple-fns",
   "fixtures/swift-omit-labels",
 ]
 
