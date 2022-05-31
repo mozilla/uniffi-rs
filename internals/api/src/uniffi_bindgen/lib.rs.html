@@ -621,12 +621,6 @@
 <span id="616">616</span>
 <span id="617">617</span>
 <span id="618">618</span>
-<span id="619">619</span>
-<span id="620">620</span>
-<span id="621">621</span>
-<span id="622">622</span>
-<span id="623">623</span>
-<span id="624">624</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -757,12 +751,12 @@
 
 <span class="kw">fn</span> <span class="ident">load_bindings_config</span><span class="op">&lt;</span><span class="ident">BC</span>: <span class="ident">BindingGeneratorConfig</span><span class="op">&gt;</span>(
     <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
+    <span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
     <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BC</span><span class="op">&gt;</span> {
     <span class="comment">// Load the config from the TOML value, falling back to an empty map if it doesn&#39;t exist</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">config_map</span>: <span class="ident">toml::value::Table</span> <span class="op">=</span>
-        <span class="kw">match</span> <span class="ident">load_bindings_config_toml</span>::<span class="op">&lt;</span><span class="ident">BC</span><span class="op">&gt;</span>(<span class="ident">udl_file</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span> {
+        <span class="kw">match</span> <span class="ident">load_bindings_config_toml</span>::<span class="op">&lt;</span><span class="ident">BC</span><span class="op">&gt;</span>(<span class="ident">crate_root</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span> {
             <span class="prelude-val">Some</span>(<span class="ident">value</span>) =&gt; <span class="ident">value</span>
                 .<span class="ident">try_into</span>()
                 .<span class="ident">context</span>(<span class="string">&quot;Bindings config must be a TOML table&quot;</span>)<span class="question-mark">?</span>,
@@ -814,19 +808,19 @@
 <span class="comment">// If there is an error parsing the file then Err will be returned. If the file is missing or the</span>
 <span class="comment">// entry for the bindings is missing, then Ok(None) will be returned.</span>
 <span class="kw">fn</span> <span class="ident">load_bindings_config_toml</span><span class="op">&lt;</span><span class="ident">BC</span>: <span class="ident">BindingGeneratorConfig</span><span class="op">&gt;</span>(
-    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
+    <span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
     <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">toml::Value</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">config_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">config_file_override</span> {
         <span class="prelude-val">Some</span>(<span class="ident">cfg</span>) =&gt; <span class="ident">cfg</span>.<span class="ident">to_owned</span>(),
-        <span class="prelude-val">None</span> =&gt; <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>.<span class="ident">join</span>(<span class="string">&quot;uniffi.toml&quot;</span>),
+        <span class="prelude-val">None</span> =&gt; <span class="ident">crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;uniffi.toml&quot;</span>),
     };
 
     <span class="kw">if</span> <span class="op">!</span><span class="ident">config_path</span>.<span class="ident">exists</span>() {
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
     }
 
-    <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">slurp_file</span>(<span class="kw-2">&amp;</span><span class="ident">config_path</span>)
+    <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="kw-2">&amp;</span><span class="ident">config_path</span>)
         .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {}&quot;</span>, <span class="ident">config_path</span>))<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">full_config</span> <span class="op">=</span> <span class="ident">toml::Value::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>)
         .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to parse config file {}&quot;</span>, <span class="ident">config_path</span>))<span class="question-mark">?</span>;
@@ -881,10 +875,11 @@
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">out_dir_override</span> <span class="op">=</span> <span class="ident">out_dir_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
     <span class="kw">let</span> <span class="ident">config_file_override</span> <span class="op">=</span> <span class="ident">config_file_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
+
+    <span class="kw">let</span> <span class="ident">crate_root</span> <span class="op">=</span> <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>(), <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>()).<span class="ident">context</span>(<span class="string">&quot;Error parsing UDL&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">bindings_config</span> <span class="op">=</span>
-        <span class="ident">load_bindings_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">udl_file</span>.<span class="ident">as_ref</span>(), <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">bindings_config</span> <span class="op">=</span> <span class="ident">load_bindings_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">crate_root</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
     <span class="ident">binding_generator</span>.<span class="ident">write_bindings</span>(<span class="ident">component</span>, <span class="ident">bindings_config</span>, <span class="kw-2">&amp;</span><span class="ident">out_dir</span>)
 }
 
@@ -1019,7 +1014,7 @@
 
     <span class="kw">match</span> <span class="ident">config_file</span> {
         <span class="prelude-val">Some</span>(<span class="ident">path</span>) =&gt; {
-            <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">slurp_file</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
+            <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
                 .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>))<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="ident">loaded_config</span>: <span class="ident">Config</span> <span class="op">=</span> <span class="ident">toml::de::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>)
                 .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to generate config from file {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>))<span class="question-mark">?</span>;
@@ -1044,17 +1039,10 @@
 }
 
 <span class="kw">fn</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">udl</span> <span class="op">=</span>
-        <span class="ident">slurp_file</span>(<span class="ident">udl_file</span>).<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read UDL from {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">udl_file</span>))<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">udl</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">udl_file</span>)
+        .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read UDL from {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">udl_file</span>))<span class="question-mark">?</span>;
     <span class="ident">udl</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">interface::ComponentInterface</span><span class="op">&gt;</span>()
         .<span class="ident">context</span>(<span class="string">&quot;Failed to parse UDL&quot;</span>)
-}
-
-<span class="kw">fn</span> <span class="ident">slurp_file</span>(<span class="ident">file_name</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">String::new</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">file_name</span>)<span class="question-mark">?</span>;
-    <span class="ident">f</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;mut</span> <span class="ident">contents</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">contents</span>)
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
