@@ -41,6 +41,7 @@ members = [
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
   "fixtures/simple-fns",
+  "fixtures/simple-iface",
   "fixtures/swift-omit-labels",
 ]
 
