@@ -1,0 +1,5 @@
+namespace uniffi_simple_iface {};
+
+interface Object {
+    i32 get_inner();
+};
