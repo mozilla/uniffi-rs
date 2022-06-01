@@ -101,6 +101,13 @@ fn convert_bare_type_name(ident: &Ident) -> syn::Result<Type> {
 fn convert_generic_type1(ident: &Ident, arg: &syn::GenericArgument) -> syn::Result<Type> {
     let arg = arg_as_type(arg)?;
     match ident.to_string().as_str() {
+        "Arc" => Ok(Type::ArcObject {
+            object_name: type_as_type_path(arg)?
+                .path
+                .get_ident()
+                .ok_or_else(|| type_not_supported(arg))?
+                .to_string(),
+        }),
         "Option" => Ok(Type::Option {
             inner_type: convert_type(arg)?.into(),
         }),

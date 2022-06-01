@@ -54,6 +54,9 @@ pub enum Type {
         key_type: Box<Type>,
         value_type: Box<Type>,
     },
+    ArcObject {
+        object_name: String,
+    },
 }
 
 /// Returns the last 16 bits of the value's hash as computed with [`DefaultHasher`].
