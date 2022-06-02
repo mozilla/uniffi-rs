@@ -652,7 +652,7 @@
             <span class="ident">FFIType::Int64</span> <span class="op">|</span> <span class="ident">FFIType::UInt64</span> =&gt; <span class="string">&quot;Long&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::Float32</span> =&gt; <span class="string">&quot;Float&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::Float64</span> =&gt; <span class="string">&quot;Double&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::RustArcPtr</span> =&gt; <span class="string">&quot;Pointer&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer.ByValue&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.<span class="ident">to_string</span>(),

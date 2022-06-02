@@ -362,7 +362,7 @@
             <span class="ident">FFIType::UInt64</span> =&gt; <span class="string">&quot;:uint64&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::Float32</span> =&gt; <span class="string">&quot;:float&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::Float64</span> =&gt; <span class="string">&quot;:double&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::RustArcPtr</span> =&gt; <span class="string">&quot;:pointer&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FFIType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;:pointer&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer.by_value&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">FFIType::ForeignCallback</span> =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
