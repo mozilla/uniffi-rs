@@ -158,7 +158,7 @@ impl Object {
         self.ffi_func_free.name = format!("ffi_{}_{}_object_free", ci_prefix, self.name);
         self.ffi_func_free.arguments = vec![FFIArgument {
             name: "ptr".to_string(),
-            type_: FFIType::RustArcPtr,
+            type_: FFIType::RustArcPtr(self.name().to_string()),
         }];
         self.ffi_func_free.return_type = None;
         for cons in self.constructors.iter_mut() {
@@ -278,7 +278,7 @@ impl Constructor {
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) {
         self.ffi_func.name = format!("{}_{}_{}", ci_prefix, obj_prefix, self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
-        self.ffi_func.return_type = Some(FFIType::RustArcPtr);
+        self.ffi_func.return_type = Some(FFIType::RustArcPtr(self.name().to_string()));
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {

@@ -160,7 +160,7 @@ impl From<&Type> for FFIType {
             // We might add a separate type for borrowed strings in future.
             Type::String => FFIType::RustBuffer,
             // Objects are pointers to an Arc<>
-            Type::Object(_) => FFIType::RustArcPtr,
+            Type::Object(name) => FFIType::RustArcPtr(name.to_owned()),
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface(_) => FFIType::UInt64,
             // Other types are serialized into a bytebuffer and deserialized on the other side.

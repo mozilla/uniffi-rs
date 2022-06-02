@@ -277,7 +277,7 @@ impl CodeOracle for KotlinCodeOracle {
             FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
             FFIType::Float32 => "Float".to_string(),
             FFIType::Float64 => "Double".to_string(),
-            FFIType::RustArcPtr => "Pointer".to_string(),
+            FFIType::RustArcPtr(_) => "Pointer".to_string(),
             FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FFIType::ForeignCallback => "ForeignCallback".to_string(),
