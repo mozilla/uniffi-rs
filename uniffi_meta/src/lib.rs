@@ -14,7 +14,7 @@ pub struct FnMetadata {
     pub module_path: Vec<String>,
     pub name: String,
     pub inputs: Vec<FnParamMetadata>,
-    pub output: Option<Type>,
+    pub return_type: Option<Type>,
 }
 
 impl FnMetadata {
@@ -26,10 +26,12 @@ impl FnMetadata {
 #[derive(Debug, Hash, Deserialize, Serialize)]
 pub struct FnParamMetadata {
     pub name: String,
+    #[serde(rename = "type")]
     pub ty: Type,
 }
 
 #[derive(Debug, Hash, Deserialize, Serialize)]
+#[serde(tag = "id")]
 pub enum Type {
     U8,
     U16,

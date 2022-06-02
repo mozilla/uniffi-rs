@@ -117,7 +117,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
     fn from(meta: uniffi_meta::FnMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
 
-        let return_type = meta.output.map(|out| convert_type(&out));
+        let return_type = meta.return_type.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         let ffi_func = FFIFunction {
