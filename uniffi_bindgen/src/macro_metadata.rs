@@ -37,11 +37,7 @@ pub(crate) fn add_macro_metadata(
             .map_err(|_| anyhow!("non-utf8 file names are not supported"))?;
 
         let file_basename = file_name.strip_suffix(".json").ok_or_else(|| {
-            anyhow!(
-                "expected only JSON files in `{}`, found `{}`",
-                metadata_dir,
-                file_name
-            )
+            anyhow!("expected only JSON files in `{metadata_dir}`, found `{file_name}`")
         })?;
 
         let mut segments = match file_basename.strip_prefix("mod.") {

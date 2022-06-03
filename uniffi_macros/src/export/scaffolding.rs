@@ -49,7 +49,7 @@ fn gen_fn_scaffolding(
             }
             FnArg::Typed(pat_ty) => {
                 let ty = &pat_ty.ty;
-                let name = format_ident!("arg{}", i);
+                let name = format_ident!("arg{i}");
 
                 params.push(quote! { #name: <#ty as ::uniffi::FfiConverter>::FfiType });
 
@@ -58,7 +58,7 @@ fn gen_fn_scaffolding(
                         format!("Failed to convert arg '{}': {{}}", i.ident)
                     }
                     _ => {
-                        format!("Failed to convert arg #{}: {{}}", i)
+                        format!("Failed to convert arg #{i}: {{}}")
                     }
                 };
                 args.push(quote! {

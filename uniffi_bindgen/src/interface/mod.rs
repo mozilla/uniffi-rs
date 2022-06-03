@@ -118,7 +118,7 @@ impl ComponentInterface {
         let (remaining, defns) = weedle::Definitions::parse(idl.trim()).unwrap();
         if !remaining.is_empty() {
             println!("Error parsing the IDL. Text remaining to be parsed is:");
-            println!("{}", remaining);
+            println!("{remaining}");
             bail!("parse error");
         }
         // Unconditionally add the String type, which is used by the panic handling

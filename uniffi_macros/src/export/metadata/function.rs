@@ -20,7 +20,7 @@ pub(super) fn gen_fn_metadata(item: syn::ItemFn, mod_path: &[String]) -> syn::Re
     ));
 
     let tracked_file = write_json_metadata(&path, &meta)
-        .map_err(|e| syn::Error::new(Span::call_site(), format!("failed to write file: {}", e)))?;
+        .map_err(|e| syn::Error::new(Span::call_site(), format!("failed to write file: {e}")))?;
 
     Ok(ExportItem::Function {
         item,

@@ -159,7 +159,7 @@ impl Coveralls {
     }
 
     fn fallible_panic(&self, message: String) -> Result<()> {
-        panic!("{}", message);
+        panic!("{message}");
     }
 
     fn get_name(&self) -> String {
@@ -167,7 +167,7 @@ impl Coveralls {
     }
 
     fn panicing_new(message: String) -> Self {
-        panic!("{}", message);
+        panic!("{message}");
     }
 
     fn maybe_throw(&self, should_throw: bool) -> Result<bool> {
@@ -201,7 +201,7 @@ impl Coveralls {
     }
 
     fn panic(&self, message: String) {
-        panic!("{}", message);
+        panic!("{message}");
     }
 
     fn strong_count(self: Arc<Self>) -> u64 {
@@ -221,7 +221,7 @@ impl Coveralls {
     }
 
     fn take_other_panic(self: Arc<Self>, message: String) {
-        panic!("{}", message);
+        panic!("{message}");
     }
 
     fn clone_me(&self) -> Arc<Self> {
@@ -235,7 +235,7 @@ impl Coveralls {
     }
 
     fn get_status(&self, status: String) -> String {
-        format!("status: {}", status)
+        format!("status: {status}")
     }
 
     fn get_dict(&self, key: String, value: u64) -> HashMap<String, u64> {
