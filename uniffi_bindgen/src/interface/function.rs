@@ -115,18 +115,13 @@ impl From<uniffi_meta::FnParamMetadata> for Argument {
 
 impl From<uniffi_meta::FnMetadata> for Function {
     fn from(meta: uniffi_meta::FnMetadata) -> Self {
-        let checksum = uniffi_meta::checksum(&meta);
+        let ffi_name = meta.ffi_symbol_name();
 
         let return_type = meta.output.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         let ffi_func = FFIFunction {
-            name: format!(
-                "__uniffi_{}_{}_{:x}",
-                meta.module_path.join("__"),
-                meta.name,
-                checksum,
-            ),
+            name: ffi_name,
             ..FFIFunction::default()
         };
 

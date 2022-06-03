@@ -13,6 +13,12 @@ pub struct FnMetadata {
     pub output: Option<Type>,
 }
 
+impl FnMetadata {
+    pub fn ffi_symbol_name(&self) -> String {
+        fn_ffi_symbol_name(&self.module_path, &self.name, checksum(self))
+    }
+}
+
 #[derive(Debug, Hash, Deserialize, Serialize)]
 pub struct FnParamMetadata {
     pub name: String,
@@ -43,4 +49,9 @@ pub fn checksum<T: Hash>(val: &T) -> u16 {
     let mut hasher = DefaultHasher::new();
     val.hash(&mut hasher);
     (hasher.finish() & 0x000000000000FFFF) as u16
+}
+
+pub fn fn_ffi_symbol_name(mod_path: &[String], name: &str, checksum: u16) -> String {
+    let mod_path = mod_path.join("__");
+    format!("__uniffi_{mod_path}_{name}_{checksum:x}")
 }

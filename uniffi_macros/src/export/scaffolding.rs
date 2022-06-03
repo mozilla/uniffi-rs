@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{FnArg, ItemFn, Pat, ReturnType};
 
@@ -27,7 +27,10 @@ fn gen_fn_scaffolding(
 ) -> syn::Result<TokenStream> {
     let name = &item.sig.ident;
     let name_s = name.to_string();
-    let ffi_name = format_ident!("__uniffi_{}_{}_{:x}", mod_path.join("__"), name, checksum);
+    let ffi_name = Ident::new(
+        &uniffi_meta::fn_ffi_symbol_name(mod_path, &name_s, checksum),
+        Span::call_site(),
+    );
 
     let mut params = Vec::new();
     let mut args = Vec::new();
