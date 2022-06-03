@@ -9,7 +9,7 @@ pub(super) fn gen_fn_metadata(item: syn::ItemFn, mod_path: &[String]) -> syn::Re
 
     let path = METADATA_DIR.join(format!(
         "mod.{}.fn.{}.json",
-        // `-` is a characters that's practically universally allowed in
+        // `-` is a character that's practically universally allowed in
         // filenames, yet can't be part of a module path segment.
         meta.module_path.join("-"),
         meta.name
