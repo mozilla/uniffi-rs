@@ -49,10 +49,7 @@ pub(crate) fn add_macro_metadata(
             None => bail!("expected filename to being with `mod.`"),
         };
 
-        let _mod_path = segments
-            .next()
-            .context("incomplete filename")?
-            .replace('$', "::");
+        let _mod_path = segments.next().context("incomplete filename")?;
 
         match segments.next() {
             Some("fn") => {
