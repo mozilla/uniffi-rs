@@ -6,22 +6,32 @@ use std::collections::BTreeMap;
 
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
-use uniffi_meta::{checksum, FnMetadata, Metadata, Type};
+use uniffi_meta::{checksum, FnMetadata, Metadata, MethodMetadata, Type};
 
 mod metadata;
 mod scaffolding;
 
 pub use self::metadata::gen_metadata;
-use self::scaffolding::gen_fn_scaffolding;
+use self::scaffolding::{gen_fn_scaffolding, gen_method_scaffolding};
+use crate::export::metadata::convert::convert_type;
 
 // TODO(jplatte): Ensure no generics, no async, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, whereever possible
 
 pub enum ExportItem {
     Function {
-        sig: syn::Signature,
+        sig: Box<syn::Signature>,
         metadata: FnMetadata,
     },
+    Impl {
+        self_ident: Ident,
+        methods: Vec<syn::Result<Method>>,
+    },
+}
+
+pub struct Method {
+    item: syn::ImplItemMethod,
+    metadata: MethodMetadata,
 }
 
 pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
@@ -38,6 +48,29 @@ pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
                 #meta_static_var
             }
         }
+        ExportItem::Impl {
+            methods,
+            self_ident,
+        } => methods
+            .into_iter()
+            .map(|res| {
+                res.map_or_else(
+                    syn::Error::into_compile_error,
+                    |Method { item, metadata }| {
+                        let checksum = checksum(&metadata);
+                        let scaffolding =
+                            gen_method_scaffolding(&item.sig, mod_path, checksum, &self_ident);
+                        let meta_static_var =
+                            create_metadata_static_var(&item.sig.ident, metadata.into());
+
+                        quote! {
+                            #scaffolding
+                            #meta_static_var
+                        }
+                    },
+                )
+            })
+            .collect(),
     }
 }
 
@@ -92,7 +125,7 @@ fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
     let type_assertions: BTreeMap<_, _> = input_types
         .chain(output_type)
         .filter_map(|ty| {
-            metadata::convert_type(ty).ok().map(|meta_ty| {
+            convert_type(ty).ok().map(|meta_ty| {
                 let expected_ty = convert_type_back(&meta_ty);
                 let assert = quote! {
                     ::uniffi::deps::static_assertions::assert_type_eq_all!(#ty, #expected_ty);

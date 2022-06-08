@@ -24,6 +24,22 @@ impl FnMetadata {
 }
 
 #[derive(Clone, Debug, Hash, Deserialize, Serialize)]
+pub struct MethodMetadata {
+    pub module_path: Vec<String>,
+    pub self_name: String,
+    pub name: String,
+    pub inputs: Vec<FnParamMetadata>,
+    pub return_type: Option<Type>,
+}
+
+impl MethodMetadata {
+    pub fn ffi_symbol_name(&self) -> String {
+        let full_name = format!("impl_{}_{}", self.self_name, self.name);
+        fn_ffi_symbol_name(&self.module_path, &full_name, checksum(self))
+    }
+}
+
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
 pub struct FnParamMetadata {
     pub name: String,
     #[serde(rename = "type")]
@@ -78,10 +94,17 @@ pub fn fn_ffi_symbol_name(mod_path: &[String], name: &str, checksum: u16) -> Str
 #[derive(Clone, Debug, Hash, Deserialize, Serialize)]
 pub enum Metadata {
     Func(FnMetadata),
+    Method(MethodMetadata),
 }
 
 impl From<FnMetadata> for Metadata {
     fn from(value: FnMetadata) -> Metadata {
         Metadata::Func(value)
+    }
+}
+
+impl From<MethodMetadata> for Metadata {
+    fn from(m: MethodMetadata) -> Self {
+        Self::Method(m)
     }
 }

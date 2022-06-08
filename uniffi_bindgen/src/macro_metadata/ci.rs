@@ -19,22 +19,32 @@ pub fn add_to_ci(
     metadata_items: Vec<Metadata>,
 ) -> anyhow::Result<()> {
     for item in metadata_items {
+        let (item_desc, crate_name) = match &item {
+            Metadata::Func(meta) => (
+                format!("function `{}`", meta.name),
+                meta.module_path.first().unwrap(),
+            ),
+            Metadata::Method(meta) => (
+                format!("method `{}.{}`", meta.self_name, meta.name),
+                meta.module_path.first().unwrap(),
+            ),
+        };
+
+        let ns = iface.namespace();
+        if crate_name != ns {
+            return Err(anyhow!("Found {item_desc} from crate `{crate_name}`.")
+                .context(format!(
+                    "Main crate is expected to be named `{ns}` based on the UDL namespace."
+                ))
+                .context("Mixing symbols from multiple crates is not supported yet."));
+        }
+
         match item {
             Metadata::Func(meta) => {
-                let cr = meta.module_path.first().unwrap();
-                let ns = iface.namespace();
-                if cr != ns {
-                    return Err(
-                        anyhow!("Ignoring function `{}` from crate `{cr}`.", meta.name)
-                            .context(format!(
-                                "Main crate is expected to be named `{ns}` \
-                                 based on the UDL namespace."
-                            ))
-                            .context("Mixing symbols from multiple crates is not supported yet."),
-                    );
-                }
-
                 iface.add_function_definition(meta.into())?;
+            }
+            Metadata::Method(meta) => {
+                iface.add_method_definition(meta)?;
             }
         }
     }
