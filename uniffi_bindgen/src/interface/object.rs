@@ -275,10 +275,10 @@ impl Constructor {
         self.name == "new"
     }
 
-    fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) {
-        self.ffi_func.name = format!("{}_{}_{}", ci_prefix, obj_prefix, self.name);
+    fn derive_ffi_func(&mut self, ci_prefix: &str, obj_name: &str) {
+        self.ffi_func.name = format!("{}_{}_{}", ci_prefix, obj_name, self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
-        self.ffi_func.return_type = Some(FFIType::RustArcPtr(self.name().to_string()));
+        self.ffi_func.return_type = Some(FFIType::RustArcPtr(obj_name.to_string()));
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
