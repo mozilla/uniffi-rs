@@ -40,7 +40,7 @@ use super::attributes::{ArgumentAttributes, FunctionAttributes};
 use super::ffi::{FFIArgument, FFIFunction};
 use super::literal::{convert_default_value, Literal};
 use super::types::{Type, TypeIterator};
-use super::{APIConverter, ComponentInterface};
+use super::{APIConverter, ComponentInterface, FFINames};
 
 /// Represents a standalone function.
 ///
@@ -88,11 +88,10 @@ impl Function {
             .map(|name| Type::Error(name.to_owned()))
     }
 
-    pub fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
-        self.ffi_func.name = format!("{}_{}", ci_prefix, self.name);
+    pub fn derive_ffi_func(&mut self, ffi_names: &FFINames) {
+        self.ffi_func.name = ffi_names.function(self);
         self.ffi_func.arguments = self.arguments.iter().map(|arg| arg.into()).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(|rt| rt.into());
-        Ok(())
     }
 }
 

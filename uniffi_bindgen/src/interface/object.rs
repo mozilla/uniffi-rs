@@ -59,6 +59,7 @@
 
 use std::convert::TryFrom;
 use std::hash::{Hash, Hasher};
+use std::iter::zip;
 use std::{collections::HashSet, iter};
 
 use anyhow::{bail, Result};
@@ -67,7 +68,7 @@ use super::attributes::{ConstructorAttributes, InterfaceAttributes, MethodAttrib
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::function::Argument;
 use super::types::{Type, TypeIterator};
-use super::{APIConverter, ComponentInterface};
+use super::{APIConverter, ComponentInterface, FFINames};
 
 /// An "object" is an opaque type that can be instantiated and passed around by reference,
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
@@ -154,20 +155,30 @@ impl Object {
             .chain(self.methods.iter().map(|f| &f.ffi_func))
     }
 
-    pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
-        self.ffi_func_free.name = format!("ffi_{}_{}_object_free", ci_prefix, self.name);
+    pub fn derive_ffi_funcs(&mut self, ffi_names: &FFINames) {
+        self.ffi_func_free.name = ffi_names.object_free(self);
         self.ffi_func_free.arguments = vec![FFIArgument {
             name: "ptr".to_string(),
             type_: FFIType::RustArcPtr(self.name().to_string()),
         }];
         self.ffi_func_free.return_type = None;
-        for cons in self.constructors.iter_mut() {
-            cons.derive_ffi_func(ci_prefix, &self.name)
+        let constructor_names: Vec<_> = self
+            .constructors()
+            .iter()
+            .map(|cons| ffi_names.constructor(self, cons))
+            .collect();
+        for (cons, ffi_name) in zip(self.constructors.iter_mut(), constructor_names) {
+            cons.derive_ffi_func(ffi_name, self.name.clone());
         }
-        for meth in self.methods.iter_mut() {
-            meth.derive_ffi_func(ci_prefix, &self.name)?
+
+        let method_names: Vec<_> = self
+            .methods()
+            .iter()
+            .map(|meth| ffi_names.method(self, meth))
+            .collect();
+        for (meth, ffi_name) in zip(self.methods.iter_mut(), method_names) {
+            meth.derive_ffi_func(ffi_name);
         }
-        Ok(())
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -275,10 +286,10 @@ impl Constructor {
         self.name == "new"
     }
 
-    fn derive_ffi_func(&mut self, ci_prefix: &str, obj_name: &str) {
-        self.ffi_func.name = format!("{}_{}_{}", ci_prefix, obj_name, self.name);
+    fn derive_ffi_func(&mut self, ffi_name: String, obj_name: String) {
+        self.ffi_func.name = ffi_name;
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
-        self.ffi_func.return_type = Some(FFIType::RustArcPtr(obj_name.to_string()));
+        self.ffi_func.return_type = Some(FFIType::RustArcPtr(obj_name));
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -388,11 +399,10 @@ impl Method {
         self.attributes.get_self_by_arc()
     }
 
-    pub fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
-        self.ffi_func.name = format!("{}_{}_{}", ci_prefix, obj_prefix, self.name);
+    pub fn derive_ffi_func(&mut self, ffi_name: String) {
+        self.ffi_func.name = ffi_name;
         self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
         self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
-        Ok(())
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {

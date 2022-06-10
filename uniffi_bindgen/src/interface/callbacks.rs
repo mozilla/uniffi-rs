@@ -40,7 +40,7 @@ use anyhow::{bail, Result};
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::object::Method;
 use super::types::{Type, TypeIterator};
-use super::{APIConverter, ComponentInterface};
+use super::{APIConverter, ComponentInterface, FFINames};
 
 #[derive(Debug, Clone)]
 pub struct CallbackInterface {
@@ -74,8 +74,8 @@ impl CallbackInterface {
         &self.ffi_init_callback
     }
 
-    pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) {
-        self.ffi_init_callback.name = format!("ffi_{}_{}_init_callback", ci_prefix, self.name);
+    pub(super) fn derive_ffi_funcs(&mut self, ffi_names: &FFINames) {
+        self.ffi_init_callback.name = ffi_names.callback_init(self);
         self.ffi_init_callback.arguments = vec![FFIArgument {
             name: "callback_stub".to_string(),
             type_: FFIType::ForeignCallback,
