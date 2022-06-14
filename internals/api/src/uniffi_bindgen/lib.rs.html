@@ -604,23 +604,6 @@
 <span id="599">599</span>
 <span id="600">600</span>
 <span id="601">601</span>
-<span id="602">602</span>
-<span id="603">603</span>
-<span id="604">604</span>
-<span id="605">605</span>
-<span id="606">606</span>
-<span id="607">607</span>
-<span id="608">608</span>
-<span id="609">609</span>
-<span id="610">610</span>
-<span id="611">611</span>
-<span id="612">612</span>
-<span id="613">613</span>
-<span id="614">614</span>
-<span id="615">615</span>
-<span id="616">616</span>
-<span id="617">617</span>
-<span id="618">618</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -1092,11 +1075,12 @@
     }
 }
 
-<span class="comment">// structs to help our cmdline parsing.</span>
+<span class="comment">// structs to help our cmdline parsing. Note that docstrings below form part</span>
+<span class="comment">// of the &quot;help&quot; output.</span>
+<span class="doccomment">/// Scaffolding and bindings generator for Rust</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Parser</span>)]</span>
 <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;uniffi-bindgen&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">version</span> <span class="op">=</span> <span class="macro">clap::crate_version!</span>())]</span>
-<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">about</span> <span class="op">=</span> <span class="string">&quot;Scaffolding and bindings generator for Rust&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">propagate_version</span> <span class="op">=</span> <span class="bool-val">true</span>)]</span>
 <span class="kw">struct</span> <span class="ident">Cli</span> {
     <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">subcommand</span>)]</span>
@@ -1105,77 +1089,59 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Subcommand</span>)]</span>
 <span class="kw">enum</span> <span class="ident">Commands</span> {
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;generate&quot;</span>, <span class="ident">about</span> <span class="op">=</span> <span class="string">&quot;Generate foreign language bindings&quot;</span>)]</span>
+    <span class="doccomment">/// Generate foreign language bindings</span>
     <span class="ident">Generate</span> {
+        <span class="doccomment">/// Foreign language(s) for which to build bindings.</span>
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>, <span class="ident">possible_values</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;kotlin&quot;</span>, <span class="string">&quot;python&quot;</span>, <span class="string">&quot;swift&quot;</span>, <span class="string">&quot;ruby&quot;</span>]</span>)]
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Foreign language(s) for which to build bindings.&quot;</span>)]</span>
         <span class="ident">language</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(
-            <span class="ident">long</span>,
-            <span class="ident">short</span>,
-            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Directory in which to write generated files. Default is same folder as .udl file.&quot;</span>
-        )]</span>
+        <span class="doccomment">/// Directory in which to write generated files. Default is same folder as .udl file.</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>, <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Do not try to format the generated bindings.&quot;</span>)]</span>
+        <span class="doccomment">/// Do not try to format the generated bindings.</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">no_format</span>: <span class="ident">bool</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(
-            <span class="ident">long</span>,
-            <span class="ident">short</span>,
-            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>
-        )]</span>
+        <span class="doccomment">/// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the UDL file.&quot;</span>)]</span>
+        <span class="doccomment">/// Path to the UDL file.</span>
         <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
     },
 
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;scaffolding&quot;</span>, <span class="ident">about</span> <span class="op">=</span> <span class="string">&quot;Generate Rust scaffolding code&quot;</span>)]</span>
+    <span class="doccomment">/// Generate Rust scaffolding code</span>
     <span class="ident">Scaffolding</span> {
-        <span class="attribute">#[<span class="ident">clap</span>(
-            <span class="ident">long</span>,
-            <span class="ident">short</span>,
-            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Directory in which to write generated files. Default is same folder as .udl file.&quot;</span>
-        )]</span>
+        <span class="doccomment">/// Directory in which to write generated files. Default is same folder as .udl file.</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(
-            <span class="ident">long</span>,
-            <span class="ident">short</span>,
-            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>
-        )]</span>
+        <span class="doccomment">/// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>, <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Do not try to format the generated bindings.&quot;</span>)]</span>
+        <span class="doccomment">/// Do not try to format the generated bindings.</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">no_format</span>: <span class="ident">bool</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the UDL file.&quot;</span>)]</span>
+        <span class="doccomment">/// Path to the UDL file.</span>
         <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
     },
 
-    <span class="attribute">#[<span class="ident">clap</span>(
-        <span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;test&quot;</span>,
-        <span class="ident">about</span> <span class="op">=</span> <span class="string">&quot;Run test scripts against foreign language bindings.&quot;</span>
-    )]</span>
+    <span class="doccomment">/// Run test scripts against foreign language bindings.</span>
     <span class="ident">Test</span> {
-        <span class="attribute">#[<span class="ident">clap</span>(
-            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the directory containing the cdylib the scripts will be testing against.&quot;</span>
-        )]</span>
+        <span class="doccomment">/// Path to the directory containing the cdylib the scripts will be testing against.</span>
         <span class="ident">cdylib_dir</span>: <span class="ident">Utf8PathBuf</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the UDL file.&quot;</span>)]</span>
+        <span class="doccomment">/// Path to the UDL file.</span>
         <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Foreign language(s) test scripts to run.&quot;</span>)]</span>
+        <span class="doccomment">/// Foreign language(s) test scripts to run.</span>
         <span class="ident">test_scripts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
-        <span class="attribute">#[<span class="ident">clap</span>(
-            <span class="ident">long</span>,
-            <span class="ident">short</span>,
-            <span class="ident">help</span> <span class="op">=</span> <span class="string">&quot;Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.&quot;</span>
-        )]</span>
+        <span class="doccomment">/// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
     },
 }
