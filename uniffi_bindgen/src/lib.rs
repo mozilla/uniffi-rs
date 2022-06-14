@@ -469,11 +469,12 @@ impl<V: Clone> MergeWith for HashMap<String, V> {
     }
 }
 
-// structs to help our cmdline parsing.
+// structs to help our cmdline parsing. Note that docstrings below form part
+// of the "help" output.
+/// Scaffolding and bindings generator for Rust
 #[derive(Parser)]
 #[clap(name = "uniffi-bindgen")]
 #[clap(version = clap::crate_version!())]
-#[clap(about = "Scaffolding and bindings generator for Rust")]
 #[clap(propagate_version = true)]
 struct Cli {
     #[clap(subcommand)]
@@ -482,77 +483,59 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    #[clap(name = "generate", about = "Generate foreign language bindings")]
+    /// Generate foreign language bindings
     Generate {
+        /// Foreign language(s) for which to build bindings.
         #[clap(long, short, possible_values = &["kotlin", "python", "swift", "ruby"])]
-        #[clap(help = "Foreign language(s) for which to build bindings.")]
         language: Vec<String>,
 
-        #[clap(
-            long,
-            short,
-            help = "Directory in which to write generated files. Default is same folder as .udl file."
-        )]
+        /// Directory in which to write generated files. Default is same folder as .udl file.
+        #[clap(long, short)]
         out_dir: Option<Utf8PathBuf>,
 
-        #[clap(long, short, help = "Do not try to format the generated bindings.")]
+        /// Do not try to format the generated bindings.
+        #[clap(long, short)]
         no_format: bool,
 
-        #[clap(
-            long,
-            short,
-            help = "Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location."
-        )]
+        /// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.
+        #[clap(long, short)]
         config: Option<Utf8PathBuf>,
 
-        #[clap(help = "Path to the UDL file.")]
+        /// Path to the UDL file.
         udl_file: Utf8PathBuf,
     },
 
-    #[clap(name = "scaffolding", about = "Generate Rust scaffolding code")]
+    /// Generate Rust scaffolding code
     Scaffolding {
-        #[clap(
-            long,
-            short,
-            help = "Directory in which to write generated files. Default is same folder as .udl file."
-        )]
+        /// Directory in which to write generated files. Default is same folder as .udl file.
+        #[clap(long, short)]
         out_dir: Option<Utf8PathBuf>,
 
-        #[clap(
-            long,
-            short,
-            help = "Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location."
-        )]
+        /// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.
+        #[clap(long, short)]
         config: Option<Utf8PathBuf>,
 
-        #[clap(long, short, help = "Do not try to format the generated bindings.")]
+        /// Do not try to format the generated bindings.
+        #[clap(long, short)]
         no_format: bool,
 
-        #[clap(help = "Path to the UDL file.")]
+        /// Path to the UDL file.
         udl_file: Utf8PathBuf,
     },
 
-    #[clap(
-        name = "test",
-        about = "Run test scripts against foreign language bindings."
-    )]
+    /// Run test scripts against foreign language bindings.
     Test {
-        #[clap(
-            help = "Path to the directory containing the cdylib the scripts will be testing against."
-        )]
+        /// Path to the directory containing the cdylib the scripts will be testing against.
         cdylib_dir: Utf8PathBuf,
 
-        #[clap(help = "Path to the UDL file.")]
+        /// Path to the UDL file.
         udl_file: Utf8PathBuf,
 
-        #[clap(help = "Foreign language(s) test scripts to run.")]
+        /// Foreign language(s) test scripts to run.
         test_scripts: Vec<Utf8PathBuf>,
 
-        #[clap(
-            long,
-            short,
-            help = "Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location."
-        )]
+        /// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.
+        #[clap(long, short)]
         config: Option<Utf8PathBuf>,
     },
 }
