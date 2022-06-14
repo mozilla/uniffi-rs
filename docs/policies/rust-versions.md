@@ -7,19 +7,23 @@ which aren't always able to be on that latest version.
 
 Given UniFFI is currently developed and maintained by Mozilla staff, it should
 be no surprise that an important consideration is mozilla-central (aka, the
-main Firefox repository). While at time of writing UniFFI is not used by
-mozilla-central, this policy is unashamedly focused on ensuring it will be
-able to.
+main Firefox repository). This policy exists to ensure UniFFI can always be
+used by mozilla-central.
 
 ## Mozilla-central Rust policies.
 
-It should also come as no surprise that the Rust policy for mozilla-central
-is somewhat flexible. There is an official [Rust Update Policy Document
-](https://firefox-source-docs.mozilla.org/writing-rust-code/update-policy.html])
-but everything in the future is documented as "estimated".
+The Rust policy for mozilla-central has an official
+[Rust Update Policy Document
+](https://firefox-source-docs.mozilla.org/writing-rust-code/update-policy.html),
+the tl;dr of which is:
 
-Ultimately though, that page defines 2 Rust versions - "Uses" and "Requires",
-and our policy revolves around these.
+* There's a "Uses" version which all of Mozilla's CI uses for releasing Firefox.
+  Discover it in the most recent updates to [this meta bug on Bugzilla](https://bugzilla.mozilla.org/show_bug.cgi?id=1504858)
+
+* There's a "Requires" version, which Mozilla is committed to supporting,
+  primarily for downstream builders such as Linux distributions.
+  [Discover it here](https://searchfox.org/mozilla-central/search?q=MINIMUM_RUST_VERSION&path=python/mozboot/mozboot/util.py). This version is tested in mozilla-central's CI,
+  but nothing is shipped by mozilla with it.
 
 # UniFFI Rust version policy
 

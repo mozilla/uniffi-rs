@@ -22,7 +22,7 @@ commands:
   # Our minimum supported rust version is specified here.
   prepare-rust-min-version:
     steps:
-      - run: rustup override set 1.57.0
+      - run: rustup override set 1.59.0
       - run: rustup update
   build-api-docs:
     steps:
