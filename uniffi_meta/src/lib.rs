@@ -53,5 +53,5 @@ pub fn checksum<T: Hash>(val: &T) -> u16 {
 
 pub fn fn_ffi_symbol_name(mod_path: &[String], name: &str, checksum: u16) -> String {
     let mod_path = mod_path.join("__");
-    format!("__uniffi_{mod_path}_{name}_{checksum:x}")
+    format!("_uniffi_{mod_path}_{name}_{checksum:x}")
 }
