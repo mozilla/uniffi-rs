@@ -185,9 +185,37 @@
 <span id="180">180</span>
 <span id="181">181</span>
 <span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>, <span class="ident">feature</span>(<span class="ident">proc_macro_expand</span>))]</span>
 
 <span class="doccomment">//! Macros for `uniffi`.</span>
 <span class="doccomment">//!</span>
@@ -198,6 +226,32 @@
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>};
 <span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">bracketed</span>, <span class="ident">punctuated::Punctuated</span>, <span class="ident">LitStr</span>, <span class="ident">Token</span>};
+
+<span class="kw">mod</span> <span class="ident">export</span>;
+<span class="kw">mod</span> <span class="ident">util</span>;
+
+<span class="kw">use</span> <span class="ident"><span class="self">self</span>::export::expand_export</span>;
+
+<span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">export</span>(
+    <span class="ident">_attr</span>: <span class="ident">proc_macro::TokenStream</span>,
+    <span class="ident">input</span>: <span class="ident">proc_macro::TokenStream</span>,
+) -&gt; <span class="ident">proc_macro::TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">input2</span> <span class="op">=</span> <span class="ident">proc_macro2::TokenStream::from</span>(<span class="ident">input</span>.<span class="ident">clone</span>());
+
+    <span class="kw">let</span> <span class="ident">gen_output</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="ident">util::mod_path</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">item</span> <span class="op">=</span> <span class="ident">syn::parse</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
+        <span class="ident">expand_export</span>(<span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="ident">mod_path</span>)
+    };
+    <span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">gen_output</span>().<span class="ident">unwrap_or_else</span>(<span class="ident">syn::Error::into_compile_error</span>);
+
+    <span class="macro">quote!</span> {
+        #<span class="ident">input2</span>
+        #<span class="ident">output</span>
+    }
+    .<span class="ident">into</span>()
+}
 
 <span class="doccomment">/// A macro to build testcases for a component&#39;s generated bindings.</span>
 <span class="doccomment">///</span>

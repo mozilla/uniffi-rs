@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Argument","Represents an argument to a function/constructor/method call."],["Function","Represents a standalone function."]]});
+initSidebarItems({"fn":[["convert_type",""]],"struct":[["Argument","Represents an argument to a function/constructor/method call."],["Function","Represents a standalone function."]]});
