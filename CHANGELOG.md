@@ -6,7 +6,11 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.18.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.0...HEAD).
+
+## v0.19.0 - (_2022-06-16_)
+
+[All changes in v0.19.0](https://github.com/mozilla/uniffi-rs/compare/v0.18.0...v0.19.0).
 
 ###  ⚠️ Breaking Changes ⚠️
 - breaking for external binding generators, the `FFIType::RustArcPtr` now includes an inner `String`. The string represents the name of the object the `RustArcPtr` was derived from.
