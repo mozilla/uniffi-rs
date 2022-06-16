@@ -147,6 +147,8 @@
 <span id="142">142</span>
 <span id="143">143</span>
 <span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -191,17 +193,17 @@
             <span class="ident">Type::String</span> =&gt; <span class="string">&quot;String&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">Type::Timestamp</span> =&gt; <span class="string">&quot;std::time::SystemTime&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">Type::Duration</span> =&gt; <span class="string">&quot;std::time::Duration&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Enum</span>(<span class="ident">name</span>) <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="ident">name</span>) <span class="op">|</span> <span class="ident">Type::Error</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
-            <span class="ident">Type::Object</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;{}&gt;&quot;</span>, <span class="ident">name</span>),
-            <span class="ident">Type::CallbackInterface</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Box&lt;dyn {}&gt;&quot;</span>, <span class="ident">name</span>),
+            <span class="ident">Type::Enum</span>(<span class="ident">name</span>) <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="ident">name</span>) <span class="op">|</span> <span class="ident">Type::Error</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{}&quot;</span>, <span class="ident">name</span>),
+            <span class="ident">Type::Object</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;r#{}&gt;&quot;</span>, <span class="ident">name</span>),
+            <span class="ident">Type::CallbackInterface</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Box&lt;dyn r#{}&gt;&quot;</span>, <span class="ident">name</span>),
             <span class="ident">Type::Optional</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
             <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
             <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;std::collections::HashMap&lt;{}, {}&gt;&quot;</span>,
+                <span class="string">&quot;std::collections::HashMap&lt;r#{}, r#{}&gt;&quot;</span>,
                 <span class="ident">type_rs</span>(<span class="ident">k</span>)<span class="question-mark">?</span>,
                 <span class="ident">type_rs</span>(<span class="ident">v</span>)<span class="question-mark">?</span>
             ),
-            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
+            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{}&quot;</span>, <span class="ident">name</span>),
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;External types coming to a uniffi near you soon!&quot;</span>),
         })
     }
@@ -236,7 +238,7 @@
             <span class="ident">Type::Timestamp</span> =&gt; <span class="string">&quot;std::time::SystemTime&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">Type::Duration</span> =&gt; <span class="string">&quot;std::time::Duration&quot;</span>.<span class="ident">into</span>(),
             <span class="comment">// Object is handled by Arc&lt;T&gt;</span>
-            <span class="ident">Type::Object</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;{}&gt;&quot;</span>, <span class="ident">name</span>),
+            <span class="ident">Type::Object</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;r#{}&gt;&quot;</span>, <span class="ident">name</span>),
             <span class="comment">// Other user-defined types are handled by a unit-struct that we generate.  The</span>
             <span class="comment">// FfiConverter implementation for this can be found in one of the scaffolding template code.</span>
             <span class="comment">//</span>
@@ -249,10 +251,12 @@
             }
             <span class="comment">// Wrapper types are implemented by generics that wrap the FfiConverter implementation of the</span>
             <span class="comment">// inner type.</span>
-            <span class="ident">Type::Optional</span>(<span class="ident">inner</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type::Sequence</span>(<span class="ident">inner</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type::Optional</span>(<span class="ident">inner</span>) =&gt; {
+                <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;r#{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>)
+            }
+            <span class="ident">Type::Sequence</span>(<span class="ident">inner</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;r#{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
             <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;std::collections::HashMap&lt;{}, {}&gt;&quot;</span>,
+                <span class="string">&quot;std::collections::HashMap&lt;r#{}, r#{}&gt;&quot;</span>,
                 <span class="ident">ffi_converter_name</span>(<span class="ident">k</span>)<span class="question-mark">?</span>,
                 <span class="ident">ffi_converter_name</span>(<span class="ident">v</span>)<span class="question-mark">?</span>
             ),

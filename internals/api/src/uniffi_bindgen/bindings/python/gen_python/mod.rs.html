@@ -346,6 +346,52 @@
 <span id="341">341</span>
 <span id="342">342</span>
 <span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -372,6 +418,51 @@
 <span class="kw">mod</span> <span class="ident">object</span>;
 <span class="kw">mod</span> <span class="ident">primitives</span>;
 <span class="kw">mod</span> <span class="ident">record</span>;
+
+<span class="macro">lazy_static::lazy_static!</span> {
+    <span class="comment">// Taken from Python&#39;s `keyword.py` module.</span>
+    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">KEYWORDS</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> {
+        <span class="kw">let</span> <span class="ident">kwlist</span> <span class="op">=</span> <span class="macro">vec!</span>[
+            <span class="string">&quot;False&quot;</span>,
+            <span class="string">&quot;None&quot;</span>,
+            <span class="string">&quot;True&quot;</span>,
+            <span class="string">&quot;__peg_parser__&quot;</span>,
+            <span class="string">&quot;and&quot;</span>,
+            <span class="string">&quot;as&quot;</span>,
+            <span class="string">&quot;assert&quot;</span>,
+            <span class="string">&quot;async&quot;</span>,
+            <span class="string">&quot;await&quot;</span>,
+            <span class="string">&quot;break&quot;</span>,
+            <span class="string">&quot;class&quot;</span>,
+            <span class="string">&quot;continue&quot;</span>,
+            <span class="string">&quot;def&quot;</span>,
+            <span class="string">&quot;del&quot;</span>,
+            <span class="string">&quot;elif&quot;</span>,
+            <span class="string">&quot;else&quot;</span>,
+            <span class="string">&quot;except&quot;</span>,
+            <span class="string">&quot;finally&quot;</span>,
+            <span class="string">&quot;for&quot;</span>,
+            <span class="string">&quot;from&quot;</span>,
+            <span class="string">&quot;global&quot;</span>,
+            <span class="string">&quot;if&quot;</span>,
+            <span class="string">&quot;import&quot;</span>,
+            <span class="string">&quot;in&quot;</span>,
+            <span class="string">&quot;is&quot;</span>,
+            <span class="string">&quot;lambda&quot;</span>,
+            <span class="string">&quot;nonlocal&quot;</span>,
+            <span class="string">&quot;not&quot;</span>,
+            <span class="string">&quot;or&quot;</span>,
+            <span class="string">&quot;pass&quot;</span>,
+            <span class="string">&quot;raise&quot;</span>,
+            <span class="string">&quot;return&quot;</span>,
+            <span class="string">&quot;try&quot;</span>,
+            <span class="string">&quot;while&quot;</span>,
+            <span class="string">&quot;with&quot;</span>,
+            <span class="string">&quot;yield&quot;</span>,
+        ];
+        <span class="ident">HashSet::from_iter</span>(<span class="ident">kwlist</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>()))
+    };
+}
 
 <span class="comment">// Config options to customize the generated python.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
@@ -500,6 +591,14 @@
     }
 }
 
+<span class="kw">fn</span> <span class="ident">fixup_keyword</span>(<span class="ident">name</span>: <span class="ident">String</span>) -&gt; <span class="ident">String</span> {
+    <span class="kw">if</span> <span class="ident">KEYWORDS</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>) {
+        <span class="macro">format!</span>(<span class="string">&quot;_{}&quot;</span>, <span class="ident">name</span>)
+    } <span class="kw">else</span> {
+        <span class="ident">name</span>
+    }
+}
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PythonCodeOracle</span>;
 
@@ -553,31 +652,28 @@
 
     <span class="doccomment">/// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).</span>
     <span class="kw">fn</span> <span class="ident">class_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_upper_camel_case</span>()
+        <span class="ident">fixup_keyword</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_upper_camel_case</span>())
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of a function name.</span>
     <span class="kw">fn</span> <span class="ident">fn_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_snake_case</span>()
+        <span class="ident">fixup_keyword</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_snake_case</span>())
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of a variable name.</span>
     <span class="kw">fn</span> <span class="ident">var_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_snake_case</span>()
+        <span class="ident">fixup_keyword</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_snake_case</span>())
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of an individual enum variant.</span>
     <span class="kw">fn</span> <span class="ident">enum_variant_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_shouty_snake_case</span>()
+        <span class="ident">fixup_keyword</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_shouty_snake_case</span>())
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of an exception name</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.  Rust code typically uses</span>
-    <span class="doccomment">/// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error</span>
-    <span class="doccomment">/// and is distinguished from an &quot;Exception&quot;.</span>
+    <span class="doccomment">/// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.</span>
     <span class="kw">fn</span> <span class="ident">error_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">nm</span>.<span class="ident">to_string</span>();
+        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">fixup_keyword</span>(<span class="self">self</span>.<span class="ident">class_name</span>(<span class="ident">nm</span>));
         <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">strip_suffix</span>(<span class="string">&quot;Error&quot;</span>) {
             <span class="prelude-val">None</span> =&gt; <span class="ident">name</span>,
             <span class="prelude-val">Some</span>(<span class="ident">stripped</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}Exception&quot;</span>, <span class="ident">stripped</span>),
@@ -676,10 +772,6 @@
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of an exception name</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.  Rust code typically uses</span>
-    <span class="doccomment">/// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error</span>
-    <span class="doccomment">/// and is distinguished from an &quot;Exception&quot;.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exception_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">error_name</span>(<span class="ident">nm</span>))
     }
