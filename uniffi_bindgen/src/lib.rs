@@ -201,9 +201,9 @@ fn load_bindings_config_toml<BC: BindingGeneratorConfig>(
     }
 
     let contents = fs::read_to_string(&config_path)
-        .with_context(|| format!("Failed to read config file from {}", config_path))?;
+        .with_context(|| format!("Failed to read config file from {config_path}"))?;
     let full_config = toml::Value::from_str(&contents)
-        .with_context(|| format!("Failed to parse config file {}", config_path))?;
+        .with_context(|| format!("Failed to parse config file {config_path}"))?;
 
     Ok(full_config
         .get("bindings")
@@ -286,7 +286,7 @@ pub fn generate_component_scaffolding(
         config_file_override,
     );
     let file_stem = udl_file.file_stem().context("not a file")?;
-    let filename = format!("{}.uniffi.rs", file_stem);
+    let filename = format!("{file_stem}.uniffi.rs");
     let out_dir = get_out_dir(udl_file, out_dir_override)?.join(filename);
     let mut f = File::create(&out_dir)?;
     write!(f, "{}", RustScaffolding::new(&component)).context("Failed to write output file")?;
@@ -418,9 +418,9 @@ fn get_config(
     match config_file {
         Some(path) => {
             let contents = fs::read_to_string(&path)
-                .with_context(|| format!("Failed to read config file from {}", &path))?;
+                .with_context(|| format!("Failed to read config file from {path}"))?;
             let loaded_config: Config = toml::de::from_str(&contents)
-                .with_context(|| format!("Failed to generate config from file {}", &path))?;
+                .with_context(|| format!("Failed to generate config from file {path}"))?;
             Ok(loaded_config.merge_with(&default_config))
         }
         None => Ok(default_config),
@@ -443,7 +443,7 @@ fn get_out_dir(udl_file: &Utf8Path, out_dir_override: Option<&Utf8Path>) -> Resu
 
 fn parse_udl(udl_file: &Utf8Path) -> Result<ComponentInterface> {
     let udl = fs::read_to_string(udl_file)
-        .with_context(|| format!("Failed to read UDL from {}", &udl_file))?;
+        .with_context(|| format!("Failed to read UDL from {udl_file}"))?;
     ComponentInterface::from_webidl(&udl).context("Failed to parse UDL")
 }
 
@@ -478,9 +478,7 @@ fn rebuild_metadata(crate_root: &Utf8Path) -> anyhow::Result<()> {
                 .to_string_lossy();
             ensure!(
                 filename.ends_with(".json"),
-                "all files in `{}` must have `.json` file endings, found `{}`",
-                metadata_dir,
-                filename,
+                "all files in `{metadata_dir}` must have `.json` file endings, found `{filename}`",
             );
 
             fs::remove_file(path)?;

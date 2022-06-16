@@ -73,7 +73,7 @@ impl UniFFITestHelper {
             .collect();
         match matching.len() {
             1 => Ok(matching[0].clone()),
-            n => bail!("cargo metadata return {} packages named {}", n, name),
+            n => bail!("cargo metadata return {n} packages named {name}"),
         }
     }
 
@@ -98,7 +98,7 @@ impl UniFFITestHelper {
             .collect();
         let target = match cdylib_targets.len() {
             1 => cdylib_targets[0],
-            n => bail!("Found {} cdylib targets for {}", n, package.name),
+            n => bail!("Found {n} cdylib targets for {}", package.name),
         };
 
         let artifacts = CARGO_BUILD_MESSAGES
@@ -116,7 +116,7 @@ impl UniFFITestHelper {
             .collect::<Vec<Artifact>>();
         let artifact = match artifacts.len() {
             1 => &artifacts[0],
-            n => bail!("Found {} artifacts for target {}", n, target.name),
+            n => bail!("Found {n} artifacts for target {}", target.name),
         };
         let cdylib_files: Vec<_> = artifact
             .filenames
@@ -126,7 +126,7 @@ impl UniFFITestHelper {
 
         match cdylib_files.len() {
             1 => Ok(cdylib_files[0].to_owned()),
-            n => bail!("Found {} cdylib files for {}", n, artifact.target.name),
+            n => bail!("Found {n} cdylib files for {}", artifact.target.name),
         }
     }
 
@@ -192,7 +192,7 @@ impl UniFFITestHelper {
         )?;
         let udl_path = match udl_paths.len() {
             1 => udl_paths.remove(0),
-            n => bail!("Found {} UDL files in {}", n, src_dir),
+            n => bail!("Found {n} UDL files in {src_dir}"),
         };
         let mut config_paths = find_files(
             crate_root,
@@ -201,7 +201,7 @@ impl UniFFITestHelper {
         let config_path = match config_paths.len() {
             0 => None,
             1 => Some(config_paths.remove(0)),
-            n => bail!("Found {} UDL files in {}", n, crate_root),
+            n => bail!("Found {n} UDL files in {crate_root}"),
         };
 
         Ok(CompileSource {

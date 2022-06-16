@@ -220,11 +220,10 @@ pub unsafe trait FfiConverter: Sized {
 /// helper function to instead return an explicit error, to help with debugging.
 pub fn check_remaining(buf: &[u8], num_bytes: usize) -> Result<()> {
     if buf.remaining() < num_bytes {
-        bail!(format!(
-            "not enough bytes remaining in buffer ({} < {})",
+        bail!(
+            "not enough bytes remaining in buffer ({} < {num_bytes})",
             buf.remaining(),
-            num_bytes
-        ));
+        );
     }
     Ok(())
 }
@@ -640,7 +639,7 @@ where
 {
     match err.downcast::<ErrConverter::RustType>() {
         Ok(actual_error) => ErrConverter::lower(actual_error),
-        Err(ohno) => panic!("Failed to convert arg '{}': {}", arg_name, ohno),
+        Err(ohno) => panic!("Failed to convert arg '{arg_name}': {ohno}"),
     }
 }
 

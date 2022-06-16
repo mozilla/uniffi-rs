@@ -102,15 +102,13 @@ pub fn ensure_compiled_cdylib(pkg_dir: &str) -> Result<Utf8PathBuf> {
             {
                 Some(cdylib) => {
                     log::warn!(
-                        "Crate produced multiple cdylibs, using the one produced by {}",
-                        pkg_dir
+                        "Crate produced multiple cdylibs, using the one produced by {pkg_dir}",
                     );
                     cdylib
                 }
                 None => {
                     bail!(
-                        "Crate produced multiple cdylibs, none of which is produced by {}",
-                        pkg_dir
+                        "Crate produced multiple cdylibs, none of which is produced by {pkg_dir}",
                     );
                 }
             }
@@ -145,7 +143,7 @@ fn run_uniffi_bindgen_test(out_dir: &str, udl_files: &[&str], test_file: &str) -
         .args(&["test", out_dir, &udl_files, test_file])
         .status()?;
     if !status.success() {
-        bail!("Error while running tests: {}", status);
+        bail!("Error while running tests: {status}");
     }
     Ok(())
 }

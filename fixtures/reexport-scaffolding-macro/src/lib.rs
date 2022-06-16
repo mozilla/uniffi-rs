@@ -21,7 +21,7 @@ mod tests {
         let output = std::io::BufReader::new(child.stdout.take().unwrap());
         let artifacts = Message::parse_stream(output)
             .filter_map(|message| match message {
-                Err(e) => panic!("{}", e),
+                Err(e) => panic!("{e}"),
                 Ok(Message::CompilerArtifact(artifact)) => {
                     if artifact.target.name == "reexport_scaffolding_macro"
                         && artifact.target.kind.iter().any(|item| item == "cdylib")
@@ -39,7 +39,7 @@ mod tests {
         }
         let artifact = match artifacts.len() {
             1 => &artifacts[0],
-            n => panic!("Found {} artfiacts from cargo build", n),
+            n => panic!("Found {n} artfiacts from cargo build"),
         };
         let cdylib_files: Vec<_> = artifact
             .filenames

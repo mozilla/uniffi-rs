@@ -38,7 +38,7 @@ pub fn mod_path() -> syn::Result<Vec<String>> {
         let cargo_toml_bytes =
             fs::read(Path::new(&manifest_dir).join("Cargo.toml")).map_err(|e| e.to_string())?;
         let cargo_toml = toml::from_slice::<CargoToml>(&cargo_toml_bytes)
-            .map_err(|e| format!("Failed to parse `Cargo.toml`: {}", e))?;
+            .map_err(|e| format!("Failed to parse `Cargo.toml`: {e}"))?;
 
         let lib_crate_name = cargo_toml
             .lib

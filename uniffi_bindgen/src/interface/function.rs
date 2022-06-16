@@ -92,7 +92,7 @@ impl Function {
         // The name is already set if the function is defined in a proc-macro-generated JSON file
         // rather than in UDL. Don't overwrite it in that case.
         if self.ffi_func.name.is_empty() {
-            self.ffi_func.name = format!("{}_{}", ci_prefix, self.name);
+            self.ffi_func.name = format!("{ci_prefix}_{}", self.name);
         }
 
         self.ffi_func.arguments = self.arguments.iter().map(|arg| arg.into()).collect();
