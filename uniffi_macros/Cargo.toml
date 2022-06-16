@@ -19,7 +19,7 @@ glob = "0.3"
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "1.0", features = ["extra-traits"] }
-uniffi_build = { path = "../uniffi_build", version = "=0.18.0" }
+uniffi_build = { path = "../uniffi_build", version = "=0.19.0"}
 
 [features]
 default = []
