@@ -92,7 +92,7 @@
     ));
 
     <span class="kw">let</span> <span class="ident">tracked_file</span> <span class="op">=</span> <span class="ident">write_json_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="ident">meta</span>)
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">syn::Error::new</span>(<span class="ident">Span::call_site</span>(), <span class="macro">format!</span>(<span class="string">&quot;failed to write file: {}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>;
+        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">syn::Error::new</span>(<span class="ident">Span::call_site</span>(), <span class="macro">format!</span>(<span class="string">&quot;failed to write file: {e}&quot;</span>)))<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">ExportItem::Function</span> {
         <span class="ident">item</span>,

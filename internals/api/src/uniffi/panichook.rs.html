@@ -59,7 +59,7 @@
                 <span class="comment">// in the future.</span>
                 (<span class="string">&quot;&lt;unknown&gt;&quot;</span>, <span class="number">0</span>)
             };
-            <span class="macro">log::error!</span>(<span class="string">&quot;### Rust `panic!` hit at file &#39;{}&#39;, line {}&quot;</span>, <span class="ident">file</span>, <span class="ident">line</span>);
+            <span class="macro">log::error!</span>(<span class="string">&quot;### Rust `panic!` hit at file &#39;{file}&#39;, line {line}&quot;</span>);
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;log_backtraces&quot;</span>, <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>)))]</span>
             {
                 <span class="macro">log::error!</span>(<span class="string">&quot;  Complete stack trace:\n{:?}&quot;</span>, <span class="ident">backtrace::Backtrace::new</span>());

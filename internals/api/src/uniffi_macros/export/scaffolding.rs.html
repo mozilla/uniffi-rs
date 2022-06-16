@@ -162,7 +162,7 @@
             }
             <span class="ident">FnArg::Typed</span>(<span class="ident">pat_ty</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">pat_ty</span>.<span class="ident">ty</span>;
-                <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;arg{}&quot;</span>, <span class="ident">i</span>);
+                <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;arg{i}&quot;</span>);
 
                 <span class="ident">params</span>.<span class="ident">push</span>(<span class="macro">quote!</span> { #<span class="ident">name</span>: <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::FfiType</span> });
 
@@ -171,7 +171,7 @@
                         <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg &#39;{}&#39;: {{}}&quot;</span>, <span class="ident">i</span>.<span class="ident">ident</span>)
                     }
                     <span class="kw">_</span> =&gt; {
-                        <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg #{}: {{}}&quot;</span>, <span class="ident">i</span>)
+                        <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg #{i}: {{}}&quot;</span>)
                     }
                 };
                 <span class="ident">args</span>.<span class="ident">push</span>(<span class="macro">quote!</span> {

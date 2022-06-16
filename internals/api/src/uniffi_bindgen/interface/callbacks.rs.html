@@ -256,7 +256,7 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">derive_ffi_funcs</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ci_prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_{}_init_callback&quot;</span>, <span class="ident">ci_prefix</span>, <span class="self">self</span>.<span class="ident">name</span>);
+        <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;ffi_{ci_prefix}_{}_init_callback&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>);
         <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">arguments</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">FFIArgument</span> {
             <span class="ident">name</span>: <span class="string">&quot;callback_stub&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">type_</span>: <span class="ident">FFIType::ForeignCallback</span>,

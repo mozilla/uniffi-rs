@@ -91,7 +91,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_scaffolding</span>(<span class="ident">udl_file</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
 
-    <span class="macro">println!</span>(<span class="string">&quot;cargo:rerun-if-changed={}&quot;</span>, <span class="ident">udl_file</span>);
+    <span class="macro">println!</span>(<span class="string">&quot;cargo:rerun-if-changed={udl_file}&quot;</span>);
     <span class="comment">// The UNIFFI_TESTS_DISABLE_EXTENSIONS variable disables some bindings, but it is evaluated</span>
     <span class="comment">// at *build* time, so we need to rebuild when it changes.</span>
     <span class="macro">println!</span>(<span class="string">&quot;cargo:rerun-if-env-changed=UNIFFI_TESTS_DISABLE_EXTENSIONS&quot;</span>);

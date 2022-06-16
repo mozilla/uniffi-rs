@@ -408,7 +408,7 @@
         <span class="comment">// The name is already set if the function is defined in a proc-macro-generated JSON file</span>
         <span class="comment">// rather than in UDL. Don&#39;t overwrite it in that case.</span>
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ffi_func</span>.<span class="ident">name</span>.<span class="ident">is_empty</span>() {
-            <span class="self">self</span>.<span class="ident">ffi_func</span>.<span class="ident">name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}_{}&quot;</span>, <span class="ident">ci_prefix</span>, <span class="self">self</span>.<span class="ident">name</span>);
+            <span class="self">self</span>.<span class="ident">ffi_func</span>.<span class="ident">name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{ci_prefix}_{}&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>);
         }
 
         <span class="self">self</span>.<span class="ident">ffi_func</span>.<span class="ident">arguments</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">arg</span><span class="op">|</span> <span class="ident">arg</span>.<span class="ident">into</span>()).<span class="ident">collect</span>();

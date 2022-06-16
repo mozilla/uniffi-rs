@@ -675,7 +675,6 @@
 <span id="670">670</span>
 <span id="671">671</span>
 <span id="672">672</span>
-<span id="673">673</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -898,11 +897,10 @@
 <span class="doccomment">/// helper function to instead return an explicit error, to help with debugging.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_remaining</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">num_bytes</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">buf</span>.<span class="ident">remaining</span>() <span class="op">&lt;</span> <span class="ident">num_bytes</span> {
-        <span class="macro">bail!</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;not enough bytes remaining in buffer ({} &lt; {})&quot;</span>,
+        <span class="macro">bail!</span>(
+            <span class="string">&quot;not enough bytes remaining in buffer ({} &lt; {num_bytes})&quot;</span>,
             <span class="ident">buf</span>.<span class="ident">remaining</span>(),
-            <span class="ident">num_bytes</span>
-        ));
+        );
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -1318,7 +1316,7 @@
 {
     <span class="kw">match</span> <span class="ident">err</span>.<span class="ident">downcast</span>::<span class="op">&lt;</span><span class="ident">ErrConverter::RustType</span><span class="op">&gt;</span>() {
         <span class="prelude-val">Ok</span>(<span class="ident">actual_error</span>) =&gt; <span class="ident">ErrConverter::lower</span>(<span class="ident">actual_error</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">ohno</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert arg &#39;{}&#39;: {}&quot;</span>, <span class="ident">arg_name</span>, <span class="ident">ohno</span>),
+        <span class="prelude-val">Err</span>(<span class="ident">ohno</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert arg &#39;{arg_name}&#39;: {ohno}&quot;</span>),
     }
 }
 
