@@ -1,0 +1,43 @@
+namespace keywords_kotlin {
+    void if(u8 break);
+};
+
+interface break {
+    void class(u8 object);
+    void object(u8? class);
+};
+
+callback interface continue {
+    return return(return v);
+    continue? continue(sequence<continue> continue);
+    record<u8, break> break(break? v);
+    while while(sequence<while> while);
+    record<u8, sequence<class>>? class(record<u8, sequence<class>> v);
+};
+
+dictionary return {
+    u8 class;
+    u8? object;
+};
+
+dictionary while {
+    return class;
+    return? fun;
+    sequence<return> object;
+    record<u8, return> break;
+};
+
+[Enum]
+interface false {
+    true(u8 object);
+};
+
+[Error]
+enum class {
+    "object",
+};
+
+[Error]
+interface fun {
+   class(u8 object);
+};

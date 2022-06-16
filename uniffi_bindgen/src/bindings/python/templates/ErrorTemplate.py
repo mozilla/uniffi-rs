@@ -27,7 +27,7 @@ class {{ type_name }}(Exception):
             {%- if variant.has_fields() %}
             field_parts = [
                 {%- for field in variant.fields() %}
-                '{{ field.name() }}={!r}'.format(self.{{ field.name() }}),
+                '{{ field.name()|var_name }}={!r}'.format(self.{{ field.name()|var_name }}),
                 {%- endfor %}
             ]
             return "{{ type_name }}.{{ variant.name()|class_name }}({})".format(', '.join(field_parts))

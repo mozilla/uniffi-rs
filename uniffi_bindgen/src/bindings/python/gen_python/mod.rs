@@ -25,6 +25,51 @@ mod object;
 mod primitives;
 mod record;
 
+lazy_static::lazy_static! {
+    // Taken from Python's `keyword.py` module.
+    static ref KEYWORDS: HashSet<String> = {
+        let kwlist = vec![
+            "False",
+            "None",
+            "True",
+            "__peg_parser__",
+            "and",
+            "as",
+            "assert",
+            "async",
+            "await",
+            "break",
+            "class",
+            "continue",
+            "def",
+            "del",
+            "elif",
+            "else",
+            "except",
+            "finally",
+            "for",
+            "from",
+            "global",
+            "if",
+            "import",
+            "in",
+            "is",
+            "lambda",
+            "nonlocal",
+            "not",
+            "or",
+            "pass",
+            "raise",
+            "return",
+            "try",
+            "while",
+            "with",
+            "yield",
+        ];
+        HashSet::from_iter(kwlist.into_iter().map(|s| s.to_string()))
+    };
+}
+
 // Config options to customize the generated python.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
@@ -152,6 +197,14 @@ impl<'a> PythonWrapper<'a> {
     }
 }
 
+fn fixup_keyword(name: String) -> String {
+    if KEYWORDS.contains(&name) {
+        format!("_{}", name)
+    } else {
+        name
+    }
+}
+
 #[derive(Clone, Default)]
 pub struct PythonCodeOracle;
 
@@ -205,31 +258,28 @@ impl CodeOracle for PythonCodeOracle {
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String {
-        nm.to_string().to_upper_camel_case()
+        fixup_keyword(nm.to_string().to_upper_camel_case())
     }
 
     /// Get the idiomatic Python rendering of a function name.
     fn fn_name(&self, nm: &str) -> String {
-        nm.to_string().to_snake_case()
+        fixup_keyword(nm.to_string().to_snake_case())
     }
 
     /// Get the idiomatic Python rendering of a variable name.
     fn var_name(&self, nm: &str) -> String {
-        nm.to_string().to_snake_case()
+        fixup_keyword(nm.to_string().to_snake_case())
     }
 
     /// Get the idiomatic Python rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &str) -> String {
-        nm.to_string().to_shouty_snake_case()
+        fixup_keyword(nm.to_string().to_shouty_snake_case())
     }
 
     /// Get the idiomatic Python rendering of an exception name
-    ///
-    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
-    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
-    /// and is distinguished from an "Exception".
+    /// This replaces "Error" at the end of the name with "Exception".
     fn error_name(&self, nm: &str) -> String {
-        let name = nm.to_string();
+        let name = fixup_keyword(self.class_name(nm));
         match name.strip_suffix("Error") {
             None => name,
             Some(stripped) => format!("{}Exception", stripped),
@@ -328,10 +378,6 @@ pub mod filters {
     }
 
     /// Get the idiomatic Python rendering of an exception name
-    ///
-    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
-    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
-    /// and is distinguished from an "Exception".
     pub fn exception_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().error_name(nm))
     }

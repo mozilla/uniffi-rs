@@ -5,7 +5,7 @@ def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
     {%- call py::setup_args(func) %}
     return {{ return_type|lift_fn }}({% call py::to_ffi_call(func) %})
 
-{% when None -%}
+{% when None %}
 
 def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
     {%- call py::setup_args(func) %}
