@@ -32,7 +32,7 @@ rust_call(
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{ arg|lower_fn }}({{ arg.name() }})
+        {{ arg|lower_fn }}({{ arg.name()|var_name }})
         {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -72,12 +72,12 @@ rust_call(
     {%- for arg in func.arguments() %}
     {%- match arg.default_value() %}
     {%- when None %}
-    {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_().borrow()) -}}
+    {{ arg.name()|var_name }} = {{ arg.name()|var_name|coerce_py(arg.type_().borrow()) -}}
     {%- when Some with(literal) %}
-    if {{ arg.name() }} is DEFAULT:
-        {{ arg.name() }} = {{ literal|literal_py(arg.type_().borrow()) }}
+    if {{ arg.name()|var_name }} is DEFAULT:
+        {{ arg.name()|var_name }} = {{ literal|literal_py(arg.type_().borrow()) }}
     else:
-        {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_().borrow()) -}}
+        {{ arg.name()|var_name }} = {{ arg.name()|var_name|coerce_py(arg.type_().borrow()) -}}
     {%- endmatch %}
     {% endfor -%}
 {%- endmacro -%}
@@ -90,12 +90,12 @@ rust_call(
         {%- for arg in func.arguments() %}
         {%- match arg.default_value() %}
         {%- when None %}
-        {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_().borrow()) -}}
+        {{ arg.name()|var_name }} = {{ arg.name()|var_name|coerce_py(arg.type_().borrow()) -}}
         {%- when Some with(literal) %}
-        if {{ arg.name() }} is DEFAULT:
-            {{ arg.name() }} = {{ literal|literal_py(arg.type_().borrow()) }}
+        if {{ arg.name()|var_name }} is DEFAULT:
+            {{ arg.name()|var_name }} = {{ literal|literal_py(arg.type_().borrow()) }}
         else:
-            {{ arg.name() }} = {{ arg.name()|coerce_py(arg.type_().borrow()) -}}
+            {{ arg.name()|var_name }} = {{ arg.name()|var_name|coerce_py(arg.type_().borrow()) -}}
         {%- endmatch %}
         {% endfor -%}
 {%- endmacro -%}
