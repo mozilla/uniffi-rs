@@ -20,7 +20,7 @@ class {{ type_name }}:
         {%- endfor %}
 
     def __str__(self):
-        return "{{ type_name }}({% for field in rec.fields() %}{{ field.name() }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in rec.fields() %}self.{{ field.name() }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
+        return "{{ type_name }}({% for field in rec.fields() %}{{ field.name()|var_name }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in rec.fields() %}self.{{ field.name()|var_name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
 
     def __eq__(self, other):
         {%- for field in rec.fields() %}
@@ -41,5 +41,5 @@ class {{ ffi_converter_name }}(FfiConverterRustBuffer):
     @staticmethod
     def write(value, buf):
         {%- for field in rec.fields() %}
-        {{ field|write_fn }}(value.{{ field.name() }}, buf)
+        {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
         {%- endfor %}

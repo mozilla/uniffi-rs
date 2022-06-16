@@ -26,6 +26,8 @@ members = [
   "fixtures/external-types/crate-two",
   "fixtures/external-types/lib",
 
+  "fixtures/keywords/kotlin",
+  "fixtures/keywords/rust",
   "fixtures/reexport-scaffolding-macro",
   "fixtures/regressions/enum-without-i32-helpers",
   "fixtures/regressions/fully-qualified-types",
