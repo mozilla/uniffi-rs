@@ -577,6 +577,17 @@ pub fn run_main() -> Result<()> {
     Ok(())
 }
 
+// FIXME(HACK):
+// Include the askama config file into the build.
+// That way cargo tracks the file and other tools relying on file tracking see it as well.
+// See https://bugzilla.mozilla.org/show_bug.cgi?id=1774585
+// In the future askama should handle that itself by using the `track_path::path` API,
+// see https://github.com/rust-lang/rust/pull/84029
+#[allow(dead_code)]
+mod __unused {
+    const _: &[u8] = include_bytes!("../askama.toml");
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
