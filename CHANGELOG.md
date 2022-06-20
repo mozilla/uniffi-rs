@@ -6,7 +6,15 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.1...HEAD).
+
+## v0.19.1 - (_2022-06-16_)
+
+[All changes in v0.19.1](https://github.com/mozilla/uniffi-rs/compare/v0.19.0...v0.19.1).
+
+### What's Changed
+
+- Fixed the dependency from `uniffi_build` -> `uniffi_bindgen`
 
 ## v0.19.0 - (_2022-06-16_)
 
