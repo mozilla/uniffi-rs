@@ -1,0 +1,10 @@
+// We define a top-level function returning nothing (`void`),
+// and use a record (a map) someplace else.
+// This should compile and run fine, but in v0.19.1 it generated invalid Python code
+// due to a missed newline.
+
+namespace regression_test_missing_newline {
+  void empty_func();
+
+  record<string, string> get_dict();
+};
