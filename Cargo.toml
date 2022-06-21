@@ -36,6 +36,7 @@ members = [
   "fixtures/regressions/kotlin-experimental-unsigned-types",
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",
+  "fixtures/regressions/missing-newline",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
   "fixtures/simple-fns",
