@@ -1,0 +1,18 @@
+[package]
+name = "bindings-ir-kotlin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bytes = "1.0"
+camino = "1.0.8"
+heck = "0.4"
+paste = "1.0"
+bindings-ir = { path = "../bindings-ir" }
+render-macro = { path = "../render-macro" }
+tera = { version = "1", default-features = false }
+
+[dev-dependencies]
+bindings-ir-tests = { path = "../bindings-ir-tests" }
+cargo_metadata = "0.14"
+lazy_static = "1.4"

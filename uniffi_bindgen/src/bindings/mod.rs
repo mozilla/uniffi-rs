@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use crate::interface::ComponentInterface;
 use crate::MergeWith;
 
+pub mod ir;
 pub mod kotlin;
 pub mod python;
 pub mod ruby;

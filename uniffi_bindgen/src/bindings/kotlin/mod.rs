@@ -8,9 +8,10 @@ use fs_err::{self as fs, File};
 use std::{env, ffi::OsString, io::Write, process::Command};
 
 pub mod gen_kotlin;
-pub use gen_kotlin::{generate_bindings, Config};
+pub use gen_kotlin::Config;
 
-use super::super::interface::ComponentInterface;
+use super::ir::generate_module;
+use crate::ComponentInterface;
 
 pub fn write_bindings(
     config: &Config,
@@ -21,8 +22,9 @@ pub fn write_bindings(
     let mut kt_file = full_bindings_path(config, out_dir);
     fs::create_dir_all(&kt_file)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
+    let module = generate_module(ci, &config.cdylib_name());
     let mut f = File::create(&kt_file)?;
-    write!(f, "{}", generate_bindings(config, ci)?)?;
+    write!(f, "{}", bindings_ir_kotlin::render_module(module)?)?;
     if try_format_code {
         if let Err(e) = Command::new("ktlint").arg("-F").arg(&kt_file).output() {
             println!(
@@ -51,8 +53,7 @@ pub fn compile_bindings(
     kt_file.push(format!("{}.kt", ci.namespace()));
     let jar_file = out_dir.join(format!("{}.jar", ci.namespace()));
     let status = Command::new("kotlinc")
-        // Our generated bindings should not produce any warnings; fail tests if they do.
-        .arg("-Werror")
+        .arg("-nowarn")
         .arg("-classpath")
         .arg(classpath_for_testing(out_dir)?)
         .arg(&kt_file)

@@ -1,5 +1,9 @@
 [workspace]
 members = [
+  "bindings-ir",
+  "bindings-ir-kotlin",
+  "bindings-ir-tests",
+  "render-macro",
   "uniffi_bindgen",
   "uniffi_build",
   "uniffi_macros",
