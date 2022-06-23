@@ -12,18 +12,18 @@ pub(crate) mod metadata;
 mod scaffolding;
 
 pub use self::metadata::gen_metadata;
-use self::scaffolding::{gen_fn_scaffolding, gen_method_scaffolding};
-use crate::{
-    export::metadata::convert::convert_type,
-    util::{assert_type_eq, create_metadata_static_var},
+use self::{
+    metadata::convert::{convert_type, try_split_result},
+    scaffolding::{gen_fn_scaffolding, gen_method_scaffolding},
 };
+use crate::util::{assert_type_eq, create_metadata_static_var};
 
 // TODO(jplatte): Ensure no generics, no async, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, whereever possible
 
 pub enum ExportItem {
     Function {
-        sig: Box<syn::Signature>,
+        sig: Signature,
         metadata: FnMetadata,
     },
     Impl {
@@ -33,8 +33,46 @@ pub enum ExportItem {
 }
 
 pub struct Method {
-    sig: syn::Signature,
+    sig: Signature,
     metadata: MethodMetadata,
+}
+
+pub struct Signature {
+    ident: Ident,
+    inputs: Vec<syn::FnArg>,
+    output: Option<FunctionReturn>,
+}
+
+impl Signature {
+    fn new(item: syn::Signature) -> syn::Result<Self> {
+        let output = match item.output {
+            syn::ReturnType::Default => None,
+            syn::ReturnType::Type(_, ty) => Some(FunctionReturn::new(ty)?),
+        };
+
+        Ok(Self {
+            ident: item.ident,
+            inputs: item.inputs.into_iter().collect(),
+            output,
+        })
+    }
+}
+
+pub struct FunctionReturn {
+    ty: Box<syn::Type>,
+    throws: Option<Ident>,
+}
+
+impl FunctionReturn {
+    fn new(ty: Box<syn::Type>) -> syn::Result<Self> {
+        Ok(match try_split_result(&ty)? {
+            Some((ok_type, throws)) => FunctionReturn {
+                ty: Box::new(ok_type.to_owned()),
+                throws: Some(throws),
+            },
+            None => FunctionReturn { ty, throws: None },
+        })
+    }
 }
 
 pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
@@ -92,7 +130,7 @@ pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
     }
 }
 
-fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
+fn fn_type_assertions(sig: &Signature) -> TokenStream {
     // Convert uniffi_meta::Type back to a Rust type
     fn convert_type_back(ty: &Type) -> TokenStream {
         match &ty {
@@ -143,10 +181,7 @@ fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
             _ => Some(&pat_ty.ty),
         },
     });
-    let output_type = match &sig.output {
-        syn::ReturnType::Default => None,
-        syn::ReturnType::Type(_, ty) => Some(ty),
-    };
+    let output_type = sig.output.as_ref().map(|s| &s.ty);
 
     let type_assertions: BTreeMap<_, _> = input_types
         .chain(output_type)
@@ -158,6 +193,18 @@ fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
             })
         })
         .collect();
+    let input_output_type_assertions: TokenStream = type_assertions.into_values().collect();
 
-    type_assertions.into_values().collect()
+    let throws_type_assertion = sig.output.as_ref().and_then(|s| {
+        let ident = s.throws.as_ref()?;
+        Some(assert_type_eq(
+            ident,
+            quote! { crate::uniffi_types::#ident },
+        ))
+    });
+
+    quote! {
+        #input_output_type_assertions
+        #throws_type_assertion
+    }
 }

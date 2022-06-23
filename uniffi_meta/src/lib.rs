@@ -15,6 +15,7 @@ pub struct FnMetadata {
     pub name: String,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
+    pub throws: Option<String>,
 }
 
 impl FnMetadata {
@@ -30,6 +31,7 @@ pub struct MethodMetadata {
     pub name: String,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
+    pub throws: Option<String>,
 }
 
 impl MethodMetadata {

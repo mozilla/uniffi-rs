@@ -36,14 +36,11 @@ use std::hash::{Hash, Hasher};
 
 use anyhow::{bail, Result};
 
+use super::attributes::{ArgumentAttributes, Attribute, FunctionAttributes};
 use super::ffi::{FfiArgument, FfiFunction};
 use super::literal::{convert_default_value, Literal};
 use super::types::{Type, TypeIterator};
-use super::{
-    attributes::{ArgumentAttributes, FunctionAttributes},
-    convert_type,
-};
-use super::{APIConverter, ComponentInterface};
+use super::{convert_type, APIConverter, ComponentInterface};
 
 /// Represents a standalone function.
 ///
@@ -137,7 +134,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
             arguments,
             return_type,
             ffi_func,
-            attributes: Default::default(),
+            attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
         }
     }
 }

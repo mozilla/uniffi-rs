@@ -63,14 +63,11 @@ use std::{collections::HashSet, iter};
 
 use anyhow::{bail, Result};
 
+use super::attributes::{Attribute, ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::function::Argument;
 use super::types::{Type, TypeIterator};
-use super::{
-    attributes::{ConstructorAttributes, InterfaceAttributes, MethodAttributes},
-    convert_type,
-};
-use super::{APIConverter, ComponentInterface};
+use super::{convert_type, APIConverter, ComponentInterface};
 
 /// An "object" is an opaque type that can be instantiated and passed around by reference,
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
@@ -445,7 +442,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             arguments,
             return_type,
             ffi_func,
-            attributes: Default::default(),
+            attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
         }
     }
 }

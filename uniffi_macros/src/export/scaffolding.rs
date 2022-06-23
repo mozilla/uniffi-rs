@@ -4,7 +4,9 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use syn::{FnArg, Pat, ReturnType, Signature};
+use syn::{FnArg, Pat};
+
+use super::{FunctionReturn, Signature};
 
 pub(super) fn gen_fn_scaffolding(
     sig: &Signature,
@@ -31,7 +33,7 @@ pub(super) fn gen_fn_scaffolding(
 }
 
 pub(super) fn gen_method_scaffolding(
-    sig: &syn::Signature,
+    sig: &Signature,
     mod_path: &[String],
     checksum: u16,
     self_ident: &Ident,
@@ -130,6 +132,8 @@ fn collect_params<'a>(
         let arg_n = format_ident!("arg{i}");
         let param = quote! { #arg_n: <#ty as ::uniffi::FfiConverter>::FfiType };
 
+        // FIXME: With UDL, fallible functions use uniffi::lower_anyhow_error_or_panic instead of
+        // panicking unconditionally. This seems cleaner though.
         let panic_fmt = match name {
             Some(name) => format!("Failed to convert arg '{name}': {{}}"),
             None => format!("Failed to convert arg #{i}: {{}}"),
@@ -145,7 +149,7 @@ fn collect_params<'a>(
 }
 
 fn gen_ffi_function(
-    sig: &syn::Signature,
+    sig: &Signature,
     ffi_ident: Ident,
     params: &[TokenStream],
     rust_fn_call: TokenStream,
@@ -157,16 +161,34 @@ fn gen_ffi_function(
     // well as `()` so no different codegen is needed?
     let (output, return_expr);
     match &sig.output {
-        ReturnType::Default => {
-            output = None;
-            return_expr = rust_fn_call;
-        }
-        ReturnType::Type(_, ty) => {
+        Some(FunctionReturn { ty, throws }) => {
             output = Some(quote! {
                 -> <#ty as ::uniffi::FfiConverter>::FfiType
             });
+
+            return_expr = if let Some(error_ident) = throws {
+                quote! {
+                    ::uniffi::call_with_result(call_status, || {
+                        let val = #rust_fn_call.map_err(|e| {
+                            <#error_ident as ::uniffi::FfiConverter>::lower(
+                                ::std::convert::Into::into(e),
+                            )
+                        })?;
+                        Ok(<#ty as ::uniffi::FfiConverter>::lower(val))
+                    })
+                }
+            } else {
+                quote! {
+                    ::uniffi::call_with_output(call_status, || {
+                        <#ty as ::uniffi::FfiConverter>::lower(#rust_fn_call)
+                    })
+                }
+            };
+        }
+        None => {
+            output = None;
             return_expr = quote! {
-                <#ty as ::uniffi::FfiConverter>::lower(#rust_fn_call)
+                ::uniffi::call_with_output(call_status, || #rust_fn_call)
             };
         }
     }
@@ -179,9 +201,7 @@ fn gen_ffi_function(
             call_status: &mut ::uniffi::RustCallStatus,
         ) #output {
             ::uniffi::deps::log::debug!(#name_s);
-            ::uniffi::call_with_output(call_status, || {
-                #return_expr
-            })
+            #return_expr
         }
     }
 }
