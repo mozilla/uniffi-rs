@@ -169,6 +169,12 @@ impl FunctionAttributes {
     }
 }
 
+impl FromIterator<Attribute> for FunctionAttributes {
+    fn from_iter<T: IntoIterator<Item = Attribute>>(iter: T) -> Self {
+        Self(Vec::from_iter(iter))
+    }
+}
+
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttributes {
     type Error = anyhow::Error;
     fn try_from(
@@ -343,6 +349,12 @@ impl MethodAttributes {
         self.0
             .iter()
             .any(|attr| matches!(attr, Attribute::SelfType(SelfType::ByArc)))
+    }
+}
+
+impl FromIterator<Attribute> for MethodAttributes {
+    fn from_iter<T: IntoIterator<Item = Attribute>>(iter: T) -> Self {
+        Self(Vec::from_iter(iter))
     }
 }
 
