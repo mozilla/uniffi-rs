@@ -30,7 +30,7 @@ pub(super) fn gen_fn_metadata(item: syn::ItemFn, mod_path: &[String]) -> syn::Re
 }
 
 fn fn_metadata(f: &syn::ItemFn, mod_path: &[String]) -> syn::Result<FnMetadata> {
-    let output = match &f.sig.output {
+    let return_type = match &f.sig.output {
         syn::ReturnType::Default => None,
         syn::ReturnType::Type(_, ty) => Some(convert_type(ty)?),
     };
@@ -44,7 +44,7 @@ fn fn_metadata(f: &syn::ItemFn, mod_path: &[String]) -> syn::Result<FnMetadata> 
             .iter()
             .map(|a| fn_param_metadata(a, false))
             .collect::<syn::Result<_>>()?,
-        output,
+        return_type,
     })
 }
 
