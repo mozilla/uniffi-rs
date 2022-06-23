@@ -12,7 +12,7 @@
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use cargo_metadata::Message;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::{
     collections::HashMap,
     process::{Command, Stdio},
@@ -22,12 +22,11 @@ use std::{
 // These statics are used for a bit of simple caching and concurrency control.
 // They map uniffi component crate directories to data about build steps that have already
 // been executed by this process.
-lazy_static! {
-    static ref COMPILED_COMPONENTS: Mutex<HashMap<Utf8PathBuf, Utf8PathBuf>> = Mutex::new(HashMap::new());
-    // Since uniffi-bindgen does the actual generating/compiling of bindings and script files,
-    // we ensure that only one call happens at once (making tests pretty much serialized sorry :/).
-    static ref UNIFFI_BINDGEN: Mutex<i32> = Mutex::new(0);
-}
+static COMPILED_COMPONENTS: Lazy<Mutex<HashMap<Utf8PathBuf, Utf8PathBuf>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
+// Since uniffi-bindgen does the actual generating/compiling of bindings and script files,
+// we ensure that only one call happens at once (making tests pretty much serialized sorry :/).
+static UNIFFI_BINDGEN: Lazy<Mutex<i32>> = Lazy::new(|| Mutex::new(0));
 
 /// Execute the given foreign-language script as part of a rust test suite.
 ///
