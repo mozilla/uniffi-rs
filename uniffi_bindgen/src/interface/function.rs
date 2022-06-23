@@ -136,21 +136,30 @@ impl From<uniffi_meta::FnMetadata> for Function {
 }
 
 fn convert_type(s: &uniffi_meta::Type) -> Type {
-    use uniffi_meta::Type as T;
+    use uniffi_meta::Type as Ty;
 
     match s {
-        T::U8 => Type::UInt8,
-        T::U16 => Type::UInt16,
-        T::U32 => Type::UInt32,
-        T::U64 => Type::UInt64,
-        T::I8 => Type::Int8,
-        T::I16 => Type::Int16,
-        T::I32 => Type::Int32,
-        T::I64 => Type::Int64,
-        T::F32 => Type::Float32,
-        T::F64 => Type::Float64,
-        T::Bool => Type::Boolean,
-        T::String => Type::String,
+        Ty::U8 => Type::UInt8,
+        Ty::U16 => Type::UInt16,
+        Ty::U32 => Type::UInt32,
+        Ty::U64 => Type::UInt64,
+        Ty::I8 => Type::Int8,
+        Ty::I16 => Type::Int16,
+        Ty::I32 => Type::Int32,
+        Ty::I64 => Type::Int64,
+        Ty::F32 => Type::Float32,
+        Ty::F64 => Type::Float64,
+        Ty::Bool => Type::Boolean,
+        Ty::String => Type::String,
+        Ty::Option { inner_type } => Type::Optional(convert_type(inner_type).into()),
+        Ty::Vec { inner_type } => Type::Sequence(convert_type(inner_type).into()),
+        Ty::HashMap {
+            key_type,
+            value_type,
+        } => Type::Map(
+            convert_type(key_type).into(),
+            convert_type(value_type).into(),
+        ),
     }
 }
 

@@ -45,6 +45,16 @@ pub enum Type {
     F64,
     Bool,
     String,
+    Option {
+        inner_type: Box<Type>,
+    },
+    Vec {
+        inner_type: Box<Type>,
+    },
+    HashMap {
+        key_type: Box<Type>,
+        value_type: Box<Type>,
+    },
 }
 
 /// Returns the last 16 bits of the value's hash as computed with [`DefaultHasher`].
