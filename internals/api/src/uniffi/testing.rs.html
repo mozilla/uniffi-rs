@@ -156,7 +156,6 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
-<span id="154">154</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -171,7 +170,7 @@
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">camino</span>::{<span class="ident">Utf8Path</span>, <span class="ident">Utf8PathBuf</span>};
 <span class="kw">use</span> <span class="ident">cargo_metadata::Message</span>;
-<span class="kw">use</span> <span class="ident">lazy_static::lazy_static</span>;
+<span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">collections::HashMap</span>,
     <span class="ident">process</span>::{<span class="ident">Command</span>, <span class="ident">Stdio</span>},
@@ -181,12 +180,11 @@
 <span class="comment">// These statics are used for a bit of simple caching and concurrency control.</span>
 <span class="comment">// They map uniffi component crate directories to data about build steps that have already</span>
 <span class="comment">// been executed by this process.</span>
-<span class="macro">lazy_static!</span> {
-    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">COMPILED_COMPONENTS</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span>, <span class="ident">Utf8PathBuf</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Mutex::new</span>(<span class="ident">HashMap::new</span>());
-    <span class="comment">// Since uniffi-bindgen does the actual generating/compiling of bindings and script files,</span>
-    <span class="comment">// we ensure that only one call happens at once (making tests pretty much serialized sorry :/).</span>
-    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">UNIFFI_BINDGEN</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Mutex::new</span>(<span class="number">0</span>);
-}
+<span class="kw">static</span> <span class="ident">COMPILED_COMPONENTS</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span>, <span class="ident">Utf8PathBuf</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span>
+    <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Mutex::new</span>(<span class="ident">HashMap::new</span>()));
+<span class="comment">// Since uniffi-bindgen does the actual generating/compiling of bindings and script files,</span>
+<span class="comment">// we ensure that only one call happens at once (making tests pretty much serialized sorry :/).</span>
+<span class="kw">static</span> <span class="ident">UNIFFI_BINDGEN</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Mutex::new</span>(<span class="number">0</span>));
 
 <span class="doccomment">/// Execute the given foreign-language script as part of a rust test suite.</span>
 <span class="doccomment">///</span>

@@ -391,7 +391,6 @@
 <span id="386">386</span>
 <span id="387">387</span>
 <span id="388">388</span>
-<span id="389">389</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -399,6 +398,7 @@
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">askama::Template</span>;
 <span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">ToShoutySnakeCase</span>, <span class="ident">ToSnakeCase</span>, <span class="ident">ToUpperCamelCase</span>};
+<span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std::borrow::Borrow</span>;
 <span class="kw">use</span> <span class="ident">std::cell::RefCell</span>;
@@ -419,50 +419,48 @@
 <span class="kw">mod</span> <span class="ident">primitives</span>;
 <span class="kw">mod</span> <span class="ident">record</span>;
 
-<span class="macro">lazy_static::lazy_static!</span> {
-    <span class="comment">// Taken from Python&#39;s `keyword.py` module.</span>
-    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">KEYWORDS</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> {
-        <span class="kw">let</span> <span class="ident">kwlist</span> <span class="op">=</span> <span class="macro">vec!</span>[
-            <span class="string">&quot;False&quot;</span>,
-            <span class="string">&quot;None&quot;</span>,
-            <span class="string">&quot;True&quot;</span>,
-            <span class="string">&quot;__peg_parser__&quot;</span>,
-            <span class="string">&quot;and&quot;</span>,
-            <span class="string">&quot;as&quot;</span>,
-            <span class="string">&quot;assert&quot;</span>,
-            <span class="string">&quot;async&quot;</span>,
-            <span class="string">&quot;await&quot;</span>,
-            <span class="string">&quot;break&quot;</span>,
-            <span class="string">&quot;class&quot;</span>,
-            <span class="string">&quot;continue&quot;</span>,
-            <span class="string">&quot;def&quot;</span>,
-            <span class="string">&quot;del&quot;</span>,
-            <span class="string">&quot;elif&quot;</span>,
-            <span class="string">&quot;else&quot;</span>,
-            <span class="string">&quot;except&quot;</span>,
-            <span class="string">&quot;finally&quot;</span>,
-            <span class="string">&quot;for&quot;</span>,
-            <span class="string">&quot;from&quot;</span>,
-            <span class="string">&quot;global&quot;</span>,
-            <span class="string">&quot;if&quot;</span>,
-            <span class="string">&quot;import&quot;</span>,
-            <span class="string">&quot;in&quot;</span>,
-            <span class="string">&quot;is&quot;</span>,
-            <span class="string">&quot;lambda&quot;</span>,
-            <span class="string">&quot;nonlocal&quot;</span>,
-            <span class="string">&quot;not&quot;</span>,
-            <span class="string">&quot;or&quot;</span>,
-            <span class="string">&quot;pass&quot;</span>,
-            <span class="string">&quot;raise&quot;</span>,
-            <span class="string">&quot;return&quot;</span>,
-            <span class="string">&quot;try&quot;</span>,
-            <span class="string">&quot;while&quot;</span>,
-            <span class="string">&quot;with&quot;</span>,
-            <span class="string">&quot;yield&quot;</span>,
-        ];
-        <span class="ident">HashSet::from_iter</span>(<span class="ident">kwlist</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>()))
-    };
-}
+<span class="comment">// Taken from Python&#39;s `keyword.py` module.</span>
+<span class="kw">static</span> <span class="ident">KEYWORDS</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> {
+    <span class="kw">let</span> <span class="ident">kwlist</span> <span class="op">=</span> <span class="macro">vec!</span>[
+        <span class="string">&quot;False&quot;</span>,
+        <span class="string">&quot;None&quot;</span>,
+        <span class="string">&quot;True&quot;</span>,
+        <span class="string">&quot;__peg_parser__&quot;</span>,
+        <span class="string">&quot;and&quot;</span>,
+        <span class="string">&quot;as&quot;</span>,
+        <span class="string">&quot;assert&quot;</span>,
+        <span class="string">&quot;async&quot;</span>,
+        <span class="string">&quot;await&quot;</span>,
+        <span class="string">&quot;break&quot;</span>,
+        <span class="string">&quot;class&quot;</span>,
+        <span class="string">&quot;continue&quot;</span>,
+        <span class="string">&quot;def&quot;</span>,
+        <span class="string">&quot;del&quot;</span>,
+        <span class="string">&quot;elif&quot;</span>,
+        <span class="string">&quot;else&quot;</span>,
+        <span class="string">&quot;except&quot;</span>,
+        <span class="string">&quot;finally&quot;</span>,
+        <span class="string">&quot;for&quot;</span>,
+        <span class="string">&quot;from&quot;</span>,
+        <span class="string">&quot;global&quot;</span>,
+        <span class="string">&quot;if&quot;</span>,
+        <span class="string">&quot;import&quot;</span>,
+        <span class="string">&quot;in&quot;</span>,
+        <span class="string">&quot;is&quot;</span>,
+        <span class="string">&quot;lambda&quot;</span>,
+        <span class="string">&quot;nonlocal&quot;</span>,
+        <span class="string">&quot;not&quot;</span>,
+        <span class="string">&quot;or&quot;</span>,
+        <span class="string">&quot;pass&quot;</span>,
+        <span class="string">&quot;raise&quot;</span>,
+        <span class="string">&quot;return&quot;</span>,
+        <span class="string">&quot;try&quot;</span>,
+        <span class="string">&quot;while&quot;</span>,
+        <span class="string">&quot;with&quot;</span>,
+        <span class="string">&quot;yield&quot;</span>,
+    ];
+    <span class="ident">HashSet::from_iter</span>(<span class="ident">kwlist</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>()))
+});
 
 <span class="comment">// Config options to customize the generated python.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
