@@ -102,7 +102,7 @@
 }
 
 <span class="kw">fn</span> <span class="ident">fn_metadata</span>(<span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">syn::ItemFn</span>, <span class="ident">mod_path</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">FnMetadata</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">sig</span>.<span class="ident">output</span> {
+    <span class="kw">let</span> <span class="ident">return_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">sig</span>.<span class="ident">output</span> {
         <span class="ident">syn::ReturnType::Default</span> =&gt; <span class="prelude-val">None</span>,
         <span class="ident">syn::ReturnType::Type</span>(<span class="kw">_</span>, <span class="ident">ty</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">convert_type</span>(<span class="ident">ty</span>)<span class="question-mark">?</span>),
     };
@@ -116,7 +116,7 @@
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">fn_param_metadata</span>(<span class="ident">a</span>, <span class="bool-val">false</span>))
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">syn::Result</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
-        <span class="ident">output</span>,
+        <span class="ident">return_type</span>,
     })
 }
 

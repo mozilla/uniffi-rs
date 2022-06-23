@@ -199,7 +199,7 @@
             <span class="ident">Type::Optional</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
             <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
             <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;std::collections::HashMap&lt;r#{}, r#{}&gt;&quot;</span>,
+                <span class="string">&quot;std::collections::HashMap&lt;{}, {}&gt;&quot;</span>,
                 <span class="ident">type_rs</span>(<span class="ident">k</span>)<span class="question-mark">?</span>,
                 <span class="ident">type_rs</span>(<span class="ident">v</span>)<span class="question-mark">?</span>
             ),
@@ -252,11 +252,11 @@
             <span class="comment">// Wrapper types are implemented by generics that wrap the FfiConverter implementation of the</span>
             <span class="comment">// inner type.</span>
             <span class="ident">Type::Optional</span>(<span class="ident">inner</span>) =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;r#{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>)
+                <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>)
             }
-            <span class="ident">Type::Sequence</span>(<span class="ident">inner</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;r#{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
+            <span class="ident">Type::Sequence</span>(<span class="ident">inner</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
             <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;std::collections::HashMap&lt;r#{}, r#{}&gt;&quot;</span>,
+                <span class="string">&quot;std::collections::HashMap&lt;{}, {}&gt;&quot;</span>,
                 <span class="ident">ffi_converter_name</span>(<span class="ident">k</span>)<span class="question-mark">?</span>,
                 <span class="ident">ffi_converter_name</span>(<span class="ident">v</span>)<span class="question-mark">?</span>
             ),
