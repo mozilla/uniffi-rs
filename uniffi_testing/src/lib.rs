@@ -6,6 +6,7 @@ use anyhow::{bail, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use cargo_metadata::{Artifact, Message, Metadata, MetadataCommand, Package, Target};
 use fs_err as fs;
+use once_cell::sync::Lazy;
 use serde::Deserialize;
 use std::{
     collections::hash_map::DefaultHasher,
@@ -28,11 +29,10 @@ pub struct CompileSource {
     pub config_path: Option<Utf8PathBuf>,
 }
 
-// Store Cargo output to in a lazy_static to avoid calling it more than once.
-lazy_static::lazy_static! {
-    static ref CARGO_METADATA: Metadata = get_cargo_metadata();
-    static ref CARGO_BUILD_MESSAGES: Vec<Message> = get_cargo_build_messages();
-}
+// Store Cargo output to in a static to avoid calling it more than once.
+
+static CARGO_METADATA: Lazy<Metadata> = Lazy::new(get_cargo_metadata);
+static CARGO_BUILD_MESSAGES: Lazy<Vec<Message>> = Lazy::new(get_cargo_build_messages);
 
 /// Struct for running fixture and example tests for bindings generators
 ///

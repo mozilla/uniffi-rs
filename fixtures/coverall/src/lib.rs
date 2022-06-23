@@ -6,11 +6,9 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 
-lazy_static::lazy_static! {
-    static ref NUM_ALIVE: RwLock<u64> = {
-        RwLock::new(0)
-    };
-}
+use once_cell::sync::Lazy;
+
+static NUM_ALIVE: Lazy<RwLock<u64>> = Lazy::new(|| RwLock::new(0));
 
 #[derive(Debug, thiserror::Error)]
 pub enum CoverallError {
