@@ -267,7 +267,6 @@
 <span id="262">262</span>
 <span id="263">263</span>
 <span id="264">264</span>
-<span id="265">265</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -435,8 +434,7 @@
             <span class="ident">Type::Boolean</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{} ? true : false&quot;</span>, <span class="ident">nm</span>),
             <span class="ident">Type::Object</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Enum</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Error</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="kw">_</span>) =&gt; <span class="ident">nm</span>.<span class="ident">to_string</span>(),
             <span class="ident">Type::String</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.to_s&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type::Timestamp</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for timestamps in Ruby, yet&quot;</span>),
-            <span class="ident">Type::Duration</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for durations in Ruby, yet&quot;</span>),
+            <span class="ident">Type::Timestamp</span> <span class="op">|</span> <span class="ident">Type::Duration</span> =&gt; <span class="ident">nm</span>.<span class="ident">to_string</span>(),
             <span class="ident">Type::CallbackInterface</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for coercing callback interfaces yet&quot;</span>),
             <span class="ident">Type::Optional</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;({} ? {} : nil)&quot;</span>, <span class="ident">nm</span>, <span class="ident">coerce_rb</span>(<span class="ident">nm</span>, <span class="ident">t</span>)<span class="question-mark">?</span>),
             <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; {
@@ -479,8 +477,6 @@
             <span class="op">|</span> <span class="ident">Type::Float64</span> =&gt; <span class="ident">nm</span>.<span class="ident">to_string</span>(),
             <span class="ident">Type::Boolean</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;({} ? 1 : 0)&quot;</span>, <span class="ident">nm</span>),
             <span class="ident">Type::String</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer.allocFromString({})&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type::Timestamp</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for timestamps in Ruby, yet&quot;</span>),
-            <span class="ident">Type::Duration</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for durations in Ruby, yet&quot;</span>),
             <span class="ident">Type::Object</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;({}._uniffi_lower {})&quot;</span>, <span class="ident">class_name_rb</span>(<span class="ident">name</span>)<span class="question-mark">?</span>, <span class="ident">nm</span>),
             <span class="ident">Type::CallbackInterface</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering callback interfaces yet&quot;</span>),
             <span class="ident">Type::Error</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
@@ -488,6 +484,8 @@
             <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type::Optional</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type::Sequence</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Timestamp</span>
+            <span class="op">|</span> <span class="ident">Type::Duration</span>
             <span class="op">|</span> <span class="ident">Type::Map</span>(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;RustBuffer.alloc_from_{}({})&quot;</span>,
                 <span class="ident">class_name_rb</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>.<span class="ident">canonical_name</span>())<span class="question-mark">?</span>,
@@ -511,8 +509,6 @@
             <span class="ident">Type::Float32</span> <span class="op">|</span> <span class="ident">Type::Float64</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.to_f&quot;</span>, <span class="ident">nm</span>),
             <span class="ident">Type::Boolean</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;1 == {}&quot;</span>, <span class="ident">nm</span>),
             <span class="ident">Type::String</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.consumeIntoString&quot;</span>, <span class="ident">nm</span>),
-            <span class="ident">Type::Timestamp</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for timestamps in Ruby, yet&quot;</span>),
-            <span class="ident">Type::Duration</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for durations in Ruby, yet&quot;</span>),
             <span class="ident">Type::Object</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}._uniffi_allocate({})&quot;</span>, <span class="ident">class_name_rb</span>(<span class="ident">name</span>)<span class="question-mark">?</span>, <span class="ident">nm</span>),
             <span class="ident">Type::CallbackInterface</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting callback interfaces, yet&quot;</span>),
             <span class="ident">Type::Error</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
@@ -520,6 +516,8 @@
             <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type::Optional</span>(<span class="kw">_</span>)
             <span class="op">|</span> <span class="ident">Type::Sequence</span>(<span class="kw">_</span>)
+            <span class="op">|</span> <span class="ident">Type::Timestamp</span>
+            <span class="op">|</span> <span class="ident">Type::Duration</span>
             <span class="op">|</span> <span class="ident">Type::Map</span>(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;{}.consumeInto{}&quot;</span>,
                 <span class="ident">nm</span>,
