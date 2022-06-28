@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_uitests"
-version = "0.19.1"
+version = "0.19.2"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 license = "MPL-2.0"
