@@ -1,6 +1,6 @@
 [package]
 name = "uniffi-fixture-keywords-rust"
-version = "0.18.0"
+version = "0.19.2"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 publish = false
