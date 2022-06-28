@@ -685,6 +685,17 @@
 <span id="680">680</span>
 <span id="681">681</span>
 <span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -1343,6 +1354,17 @@
         } =&gt; <span class="ident"><span class="kw">crate</span>::run_tests</span>(<span class="ident">cdylib_dir</span>, <span class="kw-2">&amp;</span>[<span class="ident">udl_file</span>], <span class="ident">test_scripts</span>, <span class="ident">config</span>.<span class="ident">as_deref</span>()),
     }<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
+}
+
+<span class="comment">// FIXME(HACK):</span>
+<span class="comment">// Include the askama config file into the build.</span>
+<span class="comment">// That way cargo tracks the file and other tools relying on file tracking see it as well.</span>
+<span class="comment">// See https://bugzilla.mozilla.org/show_bug.cgi?id=1774585</span>
+<span class="comment">// In the future askama should handle that itself by using the `track_path::path` API,</span>
+<span class="comment">// see https://github.com/rust-lang/rust/pull/84029</span>
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
+<span class="kw">mod</span> <span class="ident">__unused</span> {
+    <span class="kw">const</span> <span class="kw">_</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="macro">include_bytes!</span>(<span class="string">&quot;../askama.toml&quot;</span>);
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
