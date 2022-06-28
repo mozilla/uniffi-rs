@@ -3,6 +3,7 @@ name = "uniffi-fixture-keywords-rust"
 version = "0.18.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
+publish = false
 
 [lib]
 crate-type = ["cdylib"]
