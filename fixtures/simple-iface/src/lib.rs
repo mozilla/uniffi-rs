@@ -13,6 +13,7 @@ fn make_object(inner: i32) -> Arc<Object> {
     Arc::new(Object { inner })
 }
 
+#[uniffi::export]
 impl Object {
     fn get_inner(&self) -> i32 {
         self.inner
