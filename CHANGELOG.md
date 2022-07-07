@@ -6,7 +6,13 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.1...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.2...HEAD).
+
+## v0.19.2 - (_2022-06-28_)
+
+[All changes in v0.19.2](https://github.com/mozilla/uniffi-rs/compare/v0.19.1...v0.19.2).
+
+- Fixed sccache issue with the `askama.toml` config file.
 
 - Implement Timestamp and Duration types in Ruby backend.
 - Fixed sccache issue with the `askama.toml` config file.

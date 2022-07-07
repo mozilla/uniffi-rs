@@ -1,8 +1,9 @@
 [package]
 name = "uniffi-fixture-keywords-kotlin"
-version = "0.18.0"
+version = "0.19.2"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
+publish = false
 
 [lib]
 crate-type = ["cdylib"]
