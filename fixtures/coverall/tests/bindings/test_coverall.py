@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import unittest
+from datetime import datetime, timezone
 from coverall import *
 
 class TestCoverall(unittest.TestCase):
@@ -168,6 +169,12 @@ class TestCoverall(unittest.TestCase):
         # be dropped as coveralls hold an `Arc<>` to it.
         c2 = None
         self.assertEqual(get_num_alive(), 2)
+
+        coveralls.add_patch(Patch(Color.RED))
+        coveralls.add_repair(
+            Repair(when=datetime.now(timezone.utc), patch=Patch(Color.BLUE))
+        )
+        self.assertEqual(len(coveralls.get_repairs()), 2)
 
         # Dropping `coveralls` will kill both.
         coveralls = None

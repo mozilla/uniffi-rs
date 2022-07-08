@@ -5,6 +5,7 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
+use std::time::SystemTime;
 
 use once_cell::sync::Lazy;
 
@@ -137,6 +138,8 @@ pub struct Coveralls {
     // A reference to another Coveralls. Currently will be only a reference
     // to `self`, so will create a circular reference.
     other: Mutex<Option<Arc<Self>>>,
+    // Repairs we've made to this coverall.
+    repairs: Mutex<Vec<Repair>>,
 }
 
 impl Coveralls {
@@ -145,6 +148,7 @@ impl Coveralls {
         Self {
             name,
             other: Mutex::new(None),
+            repairs: Mutex::new(Vec::new()),
         }
     }
 
@@ -229,6 +233,7 @@ impl Coveralls {
         Arc::new(Self {
             name: self.name.clone(),
             other: new_other,
+            repairs: Mutex::new(Vec::new()),
         })
     }
 
@@ -253,6 +258,25 @@ impl Coveralls {
         map.insert(key, value);
         map
     }
+
+    fn add_patch(&self, patch: Arc<Patch>) {
+        let repair = Repair {
+            when: SystemTime::now(),
+            patch,
+        };
+        let mut repairs = self.repairs.lock().unwrap();
+        repairs.push(repair);
+    }
+
+    fn add_repair(&self, repair: Repair) {
+        let mut repairs = self.repairs.lock().unwrap();
+        repairs.push(repair);
+    }
+
+    fn get_repairs(&self) -> Vec<Repair> {
+        let repairs = self.repairs.lock().unwrap();
+        repairs.clone()
+    }
 }
 
 impl Drop for Coveralls {
@@ -260,6 +284,13 @@ impl Drop for Coveralls {
         *NUM_ALIVE.write().unwrap() -= 1;
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct Repair {
+    when: SystemTime,
+    patch: Arc<Patch>,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
     Red,
@@ -267,7 +298,7 @@ pub enum Color {
     Green,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Patch {
     color: Color,
 }

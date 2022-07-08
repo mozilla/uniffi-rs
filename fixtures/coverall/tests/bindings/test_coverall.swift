@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import Foundation
 import coverall
 
 // TODO: use an actual test runner.
@@ -182,4 +183,12 @@ do {
 
     let dict3 = coveralls.getDict3(key: 31, value: 42)
     assert(dict3[31] == 42)
+}
+
+// Test interfaces as dict members
+do {
+    let coveralls = Coveralls(name: "test_interfaces_in_dicts")
+    coveralls.addPatch(patch: Patch(color: Color.red))
+    coveralls.addRepair(repair: Repair(when: Date.init(), patch: Patch(color: Color.blue)))
+    assert(coveralls.getRepairs().count == 2)
 }
