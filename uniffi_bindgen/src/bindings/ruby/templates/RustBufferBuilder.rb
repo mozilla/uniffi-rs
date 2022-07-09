@@ -114,7 +114,11 @@ class RustBufferBuilder
     nanoseconds = v.tv_nsec
 
     if seconds < 0
+      # In order to get duration nsec we shift by 1 second:
       nanoseconds = ONE_SECOND_IN_NANOSECONDS - nanoseconds
+
+      # Then we compensate 1 second shift:
+      seconds += 1
     end
 
     pack_into 8, 'q>', seconds

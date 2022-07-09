@@ -16,4 +16,10 @@ namespace chronological {
   boolean equal(timestamp a, timestamp b);
 
   boolean optional(timestamp? a, duration? b);
+
+  [Throws=ChronologicalError]
+  u64 get_seconds_before_unix_epoch(timestamp a);
+
+  [Throws=ChronologicalError]
+  timestamp set_seconds_before_unix_epoch(u64 seconds);
 };

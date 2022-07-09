@@ -40,6 +40,18 @@ class TestChronological < Test::Unit::TestCase
     assert_equal Time.parse('1955-11-05T00:06:01.283002 UTC'), Chronological.add(time, delta)
   end
 
+  def test_ruby_to_rust_time_conversion
+    minute_before_unix_epoch = Time.parse '1969-12-31T23:59:00.000000 UTC'
+
+    assert_equal 60, Chronological.get_seconds_before_unix_epoch(minute_before_unix_epoch)
+  end
+
+  def test_rust_to_ruby_time_conversion
+    minute_before_unix_epoch = Time.parse '1969-12-31T23:59:00.000000 UTC'
+
+    assert_equal minute_before_unix_epoch, Chronological.set_seconds_before_unix_epoch(60)
+  end
+
   def test_exceptions_are_propagated
     assert_raises Chronological::ChronologicalError::TimeDiffError do
       Chronological.diff Time.at(100), Time.at(101)
