@@ -34,6 +34,18 @@ fn optional(a: Option<SystemTime>, b: Option<Duration>) -> bool {
     a.is_some() && b.is_some()
 }
 
+fn get_seconds_before_unix_epoch(b: SystemTime) -> Result<u64> {
+    diff(SystemTime::UNIX_EPOCH, b).map(|duration| duration.as_secs())
+}
+
+fn set_seconds_before_unix_epoch(seconds: u64) -> Result<SystemTime> {
+    let a = SystemTime::UNIX_EPOCH;
+    let b = Duration::from_secs(seconds);
+
+    a.checked_sub(b)
+        .ok_or(ChronologicalError::TimeOverflow { a, b })
+}
+
 type Result<T, E = ChronologicalError> = std::result::Result<T, E>;
 
 include!(concat!(env!("OUT_DIR"), "/chronological.uniffi.rs"));

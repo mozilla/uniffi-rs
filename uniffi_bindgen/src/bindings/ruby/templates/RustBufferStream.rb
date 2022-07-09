@@ -115,7 +115,11 @@ class RustBufferStream
     nanoseconds = unpack_from 4, 'L>'
 
     if seconds < 0
+      # In order to get duration nsec we shift by 1 second:
       nanoseconds = ONE_SECOND_IN_NANOSECONDS - nanoseconds
+
+      # Then we compensate 1 second shift:
+      seconds -= 1
     end
 
     Time.at(seconds, nanoseconds, :nanosecond, in: '+00:00').utc
