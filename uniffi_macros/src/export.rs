@@ -17,7 +17,7 @@ enum ExportItem {
     Function {
         item: syn::ItemFn,
         checksum: u16,
-        tracked_file: TokenStream,
+        meta_static_var: TokenStream,
     },
 }
 

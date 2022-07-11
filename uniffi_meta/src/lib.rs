@@ -9,7 +9,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Hash, Deserialize, Serialize)]
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
 pub struct FnMetadata {
     pub module_path: Vec<String>,
     pub name: String,
@@ -23,15 +23,14 @@ impl FnMetadata {
     }
 }
 
-#[derive(Debug, Hash, Deserialize, Serialize)]
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
 pub struct FnParamMetadata {
     pub name: String,
     #[serde(rename = "type")]
     pub ty: Type,
 }
 
-#[derive(Debug, Hash, Deserialize, Serialize)]
-#[serde(tag = "id")]
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
 pub enum Type {
     U8,
     U16,
@@ -70,4 +69,10 @@ pub fn checksum<T: Hash>(val: &T) -> u16 {
 pub fn fn_ffi_symbol_name(mod_path: &[String], name: &str, checksum: u16) -> String {
     let mod_path = mod_path.join("__");
     format!("_uniffi_{mod_path}_{name}_{checksum:x}")
+}
+
+/// Enum covering all the possible metadata types
+#[derive(Clone, Debug, enum_variant_macros::FromVariants, Hash, Deserialize, Serialize)]
+pub enum Metadata {
+    Func(FnMetadata),
 }
