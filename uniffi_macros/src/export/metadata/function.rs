@@ -2,30 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use proc_macro2::Span;
 use uniffi_meta::{checksum, FnMetadata, FnParamMetadata};
 
-use super::{convert_type, write_json_metadata, METADATA_DIR};
+use super::{convert_type, create_metadata_static_var};
 use crate::export::ExportItem;
 
 pub(super) fn gen_fn_metadata(item: syn::ItemFn, mod_path: &[String]) -> syn::Result<ExportItem> {
     let meta = fn_metadata(&item, mod_path)?;
 
-    let path = METADATA_DIR.join(format!(
-        "mod.{}.fn.{}.json",
-        // `-` is a character that's practically universally allowed in
-        // filenames, yet can't be part of a module path segment.
-        meta.module_path.join("-"),
-        meta.name
-    ));
-
-    let tracked_file = write_json_metadata(&path, &meta)
-        .map_err(|e| syn::Error::new(Span::call_site(), format!("failed to write file: {e}")))?;
-
     Ok(ExportItem::Function {
-        item,
         checksum: checksum(&meta),
-        tracked_file,
+        meta_static_var: create_metadata_static_var(&item.sig.ident, meta.into()),
+        item,
     })
 }
 

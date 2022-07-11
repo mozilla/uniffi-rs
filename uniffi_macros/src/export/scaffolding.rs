@@ -13,12 +13,12 @@ pub(super) fn gen_scaffolding(item: ExportItem, mod_path: &[String]) -> syn::Res
         ExportItem::Function {
             item,
             checksum,
-            tracked_file,
+            meta_static_var,
         } => {
             let scaffolding = gen_fn_scaffolding(&item, mod_path, checksum)?;
             Ok(quote! {
                 #scaffolding
-                #tracked_file
+                #meta_static_var
             })
         }
     }
