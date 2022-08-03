@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["extract_from_archive",""],["extract_from_bytes",""],["extract_from_elf",""],["extract_from_library","Extract metadata written by the `uniffi::export` macro from a library file"],["extract_from_mach",""],["extract_from_macho",""],["extract_from_pe",""],["is_metadata_symbol",""]],"struct":[["ExtractedItems","Container for extracted metadata items"]]});

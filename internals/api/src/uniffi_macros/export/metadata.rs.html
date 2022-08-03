@@ -169,69 +169,19 @@
 <span id="164">164</span>
 <span id="165">165</span>
 <span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">io</span>};
-
-<span class="kw">use</span> <span class="ident">camino</span>::{<span class="ident">Utf8Path</span>, <span class="ident">Utf8PathBuf</span>};
-<span class="kw">use</span> <span class="ident">fs_err</span>::{<span class="self">self</span> <span class="kw">as</span> <span class="ident">fs</span>};
-<span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">Span</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">quote</span>, <span class="ident">ToTokens</span>};
-<span class="kw">use</span> <span class="ident">serde::Serialize</span>;
-<span class="kw">use</span> <span class="ident">tempfile::NamedTempFile</span>;
-<span class="kw">use</span> <span class="ident">uniffi_meta::Type</span>;
+<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>, <span class="ident">IdentFragment</span>, <span class="ident">ToTokens</span>};
+<span class="kw">use</span> <span class="ident">uniffi_meta</span>::{<span class="ident">Metadata</span>, <span class="ident">Type</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ExportItem</span>;
 
 <span class="kw">mod</span> <span class="ident">function</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="self">self</span>::function::gen_fn_metadata</span>;
-
-<span class="kw">static</span> <span class="ident">METADATA_DIR</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> {
-    <span class="kw">let</span> <span class="ident">manifest_dir</span> <span class="op">=</span> <span class="ident">env::var</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;CARGO_MANIFEST_DIR must be set&quot;</span>);
-    <span class="kw">let</span> <span class="ident">metadata_dir</span> <span class="op">=</span> <span class="ident">Utf8Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">manifest_dir</span>)
-        .<span class="ident">join</span>(<span class="string">&quot;.uniffi&quot;</span>)
-        .<span class="ident">join</span>(<span class="string">&quot;metadata&quot;</span>);
-
-    <span class="ident">fs::create_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">metadata_dir</span>).<span class="ident">unwrap</span>();
-    <span class="ident">metadata_dir</span>
-});
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">gen_metadata</span>(<span class="ident">item</span>: <span class="ident">syn::Item</span>, <span class="ident">mod_path</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">ExportItem</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">item</span> {
@@ -375,31 +325,15 @@
     )
 }
 
-<span class="kw">fn</span> <span class="ident">write_json_metadata</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Serialize</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>, <span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">TokenStream</span><span class="op">&gt;</span> {
-    <span class="comment">// The usage of a `NamedTempFile` ensures that the file ends up in a consistent state if</span>
-    <span class="comment">// multiple processes or threads run this function in parallel with the same path (for example</span>
-    <span class="comment">// one `rustc` process and one `rust-analyzer` process).</span>
-    <span class="comment">//</span>
-    <span class="comment">// Without this, two serializers wanting to write to the same file could have their outputs</span>
-    <span class="comment">// merged together by interleaved writes. By first writing to a temporary file that is then</span>
-    <span class="comment">// atomically renamed to the desired file name, this is avoided.</span>
-    <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">NamedTempFile::new_in</span>(
-        <span class="ident">path</span>.<span class="ident">parent</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;paths passed to write_json_metadata must have a parent&quot;</span>),
-    )<span class="question-mark">?</span>;
-    <span class="ident">serde_json::to_writer_pretty</span>(<span class="kw-2">&amp;</span><span class="ident">file</span>, <span class="ident">val</span>)<span class="question-mark">?</span>;
-    <span class="ident">file</span>.<span class="ident">persist</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
+<span class="kw">fn</span> <span class="ident">create_metadata_static_var</span>(<span class="ident">name</span>: <span class="kw">impl</span> <span class="ident">IdentFragment</span>, <span class="ident">val</span>: <span class="ident">Metadata</span>) -&gt; <span class="ident">TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">bincode::serialize</span>(<span class="kw-2">&amp;</span><span class="ident">val</span>).<span class="ident">expect</span>(<span class="string">&quot;Error serializing metadata item&quot;</span>);
+    <span class="kw">let</span> <span class="ident">count</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">len</span>();
+    <span class="kw">let</span> <span class="ident">var_name</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_{}&quot;</span>, <span class="ident">name</span>);
 
-    <span class="comment">// This configures the compiler to re-run this macro invocation when the file at `path` is</span>
-    <span class="comment">// changed (practically this should only happen if it is deleted).</span>
-    <span class="comment">//</span>
-    <span class="comment">// Ideally this function would return `io::Result&lt;()&gt;` and use a proc_macro function for</span>
-    <span class="comment">// &quot;tracking&quot; the file instead of returning this TokenStream. That API is still nightly-only</span>
-    <span class="comment">// and subject to change though, see https://github.com/rust-lang/rust/issues/73921</span>
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">as_str</span>();
-    <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
-        <span class="kw">const</span> <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">::std::include_str!</span>(#<span class="ident">path</span>);
-    })
+    <span class="macro">quote!</span> {
+        <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
+        <span class="kw">pub</span> <span class="kw">static</span> #<span class="ident">var_name</span>: [<span class="ident">u8</span>; #<span class="ident">count</span>] <span class="op">=</span> [#(#<span class="ident">data</span>),<span class="kw-2">*</span>];
+    }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>

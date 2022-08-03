@@ -126,12 +126,12 @@
         <span class="ident">ExportItem::Function</span> {
             <span class="ident">item</span>,
             <span class="ident">checksum</span>,
-            <span class="ident">tracked_file</span>,
+            <span class="ident">meta_static_var</span>,
         } =&gt; {
             <span class="kw">let</span> <span class="ident">scaffolding</span> <span class="op">=</span> <span class="ident">gen_fn_scaffolding</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>, <span class="ident">mod_path</span>, <span class="ident">checksum</span>)<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
                 #<span class="ident">scaffolding</span>
-                #<span class="ident">tracked_file</span>
+                #<span class="ident">meta_static_var</span>
             })
         }
     }

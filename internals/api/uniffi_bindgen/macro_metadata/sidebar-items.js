@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["add_macro_metadata",""],["parse_json_file",""]]});
+initSidebarItems({"fn":[["add_to_ci","Add Metadata items to the ComponentInterface"],["add_to_ci_from_library",""],["extract_from_library","Extract metadata written by the `uniffi::export` macro from a library file"]],"mod":[["ci",""],["extract",""]]});

@@ -649,53 +649,6 @@
 <span id="644">644</span>
 <span id="645">645</span>
 <span id="646">646</span>
-<span id="647">647</span>
-<span id="648">648</span>
-<span id="649">649</span>
-<span id="650">650</span>
-<span id="651">651</span>
-<span id="652">652</span>
-<span id="653">653</span>
-<span id="654">654</span>
-<span id="655">655</span>
-<span id="656">656</span>
-<span id="657">657</span>
-<span id="658">658</span>
-<span id="659">659</span>
-<span id="660">660</span>
-<span id="661">661</span>
-<span id="662">662</span>
-<span id="663">663</span>
-<span id="664">664</span>
-<span id="665">665</span>
-<span id="666">666</span>
-<span id="667">667</span>
-<span id="668">668</span>
-<span id="669">669</span>
-<span id="670">670</span>
-<span id="671">671</span>
-<span id="672">672</span>
-<span id="673">673</span>
-<span id="674">674</span>
-<span id="675">675</span>
-<span id="676">676</span>
-<span id="677">677</span>
-<span id="678">678</span>
-<span id="679">679</span>
-<span id="680">680</span>
-<span id="681">681</span>
-<span id="682">682</span>
-<span id="683">683</span>
-<span id="684">684</span>
-<span id="685">685</span>
-<span id="686">686</span>
-<span id="687">687</span>
-<span id="688">688</span>
-<span id="689">689</span>
-<span id="690">690</span>
-<span id="691">691</span>
-<span id="692">692</span>
-<span id="693">693</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -792,12 +745,10 @@
 
 <span class="kw">const</span> <span class="ident">BINDGEN_VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">anyhow</span>, <span class="ident">bail</span>, <span class="ident">ensure</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">camino</span>::{<span class="ident">Utf8Path</span>, <span class="ident">Utf8PathBuf</span>};
-<span class="kw">use</span> <span class="ident">cargo_metadata</span>::{<span class="ident">Metadata</span>, <span class="ident">MetadataCommand</span>};
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Parser</span>, <span class="ident">Subcommand</span>};
 <span class="kw">use</span> <span class="ident">fs_err</span>::{<span class="self">self</span> <span class="kw">as</span> <span class="ident">fs</span>, <span class="ident">File</span>};
-<span class="kw">use</span> <span class="ident">macro_metadata::add_macro_metadata</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std::io::prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashMap</span>, <span class="ident">env</span>, <span class="ident">process::Command</span>, <span class="ident">str::FromStr</span>};
@@ -805,7 +756,7 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">backend</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bindings</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">interface</span>;
-<span class="kw">mod</span> <span class="ident">macro_metadata</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">macro_metadata</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">scaffolding</span>;
 
 <span class="kw">use</span> <span class="ident">bindings::TargetLanguage</span>;
@@ -956,15 +907,7 @@
 
     <span class="kw">let</span> <span class="ident">crate_root</span> <span class="op">=</span> <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>(), <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>()).<span class="ident">context</span>(<span class="string">&quot;Error parsing UDL&quot;</span>)<span class="question-mark">?</span>;
-
-    <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">get_pkg_metadata</span>(<span class="ident">crate_root</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">lib_name</span> <span class="op">=</span> <span class="ident">lib_name</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>)<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="ident">component</span>.<span class="ident">namespace</span>() <span class="op">==</span> <span class="ident">lib_name</span> {
-        <span class="ident">rebuild_metadata</span>(<span class="ident">crate_root</span>)<span class="question-mark">?</span>;
-        <span class="ident">add_macro_metadata</span>(<span class="kw-2">&amp;mut</span> <span class="ident">component</span>, <span class="ident">crate_root</span>)<span class="question-mark">?</span>;
-    }
-
+    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>()).<span class="ident">context</span>(<span class="string">&quot;Error parsing UDL&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">bindings_config</span> <span class="op">=</span> <span class="ident">load_bindings_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">crate_root</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
     <span class="ident">binding_generator</span>.<span class="ident">write_bindings</span>(<span class="ident">component</span>, <span class="ident">bindings_config</span>, <span class="kw-2">&amp;</span><span class="ident">out_dir</span>)
 }
@@ -1001,17 +944,14 @@
     <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
     <span class="ident">target_languages</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
     <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
+    <span class="ident">library_file</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
     <span class="ident">try_format_code</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">crate_root</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
-
-    <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">get_pkg_metadata</span>(<span class="ident">crate_root</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">lib_name</span> <span class="op">=</span> <span class="ident">lib_name</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>)<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="ident">component</span>.<span class="ident">namespace</span>() <span class="op">==</span> <span class="ident">lib_name</span> {
-        <span class="ident">rebuild_metadata</span>(<span class="ident">crate_root</span>)<span class="question-mark">?</span>;
-        <span class="ident">add_macro_metadata</span>(<span class="kw-2">&amp;mut</span> <span class="ident">component</span>, <span class="ident">crate_root</span>)<span class="question-mark">?</span>;
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">library_file</span>) <span class="op">=</span> <span class="ident">library_file</span> {
+        <span class="ident">macro_metadata::add_to_ci_from_library</span>(<span class="kw-2">&amp;mut</span> <span class="ident">component</span>, <span class="ident">library_file</span>)<span class="question-mark">?</span>;
     }
+    <span class="kw">let</span> <span class="ident">crate_root</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">crate_root</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
@@ -1028,10 +968,20 @@
     <span class="prelude-val">Ok</span>(())
 }
 
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dump_json</span>(<span class="ident">library_path</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">macro_metadata::extract_from_library</span>(<span class="ident">library_path</span>)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(<span class="ident">serde_json::to_string_pretty</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>)<span class="question-mark">?</span>)
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">print_json</span>(<span class="ident">library_path</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">dump_json</span>(<span class="ident">library_path</span>)<span class="question-mark">?</span>);
+    <span class="prelude-val">Ok</span>(())
+}
+
 <span class="comment">// Run tests against the foreign language bindings (generated and compiled at the same time).</span>
 <span class="comment">// Note that the cdylib we&#39;re testing against must be built already.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_tests</span>(
-    <span class="ident">cdylib_dir</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
+    <span class="ident">library_file</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
     <span class="ident">udl_files</span>: <span class="kw-2">&amp;</span>[<span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>],
     <span class="ident">test_scripts</span>: <span class="kw-2">&amp;</span>[<span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>],
     <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
@@ -1042,7 +992,12 @@
     <span class="comment">// with overrides, so don&#39;t have this problem.</span>
     <span class="macro">assert!</span>(<span class="ident">udl_files</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">config_file_override</span>.<span class="ident">is_none</span>());
 
-    <span class="kw">let</span> <span class="ident">cdylib_dir</span> <span class="op">=</span> <span class="ident">cdylib_dir</span>.<span class="ident">as_ref</span>();
+    <span class="kw">let</span> <span class="ident">library_file</span> <span class="op">=</span> <span class="ident">library_file</span>.<span class="ident">as_ref</span>();
+    <span class="kw">let</span> <span class="ident">cdylib_dir</span> <span class="op">=</span> <span class="ident">library_file</span>
+        .<span class="ident">parent</span>()
+        .<span class="ident">context</span>(<span class="string">&quot;Generated cdylib has no parent directory&quot;</span>)<span class="question-mark">?</span>;
+
+    <span class="kw">let</span> <span class="ident">metadata_items</span> <span class="op">=</span> <span class="ident">macro_metadata::extract_from_library</span>(<span class="ident">library_file</span>)<span class="question-mark">?</span>;
 
     <span class="comment">// Group the test scripts by language first.</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">language_tests</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">TargetLanguage</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
@@ -1064,13 +1019,7 @@
             <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
             <span class="kw">let</span> <span class="ident">crate_root</span> <span class="op">=</span> <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
-
-            <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">get_pkg_metadata</span>(<span class="ident">crate_root</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">lib_name</span> <span class="op">=</span> <span class="ident">lib_name</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>)<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="ident">component</span>.<span class="ident">namespace</span>() <span class="op">==</span> <span class="ident">lib_name</span> {
-                <span class="ident">rebuild_metadata</span>(<span class="ident">crate_root</span>)<span class="question-mark">?</span>;
-                <span class="ident">add_macro_metadata</span>(<span class="kw-2">&amp;mut</span> <span class="ident">component</span>, <span class="ident">crate_root</span>)<span class="question-mark">?</span>;
-            }
+            <span class="ident">macro_metadata::add_to_ci</span>(<span class="kw-2">&amp;mut</span> <span class="ident">component</span>, <span class="ident">metadata_items</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>;
 
             <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">crate_root</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
             <span class="ident">bindings::write_bindings</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">cdylib_dir</span>, <span class="ident">lang</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
@@ -1143,62 +1092,6 @@
     <span class="kw">let</span> <span class="ident">udl</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">udl_file</span>)
         .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read UDL from {udl_file}&quot;</span>))<span class="question-mark">?</span>;
     <span class="ident">ComponentInterface::from_webidl</span>(<span class="kw-2">&amp;</span><span class="ident">udl</span>).<span class="ident">context</span>(<span class="string">&quot;Failed to parse UDL&quot;</span>)
-}
-
-<span class="kw">fn</span> <span class="ident">get_pkg_metadata</span>(<span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="ident">anyhow::Result</span><span class="op">&lt;</span><span class="ident">Metadata</span><span class="op">&gt;</span> {
-    <span class="prelude-val">Ok</span>(<span class="ident">MetadataCommand::new</span>().<span class="ident">current_dir</span>(<span class="ident">crate_root</span>).<span class="ident">exec</span>()<span class="question-mark">?</span>)
-}
-
-<span class="kw">fn</span> <span class="ident">lib_name</span>(<span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span>, <span class="ident">anyhow::Error</span><span class="op">&gt;</span> {
-    <span class="prelude-val">Ok</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>
-        .<span class="ident">root_package</span>()
-        .<span class="ident">expect</span>(<span class="string">&quot;metadata has a root package&quot;</span>)
-        .<span class="ident">targets</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">find</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">kind</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="string">&quot;cdylib&quot;</span>.<span class="ident">to_owned</span>()))
-        .<span class="ident">context</span>(<span class="string">&quot;package has no cdylib target&quot;</span>)<span class="question-mark">?</span>
-        .<span class="ident">name</span>)
-}
-
-<span class="kw">fn</span> <span class="ident">rebuild_metadata</span>(<span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="comment">// First, delete all files from `.uniffi/metadata`, to get rid of stale ones</span>
-    <span class="comment">//</span>
-    <span class="comment">// FIXME(jplatte): Delete metadata for path dependencies as well</span>
-    <span class="kw">let</span> <span class="ident">metadata_dir</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;.uniffi&quot;</span>).<span class="ident">join</span>(<span class="string">&quot;metadata&quot;</span>);
-    <span class="kw">if</span> <span class="ident">metadata_dir</span>.<span class="ident">is_dir</span>() {
-        <span class="kw">for</span> <span class="ident">entry</span> <span class="kw">in</span> <span class="ident">fs::read_dir</span>(<span class="ident">metadata_dir</span>)<span class="question-mark">?</span> {
-            <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">entry</span><span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">entry</span>.<span class="ident">path</span>();
-
-            <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">path</span>
-                .<span class="ident">file_name</span>()
-                .<span class="ident">context</span>(<span class="string">&quot;directory entry must have a filename&quot;</span>)<span class="question-mark">?</span>
-                .<span class="ident">to_string_lossy</span>();
-            <span class="macro">ensure!</span>(
-                <span class="ident">filename</span>.<span class="ident">ends_with</span>(<span class="string">&quot;.json&quot;</span>),
-                <span class="string">&quot;all files in `{metadata_dir}` must have `.json` file endings, found `{filename}`&quot;</span>,
-            );
-
-            <span class="ident">fs::remove_file</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
-        }
-    }
-
-    <span class="comment">// Then, re-`check` the project.</span>
-    <span class="comment">//</span>
-    <span class="comment">// Since the proc-macro invocations are set up to be re-run when their own output file(s)</span>
-    <span class="comment">// change, the deletion triggers a re-expansion even if none of the source files changed since</span>
-    <span class="comment">// the last `cargo check`.</span>
-    <span class="kw">let</span> <span class="ident">cargo</span> <span class="op">=</span> <span class="ident">env::var_os</span>(<span class="string">&quot;CARGO&quot;</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;cargo&quot;</span>.<span class="ident">into</span>());
-    <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="ident">cargo</span>)
-        .<span class="ident">current_dir</span>(<span class="ident">crate_root</span>)
-        .<span class="ident">arg</span>(<span class="string">&quot;check&quot;</span>)
-        .<span class="ident">status</span>()<span class="question-mark">?</span>;
-
-    <span class="kw">if</span> <span class="ident">status</span>.<span class="ident">success</span>() {
-        <span class="prelude-val">Ok</span>(())
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Err</span>(<span class="macro">anyhow!</span>(<span class="string">&quot;`cargo check` failed, aborting&quot;</span>))
-    }
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
@@ -1280,6 +1173,10 @@
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
+        <span class="doccomment">/// Extract proc-macro metadata from a cdylib for this crate</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>)]</span>
+        <span class="ident">cdylib</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
+
         <span class="doccomment">/// Path to the UDL file.</span>
         <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
     },
@@ -1304,8 +1201,8 @@
 
     <span class="doccomment">/// Run test scripts against foreign language bindings.</span>
     <span class="ident">Test</span> {
-        <span class="doccomment">/// Path to the directory containing the cdylib the scripts will be testing against.</span>
-        <span class="ident">cdylib_dir</span>: <span class="ident">Utf8PathBuf</span>,
+        <span class="doccomment">/// Path to the library the scripts will be testing against.</span>
+        <span class="ident">library_file</span>: <span class="ident">Utf8PathBuf</span>,
 
         <span class="doccomment">/// Path to the UDL file.</span>
         <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
@@ -1317,6 +1214,12 @@
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
     },
+
+    <span class="doccomment">/// Print the JSON representation of the interface from a dynamic library</span>
+    <span class="ident">PrintJson</span> {
+        <span class="doccomment">/// Path to the library file (.so, .dll, .dylib, or .a)</span>
+        <span class="ident">path</span>: <span class="ident">Utf8PathBuf</span>,
+    },
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_main</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -1327,12 +1230,14 @@
             <span class="ident">out_dir</span>,
             <span class="ident">no_format</span>,
             <span class="ident">config</span>,
+            <span class="ident">cdylib</span>,
             <span class="ident">udl_file</span>,
         } =&gt; <span class="ident"><span class="kw">crate</span>::generate_bindings</span>(
             <span class="ident">udl_file</span>,
             <span class="ident">config</span>.<span class="ident">as_deref</span>(),
             <span class="ident">language</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">String::as_str</span>).<span class="ident">collect</span>(),
             <span class="ident">out_dir</span>.<span class="ident">as_deref</span>(),
+            <span class="ident">cdylib</span>.<span class="ident">as_deref</span>(),
             <span class="op">!</span><span class="ident">no_format</span>,
         ),
         <span class="ident">Commands::Scaffolding</span> {
@@ -1347,11 +1252,12 @@
             <span class="op">!</span><span class="ident">no_format</span>,
         ),
         <span class="ident">Commands::Test</span> {
-            <span class="ident">cdylib_dir</span>,
+            <span class="ident">library_file</span>,
             <span class="ident">udl_file</span>,
             <span class="ident">test_scripts</span>,
             <span class="ident">config</span>,
-        } =&gt; <span class="ident"><span class="kw">crate</span>::run_tests</span>(<span class="ident">cdylib_dir</span>, <span class="kw-2">&amp;</span>[<span class="ident">udl_file</span>], <span class="ident">test_scripts</span>, <span class="ident">config</span>.<span class="ident">as_deref</span>()),
+        } =&gt; <span class="ident"><span class="kw">crate</span>::run_tests</span>(<span class="ident">library_file</span>, <span class="kw-2">&amp;</span>[<span class="ident">udl_file</span>], <span class="ident">test_scripts</span>, <span class="ident">config</span>.<span class="ident">as_deref</span>()),
+        <span class="ident">Commands::PrintJson</span> { <span class="ident">path</span> } =&gt; <span class="ident">print_json</span>(<span class="ident">path</span>),
     }<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
