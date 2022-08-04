@@ -12,6 +12,19 @@ macro_rules! weedle {
     };
 }
 
+// nom::branch::alt supports at-most 21 parsers, increasing to 42 ones.
+macro_rules! alt {
+    ($member0:expr, $($member1:expr, $member2:expr,)*) => {
+       alt!(@as_expr $member0, $(nom::branch::alt(($member1, $member2)),)+)
+    };
+    ($($member0:expr, $member1:expr,)*) => {
+       alt!(@as_expr $(nom::branch::alt(($member0, $member1)),)+)
+    };
+    (@as_expr $($member:expr,)*) => {
+        nom::branch::alt(($($member,)+))
+    };
+}
+
 macro_rules! ast_types {
     (@extract_type struct $name:ident<'a> $($rest:tt)*) => ($name<'a>);
     (@extract_type struct $name:ident $($rest:tt)*) => ($name);
@@ -430,9 +443,9 @@ macro_rules! __ast_enum {
         { }
     ) => (
         impl<'a> $crate::Parse<'a> for $name<$($maybe_a)*> {
-            parser!(nom::branch::alt((
+            parser!(alt!(
                 $(nom::combinator::map(weedle!($member), From::from),)*
-            )));
+            ));
         }
     );
     (@build_parse
