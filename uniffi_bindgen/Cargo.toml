@@ -29,5 +29,5 @@ paste = "1.0"
 serde = "1"
 serde_json = "1.0.80"
 toml = "0.5"
-weedle2 = { path = "../weedle2" }
+weedle2 = { version = "4.0.0", path = "../weedle2" }
 uniffi_meta = { path = "../uniffi_meta", version = "=0.19.3" }

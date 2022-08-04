@@ -21,8 +21,6 @@
 //!
 //! If any flaws found when parsing string with a valid grammar, create an issue.
 
-extern crate nom;
-
 use self::argument::ArgumentList;
 use self::attribute::ExtendedAttributeList;
 use self::common::{Braced, Identifier, Parenthesized, PunctuatedNonEmpty};
@@ -32,7 +30,7 @@ use self::literal::StringLit;
 use self::mixin::MixinMembers;
 use self::namespace::NamespaceMembers;
 use self::types::{AttributedType, ReturnType};
-use nom::{error::Error, Err, IResult};
+pub use nom::{error::Error, Err, IResult};
 
 #[macro_use]
 mod macros;
