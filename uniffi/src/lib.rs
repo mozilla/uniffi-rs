@@ -629,6 +629,66 @@ unsafe impl<T: Sync + Send> FfiConverter for std::sync::Arc<T> {
     }
 }
 
+/// Support for passing reference-counted trait objects via the FFI.
+///
+/// This is different than the last one, since trait objects are stored as 2 pointers (AKA a "fat
+/// pointer): one for the `Arc<T>` and another for the vtable.  Since the foreign side is expecting
+/// a single pointer, everything gets wrapped in a Box
+unsafe impl<T: Sync + Send + ?Sized> FfiConverter for Box<std::sync::Arc<T>> {
+    type RustType = std::sync::Arc<T>;
+    // Don't use a pointer to <T> as that requires a `pub <T>`
+    type FfiType = *const std::os::raw::c_void;
+
+    /// When lowering, we have an owned `Arc<T>` and we transfer that ownership
+    /// to the foreign-language code, "leaking" it out of Rust's ownership system
+    /// as a raw pointer. This works safely because we have unique ownership of `self`.
+    /// The foreign-language code is responsible for freeing this by calling the
+    /// `ffi_object_free` FFI function provided by the corresponding UniFFI type.
+    ///
+    /// Safety: when freeing the resulting pointer, the foreign-language code must
+    /// call the destructor function specific to the type `T`. Calling the destructor
+    /// function for other types may lead to undefined behaviour.
+    fn lower(obj: Self::RustType) -> Self::FfiType {
+        Box::into_raw(Box::new(obj)) as *const std::os::raw::c_void
+    }
+
+    /// When lifting, we receive a "borrow" of the `Arc<T>` that is owned by
+    /// the foreign-language code, and make a clone of it for our own use.
+    ///
+    /// Safety: the provided value must be a pointer previously obtained by calling
+    /// the `lower()` or `write()` method of this impl.
+    fn try_lift(v: Self::FfiType) -> Result<Self::RustType> {
+        // Use Box::leak to avoid dropping the `Arc<T>` that is owned by the foreign-language code.
+        let foreign_arc = Box::leak(unsafe { Box::from_raw(v as *mut std::sync::Arc<T>) });
+        // Take a clone for our own use.
+        Ok(std::sync::Arc::clone(foreign_arc))
+    }
+
+    /// When writing as a field of a complex structure, make a clone and transfer ownership
+    /// of it to the foreign-language code by writing its pointer into the buffer.
+    /// The foreign-language code is responsible for freeing this by calling the
+    /// `ffi_object_free` FFI function provided by the corresponding UniFFI type.
+    ///
+    /// Safety: when freeing the resulting pointer, the foreign-language code must
+    /// call the destructor function specific to the type `T`. Calling the destructor
+    /// function for other types may lead to undefined behaviour.
+    fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
+        static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
+        buf.put_u64(Self::lower(obj) as u64);
+    }
+
+    /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc<T>`
+    /// that is owned by the foreign-language code, and make a clone for our own use.
+    ///
+    /// Safety: the buffer must contain a pointer previously obtained by calling
+    /// the `lower()` or `write()` method of this impl.
+    fn try_read(buf: &mut &[u8]) -> Result<Self::RustType> {
+        static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
+        check_remaining(buf, 8)?;
+        Self::try_lift(buf.get_u64() as Self::FfiType)
+    }
+}
+
 pub fn lower_anyhow_error_or_panic<ErrConverter>(
     err: anyhow::Error,
     arg_name: &str,

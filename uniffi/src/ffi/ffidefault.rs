@@ -45,6 +45,12 @@ impl FfiDefault for *const std::ffi::c_void {
     }
 }
 
+impl<T: ?Sized> FfiDefault for *mut std::sync::Arc<T> {
+    fn ffi_default() -> Self {
+        std::ptr::null_mut()
+    }
+}
+
 impl FfiDefault for crate::RustBuffer {
     fn ffi_default() -> Self {
         unsafe { Self::from_raw_parts(std::ptr::null_mut(), 0, 0) }
