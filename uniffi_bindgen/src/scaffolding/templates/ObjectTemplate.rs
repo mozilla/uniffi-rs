@@ -10,28 +10,19 @@
 // in the UDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)
 // error message when processing this generated code.
 
-{% if obj.uses_deprecated_threadsafe_attribute() %}
-// We want to mark this as `deprecated` - long story short, the only way to
-// sanely do this using `#[deprecated(..)]` is to generate a function with that
-// attribute, then generate call to that function in the object constructors.
-#[deprecated(
-    since = "0.11.0",
-    note = "The `[Threadsafe]` attribute on interfaces is now the default and its use is deprecated - you should upgrade \
-            `{{ obj.name() }}` to remove the `[ThreadSafe]` attribute. \
-            See https://github.com/mozilla/uniffi-rs/#thread-safety for more details"
-)]
-#[allow(non_snake_case)]
-fn uniffi_note_threadsafe_deprecation_{{ obj.name() }}() {}
-{% endif %}
-
+{%- match obj.imp() -%}
+{%- when ObjectImpl::Trait %}
+::uniffi::ffi_converter_trait_decl!({{ obj.rust_name() }}, "{{ obj.name() }}", crate::UniFfiTag);
+{% else %}
 #[::uniffi::ffi_converter_interface(tag = crate::UniFfiTag)]
-struct r#{{ obj.name() }} { }
+struct {{ obj.rust_name() }} { }
+{% endmatch %}
 
 // All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
 // if they are not, but unfortunately it fails with an unactionably obscure error message.
 // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
 // and thus help the user debug why the requirement isn't being met.
-uniffi::deps::static_assertions::assert_impl_all!(r#{{ obj.name() }}: Sync, Send);
+uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: Sync, Send);
 
 {% let ffi_free = obj.ffi_object_free() -%}
 #[doc(hidden)]
@@ -39,8 +30,14 @@ uniffi::deps::static_assertions::assert_impl_all!(r#{{ obj.name() }}: Sync, Send
 pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_status: &mut uniffi::RustCallStatus) {
     uniffi::rust_call(call_status, || {
         assert!(!ptr.is_null());
+        {%- match obj.imp() -%}
+        {%- when ObjectImpl::Trait %}
+        {#- turn it into a Box<Arc<T> and explicitly drop it. #}
+        drop(unsafe { Box::from_raw(ptr as *mut std::sync::Arc<{{ obj.rust_name() }}>) });
+        {%- when ObjectImpl::Struct %}
         {#- turn it into an Arc and explicitly drop it. #}
-        drop(unsafe { ::std::sync::Arc::from_raw(ptr as *const r#{{ obj.name() }}) });
+        drop(unsafe { ::std::sync::Arc::from_raw(ptr as *const {{ obj.rust_name() }}) });
+        {% endmatch %}
         Ok(())
     })
 }
@@ -52,18 +49,15 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_s
         {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}
     ) -> *const std::os::raw::c_void /* *const {{ obj.name() }} */ {
         uniffi::deps::log::debug!("{{ cons.ffi_func().name() }}");
-        {% if obj.uses_deprecated_threadsafe_attribute() %}
-        uniffi_note_threadsafe_deprecation_{{ obj.name() }}();
-        {% endif %}
 
         // If the constructor does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
         uniffi::rust_call(call_status, || {
             {{ cons|return_ffi_converter }}::lower_return(
                 {%- if cons.throws() %}
-                r#{{ obj.name() }}::{% call rs::to_rs_call(cons) %}.map(::std::sync::Arc::new).map_err(Into::into)
+                {{ obj.rust_name() }}::{% call rs::to_rs_call(cons) %}.map(::std::sync::Arc::new).map_err(Into::into)
                 {%- else %}
-                ::std::sync::Arc::new(r#{{ obj.name() }}::{% call rs::to_rs_call(cons) %})
+                ::std::sync::Arc::new({{ obj.rust_name() }}::{% call rs::to_rs_call(cons) %})
                 {%- endif %}
             )
         })
@@ -82,7 +76,7 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_s
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
         uniffi::rust_call(call_status, || {
             {{ meth|return_ffi_converter }}::lower_return(
-                r#{{ obj.name() }}::{% call rs::to_rs_call(meth) %}{% if meth.throws() %}.map_err(Into::into){% endif %}
+                <{{ obj.rust_name() }}>::{% call rs::to_rs_call(meth) %}{% if meth.throws() %}.map_err(Into::into){% endif %}
             )
         })
     }

@@ -143,7 +143,7 @@ class RustBufferBuilder
     pack_into 4, 'L>', nanoseconds
   end
 
-  {% when Type::Object with (object_name) -%}
+  {% when Type::Object with { name: object_name, imp } -%}
   # The Object type {{ object_name }}.
 
   def write_{{ canonical_type_name }}(obj)

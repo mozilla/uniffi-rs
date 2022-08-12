@@ -1,0 +1,12 @@
+namespace traits {
+    // Get all the buttons we can press.
+    sequence<Button> get_buttons();
+    // press a button and return it.
+    Button press(Button button);
+};
+
+// This is a trait in Rust.
+[Trait]
+interface Button {
+    string name();
+};

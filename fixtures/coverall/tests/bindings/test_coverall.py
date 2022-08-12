@@ -29,6 +29,7 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual(d.signed64, 9223372036854775807)
         self.assertEqual(d.maybe_signed64, 0)
         self.assertEqual(d.coveralls.get_name(), "some_dict")
+        self.assertEqual(d.test_trait.name(), "trait 2")
 
         # floats should be "close enough" - although it's mildly surprising that
         # we need to specify `places=6` whereas the default is 7.
@@ -59,6 +60,7 @@ class TestCoverall(unittest.TestCase):
         self.assertAlmostEqual(d.float64, 0.0)
         self.assertIsNone(d.maybe_float64)
         self.assertIsNone(d.coveralls)
+        self.assertIsNone(d.test_trait)
 
     def test_constructors(self):
         self.assertEqual(get_num_alive(), 0)
@@ -211,6 +213,22 @@ class TestCoverall(unittest.TestCase):
 
         dict3 = coveralls.get_dict3(key=31, value=42)
         assert dict3[31] == 42
+
+class TraitsTest(unittest.TestCase):
+    def test_simple(self):
+        traits = get_traits()
+        self.assertEqual(traits[0].name(), "trait 1")
+        self.assertEqual(traits[0].number(), 1)
+        self.assertEqual(traits[0].strong_count(), 2)
+
+        self.assertEqual(traits[1].name(), "trait 2")
+        self.assertEqual(traits[1].number(), 2)
+        self.assertEqual(traits[1].strong_count(), 2)
+
+        traits[0].take_other(traits[1])
+        self.assertEqual(traits[1].strong_count(), 3)
+        self.assertEqual(traits[0].get_other().name(), "trait 2")
+        traits[0].take_other(None)
 
 if __name__=='__main__':
     unittest.main()

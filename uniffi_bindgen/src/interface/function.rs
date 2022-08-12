@@ -39,7 +39,7 @@ use uniffi_meta::Checksum;
 use super::attributes::{ArgumentAttributes, Attribute, FunctionAttributes};
 use super::ffi::{FfiArgument, FfiFunction};
 use super::literal::{convert_default_value, Literal};
-use super::types::{Type, TypeIterator};
+use super::types::{ObjectImpl, Type, TypeIterator};
 use super::{convert_type, APIConverter, ComponentInterface};
 
 /// Represents a standalone function.
@@ -229,6 +229,10 @@ impl Argument {
 
     pub fn by_ref(&self) -> bool {
         self.by_ref
+    }
+
+    pub fn is_trait_ref(&self) -> bool {
+        matches!(&self.type_, Type::Object { imp, .. } if *imp == ObjectImpl::Trait)
     }
 
     pub fn default_value(&self) -> Option<&Literal> {

@@ -53,7 +53,7 @@ use std::{
 use anyhow::{bail, ensure, Result};
 
 pub mod types;
-pub use types::{ExternalKind, Type};
+pub use types::{ExternalKind, ObjectImpl, Type};
 use types::{TypeIterator, TypeUniverse};
 
 mod attributes;
@@ -280,7 +280,7 @@ impl ComponentInterface {
     /// tightly with the host GC, and hence need to perform manual destruction of objects.
     pub fn item_contains_object_references(&self, item: &Type) -> bool {
         self.iter_types_in_item(item)
-            .any(|t| matches!(t, Type::Object(_)))
+            .any(|t| matches!(t, Type::Object { .. }))
     }
 
     /// Check whether the given item contains any (possibly nested) unsigned types
@@ -699,10 +699,10 @@ impl ComponentInterface {
 
         for ty in self.iter_types() {
             match ty {
-                Type::Object(name) => {
+                Type::Object { name, .. } => {
                     ensure!(
                         self.objects.iter().any(|o| o.name == *name),
-                        "Object `{name}` has no definition",
+                        "Object `{name}` has no definition"
                     );
                 }
                 Type::Record(name) => {
@@ -749,7 +749,8 @@ fn get_or_insert_object<'a>(objects: &'a mut Vec<Object>, name: &str) -> &'a mut
     match objects.iter_mut().position(|o| o.name == name) {
         Some(idx) => &mut objects[idx],
         None => {
-            objects.push(Object::new(name.to_owned()));
+            // proc-macros don't yet support describing traits.
+            objects.push(Object::new(name.to_owned(), ObjectImpl::Struct));
             objects.last_mut().unwrap()
         }
     }
@@ -800,7 +801,7 @@ impl<'a> RecursiveTypeIterator<'a> {
             Type::Record(nm)
             | Type::Enum(nm)
             | Type::Error(nm)
-            | Type::Object(nm)
+            | Type::Object { name: nm, .. }
             | Type::CallbackInterface(nm) => {
                 if !self.seen.contains(nm.as_str()) {
                     self.pending.push(type_);
@@ -826,7 +827,9 @@ impl<'a> RecursiveTypeIterator<'a> {
                 Type::Record(nm) => self.ci.get_record_definition(nm).map(Record::iter_types),
                 Type::Enum(nm) => self.ci.get_enum_definition(nm).map(Enum::iter_types),
                 Type::Error(nm) => self.ci.get_error_definition(nm).map(Error::iter_types),
-                Type::Object(nm) => self.ci.get_object_definition(nm).map(Object::iter_types),
+                Type::Object { name: nm, .. } => {
+                    self.ci.get_object_definition(nm).map(Object::iter_types)
+                }
                 Type::CallbackInterface(nm) => self
                     .ci
                     .get_callback_interface_definition(nm)
@@ -968,7 +971,11 @@ fn convert_type(s: &uniffi_meta::Type) -> Type {
         Ty::Duration => Type::Duration,
         Ty::Record { name } => Type::Record(name.clone()),
         Ty::Enum { name } => Type::Enum(name.clone()),
-        Ty::ArcObject { object_name } => Type::Object(object_name.clone()),
+        Ty::ArcObject { object_name } => Type::Object {
+            name: object_name.clone(),
+            // proc-macros don't yet describe traits.
+            imp: ObjectImpl::Struct,
+        },
         Ty::Error { name } => Type::Error(name.clone()),
         Ty::CallbackInterface { name } => Type::CallbackInterface(name.clone()),
         Ty::Custom { name, builtin } => Type::Custom {
@@ -1009,7 +1016,7 @@ mod test {
         assert_eq!(
             err.to_string(),
             "Conflicting type definition for `Testing`! \
-             existing definition: Object(\"Testing\"), \
+             existing definition: Object { name: \"Testing\", imp: Struct }, \
              new definition: Record(\"Testing\")"
         );
 
@@ -1130,7 +1137,10 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert!(!ci.item_contains_unsigned_types(&Type::Object("Testing".into())));
+        assert!(!ci.item_contains_unsigned_types(&Type::Object {
+            name: "Testing".into(),
+            imp: ObjectImpl::Struct,
+        }));
     }
 
     #[test]
@@ -1148,6 +1158,9 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert!(ci.item_contains_unsigned_types(&Type::Object("TestObj".into())));
+        assert!(ci.item_contains_unsigned_types(&Type::Object {
+            name: "TestObj".into(),
+            imp: ObjectImpl::Struct,
+        }));
     }
 }

@@ -268,7 +268,7 @@ impl APIConverter<Field> for weedle::argument::Argument<'_> {
 impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
         let type_ = ci.resolve_type_expression(&self.type_)?;
-        if let Type::Object(_) = type_ {
+        if let Type::Object { .. } = type_ {
             bail!("Objects cannot currently be used in enum variant data");
         }
         if self.default.is_some() {

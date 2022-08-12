@@ -61,7 +61,7 @@
 {%- when Type::Record(name) %}
 {%- include "RecordTemplate.py" %}
 
-{%- when Type::Object(name) %}
+{%- when Type::Object { name, imp } %}
 {%- include "ObjectTemplate.py" %}
 
 {%- when Type::Timestamp %}

@@ -9,14 +9,15 @@ members = [
   "uniffi",
   "weedle2",
 
+  "examples/app/uniffi-bindgen-cli",
   "examples/arithmetic",
   "examples/callbacks",
+  "examples/custom-types",
   "examples/geometry",
   "examples/rondpoint",
   "examples/sprites",
   "examples/todolist",
-  "examples/custom-types",
-  "examples/app/uniffi-bindgen-cli",
+  "examples/traits",
 
   "fixtures/benchmarks",
   "fixtures/coverall",
