@@ -208,7 +208,7 @@ mod filters {
             | Type::Float64 => nm.to_string(),
             Type::Boolean => format!("({} ? 1 : 0)", nm),
             Type::String => format!("RustBuffer.allocFromString({})", nm),
-            Type::Object(name) => format!("({}._uniffi_lower {})", class_name_rb(name)?, nm),
+            Type::Object(imp) => format!("({}._uniffi_lower {})", class_name_rb(imp.id())?, nm),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)
@@ -240,7 +240,7 @@ mod filters {
             Type::Float32 | Type::Float64 => format!("{}.to_f", nm),
             Type::Boolean => format!("1 == {}", nm),
             Type::String => format!("{}.consumeIntoString", nm),
-            Type::Object(name) => format!("{}._uniffi_allocate({})", class_name_rb(name)?, nm),
+            Type::Object(imp) => format!("{}._uniffi_allocate({})", class_name_rb(imp.id())?, nm),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)

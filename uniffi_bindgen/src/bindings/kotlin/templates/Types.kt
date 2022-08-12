@@ -59,7 +59,8 @@
 {%- when Type::Error(name) %}
 {% include "ErrorTemplate.kt" %}
 
-{%- when Type::Object(name) %}
+{%- when Type::Object(imp) %}
+{%- let name = imp.id() %}
 {% include "ObjectTemplate.kt" %}
 
 {%- when Type::Record(name) %}

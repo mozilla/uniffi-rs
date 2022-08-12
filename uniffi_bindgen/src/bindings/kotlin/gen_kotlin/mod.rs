@@ -213,7 +213,9 @@ impl KotlinCodeOracle {
             Type::Duration => Box::new(miscellany::DurationCodeType),
 
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
-            Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
+            Type::Object(ObjectImpl::Struct(nm)) | Type::Object(ObjectImpl::Trait(nm)) => {
+                Box::new(object::ObjectCodeType::new(nm))
+            }
             Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
             Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
             Type::CallbackInterface(id) => {

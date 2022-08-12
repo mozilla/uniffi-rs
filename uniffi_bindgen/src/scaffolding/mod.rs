@@ -43,7 +43,10 @@ mod filters {
             Type::Timestamp => "std::time::SystemTime".into(),
             Type::Duration => "std::time::Duration".into(),
             Type::Enum(name) | Type::Record(name) | Type::Error(name) => format!("r#{}", name),
-            Type::Object(name) => format!("std::sync::Arc<r#{}>", name),
+            Type::Object(imp) => match imp {
+                ObjectImpl::Struct(name) => format!("std::sync::Arc<r#{}>", name),
+                ObjectImpl::Trait(name) => format!("std::sync::Arc<Box<dyn r#{}>>", name),
+            },
             Type::CallbackInterface(name) => format!("Box<dyn r#{}>", name),
             Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
             Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),
@@ -87,7 +90,8 @@ mod filters {
             Type::Timestamp => "std::time::SystemTime".into(),
             Type::Duration => "std::time::Duration".into(),
             // Object is handled by Arc<T>
-            Type::Object(name) => format!("std::sync::Arc<r#{}>", name),
+            Type::Object(ObjectImpl::Struct(name)) => format!("std::sync::Arc<r#{}>", name),
+            Type::Object(ObjectImpl::Trait(name)) => format!("std::sync::Arc<Box<dyn r#{}>>", name),
             // Other user-defined types are handled by a unit-struct that we generate.  The
             // FfiConverter implementation for this can be found in one of the scaffolding template code.
             //

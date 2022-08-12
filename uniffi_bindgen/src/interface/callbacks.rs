@@ -39,7 +39,7 @@ use anyhow::{bail, Result};
 
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::object::Method;
-use super::types::{Type, TypeIterator};
+use super::types::{ObjectImpl, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 #[derive(Debug, Clone)]
@@ -114,7 +114,10 @@ impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_>
             match member {
                 weedle::interface::InterfaceMember::Operation(t) => {
                     let mut method: Method = t.convert(ci)?;
-                    method.object_name = object.name.clone();
+                    // This is a little suspect and probably just reflects the fact that
+                    // CallbackInterface and ObjectImpl::Trait are actually the same thing?
+                    method.object_type =
+                        Some(Type::Object(ObjectImpl::Struct(object.name.clone())));
                     object.methods.push(method);
                 }
                 _ => bail!(

@@ -33,6 +33,21 @@ pub(super) use finder::TypeFinder;
 mod resolver;
 pub(super) use resolver::{resolve_builtin_type, TypeResolver};
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+pub enum ObjectImpl {
+    Struct(String),
+    Trait(String),
+}
+
+impl ObjectImpl {
+    pub fn id(&self) -> &String {
+        match self {
+            ObjectImpl::Struct(s) => s,
+            ObjectImpl::Trait(s) => s,
+        }
+    }
+}
+
 /// Represents all the different high-level types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
 /// of their internal structure apart from what type of thing they are (record, enum, etc).
@@ -53,8 +68,9 @@ pub enum Type {
     String,
     Timestamp,
     Duration,
+    // An object has an additional discriminator for how it's implemented in Rust.
+    Object(ObjectImpl),
     // Types defined in the component API, each of which has a string name.
-    Object(String),
     Record(String),
     Enum(String),
     Error(String),
@@ -97,7 +113,7 @@ impl Type {
             // cases like a record named `SequenceRecord` interfering with `sequence<Record>`.
             // However, types that support importing all end up with the same prefix of "Type", so
             // that the import handling code knows how to find the remote reference.
-            Type::Object(nm) => format!("Type{nm}"),
+            Type::Object(imp) => format!("Type{}", imp.id()),
             Type::Error(nm) => format!("Type{nm}"),
             Type::Enum(nm) => format!("Type{nm}"),
             Type::Record(nm) => format!("Type{nm}"),
@@ -160,7 +176,7 @@ impl From<&Type> for FFIType {
             // We might add a separate type for borrowed strings in future.
             Type::String => FFIType::RustBuffer,
             // Objects are pointers to an Arc<>
-            Type::Object(name) => FFIType::RustArcPtr(name.to_owned()),
+            Type::Object(imp) => FFIType::RustArcPtr(imp.id().to_owned()),
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface(_) => FFIType::UInt64,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
@@ -279,7 +295,7 @@ mod test_type {
         assert_eq!(Type::String.canonical_name(), "string");
         assert_eq!(
             Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object(
-                "Example".into()
+                ObjectImpl::Struct("Example".into())
             )))))
             .canonical_name(),
             "OptionalSequenceTypeExample"

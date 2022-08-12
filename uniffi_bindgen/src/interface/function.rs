@@ -38,7 +38,7 @@ use anyhow::{bail, Result};
 
 use super::ffi::{FFIArgument, FFIFunction};
 use super::literal::{convert_default_value, Literal};
-use super::types::{Type, TypeIterator};
+use super::types::{ObjectImpl, Type, TypeIterator};
 use super::{
     attributes::{ArgumentAttributes, FunctionAttributes},
     convert_type,
@@ -205,6 +205,10 @@ impl Argument {
 
     pub fn by_ref(&self) -> bool {
         self.by_ref
+    }
+
+    pub fn is_trait_ref(&self) -> bool {
+        matches!(self.type_, Type::Object(ObjectImpl::Trait(_)))
     }
 
     pub fn default_value(&self) -> Option<Literal> {

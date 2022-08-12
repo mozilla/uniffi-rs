@@ -54,7 +54,7 @@ use std::{
 use anyhow::{bail, Result};
 
 pub mod types;
-pub use types::Type;
+pub use types::{ObjectImpl, Type};
 use types::{TypeIterator, TypeUniverse};
 
 mod attributes;
@@ -194,7 +194,7 @@ impl ComponentInterface {
     /// Get an Object definition by name, or None if no such Object is defined.
     pub fn get_object_definition(&self, name: &str) -> Option<&Object> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.objects.iter().find(|o| o.name == name)
+        self.objects.iter().find(|o| o.name() == name)
     }
 
     /// Get the definitions for every Callback Interface type in the interface.
@@ -659,7 +659,8 @@ impl<'a> RecursiveTypeIterator<'a> {
             Type::Record(nm)
             | Type::Enum(nm)
             | Type::Error(nm)
-            | Type::Object(nm)
+            | Type::Object(ObjectImpl::Trait(nm))
+            | Type::Object(ObjectImpl::Struct(nm))
             | Type::CallbackInterface(nm) => {
                 if !self.seen.contains(nm.as_str()) {
                     self.pending.push(type_);
@@ -685,7 +686,10 @@ impl<'a> RecursiveTypeIterator<'a> {
                 Type::Record(nm) => self.ci.get_record_definition(nm).map(Record::iter_types),
                 Type::Enum(nm) => self.ci.get_enum_definition(nm).map(Enum::iter_types),
                 Type::Error(nm) => self.ci.get_error_definition(nm).map(Error::iter_types),
-                Type::Object(nm) => self.ci.get_object_definition(nm).map(Object::iter_types),
+                Type::Object(imp) => self
+                    .ci
+                    .get_object_definition(imp.id())
+                    .map(Object::iter_types),
                 Type::CallbackInterface(nm) => self
                     .ci
                     .get_callback_interface_definition(nm)
@@ -1023,7 +1027,9 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert!(!ci.item_contains_unsigned_types(&Type::Object("Testing".into())));
+        assert!(
+            !ci.item_contains_unsigned_types(&Type::Object(ObjectImpl::Struct("Testing".into())))
+        );
     }
 
     #[test]
@@ -1041,6 +1047,8 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert!(ci.item_contains_unsigned_types(&Type::Object("TestObj".into())));
+        assert!(
+            ci.item_contains_unsigned_types(&Type::Object(ObjectImpl::Struct("TestObj".into())))
+        );
     }
 }

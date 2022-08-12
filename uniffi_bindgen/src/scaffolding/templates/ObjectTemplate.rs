@@ -10,26 +10,11 @@
 // in the UDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)
 // error message when processing this generated code.
 
-{% if obj.uses_deprecated_threadsafe_attribute() %}
-// We want to mark this as `deprecated` - long story short, the only way to
-// sanely do this using `#[deprecated(..)]` is to generate a function with that
-// attribute, then generate call to that function in the object constructors.
-#[deprecated(
-    since = "0.11.0",
-    note = "The `[Threadsafe]` attribute on interfaces is now the default and its use is deprecated - you should upgrade \
-            `{{ obj.name() }}` to remove the `[ThreadSafe]` attribute. \
-            See https://github.com/mozilla/uniffi-rs/#thread-safety for more details"
-)]
-#[allow(non_snake_case)]
-fn uniffi_note_threadsafe_deprecation_{{ obj.name() }}() {}
-{% endif %}
-
-
 // All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
 // if they are not, but unfortunately it fails with an unactionably obscure error message.
 // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
 // and thus help the user debug why the requirement isn't being met.
-uniffi::deps::static_assertions::assert_impl_all!(r#{{ obj.name() }}: Sync, Send);
+uniffi::deps::static_assertions::assert_impl_all!(r#{{ obj.type_name() }}: Sync, Send);
 
 {% let ffi_free = obj.ffi_object_free() -%}
 #[doc(hidden)]
@@ -38,7 +23,7 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_s
     uniffi::call_with_output(call_status, || {
         assert!(!ptr.is_null());
         {#- turn it into an Arc and explicitly drop it. #}
-        drop(unsafe { std::sync::Arc::from_raw(ptr as *const r#{{ obj.name() }}) })
+        drop(unsafe { std::sync::Arc::from_raw(ptr as *const r#{{ obj.type_name() }}) })
     })
 }
 
@@ -48,9 +33,6 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_s
     pub extern "C" fn r#{{ cons.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> *const std::os::raw::c_void /* *const {{ obj.name() }} */ {
         uniffi::deps::log::debug!("{{ cons.ffi_func().name() }}");
-        {% if obj.uses_deprecated_threadsafe_attribute() %}
-        uniffi_note_threadsafe_deprecation_{{ obj.name() }}();
-        {% endif %}
 
         // If the constructor does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.

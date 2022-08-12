@@ -65,7 +65,7 @@ use anyhow::{bail, Result};
 
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::function::Argument;
-use super::types::{Type, TypeIterator};
+use super::types::{ObjectImpl, Type, TypeIterator};
 use super::{
     attributes::{ConstructorAttributes, InterfaceAttributes, MethodAttributes},
     convert_type,
@@ -88,30 +88,38 @@ use super::{APIConverter, ComponentInterface};
 ///  - maybe "Class" would be a better name than "Object" here?
 #[derive(Debug, Clone)]
 pub struct Object {
-    pub(super) name: String,
+    pub(super) imp: ObjectImpl,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     pub(super) ffi_func_free: FFIFunction,
-    pub(super) uses_deprecated_threadsafe_attribute: bool,
 }
 
 impl Object {
-    pub(super) fn new(name: String) -> Object {
+    fn new(imp: ObjectImpl) -> Object {
         Object {
-            name,
+            imp,
             constructors: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
-            uses_deprecated_threadsafe_attribute: false,
         }
     }
 
-    pub fn name(&self) -> &str {
-        &self.name
+    pub fn name(&self) -> &String {
+        self.imp.id()
+    }
+
+    // This is the type as declared by Rust - `type_name` isn't a great name
+    // though - maybe `decl_name`?
+    // XXX - TODO - wrong - getting `r#Box<dyn Animal>` instead of `Box<dyn r#Animal>`
+    pub fn type_name(&self) -> String {
+        match &self.imp {
+            ObjectImpl::Struct(name) => name.clone(),
+            ObjectImpl::Trait(name) => format!("Box<dyn {}>", name),
+        }
     }
 
     pub fn type_(&self) -> Type {
-        Type::Object(self.name.clone())
+        Type::Object(self.imp.clone())
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {
@@ -147,10 +155,6 @@ impl Object {
         &self.ffi_func_free
     }
 
-    pub fn uses_deprecated_threadsafe_attribute(&self) -> bool {
-        self.uses_deprecated_threadsafe_attribute
-    }
-
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FFIFunction> {
         iter::once(&self.ffi_func_free)
             .chain(self.constructors.iter().map(|f| &f.ffi_func))
@@ -158,17 +162,18 @@ impl Object {
     }
 
     pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
-        self.ffi_func_free.name = format!("ffi_{ci_prefix}_{}_object_free", self.name);
+        let name = self.imp.id();
+        self.ffi_func_free.name = format!("ffi_{ci_prefix}_{}_object_free", name);
         self.ffi_func_free.arguments = vec![FFIArgument {
             name: "ptr".to_string(),
-            type_: FFIType::RustArcPtr(self.name().to_string()),
+            type_: FFIType::RustArcPtr(name.to_string()),
         }];
         self.ffi_func_free.return_type = None;
         for cons in self.constructors.iter_mut() {
-            cons.derive_ffi_func(ci_prefix, &self.name)
+            cons.derive_ffi_func(ci_prefix, name)
         }
         for meth in self.methods.iter_mut() {
-            meth.derive_ffi_func(ci_prefix, &self.name)?
+            meth.derive_ffi_func(ci_prefix, name)?
         }
         Ok(())
     }
@@ -192,7 +197,7 @@ impl Hash for Object {
         //  - its `name` property includes a checksum derived from  the very
         //    hash value we're trying to calculate here, so excluding it
         //    avoids a weird circular depenendency in the calculation.
-        self.name.hash(state);
+        self.name().hash(state);
         self.constructors.hash(state);
         self.methods.hash(state);
     }
@@ -203,12 +208,18 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         if self.inheritance.is_some() {
             bail!("interface inheritence is not supported");
         }
-        let mut object = Object::new(self.identifier.0.to_string());
         let attributes = match &self.attributes {
             Some(attrs) => InterfaceAttributes::try_from(attrs)?,
             None => Default::default(),
         };
-        object.uses_deprecated_threadsafe_attribute = attributes.threadsafe();
+
+        let name = self.identifier.0.to_string();
+        let imp = if attributes.is_trait() {
+            ObjectImpl::Trait(name)
+        } else {
+            ObjectImpl::Struct(name)
+        };
+        let mut object = Object::new(imp);
         // Convert each member into a constructor or method, guarding against duplicate names.
         let mut member_names = HashSet::new();
         for member in &self.members.body {
@@ -225,7 +236,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                     if !member_names.insert(method.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", method.name())
                     }
-                    method.object_name = object.name.clone();
+                    method.object_type = Some(object.type_());
                     object.methods.push(method);
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
@@ -336,11 +347,12 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 // Represents an instance method for an object type.
 //
 // The FFI will represent this as a function whose first/self argument is a
-// `FFIType::RustArcPtr` to the instance.
+// `FFIType::RustArcPtr` to the instance (or something that can Deref to it)
 #[derive(Debug, Clone)]
 pub struct Method {
     pub(super) name: String,
-    pub(super) object_name: String,
+    // The `object_type` isn't known as this is constructed, but is filled in later.
+    pub(super) object_type: Option<Type>,
     pub(super) return_type: Option<Type>,
     pub(super) arguments: Vec<Argument>,
     pub(super) ffi_func: FFIFunction,
@@ -352,6 +364,17 @@ impl Method {
         &self.name
     }
 
+    pub fn object_name(&self) -> &String {
+        match self
+            .object_type
+            .as_ref()
+            .expect("name must be resolved by now")
+        {
+            Type::Object(imp) => imp.id(),
+            _ => unreachable!("must be an Object"),
+        }
+    }
+
     pub fn arguments(&self) -> Vec<&Argument> {
         self.arguments.iter().collect()
     }
@@ -361,9 +384,7 @@ impl Method {
     pub fn full_arguments(&self) -> Vec<Argument> {
         vec![Argument {
             name: "ptr".to_string(),
-            // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
-            // is contained in the proper `TypeUniverse`, but this works for now.
-            type_: Type::Object(self.object_name.clone()),
+            type_: self.object_type.as_ref().unwrap().clone(),
             by_ref: !self.attributes.get_self_by_arc(),
             optional: false,
             default: None,
@@ -453,7 +474,7 @@ impl Hash for Method {
         //    hash value we're trying to calculate here, so excluding it
         //    avoids a weird circular depenendency in the calculation.
         self.name.hash(state);
-        self.object_name.hash(state);
+        self.object_name().hash(state);
         self.arguments.hash(state);
         self.return_type.hash(state);
         self.attributes.hash(state);
@@ -481,7 +502,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
                 }
             },
             // We don't know the name of the containing `Object` at this point, fill it in later.
-            object_name: Default::default(),
+            object_type: Default::default(),
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),

@@ -131,7 +131,9 @@ class RustBufferStream
     Time.at(seconds, nanoseconds, :nanosecond, in: '+00:00').utc
   end
 
-  {% when Type::Object with (object_name) -%}
+  {% when Type::Object with (object_imp) -%}
+  {%- let object_name = object_imp.id() %}
+
   # The Object type {{ object_name }}.
 
   def read{{ canonical_type_name }}

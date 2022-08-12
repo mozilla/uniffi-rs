@@ -9,7 +9,9 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
 {%- macro _arg_list_rs_call(func) %}
     {%- for arg in func.full_arguments() %}
         match {{- arg.type_().borrow()|ffi_converter }}::try_lift(r#{{ arg.name() }}) {
-        {%- if arg.by_ref() %}
+        {%- if arg.is_trait_ref() %}
+            Ok(ref val) => &***val /* wow! */,
+        {%- else if arg.by_ref() %}
             Ok(ref val) => val,
         {% else %}
             Ok(val) => val,

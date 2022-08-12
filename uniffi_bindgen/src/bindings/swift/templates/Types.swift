@@ -70,7 +70,8 @@
 {%- when Type::Error(name) %}
 {%- include "ErrorTemplate.swift" %}
 
-{%- when Type::Object(name) %}
+{%- when Type::Object(imp) %}
+{%- let name = imp.id() %}
 {%- include "ObjectTemplate.swift" %}
 
 {%- when Type::Record(name) %}

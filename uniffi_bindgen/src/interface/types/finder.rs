@@ -22,7 +22,7 @@ use std::convert::TryFrom;
 use anyhow::{bail, Result};
 
 use super::super::attributes::{EnumAttributes, InterfaceAttributes, TypedefAttributes};
-use super::{Type, TypeUniverse};
+use super::{ObjectImpl, Type, TypeUniverse};
 
 /// Trait to help with an early "type discovery" phase when processing the UDL.
 ///
@@ -63,8 +63,10 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
             types.add_type_definition(self.identifier.0, Type::Enum(name))
         } else if InterfaceAttributes::try_from(self.attributes.as_ref())?.contains_error_attr() {
             types.add_type_definition(self.identifier.0, Type::Error(name))
+        } else if InterfaceAttributes::try_from(self.attributes.as_ref())?.is_trait() {
+            types.add_type_definition(self.identifier.0, Type::Object(ObjectImpl::Trait(name)))
         } else {
-            types.add_type_definition(self.identifier.0, Type::Object(name))
+            types.add_type_definition(self.identifier.0, Type::Object(ObjectImpl::Struct(name)))
         }
     }
 }
@@ -200,7 +202,7 @@ mod test {
         "#,
             |types| {
                 assert!(
-                    matches!(types.get_type_definition("TestObject").unwrap(), Type::Object(nm) if nm == "TestObject")
+                    matches!(types.get_type_definition("TestObject").unwrap(), Type::Object(ObjectImpl::Struct(nm)) if nm == "TestObject")
                 );
             },
         );
