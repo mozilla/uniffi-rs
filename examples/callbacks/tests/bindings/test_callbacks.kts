@@ -26,23 +26,24 @@ class OnCallAnsweredImpl : OnCallAnswered {
     }
 }
 
+val sim = getSimCards()[0]
 val cbObject = OnCallAnsweredImpl()
 val telephone = Telephone()
 
-telephone.call(true, cbObject)
+telephone.call(sim, true, cbObject)
 assert(cbObject.busyCount == 0) { "yesCount=${cbObject.busyCount} (should be 0)" }
 assert(cbObject.yesCount == 1) { "yesCount=${cbObject.yesCount} (should be 1)" }
 
-telephone.call(true, cbObject)
+telephone.call(sim, true, cbObject)
 assert(cbObject.busyCount == 0) { "yesCount=${cbObject.busyCount} (should be 0)" }
 assert(cbObject.yesCount == 2) { "yesCount=${cbObject.yesCount} (should be 2)" }
 
-telephone.call(false, cbObject)
+telephone.call(sim, false, cbObject)
 assert(cbObject.busyCount == 1) { "yesCount=${cbObject.busyCount} (should be 1)" }
 assert(cbObject.yesCount == 2) { "yesCount=${cbObject.yesCount} (should be 2)" }
 
 val cbObjet2 = OnCallAnsweredImpl()
-telephone.call(true, cbObjet2)
+telephone.call(sim, true, cbObjet2)
 assert(cbObjet2.busyCount == 0) { "yesCount=${cbObjet2.busyCount} (should be 0)" }
 assert(cbObjet2.yesCount == 1) { "yesCount=${cbObjet2.yesCount} (should be 1)" }
 

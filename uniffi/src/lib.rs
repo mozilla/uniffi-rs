@@ -632,8 +632,9 @@ unsafe impl<T: Sync + Send> FfiConverter for std::sync::Arc<T> {
 /// Support for passing reference-counted trait objects via the FFI.
 ///
 /// This is different than the last one, since trait objects are stored as 2 pointers (AKA a "fat
-/// pointer): one for the `Arc<T>` and another for the vtable.  Since the foreign side is expecting
-/// a single pointer, everything gets wrapped in a Box
+/// pointer): one for `T` and another for the vtable.  Since the foreign side is expecting
+/// a single pointer, something needs to get wrapped in a Box. And all our `T`s are `Arc<>`s.
+/// So, of `Box<Arc<T>` or `Arc<Box<T>`, an inner `Arc<T>` is more consistent with other impls.
 unsafe impl<T: Sync + Send + ?Sized> FfiConverter for Box<std::sync::Arc<T>> {
     type RustType = std::sync::Arc<T>;
     // Don't use a pointer to <T> as that requires a `pub <T>`

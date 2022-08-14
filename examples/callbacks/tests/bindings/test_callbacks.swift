@@ -28,23 +28,24 @@ class OnCallAnsweredImpl : OnCallAnswered {
     }
 }
 
+let sim = getSimCards()[0]
 let cbObject = OnCallAnsweredImpl()
 let telephone = Telephone()
 
-telephone.call(domestic: true, callResponder: cbObject)
+telephone.call(sim: sim, domestic: true, callResponder: cbObject)
 assert(cbObject.busyCount == 0, "yesCount=\(cbObject.busyCount) (should be 0)")
 assert(cbObject.yesCount == 1, "yesCount=\(cbObject.yesCount) (should be 1)")
 
-telephone.call(domestic: true, callResponder: cbObject)
+telephone.call(sim: sim, domestic: true, callResponder: cbObject)
 assert(cbObject.busyCount == 0, "yesCount=\(cbObject.busyCount) (should be 0)")
 assert(cbObject.yesCount == 2, "yesCount=\(cbObject.yesCount) (should be 2)")
 
-telephone.call(domestic: false, callResponder: cbObject)
+telephone.call(sim: sim, domestic: false, callResponder: cbObject)
 assert(cbObject.busyCount == 1, "yesCount=\(cbObject.busyCount) (should be 1)")
 assert(cbObject.yesCount == 2, "yesCount=\(cbObject.yesCount) (should be 2)")
 
 let cbObject2 = OnCallAnsweredImpl()
-telephone.call(domestic: true, callResponder: cbObject2)
+telephone.call(sim: sim, domestic: true, callResponder: cbObject2)
 assert(cbObject2.busyCount == 0, "yesCount=\(cbObject2.busyCount) (should be 0)")
 assert(cbObject2.yesCount == 1, "yesCount=\(cbObject2.yesCount) (should be 1)")
 

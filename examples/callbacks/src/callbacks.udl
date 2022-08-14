@@ -1,10 +1,21 @@
-namespace callbacks {};
-
-interface Telephone {
-  constructor();
-  void call(boolean domestic, OnCallAnswered call_responder);
+namespace callbacks {
+  // I'm a phone with builtin sim cards!
+  sequence<SimCard> get_sim_cards();
 };
 
+// This is a trait implemented on the Rust side.
+[Trait]
+interface SimCard {
+  string name(); // The name of the carrier/provider.
+};
+
+// Make calls on one of the sim cards, call back to foreign code with the call status.
+interface Telephone {
+  constructor();
+  void call([ByRef]SimCard sim, boolean domestic, OnCallAnswered call_responder);
+};
+
+// This is a trait implemented on the foreign side.
 callback interface OnCallAnswered {
   string hello();
   void busy();
