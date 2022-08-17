@@ -45,7 +45,7 @@ mod filters {
             Type::Enum(name) | Type::Record(name) | Type::Error(name) => format!("r#{}", name),
             Type::Object(imp) => match imp {
                 ObjectImpl::Struct(name) => format!("std::sync::Arc<r#{}>", name),
-                ObjectImpl::Trait(name) => format!("Box<std::sync::Arc<dyn r#{}>>", name),
+                ObjectImpl::Trait(name) => format!("std::sync::Arc<dyn r#{}>", name),
             },
             Type::CallbackInterface(name) => format!("Box<dyn r#{}>", name),
             Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
