@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 trait ForeignGetters {
-    fn get_bool(&self, v: bool, arg2: bool) -> bool;
+    fn get_bool(&self, v: bool, argument_two: bool) -> bool;
     fn get_string(&self, v: String, arg2: bool) -> String;
     fn get_option(&self, v: Option<String>, arg2: bool) -> Option<String>;
     fn get_list(&self, v: Vec<i32>, arg2: bool) -> Vec<i32>;
@@ -16,8 +16,8 @@ impl RustGetters {
     pub fn new() -> Self {
         RustGetters
     }
-    fn get_bool(&self, callback: Box<dyn ForeignGetters>, v: bool, arg2: bool) -> bool {
-        callback.get_bool(v, arg2)
+    fn get_bool(&self, callback: Box<dyn ForeignGetters>, v: bool, argument_two: bool) -> bool {
+        callback.get_bool(v, argument_two)
     }
     fn get_string(&self, callback: Box<dyn ForeignGetters>, v: String, arg2: bool) -> String {
         callback.get_string(v, arg2)

@@ -12,8 +12,8 @@ from callbacks import *
 rust_getters = RustGetters()
 
 class PythonGetters(ForeignGetters):
-    def get_bool(self, v, arg2):
-        return v ^ arg2
+    def get_bool(self, v, argumentTwo):
+        return v ^ argumentTwo
 
     def get_string(self, v, arg2):
         if arg2:

@@ -31,7 +31,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
             {% if meth.throws().is_some() %}try {% endif -%}
             swiftCallbackInterface.{{ meth.name()|fn_name }}(
                     {% for arg in meth.arguments() -%}
-                    {{ arg.name() }}: try {{ arg|read_fn }}(from: reader)
+                    {{ arg.name()|var_name }}: try {{ arg|read_fn }}(from: reader)
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
