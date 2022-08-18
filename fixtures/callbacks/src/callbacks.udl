@@ -3,7 +3,7 @@ namespace callbacks {};
 /// These objects are implemented by the foreign language and passed
 /// to Rust. Rust then calls methods on it when it needs to.
 callback interface ForeignGetters {
-  boolean get_bool(boolean v, boolean arg2);
+  boolean get_bool(boolean v, boolean argument_two);
   string get_string(string v, boolean arg2);
   string? get_option(string? v, boolean arg2);
   sequence<i32> get_list(sequence<i32> v, boolean arg2);
@@ -13,7 +13,7 @@ callback interface ForeignGetters {
 /// to get the value.
 interface RustGetters {
   constructor();
-  boolean get_bool(ForeignGetters callback, boolean v, boolean arg2);
+  boolean get_bool(ForeignGetters callback, boolean v, boolean argument_two);
   string get_string(ForeignGetters callback, string v, boolean arg2);
   string? get_option(ForeignGetters callback, string? v, boolean arg2);
   sequence<i32> get_list(ForeignGetters callback, sequence<i32> v, boolean arg2);

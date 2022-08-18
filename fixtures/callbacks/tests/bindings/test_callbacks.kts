@@ -11,7 +11,7 @@ import uniffi.callbacks.*
 // with a variety of return types.
 val rustGetters = RustGetters()
 class KotlinGetters(): ForeignGetters {
-    override fun getBool(v: Boolean, arg2: Boolean): Boolean = v xor arg2
+    override fun getBool(v: Boolean, argumentTwo: Boolean): Boolean = v xor argumentTwo
     override fun getString(v: String, arg2: Boolean): String = if (arg2) "1234567890123" else v
     override fun getOption(v: String?, arg2: Boolean): String? = if (arg2) v?.uppercase() else v
     override fun getList(v: List<Int>, arg2: Boolean): List<Int> = if (arg2) v else listOf()
