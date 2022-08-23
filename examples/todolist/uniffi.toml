@@ -1,0 +1,7 @@
+[bindings.geckojs.receiver_thread]
+default = "worker"
+main = [
+  "set_default_list",
+  "TodoList",
+  "TodoList.make_default",
+]

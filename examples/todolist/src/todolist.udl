@@ -1,6 +1,6 @@
 namespace todolist {
     TodoList? get_default_list();
-    undefined set_default_list(TodoList list);
+    void set_default_list(TodoList list);
 
     [Throws=TodoError]
     TodoEntry create_entry_with(string todo);
