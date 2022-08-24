@@ -23,8 +23,7 @@ error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
    |         <std::sync::Arc<r#Counter> as uniffi::FfiConverter>::lower(_arc)
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
    |
-   = help: the following implementations were found:
-             <Arc<T> as FfiConverter>
+   = help: the trait `FfiConverter` is implemented for `Arc<T>`
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
   --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
@@ -32,8 +31,7 @@ error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
    |         <std::sync::Arc<r#Counter> as uniffi::FfiConverter>::lower(_arc)
    |                                                                    ^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
    |
-   = help: the following implementations were found:
-             <Arc<T> as FfiConverter>
+   = help: the trait `FfiConverter` is implemented for `Arc<T>`
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
    --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
@@ -41,8 +39,7 @@ error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
     |         match<std::sync::Arc<r#Counter> as uniffi::FfiConverter>::try_lift(r#ptr) {
     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
     |
-    = help: the following implementations were found:
-              <Arc<T> as FfiConverter>
+    = help: the trait `FfiConverter` is implemented for `Arc<T>`
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
    --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
@@ -50,5 +47,4 @@ error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
     |         match<std::sync::Arc<r#Counter> as uniffi::FfiConverter>::try_lift(r#ptr) {
     |                                                                            ^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
     |
-    = help: the following implementations were found:
-              <Arc<T> as FfiConverter>
+    = help: the trait `FfiConverter` is implemented for `Arc<T>`
