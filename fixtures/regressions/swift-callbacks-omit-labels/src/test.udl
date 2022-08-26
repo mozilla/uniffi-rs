@@ -1,0 +1,17 @@
+// Regression test for https://github.com/mozilla/uniffi-rs/issues/1312
+
+namespace regression_test_callbacks_omit_labels { };
+
+dictionary UserModel {
+    string name;
+};
+
+interface Client {
+    constructor();
+
+    void friend_request(ClientDelegate delegate);
+};
+
+callback interface ClientDelegate {
+    void did_receive_friend_request(UserModel user);
+};

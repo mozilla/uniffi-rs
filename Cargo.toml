@@ -37,6 +37,7 @@ members = [
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",
   "fixtures/regressions/missing-newline",
+  "fixtures/regressions/swift-callbacks-omit-labels",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
   "fixtures/simple-fns",
