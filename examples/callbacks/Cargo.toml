@@ -8,7 +8,7 @@ publish = false
 
 [lib]
 crate-type = ["lib", "cdylib"]
-name = "callbacks"
+name = "uniffi_callbacks"
 
 [dependencies]
 uniffi_macros = {path = "../../uniffi_macros"}
