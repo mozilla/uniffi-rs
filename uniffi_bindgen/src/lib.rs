@@ -94,12 +94,13 @@
 
 const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-use anyhow::{bail, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::{Parser, Subcommand};
 use fs_err::{self as fs, File};
 use serde::{Deserialize, Serialize};
 use std::io::prelude::*;
+use std::io::ErrorKind;
 use std::{collections::HashMap, env, process::Command, str::FromStr};
 
 pub mod backend;
@@ -277,11 +278,11 @@ pub fn generate_component_scaffolding(
     );
     let file_stem = udl_file.file_stem().context("not a file")?;
     let filename = format!("{file_stem}.uniffi.rs");
-    let out_dir = get_out_dir(udl_file, out_dir_override)?.join(filename);
-    let mut f = File::create(&out_dir)?;
+    let out_path = get_out_dir(udl_file, out_dir_override)?.join(filename);
+    let mut f = File::create(&out_path)?;
     write!(f, "{}", RustScaffolding::new(&component)).context("Failed to write output file")?;
     if format_code {
-        Command::new("rustfmt").arg(&out_dir).status()?;
+        format_code_with_rustfmt(&out_path)?;
     }
     Ok(())
 }
@@ -441,6 +442,20 @@ fn parse_udl(udl_file: &Utf8Path) -> Result<ComponentInterface> {
     let udl = fs::read_to_string(udl_file)
         .with_context(|| format!("Failed to read UDL from {udl_file}"))?;
     ComponentInterface::from_webidl(&udl).context("Failed to parse UDL")
+}
+
+fn format_code_with_rustfmt(path: &Utf8Path) -> Result<()> {
+    let status = Command::new("rustfmt").arg(path).status().map_err(|e| {
+        let ctx = match e.kind() {
+            ErrorKind::NotFound => "formatting was requested, but rustfmt was not found",
+            _ => "unknown error when calling rustfmt",
+        };
+        anyhow!(e).context(ctx)
+    })?;
+    if !status.success() {
+        bail!("rustmt failed when formatting scaffolding. Note: --no-format can be used to skip formatting");
+    }
+    Ok(())
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
