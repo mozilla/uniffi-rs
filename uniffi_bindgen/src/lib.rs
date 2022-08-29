@@ -94,14 +94,13 @@
 
 const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::{Parser, Subcommand};
 use fs_err::{self as fs, File};
 use serde::{Deserialize, Serialize};
 use std::io::prelude::*;
-use std::io::ErrorKind;
-use std::{collections::HashMap, env, process::Command, str::FromStr};
+use std::{collections::HashMap, env, str::FromStr};
 
 pub mod backend;
 pub mod bindings;
@@ -276,14 +275,19 @@ pub fn generate_component_scaffolding(
         guess_crate_root(udl_file)?,
         config_file_override,
     );
+    let scaffolding = RustScaffolding::new(&component).to_string();
+    let file_content = if format_code {
+        let parsed =
+            syn::parse_file(&scaffolding).context("Failed parsing scaffolding for formatting")?;
+        prettyplease::unparse(&parsed)
+    } else {
+        scaffolding
+    };
     let file_stem = udl_file.file_stem().context("not a file")?;
     let filename = format!("{file_stem}.uniffi.rs");
     let out_path = get_out_dir(udl_file, out_dir_override)?.join(filename);
     let mut f = File::create(&out_path)?;
-    write!(f, "{}", RustScaffolding::new(&component)).context("Failed to write output file")?;
-    if format_code {
-        format_code_with_rustfmt(&out_path)?;
-    }
+    write!(f, "{}", file_content).context("Failed to write output file")?;
     Ok(())
 }
 
@@ -442,20 +446,6 @@ fn parse_udl(udl_file: &Utf8Path) -> Result<ComponentInterface> {
     let udl = fs::read_to_string(udl_file)
         .with_context(|| format!("Failed to read UDL from {udl_file}"))?;
     ComponentInterface::from_webidl(&udl).context("Failed to parse UDL")
-}
-
-fn format_code_with_rustfmt(path: &Utf8Path) -> Result<()> {
-    let status = Command::new("rustfmt").arg(path).status().map_err(|e| {
-        let ctx = match e.kind() {
-            ErrorKind::NotFound => "formatting was requested, but rustfmt was not found",
-            _ => "unknown error when calling rustfmt",
-        };
-        anyhow!(e).context(ctx)
-    })?;
-    if !status.success() {
-        bail!("rustmt failed when formatting scaffolding. Note: --no-format can be used to skip formatting");
-    }
-    Ok(())
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
