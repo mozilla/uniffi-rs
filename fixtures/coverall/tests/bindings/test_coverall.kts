@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import java.time.Instant
 import java.util.concurrent.*
 
 import uniffi.coverall.*
@@ -152,6 +153,14 @@ Coveralls("test_complex_errors").use { coveralls ->
     } catch(e: InternalException) {
         // Expected result
     }
+}
+
+Coveralls("test_interfaces_in_dicts").use { coveralls ->
+    coveralls.addPatch(Patch(Color.RED))
+    coveralls.addRepair(
+            Repair(`when`=Instant.now(), patch=Patch(Color.BLUE))
+        )
+    assert(coveralls.getRepairs().size == 2)
 }
 
 Coveralls("test_regressions").use { coveralls ->

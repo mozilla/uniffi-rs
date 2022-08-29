@@ -115,6 +115,21 @@ interface Coveralls {
 
     /// integer->integer dictionary
     record<u32, u64> get_dict3(u32 key, u64 value);
+
+    /// Adds a new repair at the current time.
+    void add_patch(Patch patch);
+
+    /// Adds a new repair at the specified time.
+    void add_repair(Repair repair);
+
+    /// Returns all repairs made.
+    sequence<Repair> get_repairs();
+};
+
+// coveralls keep track of their repairs (an interface in a dict)
+dictionary Repair {
+    timestamp when;
+    Patch patch;
 };
 
 // All coveralls end up with a patch.

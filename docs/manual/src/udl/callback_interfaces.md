@@ -47,7 +47,7 @@ which may use it.
 In UDL:
 
 ```webidl
-object Authenticator {
+interface Authenticator {
     constructor(Keychain keychain);
     void login();
 }
@@ -64,9 +64,9 @@ impl Authenticator {
   pub fn new(keychain: Box<dyn Keychain>) -> Self {
     Self { keychain }
   }
-  pub fn login() {
-    let username = keychain.get("username".into());
-    let password = keychain.get("password".into());
+  pub fn login(&self) {
+    let username = self.keychain.get("username".into());
+    let password = self.keychain.get("password".into());
   }
 }
 ```

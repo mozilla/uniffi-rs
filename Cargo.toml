@@ -3,9 +3,11 @@ members = [
   "uniffi_bindgen",
   "uniffi_build",
   "uniffi_macros",
+  "uniffi_meta",
   "uniffi_testing",
   "uniffi",
   "weedle2",
+
   "examples/arithmetic",
   "examples/callbacks",
   "examples/geometry",
@@ -35,8 +37,10 @@ members = [
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",
   "fixtures/regressions/missing-newline",
+  "fixtures/regressions/swift-callbacks-omit-labels",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
+  "fixtures/simple-fns",
   "fixtures/swift-omit-labels",
 ]
 

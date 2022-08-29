@@ -1,14 +1,14 @@
 [package]
 name = "uniffi-example-callbacks"
 edition = "2021"
-version = "0.19.2"
+version = "0.19.3"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 publish = false
 
 [lib]
 crate-type = ["lib", "cdylib"]
-name = "callbacks"
+name = "uniffi_callbacks"
 
 [dependencies]
 uniffi_macros = {path = "../../uniffi_macros"}

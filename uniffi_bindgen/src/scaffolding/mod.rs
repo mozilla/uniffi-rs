@@ -101,9 +101,9 @@ mod filters {
             // Wrapper types are implemented by generics that wrap the FfiConverter implementation of the
             // inner type.
             Type::Optional(inner) => {
-                format!("std::option::Option<r#{}>", ffi_converter_name(inner)?)
+                format!("std::option::Option<{}>", ffi_converter_name(inner)?)
             }
-            Type::Sequence(inner) => format!("std::vec::Vec<r#{}>", ffi_converter_name(inner)?),
+            Type::Sequence(inner) => format!("std::vec::Vec<{}>", ffi_converter_name(inner)?),
             Type::Map(k, v) => format!(
                 "std::collections::HashMap<r#{}, r#{}>",
                 ffi_converter_name(k)?,

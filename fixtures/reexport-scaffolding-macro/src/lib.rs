@@ -8,7 +8,6 @@ mod tests {
     use std::ffi::CString;
     use std::os::raw::c_void;
     use std::process::{Command, Stdio};
-    use std::str::FromStr;
     use uniffi::{FfiConverter, ForeignCallback, RustBuffer, RustCallStatus};
     use uniffi_bindgen::ComponentInterface;
 
@@ -22,7 +21,7 @@ mod tests {
         let output = std::io::BufReader::new(child.stdout.take().unwrap());
         let artifacts = Message::parse_stream(output)
             .filter_map(|message| match message {
-                Err(e) => panic!("{}", e),
+                Err(e) => panic!("{e}"),
                 Ok(Message::CompilerArtifact(artifact)) => {
                     if artifact.target.name == "reexport_scaffolding_macro"
                         && artifact.target.kind.iter().any(|item| item == "cdylib")
@@ -40,7 +39,7 @@ mod tests {
         }
         let artifact = match artifacts.len() {
             1 => &artifacts[0],
-            n => panic!("Found {} artfiacts from cargo build", n),
+            n => panic!("Found {n} artfiacts from cargo build"),
         };
         let cdylib_files: Vec<_> = artifact
             .filenames
@@ -74,9 +73,10 @@ mod tests {
     fn test_symbols_present() {
         let library = load_library();
         let coveralls_ci =
-            ComponentInterface::from_str(include_str!("../../coverall/src/coverall.udl")).unwrap();
+            ComponentInterface::from_webidl(include_str!("../../coverall/src/coverall.udl"))
+                .unwrap();
         let callbacks_ci =
-            ComponentInterface::from_str(include_str!("../../callbacks/src/callbacks.udl"))
+            ComponentInterface::from_webidl(include_str!("../../callbacks/src/callbacks.udl"))
                 .unwrap();
 
         // UniFFI internal function
@@ -129,7 +129,8 @@ mod tests {
         let mut call_status = RustCallStatus::default();
         let library = load_library();
         let coveralls_ci =
-            ComponentInterface::from_str(include_str!("../../coverall/src/coverall.udl")).unwrap();
+            ComponentInterface::from_webidl(include_str!("../../coverall/src/coverall.udl"))
+                .unwrap();
         let object_def = coveralls_ci.get_object_definition("Coveralls").unwrap();
 
         let get_num_alive: Symbol<unsafe extern "C" fn(&mut RustCallStatus) -> u64> = get_symbol(

@@ -4,7 +4,7 @@ description = "a multi-language bindings generator for rust (runtime support cod
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
 repository = "https://github.com/mozilla/uniffi-rs"
-version = "0.19.2"
+version = "0.19.3"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 edition = "2021"
@@ -15,12 +15,13 @@ keywords = ["ffi", "bindgen"]
 anyhow = "1"
 bytes = "1.0"
 camino = "1.0.8"
-lazy_static = "1.4"
 log = "0.4"
+once_cell = "1.12"
 # Regular dependencies
 cargo_metadata = "0.14"
 paste = "1.0"
-uniffi_bindgen = { path = "../uniffi_bindgen", optional = true, version = "=0.19.2"}
+uniffi_bindgen = { path = "../uniffi_bindgen", optional = true, version = "=0.19.3"}
+uniffi_macros = { path = "../uniffi_macros", version = "=0.19.3" }
 static_assertions = "1.1.0"
 
 [features]

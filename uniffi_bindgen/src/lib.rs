@@ -105,6 +105,7 @@ use std::{collections::HashMap, env, process::Command, str::FromStr};
 pub mod backend;
 pub mod bindings;
 pub mod interface;
+pub mod macro_metadata;
 pub mod scaffolding;
 
 use bindings::TargetLanguage;
@@ -198,9 +199,9 @@ fn load_bindings_config_toml<BC: BindingGeneratorConfig>(
     }
 
     let contents = fs::read_to_string(&config_path)
-        .with_context(|| format!("Failed to read config file from {}", config_path))?;
+        .with_context(|| format!("Failed to read config file from {config_path}"))?;
     let full_config = toml::Value::from_str(&contents)
-        .with_context(|| format!("Failed to parse config file {}", config_path))?;
+        .with_context(|| format!("Failed to parse config file {config_path}"))?;
 
     Ok(full_config
         .get("bindings")
@@ -275,7 +276,7 @@ pub fn generate_component_scaffolding(
         config_file_override,
     );
     let file_stem = udl_file.file_stem().context("not a file")?;
-    let filename = format!("{}.uniffi.rs", file_stem);
+    let filename = format!("{file_stem}.uniffi.rs");
     let out_dir = get_out_dir(udl_file, out_dir_override)?.join(filename);
     let mut f = File::create(&out_dir)?;
     write!(f, "{}", RustScaffolding::new(&component)).context("Failed to write output file")?;
@@ -292,14 +293,16 @@ pub fn generate_bindings(
     config_file_override: Option<&Utf8Path>,
     target_languages: Vec<&str>,
     out_dir_override: Option<&Utf8Path>,
+    library_file: Option<&Utf8Path>,
     try_format_code: bool,
 ) -> Result<()> {
-    let component = parse_udl(udl_file)?;
-    let config = get_config(
-        &component,
-        guess_crate_root(udl_file)?,
-        config_file_override,
-    )?;
+    let mut component = parse_udl(udl_file)?;
+    if let Some(library_file) = library_file {
+        macro_metadata::add_to_ci_from_library(&mut component, library_file)?;
+    }
+    let crate_root = &guess_crate_root(udl_file)?;
+
+    let config = get_config(&component, crate_root, config_file_override)?;
     let out_dir = get_out_dir(udl_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(
@@ -310,13 +313,24 @@ pub fn generate_bindings(
             try_format_code,
         )?;
     }
+
+    Ok(())
+}
+
+pub fn dump_json(library_path: &Utf8Path) -> Result<String> {
+    let metadata = macro_metadata::extract_from_library(library_path)?;
+    Ok(serde_json::to_string_pretty(&metadata)?)
+}
+
+pub fn print_json(library_path: &Utf8Path) -> Result<()> {
+    println!("{}", dump_json(library_path)?);
     Ok(())
 }
 
 // Run tests against the foreign language bindings (generated and compiled at the same time).
 // Note that the cdylib we're testing against must be built already.
 pub fn run_tests(
-    cdylib_dir: impl AsRef<Utf8Path>,
+    library_file: impl AsRef<Utf8Path>,
     udl_files: &[impl AsRef<Utf8Path>],
     test_scripts: &[impl AsRef<Utf8Path>],
     config_file_override: Option<&Utf8Path>,
@@ -327,7 +341,12 @@ pub fn run_tests(
     // with overrides, so don't have this problem.
     assert!(udl_files.len() == 1 || config_file_override.is_none());
 
-    let cdylib_dir = cdylib_dir.as_ref();
+    let library_file = library_file.as_ref();
+    let cdylib_dir = library_file
+        .parent()
+        .context("Generated cdylib has no parent directory")?;
+
+    let metadata_items = macro_metadata::extract_from_library(library_file)?;
 
     // Group the test scripts by language first.
     let mut language_tests: HashMap<TargetLanguage, Vec<_>> = HashMap::new();
@@ -348,11 +367,14 @@ pub fn run_tests(
         for udl_file in udl_files {
             let udl_file = udl_file.as_ref();
             let crate_root = guess_crate_root(udl_file)?;
-            let component = parse_udl(udl_file)?;
+            let mut component = parse_udl(udl_file)?;
+            macro_metadata::add_to_ci(&mut component, metadata_items.clone())?;
+
             let config = get_config(&component, crate_root, config_file_override)?;
             bindings::write_bindings(&config.bindings, &component, cdylib_dir, lang, true)?;
             bindings::compile_bindings(&config.bindings, &component, cdylib_dir, lang)?;
         }
+
         for test_script in test_scripts {
             bindings::run_script(cdylib_dir, &test_script, lang)?;
         }
@@ -392,9 +414,9 @@ fn get_config(
     match config_file {
         Some(path) => {
             let contents = fs::read_to_string(&path)
-                .with_context(|| format!("Failed to read config file from {}", &path))?;
+                .with_context(|| format!("Failed to read config file from {path}"))?;
             let loaded_config: Config = toml::de::from_str(&contents)
-                .with_context(|| format!("Failed to generate config from file {}", &path))?;
+                .with_context(|| format!("Failed to generate config from file {path}"))?;
             Ok(loaded_config.merge_with(&default_config))
         }
         None => Ok(default_config),
@@ -417,9 +439,8 @@ fn get_out_dir(udl_file: &Utf8Path, out_dir_override: Option<&Utf8Path>) -> Resu
 
 fn parse_udl(udl_file: &Utf8Path) -> Result<ComponentInterface> {
     let udl = fs::read_to_string(udl_file)
-        .with_context(|| format!("Failed to read UDL from {}", &udl_file))?;
-    udl.parse::<interface::ComponentInterface>()
-        .context("Failed to parse UDL")
+        .with_context(|| format!("Failed to read UDL from {udl_file}"))?;
+    ComponentInterface::from_webidl(&udl).context("Failed to parse UDL")
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -501,6 +522,10 @@ enum Commands {
         #[clap(long, short)]
         config: Option<Utf8PathBuf>,
 
+        /// Extract proc-macro metadata from a cdylib for this crate
+        #[clap(long)]
+        cdylib: Option<Utf8PathBuf>,
+
         /// Path to the UDL file.
         udl_file: Utf8PathBuf,
     },
@@ -525,8 +550,8 @@ enum Commands {
 
     /// Run test scripts against foreign language bindings.
     Test {
-        /// Path to the directory containing the cdylib the scripts will be testing against.
-        cdylib_dir: Utf8PathBuf,
+        /// Path to the library the scripts will be testing against.
+        library_file: Utf8PathBuf,
 
         /// Path to the UDL file.
         udl_file: Utf8PathBuf,
@@ -538,6 +563,12 @@ enum Commands {
         #[clap(long, short)]
         config: Option<Utf8PathBuf>,
     },
+
+    /// Print the JSON representation of the interface from a dynamic library
+    PrintJson {
+        /// Path to the library file (.so, .dll, .dylib, or .a)
+        path: Utf8PathBuf,
+    },
 }
 
 pub fn run_main() -> Result<()> {
@@ -548,12 +579,14 @@ pub fn run_main() -> Result<()> {
             out_dir,
             no_format,
             config,
+            cdylib,
             udl_file,
         } => crate::generate_bindings(
             udl_file,
             config.as_deref(),
             language.iter().map(String::as_str).collect(),
             out_dir.as_deref(),
+            cdylib.as_deref(),
             !no_format,
         ),
         Commands::Scaffolding {
@@ -568,11 +601,12 @@ pub fn run_main() -> Result<()> {
             !no_format,
         ),
         Commands::Test {
-            cdylib_dir,
+            library_file,
             udl_file,
             test_scripts,
             config,
-        } => crate::run_tests(cdylib_dir, &[udl_file], test_scripts, config.as_deref()),
+        } => crate::run_tests(library_file, &[udl_file], test_scripts, config.as_deref()),
+        Commands::PrintJson { path } => print_json(path),
     }?;
     Ok(())
 }

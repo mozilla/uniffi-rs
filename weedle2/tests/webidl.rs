@@ -1,12 +1,12 @@
 extern crate weedle;
 
-use std::io::Read;
+use std::{io::Read, path::Path};
 
 use fs_err::File;
 use weedle::*;
 
 fn read_file(path: &str) -> String {
-    let mut file = File::open(path).unwrap();
+    let mut file = File::open(Path::new(env!("CARGO_MANIFEST_DIR")).join(path)).unwrap();
     let mut file_content = String::new();
     file.read_to_string(&mut file_content).unwrap();
     file_content

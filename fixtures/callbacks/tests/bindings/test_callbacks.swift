@@ -13,7 +13,7 @@
 // with a variety of return types.
 let rustGetters = RustGetters()
 class SwiftGetters: ForeignGetters {
-    func getBool(v: Bool, arg2: Bool) -> Bool { v != arg2 }
+    func getBool(v: Bool, argumentTwo: Bool) -> Bool { v != argumentTwo }
     func getString(v: String, arg2: Bool) -> String { arg2 ? "1234567890123" : v }
     func getOption(v: String?, arg2: Bool) -> String? { arg2 ? v?.uppercased() : v }
     func getList(v: [Int32], arg2: Bool) -> [Int32] { arg2 ? v : [] }
@@ -23,8 +23,8 @@ func test() {
     let callback = SwiftGetters()
     [true, false].forEach { v in
         let flag = true
-        let expected = callback.getBool(v: v, arg2: flag)
-        let observed = rustGetters.getBool(callback: callback, v: v, arg2: flag)
+        let expected = callback.getBool(v: v, argumentTwo: flag)
+        let observed = rustGetters.getBool(callback: callback, v: v, argumentTwo: flag)
         assert(expected == observed, "roundtripping through callback: \(String(describing: expected)) != \(String(describing: observed))")
     }
 

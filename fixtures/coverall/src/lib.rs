@@ -5,12 +5,11 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
+use std::time::SystemTime;
 
-lazy_static::lazy_static! {
-    static ref NUM_ALIVE: RwLock<u64> = {
-        RwLock::new(0)
-    };
-}
+use once_cell::sync::Lazy;
+
+static NUM_ALIVE: Lazy<RwLock<u64>> = Lazy::new(|| RwLock::new(0));
 
 #[derive(Debug, thiserror::Error)]
 pub enum CoverallError {
@@ -139,6 +138,8 @@ pub struct Coveralls {
     // A reference to another Coveralls. Currently will be only a reference
     // to `self`, so will create a circular reference.
     other: Mutex<Option<Arc<Self>>>,
+    // Repairs we've made to this coverall.
+    repairs: Mutex<Vec<Repair>>,
 }
 
 impl Coveralls {
@@ -147,6 +148,7 @@ impl Coveralls {
         Self {
             name,
             other: Mutex::new(None),
+            repairs: Mutex::new(Vec::new()),
         }
     }
 
@@ -159,7 +161,7 @@ impl Coveralls {
     }
 
     fn fallible_panic(&self, message: String) -> Result<()> {
-        panic!("{}", message);
+        panic!("{message}");
     }
 
     fn get_name(&self) -> String {
@@ -167,7 +169,7 @@ impl Coveralls {
     }
 
     fn panicing_new(message: String) -> Self {
-        panic!("{}", message);
+        panic!("{message}");
     }
 
     fn maybe_throw(&self, should_throw: bool) -> Result<bool> {
@@ -201,7 +203,7 @@ impl Coveralls {
     }
 
     fn panic(&self, message: String) {
-        panic!("{}", message);
+        panic!("{message}");
     }
 
     fn strong_count(self: Arc<Self>) -> u64 {
@@ -221,7 +223,7 @@ impl Coveralls {
     }
 
     fn take_other_panic(self: Arc<Self>, message: String) {
-        panic!("{}", message);
+        panic!("{message}");
     }
 
     fn clone_me(&self) -> Arc<Self> {
@@ -231,11 +233,12 @@ impl Coveralls {
         Arc::new(Self {
             name: self.name.clone(),
             other: new_other,
+            repairs: Mutex::new(Vec::new()),
         })
     }
 
     fn get_status(&self, status: String) -> String {
-        format!("status: {}", status)
+        format!("status: {status}")
     }
 
     fn get_dict(&self, key: String, value: u64) -> HashMap<String, u64> {
@@ -255,6 +258,25 @@ impl Coveralls {
         map.insert(key, value);
         map
     }
+
+    fn add_patch(&self, patch: Arc<Patch>) {
+        let repair = Repair {
+            when: SystemTime::now(),
+            patch,
+        };
+        let mut repairs = self.repairs.lock().unwrap();
+        repairs.push(repair);
+    }
+
+    fn add_repair(&self, repair: Repair) {
+        let mut repairs = self.repairs.lock().unwrap();
+        repairs.push(repair);
+    }
+
+    fn get_repairs(&self) -> Vec<Repair> {
+        let repairs = self.repairs.lock().unwrap();
+        repairs.clone()
+    }
 }
 
 impl Drop for Coveralls {
@@ -262,6 +284,13 @@ impl Drop for Coveralls {
         *NUM_ALIVE.write().unwrap() -= 1;
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct Repair {
+    when: SystemTime,
+    patch: Arc<Patch>,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
     Red,
@@ -269,7 +298,7 @@ pub enum Color {
     Green,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Patch {
     color: Color,
 }
