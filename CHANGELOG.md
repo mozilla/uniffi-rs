@@ -6,7 +6,11 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.4...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.5...HEAD).
+
+## v0.19.5 - (_2022-08-29_)
+
+[All changes in v0.19.5](https://github.com/mozilla/uniffi-rs/compare/v0.19.4...v0.19.5).
 
 - Fixed a small bug in the 0.19.4 release, where the extraneous `r#` was present in the HashMap generated scaffolding.
 
