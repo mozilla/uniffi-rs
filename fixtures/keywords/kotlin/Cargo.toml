@@ -1,6 +1,6 @@
 [package]
 name = "uniffi-fixture-keywords-kotlin"
-version = "0.19.3"
+version = "0.19.4"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 publish = false

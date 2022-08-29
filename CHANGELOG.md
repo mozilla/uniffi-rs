@@ -6,7 +6,11 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.3...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.4...HEAD).
+
+## v0.19.4 - (_2022-08-29_)
+
+[All changes in v0.19.4](https://github.com/mozilla/uniffi-rs/compare/v0.19.3...v0.19.4).
 
 - Implement Timestamp and Duration types in Ruby backend.
 - Fixed in a bug where callback interfaces with arguments that include underscores do not get converted to camelCase on Swift.
