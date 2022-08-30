@@ -72,7 +72,13 @@ pub fn fn_ffi_symbol_name(mod_path: &[String], name: &str, checksum: u16) -> Str
 }
 
 /// Enum covering all the possible metadata types
-#[derive(Clone, Debug, enum_variant_macros::FromVariants, Hash, Deserialize, Serialize)]
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
 pub enum Metadata {
     Func(FnMetadata),
+}
+
+impl From<FnMetadata> for Metadata {
+    fn from(value: FnMetadata) -> Metadata {
+        Metadata::Func(value)
+    }
 }
