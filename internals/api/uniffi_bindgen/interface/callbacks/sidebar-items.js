@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["CallbackInterface",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["CallbackInterface",""]]};

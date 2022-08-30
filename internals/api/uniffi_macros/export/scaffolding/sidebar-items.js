@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["gen_fn_scaffolding",""],["gen_scaffolding",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["gen_fn_scaffolding",""],["gen_scaffolding",""]]};

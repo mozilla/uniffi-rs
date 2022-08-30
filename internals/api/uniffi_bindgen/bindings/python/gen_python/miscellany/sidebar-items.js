@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["impl_code_type_for_miscellany",""]],"struct":[["DurationCodeType",""],["TimestampCodeType",""]]});
+window.SIDEBAR_ITEMS = {"macro":[["impl_code_type_for_miscellany",""]],"struct":[["DurationCodeType",""],["TimestampCodeType",""]]};

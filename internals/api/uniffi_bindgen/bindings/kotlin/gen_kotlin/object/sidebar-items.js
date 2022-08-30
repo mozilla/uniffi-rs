@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ObjectCodeType",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["ObjectCodeType",""]]};

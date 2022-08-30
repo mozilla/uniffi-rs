@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["CallbackInterfaceCodeType",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["CallbackInterfaceCodeType",""]]};

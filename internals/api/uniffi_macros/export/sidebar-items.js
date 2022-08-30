@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ExportItem",""]],"fn":[["expand_export",""]],"mod":[["metadata",""],["scaffolding",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["ExportItem",""]],"fn":[["expand_export",""]],"mod":[["metadata",""],["scaffolding",""]]};

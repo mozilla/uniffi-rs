@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["TemplateExpression","Config value for template expressions"]]});
+window.SIDEBAR_ITEMS = {"struct":[["TemplateExpression","Config value for template expressions"]]};

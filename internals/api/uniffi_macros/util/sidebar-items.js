@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["mod_path",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["mod_path",""]]};

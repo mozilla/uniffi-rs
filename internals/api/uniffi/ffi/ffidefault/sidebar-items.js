@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["impl_ffi_default_with_default",""]],"trait":[["FfiDefault",""]]});
+window.SIDEBAR_ITEMS = {"macro":[["impl_ffi_default_with_default",""]],"trait":[["FfiDefault",""]]};

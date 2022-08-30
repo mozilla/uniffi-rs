@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Error","Represents an Error that might be thrown by functions/methods in the component interface."]]});
+window.SIDEBAR_ITEMS = {"struct":[["Error","Represents an Error that might be thrown by functions/methods in the component interface."]]};

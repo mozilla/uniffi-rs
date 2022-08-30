@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Namespace","A namespace is currently just a name, but might hold more metadata about the component in future."]]});
+window.SIDEBAR_ITEMS = {"struct":[["Namespace","A namespace is currently just a name, but might hold more metadata about the component in future."]]};

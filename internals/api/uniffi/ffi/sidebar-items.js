@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["ffidefault","FfiDefault trait"],["foreignbytes",""],["foreigncallbacks","Callback interfaces are traits specified in UDL which can be implemented by foreign languages."],["rustbuffer",""],["rustcalls","Low-level support for calling rust functions"]]});
+window.SIDEBAR_ITEMS = {"mod":[["ffidefault","FfiDefault trait"],["foreignbytes",""],["foreigncallbacks","Callback interfaces are traits specified in UDL which can be implemented by foreign languages."],["rustbuffer",""],["rustcalls","Low-level support for calling rust functions"]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["filters",""]],"struct":[["RustScaffolding",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["filters",""]],"struct":[["RustScaffolding",""]]};

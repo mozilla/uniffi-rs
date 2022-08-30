@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["crate_name_rs",""],["ffi_converter",""],["ffi_converter_name","Get the name of the FfiConverter implementation for this type"],["type_ffi",""],["type_rs",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["crate_name_rs",""],["ffi_converter",""],["ffi_converter_name","Get the name of the FfiConverter implementation for this type"],["type_ffi",""],["type_rs",""]]};

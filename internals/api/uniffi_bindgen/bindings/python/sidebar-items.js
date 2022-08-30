@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["run_script","Execute the specifed python script, with environment based on the generated artifacts in the given output directory."],["write_bindings",""]],"mod":[["gen_python",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["run_script","Execute the specifed python script, with environment based on the generated artifacts in the given output directory."],["write_bindings",""]],"mod":[["gen_python",""]]};

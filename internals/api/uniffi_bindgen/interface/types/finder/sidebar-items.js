@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["TypeFinder","Trait to help with an early “type discovery” phase when processing the UDL."]]});
+window.SIDEBAR_ITEMS = {"trait":[["TypeFinder","Trait to help with an early “type discovery” phase when processing the UDL."]]};

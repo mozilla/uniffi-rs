@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Literal",""],["Radix",""]],"fn":[["convert_default_value",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["Literal",""],["Radix",""]],"fn":[["convert_default_value",""]]};

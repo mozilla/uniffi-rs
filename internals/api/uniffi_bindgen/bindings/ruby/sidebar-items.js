@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["generate_ruby_bindings",""],["run_script","Execute the specifed ruby script, with environment based on the generated artifacts in the given output directory."],["write_bindings",""]],"mod":[["gen_ruby",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["generate_ruby_bindings",""],["run_script","Execute the specifed ruby script, with environment based on the generated artifacts in the given output directory."],["write_bindings",""]],"mod":[["gen_ruby",""]]};
