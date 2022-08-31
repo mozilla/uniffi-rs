@@ -537,9 +537,9 @@ enum Commands {
         #[clap(long, short)]
         config: Option<Utf8PathBuf>,
 
-        /// Extract proc-macro metadata from a cdylib for this crate
+        /// Extract proc-macro metadata from a native lib (cdylib or staticlib) for this crate.
         #[clap(long)]
-        cdylib: Option<Utf8PathBuf>,
+        lib_file: Option<Utf8PathBuf>,
 
         /// Path to the UDL file.
         udl_file: Utf8PathBuf,
@@ -594,14 +594,14 @@ pub fn run_main() -> Result<()> {
             out_dir,
             no_format,
             config,
-            cdylib,
+            lib_file,
             udl_file,
         } => crate::generate_bindings(
             udl_file,
             config.as_deref(),
             language.iter().map(String::as_str).collect(),
             out_dir.as_deref(),
-            cdylib.as_deref(),
+            lib_file.as_deref(),
             !no_format,
         ),
         Commands::Scaffolding {
