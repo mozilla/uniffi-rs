@@ -13,8 +13,5 @@ name = "uniffi_uitests"
 uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
 uniffi_macros = {path = "../../uniffi_macros", features=["builtin-bindgen"]}
 
-[build-dependencies]
-uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}
-
 [dev-dependencies]
 trybuild = "1.0.53"
