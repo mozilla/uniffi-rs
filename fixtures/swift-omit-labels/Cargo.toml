@@ -1,6 +1,6 @@
 [package]
 name = "uniffi-fixture-swift-omit-argument-labels"
-version = "0.19.5"
+version = "0.19.6"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 license = "MPL-2.0"
