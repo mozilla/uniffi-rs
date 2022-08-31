@@ -8,6 +8,10 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.5...HEAD).
 
+- Fix callback interface init signature in Rust scaffolding
+- Drop unused dependencies
+- Update to MSRV 1.61.0
+
 ## v0.19.5 - (_2022-08-29_)
 
 [All changes in v0.19.5](https://github.com/mozilla/uniffi-rs/compare/v0.19.4...v0.19.5).
