@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_meta"
-version = "0.19.5"
+version = "0.19.6"
 edition = "2021"
 description = "uniffi_meta"
 homepage = "https://mozilla.github.io/uniffi-rs"
