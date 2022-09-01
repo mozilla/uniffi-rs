@@ -184,6 +184,8 @@
 <span id="178">178</span>
 <span id="179">179</span>
 <span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -343,6 +345,7 @@
             <span class="comment">// Already extracted this item</span>
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
+
         <span class="comment">// Use the file data starting from offset, without specifying the end position.  We don&#39;t</span>
         <span class="comment">// always know the end position, because goblin reports the symbol size as 0 for PE and</span>
         <span class="comment">// MachO files.</span>
@@ -351,6 +354,7 @@
         <span class="comment">// just ignore the trailing data.</span>
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">file_data</span>[<span class="ident">offset</span>..];
         <span class="self">self</span>.<span class="ident">items</span>.<span class="ident">push</span>(<span class="ident">bincode::deserialize</span>::<span class="op">&lt;</span><span class="ident">Metadata</span><span class="op">&gt;</span>(<span class="ident">data</span>)<span class="question-mark">?</span>);
+        <span class="self">self</span>.<span class="ident">names</span>.<span class="ident">insert</span>(<span class="ident">name</span>.<span class="ident">to_string</span>());
         <span class="prelude-val">Ok</span>(())
     }
 
