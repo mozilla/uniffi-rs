@@ -132,6 +132,11 @@ fn get_num_alive() -> u64 {
 type Result<T, E = CoverallError> = std::result::Result<T, E>;
 type ComplexResult<T, E = ComplexError> = std::result::Result<T, E>;
 
+fn println(text: String) -> Result<()> {
+    println!("coveralls println: {}", text);
+    Ok(())
+}
+
 #[derive(Debug)]
 pub struct Coveralls {
     name: String,

@@ -3,6 +3,10 @@ namespace coverall {
     SimpleDict create_none_dict();
 
     u64 get_num_alive();
+
+    // void returning error throwing namespace function to catch clippy warnings (eg, #1330)
+    [Throws=CoverallError]
+    void println(string text);
 };
 
 dictionary SimpleDict {
