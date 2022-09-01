@@ -2,19 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use uniffi_meta::{checksum, FnMetadata, FnParamMetadata};
+use uniffi_meta::{FnMetadata, FnParamMetadata};
 
-use super::{convert_type, create_metadata_static_var};
+use super::convert_type;
 use crate::export::ExportItem;
 
 pub(super) fn gen_fn_metadata(item: syn::ItemFn, mod_path: &[String]) -> syn::Result<ExportItem> {
-    let meta = fn_metadata(&item, mod_path)?;
+    let metadata = fn_metadata(&item, mod_path)?;
 
-    Ok(ExportItem::Function {
-        checksum: checksum(&meta),
-        meta_static_var: create_metadata_static_var(&item.sig.ident, meta.into()),
-        item,
-    })
+    Ok(ExportItem::Function { item, metadata })
 }
 
 fn fn_metadata(f: &syn::ItemFn, mod_path: &[String]) -> syn::Result<FnMetadata> {

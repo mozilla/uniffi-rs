@@ -6,25 +6,7 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{FnArg, ItemFn, Pat, ReturnType};
 
-use super::ExportItem;
-
-pub(super) fn gen_scaffolding(item: ExportItem, mod_path: &[String]) -> syn::Result<TokenStream> {
-    match item {
-        ExportItem::Function {
-            item,
-            checksum,
-            meta_static_var,
-        } => {
-            let scaffolding = gen_fn_scaffolding(&item, mod_path, checksum)?;
-            Ok(quote! {
-                #scaffolding
-                #meta_static_var
-            })
-        }
-    }
-}
-
-fn gen_fn_scaffolding(
+pub(super) fn gen_fn_scaffolding(
     item: &ItemFn,
     mod_path: &[String],
     checksum: u16,
