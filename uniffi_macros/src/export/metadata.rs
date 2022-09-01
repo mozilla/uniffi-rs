@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use proc_macro2::{Ident, Span, TokenStream};
-use quote::{format_ident, quote, IdentFragment, ToTokens};
-use uniffi_meta::{Metadata, Type};
+use proc_macro2::{Ident, Span};
+use quote::ToTokens;
+use uniffi_meta::Type;
 
 use super::ExportItem;
 
@@ -152,15 +152,4 @@ fn type_not_supported(ty: &impl ToTokens) -> syn::Error {
         &ty,
         "this type is not currently supported by uniffi::export in this position",
     )
-}
-
-fn create_metadata_static_var(name: impl IdentFragment, val: Metadata) -> TokenStream {
-    let data: Vec<u8> = bincode::serialize(&val).expect("Error serializing metadata item");
-    let count = data.len();
-    let var_name = format_ident!("UNIFFI_META_{}", name);
-
-    quote! {
-        #[no_mangle]
-        pub static #var_name: [u8; #count] = [#(#data),*];
-    }
 }
