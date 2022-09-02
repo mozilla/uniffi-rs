@@ -20,7 +20,17 @@ pub fn add_to_ci(
     for item in metadata_items {
         match item {
             Metadata::Func(meta) => {
-                iface.add_function_definition(meta.into())?;
+                let cr = meta.module_path.first().unwrap();
+                let ns = iface.namespace();
+                if cr == ns {
+                    iface.add_function_definition(meta.into())?;
+                } else {
+                    eprintln!("Mixing symbols from multiple crates is not supported yet.");
+                    eprintln!(
+                        "Main crate is expected to be named `{ns}` based on the UDL namespace."
+                    );
+                    eprintln!("Ignoring function `{}` from crate `{cr}`.", meta.name);
+                }
             }
         }
     }
