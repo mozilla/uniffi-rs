@@ -31,17 +31,39 @@
 <span id="25">25</span>
 <span id="26">26</span>
 <span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
-<span class="kw">use</span> <span class="ident">proc_macro2::TokenStream</span>;
+<span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">TokenStream</span>};
+<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>};
+<span class="kw">use</span> <span class="ident">uniffi_meta</span>::{<span class="ident">checksum</span>, <span class="ident">FnMetadata</span>, <span class="ident">Metadata</span>};
 
 <span class="kw">mod</span> <span class="ident">metadata</span>;
 <span class="kw">mod</span> <span class="ident">scaffolding</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::metadata::gen_metadata</span>;
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::scaffolding::gen_scaffolding</span>;
+<span class="kw">use</span> <span class="self">self</span>::{<span class="ident">metadata::gen_metadata</span>, <span class="ident">scaffolding::gen_fn_scaffolding</span>};
 
 <span class="comment">// TODO(jplatte): Ensure no generics, no async, …</span>
 <span class="comment">// TODO(jplatte): Aggregate errors instead of short-circuiting, whereever possible</span>
@@ -49,14 +71,34 @@
 <span class="kw">enum</span> <span class="ident">ExportItem</span> {
     <span class="ident">Function</span> {
         <span class="ident">item</span>: <span class="ident">syn::ItemFn</span>,
-        <span class="ident">checksum</span>: <span class="ident">u16</span>,
-        <span class="ident">meta_static_var</span>: <span class="ident">TokenStream</span>,
+        <span class="ident">metadata</span>: <span class="ident">FnMetadata</span>,
     },
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">expand_export</span>(<span class="ident">item</span>: <span class="ident">syn::Item</span>, <span class="ident">mod_path</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">TokenStream</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">item</span> <span class="op">=</span> <span class="ident">gen_metadata</span>(<span class="ident">item</span>, <span class="ident">mod_path</span>)<span class="question-mark">?</span>;
-    <span class="ident">gen_scaffolding</span>(<span class="ident">item</span>, <span class="ident">mod_path</span>)
+    <span class="kw">match</span> <span class="ident">gen_metadata</span>(<span class="ident">item</span>, <span class="ident">mod_path</span>)<span class="question-mark">?</span> {
+        <span class="ident">ExportItem::Function</span> { <span class="ident">item</span>, <span class="ident">metadata</span> } =&gt; {
+            <span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="ident">checksum</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>);
+            <span class="kw">let</span> <span class="ident">meta_static_var</span> <span class="op">=</span> <span class="ident">create_metadata_static_var</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">sig</span>.<span class="ident">ident</span>, <span class="ident">metadata</span>.<span class="ident">into</span>());
+            <span class="kw">let</span> <span class="ident">scaffolding</span> <span class="op">=</span> <span class="ident">gen_fn_scaffolding</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>, <span class="ident">mod_path</span>, <span class="ident">checksum</span>)<span class="question-mark">?</span>;
+
+            <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
+                #<span class="ident">scaffolding</span>
+                #<span class="ident">meta_static_var</span>
+            })
+        }
+    }
+}
+
+<span class="kw">fn</span> <span class="ident">create_metadata_static_var</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>, <span class="ident">val</span>: <span class="ident">Metadata</span>) -&gt; <span class="ident">TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">bincode::serialize</span>(<span class="kw-2">&amp;</span><span class="ident">val</span>).<span class="ident">expect</span>(<span class="string">&quot;Error serializing metadata item&quot;</span>);
+    <span class="kw">let</span> <span class="ident">count</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">len</span>();
+    <span class="kw">let</span> <span class="ident">var_name</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_{}&quot;</span>, <span class="ident">name</span>);
+
+    <span class="macro">quote!</span> {
+        <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
+        <span class="kw">pub</span> <span class="kw">static</span> #<span class="ident">var_name</span>: [<span class="ident">u8</span>; #<span class="ident">count</span>] <span class="op">=</span> [#(#<span class="ident">data</span>),<span class="kw-2">*</span>];
+    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
