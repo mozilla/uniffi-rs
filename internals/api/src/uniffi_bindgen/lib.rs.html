@@ -1204,9 +1204,9 @@
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
         <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
-        <span class="doccomment">/// Extract proc-macro metadata from a cdylib for this crate</span>
+        <span class="doccomment">/// Extract proc-macro metadata from a native lib (cdylib or staticlib) for this crate.</span>
         <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>)]</span>
-        <span class="ident">cdylib</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
+        <span class="ident">lib_file</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
 
         <span class="doccomment">/// Path to the UDL file.</span>
         <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
@@ -1261,14 +1261,14 @@
             <span class="ident">out_dir</span>,
             <span class="ident">no_format</span>,
             <span class="ident">config</span>,
-            <span class="ident">cdylib</span>,
+            <span class="ident">lib_file</span>,
             <span class="ident">udl_file</span>,
         } =&gt; <span class="ident"><span class="kw">crate</span>::generate_bindings</span>(
             <span class="ident">udl_file</span>,
             <span class="ident">config</span>.<span class="ident">as_deref</span>(),
             <span class="ident">language</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">String::as_str</span>).<span class="ident">collect</span>(),
             <span class="ident">out_dir</span>.<span class="ident">as_deref</span>(),
-            <span class="ident">cdylib</span>.<span class="ident">as_deref</span>(),
+            <span class="ident">lib_file</span>.<span class="ident">as_deref</span>(),
             <span class="op">!</span><span class="ident">no_format</span>,
         ),
         <span class="ident">Commands::Scaffolding</span> {
