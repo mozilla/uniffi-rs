@@ -428,7 +428,7 @@ fn get_out_dir(udl_file: &Utf8Path, out_dir_override: Option<&Utf8Path>) -> Resu
     Ok(match out_dir_override {
         Some(s) => {
             // Create the directory if it doesn't exist yet.
-            fs::create_dir_all(&s)?;
+            fs::create_dir_all(s)?;
             s.canonicalize_utf8().context("Unable to find out-dir")?
         }
         None => udl_file

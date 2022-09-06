@@ -40,7 +40,7 @@ fn convert_type(ty: &syn::Type) -> syn::Result<Type> {
 
     if type_path.path.segments.len() > 1 {
         return Err(syn::Error::new_spanned(
-            &type_path,
+            type_path,
             "qualified paths in types are not currently supported by uniffi::export",
         ));
     }
@@ -52,7 +52,7 @@ fn convert_type(ty: &syn::Type) -> syn::Result<Type> {
             syn::PathArguments::Parenthesized(_) => Err(type_not_supported(type_path)),
         },
         None => Err(syn::Error::new_spanned(
-            &type_path,
+            type_path,
             "unreachable: TypePath must have non-empty segments",
         )),
     }
@@ -156,7 +156,7 @@ fn arg_as_type(arg: &syn::GenericArgument) -> syn::Result<&syn::Type> {
 
 fn type_not_supported(ty: &impl ToTokens) -> syn::Error {
     syn::Error::new_spanned(
-        &ty,
+        ty,
         "this type is not currently supported by uniffi::export in this position",
     )
 }
