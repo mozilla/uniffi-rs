@@ -8,3 +8,10 @@ assert get_string() == "String created by Rust"
 assert get_int() == 1289
 assert string_identity("String created by Python") == "String created by Python"
 assert byte_to_u32(255) == 255
+
+a_set = new_set()
+add_to_set(a_set, "foo")
+add_to_set(a_set, "bar")
+assert set_contains(a_set, "foo")
+assert set_contains(a_set, "bar")
+assert not set_contains(a_set, "baz")
