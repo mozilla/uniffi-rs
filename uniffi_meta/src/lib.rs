@@ -30,7 +30,7 @@ pub struct FnParamMetadata {
     pub ty: Type,
 }
 
-#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 pub enum Type {
     U8,
     U16,

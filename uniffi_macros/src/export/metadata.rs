@@ -28,7 +28,7 @@ pub(super) fn gen_metadata(item: syn::Item, mod_path: &[String]) -> syn::Result<
     }
 }
 
-fn convert_type(ty: &syn::Type) -> syn::Result<Type> {
+pub(super) fn convert_type(ty: &syn::Type) -> syn::Result<Type> {
     let type_path = type_as_type_path(ty)?;
 
     if type_path.qself.is_some() {
