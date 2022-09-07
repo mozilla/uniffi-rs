@@ -160,6 +160,7 @@ fn convert_type(s: &uniffi_meta::Type) -> Type {
             convert_type(key_type).into(),
             convert_type(value_type).into(),
         ),
+        Ty::ArcObject { object_name } => Type::Object(object_name.clone()),
     }
 }
 

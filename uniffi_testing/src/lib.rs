@@ -212,7 +212,7 @@ impl UniFFITestHelper {
 }
 
 fn find_files<F: Fn(&Utf8Path) -> bool>(dir: &Utf8Path, predicate: F) -> Result<Vec<Utf8PathBuf>> {
-    fs::read_dir(&dir)?
+    fs::read_dir(dir)?
         .flatten()
         .map(|entry| entry.path().try_into())
         .try_fold(Vec::new(), |mut vec, path| {

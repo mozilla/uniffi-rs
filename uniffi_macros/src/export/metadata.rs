@@ -28,7 +28,7 @@ pub(super) fn gen_metadata(item: syn::Item, mod_path: &[String]) -> syn::Result<
     }
 }
 
-fn convert_type(ty: &syn::Type) -> syn::Result<Type> {
+pub(super) fn convert_type(ty: &syn::Type) -> syn::Result<Type> {
     let type_path = type_as_type_path(ty)?;
 
     if type_path.qself.is_some() {
@@ -40,7 +40,7 @@ fn convert_type(ty: &syn::Type) -> syn::Result<Type> {
 
     if type_path.path.segments.len() > 1 {
         return Err(syn::Error::new_spanned(
-            &type_path,
+            type_path,
             "qualified paths in types are not currently supported by uniffi::export",
         ));
     }
@@ -52,7 +52,7 @@ fn convert_type(ty: &syn::Type) -> syn::Result<Type> {
             syn::PathArguments::Parenthesized(_) => Err(type_not_supported(type_path)),
         },
         None => Err(syn::Error::new_spanned(
-            &type_path,
+            type_path,
             "unreachable: TypePath must have non-empty segments",
         )),
     }
@@ -101,6 +101,13 @@ fn convert_bare_type_name(ident: &Ident) -> syn::Result<Type> {
 fn convert_generic_type1(ident: &Ident, arg: &syn::GenericArgument) -> syn::Result<Type> {
     let arg = arg_as_type(arg)?;
     match ident.to_string().as_str() {
+        "Arc" => Ok(Type::ArcObject {
+            object_name: type_as_type_path(arg)?
+                .path
+                .get_ident()
+                .ok_or_else(|| type_not_supported(arg))?
+                .to_string(),
+        }),
         "Option" => Ok(Type::Option {
             inner_type: convert_type(arg)?.into(),
         }),
@@ -149,7 +156,7 @@ fn arg_as_type(arg: &syn::GenericArgument) -> syn::Result<&syn::Type> {
 
 fn type_not_supported(ty: &impl ToTokens) -> syn::Error {
     syn::Error::new_spanned(
-        &ty,
+        ty,
         "this type is not currently supported by uniffi::export in this position",
     )
 }
