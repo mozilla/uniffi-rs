@@ -388,7 +388,7 @@ pub fn run_tests(
 /// For now, we assume that the UDL file is in `./src/something.udl` relative
 /// to the crate root. We might consider something more sophisticated in
 /// future.
-fn guess_crate_root(udl_file: &Utf8Path) -> Result<&Utf8Path> {
+pub fn guess_crate_root(udl_file: &Utf8Path) -> Result<&Utf8Path> {
     let path_guess = udl_file
         .parent()
         .context("UDL file has no parent folder!")?
