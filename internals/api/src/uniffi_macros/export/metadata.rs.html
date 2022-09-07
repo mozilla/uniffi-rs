@@ -159,6 +159,13 @@
 <span id="153">153</span>
 <span id="154">154</span>
 <span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -189,7 +196,7 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">convert_type</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Type</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">convert_type</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Type</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">type_path</span> <span class="op">=</span> <span class="ident">type_as_type_path</span>(<span class="ident">ty</span>)<span class="question-mark">?</span>;
 
     <span class="kw">if</span> <span class="ident">type_path</span>.<span class="ident">qself</span>.<span class="ident">is_some</span>() {
@@ -201,7 +208,7 @@
 
     <span class="kw">if</span> <span class="ident">type_path</span>.<span class="ident">path</span>.<span class="ident">segments</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new_spanned</span>(
-            <span class="kw-2">&amp;</span><span class="ident">type_path</span>,
+            <span class="ident">type_path</span>,
             <span class="string">&quot;qualified paths in types are not currently supported by uniffi::export&quot;</span>,
         ));
     }
@@ -213,7 +220,7 @@
             <span class="ident">syn::PathArguments::Parenthesized</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">type_not_supported</span>(<span class="ident">type_path</span>)),
         },
         <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new_spanned</span>(
-            <span class="kw-2">&amp;</span><span class="ident">type_path</span>,
+            <span class="ident">type_path</span>,
             <span class="string">&quot;unreachable: TypePath must have non-empty segments&quot;</span>,
         )),
     }
@@ -262,6 +269,13 @@
 <span class="kw">fn</span> <span class="ident">convert_generic_type1</span>(<span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>, <span class="ident">arg</span>: <span class="kw-2">&amp;</span><span class="ident">syn::GenericArgument</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="ident">arg_as_type</span>(<span class="ident">arg</span>)<span class="question-mark">?</span>;
     <span class="kw">match</span> <span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>() {
+        <span class="string">&quot;Arc&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::ArcObject</span> {
+            <span class="ident">object_name</span>: <span class="ident">type_as_type_path</span>(<span class="ident">arg</span>)<span class="question-mark">?</span>
+                .<span class="ident">path</span>
+                .<span class="ident">get_ident</span>()
+                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">type_not_supported</span>(<span class="ident">arg</span>))<span class="question-mark">?</span>
+                .<span class="ident">to_string</span>(),
+        }),
         <span class="string">&quot;Option&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::Option</span> {
             <span class="ident">inner_type</span>: <span class="ident">convert_type</span>(<span class="ident">arg</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
         }),
@@ -310,7 +324,7 @@
 
 <span class="kw">fn</span> <span class="ident">type_not_supported</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">ToTokens</span>) -&gt; <span class="ident">syn::Error</span> {
     <span class="ident">syn::Error::new_spanned</span>(
-        <span class="kw-2">&amp;</span><span class="ident">ty</span>,
+        <span class="ident">ty</span>,
         <span class="string">&quot;this type is not currently supported by uniffi::export in this position&quot;</span>,
     )
 }

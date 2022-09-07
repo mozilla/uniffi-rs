@@ -36,6 +36,16 @@
 <span id="30">30</span>
 <span id="31">31</span>
 <span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -58,7 +68,17 @@
     <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">metadata_items</span> {
         <span class="kw">match</span> <span class="ident">item</span> {
             <span class="ident">Metadata::Func</span>(<span class="ident">meta</span>) =&gt; {
-                <span class="ident">iface</span>.<span class="ident">add_function_definition</span>(<span class="ident">meta</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">cr</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">module_path</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>();
+                <span class="kw">let</span> <span class="ident">ns</span> <span class="op">=</span> <span class="ident">iface</span>.<span class="ident">namespace</span>();
+                <span class="kw">if</span> <span class="ident">cr</span> <span class="op">==</span> <span class="ident">ns</span> {
+                    <span class="ident">iface</span>.<span class="ident">add_function_definition</span>(<span class="ident">meta</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+                } <span class="kw">else</span> {
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;Mixing symbols from multiple crates is not supported yet.&quot;</span>);
+                    <span class="macro">eprintln!</span>(
+                        <span class="string">&quot;Main crate is expected to be named `{ns}` based on the UDL namespace.&quot;</span>
+                    );
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;Ignoring function `{}` from crate `{cr}`.&quot;</span>, <span class="ident">meta</span>.<span class="ident">name</span>);
+                }
             }
         }
     }

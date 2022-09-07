@@ -324,6 +324,7 @@
 <span id="318">318</span>
 <span id="319">319</span>
 <span id="320">320</span>
+<span id="321">321</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -486,6 +487,7 @@
             <span class="ident">convert_type</span>(<span class="ident">key_type</span>).<span class="ident">into</span>(),
             <span class="ident">convert_type</span>(<span class="ident">value_type</span>).<span class="ident">into</span>(),
         ),
+        <span class="ident">Ty::ArcObject</span> { <span class="ident">object_name</span> } =&gt; <span class="ident">Type::Object</span>(<span class="ident">object_name</span>.<span class="ident">clone</span>()),
     }
 }
 
