@@ -213,6 +213,7 @@
 <span id="207">207</span>
 <span id="208">208</span>
 <span id="209">209</span>
+<span id="210">210</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -243,7 +244,8 @@
     <span class="kw">let</span> <span class="ident">gen_output</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="ident">util::mod_path</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">item</span> <span class="op">=</span> <span class="ident">syn::parse</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
-        <span class="ident">expand_export</span>(<span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="ident">mod_path</span>)
+        <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">export::gen_metadata</span>(<span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="ident">mod_path</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="ident">expand_export</span>(<span class="ident">metadata</span>, <span class="kw-2">&amp;</span><span class="ident">mod_path</span>))
     };
     <span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">gen_output</span>().<span class="ident">unwrap_or_else</span>(<span class="ident">syn::Error::into_compile_error</span>);
 

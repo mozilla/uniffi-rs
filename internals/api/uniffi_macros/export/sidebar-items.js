@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["ExportItem",""]],"fn":[["create_metadata_static_var",""],["expand_export",""],["fn_type_assertions",""]],"mod":[["metadata",""],["scaffolding",""]]};
+window.SIDEBAR_ITEMS = {"enum":[["ExportItem",""]],"fn":[["create_metadata_static_var",""],["expand_export",""],["fn_type_assertions",""]],"mod":[["metadata",""],["scaffolding",""]],"struct":[["Method",""]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["gen_impl_metadata",""],["gen_method_metadata",""],["method_metadata",""]]};

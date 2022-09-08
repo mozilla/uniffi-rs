@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["fn_metadata",""],["fn_param_metadata",""],["gen_fn_metadata",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["fn_metadata",""],["gen_fn_metadata",""]]};

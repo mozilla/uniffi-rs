@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["convert_type",""]],"struct":[["Argument","Represents an argument to a function/constructor/method call."],["Function","Represents a standalone function."]]};
+window.SIDEBAR_ITEMS = {"struct":[["Argument","Represents an argument to a function/constructor/method call."],["Function","Represents a standalone function."]]};
