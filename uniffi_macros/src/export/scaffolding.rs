@@ -48,6 +48,7 @@ pub(super) fn gen_method_scaffolding(
     let mut params_args = (Vec::new(), Vec::new());
 
     const RECEIVER_ERROR: &str = "unreachable: only first parameter can be method receiver";
+    let mut assoc_fn_error = None;
     let fn_call_prefix = match sig.inputs.first() {
         Some(arg) if is_receiver(arg) => {
             let ffi_converter = quote! {
@@ -66,6 +67,10 @@ pub(super) fn gen_method_scaffolding(
             }
         }
         _ => {
+            assoc_fn_error = Some(
+                syn::Error::new_spanned(sig, "associated functions are not currently supported")
+                    .into_compile_error(),
+            );
             params_args.extend(collect_params(&sig.inputs, RECEIVER_ERROR));
             quote! { #self_ident:: }
         }
@@ -74,6 +79,7 @@ pub(super) fn gen_method_scaffolding(
     let (params, args) = params_args;
 
     let fn_call = quote! {
+        #assoc_fn_error
         #fn_call_prefix #name(#(#args),*)
     };
 
