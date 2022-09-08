@@ -92,7 +92,7 @@ impl Function {
     }
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
-        // The name is already set if the function is defined in a proc-macro-generated JSON file
+        // The name is already set if the function is defined through a proc-macro invocation
         // rather than in UDL. Don't overwrite it in that case.
         if self.ffi_func.name.is_empty() {
             self.ffi_func.name = format!("{ci_prefix}_{}", self.name);

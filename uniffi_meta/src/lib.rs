@@ -99,7 +99,7 @@ pub enum Metadata {
 
 impl From<FnMetadata> for Metadata {
     fn from(value: FnMetadata) -> Metadata {
-        Metadata::Func(value)
+        Self::Func(value)
     }
 }
 
