@@ -10,7 +10,7 @@ pub(super) fn gen_fn_scaffolding(
     sig: &Signature,
     mod_path: &[String],
     checksum: u16,
-) -> syn::Result<TokenStream> {
+) -> TokenStream {
     let name = &sig.ident;
     let name_s = name.to_string();
     let ffi_name = Ident::new(
@@ -18,22 +18,26 @@ pub(super) fn gen_fn_scaffolding(
         Span::call_site(),
     );
 
-    let mut params = Vec::new();
-    let mut args = Vec::new();
-
-    for (i, arg) in sig.inputs.iter().enumerate() {
-        match arg {
+    let (params, args): (Vec<_>, Vec<_>) = sig
+        .inputs
+        .iter()
+        .enumerate()
+        .map(|(i, arg)| match arg {
             FnArg::Receiver(receiver) => {
-                return Err(syn::Error::new_spanned(
+                let param = quote! { &self };
+                let arg = syn::Error::new_spanned(
                     receiver,
                     "methods are not yet supported by uniffi::export",
-                ));
+                )
+                .into_compile_error();
+
+                (param, arg)
             }
             FnArg::Typed(pat_ty) => {
                 let ty = &pat_ty.ty;
                 let name = format_ident!("arg{i}");
 
-                params.push(quote! { #name: <#ty as ::uniffi::FfiConverter>::FfiType });
+                let param = quote! { #name: <#ty as ::uniffi::FfiConverter>::FfiType };
 
                 let panic_fmt = match &*pat_ty.pat {
                     Pat::Ident(i) => {
@@ -43,14 +47,16 @@ pub(super) fn gen_fn_scaffolding(
                         format!("Failed to convert arg #{i}: {{}}")
                     }
                 };
-                args.push(quote! {
+                let arg = quote! {
                     <#ty as ::uniffi::FfiConverter>::try_lift(#name).unwrap_or_else(|err| {
                         ::std::panic!(#panic_fmt, err)
                     })
-                });
+                };
+
+                (param, arg)
             }
-        }
-    }
+        })
+        .unzip();
 
     let fn_call = quote! {
         #name(#(#args),*)
@@ -74,7 +80,7 @@ pub(super) fn gen_fn_scaffolding(
         }
     }
 
-    Ok(quote! {
+    quote! {
         #[doc(hidden)]
         #[no_mangle]
         pub extern "C" fn #ffi_name(
@@ -86,5 +92,5 @@ pub(super) fn gen_fn_scaffolding(
                 #return_expr
             })
         }
-    })
+    }
 }

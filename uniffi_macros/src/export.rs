@@ -11,31 +11,32 @@ use uniffi_meta::{checksum, FnMetadata, Metadata, Type};
 mod metadata;
 mod scaffolding;
 
-use self::{metadata::gen_metadata, scaffolding::gen_fn_scaffolding};
+pub use self::metadata::gen_metadata;
+use self::scaffolding::gen_fn_scaffolding;
 
 // TODO(jplatte): Ensure no generics, no async, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, whereever possible
 
-enum ExportItem {
+pub enum ExportItem {
     Function {
         sig: syn::Signature,
         metadata: FnMetadata,
     },
 }
 
-pub fn expand_export(item: syn::Item, mod_path: &[String]) -> syn::Result<TokenStream> {
-    match gen_metadata(item, mod_path)? {
+pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
+    match metadata {
         ExportItem::Function { sig, metadata } => {
             let checksum = checksum(&metadata);
-            let scaffolding = gen_fn_scaffolding(&sig, mod_path, checksum)?;
+            let scaffolding = gen_fn_scaffolding(&sig, mod_path, checksum);
             let type_assertions = fn_type_assertions(&sig);
             let meta_static_var = create_metadata_static_var(&sig.ident, metadata.into());
 
-            Ok(quote! {
+            quote! {
                 #scaffolding
                 #type_assertions
                 #meta_static_var
-            })
+            }
         }
     }
 }
