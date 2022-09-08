@@ -18,18 +18,18 @@ use self::{metadata::gen_metadata, scaffolding::gen_fn_scaffolding};
 
 enum ExportItem {
     Function {
-        item: syn::ItemFn,
+        sig: syn::Signature,
         metadata: FnMetadata,
     },
 }
 
 pub fn expand_export(item: syn::Item, mod_path: &[String]) -> syn::Result<TokenStream> {
     match gen_metadata(item, mod_path)? {
-        ExportItem::Function { item, metadata } => {
+        ExportItem::Function { sig, metadata } => {
             let checksum = checksum(&metadata);
-            let scaffolding = gen_fn_scaffolding(&item, mod_path, checksum)?;
-            let type_assertions = fn_type_assertions(&item);
-            let meta_static_var = create_metadata_static_var(&item.sig.ident, metadata.into());
+            let scaffolding = gen_fn_scaffolding(&sig, mod_path, checksum)?;
+            let type_assertions = fn_type_assertions(&sig);
+            let meta_static_var = create_metadata_static_var(&sig.ident, metadata.into());
 
             Ok(quote! {
                 #scaffolding
@@ -40,7 +40,7 @@ pub fn expand_export(item: syn::Item, mod_path: &[String]) -> syn::Result<TokenS
     }
 }
 
-fn fn_type_assertions(item: &syn::ItemFn) -> TokenStream {
+fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
     // Convert uniffi_meta::Type back to a Rust type
     fn convert_type_back(ty: &Type) -> TokenStream {
         match &ty {
@@ -79,11 +79,11 @@ fn fn_type_assertions(item: &syn::ItemFn) -> TokenStream {
         }
     }
 
-    let input_types = item.sig.inputs.iter().filter_map(|input| match input {
+    let input_types = sig.inputs.iter().filter_map(|input| match input {
         syn::FnArg::Receiver(_) => None,
         syn::FnArg::Typed(pat_ty) => Some(&pat_ty.ty),
     });
-    let output_type = match &item.sig.output {
+    let output_type = match &sig.output {
         syn::ReturnType::Default => None,
         syn::ReturnType::Type(_, ty) => Some(ty),
     };

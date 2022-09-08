@@ -4,14 +4,14 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{FnArg, ItemFn, Pat, ReturnType};
+use syn::{FnArg, Pat, ReturnType, Signature};
 
 pub(super) fn gen_fn_scaffolding(
-    item: &ItemFn,
+    sig: &Signature,
     mod_path: &[String],
     checksum: u16,
 ) -> syn::Result<TokenStream> {
-    let name = &item.sig.ident;
+    let name = &sig.ident;
     let name_s = name.to_string();
     let ffi_name = Ident::new(
         &uniffi_meta::fn_ffi_symbol_name(mod_path, &name_s, checksum),
@@ -21,7 +21,7 @@ pub(super) fn gen_fn_scaffolding(
     let mut params = Vec::new();
     let mut args = Vec::new();
 
-    for (i, arg) in item.sig.inputs.iter().enumerate() {
+    for (i, arg) in sig.inputs.iter().enumerate() {
         match arg {
             FnArg::Receiver(receiver) => {
                 return Err(syn::Error::new_spanned(
@@ -59,7 +59,7 @@ pub(super) fn gen_fn_scaffolding(
     // FIXME(jplatte): Use an extra trait implemented for `T: FfiConverter` as
     // well as `()` so no different codegen is needed?
     let (output, return_expr);
-    match &item.sig.output {
+    match &sig.output {
         ReturnType::Default => {
             output = None;
             return_expr = fn_call;
