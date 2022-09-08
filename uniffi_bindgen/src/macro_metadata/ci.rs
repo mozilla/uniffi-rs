@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::interface::ComponentInterface;
+use anyhow::anyhow;
 use uniffi_meta::Metadata;
 
 /// Add Metadata items to the ComponentInterface
@@ -22,15 +23,18 @@ pub fn add_to_ci(
             Metadata::Func(meta) => {
                 let cr = meta.module_path.first().unwrap();
                 let ns = iface.namespace();
-                if cr == ns {
-                    iface.add_function_definition(meta.into())?;
-                } else {
-                    eprintln!("Mixing symbols from multiple crates is not supported yet.");
-                    eprintln!(
-                        "Main crate is expected to be named `{ns}` based on the UDL namespace."
+                if cr != ns {
+                    return Err(
+                        anyhow!("Ignoring function `{}` from crate `{cr}`.", meta.name)
+                            .context(format!(
+                                "Main crate is expected to be named `{ns}` \
+                                 based on the UDL namespace."
+                            ))
+                            .context("Mixing symbols from multiple crates is not supported yet."),
                     );
-                    eprintln!("Ignoring function `{}` from crate `{cr}`.", meta.name);
                 }
+
+                iface.add_function_definition(meta.into())?;
             }
         }
     }
