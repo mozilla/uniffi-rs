@@ -12,7 +12,7 @@ mod function;
 
 use self::function::gen_fn_metadata;
 
-pub(super) fn gen_metadata(item: syn::Item, mod_path: &[String]) -> syn::Result<ExportItem> {
+pub fn gen_metadata(item: syn::Item, mod_path: &[String]) -> syn::Result<ExportItem> {
     match item {
         syn::Item::Fn(item) => gen_fn_metadata(item.sig, mod_path),
         syn::Item::Impl(_) => Err(syn::Error::new(
