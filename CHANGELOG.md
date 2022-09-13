@@ -8,6 +8,14 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.19.6...HEAD).
 
+###  ⚠️ Breaking Changes ⚠️
+
+- Renamed the `uniffi_bindgen` `cydlib` argument to `lib_file`, since it can also accept static libraries
+
+### What's changed
+
+- The `guess_crate_root` function is now public
+
 ## v0.19.6 - (_2022-08-31_)
 
 [All changes in v0.19.6](https://github.com/mozilla/uniffi-rs/compare/v0.19.5...v0.19.6).
