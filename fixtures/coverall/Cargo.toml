@@ -1,6 +1,6 @@
 [package]
 name = "uniffi-fixture-coverall"
-version = "0.19.6"
+version = "0.20.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 license = "MPL-2.0"
