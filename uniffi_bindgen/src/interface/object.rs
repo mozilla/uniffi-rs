@@ -264,7 +264,11 @@ impl Constructor {
         &self.ffi_func
     }
 
-    pub fn throws(&self) -> Option<&str> {
+    pub fn throws(&self) -> bool {
+        self.attributes.get_throws_err().is_some()
+    }
+
+    pub fn throws_name(&self) -> Option<&str> {
         self.attributes.get_throws_err()
     }
 
@@ -377,7 +381,11 @@ impl Method {
         &self.ffi_func
     }
 
-    pub fn throws(&self) -> Option<&str> {
+    pub fn throws(&self) -> bool {
+        self.attributes.get_throws_err().is_some()
+    }
+
+    pub fn throws_name(&self) -> Option<&str> {
         self.attributes.get_throws_err()
     }
 
