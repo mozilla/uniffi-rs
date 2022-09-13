@@ -28,7 +28,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
 
             let reader = Reader(data: Data(rustBuffer: args))
             {% if meth.return_type().is_some() %}let result = {% endif -%}
-            {% if meth.throws().is_some() %}try {% endif -%}
+            {% if meth.throws() %}try {% endif -%}
             swiftCallbackInterface.{{ meth.name()|fn_name }}(
                     {% for arg in meth.arguments() -%}
                     {% if !config.omit_argument_labels() %}{{ arg.name()|var_name }}: {% endif %} try {{ arg|read_fn }}(from: reader)
@@ -37,7 +37,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
                 )
             {% else %}
             {% if meth.return_type().is_some() %}let result = {% endif -%}
-            {% if meth.throws().is_some() %}try {% endif -%}
+            {% if meth.throws() %}try {% endif -%}
             swiftCallbackInterface.{{ meth.name()|fn_name }}()
             {% endif -%}
 

@@ -376,11 +376,6 @@ pub mod filters {
         Ok(oracle().enum_variant_name(nm))
     }
 
-    /// Get the idiomatic Python rendering of an exception name
-    pub fn exception_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().error_name(nm))
-    }
-
     pub fn coerce_py(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
         Ok(oracle.find(type_).coerce(oracle, nm))

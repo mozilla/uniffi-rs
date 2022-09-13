@@ -8,6 +8,12 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.20.0...HEAD).
 
+###  ⚠️ Breaking Changes ⚠️
+
+- `uniffi_bindgen`: Renamed the `throws()` method of `Function`, `Method`, and
+  `Contstructor` to `throws_str()`.  Added a new `throws()` method that returns
+  a boolean.
+
 ## v0.20.0 - (_2022-09-13_)
 
 [All changes in v0.20.0](https://github.com/mozilla/uniffi-rs/compare/v0.19.6...v0.20.0).
