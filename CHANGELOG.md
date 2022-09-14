@@ -65,6 +65,7 @@
 
 ###  ⚠️ Breaking Changes ⚠️
 - breaking for external binding generators, the `FFIType::RustArcPtr` now includes an inner `String`. The string represents the name of the object the `RustArcPtr` was derived from.
+- Kotlin exception names are now formatted as strict UpperCamelCase.  Most names shouldn't change, but names that use one word with all caps will be affected (for example `URL` -> `Url`, `JSONException` -> `JsonException`)
 
 ### What's changed
 - The UDL can contain identifiers which are also keywords in Rust, Python or Kotlin.
