@@ -2,25 +2,33 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-pub trait OnCallAnswered {
-    fn hello(&self) -> String;
-    fn busy(&self);
-    fn text_received(&self, text: String);
+#[derive(Debug, thiserror::Error)]
+pub enum TelephoneError {
+    #[error("Busy")]
+    Busy,
+    #[error("InternalTelephoneError")]
+    InternalTelephoneError,
+}
+
+impl From<uniffi::UnexpectedUniFFICallbackError> for TelephoneError {
+    fn from(_: uniffi::UnexpectedUniFFICallbackError) -> Self {
+        Self::InternalTelephoneError
+    }
+}
+
+pub trait CallAnswerer {
+    fn answer(&self) -> Result<String, TelephoneError>;
 }
 
 #[derive(Debug, Clone)]
-struct Telephone;
+pub struct Telephone;
 impl Telephone {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Telephone
     }
-    fn call(&self, domestic: bool, call_responder: Box<dyn OnCallAnswered>) {
-        if domestic {
-            let _ = call_responder.hello();
-        } else {
-            call_responder.busy();
-            call_responder.text_received("Not now, I'm on another call!".into());
-        }
+
+    pub fn call(&self, answerer: Box<dyn CallAnswerer>) -> Result<String, TelephoneError> {
+        answerer.answer()
     }
 }
 

@@ -18,10 +18,12 @@ by the host operating system (e.g. the key chain).
 
 ```rust,no_run
 trait Keychain: Send + Sync + Debug {
-  pub fn get(key: String) -> Option<String>
-  pub fn put(key: String, value: String)
+  pub fn get(key: String) -> Result<Option<String>, KeyChainError>
+  pub fn put(key: String, value: String) -> Result<(), KeyChainError>
 }
 ```
+
+### Why + Send + Sync?
 
 The concrete types that UniFFI generates for callback interfaces implement `Send`, `Sync`, and `Debug`, so it's safe to
 include these as supertraits of your callback interface trait.  This isn't strictly necessary, but it's often useful.  In
@@ -30,16 +32,35 @@ particular, `Sync + Send` is useful when:
     interface type)
   - Storing `Box<dyn CallbackInterfaceTrait>` inside a global `Mutex` or `RwLock`
 
-## 2. Define a callback interface in the UDL.
+
+## 2. Setup error handling
+
+All methods of the Rust trait should return a Result.  The error half of that result must
+be an [error type defined in the UDL](./errors.md).
+
+In addition to expected errors, a callback interface call can result in all kinds of
+unexpected errors.  Some examples are the foreign code throws an exception that's not part
+of the exception type or there was a problem marshalling the data for the call.  UniFFI
+uses `uniffi::UnexpectedUniFFICallbackError` for these cases.  Your code must include a
+`From<uniffi::UnexpectedUniFFICallbackError>` impl for your error type to handle those.
+
+It's currently allowed for callback interface methods to return a regular value rather
+than a `Result<>`.  However, this is deprecated and we plan to remove support at some
+point.
+
+## 3. Define a callback interface in the UDL.
 
 ```webidl
 callback interface Keychain {
+    [Throws=KeyChainError]
     string? get(string key);
+
+    [Throws=KeyChainError]
     void put(string key, string data);
 };
 ```
 
-## 3. And allow it to be passed into Rust.
+## 4. And allow it to be passed into Rust.
 
 Here, we define a constructor to pass the keychain to rust, and then another method
 which may use it.

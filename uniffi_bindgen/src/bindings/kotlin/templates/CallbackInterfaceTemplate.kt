@@ -34,11 +34,32 @@ internal class {{ foreign_callback }} : ForeignCallback {
             {% for meth in cbi.methods() -%}
             {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
             {{ loop.index }} -> {
-                val buffer = this.{{ method_name }}(cb, args)
-                outBuf.setValue(buffer)
-                // Value written to out buffer.
-                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-                1
+                // Call the method, write to outBuf and return a status code
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs` for info
+                try {
+                    {%- match meth.throws_type() %}
+                    {%- when Some(error_type) %}
+                    try {
+                        val buffer = this.{{ method_name }}(cb, args)
+                        // Success
+                        outBuf.setValue(buffer)
+                        1
+                    } catch (e: {{ error_type|type_name }}) {
+                        // Expected error
+                        val buffer = {{ error_type|ffi_converter_name }}.lowerIntoRustBuffer(e)
+                        outBuf.setValue(buffer)
+                        -2
+                    }
+                    {%- else %} 
+                    val buffer = this.{{ method_name }}(cb, args)
+                    // Success
+                    outBuf.setValue(buffer)
+                    1
+                    {%- endmatch %}
+                } catch (e: Throwable) {
+                    // Unexpected error
+                    -1
+                }
             }
             {% endfor %}
             // This should never happen, because an out of bounds method index won't

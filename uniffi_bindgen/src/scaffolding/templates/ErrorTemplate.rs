@@ -33,9 +33,15 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name
         };
     }
 
-    fn try_read(_buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<r#{{ e.name() }}> {
-        // It's not currently possible to send errors from the foreign language *into* Rust.
-        panic!("try_read not supported for flat errors");
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<r#{{ e.name() }}> {
+        use uniffi::deps::bytes::Buf;
+        uniffi::check_remaining(buf, 4)?;
+        Ok(match buf.get_i32() {
+            {%- for variant in e.variants() %}
+            {{ loop.index }} => r#{{ e.name() }}::r#{{ variant.name() }},
+            {%- endfor %}
+            v => uniffi::deps::anyhow::bail!("Invalid {{ e.name() }} enum value: {}", v),
+        })
     }
 
     {% else %}

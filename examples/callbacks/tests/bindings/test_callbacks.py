@@ -1,41 +1,33 @@
+import unittest
 from callbacks import *
 
-# Simple example just to see it work.
-# Pass in a string, get a string back.
-# Pass in nothing, get unit back.
-class OnCallAnsweredImpl(OnCallAnswered):
-    def __init__(self):
-        self.yes_count = 0
-        self.busy_count = 0
-        self.string_received = ""
+class CallAnswererImpl(CallAnswerer):
+    def __init__(self, mode):
+        self.mode = mode
 
-    def hello(self):
-        self.yes_count += 1
-        return f"Hi hi {self.yes_count}"
+    def answer(self):
+        if self.mode == "ready":
+            return "Bonjour"
+        elif self.mode == "busy":
+            raise TelephoneError.Busy()
+        else:
+            raise ValueError("Testing an unexpected error")
 
-    def busy(self):
-        self.busy_count += 1
 
-    def text_received(self, text):
-        self.string_received = text
+class CallbacksTest(unittest.TestCase):
+    def test_answer(self):
+        cb_object = CallAnswererImpl("ready")
+        telephone = Telephone()
+        self.assertEqual("Bonjour", telephone.call(cb_object))
 
-cb_object = OnCallAnsweredImpl()
-telephone = Telephone()
+    def test_busy(self):
+        cb_object = CallAnswererImpl("busy")
+        telephone = Telephone()
+        self.assertRaises(TelephoneError.Busy, telephone.call, cb_object)
 
-telephone.call(domestic=True, call_responder=cb_object)
-assert cb_object.busy_count == 0, f"yes_count={cb_object.busy_count} (should be 0)"
-assert cb_object.yes_count == 1, f"yes_count={cb_object.yes_count} (should be 1)"
+    def test_unexpected_error(self):
+        cb_object = CallAnswererImpl("something-else")
+        telephone = Telephone()
+        self.assertRaises(TelephoneError.InternalTelephoneError, telephone.call, cb_object)
 
-telephone.call(domestic=True, call_responder=cb_object)
-assert cb_object.busy_count == 0, f"yes_count={cb_object.busy_count} (should be 0)"
-assert cb_object.yes_count == 2, f"yes_count={cb_object.yes_count} (should be 2)"
-
-telephone.call(domestic=False, call_responder=cb_object)
-assert cb_object.busy_count == 1, f"yes_count={cb_object.busy_count} (should be 1)"
-assert cb_object.yes_count == 2, f"yes_count={cb_object.yes_count} (should be 2)"
-assert cb_object.string_received != "", f"string_received='{cb_object.string_received}' (should be a message)"
-
-cb_object2 = OnCallAnsweredImpl()
-telephone.call(domestic=True, call_responder=cb_object2)
-assert cb_object2.busy_count == 0, f"yes_count={cb_object2.busy_count} (should be 0)"
-assert cb_object2.yes_count == 1, f"yes_count={cb_object2.yes_count} (should be 1)"
+unittest.main()
