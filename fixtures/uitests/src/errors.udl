@@ -1,0 +1,14 @@
+[Error]
+enum ArithmeticError {
+  "IntegerOverflow",
+  "DivisionByZero",
+  "UnexpectedError",
+};
+
+callback interface Calculator {
+  [Throws=ArithmeticError]
+  u64 add(u64 a, u64 b);
+};
+
+namespace errors {
+};

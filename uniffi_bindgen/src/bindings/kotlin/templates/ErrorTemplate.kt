@@ -74,14 +74,36 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
         {%- endif %}
     }
 
-    @Suppress("UNUSED_PARAMETER")
     override fun allocationSize(value: {{ type_name }}): Int {
-        throw RuntimeException("Writing Errors is not supported")
+        {%- if e.is_flat() %}
+        return 4
+        {%- else %}
+        return when(value) {
+            {%- for variant in e.variants() %}
+            is {{ type_name }}.{{ variant.name()|exception_name }} -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4
+                {%- for field in variant.fields() %}
+                + {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }})
+                {%- endfor %}
+            )
+            {%- endfor %}
+        }
+        {%- endif %}
     }
 
-    @Suppress("UNUSED_PARAMETER")
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
-        throw RuntimeException("Writing Errors is not supported")
+        when(value) {
+            {%- for variant in e.variants() %}
+            is {{ type_name }}.{{ variant.name()|exception_name }} -> {
+                buf.putInt({{ loop.index }})
+                {%- for field in variant.fields() %}
+                {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
+                {%- endfor %}
+                Unit
+            }
+            {%- endfor %}
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
 
 }

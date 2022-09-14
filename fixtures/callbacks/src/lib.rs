@@ -3,10 +3,38 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 trait ForeignGetters {
-    fn get_bool(&self, v: bool, argument_two: bool) -> bool;
-    fn get_string(&self, v: String, arg2: bool) -> String;
-    fn get_option(&self, v: Option<String>, arg2: bool) -> Option<String>;
-    fn get_list(&self, v: Vec<i32>, arg2: bool) -> Vec<i32>;
+    fn get_bool(&self, v: bool, argument_two: bool) -> Result<bool, SimpleError>;
+    fn get_string(&self, v: String, arg2: bool) -> Result<String, SimpleError>;
+    fn get_option(&self, v: Option<String>, arg2: bool) -> Result<Option<String>, ComplexError>;
+    fn get_list(&self, v: Vec<i32>, arg2: bool) -> Result<Vec<i32>, SimpleError>;
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum SimpleError {
+    #[error("BadArgument")]
+    BadArgument,
+    #[error("InternalTelephoneError")]
+    UnexpectedError,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ComplexError {
+    #[error("ReallyBadArgument")]
+    ReallyBadArgument { code: i32 },
+    #[error("InternalTelephoneError")]
+    UnexpectedErrorWithReason { reason: String },
+}
+
+impl From<uniffi::UnexpectedUniFFICallbackError> for SimpleError {
+    fn from(_: uniffi::UnexpectedUniFFICallbackError) -> SimpleError {
+        SimpleError::UnexpectedError
+    }
+}
+
+impl From<uniffi::UnexpectedUniFFICallbackError> for ComplexError {
+    fn from(e: uniffi::UnexpectedUniFFICallbackError) -> ComplexError {
+        ComplexError::UnexpectedErrorWithReason { reason: e.reason }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -16,10 +44,20 @@ impl RustGetters {
     pub fn new() -> Self {
         RustGetters
     }
-    fn get_bool(&self, callback: Box<dyn ForeignGetters>, v: bool, argument_two: bool) -> bool {
+    fn get_bool(
+        &self,
+        callback: Box<dyn ForeignGetters>,
+        v: bool,
+        argument_two: bool,
+    ) -> Result<bool, SimpleError> {
         callback.get_bool(v, argument_two)
     }
-    fn get_string(&self, callback: Box<dyn ForeignGetters>, v: String, arg2: bool) -> String {
+    fn get_string(
+        &self,
+        callback: Box<dyn ForeignGetters>,
+        v: String,
+        arg2: bool,
+    ) -> Result<String, SimpleError> {
         callback.get_string(v, arg2)
     }
     fn get_option(
@@ -27,10 +65,15 @@ impl RustGetters {
         callback: Box<dyn ForeignGetters>,
         v: Option<String>,
         arg2: bool,
-    ) -> Option<String> {
+    ) -> Result<Option<String>, ComplexError> {
         callback.get_option(v, arg2)
     }
-    fn get_list(&self, callback: Box<dyn ForeignGetters>, v: Vec<i32>, arg2: bool) -> Vec<i32> {
+    fn get_list(
+        &self,
+        callback: Box<dyn ForeignGetters>,
+        v: Vec<i32>,
+        arg2: bool,
+    ) -> Result<Vec<i32>, SimpleError> {
         callback.get_list(v, arg2)
     }
 
@@ -39,8 +82,8 @@ impl RustGetters {
         callback: Option<Box<dyn ForeignGetters>>,
         v: String,
         arg2: bool,
-    ) -> Option<String> {
-        callback.map(|c| c.get_string(v, arg2))
+    ) -> Result<Option<String>, SimpleError> {
+        callback.map(|c| c.get_string(v, arg2)).transpose()
     }
 }
 

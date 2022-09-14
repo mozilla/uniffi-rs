@@ -1,12 +1,18 @@
 namespace callbacks {};
 
-interface Telephone {
-  constructor();
-  void call(boolean domestic, OnCallAnswered call_responder);
+[Error]
+enum TelephoneError {
+  "Busy",
+  "InternalTelephoneError",
 };
 
-callback interface OnCallAnswered {
-  string hello();
-  void busy();
-  void text_received(string text);
+interface Telephone {
+  constructor();
+  [Throws=TelephoneError]
+  string call(CallAnswerer answerer);
+};
+
+callback interface CallAnswerer {
+  [Throws=TelephoneError]
+  string answer();
 };

@@ -219,6 +219,25 @@ impl ComponentInterface {
         self.errors.iter().find(|e| e.name == name)
     }
 
+    /// Should we generate read (and lift) functions for errors?
+    ///
+    /// This is a workaround for the fact that lower/write can't be generated for some errors,
+    /// specifically errors that are defined as flat in the UDL, but actually have fields in the
+    /// Rust source.
+    pub fn should_generate_error_read(&self, error: &Error) -> bool {
+        // We can and should always generate read() methods for fielded errors
+        let fielded = !error.is_flat();
+        // For flat errors, we should only generate read() methods if we need them to support
+        // callback interface errors
+        let used_in_callback_interface = self
+            .callback_interface_definitions()
+            .iter()
+            .flat_map(|cb| cb.methods())
+            .any(|m| m.throws_type() == Some(error.type_()));
+
+        fielded || used_in_callback_interface
+    }
+
     /// Get details about all `Type::External` types
     pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, &String)> {
         self.types.iter_known_types().filter_map(|t| match t {

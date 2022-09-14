@@ -6,45 +6,44 @@
     import callbacks
 #endif
 
+struct SomeOtherError: Error { }
+
 // Simple example just to see it work.
 // Pass in a string, get a string back.
 // Pass in nothing, get unit back.
-class OnCallAnsweredImpl : OnCallAnswered {
-    var yesCount: Int = 0
-    var busyCount: Int = 0
-    var stringReceived = ""
+class OnCallAnsweredImpl : CallAnswerer {
+    var mode: String
 
-    func hello() -> String {
-        yesCount += 1
-        return "Hi hi \(yesCount)"
+    init(withMode: String) {
+        mode = withMode
     }
 
-    func busy() {
-        busyCount += 1
-    }
+    func answer() throws -> String {
+        switch mode {
+            case "ready":
+                return "Bonjour"
 
-    func textReceived(text: String) {
-        stringReceived = text
+            case "busy":
+                throw TelephoneError.Busy(message: "I'm Busy")
+
+            default:
+                throw SomeOtherError()
+        }
     }
 }
 
-let cbObject = OnCallAnsweredImpl()
 let telephone = Telephone()
 
-telephone.call(domestic: true, callResponder: cbObject)
-assert(cbObject.busyCount == 0, "yesCount=\(cbObject.busyCount) (should be 0)")
-assert(cbObject.yesCount == 1, "yesCount=\(cbObject.yesCount) (should be 1)")
+assert(try! telephone.call(answerer: OnCallAnsweredImpl(withMode: "ready")) == "Bonjour")
 
-telephone.call(domestic: true, callResponder: cbObject)
-assert(cbObject.busyCount == 0, "yesCount=\(cbObject.busyCount) (should be 0)")
-assert(cbObject.yesCount == 2, "yesCount=\(cbObject.yesCount) (should be 2)")
+do {
+    _ = try telephone.call(answerer: OnCallAnsweredImpl(withMode: "busy"))
+} catch TelephoneError.Busy {
+    // Expected error
+}
 
-telephone.call(domestic: false, callResponder: cbObject)
-assert(cbObject.busyCount == 1, "yesCount=\(cbObject.busyCount) (should be 1)")
-assert(cbObject.yesCount == 2, "yesCount=\(cbObject.yesCount) (should be 2)")
-
-let cbObject2 = OnCallAnsweredImpl()
-telephone.call(domestic: true, callResponder: cbObject2)
-assert(cbObject2.busyCount == 0, "yesCount=\(cbObject2.busyCount) (should be 0)")
-assert(cbObject2.yesCount == 1, "yesCount=\(cbObject2.yesCount) (should be 1)")
-
+do {
+    _ = try telephone.call(answerer: OnCallAnsweredImpl(withMode: "unexpected-value"))
+} catch TelephoneError.InternalTelephoneError {
+    // Expected error
+}

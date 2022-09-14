@@ -12,8 +12,24 @@ import uniffi.fixture_callbacks.*
 val rustGetters = RustGetters()
 class KotlinGetters(): ForeignGetters {
     override fun getBool(v: Boolean, argumentTwo: Boolean): Boolean = v xor argumentTwo
-    override fun getString(v: String, arg2: Boolean): String = if (arg2) "1234567890123" else v
-    override fun getOption(v: String?, arg2: Boolean): String? = if (arg2) v?.uppercase() else v
+    override fun getString(v: String, arg2: Boolean): String {
+        if (v == "bad-argument") {
+            throw SimpleException.BadArgument("bad argument")
+        }
+        if (v == "unexpected-error") {
+            throw RuntimeException("something failed")
+        }
+        return if (arg2) "1234567890123" else v
+    }
+    override fun getOption(v: String?, arg2: Boolean): String? {
+        if (v == "bad-argument") {
+            throw ComplexException.ReallyBadArgument(20)
+        }
+        if (v == "unexpected-error") {
+            throw RuntimeException("something failed")
+        }
+        return if (arg2) v?.uppercase() else v
+    }
     override fun getList(v: List<Int>, arg2: Boolean): List<Int> = if (arg2) v else listOf()
 }
 
@@ -48,6 +64,36 @@ listOf("Some", null).forEach { v ->
 
 assert(rustGetters.getStringOptionalCallback(callback, "TestString", false) == "TestString")
 assert(rustGetters.getStringOptionalCallback(null, "TestString", false) == null)
+
+
+try {
+    rustGetters.getString(callback, "bad-argument", true)
+    throw RuntimeException("Expected SimpleException.BadArgument")
+} catch (e: SimpleException.BadArgument){
+    // Expected error
+}
+try {
+    rustGetters.getString(callback, "unexpected-error", true)
+    throw RuntimeException("Expected SimpleException.UnexpectedException")
+} catch (e: SimpleException.UnexpectedException) {
+    // Expected error
+}
+
+
+try {
+    rustGetters.getOption(callback, "bad-argument", true)
+    throw RuntimeException("Expected ComplexException.ReallyBadArgument")
+} catch (e: ComplexException.ReallyBadArgument) {
+    // Expected error
+    assert(e.code == 20)
+}
+try {
+    rustGetters.getOption(callback, "unexpected-error", true)
+    throw RuntimeException("Expected ComplexException.UnexpectedErrorWithReason")
+} catch (e: ComplexException.UnexpectedErrorWithReason) {
+    // Expected error
+    assert(e.reason == RuntimeException("something failed").toString())
+}
 
 rustGetters.destroy()
 
