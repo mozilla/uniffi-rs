@@ -614,6 +614,14 @@
 <span id="608">608</span>
 <span id="609">609</span>
 <span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -880,7 +888,11 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ffi_func</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">throws</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">throws</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">get_throws_err</span>().<span class="ident">is_some</span>()
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">throws_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">get_throws_err</span>()
     }
 
@@ -993,7 +1005,11 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ffi_func</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">throws</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">throws</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">get_throws_err</span>().<span class="ident">is_some</span>()
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">throws_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">get_throws_err</span>()
     }
 

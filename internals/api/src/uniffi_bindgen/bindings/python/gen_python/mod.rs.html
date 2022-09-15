@@ -387,11 +387,6 @@
 <span id="381">381</span>
 <span id="382">382</span>
 <span id="383">383</span>
-<span id="384">384</span>
-<span id="385">385</span>
-<span id="386">386</span>
-<span id="387">387</span>
-<span id="388">388</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -768,11 +763,6 @@
     <span class="doccomment">/// Get the idiomatic Python rendering of an individual enum variant.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_variant_py</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">enum_variant_name</span>(<span class="ident">nm</span>))
-    }
-
-    <span class="doccomment">/// Get the idiomatic Python rendering of an exception name</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exception_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">error_name</span>(<span class="ident">nm</span>))
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">coerce_py</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
