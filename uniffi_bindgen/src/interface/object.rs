@@ -158,18 +158,24 @@ impl Object {
     }
 
     pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
-        self.ffi_func_free.name = format!("ffi_{ci_prefix}_{}_object_free", self.name);
+        // The name is already set if the function is defined through a proc-macro invocation
+        // rather than in UDL. Don't overwrite it in that case.
+        if self.ffi_func_free.name().is_empty() {
+            self.ffi_func_free.name = format!("ffi_{ci_prefix}_{}_object_free", self.name);
+        }
         self.ffi_func_free.arguments = vec![FFIArgument {
             name: "ptr".to_string(),
             type_: FFIType::RustArcPtr(self.name().to_string()),
         }];
         self.ffi_func_free.return_type = None;
+
         for cons in self.constructors.iter_mut() {
-            cons.derive_ffi_func(ci_prefix, &self.name)
+            cons.derive_ffi_func(ci_prefix, &self.name);
         }
         for meth in self.methods.iter_mut() {
-            meth.derive_ffi_func(ci_prefix, &self.name)?
+            meth.derive_ffi_func(ci_prefix, &self.name)?;
         }
+
         Ok(())
     }
 

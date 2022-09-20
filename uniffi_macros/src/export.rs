@@ -6,14 +6,14 @@ use std::collections::BTreeMap;
 
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
-use uniffi_meta::{checksum, FnMetadata, Metadata, MethodMetadata, Type};
+use uniffi_meta::{checksum, FnMetadata, MethodMetadata, Type};
 
 mod metadata;
 mod scaffolding;
 
 pub use self::metadata::gen_metadata;
 use self::scaffolding::{gen_fn_scaffolding, gen_method_scaffolding};
-use crate::export::metadata::convert::convert_type;
+use crate::{export::metadata::convert::convert_type, util::create_metadata_static_var};
 
 // TODO(jplatte): Ensure no generics, no async, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, whereever possible
@@ -138,15 +138,4 @@ fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
         .collect();
 
     type_assertions.into_values().collect()
-}
-
-fn create_metadata_static_var(name: &Ident, val: Metadata) -> TokenStream {
-    let data: Vec<u8> = bincode::serialize(&val).expect("Error serializing metadata item");
-    let count = data.len();
-    let var_name = format_ident!("UNIFFI_META_{}", name);
-
-    quote! {
-        #[no_mangle]
-        pub static #var_name: [u8; #count] = [#(#data),*];
-    }
 }

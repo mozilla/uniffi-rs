@@ -28,6 +28,10 @@ pub fn add_to_ci(
                 format!("method `{}.{}`", meta.self_name, meta.name),
                 meta.module_path.first().unwrap(),
             ),
+            Metadata::Object(meta) => (
+                format!("object `{}`", meta.name),
+                meta.module_path.first().unwrap(),
+            ),
         };
 
         let ns = iface.namespace();
@@ -45,6 +49,9 @@ pub fn add_to_ci(
             }
             Metadata::Method(meta) => {
                 iface.add_method_definition(meta)?;
+            }
+            Metadata::Object(meta) => {
+                iface.add_object_free_fn(meta);
             }
         }
     }
