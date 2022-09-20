@@ -4,6 +4,7 @@
 
 use std::sync::Arc;
 
+#[derive(uniffi::Object)]
 pub struct Object {
     inner: i32,
 }
