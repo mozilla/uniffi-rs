@@ -12,12 +12,13 @@ use camino::{Utf8Path, Utf8PathBuf};
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use std::env;
-use syn::{bracketed, punctuated::Punctuated, LitStr, Token};
+use syn::{bracketed, parse_macro_input, punctuated::Punctuated, LitStr, Token};
 
 mod export;
+mod object;
 mod util;
 
-use self::export::expand_export;
+use self::{export::expand_export, object::expand_object};
 
 #[proc_macro_attribute]
 pub fn export(_attr: TokenStream, input: TokenStream) -> TokenStream {
@@ -36,6 +37,17 @@ pub fn export(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #output
     }
     .into()
+}
+
+#[proc_macro_derive(Object)]
+pub fn derive_object(input: TokenStream) -> TokenStream {
+    let mod_path = match util::mod_path() {
+        Ok(p) => p,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let input = parse_macro_input!(input);
+
+    expand_object(input, mod_path).into()
 }
 
 /// A macro to build testcases for a component's generated bindings.

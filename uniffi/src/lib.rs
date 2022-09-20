@@ -56,7 +56,7 @@ pub mod deps {
     pub use static_assertions;
 }
 
-pub use uniffi_macros::export;
+pub use uniffi_macros::{export, Object};
 
 mod panichook;
 

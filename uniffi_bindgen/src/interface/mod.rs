@@ -77,7 +77,7 @@ pub use record::{Field, Record};
 
 pub mod ffi;
 pub use ffi::{FFIArgument, FFIFunction, FFIType};
-use uniffi_meta::MethodMetadata;
+use uniffi_meta::{MethodMetadata, ObjectMetadata};
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
@@ -517,13 +517,7 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_method_definition(&mut self, meta: MethodMetadata) -> Result<()> {
-        let object = match self.objects.iter_mut().find(|o| o.name == meta.self_name) {
-            Some(o) => o,
-            None => {
-                self.objects.push(Object::new(meta.self_name.clone()));
-                self.objects.last_mut().unwrap()
-            }
-        };
+        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
 
         let defn: Method = meta.into();
         for arg in &defn.arguments {
@@ -535,6 +529,11 @@ impl ComponentInterface {
         object.methods.push(defn);
 
         Ok(())
+    }
+
+    pub(super) fn add_object_free_fn(&mut self, meta: ObjectMetadata) {
+        let object = get_or_insert_object(&mut self.objects, &meta.name);
+        object.ffi_func_free.name = meta.free_ffi_symbol_name();
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
@@ -611,6 +610,18 @@ impl Hash for ComponentInterface {
         self.objects.hash(state);
         self.callback_interfaces.hash(state);
         self.errors.hash(state);
+    }
+}
+
+fn get_or_insert_object<'a>(objects: &'a mut Vec<Object>, name: &str) -> &'a mut Object {
+    // The find-based way of writing this currently runs into a borrow checker
+    // error, so we use position
+    match objects.iter_mut().position(|o| o.name == name) {
+        Some(idx) => &mut objects[idx],
+        None => {
+            objects.push(Object::new(name.to_owned()));
+            objects.last_mut().unwrap()
+        }
     }
 }
 

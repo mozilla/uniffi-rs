@@ -75,6 +75,22 @@ pub enum Type {
     },
 }
 
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
+pub struct ObjectMetadata {
+    pub module_path: Vec<String>,
+    pub name: String,
+}
+
+impl ObjectMetadata {
+    /// FFI symbol name for the `free` function for this object.
+    ///
+    /// This function is used to free the memory used by this object.
+    pub fn free_ffi_symbol_name(&self) -> String {
+        let free_name = format!("object_free_{}", self.name);
+        fn_ffi_symbol_name(&self.module_path, &free_name, checksum(self))
+    }
+}
+
 /// Returns the last 16 bits of the value's hash as computed with [`DefaultHasher`].
 ///
 /// To be used as a checksum of FFI symbols, as a safeguard against different UniFFI versions being
@@ -95,6 +111,7 @@ pub fn fn_ffi_symbol_name(mod_path: &[String], name: &str, checksum: u16) -> Str
 pub enum Metadata {
     Func(FnMetadata),
     Method(MethodMetadata),
+    Object(ObjectMetadata),
 }
 
 impl From<FnMetadata> for Metadata {
@@ -106,5 +123,11 @@ impl From<FnMetadata> for Metadata {
 impl From<MethodMetadata> for Metadata {
     fn from(m: MethodMetadata) -> Self {
         Self::Method(m)
+    }
+}
+
+impl From<ObjectMetadata> for Metadata {
+    fn from(v: ObjectMetadata) -> Self {
+        Self::Object(v)
     }
 }
