@@ -60,8 +60,10 @@ pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
                         let checksum = checksum(&metadata);
                         let scaffolding =
                             gen_method_scaffolding(&item.sig, mod_path, checksum, &self_ident);
-                        let meta_static_var =
-                            create_metadata_static_var(&item.sig.ident, metadata.into());
+                        let meta_static_var = create_metadata_static_var(
+                            &format_ident!("{}_{}", metadata.self_name, item.sig.ident),
+                            metadata.into(),
+                        );
 
                         quote! {
                             #scaffolding
