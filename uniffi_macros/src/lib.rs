@@ -9,6 +9,7 @@
 //! we'll put some other code-annotation helper macros in here at some point.
 
 use camino::{Utf8Path, Utf8PathBuf};
+use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use std::env;
 use syn::{bracketed, punctuated::Punctuated, LitStr, Token};
@@ -19,10 +20,7 @@ mod util;
 use self::export::expand_export;
 
 #[proc_macro_attribute]
-pub fn export(
-    _attr: proc_macro::TokenStream,
-    input: proc_macro::TokenStream,
-) -> proc_macro::TokenStream {
+pub fn export(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let input2 = proc_macro2::TokenStream::from(input.clone());
 
     let gen_output = || {
@@ -55,7 +53,7 @@ pub fn export(
 /// It will produce one `#[test]` function per file, in a manner designed to
 /// play nicely with `cargo test` and its test filtering options.
 #[proc_macro]
-pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn build_foreign_language_testcases(paths: TokenStream) -> TokenStream {
     let paths = syn::parse_macro_input!(paths as FilePaths);
     // We resolve each path relative to the crate root directory.
     let pkg_dir = env::var("CARGO_MANIFEST_DIR")
@@ -102,7 +100,7 @@ pub fn build_foreign_language_testcases(paths: proc_macro::TokenStream) -> proc_
     let test_module = quote! {
         #(#test_functions)*
     };
-    proc_macro::TokenStream::from(test_module)
+    TokenStream::from(test_module)
 }
 
 // UNIFFI_TESTS_DISABLE_EXTENSIONS contains a comma-sep'd list of extensions (without leading `.`)
@@ -160,7 +158,7 @@ impl syn::parse::Parse for FilePaths {
 /// been successfully built by your crate's `build.rs` script).
 ///
 #[proc_macro]
-pub fn include_scaffolding(component_name: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
     let name = syn::parse_macro_input!(component_name as syn::LitStr);
     if std::env::var("OUT_DIR").is_err() {
         quote! {
@@ -185,9 +183,7 @@ pub fn include_scaffolding(component_name: proc_macro::TokenStream) -> proc_macr
 /// ```
 ///
 #[proc_macro]
-pub fn generate_and_include_scaffolding(
-    udl_file: proc_macro::TokenStream,
-) -> proc_macro::TokenStream {
+pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
     let udl_file = syn::parse_macro_input!(udl_file as syn::LitStr);
     let udl_file_string = udl_file.value();
     let udl_file_path = Utf8Path::new(&udl_file_string);
