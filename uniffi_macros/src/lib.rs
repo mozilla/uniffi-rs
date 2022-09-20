@@ -13,6 +13,7 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use std::env;
 use syn::{bracketed, parse_macro_input, punctuated::Punctuated, LitStr, Token};
+use util::rewrite_self_type;
 
 mod export;
 mod object;
@@ -26,7 +27,14 @@ pub fn export(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     let gen_output = || {
         let mod_path = util::mod_path()?;
-        let item = syn::parse(input)?;
+        let mut item = syn::parse(input)?;
+
+        // If the input is an `impl` block, rewrite any uses of the `Self` type
+        // alias to the actual type, so we don't have to special-case it in the
+        // metadata collection or scaffolding code generation (which generates
+        // new functions outside of the `impl`).
+        rewrite_self_type(&mut item);
+
         let metadata = export::gen_metadata(item, &mod_path)?;
         Ok(expand_export(metadata, &mod_path))
     };
