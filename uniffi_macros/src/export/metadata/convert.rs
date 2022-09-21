@@ -21,6 +21,11 @@ pub(super) fn fn_param_metadata(
                         syn::Pat::Ident(pat_id) => pat_id.ident.to_string(),
                         _ => unimplemented!(),
                     };
+
+                    if name == "self" {
+                        return None;
+                    }
+
                     (name, &pat_ty.ty)
                 }
             };
