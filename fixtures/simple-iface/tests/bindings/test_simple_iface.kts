@@ -6,3 +6,4 @@ import uniffi.fixture.simple_iface.*;
 
 var obj = makeObject(9000)
 assert(obj.getInner() == 9000)
+obj.someMethod()

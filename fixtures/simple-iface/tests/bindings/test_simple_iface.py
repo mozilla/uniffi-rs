@@ -6,3 +6,4 @@ from uniffi_simple_iface import *
 
 obj = make_object(9000)
 assert obj.get_inner() == 9000
+obj.some_method()
