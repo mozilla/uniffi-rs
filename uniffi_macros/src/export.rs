@@ -117,7 +117,10 @@ fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
 
     let input_types = sig.inputs.iter().filter_map(|input| match input {
         syn::FnArg::Receiver(_) => None,
-        syn::FnArg::Typed(pat_ty) => Some(&pat_ty.ty),
+        syn::FnArg::Typed(pat_ty) => match &*pat_ty.pat {
+            syn::Pat::Ident(i) if i.ident == "self" => None,
+            _ => Some(&pat_ty.ty),
+        },
     });
     let output_type = match &sig.output {
         syn::ReturnType::Default => None,
