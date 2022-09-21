@@ -19,6 +19,11 @@ impl Object {
     fn get_inner(&self) -> i32 {
         self.inner
     }
+
+    // Test that uniffi::export can handle Self in arbitrary positions
+    fn some_method(self: Arc<Self>) -> Option<Arc<Self>> {
+        None
+    }
 }
 
 include!(concat!(env!("OUT_DIR"), "/simple-iface.uniffi.rs"));

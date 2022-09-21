@@ -6,3 +6,4 @@ import uniffi_simple_iface
 
 let obj = makeObject(inner: 9000)
 assert(obj.getInner() == 9000)
+let _ = obj.someMethod()
