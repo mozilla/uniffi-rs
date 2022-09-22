@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import uniffi.callbacks.*
+import uniffi.fixture_callbacks.*
 
 // A bit more systematic in testing, but this time in English.
 //

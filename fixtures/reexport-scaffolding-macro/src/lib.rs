@@ -1,4 +1,4 @@
-uniffi_callbacks::uniffi_reexport_scaffolding!();
+uniffi_fixture_callbacks::uniffi_reexport_scaffolding!();
 uniffi_coverall::uniffi_reexport_scaffolding!();
 
 #[cfg(test)]
