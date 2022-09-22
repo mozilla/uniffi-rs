@@ -145,15 +145,6 @@
 <span id="139">139</span>
 <span id="140">140</span>
 <span id="141">141</span>
-<span id="142">142</span>
-<span id="143">143</span>
-<span id="144">144</span>
-<span id="145">145</span>
-<span id="146">146</span>
-<span id="147">147</span>
-<span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -162,14 +153,14 @@
 
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">TokenStream</span>};
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>};
-<span class="kw">use</span> <span class="ident">uniffi_meta</span>::{<span class="ident">checksum</span>, <span class="ident">FnMetadata</span>, <span class="ident">Metadata</span>, <span class="ident">MethodMetadata</span>, <span class="ident">Type</span>};
+<span class="kw">use</span> <span class="ident">uniffi_meta</span>::{<span class="ident">checksum</span>, <span class="ident">FnMetadata</span>, <span class="ident">MethodMetadata</span>, <span class="ident">Type</span>};
 
 <span class="kw">mod</span> <span class="ident">metadata</span>;
 <span class="kw">mod</span> <span class="ident">scaffolding</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::metadata::gen_metadata</span>;
 <span class="kw">use</span> <span class="ident"><span class="self">self</span>::scaffolding</span>::{<span class="ident">gen_fn_scaffolding</span>, <span class="ident">gen_method_scaffolding</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::export::metadata::convert::convert_type</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">export::metadata::convert::convert_type</span>, <span class="ident">util::create_metadata_static_var</span>};
 
 <span class="comment">// TODO(jplatte): Ensure no generics, no async, …</span>
 <span class="comment">// TODO(jplatte): Aggregate errors instead of short-circuiting, whereever possible</span>
@@ -216,8 +207,10 @@
                         <span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="ident">checksum</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>);
                         <span class="kw">let</span> <span class="ident">scaffolding</span> <span class="op">=</span>
                             <span class="ident">gen_method_scaffolding</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">sig</span>, <span class="ident">mod_path</span>, <span class="ident">checksum</span>, <span class="kw-2">&amp;</span><span class="ident">self_ident</span>);
-                        <span class="kw">let</span> <span class="ident">meta_static_var</span> <span class="op">=</span>
-                            <span class="ident">create_metadata_static_var</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">sig</span>.<span class="ident">ident</span>, <span class="ident">metadata</span>.<span class="ident">into</span>());
+                        <span class="kw">let</span> <span class="ident">meta_static_var</span> <span class="op">=</span> <span class="ident">create_metadata_static_var</span>(
+                            <span class="kw-2">&amp;</span><span class="macro">format_ident!</span>(<span class="string">&quot;{}_{}&quot;</span>, <span class="ident">metadata</span>.<span class="ident">self_name</span>, <span class="ident">item</span>.<span class="ident">sig</span>.<span class="ident">ident</span>),
+                            <span class="ident">metadata</span>.<span class="ident">into</span>(),
+                        );
 
                         <span class="macro">quote!</span> {
                             #<span class="ident">scaffolding</span>
@@ -292,17 +285,6 @@
         .<span class="ident">collect</span>();
 
     <span class="ident">type_assertions</span>.<span class="ident">into_values</span>().<span class="ident">collect</span>()
-}
-
-<span class="kw">fn</span> <span class="ident">create_metadata_static_var</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>, <span class="ident">val</span>: <span class="ident">Metadata</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">bincode::serialize</span>(<span class="kw-2">&amp;</span><span class="ident">val</span>).<span class="ident">expect</span>(<span class="string">&quot;Error serializing metadata item&quot;</span>);
-    <span class="kw">let</span> <span class="ident">count</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">len</span>();
-    <span class="kw">let</span> <span class="ident">var_name</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_{}&quot;</span>, <span class="ident">name</span>);
-
-    <span class="macro">quote!</span> {
-        <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-        <span class="kw">pub</span> <span class="kw">static</span> #<span class="ident">var_name</span>: [<span class="ident">u8</span>; #<span class="ident">count</span>] <span class="op">=</span> [#(#<span class="ident">data</span>),<span class="kw-2">*</span>];
-    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>

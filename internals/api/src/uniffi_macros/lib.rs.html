@@ -214,6 +214,14 @@
 <span id="208">208</span>
 <span id="209">209</span>
 <span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -225,20 +233,19 @@
 <span class="doccomment">//! we&#39;ll put some other code-annotation helper macros in here at some point.</span>
 
 <span class="kw">use</span> <span class="ident">camino</span>::{<span class="ident">Utf8Path</span>, <span class="ident">Utf8PathBuf</span>};
+<span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>};
 <span class="kw">use</span> <span class="ident">std::env</span>;
-<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">bracketed</span>, <span class="ident">punctuated::Punctuated</span>, <span class="ident">LitStr</span>, <span class="ident">Token</span>};
+<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">bracketed</span>, <span class="ident">parse_macro_input</span>, <span class="ident">punctuated::Punctuated</span>, <span class="ident">LitStr</span>, <span class="ident">Token</span>};
 
 <span class="kw">mod</span> <span class="ident">export</span>;
+<span class="kw">mod</span> <span class="ident">object</span>;
 <span class="kw">mod</span> <span class="ident">util</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::export::expand_export</span>;
+<span class="kw">use</span> <span class="self">self</span>::{<span class="ident">export::expand_export</span>, <span class="ident">object::expand_object</span>};
 
 <span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">export</span>(
-    <span class="ident">_attr</span>: <span class="ident">proc_macro::TokenStream</span>,
-    <span class="ident">input</span>: <span class="ident">proc_macro::TokenStream</span>,
-) -&gt; <span class="ident">proc_macro::TokenStream</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">export</span>(<span class="ident">_attr</span>: <span class="ident">TokenStream</span>, <span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
     <span class="kw">let</span> <span class="ident">input2</span> <span class="op">=</span> <span class="ident">proc_macro2::TokenStream::from</span>(<span class="ident">input</span>.<span class="ident">clone</span>());
 
     <span class="kw">let</span> <span class="ident">gen_output</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> {
@@ -256,6 +263,17 @@
     .<span class="ident">into</span>()
 }
 
+<span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Object</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">derive_object</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">util::mod_path</span>() {
+        <span class="prelude-val">Ok</span>(<span class="ident">p</span>) =&gt; <span class="ident">p</span>,
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>.<span class="ident">into_compile_error</span>().<span class="ident">into</span>(),
+    };
+    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">input</span>);
+
+    <span class="ident">expand_object</span>(<span class="ident">input</span>, <span class="ident">mod_path</span>).<span class="ident">into</span>()
+}
+
 <span class="doccomment">/// A macro to build testcases for a component&#39;s generated bindings.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This macro provides some plumbing to write automated tests for the generated</span>
@@ -271,7 +289,7 @@
 <span class="doccomment">/// It will produce one `#[test]` function per file, in a manner designed to</span>
 <span class="doccomment">/// play nicely with `cargo test` and its test filtering options.</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build_foreign_language_testcases</span>(<span class="ident">paths</span>: <span class="ident">proc_macro::TokenStream</span>) -&gt; <span class="ident">proc_macro::TokenStream</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build_foreign_language_testcases</span>(<span class="ident">paths</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
     <span class="kw">let</span> <span class="ident">paths</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">paths</span> <span class="kw">as</span> <span class="ident">FilePaths</span>);
     <span class="comment">// We resolve each path relative to the crate root directory.</span>
     <span class="kw">let</span> <span class="ident">pkg_dir</span> <span class="op">=</span> <span class="ident">env::var</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>)
@@ -318,7 +336,7 @@
     <span class="kw">let</span> <span class="ident">test_module</span> <span class="op">=</span> <span class="macro">quote!</span> {
         #(#<span class="ident">test_functions</span>)<span class="op">*</span>
     };
-    <span class="ident">proc_macro::TokenStream::from</span>(<span class="ident">test_module</span>)
+    <span class="ident">TokenStream::from</span>(<span class="ident">test_module</span>)
 }
 
 <span class="comment">// UNIFFI_TESTS_DISABLE_EXTENSIONS contains a comma-sep&#39;d list of extensions (without leading `.`)</span>
@@ -376,7 +394,7 @@
 <span class="doccomment">/// been successfully built by your crate&#39;s `build.rs` script).</span>
 <span class="doccomment">///</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_scaffolding</span>(<span class="ident">component_name</span>: <span class="ident">proc_macro::TokenStream</span>) -&gt; <span class="ident">proc_macro::TokenStream</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_scaffolding</span>(<span class="ident">component_name</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
     <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">component_name</span> <span class="kw">as</span> <span class="ident">syn::LitStr</span>);
     <span class="kw">if</span> <span class="ident">std::env::var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">is_err</span>() {
         <span class="macro">quote!</span> {
@@ -401,9 +419,7 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_and_include_scaffolding</span>(
-    <span class="ident">udl_file</span>: <span class="ident">proc_macro::TokenStream</span>,
-) -&gt; <span class="ident">proc_macro::TokenStream</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_and_include_scaffolding</span>(<span class="ident">udl_file</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
     <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">udl_file</span> <span class="kw">as</span> <span class="ident">syn::LitStr</span>);
     <span class="kw">let</span> <span class="ident">udl_file_string</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">value</span>();
     <span class="kw">let</span> <span class="ident">udl_file_path</span> <span class="op">=</span> <span class="ident">Utf8Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file_string</span>);

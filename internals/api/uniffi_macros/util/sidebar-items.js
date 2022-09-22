@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["mod_path",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["create_metadata_static_var",""],["mod_path",""]]};
