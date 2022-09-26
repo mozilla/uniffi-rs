@@ -51,7 +51,8 @@ pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
         ExportItem::Impl {
             methods,
             self_ident,
-        } => methods
+        } => {
+            let method_tokens: TokenStream = methods
             .into_iter()
             .map(|res| {
                 res.map_or_else(
@@ -60,6 +61,7 @@ pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
                         let checksum = checksum(&metadata);
                         let scaffolding =
                             gen_method_scaffolding(&item.sig, mod_path, checksum, &self_ident);
+                            let type_assertions = fn_type_assertions(&item.sig);
                         let meta_static_var = create_metadata_static_var(
                             &format_ident!("{}_{}", metadata.self_name, item.sig.ident),
                             metadata.into(),
@@ -67,12 +69,23 @@ pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
 
                         quote! {
                             #scaffolding
+                                #type_assertions
                             #meta_static_var
                         }
                     },
                 )
             })
-            .collect(),
+                .collect();
+
+            quote! {
+                ::uniffi::deps::static_assertions::assert_type_eq_all!(
+                    #self_ident,
+                    crate::uniffi_types::#self_ident
+                );
+
+                #method_tokens
+            }
+        }
     }
 }
 
