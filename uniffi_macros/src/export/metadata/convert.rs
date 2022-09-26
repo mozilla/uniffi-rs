@@ -15,6 +15,7 @@ pub(super) fn fn_param_metadata(
         .filter_map(|a| {
             let _is_method = false;
             let (name, ty) = match a {
+                // methods currently have an implicit self parameter in uniffi_meta
                 syn::FnArg::Receiver(_) => return None,
                 syn::FnArg::Typed(pat_ty) => {
                     let name = match &*pat_ty.pat {
@@ -22,6 +23,7 @@ pub(super) fn fn_param_metadata(
                         _ => unimplemented!(),
                     };
 
+                    // methods currently have an implicit self parameter in uniffi_meta
                     if name == "self" {
                         return None;
                     }

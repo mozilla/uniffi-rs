@@ -53,28 +53,28 @@ pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
             self_ident,
         } => {
             let method_tokens: TokenStream = methods
-            .into_iter()
-            .map(|res| {
-                res.map_or_else(
-                    syn::Error::into_compile_error,
-                    |Method { item, metadata }| {
-                        let checksum = checksum(&metadata);
-                        let scaffolding =
-                            gen_method_scaffolding(&item.sig, mod_path, checksum, &self_ident);
+                .into_iter()
+                .map(|res| {
+                    res.map_or_else(
+                        syn::Error::into_compile_error,
+                        |Method { item, metadata }| {
+                            let checksum = checksum(&metadata);
+                            let scaffolding =
+                                gen_method_scaffolding(&item.sig, mod_path, checksum, &self_ident);
                             let type_assertions = fn_type_assertions(&item.sig);
-                        let meta_static_var = create_metadata_static_var(
-                            &format_ident!("{}_{}", metadata.self_name, item.sig.ident),
-                            metadata.into(),
-                        );
+                            let meta_static_var = create_metadata_static_var(
+                                &format_ident!("{}_{}", metadata.self_name, item.sig.ident),
+                                metadata.into(),
+                            );
 
-                        quote! {
-                            #scaffolding
+                            quote! {
+                                #scaffolding
                                 #type_assertions
-                            #meta_static_var
-                        }
-                    },
-                )
-            })
+                                #meta_static_var
+                            }
+                        },
+                    )
+                })
                 .collect();
 
             quote! {
@@ -131,6 +131,7 @@ fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
     let input_types = sig.inputs.iter().filter_map(|input| match input {
         syn::FnArg::Receiver(_) => None,
         syn::FnArg::Typed(pat_ty) => match &*pat_ty.pat {
+            // Self type is asserted separately for impl blocks
             syn::Pat::Ident(i) if i.ident == "self" => None,
             _ => Some(&pat_ty.ty),
         },
