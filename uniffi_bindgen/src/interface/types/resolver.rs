@@ -123,9 +123,12 @@ impl TypeResolver for weedle::types::RecordKeyType<'_> {
     fn resolve_type_expression(&self, types: &mut TypeUniverse) -> Result<Type> {
         use weedle::types::RecordKeyType::*;
         match self {
-            Byte(_) | USV(_) => bail!("WebIDL Byte or USV string type not implemented ({:?}); consider using DOMString or string", self),
+            Byte(_) | USV(_) => bail!(
+                "WebIDL Byte or USV string type not implemented ({self:?}); \
+                 consider using DOMString or string",
+            ),
             DOM(_) => types.add_known_type(Type::String),
-            NonAny(t) => t.resolve_type_expression(types)
+            NonAny(t) => t.resolve_type_expression(types),
         }
     }
 }
