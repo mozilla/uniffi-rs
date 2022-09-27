@@ -221,7 +221,7 @@ impl TypeUniverse {
                 type_.canonical_name(),
             );
         }
-        self.add_known_type(&type_)?;
+        self.add_known_type(&type_);
         match self.type_definitions.entry(name.to_string()) {
             Entry::Occupied(_) => bail!("Conflicting type definition for \"{name}\""),
             Entry::Vacant(e) => {
@@ -248,12 +248,11 @@ impl TypeUniverse {
     ///
     /// This helpfully returns a `Result<Type>` so it can be chained in with other
     /// methods during the type resolution process.
-    pub fn add_known_type(&mut self, type_: &Type) -> Result<()> {
+    pub fn add_known_type(&mut self, type_: &Type) {
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
         if !self.all_known_types.contains(type_) {
             self.all_known_types.insert(type_.to_owned());
         }
-        Ok(())
     }
 
     /// Iterator over all the known types in this universe.

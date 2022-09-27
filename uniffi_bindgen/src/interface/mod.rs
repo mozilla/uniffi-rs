@@ -123,7 +123,7 @@ impl ComponentInterface {
             bail!("parse error");
         }
         // Unconditionally add the String type, which is used by the panic handling
-        ci.types.add_known_type(&Type::String)?;
+        ci.types.add_known_type(&Type::String);
         // We process the WebIDL definitions in two passes.
         // First, go through and look for all the named types.
         ci.types.add_type_definitions_from(defns.as_slice())?;
@@ -498,10 +498,10 @@ impl ComponentInterface {
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
     pub(super) fn add_function_definition(&mut self, defn: Function) -> Result<()> {
         for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_)?;
+            self.types.add_known_type(&arg.type_);
         }
         if let Some(ty) = &defn.return_type {
-            self.types.add_known_type(ty)?;
+            self.types.add_known_type(ty);
         }
 
         // Since functions are not a first-class type, we have to check for duplicates here
@@ -516,19 +516,17 @@ impl ComponentInterface {
         Ok(())
     }
 
-    pub(super) fn add_method_definition(&mut self, meta: MethodMetadata) -> Result<()> {
+    pub(super) fn add_method_definition(&mut self, meta: MethodMetadata) {
         let object = get_or_insert_object(&mut self.objects, &meta.self_name);
 
         let defn: Method = meta.into();
         for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_)?;
+            self.types.add_known_type(&arg.type_);
         }
         if let Some(ty) = &defn.return_type {
-            self.types.add_known_type(ty)?;
+            self.types.add_known_type(ty);
         }
         object.methods.push(defn);
-
-        Ok(())
     }
 
     pub(super) fn add_object_free_fn(&mut self, meta: ObjectMetadata) {
