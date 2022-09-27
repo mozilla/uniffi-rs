@@ -48,7 +48,7 @@ pub fn add_to_ci(
                 iface.add_function_definition(meta.into())?;
             }
             Metadata::Method(meta) => {
-                iface.add_method_definition(meta)?;
+                iface.add_method_definition(meta);
             }
             Metadata::Object(meta) => {
                 iface.add_object_free_fn(meta);
