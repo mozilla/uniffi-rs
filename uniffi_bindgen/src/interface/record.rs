@@ -46,8 +46,11 @@
 
 use anyhow::{bail, Result};
 
-use super::literal::{convert_default_value, Literal};
 use super::types::{Type, TypeIterator};
+use super::{
+    convert_type,
+    literal::{convert_default_value, Literal},
+};
 use super::{APIConverter, ComponentInterface};
 
 /// Represents a "data class" style object, for passing around complex values.
@@ -78,6 +81,15 @@ impl Record {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
+    }
+}
+
+impl From<uniffi_meta::RecordMetadata> for Record {
+    fn from(meta: uniffi_meta::RecordMetadata) -> Self {
+        Self {
+            name: meta.name,
+            fields: meta.fields.into_iter().map(Into::into).collect(),
+        }
     }
 }
 
@@ -120,6 +132,17 @@ impl Field {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
+    }
+}
+
+impl From<uniffi_meta::FieldMetadata> for Field {
+    fn from(meta: uniffi_meta::FieldMetadata) -> Self {
+        Self {
+            name: meta.name,
+            type_: convert_type(&meta.ty),
+            required: true,
+            default: None,
+        }
     }
 }
 

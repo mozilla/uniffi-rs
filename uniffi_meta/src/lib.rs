@@ -79,6 +79,20 @@ pub enum Type {
 }
 
 #[derive(Clone, Debug, Hash, Deserialize, Serialize)]
+pub struct RecordMetadata {
+    pub module_path: Vec<String>,
+    pub name: String,
+    pub fields: Vec<FieldMetadata>,
+}
+
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
+pub struct FieldMetadata {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub ty: Type,
+}
+
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
 pub struct ObjectMetadata {
     pub module_path: Vec<String>,
     pub name: String,
@@ -114,6 +128,7 @@ pub fn fn_ffi_symbol_name(mod_path: &[String], name: &str, checksum: u16) -> Str
 pub enum Metadata {
     Func(FnMetadata),
     Method(MethodMetadata),
+    Record(RecordMetadata),
     Object(ObjectMetadata),
 }
 
@@ -126,6 +141,12 @@ impl From<FnMetadata> for Metadata {
 impl From<MethodMetadata> for Metadata {
     fn from(m: MethodMetadata) -> Self {
         Self::Method(m)
+    }
+}
+
+impl From<RecordMetadata> for Metadata {
+    fn from(r: RecordMetadata) -> Self {
+        Self::Record(r)
     }
 }
 
