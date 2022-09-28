@@ -9,7 +9,7 @@ use quote::{format_ident, quote, quote_spanned};
 use syn::spanned::Spanned;
 use uniffi_meta::{checksum, FnMetadata, MethodMetadata, Type};
 
-mod metadata;
+pub(crate) mod metadata;
 mod scaffolding;
 
 pub use self::metadata::gen_metadata;

@@ -17,9 +17,10 @@ use util::rewrite_self_type;
 
 mod export;
 mod object;
+mod record;
 mod util;
 
-use self::{export::expand_export, object::expand_object};
+use self::{export::expand_export, object::expand_object, record::expand_record};
 
 #[proc_macro_attribute]
 pub fn export(_attr: TokenStream, input: TokenStream) -> TokenStream {
@@ -45,6 +46,17 @@ pub fn export(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #output
     }
     .into()
+}
+
+#[proc_macro_derive(Record)]
+pub fn derive_record(input: TokenStream) -> TokenStream {
+    let mod_path = match util::mod_path() {
+        Ok(p) => p,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let input = parse_macro_input!(input);
+
+    expand_record(input, mod_path).into()
 }
 
 #[proc_macro_derive(Object)]

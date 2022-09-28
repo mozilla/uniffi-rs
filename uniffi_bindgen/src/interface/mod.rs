@@ -89,7 +89,7 @@ pub struct ComponentInterface {
     /// using a different version, which might introduce unsafety.
     uniffi_version: String,
     /// All of the types used in the interface.
-    types: TypeUniverse,
+    pub(super) types: TypeUniverse,
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
     namespace: String,
     /// The internal unique prefix used to namespace FFI symbols
@@ -490,7 +490,7 @@ impl ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed record definition to the `ComponentInterface`.
-    fn add_record_definition(&mut self, defn: Record) {
+    pub(super) fn add_record_definition(&mut self, defn: Record) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.records.push(defn);
     }
