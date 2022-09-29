@@ -26,6 +26,9 @@
 
 - The `guess_crate_root` function is now public
 
+### What's changed
+- The UDL can contain identifiers which are also keywords in Swift, except in namespace functions.
+
 ## v0.19.6 - (_2022-08-31_)
 
 [All changes in v0.19.6](https://github.com/mozilla/uniffi-rs/compare/v0.19.5...v0.19.6).
