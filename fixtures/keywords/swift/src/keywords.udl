@@ -1,0 +1,32 @@
+namespace keywords_swift {
+
+};
+
+enum case {
+    "internal",
+};
+
+[Enum]
+interface for {
+    internal(u8 break);
+};
+
+dictionary return {
+    u8 class;
+    u8? switch;
+};
+
+interface break {
+    void class(u8 internal);
+    void internal(u8? class);
+};
+
+[Error]
+enum class {
+    "internal",
+};
+
+[Error]
+interface func {
+   class(u8 object);
+};
