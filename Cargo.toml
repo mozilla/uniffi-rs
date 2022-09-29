@@ -30,6 +30,7 @@ members = [
 
   "fixtures/keywords/kotlin",
   "fixtures/keywords/rust",
+  "fixtures/keywords/swift",
   "fixtures/reexport-scaffolding-macro",
   "fixtures/regressions/enum-without-i32-helpers",
   "fixtures/regressions/fully-qualified-types",
