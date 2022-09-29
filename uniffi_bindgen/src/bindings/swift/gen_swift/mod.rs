@@ -341,22 +341,22 @@ impl CodeOracle for SwiftCodeOracle {
 
     /// Get the idiomatic Swift rendering of a function name.
     fn fn_name(&self, nm: &str) -> String {
-        nm.to_string().to_lower_camel_case()
+        format!("`{}`", nm.to_string().to_lower_camel_case())
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
     fn var_name(&self, nm: &str) -> String {
-        nm.to_string().to_lower_camel_case()
+        format!("`{}`", nm.to_string().to_lower_camel_case())
     }
 
     /// Get the idiomatic Swift rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &str) -> String {
-        nm.to_string().to_lower_camel_case()
+        format!("`{}`", nm.to_string().to_lower_camel_case())
     }
 
     /// Get the idiomatic Swift rendering of an exception name.
     fn error_name(&self, nm: &str) -> String {
-        self.class_name(nm)
+        format!("`{}`", self.class_name(nm))
     }
 
     fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
