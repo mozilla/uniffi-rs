@@ -1059,8 +1059,6 @@
 <span id="1053">1053</span>
 <span id="1054">1054</span>
 <span id="1055">1055</span>
-<span id="1056">1056</span>
-<span id="1057">1057</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -1186,7 +1184,7 @@
             <span class="macro">bail!</span>(<span class="string">&quot;parse error&quot;</span>);
         }
         <span class="comment">// Unconditionally add the String type, which is used by the panic handling</span>
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">Type::String</span>);
+        <span class="ident">ci</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="kw-2">&amp;</span><span class="ident">Type::String</span>);
         <span class="comment">// We process the WebIDL definitions in two passes.</span>
         <span class="comment">// First, go through and look for all the named types.</span>
         <span class="ident">ci</span>.<span class="ident">types</span>.<span class="ident">add_type_definitions_from</span>(<span class="ident">defns</span>.<span class="ident">as_slice</span>())<span class="question-mark">?</span>;
@@ -1561,10 +1559,10 @@
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_function_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Function</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">defn</span>.<span class="ident">arguments</span> {
-            <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">arg</span>.<span class="ident">type_</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="kw-2">&amp;</span><span class="ident">arg</span>.<span class="ident">type_</span>);
         }
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ty</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">defn</span>.<span class="ident">return_type</span> {
-            <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">ty</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">ty</span>);
         }
 
         <span class="comment">// Since functions are not a first-class type, we have to check for duplicates here</span>
@@ -1579,19 +1577,17 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_method_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="ident">MethodMetadata</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_method_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="ident">MethodMetadata</span>) {
         <span class="kw">let</span> <span class="ident">object</span> <span class="op">=</span> <span class="ident">get_or_insert_object</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">objects</span>, <span class="kw-2">&amp;</span><span class="ident">meta</span>.<span class="ident">self_name</span>);
 
         <span class="kw">let</span> <span class="ident">defn</span>: <span class="ident">Method</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">into</span>();
         <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">defn</span>.<span class="ident">arguments</span> {
-            <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">arg</span>.<span class="ident">type_</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="kw-2">&amp;</span><span class="ident">arg</span>.<span class="ident">type_</span>);
         }
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ty</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">defn</span>.<span class="ident">return_type</span> {
-            <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">ty</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">ty</span>);
         }
         <span class="ident">object</span>.<span class="ident">methods</span>.<span class="ident">push</span>(<span class="ident">defn</span>);
-
-        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_object_free_fn</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="ident">ObjectMetadata</span>) {
