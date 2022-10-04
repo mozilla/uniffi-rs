@@ -39,8 +39,10 @@
 <span id="33">33</span>
 <span id="34">34</span>
 <span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">Span</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">quote::quote</span>;
+<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">quote</span>, <span class="ident">quote_spanned</span>};
 <span class="kw">use</span> <span class="ident">syn::DeriveInput</span>;
 <span class="kw">use</span> <span class="ident">uniffi_meta::ObjectMetadata</span>;
 
@@ -52,6 +54,9 @@
     <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">ObjectMetadata</span> { <span class="ident">module_path</span>, <span class="ident">name</span> };
     <span class="kw">let</span> <span class="ident">free_fn_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>.<span class="ident">free_ffi_symbol_name</span>(), <span class="ident">Span::call_site</span>());
     <span class="kw">let</span> <span class="ident">meta_static_var</span> <span class="op">=</span> <span class="ident">create_metadata_static_var</span>(<span class="ident">ident</span>, <span class="ident">metadata</span>.<span class="ident">into</span>());
+    <span class="kw">let</span> <span class="ident">type_assertion</span> <span class="op">=</span> <span class="macro">quote_spanned!</span> {<span class="ident">ident</span>.<span class="ident">span</span>()=&gt;
+        <span class="macro">::uniffi::deps::static_assertions::assert_type_eq_all!</span>(#<span class="ident">ident</span>, <span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">ident</span>);
+    };
 
     <span class="macro">quote!</span> {
         <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
@@ -69,9 +74,8 @@
             });
         }
 
-        <span class="macro">::uniffi::deps::static_assertions::assert_type_eq_all!</span>(#<span class="ident">ident</span>, <span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">ident</span>);
-
         #<span class="ident">meta_static_var</span>
+        #<span class="ident">type_assertion</span>
     }
 }
 </code></pre></div>
