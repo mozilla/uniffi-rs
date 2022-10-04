@@ -199,16 +199,16 @@ impl Argument {
         &self.name
     }
 
-    pub fn type_(&self) -> Type {
-        self.type_.clone()
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
 
     pub fn by_ref(&self) -> bool {
         self.by_ref
     }
 
-    pub fn default_value(&self) -> Option<Literal> {
-        self.default.clone()
+    pub fn default_value(&self) -> Option<&Literal> {
+        self.default.as_ref()
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
