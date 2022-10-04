@@ -297,6 +297,20 @@
 <span id="291">291</span>
 <span id="292">292</span>
 <span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -551,6 +565,20 @@
         <span class="comment">// Types are more likely to already be known than not, so avoid unnecessary cloning.</span>
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">all_known_types</span>.<span class="ident">contains</span>(<span class="ident">type_</span>) {
             <span class="self">self</span>.<span class="ident">all_known_types</span>.<span class="ident">insert</span>(<span class="ident">type_</span>.<span class="ident">to_owned</span>());
+
+            <span class="comment">// Add inner types. For UDL, this is actually pointless extra work (as is calling</span>
+            <span class="comment">// add_known_type from add_function_definition), but for the proc-macro frontend</span>
+            <span class="comment">// this is important if the inner type isn&#39;t ever mentioned outside one of these</span>
+            <span class="comment">// generic builtin types.</span>
+            <span class="kw">match</span> <span class="ident">type_</span> {
+                <span class="ident">Type::Optional</span>(<span class="ident">t</span>) =&gt; <span class="self">self</span>.<span class="ident">add_known_type</span>(<span class="ident">t</span>),
+                <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="self">self</span>.<span class="ident">add_known_type</span>(<span class="ident">t</span>),
+                <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; {
+                    <span class="self">self</span>.<span class="ident">add_known_type</span>(<span class="ident">k</span>);
+                    <span class="self">self</span>.<span class="ident">add_known_type</span>(<span class="ident">v</span>);
+                }
+                <span class="kw">_</span> =&gt; {}
+            }
         }
     }
 
