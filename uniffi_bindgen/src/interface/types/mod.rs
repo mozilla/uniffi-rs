@@ -252,6 +252,20 @@ impl TypeUniverse {
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
         if !self.all_known_types.contains(type_) {
             self.all_known_types.insert(type_.to_owned());
+
+            // Add inner types. For UDL, this is actually pointless extra work (as is calling
+            // add_known_type from add_function_definition), but for the proc-macro frontend
+            // this is important if the inner type isn't ever mentioned outside one of these
+            // generic builtin types.
+            match type_ {
+                Type::Optional(t) => self.add_known_type(t),
+                Type::Sequence(t) => self.add_known_type(t),
+                Type::Map(k, v) => {
+                    self.add_known_type(k);
+                    self.add_known_type(v);
+                }
+                _ => {}
+            }
         }
     }
 
