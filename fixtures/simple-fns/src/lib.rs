@@ -41,6 +41,11 @@ fn set_contains(set: Arc<MyHashSet>, value: String) -> bool {
     set.lock().unwrap().contains(&value)
 }
 
+// This used to generate broken bindings because the type inside `Option` (and
+// other generic builtin types) wasn't being added as a known type.
+#[uniffi::export]
+fn dummy(_arg: Option<i8>) {}
+
 mod uniffi_types {
     use std::{collections::HashSet, sync::Mutex};
 
