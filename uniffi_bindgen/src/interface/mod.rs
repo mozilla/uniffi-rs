@@ -552,6 +552,44 @@ impl ComponentInterface {
         self.errors.push(defn);
     }
 
+    /// Resolve unresolved types within proc-macro function / method signatures.
+    pub fn resolve_types(&mut self) -> Result<()> {
+        let fn_sig_types = self.functions.iter_mut().flat_map(|fun| {
+            fun.arguments
+                .iter_mut()
+                .map(|arg| &mut arg.type_)
+                .chain(&mut fun.return_type)
+        });
+        let method_sig_types = self.objects.iter_mut().flat_map(|obj| {
+            obj.methods.iter_mut().flat_map(|m| {
+                m.arguments
+                    .iter_mut()
+                    .map(|arg| &mut arg.type_)
+                    .chain(&mut m.return_type)
+            })
+        });
+
+        for ty in fn_sig_types.chain(method_sig_types) {
+            let ty_name = match ty {
+                Type::Unresolved { name } => name.as_str(),
+                _ => continue,
+            };
+
+            match self.types.get_type_definition(ty_name) {
+                Some(def) => {
+                    assert!(
+                        !matches!(&def, Type::Unresolved { .. }),
+                        "unresolved types must not be part of TypeUniverse"
+                    );
+                    *ty = def;
+                }
+                None => bail!("Failed to resolve type `{ty_name}`"),
+            }
+        }
+
+        Ok(())
+    }
+
     /// Perform global consistency checks on the declared interface.
     ///
     /// This method checks for consistency problems in the declared interface
@@ -842,6 +880,7 @@ fn convert_type(s: &uniffi_meta::Type) -> Type {
             convert_type(value_type).into(),
         ),
         Ty::ArcObject { object_name } => Type::Object(object_name.clone()),
+        Ty::Unresolved { name } => Type::Unresolved { name: name.clone() },
     }
 }
 

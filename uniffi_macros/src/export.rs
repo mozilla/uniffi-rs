@@ -126,6 +126,10 @@ fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
                 let object_ident = format_ident!("{object_name}");
                 quote! { ::std::sync::Arc<crate::uniffi_types::#object_ident> }
             }
+            Type::Unresolved { name } => {
+                let ident = format_ident!("{name}");
+                quote! { crate::uniffi_types::#ident }
+            }
         }
     }
 
