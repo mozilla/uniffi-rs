@@ -245,9 +245,6 @@ impl TypeUniverse {
     }
 
     /// Add a [Type] to the set of all types seen in the component interface.
-    ///
-    /// This helpfully returns a `Result<Type>` so it can be chained in with other
-    /// methods during the type resolution process.
     pub fn add_known_type(&mut self, type_: &Type) {
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
         if !self.all_known_types.contains(type_) {
