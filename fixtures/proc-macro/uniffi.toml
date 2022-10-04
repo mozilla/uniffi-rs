@@ -1,0 +1,9 @@
+[bindings.kotlin]
+package_name = "uniffi.fixture.proc_macro"
+cdylib_name = "uniffi_proc_macro"
+
+[bindings.python]
+cdylib_name = "uniffi_proc_macro"
+
+[bindings.swift]
+cdylib_name = "uniffi_proc_macro"
