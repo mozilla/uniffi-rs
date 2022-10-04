@@ -5,7 +5,8 @@
 use std::collections::BTreeMap;
 
 use proc_macro2::{Ident, TokenStream};
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, quote_spanned};
+use syn::spanned::Spanned;
 use uniffi_meta::{checksum, FnMetadata, MethodMetadata, Type};
 
 mod metadata;
@@ -77,7 +78,7 @@ pub fn expand_export(metadata: ExportItem, mod_path: &[String]) -> TokenStream {
                 })
                 .collect();
 
-            quote! {
+            quote_spanned! {self_ident.span()=>
                 ::uniffi::deps::static_assertions::assert_type_eq_all!(
                     #self_ident,
                     crate::uniffi_types::#self_ident
@@ -146,7 +147,7 @@ fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
         .filter_map(|ty| {
             convert_type(ty).ok().map(|meta_ty| {
                 let expected_ty = convert_type_back(&meta_ty);
-                let assert = quote! {
+                let assert = quote_spanned! {ty.span()=>
                     ::uniffi::deps::static_assertions::assert_type_eq_all!(#ty, #expected_ty);
                 };
                 (meta_ty, assert)
