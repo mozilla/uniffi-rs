@@ -9,6 +9,7 @@
 
 use anyhow::{bail, Result};
 use camino::Utf8Path;
+use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
 
 use crate::interface::ComponentInterface;
@@ -25,7 +26,7 @@ pub mod swift;
 /// on the provided `TargetLanguage`. For convenience of calling code we also provide
 /// a few `TryFrom` implementations to help guess the correct target language from
 /// e.g. a file extension of command-line argument.
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, ValueEnum)]
 pub enum TargetLanguage {
     Kotlin,
     Swift,

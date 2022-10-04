@@ -292,7 +292,7 @@ pub fn generate_component_scaffolding(
 pub fn generate_bindings(
     udl_file: &Utf8Path,
     config_file_override: Option<&Utf8Path>,
-    target_languages: Vec<&str>,
+    target_languages: &[TargetLanguage],
     out_dir_override: Option<&Utf8Path>,
     library_file: Option<&Utf8Path>,
     try_format_code: bool,
@@ -310,7 +310,7 @@ pub fn generate_bindings(
             &config.bindings,
             &component,
             &out_dir,
-            language.try_into()?,
+            *language,
             try_format_code,
         )?;
     }
@@ -522,8 +522,8 @@ enum Commands {
     /// Generate foreign language bindings
     Generate {
         /// Foreign language(s) for which to build bindings.
-        #[clap(long, short, possible_values = &["kotlin", "python", "swift", "ruby"])]
-        language: Vec<String>,
+        #[clap(long, short, value_enum)]
+        language: Vec<TargetLanguage>,
 
         /// Directory in which to write generated files. Default is same folder as .udl file.
         #[clap(long, short)]
@@ -599,7 +599,7 @@ pub fn run_main() -> Result<()> {
         } => generate_bindings(
             udl_file,
             config.as_deref(),
-            language.iter().map(String::as_str).collect(),
+            language,
             out_dir.as_deref(),
             lib_file.as_deref(),
             !no_format,
