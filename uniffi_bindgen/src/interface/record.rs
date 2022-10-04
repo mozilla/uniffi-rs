@@ -72,8 +72,8 @@ impl Record {
         Type::Record(self.name.clone())
     }
 
-    pub fn fields(&self) -> Vec<&Field> {
-        self.fields.iter().collect()
+    pub fn fields(&self) -> &[Field] {
+        &self.fields
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -110,12 +110,12 @@ impl Field {
         &self.name
     }
 
-    pub fn type_(&self) -> Type {
-        self.type_.clone()
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
 
-    pub fn default_value(&self) -> Option<Literal> {
-        self.default.clone()
+    pub fn default_value(&self) -> Option<&Literal> {
+        self.default.as_ref()
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
