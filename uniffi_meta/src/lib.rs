@@ -73,6 +73,9 @@ pub enum Type {
     ArcObject {
         object_name: String,
     },
+    Unresolved {
+        name: String,
+    },
 }
 
 #[derive(Clone, Debug, Hash, Deserialize, Serialize)]

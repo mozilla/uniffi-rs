@@ -67,6 +67,9 @@ pub enum Type {
     External { name: String, crate_name: String },
     // Custom type on the scaffolding side
     Custom { name: String, builtin: Box<Type> },
+    // An unresolved user-defined type inside a proc-macro exported function
+    // signature. Must be replaced by another type before bindings generation.
+    Unresolved { name: String },
 }
 
 impl Type {
@@ -118,6 +121,9 @@ impl Type {
             ),
             // A type that exists externally.
             Type::External { name, .. } | Type::Custom { name, .. } => format!("Type{name}"),
+            Type::Unresolved { .. } => {
+                unreachable!("Type must be resolved before calling canonical_name")
+            }
         }
     }
 
@@ -174,6 +180,9 @@ impl From<&Type> for FFIType {
             | Type::Duration
             | Type::External { .. } => FFIType::RustBuffer,
             Type::Custom { builtin, .. } => FFIType::from(builtin.as_ref()),
+            Type::Unresolved { .. } => {
+                unreachable!("Type must be resolved before lowering to FFIType")
+            }
         }
     }
 }
@@ -249,6 +258,12 @@ impl TypeUniverse {
     /// This helpfully returns a `Result<Type>` so it can be chained in with other
     /// methods during the type resolution process.
     pub fn add_known_type(&mut self, type_: &Type) {
+        // Don't add unresolved types, they are only useful as placeholders
+        // inside function / method signatures.
+        if matches!(type_, Type::Unresolved { .. }) {
+            return;
+        }
+
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
         if !self.all_known_types.contains(type_) {
             self.all_known_types.insert(type_.to_owned());
