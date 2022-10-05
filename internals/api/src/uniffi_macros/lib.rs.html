@@ -230,6 +230,18 @@
 <span id="224">224</span>
 <span id="225">225</span>
 <span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -249,9 +261,10 @@
 
 <span class="kw">mod</span> <span class="ident">export</span>;
 <span class="kw">mod</span> <span class="ident">object</span>;
+<span class="kw">mod</span> <span class="ident">record</span>;
 <span class="kw">mod</span> <span class="ident">util</span>;
 
-<span class="kw">use</span> <span class="self">self</span>::{<span class="ident">export::expand_export</span>, <span class="ident">object::expand_object</span>};
+<span class="kw">use</span> <span class="self">self</span>::{<span class="ident">export::expand_export</span>, <span class="ident">object::expand_object</span>, <span class="ident">record::expand_record</span>};
 
 <span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">export</span>(<span class="ident">_attr</span>: <span class="ident">TokenStream</span>, <span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
@@ -277,6 +290,17 @@
         #<span class="ident">output</span>
     }
     .<span class="ident">into</span>()
+}
+
+<span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Record</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">derive_record</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">util::mod_path</span>() {
+        <span class="prelude-val">Ok</span>(<span class="ident">p</span>) =&gt; <span class="ident">p</span>,
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>.<span class="ident">into_compile_error</span>().<span class="ident">into</span>(),
+    };
+    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">input</span>);
+
+    <span class="ident">expand_record</span>(<span class="ident">input</span>, <span class="ident">mod_path</span>).<span class="ident">into</span>()
 }
 
 <span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Object</span>)]</span>

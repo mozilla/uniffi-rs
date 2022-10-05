@@ -182,6 +182,7 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
+<span id="179">179</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -247,7 +248,7 @@
 
     <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">type_path</span>.<span class="ident">path</span>.<span class="ident">segments</span>.<span class="ident">first</span>() {
         <span class="prelude-val">Some</span>(<span class="ident">seg</span>) =&gt; <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">seg</span>.<span class="ident">arguments</span> {
-            <span class="ident">syn::PathArguments::None</span> =&gt; <span class="ident">convert_bare_type_name</span>(<span class="kw-2">&amp;</span><span class="ident">seg</span>.<span class="ident">ident</span>),
+            <span class="ident">syn::PathArguments::None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">convert_bare_type_name</span>(<span class="kw-2">&amp;</span><span class="ident">seg</span>.<span class="ident">ident</span>)),
             <span class="ident">syn::PathArguments::AngleBracketed</span>(<span class="ident">a</span>) =&gt; <span class="ident">convert_generic_type</span>(<span class="kw-2">&amp;</span><span class="ident">seg</span>.<span class="ident">ident</span>, <span class="ident">a</span>),
             <span class="ident">syn::PathArguments::Parenthesized</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">type_not_supported</span>(<span class="ident">type_path</span>)),
         },
@@ -265,7 +266,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">args</span>.<span class="ident">iter</span>();
     <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
         <span class="comment">// `u8&lt;&gt;` is a valid way to write `u8` in the type namespace, so why not?</span>
-        <span class="prelude-val">None</span> =&gt; <span class="ident">convert_bare_type_name</span>(<span class="ident">ident</span>),
+        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">convert_bare_type_name</span>(<span class="ident">ident</span>)),
         <span class="prelude-val">Some</span>(<span class="ident">arg1</span>) =&gt; <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
             <span class="prelude-val">None</span> =&gt; <span class="ident">convert_generic_type1</span>(<span class="ident">ident</span>, <span class="ident">arg1</span>),
             <span class="prelude-val">Some</span>(<span class="ident">arg2</span>) =&gt; <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
@@ -280,21 +281,22 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">convert_bare_type_name</span>(<span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>() {
-        <span class="string">&quot;u8&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::U8</span>),
-        <span class="string">&quot;u16&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::U16</span>),
-        <span class="string">&quot;u32&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::U32</span>),
-        <span class="string">&quot;u64&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::U64</span>),
-        <span class="string">&quot;i8&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::I8</span>),
-        <span class="string">&quot;i16&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::I16</span>),
-        <span class="string">&quot;i32&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::I32</span>),
-        <span class="string">&quot;i64&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::I64</span>),
-        <span class="string">&quot;f32&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::F32</span>),
-        <span class="string">&quot;f64&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::F64</span>),
-        <span class="string">&quot;bool&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::Bool</span>),
-        <span class="string">&quot;String&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::String</span>),
-        <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">type_not_supported</span>(<span class="ident">ident</span>)),
+<span class="kw">fn</span> <span class="ident">convert_bare_type_name</span>(<span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>) -&gt; <span class="ident">Type</span> {
+    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">ident</span>.<span class="ident">to_string</span>();
+    <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">as_str</span>() {
+        <span class="string">&quot;u8&quot;</span> =&gt; <span class="ident">Type::U8</span>,
+        <span class="string">&quot;u16&quot;</span> =&gt; <span class="ident">Type::U16</span>,
+        <span class="string">&quot;u32&quot;</span> =&gt; <span class="ident">Type::U32</span>,
+        <span class="string">&quot;u64&quot;</span> =&gt; <span class="ident">Type::U64</span>,
+        <span class="string">&quot;i8&quot;</span> =&gt; <span class="ident">Type::I8</span>,
+        <span class="string">&quot;i16&quot;</span> =&gt; <span class="ident">Type::I16</span>,
+        <span class="string">&quot;i32&quot;</span> =&gt; <span class="ident">Type::I32</span>,
+        <span class="string">&quot;i64&quot;</span> =&gt; <span class="ident">Type::I64</span>,
+        <span class="string">&quot;f32&quot;</span> =&gt; <span class="ident">Type::F32</span>,
+        <span class="string">&quot;f64&quot;</span> =&gt; <span class="ident">Type::F64</span>,
+        <span class="string">&quot;bool&quot;</span> =&gt; <span class="ident">Type::Bool</span>,
+        <span class="string">&quot;String&quot;</span> =&gt; <span class="ident">Type::String</span>,
+        <span class="kw">_</span> =&gt; <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> },
     }
 }
 

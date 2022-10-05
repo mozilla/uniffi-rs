@@ -268,6 +268,15 @@
 <span id="262">262</span>
 <span id="263">263</span>
 <span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -461,6 +470,9 @@
             }
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for external types, yet&quot;</span>),
             <span class="ident">Type::Custom</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for custom types, yet&quot;</span>),
+            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling coerce_rb&quot;</span>)
+            }
         })
     }
 
@@ -494,6 +506,9 @@
             ),
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering external types, yet&quot;</span>),
             <span class="ident">Type::Custom</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering custom types, yet&quot;</span>),
+            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling lower_rb&quot;</span>)
+            }
         })
     }
 
@@ -526,6 +541,9 @@
             ),
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting external types, yet&quot;</span>),
             <span class="ident">Type::Custom</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting custom types, yet&quot;</span>),
+            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling lift_rb&quot;</span>)
+            }
         })
     }
 }

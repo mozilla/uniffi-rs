@@ -150,6 +150,12 @@
 <span id="144">144</span>
 <span id="145">145</span>
 <span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -206,6 +212,9 @@
             ),
             <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{}&quot;</span>, <span class="ident">name</span>),
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;External types coming to a uniffi near you soon!&quot;</span>),
+            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;UDL scaffolding code never contains unresolved types&quot;</span>)
+            }
         })
     }
 
@@ -278,6 +287,9 @@
             <span class="ident">Type::Float64</span> =&gt; <span class="string">&quot;f64&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">Type::String</span> =&gt; <span class="string">&quot;String&quot;</span>.<span class="ident">into</span>(),
             <span class="ident">Type::Boolean</span> =&gt; <span class="string">&quot;bool&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;UDL scaffolding code never contains unresolved types&quot;</span>)
+            }
         })
     }
 

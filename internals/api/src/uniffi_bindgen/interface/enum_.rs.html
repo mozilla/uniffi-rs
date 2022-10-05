@@ -770,7 +770,7 @@
                 .<span class="ident">iter</span>()
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">type_</span>())
                 .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-            <span class="macro">vec!</span>[<span class="ident">Type::UInt32</span>]
+            <span class="macro">vec!</span>[<span class="kw-2">&amp;</span><span class="ident">Type::UInt32</span>]
         );
         <span class="macro">assert_eq!</span>(
             <span class="ident">ed</span>.<span class="ident">variants</span>()[<span class="number">2</span>]
@@ -786,7 +786,7 @@
                 .<span class="ident">iter</span>()
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">type_</span>())
                 .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-            <span class="macro">vec!</span>[<span class="ident">Type::UInt32</span>, <span class="ident">Type::String</span>]
+            <span class="macro">vec!</span>[<span class="kw-2">&amp;</span><span class="ident">Type::UInt32</span>, <span class="kw-2">&amp;</span><span class="ident">Type::String</span>]
         );
 
         <span class="comment">// The enum declared via interface, but with no associated data.</span>
@@ -804,7 +804,7 @@
         <span class="comment">// (It might be nice to optimize these to pass as plain integers, but that&#39;s</span>
         <span class="comment">// difficult atop the current factoring of `ComponentInterface` and friends).</span>
         <span class="kw">let</span> <span class="ident">farg</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;takes_an_enum&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">farg</span>.<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(), <span class="ident">Type::Enum</span>(<span class="string">&quot;TestEnum&quot;</span>.<span class="ident">into</span>()));
+        <span class="macro">assert_eq!</span>(<span class="kw-2">*</span><span class="ident">farg</span>.<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(), <span class="ident">Type::Enum</span>(<span class="string">&quot;TestEnum&quot;</span>.<span class="ident">into</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">farg</span>.<span class="ident">ffi_func</span>().<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(), <span class="ident">FFIType::RustBuffer</span>);
         <span class="kw">let</span> <span class="ident">fret</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;returns_an_enum&quot;</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">fret</span>.<span class="ident">return_type</span>(), <span class="prelude-val">Some</span>(<span class="ident">Type::Enum</span>(<span class="ident">nm</span>)) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">==</span> <span class="string">&quot;TestEnum&quot;</span>));
@@ -818,7 +818,7 @@
             .<span class="ident">get_function_definition</span>(<span class="string">&quot;takes_an_enum_with_data&quot;</span>)
             .<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">farg</span>.<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(),
+            <span class="kw-2">*</span><span class="ident">farg</span>.<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(),
             <span class="ident">Type::Enum</span>(<span class="string">&quot;TestEnumWithData&quot;</span>.<span class="ident">into</span>())
         );
         <span class="macro">assert_eq!</span>(<span class="ident">farg</span>.<span class="ident">ffi_func</span>().<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(), <span class="ident">FFIType::RustBuffer</span>);

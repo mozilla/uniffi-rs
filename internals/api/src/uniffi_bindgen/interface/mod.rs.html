@@ -1059,6 +1059,45 @@
 <span id="1053">1053</span>
 <span id="1054">1054</span>
 <span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -1150,7 +1189,7 @@
     <span class="doccomment">/// using a different version, which might introduce unsafety.</span>
     <span class="ident">uniffi_version</span>: <span class="ident">String</span>,
     <span class="doccomment">/// All of the types used in the interface.</span>
-    <span class="ident">types</span>: <span class="ident">TypeUniverse</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">types</span>: <span class="ident">TypeUniverse</span>,
     <span class="doccomment">/// The unique prefix that we&#39;ll use for namespacing when exposing this component&#39;s API.</span>
     <span class="ident">namespace</span>: <span class="ident">String</span>,
     <span class="doccomment">/// The internal unique prefix used to namespace FFI symbols</span>
@@ -1551,7 +1590,7 @@
     }
 
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed record definition to the `ComponentInterface`.</span>
-    <span class="kw">fn</span> <span class="ident">add_record_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Record</span>) {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_record_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Record</span>) {
         <span class="comment">// Note that there will be no duplicates thanks to the previous type-finding pass.</span>
         <span class="self">self</span>.<span class="ident">records</span>.<span class="ident">push</span>(<span class="ident">defn</span>);
     }
@@ -1611,6 +1650,44 @@
     <span class="kw">fn</span> <span class="ident">add_error_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Error</span>) {
         <span class="comment">// Note that there will be no duplicates thanks to the previous type-finding pass.</span>
         <span class="self">self</span>.<span class="ident">errors</span>.<span class="ident">push</span>(<span class="ident">defn</span>);
+    }
+
+    <span class="doccomment">/// Resolve unresolved types within proc-macro function / method signatures.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resolve_types</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">fn_sig_types</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">functions</span>.<span class="ident">iter_mut</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">fun</span><span class="op">|</span> {
+            <span class="ident">fun</span>.<span class="ident">arguments</span>
+                .<span class="ident">iter_mut</span>()
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">arg</span><span class="op">|</span> <span class="kw-2">&amp;mut</span> <span class="ident">arg</span>.<span class="ident">type_</span>)
+                .<span class="ident">chain</span>(<span class="kw-2">&amp;mut</span> <span class="ident">fun</span>.<span class="ident">return_type</span>)
+        });
+        <span class="kw">let</span> <span class="ident">method_sig_types</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">objects</span>.<span class="ident">iter_mut</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">obj</span><span class="op">|</span> {
+            <span class="ident">obj</span>.<span class="ident">methods</span>.<span class="ident">iter_mut</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> {
+                <span class="ident">m</span>.<span class="ident">arguments</span>
+                    .<span class="ident">iter_mut</span>()
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">arg</span><span class="op">|</span> <span class="kw-2">&amp;mut</span> <span class="ident">arg</span>.<span class="ident">type_</span>)
+                    .<span class="ident">chain</span>(<span class="kw-2">&amp;mut</span> <span class="ident">m</span>.<span class="ident">return_type</span>)
+            })
+        });
+
+        <span class="kw">for</span> <span class="ident">ty</span> <span class="kw">in</span> <span class="ident">fn_sig_types</span>.<span class="ident">chain</span>(<span class="ident">method_sig_types</span>) {
+            <span class="kw">let</span> <span class="ident">ty_name</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ty</span> {
+                <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; <span class="ident">name</span>.<span class="ident">as_str</span>(),
+                <span class="kw">_</span> =&gt; <span class="kw">continue</span>,
+            };
+
+            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="ident">ty_name</span>) {
+                <span class="prelude-val">Some</span>(<span class="ident">def</span>) =&gt; {
+                    <span class="macro">assert!</span>(
+                        <span class="op">!</span><span class="macro">matches!</span>(<span class="kw-2">&amp;</span><span class="ident">def</span>, <span class="ident">Type::Unresolved</span> { .. }),
+                        <span class="string">&quot;unresolved types must not be part of TypeUniverse&quot;</span>
+                    );
+                    <span class="kw-2">*</span><span class="ident">ty</span> <span class="op">=</span> <span class="ident">def</span>;
+                }
+                <span class="prelude-val">None</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;Failed to resolve type `{ty_name}`&quot;</span>),
+            }
+        }
+
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Perform global consistency checks on the declared interface.</span>
@@ -1903,6 +1980,7 @@
             <span class="ident">convert_type</span>(<span class="ident">value_type</span>).<span class="ident">into</span>(),
         ),
         <span class="ident">Ty::ArcObject</span> { <span class="ident">object_name</span> } =&gt; <span class="ident">Type::Object</span>(<span class="ident">object_name</span>.<span class="ident">clone</span>()),
+        <span class="ident">Ty::Unresolved</span> { <span class="ident">name</span> } =&gt; <span class="ident">Type::Unresolved</span> { <span class="ident">name</span>: <span class="ident">name</span>.<span class="ident">clone</span>() },
     }
 }
 

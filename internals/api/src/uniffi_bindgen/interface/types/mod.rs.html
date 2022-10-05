@@ -308,6 +308,21 @@
 <span id="302">302</span>
 <span id="303">303</span>
 <span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -377,6 +392,9 @@
     <span class="ident">External</span> { <span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">crate_name</span>: <span class="ident">String</span> },
     <span class="comment">// Custom type on the scaffolding side</span>
     <span class="ident">Custom</span> { <span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">builtin</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> },
+    <span class="comment">// An unresolved user-defined type inside a proc-macro exported function</span>
+    <span class="comment">// signature. Must be replaced by another type before bindings generation.</span>
+    <span class="ident">Unresolved</span> { <span class="ident">name</span>: <span class="ident">String</span> },
 }
 
 <span class="kw">impl</span> <span class="ident">Type</span> {
@@ -428,6 +446,9 @@
             ),
             <span class="comment">// A type that exists externally.</span>
             <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
+            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling canonical_name&quot;</span>)
+            }
         }
     }
 
@@ -484,6 +505,9 @@
             <span class="op">|</span> <span class="ident">Type::Duration</span>
             <span class="op">|</span> <span class="ident">Type::External</span> { .. } =&gt; <span class="ident">FFIType::RustBuffer</span>,
             <span class="ident">Type::Custom</span> { <span class="ident">builtin</span>, .. } =&gt; <span class="ident">FFIType::from</span>(<span class="ident">builtin</span>.<span class="ident">as_ref</span>()),
+            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before lowering to FFIType&quot;</span>)
+            }
         }
     }
 }
@@ -556,6 +580,12 @@
 
     <span class="doccomment">/// Add a [Type] to the set of all types seen in the component interface.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_known_type</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) {
+        <span class="comment">// Don&#39;t add unresolved types, they are only useful as placeholders</span>
+        <span class="comment">// inside function / method signatures.</span>
+        <span class="kw">if</span> <span class="macro">matches!</span>(<span class="ident">type_</span>, <span class="ident">Type::Unresolved</span> { .. }) {
+            <span class="kw">return</span>;
+        }
+
         <span class="comment">// Types are more likely to already be known than not, so avoid unnecessary cloning.</span>
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">all_known_types</span>.<span class="ident">contains</span>(<span class="ident">type_</span>) {
             <span class="self">self</span>.<span class="ident">all_known_types</span>.<span class="ident">insert</span>(<span class="ident">type_</span>.<span class="ident">to_owned</span>());

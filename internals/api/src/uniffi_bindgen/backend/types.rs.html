@@ -413,13 +413,13 @@
 
 <span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">Field</span> {
     <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>())
+        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="self">self</span>.<span class="ident">type_</span>())
     }
 }
 
 <span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">Argument</span> {
     <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>())
+        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="self">self</span>.<span class="ident">type_</span>())
     }
 }
 

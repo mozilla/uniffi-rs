@@ -476,6 +476,9 @@
 <span id="470">470</span>
 <span id="471">471</span>
 <span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -803,6 +806,9 @@
             <span class="ident">Type::Map</span>(<span class="ident">key</span>, <span class="ident">value</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="kw-2">*</span><span class="ident">key</span>, <span class="kw-2">*</span><span class="ident">value</span>)),
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;no support for external types yet&quot;</span>),
             <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">Box::new</span>(<span class="ident">custom::CustomCodeType::new</span>(<span class="ident">name</span>)),
+            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling create_code_type&quot;</span>)
+            }
         }
     }
 }
