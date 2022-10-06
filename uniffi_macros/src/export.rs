@@ -6,7 +6,6 @@ use std::collections::BTreeMap;
 
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
-use syn::spanned::Spanned;
 use uniffi_meta::{checksum, FnMetadata, MethodMetadata, Type};
 
 pub(crate) mod metadata;
@@ -14,7 +13,10 @@ mod scaffolding;
 
 pub use self::metadata::gen_metadata;
 use self::scaffolding::{gen_fn_scaffolding, gen_method_scaffolding};
-use crate::{export::metadata::convert::convert_type, util::create_metadata_static_var};
+use crate::{
+    export::metadata::convert::convert_type,
+    util::{assert_type_eq, create_metadata_static_var},
+};
 
 // TODO(jplatte): Ensure no generics, no async, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, whereever possible
@@ -151,9 +153,7 @@ fn fn_type_assertions(sig: &syn::Signature) -> TokenStream {
         .filter_map(|ty| {
             convert_type(ty).ok().map(|meta_ty| {
                 let expected_ty = convert_type_back(&meta_ty);
-                let assert = quote_spanned! {ty.span()=>
-                    ::uniffi::deps::static_assertions::assert_type_eq_all!(#ty, #expected_ty);
-                };
+                let assert = assert_type_eq(ty, expected_ty);
                 (meta_ty, assert)
             })
         })

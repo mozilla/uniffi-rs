@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::{format_ident, quote};
-use syn::{visit_mut::VisitMut, Item, Type};
+use quote::{format_ident, quote, quote_spanned, ToTokens};
+use syn::{spanned::Spanned, visit_mut::VisitMut, Item, Type};
 use uniffi_meta::Metadata;
 
 #[cfg(not(feature = "nightly"))]
@@ -132,5 +132,14 @@ pub fn create_metadata_static_var(name: &Ident, val: Metadata) -> TokenStream {
     quote! {
         #[no_mangle]
         pub static #var_name: [u8; #count] = [#(#data),*];
+    }
+}
+
+pub fn assert_type_eq(a: impl ToTokens + Spanned, b: impl ToTokens) -> TokenStream {
+    quote_spanned! {a.span()=>
+        #[allow(unused_qualifications)]
+        const _: () = {
+            ::uniffi::deps::static_assertions::assert_type_eq_all!(#a, #b);
+        };
     }
 }

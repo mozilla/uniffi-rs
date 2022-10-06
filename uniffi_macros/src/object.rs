@@ -1,9 +1,9 @@
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::{quote, quote_spanned};
+use quote::quote;
 use syn::DeriveInput;
 use uniffi_meta::ObjectMetadata;
 
-use crate::util::create_metadata_static_var;
+use crate::util::{assert_type_eq, create_metadata_static_var};
 
 pub fn expand_object(input: DeriveInput, module_path: Vec<String>) -> TokenStream {
     let ident = &input.ident;
@@ -11,9 +11,7 @@ pub fn expand_object(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
     let metadata = ObjectMetadata { module_path, name };
     let free_fn_ident = Ident::new(&metadata.free_ffi_symbol_name(), Span::call_site());
     let meta_static_var = create_metadata_static_var(ident, metadata.into());
-    let type_assertion = quote_spanned! {ident.span()=>
-        ::uniffi::deps::static_assertions::assert_type_eq_all!(#ident, crate::uniffi_types::#ident);
-    };
+    let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
 
     quote! {
         #[doc(hidden)]
