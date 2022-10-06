@@ -17,9 +17,9 @@ This toy example defines a way of Rust accessing a key-value store exposed
 by the host operating system (e.g. the key chain).
 
 ```rust,no_run
-trait Keychain: Send + Sync + Debug {
-  pub fn get(key: String) -> Option<String>
-  pub fn put(key: String, value: String)
+pub trait Keychain: Send + Sync + Debug {
+  fn get(&self, key: String) -> Option<String>;
+  fn put(&self, key: String, value: String);
 }
 ```
 
