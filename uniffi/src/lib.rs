@@ -278,11 +278,7 @@ unsafe impl FfiConverter for bool {
     type FfiType = i8;
 
     fn lower(obj: Self::RustType) -> Self::FfiType {
-        if obj {
-            1
-        } else {
-            0
-        }
+        i8::from(obj)
     }
 
     fn try_lift(v: Self::FfiType) -> Result<Self::RustType> {
