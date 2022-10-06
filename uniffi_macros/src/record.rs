@@ -3,7 +3,10 @@ use quote::quote;
 use syn::{Data, DeriveInput};
 use uniffi_meta::{FieldMetadata, RecordMetadata};
 
-use crate::{export::metadata::convert::convert_type, util::create_metadata_static_var};
+use crate::{
+    export::metadata::convert::convert_type,
+    util::{assert_type_eq, create_metadata_static_var},
+};
 
 pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStream {
     let fields = match input.data {
@@ -76,6 +79,8 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
             .into_compile_error()
         });
 
+    let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
+
     quote! {
         impl ::uniffi::RustBufferFfiConverter for #ident {
             type RustType = Self;
@@ -89,8 +94,7 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
             }
         }
 
-        ::uniffi::deps::static_assertions::assert_type_eq_all!(#ident, crate::uniffi_types::#ident);
-
         #meta_static_var
+        #type_assertion
     }
 }
