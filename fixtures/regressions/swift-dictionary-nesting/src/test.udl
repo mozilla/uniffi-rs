@@ -1,0 +1,8 @@
+// Regression test for ...
+
+namespace regression_test_swift_dictionary_nesting {
+    record<string, string> get_dict_1();
+    record<string, sequence<string>> get_dict_2();
+    record<string, record<string, string>> get_dict_3();
+    record<string, record<string, sequence<string>>> get_dict_4();
+};
