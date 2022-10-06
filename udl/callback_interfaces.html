@@ -175,9 +175,9 @@ by the host operating system (e.g. the key chain).</p>
 <pre><pre class="playground"><code class="language-rust no_run">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>trait Keychain: Send + Sync + Debug {
-  pub fn get(key: String) -&gt; Option&lt;String&gt;
-  pub fn put(key: String, value: String)
+</span>pub trait Keychain: Send + Sync + Debug {
+  fn get(&amp;self, key: String) -&gt; Option&lt;String&gt;;
+  fn put(&amp;self, key: String, value: String);
 }
 <span class="boring">}
 </span></code></pre></pre>
