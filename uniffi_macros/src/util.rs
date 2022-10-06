@@ -131,6 +131,7 @@ pub fn create_metadata_static_var(name: &Ident, val: Metadata) -> TokenStream {
 
     quote! {
         #[no_mangle]
+        #[doc(hidden)]
         pub static #var_name: [u8; #count] = [#(#data),*];
     }
 }
