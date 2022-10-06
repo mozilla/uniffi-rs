@@ -28,6 +28,8 @@
 //! In addition to the core `FfiConverter` trait, we provide a handful of struct definitions useful
 //! for passing core rust types over the FFI, such as [`RustBuffer`].
 
+#![warn(rust_2018_idioms, unused_qualifications)]
+
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
 use paste::paste;
