@@ -1,0 +1,17 @@
+[package]
+name = "uniffi-fixture-regression-swift-dictionary-nesting"
+edition = "2021"
+version = "0.20.0"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+name = "uniffi_regression_test_swift_dictionary_nesting"
+
+[dependencies]
+uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+
+[build-dependencies]
+uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
