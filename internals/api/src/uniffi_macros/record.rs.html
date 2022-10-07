@@ -100,12 +100,19 @@
 <span id="94">94</span>
 <span id="95">95</span>
 <span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Span</span>, <span class="ident">TokenStream</span>};
 <span class="kw">use</span> <span class="ident">quote::quote</span>;
 <span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">Data</span>, <span class="ident">DeriveInput</span>};
 <span class="kw">use</span> <span class="ident">uniffi_meta</span>::{<span class="ident">FieldMetadata</span>, <span class="ident">RecordMetadata</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">export::metadata::convert::convert_type</span>, <span class="ident">util::create_metadata_static_var</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{
+    <span class="ident">export::metadata::convert::convert_type</span>,
+    <span class="ident">util</span>::{<span class="ident">assert_type_eq</span>, <span class="ident">create_metadata_static_var</span>},
+};
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">expand_record</span>(<span class="ident">input</span>: <span class="ident">DeriveInput</span>, <span class="ident">module_path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="ident">TokenStream</span> {
     <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">input</span>.<span class="ident">data</span> {
@@ -178,6 +185,8 @@
             .<span class="ident">into_compile_error</span>()
         });
 
+    <span class="kw">let</span> <span class="ident">type_assertion</span> <span class="op">=</span> <span class="ident">assert_type_eq</span>(<span class="ident">ident</span>, <span class="macro">quote!</span> { <span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">ident</span> });
+
     <span class="macro">quote!</span> {
         <span class="kw">impl</span> <span class="ident">::uniffi::RustBufferFfiConverter</span> <span class="kw">for</span> #<span class="ident">ident</span> {
             <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
@@ -191,9 +200,8 @@
             }
         }
 
-        <span class="macro">::uniffi::deps::static_assertions::assert_type_eq_all!</span>(#<span class="ident">ident</span>, <span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">ident</span>);
-
         #<span class="ident">meta_static_var</span>
+        #<span class="ident">type_assertion</span>
     }
 }
 </code></pre></div>

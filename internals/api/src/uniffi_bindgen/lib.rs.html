@@ -756,7 +756,7 @@
 <span class="doccomment">//! to load and use the compiled rust code via its C-compatible FFI.</span>
 <span class="doccomment">//!</span>
 
-<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">rust_2018_idioms</span>)]</span>
+<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">rust_2018_idioms</span>, <span class="ident">unused_qualifications</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unknown_lints</span>)]</span>
 
 <span class="kw">const</span> <span class="ident">BINDGEN_VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
@@ -896,7 +896,7 @@
         <span class="ident">ci</span>: <span class="ident">ComponentInterface</span>,
         <span class="ident">config</span>: <span class="ident"><span class="self">Self</span>::Config</span>,
         <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
-    ) -&gt; <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Generate bindings for an external binding generator</span>
@@ -1263,7 +1263,7 @@
             <span class="ident">config</span>,
             <span class="ident">lib_file</span>,
             <span class="ident">udl_file</span>,
-        } =&gt; <span class="ident"><span class="kw">crate</span>::generate_bindings</span>(
+        } =&gt; <span class="ident">generate_bindings</span>(
             <span class="ident">udl_file</span>,
             <span class="ident">config</span>.<span class="ident">as_deref</span>(),
             <span class="ident">language</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">String::as_str</span>).<span class="ident">collect</span>(),
@@ -1276,7 +1276,7 @@
             <span class="ident">config</span>,
             <span class="ident">no_format</span>,
             <span class="ident">udl_file</span>,
-        } =&gt; <span class="ident"><span class="kw">crate</span>::generate_component_scaffolding</span>(
+        } =&gt; <span class="ident">generate_component_scaffolding</span>(
             <span class="ident">udl_file</span>,
             <span class="ident">config</span>.<span class="ident">as_deref</span>(),
             <span class="ident">out_dir</span>.<span class="ident">as_deref</span>(),
@@ -1287,7 +1287,7 @@
             <span class="ident">udl_file</span>,
             <span class="ident">test_scripts</span>,
             <span class="ident">config</span>,
-        } =&gt; <span class="ident"><span class="kw">crate</span>::run_tests</span>(<span class="ident">library_file</span>, <span class="kw-2">&amp;</span>[<span class="ident">udl_file</span>], <span class="ident">test_scripts</span>, <span class="ident">config</span>.<span class="ident">as_deref</span>()),
+        } =&gt; <span class="ident">run_tests</span>(<span class="ident">library_file</span>, <span class="kw-2">&amp;</span>[<span class="ident">udl_file</span>], <span class="ident">test_scripts</span>, <span class="ident">config</span>.<span class="ident">as_deref</span>()),
         <span class="ident">Commands::PrintJson</span> { <span class="ident">path</span> } =&gt; <span class="ident">print_json</span>(<span class="ident">path</span>),
     }<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())

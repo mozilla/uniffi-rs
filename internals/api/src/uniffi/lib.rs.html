@@ -674,8 +674,6 @@
 <span id="668">668</span>
 <span id="669">669</span>
 <span id="670">670</span>
-<span id="671">671</span>
-<span id="672">672</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -705,6 +703,8 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! In addition to the core `FfiConverter` trait, we provide a handful of struct definitions useful</span>
 <span class="doccomment">//! for passing core rust types over the FFI, such as [`RustBuffer`].</span>
+
+<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">rust_2018_idioms</span>, <span class="ident">unused_qualifications</span>)]</span>
 
 <span class="kw">use</span> <span class="ident">anyhow::bail</span>;
 <span class="kw">use</span> <span class="ident">bytes::buf</span>::{<span class="ident">Buf</span>, <span class="ident">BufMut</span>};
@@ -954,11 +954,7 @@
     <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="ident">i8</span>;
 
     <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
-        <span class="kw">if</span> <span class="ident">obj</span> {
-            <span class="number">1</span>
-        } <span class="kw">else</span> {
-            <span class="number">0</span>
-        }
+        <span class="ident">i8::from</span>(<span class="ident">obj</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
