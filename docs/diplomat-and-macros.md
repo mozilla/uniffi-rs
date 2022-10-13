@@ -129,7 +129,7 @@ annotations. As discussed below, re-parsing this code might be an option if we h
 find it, but asking UniFFI to parse this and all dependent crates to auto-discover them
 probably is not going to be viable.
 
-### Why is this considered a limition for UniFFI but not diplomat?
+### Why is this considered a limitation for UniFFI but not diplomat?
 
 As mentioned above, diplomat considers the limitation described above as an intentional design
 feature. By limiting where FFI types can be described, there's no risk of changes made "far away"
