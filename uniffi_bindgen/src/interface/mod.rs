@@ -573,6 +573,30 @@ impl ComponentInterface {
 
     /// Resolve unresolved types within proc-macro function / method signatures.
     pub fn resolve_types(&mut self) -> Result<()> {
+        fn handle_unresolved_in(
+            ty: &mut Type,
+            f: impl Fn(&str) -> Result<Type> + Clone,
+        ) -> Result<()> {
+            match ty {
+                Type::Unresolved { name } => {
+                    *ty = f(name)?;
+                }
+                Type::Optional(inner) => {
+                    handle_unresolved_in(inner, f)?;
+                }
+                Type::Sequence(inner) => {
+                    handle_unresolved_in(inner, f)?;
+                }
+                Type::Map(k, v) => {
+                    handle_unresolved_in(k, f.clone())?;
+                    handle_unresolved_in(v, f)?;
+                }
+                _ => {}
+            }
+
+            Ok(())
+        }
+
         let fn_sig_types = self.functions.iter_mut().flat_map(|fun| {
             fun.arguments
                 .iter_mut()
@@ -589,21 +613,18 @@ impl ComponentInterface {
         });
 
         for ty in fn_sig_types.chain(method_sig_types) {
-            let ty_name = match ty {
-                Type::Unresolved { name } => name.as_str(),
-                _ => continue,
-            };
-
-            match self.types.get_type_definition(ty_name) {
-                Some(def) => {
-                    assert!(
-                        !matches!(&def, Type::Unresolved { .. }),
-                        "unresolved types must not be part of TypeUniverse"
-                    );
-                    *ty = def;
+            handle_unresolved_in(ty, |unresolved_ty_name| {
+                match self.types.get_type_definition(unresolved_ty_name) {
+                    Some(def) => {
+                        assert!(
+                            !matches!(&def, Type::Unresolved { .. }),
+                            "unresolved types must not be part of TypeUniverse"
+                        );
+                        Ok(def)
+                    }
+                    None => bail!("Failed to resolve type `{unresolved_ty_name}`"),
                 }
-                None => bail!("Failed to resolve type `{ty_name}`"),
-            }
+            })?;
         }
 
         Ok(())
