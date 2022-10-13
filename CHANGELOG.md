@@ -11,8 +11,12 @@
 ###  ⚠️ Breaking Changes ⚠️
 
 - `uniffi_bindgen`: Renamed the `throws()` method of `Function`, `Method`, and
-  `Contstructor` to `throws_str()`.  Added a new `throws()` method that returns
+  `Constructor` to `throws_str()`.  Added a new `throws()` method that returns
   a boolean.
+
+### What's changed
+
+- Added support for exceptions in callback interface methods.
 
 ## v0.20.0 - (_2022-09-13_)
 
