@@ -91,7 +91,7 @@ use super::{APIConverter, ComponentInterface};
 pub struct Enum {
     pub(super) name: String,
     pub(super) variants: Vec<Variant>,
-    // "Flat" enums do not have, and will never have, variants with associated data.
+    // "Flat" enums do not have variants with associated data.
     pub(super) flat: bool,
 }
 
@@ -106,8 +106,8 @@ impl Enum {
         Type::Enum(self.name.clone())
     }
 
-    pub fn variants(&self) -> Vec<&Variant> {
-        self.variants.iter().collect()
+    pub fn variants(&self) -> &[Variant] {
+        &self.variants
     }
 
     pub fn is_flat(&self) -> bool {
@@ -116,6 +116,17 @@ impl Enum {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.variants.iter().flat_map(Variant::iter_types))
+    }
+}
+
+impl From<uniffi_meta::EnumMetadata> for Enum {
+    fn from(meta: uniffi_meta::EnumMetadata) -> Self {
+        let flat = meta.variants.iter().all(|v| v.fields.is_empty());
+        Self {
+            name: meta.name,
+            variants: meta.variants.into_iter().map(Into::into).collect(),
+            flat,
+        }
     }
 }
 
@@ -184,8 +195,9 @@ impl Variant {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn fields(&self) -> Vec<&Field> {
-        self.fields.iter().collect()
+
+    pub fn fields(&self) -> &[Field] {
+        &self.fields
     }
 
     pub fn has_fields(&self) -> bool {
@@ -194,6 +206,15 @@ impl Variant {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
+    }
+}
+
+impl From<uniffi_meta::VariantMetadata> for Variant {
+    fn from(meta: uniffi_meta::VariantMetadata) -> Self {
+        Self {
+            name: meta.name,
+            fields: meta.fields.into_iter().map(Into::into).collect(),
+        }
     }
 }
 

@@ -122,7 +122,7 @@ impl Error {
         &self.enum_
     }
 
-    pub fn variants(&self) -> Vec<&Variant> {
+    pub fn variants(&self) -> &[Variant] {
         self.enum_.variants()
     }
 
