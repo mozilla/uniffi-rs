@@ -503,7 +503,7 @@ impl ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.
-    fn add_enum_definition(&mut self, defn: Enum) {
+    pub(super) fn add_enum_definition(&mut self, defn: Enum) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.enums.push(defn);
     }

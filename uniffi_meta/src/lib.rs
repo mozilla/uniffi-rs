@@ -93,6 +93,19 @@ pub struct FieldMetadata {
 }
 
 #[derive(Clone, Debug, Hash, Deserialize, Serialize)]
+pub struct EnumMetadata {
+    pub module_path: Vec<String>,
+    pub name: String,
+    pub variants: Vec<VariantMetadata>,
+}
+
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
+pub struct VariantMetadata {
+    pub name: String,
+    pub fields: Vec<FieldMetadata>,
+}
+
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
 pub struct ObjectMetadata {
     pub module_path: Vec<String>,
     pub name: String,
@@ -129,6 +142,7 @@ pub enum Metadata {
     Func(FnMetadata),
     Method(MethodMetadata),
     Record(RecordMetadata),
+    Enum(EnumMetadata),
     Object(ObjectMetadata),
 }
 
@@ -147,6 +161,12 @@ impl From<MethodMetadata> for Metadata {
 impl From<RecordMetadata> for Metadata {
     fn from(r: RecordMetadata) -> Self {
         Self::Record(r)
+    }
+}
+
+impl From<EnumMetadata> for Metadata {
+    fn from(e: EnumMetadata) -> Self {
+        Self::Enum(e)
     }
 }
 
