@@ -1,6 +1,6 @@
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{Data, DeriveInput};
+use syn::{Data, DeriveInput, Fields};
 use uniffi_meta::{FieldMetadata, RecordMetadata};
 
 use crate::{
@@ -42,14 +42,21 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
     let meta_static_var = fields
         .map(|fields| {
             let name = ident.to_string();
+            let fields = match fields {
+                Fields::Named(fields) => fields.named,
+                _ => {
+                    return syn::Error::new(
+                        Span::call_site(),
+                        "UniFFI only supports structs with named fields",
+                    )
+                    .into_compile_error();
+                }
+            };
+
             let fields_res: syn::Result<_> = fields
                 .iter()
                 .map(|f| {
-                    let name = f
-                        .ident
-                        .as_ref()
-                        .expect("We only allow record structs")
-                        .to_string();
+                    let name = f.ident.as_ref().unwrap().to_string();
 
                     Ok(FieldMetadata {
                         name,
