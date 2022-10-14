@@ -5,7 +5,7 @@ use uniffi_meta::{FieldMetadata, RecordMetadata};
 
 use crate::{
     export::metadata::convert::convert_type,
-    util::{assert_type_eq, create_metadata_static_var},
+    util::{assert_type_eq, create_metadata_static_var, try_read_field},
 };
 
 pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStream {
@@ -17,22 +17,10 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
     let ident = &input.ident;
 
     let (write_impl, try_read_fields) = match &fields {
-        Some(fields) => fields
-            .iter()
-            .map(|f| {
-                let ident = &f.ident;
-                let ty = &f.ty;
-
-                let write_field = quote! {
-                    <#ty as ::uniffi::FfiConverter>::write(obj.#ident, buf);
-                };
-                let try_read_field = quote! {
-                    #ident: <#ty as ::uniffi::FfiConverter>::try_read(buf)?,
-                };
-
-                (write_field, try_read_field)
-            })
-            .unzip(),
+        Some(fields) => (
+            fields.iter().map(write_field).collect(),
+            fields.iter().map(try_read_field).collect(),
+        ),
         None => {
             let unimplemented = quote! { ::std::unimplemented!() };
             (unimplemented.clone(), unimplemented)
@@ -103,5 +91,14 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
 
         #meta_static_var
         #type_assertion
+    }
+}
+
+pub fn write_field(f: &syn::Field) -> TokenStream {
+    let ident = &f.ident;
+    let ty = &f.ty;
+
+    quote! {
+        <#ty as ::uniffi::FfiConverter>::write(obj.#ident, buf);
     }
 }
