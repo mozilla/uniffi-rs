@@ -17,6 +17,7 @@
 ### What's changed
 
 - Added support for exceptions in callback interface methods.
+- Improved error stringifying on Kotlin and Ruby (the `message` and `to_s` methods respectively).
 
 ## v0.20.0 - (_2022-09-13_)
 

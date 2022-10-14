@@ -16,15 +16,15 @@ sealed class {{ type_name }}(message: String): Exception(message){% if contains_
 sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Disposable {% endif %} {
     // Each variant is a nested class
     {% for variant in e.variants() -%}
-    {% if !variant.has_fields() -%}
-    class {{ variant.name()|exception_name }} : {{ type_name }}()
-    {% else %}
-    class {{ variant.name()|exception_name }}(
+    {%- let variant_name = variant.name()|exception_name %}
+    class {{ variant_name }}(
         {% for field in variant.fields() -%}
         val {{ field.name()|var_name }}: {{ field|type_name}}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
-    ) : {{ type_name }}()
-    {%- endif %}
+    ) : {{ type_name }}() {
+        override val message
+            get() = "{%- for field in variant.fields() %}{{ field.name()|var_name|unquote }}=${ {{field.name()|var_name }} }{% if !loop.last %}, {% endif %}{% endfor %}"
+    }
     {% endfor %}
 
     companion object ErrorHandler : CallStatusErrorHandler<{{ type_name }}> {
@@ -36,7 +36,7 @@ sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Di
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant.name()|class_name }} -> {
+            is {{ type_name }}.{{ variant.name()|exception_name }} -> {
                 {%- if variant.has_fields() %}
                 {% call kt::destroy_fields(variant) %}
                 {% else -%}

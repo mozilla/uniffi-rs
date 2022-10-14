@@ -126,6 +126,7 @@ class TestCoverall < Test::Unit::TestCase
     rescue Coverall::ComplexError::OsError => err
       assert_equal err.code, 10
       assert_equal err.extended_code, 20
+      assert_equal err.to_s, 'Coverall::ComplexError::OsError(code=10, extended_code=20)'
     else
       raise 'should have thrown'
     end
@@ -134,6 +135,7 @@ class TestCoverall < Test::Unit::TestCase
       coveralls.maybe_throw_complex(2)
     rescue Coverall::ComplexError::PermissionDenied => err
       assert_equal err.reason, "Forbidden"
+      assert_equal err.to_s, 'Coverall::ComplexError::PermissionDenied(reason="Forbidden")'
     else
       raise 'should have thrown'
     end

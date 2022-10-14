@@ -109,16 +109,26 @@ do {
     do {
         let _ = try coveralls.maybeThrowComplex(input: 1)
         fatalError("should have thrown")
-    } catch ComplexError.OsError(let code, let extendedCode) {
-        assert(code == 10)
-        assert(extendedCode == 20)
+    } catch let e as ComplexError {
+        if case let .OsError(code, extendedCode) = e {
+            assert(code == 10)
+            assert(extendedCode == 20)
+        } else {
+            fatalError("wrong error variant: \(e)")
+        }
+        assert(String(describing: e) == "OsError(code: 10, extendedCode: 20)", "Unexpected ComplexError.OsError description: \(e)")
     }
 
     do {
         let _ = try coveralls.maybeThrowComplex(input: 2)
         fatalError("should have thrown")
-    } catch ComplexError.PermissionDenied(let reason) {
-        assert(reason == "Forbidden")
+    } catch let e as ComplexError {
+        if case let .PermissionDenied(reason) = e {
+            assert(reason == "Forbidden")
+        } else {
+            fatalError("wrong error variant: \(e)")
+        }
+        assert(String(describing: e) == "PermissionDenied(reason: \"Forbidden\")", "Unexpected ComplexError.PermissionDenied description: \(e)")
     }
 
     do {
