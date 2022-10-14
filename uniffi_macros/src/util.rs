@@ -124,6 +124,15 @@ pub fn rewrite_self_type(item: &mut Item) {
     }
 }
 
+pub fn try_read_field(f: &syn::Field) -> TokenStream {
+    let ident = &f.ident;
+    let ty = &f.ty;
+
+    quote! {
+        #ident: <#ty as ::uniffi::FfiConverter>::try_read(buf)?,
+    }
+}
+
 pub fn create_metadata_static_var(name: &Ident, val: Metadata) -> TokenStream {
     let data: Vec<u8> = bincode::serialize(&val).expect("Error serializing metadata item");
     let count = data.len();
