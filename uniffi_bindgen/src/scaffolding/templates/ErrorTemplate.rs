@@ -66,7 +66,7 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name
             r#{{ e.name() }}::r#{{ variant.name() }}{% if variant.has_fields() %} { {% for field in variant.fields() %}r#{{ field.name() }}, {%- endfor %} }{% else %}{..}{% endif %} => {
                 buf.put_i32({{ loop.index }});
                 {% for field in variant.fields() -%}
-                {{ field.type_().borrow()|ffi_converter }}::write(r#{{ field.name() }}, buf);
+                {{ field.type_()|ffi_converter }}::write(r#{{ field.name() }}, buf);
                 {%- endfor %}
             },
             {%- endfor %}
@@ -82,7 +82,7 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name
             {%- for variant in e.variants() %}
             {{ loop.index }} => r#{{ e.name() }}::r#{{ variant.name() }}{% if variant.has_fields() %} {
                 {% for field in variant.fields() %}
-                r#{{ field.name() }}: {{ field.type_().borrow()|ffi_converter }}::try_read(buf)?,
+                r#{{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf)?,
                 {%- endfor %}
             }{% endif %},
             {%- endfor %}

@@ -49,8 +49,8 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
     fn r#{{ meth.name() -}}
     ({% call rs::arg_list_decl_with_prefix("&self", meth) %})
     {%- match (meth.return_type(), meth.throws_type()) %}
-    {%- when (Some(return_type), None) %} -> {{ return_type.borrow()|type_rs }}
-    {%- when (Some(return_type), Some(err)) %} -> ::std::result::Result<{{ return_type.borrow()|type_rs }}, {{ err|type_rs }}>
+    {%- when (Some(return_type), None) %} -> {{ return_type|type_rs }}
+    {%- when (Some(return_type), Some(err)) %} -> ::std::result::Result<{{ return_type|type_rs }}, {{ err|type_rs }}>
     {%- when (None, Some(err)) %} -> ::std::result::Result<(), {{ err|type_rs }}>
     {% else -%}
     {%- endmatch -%} {
@@ -64,7 +64,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
         let mut args_buf = Vec::new();
         {% endif -%}
         {%- for arg in meth.arguments() %}
-        {{ arg.type_().borrow()|ffi_converter }}::write(r#{{ arg.name() }}, &mut args_buf);
+        {{ arg.type_()|ffi_converter }}::write(r#{{ arg.name() }}, &mut args_buf);
         {%- endfor -%}
         let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
 

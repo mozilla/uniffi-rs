@@ -83,7 +83,7 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.type_().borrow()|ffi_type_name }} {{ arg.name() -}},
+        {{- arg.type_()|ffi_type_name }} {{ arg.name() -}},
     {%- endfor %}
     RustCallStatus *_Nonnull out_status
 {%- endmacro -%}

@@ -57,7 +57,7 @@
 // Note unfiltered name but type_ffi filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}
-    [{%- for arg in func.arguments() -%}{{ arg.type_().borrow()|type_ffi }}, {% endfor -%} RustCallStatus.by_ref]
+    [{%- for arg in func.arguments() -%}{{ arg.type_()|type_ffi }}, {% endfor -%} RustCallStatus.by_ref]
 {%- endmacro -%}
 
 {%- macro coerce_args(func) %}

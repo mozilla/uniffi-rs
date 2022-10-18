@@ -19,14 +19,14 @@ impl uniffi::RustBufferFfiConverter for {{ rec.type_().borrow()|ffi_converter_na
         // If the provided struct doesn't match the fields declared in the UDL, then
         // the generated code here will fail to compile with somewhat helpful error.
         {%- for field in rec.fields() %}
-        {{ field.type_().borrow()|ffi_converter }}::write(obj.r#{{ field.name() }}, buf);
+        {{ field.type_()|ffi_converter }}::write(obj.r#{{ field.name() }}, buf);
         {%- endfor %}
     }
 
     fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<r#{{ rec.name() }}> {
         Ok(r#{{ rec.name() }} {
             {%- for field in rec.fields() %}
-                r#{{ field.name() }}: {{ field.type_().borrow()|ffi_converter }}::try_read(buf)?,
+                r#{{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf)?,
             {%- endfor %}
         })
     }
