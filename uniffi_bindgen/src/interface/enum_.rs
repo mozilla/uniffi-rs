@@ -385,7 +385,7 @@ mod test {
         // difficult atop the current factoring of `ComponentInterface` and friends).
         let farg = ci.get_function_definition("takes_an_enum").unwrap();
         assert_eq!(*farg.arguments()[0].type_(), Type::Enum("TestEnum".into()));
-        assert_eq!(farg.ffi_func().arguments()[0].type_(), FFIType::RustBuffer);
+        assert_eq!(*farg.ffi_func().arguments()[0].type_(), FFIType::RustBuffer);
         let fret = ci.get_function_definition("returns_an_enum").unwrap();
         assert!(matches!(fret.return_type(), Some(Type::Enum(nm)) if nm == "TestEnum"));
         assert!(matches!(
@@ -401,7 +401,7 @@ mod test {
             *farg.arguments()[0].type_(),
             Type::Enum("TestEnumWithData".into())
         );
-        assert_eq!(farg.ffi_func().arguments()[0].type_(), FFIType::RustBuffer);
+        assert_eq!(*farg.ffi_func().arguments()[0].type_(), FFIType::RustBuffer);
         let fret = ci
             .get_function_definition("returns_an_enum_with_data")
             .unwrap();
