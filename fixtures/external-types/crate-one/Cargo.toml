@@ -1,9 +1,0 @@
-[package]
-name = "crate_one"
-edition = "2021"
-version = "0.21.0"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
-license = "MPL-2.0"
-publish = false
-
-[dependencies]

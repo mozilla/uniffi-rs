@@ -23,11 +23,6 @@ members = [
   "fixtures/ext-types/uniffi-one",
   "fixtures/ext-types/lib",
 
-  # we should roll the above and below up somehow that makes sense...
-  "fixtures/external-types/crate-one",
-  "fixtures/external-types/crate-two",
-  "fixtures/external-types/lib",
-
   "fixtures/keywords/kotlin",
   "fixtures/keywords/rust",
   "fixtures/keywords/swift",
