@@ -18,8 +18,4 @@ crate_one = {path = "../crate-one"}
 crate_two = {path = "../crate-two"}
 
 [build-dependencies]
-uniffi_build = {path = "../../../uniffi_build"}
-
-[dev-dependencies]
-uniffi_bindgen = {path = "../../../uniffi_bindgen"}
-uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi"}

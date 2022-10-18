@@ -31,10 +31,4 @@ uniffi-example-custom-types = {path = "../../../examples/custom-types"}
 url = "2.2"
 
 [build-dependencies]
-uniffi_build = {path = "../../../uniffi_build"}
-
-
-
-[dev-dependencies]
-uniffi_bindgen = {path = "../../../uniffi_bindgen"}
-uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi"}

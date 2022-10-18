@@ -1,1 +1,1 @@
-uniffi_macros::build_foreign_language_testcases!("tests/bindings/test.kts",);
+uniffi::build_foreign_language_testcases!("tests/bindings/test.kts",);

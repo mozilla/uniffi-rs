@@ -53,10 +53,10 @@ With that in place, try the following:
 * Run `cargo test`.  This will run each of the foreign-language testcases against the compiled Rust code,
   confirming whether everything is working as intended.
 * Explore the build process in more detail:
-  * Run `cargo run -p uniffi_bindgen -- scaffolding ./src/<namespace>.udl`.
+  * Run `cargo run -p uniffi -- scaffolding ./src/<namespace>.udl`.
     This will generate the Rust scaffolding code which exposes a C FFI for the component.
     You can view the generatd code in `./src/<namespace>.uniffi.rs`.
-  * Run `cargo run -p uniffi_bindgen -- generate --language kotlin ./src/<namespace>.udl`.
+  * Run `cargo run -p uniffi -- generate --language kotlin ./src/<namespace>.udl`.
     This will generate the foreign-language bindings for Kotlin, which load the compiled Rust code
     and use the C FFI generated above to interact with it.
     You can view the generated code in `./src/uniffi/<namespace>/<namespace>.kt`.

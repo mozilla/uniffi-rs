@@ -13,8 +13,4 @@ name = "uniffi_regression_test_swift_dictionary_nesting"
 uniffi = {path = "../../../uniffi"}
 
 [build-dependencies]
-uniffi_build = {path = "../../../uniffi_build"}
-
-[dev-dependencies]
-uniffi_bindgen = {path = "../../../uniffi_bindgen"}
-uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi"}

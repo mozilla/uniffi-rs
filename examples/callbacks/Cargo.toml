@@ -15,8 +15,4 @@ uniffi = {path = "../../uniffi"}
 thiserror = "1.0"
 
 [build-dependencies]
-uniffi_build = {path = "../../uniffi_build"}
-
-[dev-dependencies]
-uniffi_bindgen = {path = "../../uniffi_bindgen"}
-uniffi_macros = {path = "../../uniffi_macros"}
+uniffi = {path = "../../uniffi"}

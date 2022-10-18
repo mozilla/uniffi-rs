@@ -11,7 +11,14 @@ edition = "2021"
 keywords = ["ffi", "bindgen"]
 
 [dependencies]
+uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.22.0" }
+uniffi_build = { path = "../uniffi_build", version = "=0.22.0" }
 uniffi_core = { path = "../uniffi_core", version = "=0.22.0" }
+uniffi_macros = { path = "../uniffi_macros", version = "=0.22.0" }
 
 [dev-dependencies]
 trybuild = "1"
+
+[[bin]]
+name = "run-uniffi-bindgen"
+path = "run-uniffi-bindgen.rs"
