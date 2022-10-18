@@ -28,9 +28,6 @@ class TestGuid(unittest.TestCase):
         with self.assertRaisesRegex(InternalError, "Failed to convert arg 'value': The Guid is too short"):
             get_guid("")
 
-        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'value': Something unexpected went wrong"):
-            get_guid("unexpected")
-
         with self.assertRaisesRegex(InternalError, "guid value caused a panic!"):
             get_guid("panic")
 
@@ -39,9 +36,6 @@ class TestGuid(unittest.TestCase):
         # will get a mix of "expected" errors and panics.
         with self.assertRaises(GuidError.TooShort):
             try_get_guid("")
-
-        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'value': Something unexpected went wrong"):
-            try_get_guid("unexpected")
 
         with self.assertRaisesRegex(InternalError, "guid value caused a panic!"):
             try_get_guid("panic")

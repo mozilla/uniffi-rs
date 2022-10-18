@@ -1,7 +1,6 @@
-use custom_types::Handle;
+use custom_types::{Handle, Url};
 use ext_types_guid::Guid;
 use uniffi_one::UniffiOneType;
-use url::Url;
 
 pub struct CombinedType {
     pub uot: UniffiOneType,
@@ -40,7 +39,7 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
         guids: vec![Guid("b-guid".into()), Guid("c-guid".into())],
         maybe_guid: None,
 
-        url: Url::parse("http://example.com/").unwrap(),
+        url: Url(url::Url::parse("http://example.com/").unwrap()),
         urls: vec![],
         maybe_url: None,
 

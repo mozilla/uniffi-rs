@@ -8,21 +8,13 @@ pub enum GuidError {
     TooShort,
 }
 
-// This error is not represented in the UDL - it's only to be used internally (although
-// for test purposes, we do allow this to leak out below.)
-#[derive(Debug, thiserror::Error)]
-pub enum InternalError {
-    #[error("Something unexpected went wrong")]
-    Unexpected,
-}
-
 fn get_guid(guid: Option<Guid>) -> Guid {
     // This function doesn't return a Result, so all conversion errors are panics
     match guid {
         Some(guid) => {
             assert!(
                 !guid.0.is_empty(),
-                "our UniffiCustomTypeConverter already checked!"
+                "our TryFrom implementation already checked!"
             );
             guid
         }
@@ -32,13 +24,13 @@ fn get_guid(guid: Option<Guid>) -> Guid {
 
 fn try_get_guid(guid: Option<Guid>) -> std::result::Result<Guid, GuidError> {
     // This function itself always returns Ok - but it's declared as a Result
-    // because the UniffiCustomTypeConverter might return the Err as part of
+    // because the TryFrom implementation might return the Err as part of
     // turning the string into the Guid.
     Ok(match guid {
         Some(guid) => {
             assert!(
                 !guid.0.is_empty(),
-                "our UniffiCustomTypeConverter failed to check for an empty GUID"
+                "our TryFrom implementation failed to check for an empty GUID"
             );
             guid
         }
@@ -74,25 +66,25 @@ pub fn run_callback(callback: Box<dyn GuidCallback>) -> Guid {
     callback.run(Guid("callback-test-payload".into()))
 }
 
-impl UniffiCustomTypeConverter for Guid {
-    type Builtin = String;
+impl TryFrom<String> for Guid {
+    type Error = GuidError;
 
     // This is a "fixture" rather than an "example", so we are free to do things that don't really
     // make sense for real apps.
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+    fn try_from(val: String) -> Result<Self, Self::Error> {
         if val.is_empty() {
-            Err(GuidError::TooShort.into())
-        } else if val == "unexpected" {
-            Err(InternalError::Unexpected.into())
+            Err(GuidError::TooShort)
         } else if val == "panic" {
             panic!("guid value caused a panic!");
         } else {
             Ok(Guid(val))
         }
     }
+}
 
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.0
+impl From<Guid> for String {
+    fn from(guid: Guid) -> Self {
+        guid.0
     }
 }
 

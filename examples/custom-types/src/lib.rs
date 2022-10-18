@@ -1,34 +1,40 @@
-use url::Url;
-
 // Custom Handle type which trivially wraps an i64.
 pub struct Handle(pub i64);
 
-// We must implement the UniffiCustomTypeConverter trait for each custom type on the scaffolding side
-impl UniffiCustomTypeConverter for Handle {
-    // The `Builtin` type will be used to marshall values across the FFI
-    type Builtin = i64;
-
-    // Convert Builtin to our custom type
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(Handle(val))
-    }
-
-    // Convert our custom type to Builtin
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.0
+// UniFFI must be able to convert each custom type into the builtin type and vice versa
+impl From<i64> for Handle {
+    fn from(value: i64) -> Self {
+        Handle(value)
     }
 }
 
-// Use `url::Url` as a custom type, with `String` as the Builtin
-impl UniffiCustomTypeConverter for Url {
-    type Builtin = String;
-
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(Url::parse(&val)?)
+impl From<Handle> for i64 {
+    fn from(handle: Handle) -> Self {
+        handle.0
     }
+}
 
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.into()
+pub struct Url(pub url::Url);
+
+// Convenience impl
+impl From<url::Url> for Url {
+    fn from(value: url::Url) -> Self {
+        Url(value)
+    }
+}
+
+// Used by UniFFI scaffolding
+impl TryFrom<String> for Url {
+    type Error = url::ParseError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Ok(url::Url::parse(&value)?.into())
+    }
+}
+
+impl From<Url> for String {
+    fn from(url: Url) -> Self {
+        url.0.into()
     }
 }
 
@@ -40,7 +46,7 @@ pub struct CustomTypesDemo {
 
 pub fn get_custom_types_demo(v: Option<CustomTypesDemo>) -> CustomTypesDemo {
     v.unwrap_or_else(|| CustomTypesDemo {
-        url: Url::parse("http://example.com/").unwrap(),
+        url: url::Url::parse("http://example.com/").unwrap().into(),
         handle: Handle(123),
     })
 }
