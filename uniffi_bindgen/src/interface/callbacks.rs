@@ -62,6 +62,10 @@ impl CallbackInterface {
         &self.name
     }
 
+    pub fn handle_name(&self) -> String {
+        format!("CallbackInterface{}Handle", self.name)
+    }
+
     pub fn type_(&self) -> Type {
         Type::CallbackInterface(self.name.clone())
     }

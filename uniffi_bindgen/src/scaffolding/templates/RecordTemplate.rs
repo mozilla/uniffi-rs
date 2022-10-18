@@ -9,13 +9,8 @@
 #}
 
 #[doc(hidden)]
-pub struct {{ rec.type_().borrow()|ffi_converter_name }};
-
-#[doc(hidden)]
-impl uniffi::RustBufferFfiConverter for {{ rec.type_().borrow()|ffi_converter_name }} {
-    type RustType = r#{{ rec.name() }};
-
-    fn write(obj: r#{{ rec.name() }}, buf: &mut std::vec::Vec<u8>) {
+impl uniffi::RustBufferFfiConverter for r#{{ rec.name() }} {
+    fn write(obj: Self, buf: &mut std::vec::Vec<u8>) {
         // If the provided struct doesn't match the fields declared in the UDL, then
         // the generated code here will fail to compile with somewhat helpful error.
         {%- for field in rec.fields() %}
@@ -23,8 +18,8 @@ impl uniffi::RustBufferFfiConverter for {{ rec.type_().borrow()|ffi_converter_na
         {%- endfor %}
     }
 
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<r#{{ rec.name() }}> {
-        Ok(r#{{ rec.name() }} {
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
+        Ok(Self {
             {%- for field in rec.fields() %}
                 r#{{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf)?,
             {%- endfor %}

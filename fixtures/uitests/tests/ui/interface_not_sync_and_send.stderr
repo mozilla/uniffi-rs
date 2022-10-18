@@ -26,25 +26,17 @@ error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
    = help: the trait `FfiConverter` is implemented for `Arc<T>`
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
-  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-   |
-   |         <std::sync::Arc<r#Counter> as uniffi::FfiConverter>::lower(_arc)
-   |                                                                    ^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
-   |
-   = help: the trait `FfiConverter` is implemented for `Arc<T>`
-
-error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
    --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
     |
-    |         match<std::sync::Arc<r#Counter> as uniffi::FfiConverter>::try_lift(r#ptr) {
-    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
+    |         match <std::sync::Arc<r#Counter> as uniffi::FfiConverter>::try_lift(r#ptr) {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
     |
     = help: the trait `FfiConverter` is implemented for `Arc<T>`
 
 error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
    --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
     |
-    |         match<std::sync::Arc<r#Counter> as uniffi::FfiConverter>::try_lift(r#ptr) {
-    |                                                                            ^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
+    |         match <std::sync::Arc<r#Counter> as uniffi::FfiConverter>::try_lift(r#ptr) {
+    |                                                                             ^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
     |
     = help: the trait `FfiConverter` is implemented for `Arc<T>`

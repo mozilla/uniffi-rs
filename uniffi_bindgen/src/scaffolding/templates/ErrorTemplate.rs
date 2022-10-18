@@ -8,24 +8,19 @@
 #}
 
 #[doc(hidden)]
-pub struct {{ e.type_().borrow()|ffi_converter_name }};
-
-#[doc(hidden)]
-impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name }} {
-    type RustType = r#{{ e.name() }};
-
+impl uniffi::RustBufferFfiConverter for r#{{ e.name() }} {
     {% if e.is_flat() %}
 
     // For "flat" error enums, we stringify the error on the Rust side and surface that
     // as the error message in the foreign language.
 
 
-    fn write(obj: r#{{ e.name() }}, buf: &mut std::vec::Vec<u8>) {
+    fn write(obj: Self, buf: &mut std::vec::Vec<u8>) {
         use uniffi::deps::bytes::BufMut;
         let msg = obj.to_string();
         match obj {
             {%- for variant in e.variants() %}
-            r#{{ e.name() }}::r#{{ variant.name() }}{..} => {
+            Self::r#{{ variant.name() }}{..} => {
                 buf.put_i32({{ loop.index }});
                 <String as uniffi::FfiConverter>::write(msg, buf);
             },
@@ -34,18 +29,18 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name
     }
 
     {%- if ci.should_generate_error_read(e) %}
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<r#{{ e.name() }}> {
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
         use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 4)?;
         Ok(match buf.get_i32() {
             {%- for variant in e.variants() %}
-            {{ loop.index }} => r#{{ e.name() }}::r#{{ variant.name() }}{ },
+            {{ loop.index }} => Self::r#{{ variant.name() }}{ },
             {%- endfor %}
             v => uniffi::deps::anyhow::bail!("Invalid {{ e.name() }} enum value: {}", v),
         })
     }
     {%- else %}
-    fn try_read(_buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<r#{{ e.name() }}> {
+    fn try_read(_buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
         panic!("try_read not supported for flat errors");
     }
     {%- endif %}
@@ -59,11 +54,11 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name
     // the Rust enum has fields and they're just not listed. In that case we use the `Variant{..}`
     // syntax to match the variant while ignoring its fields.
 
-    fn write(obj: r#{{ e.name() }}, buf: &mut std::vec::Vec<u8>) {
+    fn write(obj: Self, buf: &mut std::vec::Vec<u8>) {
         use uniffi::deps::bytes::BufMut;
         match obj {
             {%- for variant in e.variants() %}
-            r#{{ e.name() }}::r#{{ variant.name() }}{% if variant.has_fields() %} { {% for field in variant.fields() %}r#{{ field.name() }}, {%- endfor %} }{% else %}{..}{% endif %} => {
+            Self::r#{{ variant.name() }}{% if variant.has_fields() %} { {% for field in variant.fields() %}r#{{ field.name() }}, {%- endfor %} }{% else %}{..}{% endif %} => {
                 buf.put_i32({{ loop.index }});
                 {% for field in variant.fields() -%}
                 {{ field.type_()|ffi_converter }}::write(r#{{ field.name() }}, buf);
@@ -73,14 +68,14 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name
         };
     }
 
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<r#{{ e.name() }}> {
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
         // Note: no need to call should_generate_error_read here, since it is always true for
         // non-flat errors
         use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 4)?;
         Ok(match buf.get_i32() {
             {%- for variant in e.variants() %}
-            {{ loop.index }} => r#{{ e.name() }}::r#{{ variant.name() }}{% if variant.has_fields() %} {
+            {{ loop.index }} => Self::r#{{ variant.name() }}{% if variant.has_fields() %} {
                 {% for field in variant.fields() %}
                 r#{{ field.name() }}: {{ field.type_()|ffi_converter }}::try_read(buf)?,
                 {%- endfor %}
@@ -92,4 +87,4 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name
     {% endif %}
 }
 
-impl uniffi::FfiError for {{ e.type_().borrow()|ffi_converter_name }} { }
+impl uniffi::FfiError for r#{{ e.name() }} { }

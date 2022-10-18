@@ -83,8 +83,6 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
 
     quote! {
         impl ::uniffi::RustBufferFfiConverter for #ident {
-            type RustType = Self;
-
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl
             }

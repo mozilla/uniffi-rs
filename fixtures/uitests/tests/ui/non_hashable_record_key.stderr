@@ -67,6 +67,7 @@ error[E0277]: the trait bound `f32: Hash` is not satisfied
              u16
            and 4 others
    = note: required because of the requirements on the impl of `RustBufferFfiConverter` for `HashMap<f32, u64>`
+   = note: required because of the requirements on the impl of `FfiConverter` for `HashMap<f32, u64>`
 
 error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
   --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
@@ -85,3 +86,4 @@ error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
              u16
            and 4 others
    = note: required because of the requirements on the impl of `RustBufferFfiConverter` for `HashMap<f32, u64>`
+   = note: required because of the requirements on the impl of `FfiConverter` for `HashMap<f32, u64>`

@@ -1,11 +1,11 @@
 error[E0063]: missing field `numerator` in initializer of `ArithmeticError`
   --> $OUT_DIR[uniffi_uitests]/errors.uniffi.rs
    |
-   |             2 => r#ArithmeticError::r#DivisionByZero{ },
-   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `numerator`
+   |             2 => Self::r#DivisionByZero{ },
+   |                  ^^^^^^^^^^^^^^^^^^^^^^ missing `numerator`
 
 error[E0063]: missing field `0` in initializer of `ArithmeticError`
   --> $OUT_DIR[uniffi_uitests]/errors.uniffi.rs
    |
-   |             3 => r#ArithmeticError::r#UnexpectedError{ },
-   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `0`
+   |             3 => Self::r#UnexpectedError{ },
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^ missing `0`

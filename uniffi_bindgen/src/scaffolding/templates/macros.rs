@@ -8,7 +8,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
 
 {%- macro _arg_list_rs_call(func) %}
     {%- for arg in func.full_arguments() %}
-        match {{- arg.type_()|ffi_converter }}::try_lift(r#{{ arg.name() }}) {
+        match {{ arg.type_()|ffi_converter }}::try_lift(r#{{ arg.name() }}) {
         {%- if arg.by_ref() %}
             Ok(ref val) => val,
         {% else %}
@@ -21,7 +21,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
         #}
         {%- match func.throws_type() -%}
         {%- when Some with (e) %}
-            Err(err) => return Err(uniffi::lower_anyhow_error_or_panic::<{{ e|ffi_converter_name }}>(err, "{{ arg.name() }}")),
+            Err(err) => return Err(uniffi::lower_anyhow_error_or_panic::<{{ e|type_rs }}>(err, "{{ arg.name() }}")),
         {%- else %}
             Err(err) => panic!("Failed to convert arg '{}': {}", "{{ arg.name() }}", err),
         {%- endmatch %}

@@ -223,9 +223,7 @@ mod test {
 
     // Use RustBufferFfiConverter to simplify lifting TestError out of RustBuffer to check it
     impl RustBufferFfiConverter for TestError {
-        type RustType = Self;
-
-        fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
+        fn write(obj: Self, buf: &mut Vec<u8>) {
             <String as FfiConverter>::write(obj.0, buf);
         }
 

@@ -11,7 +11,7 @@
 //    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
 #}
 {% let trait_name = cbi.name() -%}
-{% let trait_impl = cbi.type_().borrow()|ffi_converter_name -%}
+{% let trait_handle_name = cbi.handle_name() -%}
 {% let foreign_callback_internals = format!("foreign_callback_{}_internals", trait_name)|upper -%}
 
 // Register a foreign callback for getting across the FFI.
@@ -28,11 +28,11 @@ pub extern "C" fn {{ cbi.ffi_init_callback().name() }}(callback: uniffi::Foreign
 // Make an implementation which will shell out to the foreign language.
 #[doc(hidden)]
 #[derive(Debug)]
-struct {{ trait_impl }} {
+struct {{ trait_handle_name }} {
   handle: u64
 }
 
-impl Drop for {{ trait_impl }} {
+impl Drop for {{ trait_handle_name }} {
     fn drop(&mut self) {
         let callback = {{ foreign_callback_internals }}.get_callback().unwrap();
         let mut rbuf = uniffi::RustBuffer::new();
@@ -40,9 +40,9 @@ impl Drop for {{ trait_impl }} {
     }
 }
 
-uniffi::deps::static_assertions::assert_impl_all!({{ trait_impl }}: Send);
+uniffi::deps::static_assertions::assert_impl_all!({{ trait_handle_name }}: Send);
 
-impl r#{{ trait_name }} for {{ trait_impl }} {
+impl r#{{ trait_name }} for {{ trait_handle_name }} {
     {%- for meth in cbi.methods() %}
 
     {#- Method declaration #}
@@ -65,7 +65,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
         {% endif -%}
         {%- for arg in meth.arguments() %}
         {{ arg.type_()|ffi_converter }}::write(r#{{ arg.name() }}, &mut args_buf);
-        {%- endfor -%}
+        {%- endfor %}
         let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
 
     {#- Calling into foreign code. #}
@@ -152,9 +152,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
     {%- endfor %}
 }
 
-unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
-    // This RustType allows for rust code that inputs this type as a Box<dyn CallbackInterfaceTrait> param
-    type RustType = Box<dyn r#{{ trait_name }}>;
+unsafe impl uniffi::FfiConverter for Box<dyn r#{{ trait_name }}> {
     type FfiType = u64;
 
     // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
@@ -166,19 +164,19 @@ unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
     // language.
     //
     // Until we have some certainty, and use cases, we shouldn't use them.
-    fn lower(_obj: Self::RustType) -> Self::FfiType {
+    fn lower(_obj: Self) -> Self::FfiType {
         panic!("Lowering CallbackInterface not supported")
     }
 
-    fn write(_obj: Self::RustType, _buf: &mut std::vec::Vec<u8>) {
+    fn write(_obj: Self, _buf: &mut std::vec::Vec<u8>) {
         panic!("Writing CallbackInterface not supported")
     }
 
-    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self::RustType> {
-        Ok(Box::new(Self { handle: v }))
+    fn try_lift(v: Self::FfiType) -> ::uniffi::Result<Self> {
+        Ok(Box::new({{ trait_handle_name }} { handle: v }))
     }
 
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self::RustType> {
+    fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<Self> {
         use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 8)?;
         <Self as uniffi::FfiConverter>::try_lift(buf.get_u64())
