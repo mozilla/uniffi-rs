@@ -13,10 +13,10 @@ name = "uniffi_one"
 [dependencies]
 anyhow = "1"
 bytes = "1.0"
-uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+uniffi = {path = "../../../uniffi"}
 
 [build-dependencies]
-uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
+uniffi_build = {path = "../../../uniffi_build"}
 
 [dev-dependencies]
 uniffi_bindgen = {path = "../../../uniffi_bindgen"}

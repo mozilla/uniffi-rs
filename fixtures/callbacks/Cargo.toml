@@ -11,11 +11,11 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_fixture_callbacks"
 
 [dependencies]
-uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
+uniffi = {path = "../../uniffi"}
 thiserror = "1.0"
 
 [build-dependencies]
-uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}
+uniffi_build = {path = "../../uniffi_build"}
 
 [dev-dependencies]
 uniffi_bindgen = {path = "../../uniffi_bindgen"}

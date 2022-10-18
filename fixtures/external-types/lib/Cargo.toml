@@ -13,12 +13,12 @@ name = "uniffi_external_types_lib"
 [dependencies]
 anyhow = "1"
 bytes = "1.0"
-uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+uniffi = {path = "../../../uniffi"}
 crate_one = {path = "../crate-one"}
 crate_two = {path = "../crate-two"}
 
 [build-dependencies]
-uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
+uniffi_build = {path = "../../../uniffi_build"}
 
 [dev-dependencies]
 uniffi_bindgen = {path = "../../../uniffi_bindgen"}

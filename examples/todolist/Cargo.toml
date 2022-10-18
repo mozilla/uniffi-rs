@@ -11,12 +11,12 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_todolist"
 
 [dependencies]
-uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
+uniffi = {path = "../../uniffi"}
 once_cell = "1.12"
 thiserror = "1.0"
 
 [build-dependencies]
-uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}
+uniffi_build = {path = "../../uniffi_build"}
 
 [dev-dependencies]
 uniffi_bindgen = {path = "../../uniffi_bindgen"}

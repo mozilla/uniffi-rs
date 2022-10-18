@@ -15,7 +15,7 @@ crate-type = ["lib", "cdylib"]
 [dependencies]
 uniffi-fixture-callbacks = { path = "../callbacks" }
 uniffi-fixture-coverall = { path = "../coverall" }
-uniffi = { path = "../../uniffi", features=["builtin-bindgen"] }
+uniffi = { path = "../../uniffi" }
 
 [dev-dependencies]
 cargo_metadata = "0.15"

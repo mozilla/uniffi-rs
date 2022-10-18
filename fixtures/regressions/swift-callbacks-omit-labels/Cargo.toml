@@ -10,10 +10,10 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_regression_test_callbacks_omit_labels"
 
 [dependencies]
-uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+uniffi = {path = "../../../uniffi"}
 
 [build-dependencies]
-uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
+uniffi_build = {path = "../../../uniffi_build"}
 
 [dev-dependencies]
 uniffi_bindgen = {path = "../../../uniffi_bindgen"}
