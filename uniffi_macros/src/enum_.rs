@@ -1,6 +1,6 @@
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{Data, DeriveInput, Index};
+use syn::{punctuated::Punctuated, Data, DeriveInput, Field, Index, Token, Variant};
 use uniffi_meta::{EnumMetadata, FieldMetadata, VariantMetadata};
 
 use crate::{
@@ -62,57 +62,15 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
         }
     };
 
-    let meta_static_var = variants
-        .map(|variants| {
-            let name = ident.to_string();
-            let variants_res: syn::Result<_> = variants
-                .iter()
-                .map(|v| {
-                    let name = v.ident.to_string();
-                    let fields = v
-                        .fields
-                        .iter()
-                        .map(|f| {
-                            let name = f
-                                .ident
-                                .as_ref()
-                                .ok_or_else(|| {
-                                    syn::Error::new_spanned(
-                                        v,
-                                        "UniFFI only supports enum variants with named fields \
-                                         (or no fields at all)",
-                                    )
-                                })?
-                                .to_string();
-
-                            Ok(FieldMetadata {
-                                name,
-                                ty: convert_type(&f.ty)?,
-                            })
-                        })
-                        .collect::<syn::Result<_>>()?;
-
-                    Ok(VariantMetadata { name, fields })
-                })
-                .collect();
-
-            match variants_res {
-                Ok(variants) => {
-                    let metadata = EnumMetadata {
-                        module_path,
-                        name,
-                        variants,
-                    };
-
-                    create_metadata_static_var(ident, metadata.into())
-                }
-                Err(e) => e.into_compile_error(),
-            }
-        })
-        .unwrap_or_else(|| {
-            syn::Error::new(Span::call_site(), "This derive must only be used on enums")
-                .into_compile_error()
-        });
+    let meta_static_var = if let Some(variants) = variants {
+        match enum_metadata(ident, variants, module_path) {
+            Ok(metadata) => create_metadata_static_var(ident, metadata.into()),
+            Err(e) => e.into_compile_error(),
+        }
+    } else {
+        syn::Error::new(Span::call_site(), "This derive must only be used on enums")
+            .into_compile_error()
+    };
 
     let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
 
@@ -134,7 +92,54 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
     }
 }
 
-pub fn write_field(f: &syn::Field) -> TokenStream {
+fn enum_metadata(
+    ident: &Ident,
+    variants: Punctuated<Variant, Token![,]>,
+    module_path: Vec<String>,
+) -> syn::Result<EnumMetadata> {
+    let name = ident.to_string();
+    let variants = variants
+        .iter()
+        .map(variant_metadata)
+        .collect::<syn::Result<_>>()?;
+
+    Ok(EnumMetadata {
+        module_path,
+        name,
+        variants,
+    })
+}
+
+fn variant_metadata(v: &Variant) -> syn::Result<VariantMetadata> {
+    let name = v.ident.to_string();
+    let fields = v
+        .fields
+        .iter()
+        .map(|f| field_metadata(f, v))
+        .collect::<syn::Result<_>>()?;
+
+    Ok(VariantMetadata { name, fields })
+}
+
+fn field_metadata(f: &Field, v: &Variant) -> syn::Result<FieldMetadata> {
+    let name = f
+        .ident
+        .as_ref()
+        .ok_or_else(|| {
+            syn::Error::new_spanned(
+                v,
+                "UniFFI only supports enum variants with named fields (or no fields at all)",
+            )
+        })?
+        .to_string();
+
+    Ok(FieldMetadata {
+        name,
+        ty: convert_type(&f.ty)?,
+    })
+}
+
+pub fn write_field(f: &Field) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 
