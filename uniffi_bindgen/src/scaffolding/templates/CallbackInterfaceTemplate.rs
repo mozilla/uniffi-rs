@@ -113,7 +113,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
                 }
                 // 0 is a deprecated method to indicates success for void returns
                 0 => {
-                    eprintln!("UniFFI: Callback interface returned 0.  Please update the bindings code to return 1 for all successfull calls");
+                    uniffi::deps::log::error!("UniFFI: Callback interface returned 0. Please update the bindings code to return 1 for all successfull calls");
                     {% match (meth.return_type(), meth.throws()) %}
                     {% when (Some(_), _) %}
                     panic!("Callback returned 0 when we were expecting a return value");
