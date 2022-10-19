@@ -104,14 +104,21 @@
 <span id="98">98</span>
 <span id="99">99</span>
 <span id="100">100</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Span</span>, <span class="ident">TokenStream</span>};
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">Span</span>, <span class="ident">TokenStream</span>};
 <span class="kw">use</span> <span class="ident">quote::quote</span>;
-<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">Data</span>, <span class="ident">DeriveInput</span>};
+<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">Data</span>, <span class="ident">DeriveInput</span>, <span class="ident">Field</span>, <span class="ident">Fields</span>};
 <span class="kw">use</span> <span class="ident">uniffi_meta</span>::{<span class="ident">FieldMetadata</span>, <span class="ident">RecordMetadata</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">export::metadata::convert::convert_type</span>,
-    <span class="ident">util</span>::{<span class="ident">assert_type_eq</span>, <span class="ident">create_metadata_static_var</span>},
+    <span class="ident">util</span>::{<span class="ident">assert_type_eq</span>, <span class="ident">create_metadata_static_var</span>, <span class="ident">try_read_field</span>},
 };
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">expand_record</span>(<span class="ident">input</span>: <span class="ident">DeriveInput</span>, <span class="ident">module_path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="ident">TokenStream</span> {
@@ -123,67 +130,28 @@
     <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">ident</span>;
 
     <span class="kw">let</span> (<span class="ident">write_impl</span>, <span class="ident">try_read_fields</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">fields</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">fields</span>) =&gt; <span class="ident">fields</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ident</span>;
-                <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ty</span>;
-
-                <span class="kw">let</span> <span class="ident">write_field</span> <span class="op">=</span> <span class="macro">quote!</span> {
-                    <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">obj</span>.#<span class="ident">ident</span>, <span class="ident">buf</span>);
-                };
-                <span class="kw">let</span> <span class="ident">try_read_field</span> <span class="op">=</span> <span class="macro">quote!</span> {
-                    #<span class="ident">ident</span>: <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>,
-                };
-
-                (<span class="ident">write_field</span>, <span class="ident">try_read_field</span>)
-            })
-            .<span class="ident">unzip</span>(),
+        <span class="prelude-val">Some</span>(<span class="ident">fields</span>) =&gt; (
+            <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">write_field</span>).<span class="ident">collect</span>(),
+            <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">try_read_field</span>).<span class="ident">collect</span>(),
+        ),
         <span class="prelude-val">None</span> =&gt; {
             <span class="kw">let</span> <span class="ident">unimplemented</span> <span class="op">=</span> <span class="macro">quote!</span> { <span class="macro">::std::unimplemented!</span>() };
             (<span class="ident">unimplemented</span>.<span class="ident">clone</span>(), <span class="ident">unimplemented</span>)
         }
     };
 
-    <span class="kw">let</span> <span class="ident">meta_static_var</span> <span class="op">=</span> <span class="ident">fields</span>
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">fields</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">ident</span>.<span class="ident">to_string</span>();
-            <span class="kw">let</span> <span class="ident">fields_res</span>: <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">fields</span>
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> {
-                    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">f</span>
-                        .<span class="ident">ident</span>
-                        .<span class="ident">as_ref</span>()
-                        .<span class="ident">expect</span>(<span class="string">&quot;We only allow record structs&quot;</span>)
-                        .<span class="ident">to_string</span>();
-
-                    <span class="prelude-val">Ok</span>(<span class="ident">FieldMetadata</span> {
-                        <span class="ident">name</span>,
-                        <span class="ident">ty</span>: <span class="ident">convert_type</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ty</span>)<span class="question-mark">?</span>,
-                    })
-                })
-                .<span class="ident">collect</span>();
-
-            <span class="kw">match</span> <span class="ident">fields_res</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">fields</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">RecordMetadata</span> {
-                        <span class="ident">module_path</span>,
-                        <span class="ident">name</span>,
-                        <span class="ident">fields</span>,
-                    };
-
-                    <span class="ident">create_metadata_static_var</span>(<span class="ident">ident</span>, <span class="ident">metadata</span>.<span class="ident">into</span>())
-                }
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="ident">e</span>.<span class="ident">into_compile_error</span>(),
-            }
-        })
-        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> {
-            <span class="ident">syn::Error::new</span>(
-                <span class="ident">Span::call_site</span>(),
-                <span class="string">&quot;This derive must only be used on structs&quot;</span>,
-            )
-            .<span class="ident">into_compile_error</span>()
-        });
+    <span class="kw">let</span> <span class="ident">meta_static_var</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">fields</span>) <span class="op">=</span> <span class="ident">fields</span> {
+        <span class="kw">match</span> <span class="ident">record_metadata</span>(<span class="ident">ident</span>, <span class="ident">fields</span>, <span class="ident">module_path</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">metadata</span>) =&gt; <span class="ident">create_metadata_static_var</span>(<span class="ident">ident</span>, <span class="ident">metadata</span>.<span class="ident">into</span>()),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="ident">e</span>.<span class="ident">into_compile_error</span>(),
+        }
+    } <span class="kw">else</span> {
+        <span class="ident">syn::Error::new</span>(
+            <span class="ident">Span::call_site</span>(),
+            <span class="string">&quot;This derive must only be used on structs&quot;</span>,
+        )
+        .<span class="ident">into_compile_error</span>()
+    };
 
     <span class="kw">let</span> <span class="ident">type_assertion</span> <span class="op">=</span> <span class="ident">assert_type_eq</span>(<span class="ident">ident</span>, <span class="macro">quote!</span> { <span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">ident</span> });
 
@@ -202,6 +170,52 @@
 
         #<span class="ident">meta_static_var</span>
         #<span class="ident">type_assertion</span>
+    }
+}
+
+<span class="kw">fn</span> <span class="ident">record_metadata</span>(
+    <span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>,
+    <span class="ident">fields</span>: <span class="ident">Fields</span>,
+    <span class="ident">module_path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">RecordMetadata</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">ident</span>.<span class="ident">to_string</span>();
+    <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">fields</span> {
+        <span class="ident">Fields::Named</span>(<span class="ident">fields</span>) =&gt; <span class="ident">fields</span>.<span class="ident">named</span>,
+        <span class="kw">_</span> =&gt; {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new</span>(
+                <span class="ident">Span::call_site</span>(),
+                <span class="string">&quot;UniFFI only supports structs with named fields&quot;</span>,
+            ));
+        }
+    };
+
+    <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="ident">fields</span>
+        .<span class="ident">iter</span>()
+        .<span class="ident">map</span>(<span class="ident">field_metadata</span>)
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">syn::Result</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(<span class="ident">RecordMetadata</span> {
+        <span class="ident">module_path</span>,
+        <span class="ident">name</span>,
+        <span class="ident">fields</span>,
+    })
+}
+
+<span class="kw">fn</span> <span class="ident">field_metadata</span>(<span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">Field</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">FieldMetadata</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">ident</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">to_string</span>();
+
+    <span class="prelude-val">Ok</span>(<span class="ident">FieldMetadata</span> {
+        <span class="ident">name</span>,
+        <span class="ident">ty</span>: <span class="ident">convert_type</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ty</span>)<span class="question-mark">?</span>,
+    })
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_field</span>(<span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">Field</span>) -&gt; <span class="ident">TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ident</span>;
+    <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ty</span>;
+
+    <span class="macro">quote!</span> {
+        <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">obj</span>.#<span class="ident">ident</span>, <span class="ident">buf</span>);
     }
 }
 </code></pre></div>

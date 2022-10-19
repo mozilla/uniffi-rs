@@ -150,6 +150,15 @@
 <span id="144">144</span>
 <span id="145">145</span>
 <span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -273,6 +282,15 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visitor</span> <span class="op">=</span> <span class="ident">RewriteSelfVisitor</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">self_ty</span>);
     <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="kw-2">&amp;mut</span> <span class="ident">item</span>.<span class="ident">items</span> {
         <span class="ident">visitor</span>.<span class="ident">visit_impl_item_mut</span>(<span class="ident">item</span>);
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_read_field</span>(<span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Field</span>) -&gt; <span class="ident">TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ident</span>;
+    <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ty</span>;
+
+    <span class="macro">quote!</span> {
+        #<span class="ident">ident</span>: <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>,
     }
 }
 

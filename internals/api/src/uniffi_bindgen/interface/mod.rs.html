@@ -1643,7 +1643,7 @@
     }
 
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.</span>
-    <span class="kw">fn</span> <span class="ident">add_enum_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Enum</span>) {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_enum_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Enum</span>) {
         <span class="comment">// Note that there will be no duplicates thanks to the previous type-finding pass.</span>
         <span class="self">self</span>.<span class="ident">enums</span>.<span class="ident">push</span>(<span class="ident">defn</span>);
     }

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["expand_record",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["expand_record",""],["field_metadata",""],["record_metadata",""],["write_field",""]]};

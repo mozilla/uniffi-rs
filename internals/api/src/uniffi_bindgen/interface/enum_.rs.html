@@ -418,6 +418,27 @@
 <span id="412">412</span>
 <span id="413">413</span>
 <span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -511,7 +532,7 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Enum</span> {
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">variants</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Variant</span><span class="op">&gt;</span>,
-    <span class="comment">// &quot;Flat&quot; enums do not have, and will never have, variants with associated data.</span>
+    <span class="comment">// &quot;Flat&quot; enums do not have variants with associated data.</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">flat</span>: <span class="ident">bool</span>,
 }
 
@@ -526,8 +547,8 @@
         <span class="ident">Type::Enum</span>(<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variants</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Variant</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">collect</span>()
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variants</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">Variant</span>] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">variants</span>
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_flat</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
@@ -536,6 +557,17 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
         <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">Variant::iter_types</span>))
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">uniffi_meta::EnumMetadata</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Enum</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">meta</span>: <span class="ident">uniffi_meta::EnumMetadata</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">flat</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">all</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">fields</span>.<span class="ident">is_empty</span>());
+        <span class="self">Self</span> {
+            <span class="ident">name</span>: <span class="ident">meta</span>.<span class="ident">name</span>,
+            <span class="ident">variants</span>: <span class="ident">meta</span>.<span class="ident">variants</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">Into::into</span>).<span class="ident">collect</span>(),
+            <span class="ident">flat</span>,
+        }
     }
 }
 
@@ -604,8 +636,9 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Field</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">collect</span>()
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">Field</span>] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fields</span>
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
@@ -614,6 +647,15 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
         <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">Field::iter_types</span>))
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">uniffi_meta::VariantMetadata</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Variant</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">meta</span>: <span class="ident">uniffi_meta::VariantMetadata</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> {
+            <span class="ident">name</span>: <span class="ident">meta</span>.<span class="ident">name</span>,
+            <span class="ident">fields</span>: <span class="ident">meta</span>.<span class="ident">fields</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">Into::into</span>).<span class="ident">collect</span>(),
+        }
     }
 }
 

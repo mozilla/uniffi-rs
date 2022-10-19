@@ -242,6 +242,20 @@
 <span id="236">236</span>
 <span id="237">237</span>
 <span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -259,12 +273,15 @@
 <span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">bracketed</span>, <span class="ident">parse_macro_input</span>, <span class="ident">punctuated::Punctuated</span>, <span class="ident">LitStr</span>, <span class="ident">Token</span>};
 <span class="kw">use</span> <span class="ident">util::rewrite_self_type</span>;
 
+<span class="kw">mod</span> <span class="ident">enum_</span>;
 <span class="kw">mod</span> <span class="ident">export</span>;
 <span class="kw">mod</span> <span class="ident">object</span>;
 <span class="kw">mod</span> <span class="ident">record</span>;
 <span class="kw">mod</span> <span class="ident">util</span>;
 
-<span class="kw">use</span> <span class="self">self</span>::{<span class="ident">export::expand_export</span>, <span class="ident">object::expand_object</span>, <span class="ident">record::expand_record</span>};
+<span class="kw">use</span> <span class="self">self</span>::{
+    <span class="ident">enum_::expand_enum</span>, <span class="ident">export::expand_export</span>, <span class="ident">object::expand_object</span>, <span class="ident">record::expand_record</span>,
+};
 
 <span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">export</span>(<span class="ident">_attr</span>: <span class="ident">TokenStream</span>, <span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
@@ -301,6 +318,17 @@
     <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">input</span>);
 
     <span class="ident">expand_record</span>(<span class="ident">input</span>, <span class="ident">mod_path</span>).<span class="ident">into</span>()
+}
+
+<span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Enum</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">derive_enum</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">util::mod_path</span>() {
+        <span class="prelude-val">Ok</span>(<span class="ident">p</span>) =&gt; <span class="ident">p</span>,
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>.<span class="ident">into_compile_error</span>().<span class="ident">into</span>(),
+    };
+    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">input</span>);
+
+    <span class="ident">expand_enum</span>(<span class="ident">input</span>, <span class="ident">mod_path</span>).<span class="ident">into</span>()
 }
 
 <span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Object</span>)]</span>
