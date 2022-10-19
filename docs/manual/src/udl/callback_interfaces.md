@@ -155,3 +155,16 @@ Care is taken to ensure that once `Box<dyn Keychain>` is dropped in Rust, then i
 
 Also note, that storing the `Box<dyn Keychain>` in the `Authenticator` required that all implementations
 *must* implement `Send`.
+
+## ⚠️  Avoid callback interfaces cycles
+
+Callback interfaces can create cycles between Rust and foreign objects and lead to memory leaks.  For example a callback
+interface object holds a reference to a Rust object which also holds a reference to the same callback interface object.
+Take care to avoid this by following guidelines:
+
+1. Avoid references to UniFFI objects in callback objects, including direct references and transitive
+   references through intermediate objects.
+2. Avoid references to callback objects from UniFFI objects, including direct references and transitive
+   references through intermediate objects.
+3. If you need to break the first 2 guidelines, then take steps to manually break the cycles to avoid memory leaks.
+   Alternatively, ensure that the number of objects that can ever be created is bounded below some acceptable level.
