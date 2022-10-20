@@ -58,7 +58,7 @@ use super::{APIConverter, ComponentInterface};
 /// In the FFI these are represented as a byte buffer, which one side explicitly
 /// serializes the data into and the other serializes it out of. So I guess they're
 /// kind of like "pass by clone" values.
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Record {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
@@ -109,7 +109,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
 }
 
 // Represents an individual field on a Record.
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Field {
     pub(super) name: String,
     pub(super) type_: Type,
@@ -182,7 +182,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.record_definitions().len(), 3);
+        assert_eq!(ci.record_definitions().count(), 3);
 
         let record = ci.get_record_definition("Empty").unwrap();
         assert_eq!(record.name(), "Empty");
@@ -225,7 +225,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.record_definitions().len(), 1);
+        assert_eq!(ci.record_definitions().count(), 1);
         let record = ci.get_record_definition("Testing").unwrap();
         assert_eq!(record.fields().len(), 2);
         assert_eq!(record.fields()[0].name(), "maybe_name");

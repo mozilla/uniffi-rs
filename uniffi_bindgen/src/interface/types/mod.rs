@@ -232,7 +232,21 @@ impl TypeUniverse {
         }
         self.add_known_type(&type_);
         match self.type_definitions.entry(name.to_string()) {
-            Entry::Occupied(_) => bail!("Conflicting type definition for \"{name}\""),
+            Entry::Occupied(o) => {
+                let existing_def = o.get();
+                if type_ == *existing_def && matches!(type_, Type::Record(_) | Type::Enum(_)) {
+                    // UDL and proc-macro metadata are allowed to define the same record and enum
+                    // types, if the definitions match (fields and variants are checked in
+                    // add_record_definition and add_enum_definition)
+                    Ok(())
+                } else {
+                    bail!(
+                        "Conflicting type definition for `{name}`! \
+                         existing definition: {existing_def:?}, \
+                         new definition: {type_:?}"
+                    );
+                }
+            }
             Entry::Vacant(e) => {
                 e.insert(type_);
                 Ok(())
