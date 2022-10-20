@@ -642,7 +642,22 @@ impl ComponentInterface {
             })
         });
 
-        for ty in fn_sig_types.chain(method_sig_types) {
+        let record_fields_types = self
+            .records
+            .values_mut()
+            .flat_map(|r| r.fields.iter_mut().map(|f| &mut f.type_));
+        let enum_fields_types = self.enums.values_mut().flat_map(|e| {
+            e.variants
+                .iter_mut()
+                .flat_map(|r| r.fields.iter_mut().map(|f| &mut f.type_))
+        });
+
+        let possibly_unresolved_types = fn_sig_types
+            .chain(method_sig_types)
+            .chain(record_fields_types)
+            .chain(enum_fields_types);
+
+        for ty in possibly_unresolved_types {
             handle_unresolved_in(ty, |unresolved_ty_name| {
                 match self.types.get_type_definition(unresolved_ty_name) {
                     Some(def) => {
