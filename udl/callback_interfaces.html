@@ -283,6 +283,18 @@ authenticator.login()
 <p>Care is taken to ensure that once <code>Box&lt;dyn Keychain&gt;</code> is dropped in Rust, then it is cleaned up in the foreign language.</p>
 <p>Also note, that storing the <code>Box&lt;dyn Keychain&gt;</code> in the <code>Authenticator</code> required that all implementations
 <em>must</em> implement <code>Send</code>.</p>
+<h2><a class="header" href="#--avoid-callback-interfaces-cycles" id="--avoid-callback-interfaces-cycles">⚠️  Avoid callback interfaces cycles</a></h2>
+<p>Callback interfaces can create cycles between Rust and foreign objects and lead to memory leaks.  For example a callback
+interface object holds a reference to a Rust object which also holds a reference to the same callback interface object.
+Take care to avoid this by following guidelines:</p>
+<ol>
+<li>Avoid references to UniFFI objects in callback objects, including direct references and transitive
+references through intermediate objects.</li>
+<li>Avoid references to callback objects from UniFFI objects, including direct references and transitive
+references through intermediate objects.</li>
+<li>If you need to break the first 2 guidelines, then take steps to manually break the cycles to avoid memory leaks.
+Alternatively, ensure that the number of objects that can ever be created is bounded below some acceptable level.</li>
+</ol>
 
                     </main>
 
