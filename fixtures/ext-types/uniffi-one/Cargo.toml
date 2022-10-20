@@ -13,8 +13,11 @@ name = "uniffi_one"
 [dependencies]
 anyhow = "1"
 bytes = "1.0"
-uniffi_macros = {path = "../../../uniffi_macros"}
 uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
 
 [build-dependencies]
 uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
+
+[dev-dependencies]
+uniffi_bindgen = {path = "../../../uniffi_bindgen"}
+uniffi_macros = {path = "../../../uniffi_macros"}

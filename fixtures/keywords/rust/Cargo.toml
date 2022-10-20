@@ -6,13 +6,16 @@ edition = "2021"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]
 name = "uniffi_keywords_rust"
 
 [dependencies]
 thiserror = "1.0"
-uniffi_macros = {path = "../../../uniffi_macros"}
 uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
 
 [build-dependencies]
 uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
+
+[dev-dependencies]
+uniffi_bindgen = {path = "../../../uniffi_bindgen"}
+uniffi_macros = {path = "../../../uniffi_macros"}
