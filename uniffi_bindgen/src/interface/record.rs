@@ -113,7 +113,6 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
 pub struct Field {
     pub(super) name: String,
     pub(super) type_: Type,
-    pub(super) required: bool,
     pub(super) default: Option<Literal>,
 }
 
@@ -140,7 +139,6 @@ impl From<uniffi_meta::FieldMetadata> for Field {
         Self {
             name: meta.name,
             type_: convert_type(&meta.ty),
-            required: true,
             default: None,
         }
     }
@@ -159,7 +157,6 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
         Ok(Field {
             name: self.identifier.0.to_string(),
             type_,
-            required: self.required.is_some(),
             default,
         })
     }
@@ -196,7 +193,6 @@ mod test {
         assert_eq!(record.fields().len(), 1);
         assert_eq!(record.fields()[0].name(), "field");
         assert_eq!(record.fields()[0].type_().canonical_name(), "u32");
-        assert!(!record.fields()[0].required);
         assert!(record.fields()[0].default_value().is_none());
 
         let record = ci.get_record_definition("Complex").unwrap();
@@ -207,18 +203,15 @@ mod test {
             record.fields()[0].type_().canonical_name(),
             "Optionalstring"
         );
-        assert!(!record.fields()[0].required);
         assert!(record.fields()[0].default_value().is_none());
         assert_eq!(record.fields()[1].name(), "value");
         assert_eq!(record.fields()[1].type_().canonical_name(), "u32");
-        assert!(!record.fields()[1].required);
         assert!(matches!(
             record.fields()[1].default_value(),
             Some(Literal::UInt(0, Radix::Decimal, Type::UInt32))
         ));
         assert_eq!(record.fields()[2].name(), "spin");
         assert_eq!(record.fields()[2].type_().canonical_name(), "bool");
-        assert!(record.fields()[2].required);
         assert!(record.fields()[2].default_value().is_none());
     }
 

@@ -281,7 +281,6 @@ impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
         Ok(Field {
             name: self.identifier.0.to_string(),
             type_,
-            required: false,
             default: None,
         })
     }
