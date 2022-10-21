@@ -695,6 +695,13 @@ impl ComponentInterface {
                 }
             }
         }
+
+        for ty in self.iter_types() {
+            if let Type::Unresolved { name } = ty {
+                bail!("Type `{name}` should be resolved at this point");
+            }
+        }
+
         Ok(())
     }
 

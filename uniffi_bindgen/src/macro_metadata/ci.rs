@@ -87,8 +87,8 @@ pub fn add_to_ci(
     }
 
     iface.resolve_types()?;
-    iface.check_consistency()?;
     iface.derive_ffi_funcs()?;
+    iface.check_consistency()?;
 
     Ok(())
 }
