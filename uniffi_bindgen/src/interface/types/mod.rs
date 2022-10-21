@@ -224,6 +224,11 @@ impl TypeUniverse {
     ///
     /// This will fail if you try to add a name for which an existing type definition exists.
     pub fn add_type_definition(&mut self, name: &str, type_: Type) -> Result<()> {
+        if let Type::Unresolved { name: name_ } = &type_ {
+            assert_eq!(name, name_);
+            bail!("attempted to add type definition of Unresolved for `{name}`");
+        }
+
         if resolve_builtin_type(name).is_some() {
             bail!(
                 "please don't shadow builtin types ({name}, {})",
