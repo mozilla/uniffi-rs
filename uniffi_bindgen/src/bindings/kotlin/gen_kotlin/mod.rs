@@ -224,8 +224,8 @@ impl KotlinCodeOracle {
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
             Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
-            Type::Unresolved { .. } => {
-                unreachable!("Type must be resolved before calling create_code_type")
+            Type::Unresolved { name } => {
+                unreachable!("Type `{name}` must be resolved before calling create_code_type")
             }
         }
     }

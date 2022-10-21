@@ -325,8 +325,8 @@ impl SwiftCodeOracle {
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
             Type::External { .. } => panic!("no support for external types yet"),
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
-            Type::Unresolved { .. } => {
-                unreachable!("Type must be resolved before calling create_code_type")
+            Type::Unresolved { name } => {
+                unreachable!("Type `{name}` must be resolved before calling create_code_type")
             }
         }
     }
