@@ -121,8 +121,8 @@ impl Type {
             ),
             // A type that exists externally.
             Type::External { name, .. } | Type::Custom { name, .. } => format!("Type{name}"),
-            Type::Unresolved { .. } => {
-                unreachable!("Type must be resolved before calling canonical_name")
+            Type::Unresolved { name } => {
+                unreachable!("Type `{name}` must be resolved before calling canonical_name")
             }
         }
     }
@@ -180,8 +180,8 @@ impl From<&Type> for FFIType {
             | Type::Duration
             | Type::External { .. } => FFIType::RustBuffer,
             Type::Custom { builtin, .. } => FFIType::from(builtin.as_ref()),
-            Type::Unresolved { .. } => {
-                unreachable!("Type must be resolved before lowering to FFIType")
+            Type::Unresolved { name } => {
+                unreachable!("Type `{name}` must be resolved before lowering to FFIType")
             }
         }
     }
