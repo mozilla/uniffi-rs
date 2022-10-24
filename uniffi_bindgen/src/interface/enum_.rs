@@ -87,7 +87,7 @@ use super::{APIConverter, ComponentInterface};
 ///
 /// Enums are passed across the FFI by serializing to a bytebuffer, with a
 /// i32 indicating the variant followed by the serialization of each field.
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Enum {
     pub(super) name: String,
     pub(super) variants: Vec<Variant>,
@@ -185,7 +185,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 /// Represents an individual variant in an Enum.
 ///
 /// Each variant has a name and zero or more fields.
-#[derive(Debug, Clone, Default, Hash)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 pub struct Variant {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
@@ -281,7 +281,6 @@ impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
         Ok(Field {
             name: self.identifier.0.to_string(),
             type_,
-            required: false,
             default: None,
         })
     }
@@ -301,7 +300,7 @@ mod test {
             enum Testing { "one", "two", "one" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.enum_definitions().len(), 1);
+        assert_eq!(ci.enum_definitions().count(), 1);
         assert_eq!(
             ci.get_enum_definition("Testing").unwrap().variants().len(),
             3
@@ -334,7 +333,7 @@ mod test {
             };
         "##;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.enum_definitions().len(), 3);
+        assert_eq!(ci.enum_definitions().count(), 3);
         assert_eq!(ci.function_definitions().len(), 4);
 
         // The "flat" enum with no associated data.

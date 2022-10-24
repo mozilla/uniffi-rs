@@ -45,7 +45,7 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::HashSet,
+    collections::{btree_map::Entry, BTreeMap, HashSet},
     convert::TryFrom,
     hash::{Hash, Hasher},
     iter,
@@ -95,8 +95,8 @@ pub struct ComponentInterface {
     /// The internal unique prefix used to namespace FFI symbols
     ffi_namespace: String,
     /// The high-level API provided by the component.
-    enums: Vec<Enum>,
-    records: Vec<Record>,
+    enums: BTreeMap<String, Enum>,
+    records: BTreeMap<String, Record>,
     functions: Vec<Function>,
     objects: Vec<Object>,
     callback_interfaces: Vec<CallbackInterface>,
@@ -154,25 +154,23 @@ impl ComponentInterface {
     }
 
     /// Get the definitions for every Enum type in the interface.
-    pub fn enum_definitions(&self) -> &[Enum] {
-        &self.enums
+    pub fn enum_definitions(&self) -> impl Iterator<Item = &Enum> {
+        self.enums.values()
     }
 
     /// Get an Enum definition by name, or None if no such Enum is defined.
     pub fn get_enum_definition(&self, name: &str) -> Option<&Enum> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.enums.iter().find(|e| e.name == name)
+        self.enums.get(name)
     }
 
     /// Get the definitions for every Record type in the interface.
-    pub fn record_definitions(&self) -> &[Record] {
-        &self.records
+    pub fn record_definitions(&self) -> impl Iterator<Item = &Record> {
+        self.records.values()
     }
 
     /// Get a Record definition by name, or None if no such Record is defined.
     pub fn get_record_definition(&self, name: &str) -> Option<&Record> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.records.iter().find(|r| r.name == name)
+        self.records.get(name)
     }
 
     /// Get the definitions for every Function in the interface.
@@ -503,15 +501,47 @@ impl ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.
-    pub(super) fn add_enum_definition(&mut self, defn: Enum) {
-        // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.enums.push(defn);
+    pub(super) fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
+        match self.enums.entry(defn.name().to_owned()) {
+            Entry::Vacant(v) => {
+                v.insert(defn);
+            }
+            Entry::Occupied(o) => {
+                let existing_def = o.get();
+                if defn != *existing_def {
+                    bail!(
+                        "Mismatching definition for enum `{}`!\n\
+                        existing definition: {existing_def:#?},\n\
+                        new definition: {defn:#?}",
+                        defn.name(),
+                    );
+                }
+            }
+        }
+
+        Ok(())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed record definition to the `ComponentInterface`.
-    pub(super) fn add_record_definition(&mut self, defn: Record) {
-        // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.records.push(defn);
+    pub(super) fn add_record_definition(&mut self, defn: Record) -> Result<()> {
+        match self.records.entry(defn.name().to_owned()) {
+            Entry::Vacant(v) => {
+                v.insert(defn);
+            }
+            Entry::Occupied(o) => {
+                let existing_def = o.get();
+                if defn != *existing_def {
+                    bail!(
+                        "Mismatching definition for record `{}`!\n\
+                         existing definition: {existing_def:#?},\n\
+                         new definition: {defn:#?}",
+                        defn.name(),
+                    );
+                }
+            }
+        }
+
+        Ok(())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
@@ -640,7 +670,7 @@ impl ComponentInterface {
             bail!("missing namespace definition");
         }
         // To keep codegen tractable, enum variant names must not shadow type names.
-        for e in &self.enums {
+        for e in self.enums.values() {
             for variant in &e.variants {
                 if self.types.get_type_definition(variant.name()).is_some() {
                     bail!(
@@ -839,18 +869,18 @@ impl APIBuilder for weedle::Definition<'_> {
                     ci.add_error_definition(err);
                 } else {
                     let e = d.convert(ci)?;
-                    ci.add_enum_definition(e);
+                    ci.add_enum_definition(e)?;
                 }
             }
             weedle::Definition::Dictionary(d) => {
                 let rec = d.convert(ci)?;
-                ci.add_record_definition(rec);
+                ci.add_record_definition(rec)?;
             }
             weedle::Definition::Interface(d) => {
                 let attrs = attributes::InterfaceAttributes::try_from(d.attributes.as_ref())?;
                 if attrs.contains_enum_attr() {
                     let e = d.convert(ci)?;
-                    ci.add_enum_definition(e);
+                    ci.add_enum_definition(e)?;
                 } else if attrs.contains_error_attr() {
                     let e = d.convert(ci)?;
                     ci.add_error_definition(e);
@@ -993,7 +1023,9 @@ mod test {
         let err = ComponentInterface::from_webidl(UDL).unwrap_err();
         assert_eq!(
             err.to_string(),
-            "Conflicting type definition for \"Testing\""
+            "Conflicting type definition for `Testing`! \
+             existing definition: Object(\"Testing\"), \
+             new definition: Record(\"Testing\")"
         );
 
         const UDL2: &str = r#"
@@ -1007,7 +1039,9 @@ mod test {
         let err = ComponentInterface::from_webidl(UDL2).unwrap_err();
         assert_eq!(
             err.to_string(),
-            "Conflicting type definition for \"Testing\""
+            "Conflicting type definition for `Testing`! \
+             existing definition: Enum(\"Testing\"), \
+             new definition: Error(\"Testing\")"
         );
 
         const UDL3: &str = r#"

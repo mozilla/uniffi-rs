@@ -67,7 +67,7 @@ pub fn add_to_ci(
                 for field in record.fields() {
                     iface.types.add_known_type(field.type_());
                 }
-                iface.add_record_definition(record);
+                iface.add_record_definition(record)?;
             }
             Metadata::Enum(meta) => {
                 let ty = Type::Enum(meta.name.clone());
@@ -78,7 +78,7 @@ pub fn add_to_ci(
                 for field in enum_.variants().iter().flat_map(|v| v.fields()) {
                     iface.types.add_known_type(field.type_());
                 }
-                iface.add_enum_definition(enum_);
+                iface.add_enum_definition(enum_)?;
             }
             Metadata::Object(meta) => {
                 iface.add_object_free_fn(meta);

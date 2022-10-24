@@ -1,1 +1,7 @@
 namespace uniffi_proc_macro {};
+
+// Test that redundant definition of a dictionary works
+dictionary Two {
+    string a;
+    sequence<boolean>? b;
+};
