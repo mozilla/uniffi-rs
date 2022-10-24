@@ -37,7 +37,7 @@ On the other side (Kotlin, Swift etc.), a proper exception will be thrown if `Re
 If you want to expose the assocated data as fields on the exception, use this syntax:
 
 ```
-[Enum]
+[Error]
 interface ArithmeticError {
   IntegerOverflow(u64 a, u64 b);
 };
