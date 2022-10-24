@@ -438,7 +438,6 @@
 <span id="432">432</span>
 <span id="433">433</span>
 <span id="434">434</span>
-<span id="435">435</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -528,7 +527,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Enums are passed across the FFI by serializing to a bytebuffer, with a</span>
 <span class="doccomment">/// i32 indicating the variant followed by the serialization of each field.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Enum</span> {
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">variants</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Variant</span><span class="op">&gt;</span>,
@@ -626,7 +625,7 @@
 <span class="doccomment">/// Represents an individual variant in an Enum.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Each variant has a name and zero or more fields.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Hash</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Variant</span> {
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span>,
@@ -722,7 +721,6 @@
         <span class="prelude-val">Ok</span>(<span class="ident">Field</span> {
             <span class="ident">name</span>: <span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
             <span class="ident">type_</span>,
-            <span class="ident">required</span>: <span class="bool-val">false</span>,
             <span class="ident">default</span>: <span class="prelude-val">None</span>,
         })
     }
@@ -742,7 +740,7 @@
             enum Testing { &quot;one&quot;, &quot;two&quot;, &quot;one&quot; };
         &quot;#</span>;
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">enum_definitions</span>().<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">enum_definitions</span>().<span class="ident">count</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             <span class="ident">ci</span>.<span class="ident">get_enum_definition</span>(<span class="string">&quot;Testing&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">variants</span>().<span class="ident">len</span>(),
             <span class="number">3</span>
@@ -775,7 +773,7 @@
             };
         &quot;##</span>;
         <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">enum_definitions</span>().<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">enum_definitions</span>().<span class="ident">count</span>(), <span class="number">3</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">function_definitions</span>().<span class="ident">len</span>(), <span class="number">4</span>);
 
         <span class="comment">// The &quot;flat&quot; enum with no associated data.</span>

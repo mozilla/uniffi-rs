@@ -167,7 +167,7 @@
                 <span class="kw">for</span> <span class="ident">field</span> <span class="kw">in</span> <span class="ident">record</span>.<span class="ident">fields</span>() {
                     <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">field</span>.<span class="ident">type_</span>());
                 }
-                <span class="ident">iface</span>.<span class="ident">add_record_definition</span>(<span class="ident">record</span>);
+                <span class="ident">iface</span>.<span class="ident">add_record_definition</span>(<span class="ident">record</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">Metadata::Enum</span>(<span class="ident">meta</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="ident">Type::Enum</span>(<span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">clone</span>());
@@ -178,7 +178,7 @@
                 <span class="kw">for</span> <span class="ident">field</span> <span class="kw">in</span> <span class="ident">enum_</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">fields</span>()) {
                     <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">field</span>.<span class="ident">type_</span>());
                 }
-                <span class="ident">iface</span>.<span class="ident">add_enum_definition</span>(<span class="ident">enum_</span>);
+                <span class="ident">iface</span>.<span class="ident">add_enum_definition</span>(<span class="ident">enum_</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">Metadata::Object</span>(<span class="ident">meta</span>) =&gt; {
                 <span class="ident">iface</span>.<span class="ident">add_object_free_fn</span>(<span class="ident">meta</span>);

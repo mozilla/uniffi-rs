@@ -1138,6 +1138,40 @@
 <span id="1132">1132</span>
 <span id="1133">1133</span>
 <span id="1134">1134</span>
+<span id="1135">1135</span>
+<span id="1136">1136</span>
+<span id="1137">1137</span>
+<span id="1138">1138</span>
+<span id="1139">1139</span>
+<span id="1140">1140</span>
+<span id="1141">1141</span>
+<span id="1142">1142</span>
+<span id="1143">1143</span>
+<span id="1144">1144</span>
+<span id="1145">1145</span>
+<span id="1146">1146</span>
+<span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
+<span id="1150">1150</span>
+<span id="1151">1151</span>
+<span id="1152">1152</span>
+<span id="1153">1153</span>
+<span id="1154">1154</span>
+<span id="1155">1155</span>
+<span id="1156">1156</span>
+<span id="1157">1157</span>
+<span id="1158">1158</span>
+<span id="1159">1159</span>
+<span id="1160">1160</span>
+<span id="1161">1161</span>
+<span id="1162">1162</span>
+<span id="1163">1163</span>
+<span id="1164">1164</span>
+<span id="1165">1165</span>
+<span id="1166">1166</span>
+<span id="1167">1167</span>
+<span id="1168">1168</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -1185,7 +1219,7 @@
 <span class="doccomment">//!   * Error messages and general developer experience leave a lot to be desired.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">collections::HashSet</span>,
+    <span class="ident">collections</span>::{<span class="ident">btree_map::Entry</span>, <span class="ident">BTreeMap</span>, <span class="ident">HashSet</span>},
     <span class="ident">convert::TryFrom</span>,
     <span class="ident">hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>},
     <span class="ident">iter</span>,
@@ -1235,8 +1269,8 @@
     <span class="doccomment">/// The internal unique prefix used to namespace FFI symbols</span>
     <span class="ident">ffi_namespace</span>: <span class="ident">String</span>,
     <span class="doccomment">/// The high-level API provided by the component.</span>
-    <span class="ident">enums</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Enum</span><span class="op">&gt;</span>,
-    <span class="ident">records</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Record</span><span class="op">&gt;</span>,
+    <span class="ident">enums</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Enum</span><span class="op">&gt;</span>,
+    <span class="ident">records</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Record</span><span class="op">&gt;</span>,
     <span class="ident">functions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Function</span><span class="op">&gt;</span>,
     <span class="ident">objects</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Object</span><span class="op">&gt;</span>,
     <span class="ident">callback_interfaces</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">CallbackInterface</span><span class="op">&gt;</span>,
@@ -1294,25 +1328,23 @@
     }
 
     <span class="doccomment">/// Get the definitions for every Enum type in the interface.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_definitions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">Enum</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">enums</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_definitions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">Enum</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">enums</span>.<span class="ident">values</span>()
     }
 
     <span class="doccomment">/// Get an Enum definition by name, or None if no such Enum is defined.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_enum_definition</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Enum</span><span class="op">&gt;</span> {
-        <span class="comment">// TODO: probably we could store these internally in a HashMap to make this easier?</span>
-        <span class="self">self</span>.<span class="ident">enums</span>.<span class="ident">iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">name</span>)
+        <span class="self">self</span>.<span class="ident">enums</span>.<span class="ident">get</span>(<span class="ident">name</span>)
     }
 
     <span class="doccomment">/// Get the definitions for every Record type in the interface.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">record_definitions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">Record</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">records</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">record_definitions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">Record</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">records</span>.<span class="ident">values</span>()
     }
 
     <span class="doccomment">/// Get a Record definition by name, or None if no such Record is defined.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_record_definition</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Record</span><span class="op">&gt;</span> {
-        <span class="comment">// TODO: probably we could store these internally in a HashMap to make this easier?</span>
-        <span class="self">self</span>.<span class="ident">records</span>.<span class="ident">iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">name</span>)
+        <span class="self">self</span>.<span class="ident">records</span>.<span class="ident">get</span>(<span class="ident">name</span>)
     }
 
     <span class="doccomment">/// Get the definitions for every Function in the interface.</span>
@@ -1643,15 +1675,47 @@
     }
 
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_enum_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Enum</span>) {
-        <span class="comment">// Note that there will be no duplicates thanks to the previous type-finding pass.</span>
-        <span class="self">self</span>.<span class="ident">enums</span>.<span class="ident">push</span>(<span class="ident">defn</span>);
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_enum_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Enum</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">enums</span>.<span class="ident">entry</span>(<span class="ident">defn</span>.<span class="ident">name</span>().<span class="ident">to_owned</span>()) {
+            <span class="ident">Entry::Vacant</span>(<span class="ident">v</span>) =&gt; {
+                <span class="ident">v</span>.<span class="ident">insert</span>(<span class="ident">defn</span>);
+            }
+            <span class="ident">Entry::Occupied</span>(<span class="ident">o</span>) =&gt; {
+                <span class="kw">let</span> <span class="ident">existing_def</span> <span class="op">=</span> <span class="ident">o</span>.<span class="ident">get</span>();
+                <span class="kw">if</span> <span class="ident">defn</span> <span class="op">!</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">existing_def</span> {
+                    <span class="macro">bail!</span>(
+                        <span class="string">&quot;Mismatching definition for enum `{}`!\n\
+                        existing definition: {existing_def:#?},\n\
+                        new definition: {defn:#?}&quot;</span>,
+                        <span class="ident">defn</span>.<span class="ident">name</span>(),
+                    );
+                }
+            }
+        }
+
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed record definition to the `ComponentInterface`.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_record_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Record</span>) {
-        <span class="comment">// Note that there will be no duplicates thanks to the previous type-finding pass.</span>
-        <span class="self">self</span>.<span class="ident">records</span>.<span class="ident">push</span>(<span class="ident">defn</span>);
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_record_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">Record</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">records</span>.<span class="ident">entry</span>(<span class="ident">defn</span>.<span class="ident">name</span>().<span class="ident">to_owned</span>()) {
+            <span class="ident">Entry::Vacant</span>(<span class="ident">v</span>) =&gt; {
+                <span class="ident">v</span>.<span class="ident">insert</span>(<span class="ident">defn</span>);
+            }
+            <span class="ident">Entry::Occupied</span>(<span class="ident">o</span>) =&gt; {
+                <span class="kw">let</span> <span class="ident">existing_def</span> <span class="op">=</span> <span class="ident">o</span>.<span class="ident">get</span>();
+                <span class="kw">if</span> <span class="ident">defn</span> <span class="op">!</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">existing_def</span> {
+                    <span class="macro">bail!</span>(
+                        <span class="string">&quot;Mismatching definition for record `{}`!\n\
+                         existing definition: {existing_def:#?},\n\
+                         new definition: {defn:#?}&quot;</span>,
+                        <span class="ident">defn</span>.<span class="ident">name</span>(),
+                    );
+                }
+            }
+        }
+
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.</span>
@@ -1780,7 +1844,7 @@
             <span class="macro">bail!</span>(<span class="string">&quot;missing namespace definition&quot;</span>);
         }
         <span class="comment">// To keep codegen tractable, enum variant names must not shadow type names.</span>
-        <span class="kw">for</span> <span class="ident">e</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">enums</span> {
+        <span class="kw">for</span> <span class="ident">e</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">enums</span>.<span class="ident">values</span>() {
             <span class="kw">for</span> <span class="ident">variant</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">variants</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">get_type_definition</span>(<span class="ident">variant</span>.<span class="ident">name</span>()).<span class="ident">is_some</span>() {
                     <span class="macro">bail!</span>(
@@ -1979,18 +2043,18 @@
                     <span class="ident">ci</span>.<span class="ident">add_error_definition</span>(<span class="ident">err</span>);
                 } <span class="kw">else</span> {
                     <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">convert</span>(<span class="ident">ci</span>)<span class="question-mark">?</span>;
-                    <span class="ident">ci</span>.<span class="ident">add_enum_definition</span>(<span class="ident">e</span>);
+                    <span class="ident">ci</span>.<span class="ident">add_enum_definition</span>(<span class="ident">e</span>)<span class="question-mark">?</span>;
                 }
             }
             <span class="ident">weedle::Definition::Dictionary</span>(<span class="ident">d</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">rec</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">convert</span>(<span class="ident">ci</span>)<span class="question-mark">?</span>;
-                <span class="ident">ci</span>.<span class="ident">add_record_definition</span>(<span class="ident">rec</span>);
+                <span class="ident">ci</span>.<span class="ident">add_record_definition</span>(<span class="ident">rec</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">weedle::Definition::Interface</span>(<span class="ident">d</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">attributes::InterfaceAttributes::try_from</span>(<span class="ident">d</span>.<span class="ident">attributes</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">attrs</span>.<span class="ident">contains_enum_attr</span>() {
                     <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">convert</span>(<span class="ident">ci</span>)<span class="question-mark">?</span>;
-                    <span class="ident">ci</span>.<span class="ident">add_enum_definition</span>(<span class="ident">e</span>);
+                    <span class="ident">ci</span>.<span class="ident">add_enum_definition</span>(<span class="ident">e</span>)<span class="question-mark">?</span>;
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">attrs</span>.<span class="ident">contains_error_attr</span>() {
                     <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">d</span>.<span class="ident">convert</span>(<span class="ident">ci</span>)<span class="question-mark">?</span>;
                     <span class="ident">ci</span>.<span class="ident">add_error_definition</span>(<span class="ident">e</span>);
@@ -2133,7 +2197,9 @@
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap_err</span>();
         <span class="macro">assert_eq!</span>(
             <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;Conflicting type definition for \&quot;Testing\&quot;&quot;</span>
+            <span class="string">&quot;Conflicting type definition for `Testing`! \
+             existing definition: Object(\&quot;Testing\&quot;), \
+             new definition: Record(\&quot;Testing\&quot;)&quot;</span>
         );
 
         <span class="kw">const</span> <span class="ident">UDL2</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
@@ -2147,7 +2213,9 @@
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL2</span>).<span class="ident">unwrap_err</span>();
         <span class="macro">assert_eq!</span>(
             <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;Conflicting type definition for \&quot;Testing\&quot;&quot;</span>
+            <span class="string">&quot;Conflicting type definition for `Testing`! \
+             existing definition: Enum(\&quot;Testing\&quot;), \
+             new definition: Error(\&quot;Testing\&quot;)&quot;</span>
         );
 
         <span class="kw">const</span> <span class="ident">UDL3</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;

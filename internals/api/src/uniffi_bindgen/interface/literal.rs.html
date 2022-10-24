@@ -204,7 +204,7 @@
 
 <span class="comment">// Represents a literal value.</span>
 <span class="comment">// Used for e.g. default argument values.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Literal</span> {
     <span class="ident">Boolean</span>(<span class="ident">bool</span>),
     <span class="ident">String</span>(<span class="ident">String</span>),
@@ -226,7 +226,7 @@
 
 <span class="comment">// Represent the radix of integer literal values.</span>
 <span class="comment">// We preserve the radix into the generated bindings for readability reasons.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Hash</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Radix</span> {
     <span class="ident">Decimal</span> <span class="op">=</span> <span class="number">10</span>,
     <span class="ident">Octal</span> <span class="op">=</span> <span class="number">8</span>,
