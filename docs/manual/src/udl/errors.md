@@ -34,7 +34,7 @@ namespace arithmetic {
 
 On the other side (Kotlin, Swift etc.), a proper exception will be thrown if `Result::is_err()` is `true`.
 
-If you want to expose the assocated data as fields on the exception, use this syntax:
+If you want to expose the associated data as fields on the exception, use this syntax:
 
 ```
 [Error]
