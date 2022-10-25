@@ -109,24 +109,24 @@ mod filters {
                 }
             }
             // use the double-quote form to match with the other languages, and quote escapes.
-            Literal::String(s) => format!("\"{}\"", s),
+            Literal::String(s) => format!("\"{s}\""),
             Literal::Null => "nil".into(),
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "{}".into(),
             Literal::Enum(v, type_) => match type_ {
                 Type::Enum(name) => format!("{}::{}", class_name_rb(name)?, enum_name_rb(v)?),
-                _ => panic!("Unexpected type in enum literal: {:?}", type_),
+                _ => panic!("Unexpected type in enum literal: {type_:?}"),
             },
             // https://docs.ruby-lang.org/en/2.0.0/syntax/literals_rdoc.html
             Literal::Int(i, radix, _) => match radix {
-                Radix::Octal => format!("0o{:o}", i),
-                Radix::Decimal => format!("{}", i),
-                Radix::Hexadecimal => format!("{:#x}", i),
+                Radix::Octal => format!("0o{i:o}"),
+                Radix::Decimal => format!("{i}"),
+                Radix::Hexadecimal => format!("{i:#x}"),
             },
             Literal::UInt(i, radix, _) => match radix {
-                Radix::Octal => format!("0o{:o}", i),
-                Radix::Decimal => format!("{}", i),
-                Radix::Hexadecimal => format!("{:#x}", i),
+                Radix::Octal => format!("0o{i:o}"),
+                Radix::Decimal => format!("{i}"),
+                Radix::Hexadecimal => format!("{i:#x}"),
             },
             Literal::Float(string, _type_) => string.clone(),
         })
@@ -144,7 +144,7 @@ mod filters {
         let nm = nm.to_string();
         let prefix = if is_reserved_word(&nm) { "_" } else { "" };
 
-        Ok(format!("{}{}", prefix, nm.to_snake_case()))
+        Ok(format!("{prefix}{}", nm.to_snake_case()))
     }
 
     pub fn enum_name_rb(nm: &str) -> Result<String, askama::Error> {
@@ -160,20 +160,20 @@ mod filters {
             | Type::Int32
             | Type::UInt32
             | Type::Int64
-            | Type::UInt64 => format!("{}.to_i", nm), // TODO: check max/min value
-            Type::Float32 | Type::Float64 => format!("{}.to_f", nm),
-            Type::Boolean => format!("{} ? true : false", nm),
+            | Type::UInt64 => format!("{nm}.to_i"), // TODO: check max/min value
+            Type::Float32 | Type::Float64 => format!("{nm}.to_f"),
+            Type::Boolean => format!("{nm} ? true : false"),
             Type::Object(_) | Type::Enum(_) | Type::Error(_) | Type::Record(_) => nm.to_string(),
-            Type::String => format!("{}.to_s", nm),
+            Type::String => format!("{nm}.to_s"),
             Type::Timestamp | Type::Duration => nm.to_string(),
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
-            Type::Optional(t) => format!("({} ? {} : nil)", nm, coerce_rb(nm, t)?),
+            Type::Optional(t) => format!("({nm} ? {} : nil)", coerce_rb(nm, t)?),
             Type::Sequence(t) => {
                 let coerce_code = coerce_rb("v", t)?;
                 if coerce_code == "v" {
                     nm.to_string()
                 } else {
-                    format!("{}.map {{ |v| {} }}", nm, coerce_code)
+                    format!("{nm}.map {{ |v| {coerce_code} }}")
                 }
             }
             Type::Map(_k, t) => {
@@ -209,9 +209,9 @@ mod filters {
             | Type::UInt64
             | Type::Float32
             | Type::Float64 => nm.to_string(),
-            Type::Boolean => format!("({} ? 1 : 0)", nm),
-            Type::String => format!("RustBuffer.allocFromString({})", nm),
-            Type::Object(name) => format!("({}._uniffi_lower {})", class_name_rb(name)?, nm),
+            Type::Boolean => format!("({nm} ? 1 : 0)"),
+            Type::String => format!("RustBuffer.allocFromString({nm})"),
+            Type::Object(name) => format!("({}._uniffi_lower {nm})", class_name_rb(name)?),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)
@@ -242,11 +242,11 @@ mod filters {
             | Type::Int32
             | Type::UInt32
             | Type::Int64
-            | Type::UInt64 => format!("{}.to_i", nm),
-            Type::Float32 | Type::Float64 => format!("{}.to_f", nm),
-            Type::Boolean => format!("1 == {}", nm),
-            Type::String => format!("{}.consumeIntoString", nm),
-            Type::Object(name) => format!("{}._uniffi_allocate({})", class_name_rb(name)?, nm),
+            | Type::UInt64 => format!("{nm}.to_i"),
+            Type::Float32 | Type::Float64 => format!("{nm}.to_f"),
+            Type::Boolean => format!("1 == {nm}"),
+            Type::String => format!("{nm}.consumeIntoString"),
+            Type::Object(name) => format!("{}._uniffi_allocate({nm})", class_name_rb(name)?),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)

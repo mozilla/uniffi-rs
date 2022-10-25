@@ -266,7 +266,7 @@ impl CodeOracle for KotlinCodeOracle {
         let name = self.class_name(nm);
         match name.strip_suffix("Error") {
             None => name,
-            Some(stripped) => format!("{}Exception", stripped),
+            Some(stripped) => format!("{stripped}Exception"),
         }
     }
 

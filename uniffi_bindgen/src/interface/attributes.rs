@@ -135,7 +135,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Error => Ok(()),
-            _ => bail!(format!("{:?} not supported for enums", attr)),
+            _ => bail!(format!("{attr:?} not supported for enums")),
         })?;
         Ok(Self(attrs))
     }
@@ -176,7 +176,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttribut
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
-            _ => bail!(format!("{:?} not supported for functions", attr)),
+            _ => bail!(format!("{attr:?} not supported for functions")),
         })?;
         Ok(Self(attrs))
     }
@@ -214,7 +214,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ArgumentAttribut
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::ByRef => Ok(()),
-            _ => bail!(format!("{:?} not supported for arguments", attr)),
+            _ => bail!(format!("{attr:?} not supported for arguments")),
         })?;
         Ok(Self(attrs))
     }
@@ -261,7 +261,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
             Attribute::Enum => Ok(()),
             Attribute::Error => Ok(()),
             Attribute::Threadsafe => Ok(()),
-            _ => bail!(format!("{:?} not supported for interface definition", attr)),
+            _ => bail!(format!("{attr:?} not supported for interface definition")),
         })?;
         // Can't be both `[Threadsafe]` and an `[Enum]`.
         if attrs.len() > 1 {
@@ -316,7 +316,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttri
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
             Attribute::Name(_) => Ok(()),
-            _ => bail!(format!("{:?} not supported for constructors", attr)),
+            _ => bail!(format!("{attr:?} not supported for constructors")),
         })?;
         Ok(Self(attrs))
     }
@@ -354,7 +354,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for MethodAttributes
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::SelfType(_) => Ok(()),
             Attribute::Throws(_) => Ok(()),
-            _ => bail!(format!("{:?} not supported for methods", attr)),
+            _ => bail!(format!("{attr:?} not supported for methods")),
         })?;
         Ok(Self(attrs))
     }
@@ -426,7 +426,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for TypedefAttribute
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::External { .. } | Attribute::Custom => Ok(()),
-            _ => bail!(format!("{:?} not supported for typedefs", attr)),
+            _ => bail!(format!("{attr:?} not supported for typedefs")),
         })?;
         Ok(Self(attrs))
     }
