@@ -170,7 +170,7 @@ impl UniFFITestHelper {
 
         for path in cdylib_paths {
             let dest = out_dir.as_ref().join(path.file_name().unwrap());
-            fs::copy(&path, &dest)?;
+            fs::copy(&path, dest)?;
         }
         Ok(())
     }

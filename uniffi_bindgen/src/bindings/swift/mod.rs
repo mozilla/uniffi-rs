@@ -70,14 +70,14 @@ pub fn write_bindings(
 
     let source_file = out_dir.join(format!("{}.swift", config.module_name()));
     let mut l = File::create(&source_file)?;
-    write!(l, "{}", library)?;
+    write!(l, "{library}")?;
 
     let mut h = File::create(out_dir.join(config.header_filename()))?;
-    write!(h, "{}", header)?;
+    write!(h, "{header}")?;
 
     if let Some(modulemap) = modulemap {
         let mut m = File::create(out_dir.join(config.modulemap_filename()))?;
-        write!(m, "{}", modulemap)?;
+        write!(m, "{modulemap}")?;
     }
 
     if try_format_code {

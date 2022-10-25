@@ -198,7 +198,7 @@ impl<'a> PythonWrapper<'a> {
 
 fn fixup_keyword(name: String) -> String {
     if KEYWORDS.contains(&name) {
-        format!("_{}", name)
+        format!("_{name}")
     } else {
         name
     }
@@ -284,7 +284,7 @@ impl CodeOracle for PythonCodeOracle {
         let name = fixup_keyword(self.class_name(nm));
         match name.strip_suffix("Error") {
             None => name,
-            Some(stripped) => format!("{}Exception", stripped),
+            Some(stripped) => format!("{stripped}Exception"),
         }
     }
 
