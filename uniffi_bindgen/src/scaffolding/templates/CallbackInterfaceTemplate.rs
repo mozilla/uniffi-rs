@@ -130,7 +130,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
                         match {{ Type::String.borrow()|ffi_converter }}::try_lift(ret_rbuf) {
                             Ok(s) => s,
                             Err(e) => {
-                                println!("{{ trait_name }} Error reading ret_buf: {e}");
+                                uniffi::deps::log::error!("{{ trait_name }} Error reading ret_buf: {e}");
                                 String::from("[Error reading reason]")
                             }
                         }
