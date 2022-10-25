@@ -146,7 +146,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
                     if !ret_rbuf.is_empty() {
                         let reason = match {{ Type::String.borrow()|ffi_converter }}::try_lift(ret_rbuf) {
                             Ok(s) => s,
-                            Err(e) => {
+                            Err(_) => {
                                 String::from("[Error reading reason]")
                             }
                         };
