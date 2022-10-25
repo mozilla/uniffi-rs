@@ -887,7 +887,7 @@
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
             <span class="ident">Attribute::Error</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?} not supported for enums&quot;</span>, <span class="ident">attr</span>)),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for enums&quot;</span>)),
         })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
     }
@@ -928,7 +928,7 @@
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
             <span class="ident">Attribute::Throws</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?} not supported for functions&quot;</span>, <span class="ident">attr</span>)),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for functions&quot;</span>)),
         })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
     }
@@ -966,7 +966,7 @@
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
             <span class="ident">Attribute::ByRef</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?} not supported for arguments&quot;</span>, <span class="ident">attr</span>)),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for arguments&quot;</span>)),
         })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
     }
@@ -1013,7 +1013,7 @@
             <span class="ident">Attribute::Enum</span> =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="ident">Attribute::Error</span> =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="ident">Attribute::Threadsafe</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?} not supported for interface definition&quot;</span>, <span class="ident">attr</span>)),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for interface definition&quot;</span>)),
         })<span class="question-mark">?</span>;
         <span class="comment">// Can&#39;t be both `[Threadsafe]` and an `[Enum]`.</span>
         <span class="kw">if</span> <span class="ident">attrs</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
@@ -1068,7 +1068,7 @@
         <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
             <span class="ident">Attribute::Throws</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="ident">Attribute::Name</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?} not supported for constructors&quot;</span>, <span class="ident">attr</span>)),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for constructors&quot;</span>)),
         })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
     }
@@ -1106,7 +1106,7 @@
         <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
             <span class="ident">Attribute::SelfType</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="ident">Attribute::Throws</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?} not supported for methods&quot;</span>, <span class="ident">attr</span>)),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for methods&quot;</span>)),
         })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
     }
@@ -1178,7 +1178,7 @@
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
             <span class="ident">Attribute::External</span> { .. } <span class="op">|</span> <span class="ident">Attribute::Custom</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?} not supported for typedefs&quot;</span>, <span class="ident">attr</span>)),
+            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for typedefs&quot;</span>)),
         })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
     }

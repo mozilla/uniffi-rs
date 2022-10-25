@@ -116,31 +116,31 @@
             <span class="op">|</span> <span class="ident">Type::Float64</span> =&gt;
             <span class="comment">// XXX we should pass in the codetype itself.</span>
             {
-                <span class="macro">format!</span>(<span class="string">&quot;{}({})&quot;</span>, <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">type_</span>).<span class="ident">type_label</span>(<span class="ident">oracle</span>), <span class="ident">num_str</span>)
+                <span class="macro">format!</span>(<span class="string">&quot;{}({num_str})&quot;</span>, <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="ident">type_</span>).<span class="ident">type_label</span>(<span class="ident">oracle</span>))
             }
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected literal: {} is not a number&quot;</span>, <span class="ident">num_str</span>),
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected literal: {num_str} is not a number&quot;</span>),
         }
     }
 
     <span class="kw">match</span> <span class="ident">literal</span> {
-        <span class="ident">Literal::Boolean</span>(<span class="ident">v</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">v</span>),
-        <span class="ident">Literal::String</span>(<span class="ident">s</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;\&quot;{}\&quot;&quot;</span>, <span class="ident">s</span>),
+        <span class="ident">Literal::Boolean</span>(<span class="ident">v</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{v}&quot;</span>),
+        <span class="ident">Literal::String</span>(<span class="ident">s</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;\&quot;{s}\&quot;&quot;</span>),
         <span class="ident">Literal::Int</span>(<span class="ident">i</span>, <span class="ident">radix</span>, <span class="ident">type_</span>) =&gt; <span class="ident">typed_number</span>(
             <span class="ident">oracle</span>,
             <span class="ident">type_</span>,
             <span class="kw">match</span> <span class="ident">radix</span> {
-                <span class="ident">Radix::Octal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;0o{:o}&quot;</span>, <span class="ident">i</span>),
-                <span class="ident">Radix::Decimal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>),
-                <span class="ident">Radix::Hexadecimal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
+                <span class="ident">Radix::Octal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;0o{i:o}&quot;</span>),
+                <span class="ident">Radix::Decimal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{i}&quot;</span>),
+                <span class="ident">Radix::Hexadecimal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{i:#x}&quot;</span>),
             },
         ),
         <span class="ident">Literal::UInt</span>(<span class="ident">i</span>, <span class="ident">radix</span>, <span class="ident">type_</span>) =&gt; <span class="ident">typed_number</span>(
             <span class="ident">oracle</span>,
             <span class="ident">type_</span>,
             <span class="kw">match</span> <span class="ident">radix</span> {
-                <span class="ident">Radix::Octal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;0o{:o}&quot;</span>, <span class="ident">i</span>),
-                <span class="ident">Radix::Decimal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>),
-                <span class="ident">Radix::Hexadecimal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{:#x}&quot;</span>, <span class="ident">i</span>),
+                <span class="ident">Radix::Octal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;0o{i:o}&quot;</span>),
+                <span class="ident">Radix::Decimal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{i}&quot;</span>),
+                <span class="ident">Radix::Hexadecimal</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{i:#x}&quot;</span>),
             },
         ),
         <span class="ident">Literal::Float</span>(<span class="ident">string</span>, <span class="ident">type_</span>) =&gt; <span class="ident">typed_number</span>(<span class="ident">oracle</span>, <span class="ident">type_</span>, <span class="ident">string</span>.<span class="ident">clone</span>()),
