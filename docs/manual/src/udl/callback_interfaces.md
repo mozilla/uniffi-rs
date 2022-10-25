@@ -47,15 +47,15 @@ foreign bindings will lead to a panic.
 In order to support errors in callback interfaces, UniFFI must be able to
 properly [lift the error](../internals/lifting_and_lowering.md).  This means
 that the if the error is described by an `enum` rather than an `interface` in
-the UDL (see (./errors.md)) then all variants of the Rust enum must be unit variants.
+the UDL (see [Errors](./errors.md)) then all variants of the Rust enum must be unit variants.
 
 In addition to expected errors, a callback interface call can result in all kinds of
 unexpected errors.  Some examples are the foreign code throws an exception that's not part
 of the exception type or there was a problem marshalling the data for the call.  UniFFI
 uses `uniffi::UnexpectedUniFFICallbackError` for these cases.  Your code must include a
 `From<uniffi::UnexpectedUniFFICallbackError>` impl for your error type to handle those or
-the UniFFI scaffolding code will fail to compile.  See the `example/callbacks` for an
-exapmle of how to do this.
+the UniFFI scaffolding code will fail to compile.  See `example/callbacks` for an
+example of how to do this.
 
 ## 3. Define a callback interface in the UDL.
 
@@ -101,7 +101,7 @@ impl Authenticator {
 }
 ```
 
-## 4. Create an foreign language implementation of the callback interface.
+## 5. Create an foreign language implementation of the callback interface.
 
 In this example, here's a Kotlin implementation.
 
@@ -133,7 +133,7 @@ class SwiftKeychain: Keychain {
 
 Note: in Swift, this must be a `class`.
 
-## 5. Pass the implementation to Rust.
+## 6. Pass the implementation to Rust.
 
 Again, in Kotlin
 
