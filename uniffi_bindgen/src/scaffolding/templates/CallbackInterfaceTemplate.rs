@@ -142,7 +142,19 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
                     Err(e)
                 }
                 {%- else %}
-                -1 => panic!("Callback failed"),
+                -1 => {
+                    if !ret_rbuf.is_empty() {
+                        let reason = match {{ Type::String.borrow()|ffi_converter }}::try_lift(ret_rbuf) {
+                            Ok(s) => s,
+                            Err(e) => {
+                                String::from("[Error reading reason]")
+                            }
+                        };
+                        panic!("callback failed. Reason: {}", reason);
+                    } else {
+                        panic!("Callback failed")
+                    }
+                },
                 {%- endmatch %}
                 // Other values should never be returned
                 _ => panic!("Callback failed with unexpected return code"),
