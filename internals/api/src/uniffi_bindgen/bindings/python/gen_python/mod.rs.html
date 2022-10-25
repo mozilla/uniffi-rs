@@ -638,8 +638,8 @@
             <span class="ident">Type::Map</span>(<span class="ident">key</span>, <span class="ident">value</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="kw-2">*</span><span class="ident">key</span>, <span class="kw-2">*</span><span class="ident">value</span>)),
             <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">Box::new</span>(<span class="ident">external::ExternalCodeType::new</span>(<span class="ident">name</span>)),
             <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">Box::new</span>(<span class="ident">custom::CustomCodeType::new</span>(<span class="ident">name</span>)),
-            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling create_code_type&quot;</span>)
+            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before calling create_code_type&quot;</span>)
             }
         }
     }

@@ -470,8 +470,8 @@
             }
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for external types, yet&quot;</span>),
             <span class="ident">Type::Custom</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for custom types, yet&quot;</span>),
-            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling coerce_rb&quot;</span>)
+            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before calling coerce_rb&quot;</span>)
             }
         })
     }
@@ -506,8 +506,8 @@
             ),
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering external types, yet&quot;</span>),
             <span class="ident">Type::Custom</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering custom types, yet&quot;</span>),
-            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling lower_rb&quot;</span>)
+            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before calling lower_rb&quot;</span>)
             }
         })
     }
@@ -541,8 +541,8 @@
             ),
             <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting external types, yet&quot;</span>),
             <span class="ident">Type::Custom</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting custom types, yet&quot;</span>),
-            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling lift_rb&quot;</span>)
+            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before calling lift_rb&quot;</span>)
             }
         })
     }

@@ -337,6 +337,11 @@
 <span id="331">331</span>
 <span id="332">332</span>
 <span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -460,8 +465,8 @@
             ),
             <span class="comment">// A type that exists externally.</span>
             <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
-            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before calling canonical_name&quot;</span>)
+            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before calling canonical_name&quot;</span>)
             }
         }
     }
@@ -519,8 +524,8 @@
             <span class="op">|</span> <span class="ident">Type::Duration</span>
             <span class="op">|</span> <span class="ident">Type::External</span> { .. } =&gt; <span class="ident">FFIType::RustBuffer</span>,
             <span class="ident">Type::Custom</span> { <span class="ident">builtin</span>, .. } =&gt; <span class="ident">FFIType::from</span>(<span class="ident">builtin</span>.<span class="ident">as_ref</span>()),
-            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;Type must be resolved before lowering to FFIType&quot;</span>)
+            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
+                <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before lowering to FFIType&quot;</span>)
             }
         }
     }
@@ -563,6 +568,11 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This will fail if you try to add a name for which an existing type definition exists.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_type_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">type_</span>: <span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Type::Unresolved</span> { <span class="ident">name</span>: <span class="ident">name_</span> } <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">type_</span> {
+            <span class="macro">assert_eq!</span>(<span class="ident">name</span>, <span class="ident">name_</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;attempted to add type definition of Unresolved for `{name}`&quot;</span>);
+        }
+
         <span class="kw">if</span> <span class="ident">resolve_builtin_type</span>(<span class="ident">name</span>).<span class="ident">is_some</span>() {
             <span class="macro">bail!</span>(
                 <span class="string">&quot;please don&#39;t shadow builtin types ({name}, {})&quot;</span>,
