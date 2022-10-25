@@ -34,7 +34,7 @@ try {
 
 try {
     telephone.call(CallAnswererImpl("something-else"))
-    throw RuntimeException("Should have thrown a Busy exception!")
+    throw RuntimeException("Should have thrown an internal exception!")
 } catch(e: TelephoneException.InternalTelephoneException) {
     // It's okay
 }
