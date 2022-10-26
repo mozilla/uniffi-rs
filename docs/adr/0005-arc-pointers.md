@@ -84,7 +84,7 @@ This decision is taken because:
   generated instead of hand-written.
 
 * Correctly implementing better lifetime management in a thread-safe way is not
-  trivial and subtle errors there would defeat all the safely mechanisms the
+  trivial and subtle errors there would defeat all the safety mechanisms the
   `HandleMap`s offer. Ultimately we'd just end up reimplementing `Arc<>` anyway,
   and the one in the stdlib is far more likely to be correct.
 
