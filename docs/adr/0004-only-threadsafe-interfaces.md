@@ -19,7 +19,7 @@ the only question is who manages this thread-safety. Interfaces which are not
 marked as thread-safe cause uniffi to wrap the interface in a mutex which is
 hidden in the generated code and therefore not obvious to the casual reader.
 
-The [Threadsafe] marker acts as a way for the component author to opt out of
+The `[Threadsafe]` marker acts as a way for the component author to opt out of
 the overhead and blocking behaviour of this mutex, at the cost of opting in to
 managing their own locking internally. This ADR proposes that uniffi forces
 component authors to explicitly manage that locking in all cases - or to put
