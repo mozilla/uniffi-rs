@@ -63,7 +63,7 @@ Chosen option:
 This decision was taken because our real world experience tells us that
 non-`Send+Sync` interfaces are only useful in toy or example applications (eg,
 the nimbus and autofill projects didn't get very far before needing these
-capabilities), so the extra ongoing work in supporting these interfaces can not
+capabilities), so the extra ongoing work in supporting these interfaces cannot
 be justified.
 
 ### Positive Consequences
@@ -94,7 +94,7 @@ be justified.
   https://github.com/mozilla/uniffi-rs/commit/454dfff6aa560dffad980a9258853108a44d5985).
 
 * Existing applications that are yet to consider how to make their
-  implementations `Send+Sync` can not be wrapped until they have.
+  implementations `Send+Sync` cannot be wrapped until they have.
 
 * The examples which aren't currently marked with the `[Threadsafe]` attribute
   will become more complex as they will all need to implement and explain how
