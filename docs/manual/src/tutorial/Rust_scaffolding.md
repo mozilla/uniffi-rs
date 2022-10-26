@@ -99,10 +99,10 @@ For example, you will probably end up with Cargo.toml looking something like:
 
 ```toml
 [dependencies]
-uniffi = { path = "path/to/uniffi-rs/uniffi }
+uniffi = { path = "path/to/uniffi-rs/uniffi" }
 ...
 [build-dependencies]
-uniffi_build = { path = "path/to/uniffi-rs/uniffi_build, features=["builtin-bindgen"] }
+uniffi_build = { path = "path/to/uniffi-rs/uniffi_build", features=["builtin-bindgen"] }
 ```
 
 Note that `path/to/uniffi-rs` should be the path to the root of the `uniffi`
