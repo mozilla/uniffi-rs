@@ -54,7 +54,7 @@ code to send it across the FFI as a bytebuffer.
 * Bad, because Protocol Buffers contain some complexity that isn't useful for our use-case, such
   as affordances for backwards-compatibility.
 
-A similar set of considerations apply to other third-party serialization schems such as flatbuffers,
+A similar set of considerations apply to other third-party serialization schemes such as flatbuffers,
 with the added disadvantage of unfamiliarity.
 
 Ultimately, the additional build complexity of integrating a code-generator inside our own code generator
