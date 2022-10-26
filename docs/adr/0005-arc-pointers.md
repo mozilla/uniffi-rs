@@ -48,7 +48,7 @@ lifetimes, so that references to structs can be used more widely than currently 
   should be impossible to misuse the generated bindings in a way that triggers
   Rust's "undefined behavior" or otherwise defeats Rust's safety
   characteristics and ownership model (and in particular, avoiding things like
-  use-after-free issues)
+  use-after-free issues).
 
 * We would like to keep the overhead of UniFFI as small as possible so that it
   is a viable solution to more use-cases.
