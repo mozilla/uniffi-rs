@@ -37,7 +37,7 @@ generic "Threadsafe".
   them `Send+Sync`. We consider this a "foot-gun" as it may lead to accidentally
   having method calls unexpectedly block for long periods, such as
   [this Fenix bug](https://github.com/mozilla-mobile/fenix/issues/17086)
-  (with more details available in [this JIRA ticket](https://jira.mozilla.com/browse/SDK-157).)
+  (with more details available in [this JIRA ticket](https://jira.mozilla.com/browse/SDK-157)).
 
 * Supporting such structs will hinder uniffi growing in directions that we've
   found are desired in practice, such as allowing structs to use [alternative
