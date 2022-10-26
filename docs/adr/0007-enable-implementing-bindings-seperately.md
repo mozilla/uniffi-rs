@@ -85,7 +85,7 @@ The trait would have the following:
 
 See [PR 1201](https://github.com/mozilla/uniffi-rs/pull/1201) for implementation of the above changes.
 
-### Expose fixtures for testings
+### Expose fixtures for testing
 To enable external binding generators to implement tests, we would publish our fixtures and a new `uniffi_testing` crate that is a helper for consumers to build and consume the fixture crates.
 
 See [PR 1206](https://github.com/mozilla/uniffi-rs/pull/1206) for implementation of the testing changes.
