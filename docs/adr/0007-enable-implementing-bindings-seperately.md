@@ -54,14 +54,14 @@ This ADR proposes enabling third-party crates to implement binding generators, a
 * Good, because ownership will be clear, and members of the community can opt to maintain their own binding generators.
 * Good, because our CI would only need to test the core bindings we maintain, and others can be tested by their own maintainers (for example, a `gecko-js` binding generator should be tested in `mozilla-central` and not here).
 * Good, because a release in external bindings wouldn't have an impact on any internal ones unless it changes internal `uniffi` behavior.
-* Bad, because it's easier to accidentally have a version mismatch. (see [this ADR](https://github.com/mozilla/uniffi-rs/pull/1203)).
+* Bad, because it's easier to accidentally have a version mismatch. (see [this ADR](https://github.com/mozilla/uniffi-rs/pull/1203))
 * Bad, because testability increases in complexity. We are required to publish fixtures and examples we have. (see [PR 1206](https://github.com/mozilla/uniffi-rs/pull/1206))
 
 Overall this option is preferred because:
 
 - It's a requirement to implement bindings for gecko-js, which can't be tested end-to-end without a complex build system.
 - It creates the possibility of community contributors writing and maintaining their own binding generators in their own repositories.
-- The increased risk of version mismatch can be dealt with (see [this ADR](https://github.com/mozilla/uniffi-rs/pull/1203)).
+- The increased risk of version mismatch can be dealt with. (see [this ADR](https://github.com/mozilla/uniffi-rs/pull/1203))
 
 
 ## Decision Outcome
