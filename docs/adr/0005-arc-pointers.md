@@ -159,7 +159,7 @@ We may reconsider this decision if future profiling shows the use of stdlib `Arc
 
 ## Links
 
-* Thom discusses this a but in [this issue](https://github.com/mozilla/uniffi-rs/issues/244)
+* Thom discusses this a bit in [this issue](https://github.com/mozilla/uniffi-rs/issues/244)
   and agrees with the assertion that raw pointer make sense when all
   the relevant code is generated.
 
