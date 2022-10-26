@@ -88,7 +88,7 @@ This decision is taken because:
   `HandleMap`s offer. Ultimately we'd just end up reimplementing `Arc<>` anyway,
   and the one in the stdlib is far more likely to be correct.
 
-* There are useability and familiarity benefits to using the stdlib `Arc<>` rather
+* There are usability and familiarity benefits to using the stdlib `Arc<>` rather
   than a special-purpose container like `triomphe::Arc`, and the way we currently
   do codegen means we're unlikely to notice any potential performance improvements
   from using a more specialized type.
