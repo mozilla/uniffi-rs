@@ -161,7 +161,7 @@ impl Object {
         self.ffi_func_free.name = format!("ffi_{ci_prefix}_{}_object_free", self.name);
         self.ffi_func_free.arguments = vec![FFIArgument {
             name: "ptr".to_string(),
-            type_: FFIType::RustArcPtr(self.name().to_string()),
+            type_: FFIType::RustArcPtrUnsafe(self.name().to_string()),
         }];
         self.ffi_func_free.return_type = None;
         for cons in self.constructors.iter_mut() {
