@@ -68,7 +68,7 @@ be justified.
 
 ### Positive Consequences
 
-* The locking in all uniffi supported component will more easily
+* The locking in all uniffi supported components will be more easily
   discoverable - it will be in hand-written rust code and not hidden inside
   generated code. This is a benefit to the developers of the uniffi supported
   component rather than to the consumers of it; while we are considering other
