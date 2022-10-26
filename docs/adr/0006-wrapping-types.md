@@ -67,7 +67,7 @@ Chosen option:
 
 This decision is taken because:
 
-* It's was relatively easy to implement wrapper types by allowing the external
+* It was relatively easy to implement wrapper types by allowing the external
   crates to add custom scaffolding code.  This code could wrap primitive types
   because all lifting/lowering/reading/writing was handled by Rust code.  If we
   had gone with option 1, then the wrapping code would need to hook into the
