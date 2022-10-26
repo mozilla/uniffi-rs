@@ -63,7 +63,7 @@ code will be allowed to contain inefficiencies and limitations that hand-written
 on the premise that our first consumers are not very performance-sensitive, and that there is a lot of scope for
 improving these implementation details over time.
 
-We are likely to ***revisit every single one of these chocies*** if the MVP of the tool proves successful,
+We are likely to ***revisit every single one of these choices*** if the MVP of the tool proves successful,
 and will attempt to build it in such a what that they're easy to revisit.
 
 ## Pros and Cons of the Options
@@ -93,7 +93,7 @@ using our own custom variant of an IDL syntax.
 * Good, because the syntax can be custom designed to fit well with the developer's mental
   model of the generated code.
 * Good, because we already have several different IDL variants in use at Mozilla (WebIDL, XPIDL),
-  so our changes of building something that feels familiar are high.
+  so our chances of building something that feels familiar are high.
 * Bad, because developers will need to duplicate their API, once in the Rust code and once in the IDL.
 * Bad, because we have to make up and document a whole syntax.
 * Bad, because rust parsing crates such as `nom` do not seem to generate particularly helpful error messages
@@ -148,7 +148,7 @@ tool that integrates it with `cargo build` for convenience.
 ### Option F: Go broad, implementing many data types and API capabilities, even if they're slow or incomplete.
 
 We can focus our initial efforts on fleshing out a broad suite of data types and API capabilities,
-spending less time focussed on performance or edge-cases in the generated code.
+spending less time focused on performance or edge-cases in the generated code.
 
 * Good, because consumers can iterate their API with less chance of being limited by the tool.
 * Good, because it makes more opportunities for team members to get involved in implementing features
