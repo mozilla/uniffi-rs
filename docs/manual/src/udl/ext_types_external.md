@@ -39,8 +39,8 @@ Inside `consuming-crate`'s Rust code you must `use` that struct as normal - for 
 use demo_crate::DemoDict;
 
 pub struct ConsumingDict {
-    demo_dict: DemoDict;
-    another_bool: bool;
+    demo_dict: DemoDict,
+    another_bool: bool,
 }
 
 include!(concat!(env!("OUT_DIR"), "/consuming_crate.uniffi.rs"));
