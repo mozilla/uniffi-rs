@@ -8,8 +8,8 @@ that you have an existing crate named `demo_crate` with the following UDL:
 
 ```idl
 dictionary DemoDict {
-  string string_val,
-  boolean bool_val,
+  string string_val;
+  boolean bool_val;
 };
 ```
 
@@ -23,8 +23,8 @@ typedef extern DemoDict;
 
 // Now define our own dictionary which references the imported type.
 dictionary ConsumingDict {
-  DemoDict demo_dict,
-  boolean another_bool,
+  DemoDict demo_dict;
+  boolean another_bool;
 };
 
 ```
@@ -39,8 +39,8 @@ Inside `consuming-crate`'s Rust code you must `use` that struct as normal - for 
 use demo_crate::DemoDict;
 
 pub struct ConsumingDict {
-    demo_dict: DemoDict,
-    another_bool: bool,
+    demo_dict: DemoDict;
+    another_bool: bool;
 }
 
 include!(concat!(env!("OUT_DIR"), "/consuming_crate.uniffi.rs"));
