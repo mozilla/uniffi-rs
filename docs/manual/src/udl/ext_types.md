@@ -7,7 +7,7 @@ UniFFI supports referring to types defined outside of the UDL file. These types 
 either:
 
 1) A locally defined type which [wraps a UniFFI primitive type](./custom_types.md).
-2) A "UniFFI compatible" type [in another crate](./ext_types_external.md)
+2) A "UniFFI compatible" type [in another crate](./ext_types_external.md).
 
 Specifically, "UniFFI compatible" means either a type defined in `udl` in an external crate, or
 a type defined in another crate that satisfies (1).
