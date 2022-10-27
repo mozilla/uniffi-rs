@@ -5,7 +5,7 @@ Callback interfaces are traits specified in UDL which can be implemented by fore
 They can provide Rust code access available to the host language, but not easily replicated
 in Rust.
 
- * accessing device APIs
+ * accessing device APIs.
  * provide glue to clip together Rust components at runtime.
  * access shared resources and assets bundled with the app.
 
