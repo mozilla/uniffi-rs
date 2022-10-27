@@ -33,14 +33,14 @@ public typealias {{ name }} = {{ concrete_type_name }}
 fileprivate struct FfiConverterType{{ name }} {
     {#- Custom type config supplied, use it to convert the builtin type #}
 
-    static func read(from buf: Reader) throws -> {{ name }} {
-        let builtinValue = try {{ builtin|read_fn }}(from: buf)
+    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ name }} {
+        let builtinValue = try {{ builtin|read_fn }}(from: &buf)
         return {{ config.into_custom.render("builtinValue") }}
     }
 
-    static func write(_ value: {{ name }}, into buf: Writer) {
+    static func write(_ value: {{ name }}, into buf: inout [UInt8]) {
         let builtinValue = {{ config.from_custom.render("value") }}
-        return {{ builtin|write_fn }}(builtinValue, into: buf)
+        return {{ builtin|write_fn }}(builtinValue, into: &buf)
     }
 
     static func lift(_ value: {{ ffi_type_name }}) throws -> {{ name }} {

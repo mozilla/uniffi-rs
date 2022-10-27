@@ -61,8 +61,8 @@ fileprivate struct {{ ffi_converter_name }}: FfiConverter {
     typealias FfiType = UnsafeMutableRawPointer
     typealias SwiftType = {{ type_name }}
 
-    static func read(from buf: Reader) throws -> {{ type_name }} {
-        let v: UInt64 = try buf.readInt()
+    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
+        let v: UInt64 = try readInt(&buf)
         // The Rust code won't compile if a pointer won't fit in a UInt64.
         // We have to go via `UInt` because that's the thing that's the size of a pointer.
         let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: v))
@@ -72,10 +72,10 @@ fileprivate struct {{ ffi_converter_name }}: FfiConverter {
         return try lift(ptr!)
     }
 
-    static func write(_ value: {{ type_name }}, into buf: Writer) {
+    static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
         // This fiddling is because `Int` is the thing that's the same size as a pointer.
         // The Rust code won't compile if a pointer won't fit in a `UInt64`.
-        buf.writeInt(UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
+        writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
     }
 
     static func lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {

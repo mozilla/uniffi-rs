@@ -26,12 +26,12 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
             {%- if meth.arguments().len() != 0 -%}
             {#- Calling the concrete callback object #}
 
-            let reader = Reader(data: Data(rustBuffer: args))
+            var reader = createReader(data: Data(rustBuffer: args))
             {% if meth.return_type().is_some() %}let result = {% endif -%}
             {% if meth.throws() %}try {% endif -%}
             swiftCallbackInterface.{{ meth.name()|fn_name }}(
                     {% for arg in meth.arguments() -%}
-                    {% if !config.omit_argument_labels() %}{{ arg.name()|var_name }}: {% endif %} try {{ arg|read_fn }}(from: reader)
+                    {% if !config.omit_argument_labels() %}{{ arg.name()|var_name }}: {% endif %} try {{ arg|read_fn }}(from: &reader)
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
@@ -44,9 +44,9 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
         {#- Packing up the return value into a RustBuffer #}
                 {%- match meth.return_type() -%}
                 {%- when Some with (return_type) -%}
-                let writer = Writer()
-                {{ return_type|write_fn }}(result, into: writer)
-                return RustBuffer(bytes: writer.bytes)
+                var writer = [UInt8]()
+                {{ return_type|write_fn }}(result, into: &writer)
+                return RustBuffer(bytes: writer)
                 {%- else -%}
                 return RustBuffer()
                 {% endmatch -%}
@@ -136,9 +136,9 @@ extension {{ ffi_converter_name }} : FfiConverter {
         return callback
     }
 
-    static func read(from buf: Reader) throws -> SwiftType {
+    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
         ensureCallbackinitialized();
-        let handle: Handle = try buf.readInt()
+        let handle: Handle = try readInt(&buf)
         return try lift(handle)
     }
 
@@ -147,8 +147,8 @@ extension {{ ffi_converter_name }} : FfiConverter {
         return handleMap.insert(obj: v)
     }
 
-    static func write(_ v: SwiftType, into buf: Writer) {
+    static func write(_ v: SwiftType, into buf: inout [UInt8]) {
         ensureCallbackinitialized();
-        buf.writeInt(lower(v))
+        writeInt(&buf, lower(v))
     }
 }
