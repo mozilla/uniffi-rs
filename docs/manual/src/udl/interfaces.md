@@ -14,7 +14,7 @@ struct TodoList {
 impl TodoList {
     fn new() -> Self {
         TodoList {
-            items: RwLock::<Vec::new())
+            items: RwLock::new(Vec::new())
         }
     }
 
