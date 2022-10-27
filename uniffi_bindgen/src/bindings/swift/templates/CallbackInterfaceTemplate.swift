@@ -16,7 +16,7 @@ public protocol {{ type_name }} : AnyObject {
 
 // The ForeignCallback that is passed to Rust.
 fileprivate let {{ foreign_callback }} : ForeignCallback =
-    { (handle: Handle, method: Int32, args: RustBuffer, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
+    { (handle: UniFFICallbackHandle, method: Int32, args: RustBuffer, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
         {% for meth in cbi.methods() -%}
     {%- let method_name = format!("invoke_{}", meth.name())|fn_name -%}
 
@@ -116,19 +116,19 @@ fileprivate struct {{ ffi_converter_name }} {
         }
     }
 
-    static func drop(handle: Handle) {
+    static func drop(handle: UniFFICallbackHandle) {
         handleMap.remove(handle: handle)
     }
 
-    private static var handleMap = ConcurrentHandleMap<{{ type_name }}>()
+    private static var handleMap = UniFFICallbackHandleMap<{{ type_name }}>()
 }
 
 extension {{ ffi_converter_name }} : FfiConverter {
     typealias SwiftType = {{ type_name }}
     // We can use Handle as the FFIType because it's a typealias to UInt64
-    typealias FfiType = Handle
+    typealias FfiType = UniFFICallbackHandle
 
-    static func lift(_ handle: Handle) throws -> SwiftType {
+    static func lift(_ handle: UniFFICallbackHandle) throws -> SwiftType {
         ensureCallbackinitialized();
         guard let callback = handleMap.get(handle: handle) else {
             throw UniffiInternalError.unexpectedStaleHandle
@@ -138,11 +138,11 @@ extension {{ ffi_converter_name }} : FfiConverter {
 
     static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
         ensureCallbackinitialized();
-        let handle: Handle = try readInt(&buf)
+        let handle: UniFFICallbackHandle = try readInt(&buf)
         return try lift(handle)
     }
 
-    static func lower(_ v: SwiftType) -> Handle {
+    static func lower(_ v: SwiftType) -> UniFFICallbackHandle {
         ensureCallbackinitialized();
         return handleMap.insert(obj: v)
     }
