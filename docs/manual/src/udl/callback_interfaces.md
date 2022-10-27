@@ -11,7 +11,7 @@ in Rust.
 
 # Using callback interfaces
 
-## 1. Define a Rust trait.
+## 1. Define a Rust trait
 
 This toy example defines a way of Rust accessing a key-value store exposed
 by the host operating system (e.g. the key chain).
@@ -57,7 +57,7 @@ uses `uniffi::UnexpectedUniFFICallbackError` for these cases.  Your code must in
 the UniFFI scaffolding code will fail to compile.  See `example/callbacks` for an
 example of how to do this.
 
-## 3. Define a callback interface in the UDL.
+## 3. Define a callback interface in the UDL
 
 ```webidl
 callback interface Keychain {
@@ -69,7 +69,7 @@ callback interface Keychain {
 };
 ```
 
-## 4. And allow it to be passed into Rust.
+## 4. And allow it to be passed into Rust
 
 Here, we define a constructor to pass the keychain to rust, and then another method
 which may use it.
@@ -101,7 +101,7 @@ impl Authenticator {
 }
 ```
 
-## 5. Create an foreign language implementation of the callback interface.
+## 5. Create an foreign language implementation of the callback interface
 
 In this example, here's a Kotlin implementation.
 
@@ -133,7 +133,7 @@ class SwiftKeychain: Keychain {
 
 Note: in Swift, this must be a `class`.
 
-## 6. Pass the implementation to Rust.
+## 6. Pass the implementation to Rust
 
 Again, in Kotlin
 
