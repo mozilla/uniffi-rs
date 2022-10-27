@@ -3,7 +3,7 @@
 *Note: The facility described in this document is not yet available for all foreign language
 bindings.*
 
-UniFFI supports refering to types defined outside of the UDL file. These types must be
+UniFFI supports referring to types defined outside of the UDL file. These types must be
 either:
 
 1) A locally defined type which [wraps a UniFFI primitive type](./custom_types.md).
