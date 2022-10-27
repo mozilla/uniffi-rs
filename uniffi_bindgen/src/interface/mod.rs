@@ -51,7 +51,7 @@ use std::{
     iter,
 };
 
-use anyhow::{bail, Result};
+use anyhow::{bail, ensure, Result};
 
 pub mod types;
 pub use types::Type;
@@ -684,6 +684,7 @@ impl ComponentInterface {
         if self.namespace.is_empty() {
             bail!("missing namespace definition");
         }
+
         // To keep codegen tractable, enum variant names must not shadow type names.
         for e in self.enums.values() {
             for variant in &e.variants {
@@ -697,8 +698,29 @@ impl ComponentInterface {
         }
 
         for ty in self.iter_types() {
-            if let Type::Unresolved { name } = ty {
-                bail!("Type `{name}` should be resolved at this point");
+            match ty {
+                Type::Object(name) => {
+                    ensure!(
+                        self.objects.iter().any(|o| o.name == *name),
+                        "Object `{name}` has no definition",
+                    );
+                }
+                Type::Record(name) => {
+                    ensure!(
+                        self.records.contains_key(name),
+                        "Record `{name}` has no definition",
+                    );
+                }
+                Type::Enum(name) => {
+                    ensure!(
+                        self.enums.contains_key(name),
+                        "Enum `{name}` has no definition",
+                    );
+                }
+                Type::Unresolved { name } => {
+                    bail!("Type `{name}` should be resolved at this point");
+                }
+                _ => {}
             }
         }
 
