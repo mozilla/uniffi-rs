@@ -85,7 +85,6 @@
 {%- when Type::Map(key_type, value_type) %}
 {%- include "MapTemplate.swift" %}
 
-
 {%- else %}
 {%- endmatch %}
 {%- endfor %}

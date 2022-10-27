@@ -16,8 +16,11 @@ use std::{
     process::{Command, Stdio},
 };
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct UniFFITestingMetadata {
+    /// Crates that hold external types used by this crate.  When running the tests, we will build
+    /// the libraries and generate the source files for those crates and put them in the test
+    /// directory
     #[serde(rename = "external-crates")]
     external_crates: Option<Vec<String>>,
 }
@@ -188,8 +191,18 @@ impl UniFFITestHelper {
 
     /// Get paths to the UDL and config files for a fixture
     pub fn get_compile_sources(&self) -> Result<Vec<CompileSource>> {
-        std::iter::once(self.package.clone())
-            .chain(self.find_packages_for_external_crates()?)
+        Ok(std::iter::once(self.get_main_compile_source()?)
+            .chain(self.get_external_compile_sources()?)
+            .collect())
+    }
+
+    pub fn get_main_compile_source(&self) -> Result<CompileSource> {
+        self.find_compile_source(&self.package.clone())
+    }
+
+    pub fn get_external_compile_sources(&self) -> Result<Vec<CompileSource>> {
+        self.find_packages_for_external_crates()?
+            .into_iter()
             .map(|p| self.find_compile_source(&p))
             .collect()
     }

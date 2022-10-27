@@ -49,3 +49,30 @@ include!(concat!(env!("OUT_DIR"), "/consuming_crate.uniffi.rs"));
 Your `Cargo.toml` must reference the external crate as normal.
 
 The `External` attribute can be specified on dictionaries, enums and errors.
+
+## Foreign bindings
+
+The foreign bindings will also need to know how to access the external type,
+which varies slightly for each language:
+
+### Kotlin
+
+For Kotlin, the generated code needs to import the external types from the
+Kotlin module that corresponds to the Rust crate.  By default, UniFFI assumes
+that the Kotlin module name matches the Rust crate name, but this can be
+configured in `uniffi.toml` with an entry like this:
+
+```
+[bindings.kotlin.external_packages]
+# Map the crate names from [External={name}] into Kotlin package names
+rust-crate-name = "kotlin.package.name"
+```
+
+See the [`ext-types` fixture](https://github.com/mozilla/uniffi-rs/blob/main/fixtures/ext-types/lib/uniffi.toml)
+for an example
+
+### Swift
+
+For Swift, you must compile all generated `.swift` files together in a single
+module since the generate code expects that it can access external types
+without importing them.

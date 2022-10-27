@@ -1,13 +1,13 @@
 fileprivate struct FfiConverterDuration: FfiConverterRustBuffer {
     typealias SwiftType = TimeInterval
 
-    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TimeInterval {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TimeInterval {
         let seconds: UInt64 = try readInt(&buf)
         let nanoseconds: UInt32 = try readInt(&buf)
         return Double(seconds) + (Double(nanoseconds) / 1.0e9)
     }
 
-    static func write(_ value: TimeInterval, into buf: inout [UInt8]) {
+    public static func write(_ value: TimeInterval, into buf: inout [UInt8]) {
         if value.rounded(.down) > Double(Int64.max) {
             fatalError("Duration overflow, exceeds max bounds supported by Uniffi")
         }

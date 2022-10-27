@@ -7,10 +7,10 @@ public enum {{ type_name }} {
     {% endfor %}
 }
 
-fileprivate struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
+public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     typealias SwiftType = {{ type_name }}
 
-    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         {% for variant in e.variants() %}
@@ -25,7 +25,7 @@ fileprivate struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         }
     }
 
-    static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
+    public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
         switch value {
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}

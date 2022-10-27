@@ -59,7 +59,6 @@ pub fn mod_path() -> syn::Result<Vec<String>> {
 #[cfg(feature = "nightly")]
 pub fn mod_path() -> syn::Result<Vec<String>> {
     use proc_macro::TokenStream;
-    use quote::quote;
 
     let module_path_invoc = TokenStream::from(quote! { ::core::module_path!() });
     // We ask the compiler what `module_path!()` expands to here.

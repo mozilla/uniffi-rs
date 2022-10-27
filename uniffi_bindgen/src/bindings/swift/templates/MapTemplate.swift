@@ -1,5 +1,5 @@
 fileprivate struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
-    fileprivate static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
+    public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
         let len = Int32(value.count)
         writeInt(&buf, len)
         for (key, value) in value {
@@ -8,7 +8,7 @@ fileprivate struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         }
     }
 
-    fileprivate static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
         let len: Int32 = try readInt(&buf)
         var dict = {{ type_name }}()
         dict.reserveCapacity(Int(len))
