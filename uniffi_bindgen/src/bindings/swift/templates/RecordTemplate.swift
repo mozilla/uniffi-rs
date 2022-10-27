@@ -33,18 +33,18 @@ extension {{ type_name }}: Equatable, Hashable {
 {% endif %}
 
 fileprivate struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
-    fileprivate static func read(from buf: Reader) throws -> {{ type_name }} {
+    fileprivate static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
         return try {{ type_name }}(
             {%- for field in rec.fields() %}
-            {{ field.name()|var_name }}: {{ field|read_fn }}(from: buf)
+            {{ field.name()|var_name }}: {{ field|read_fn }}(from: &buf)
             {%- if !loop.last %}, {% endif %}
             {%- endfor %}
         )
     }
 
-    fileprivate static func write(_ value: {{ type_name }}, into buf: Writer) {
+    fileprivate static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
         {%- for field in rec.fields() %}
-        {{ field|write_fn }}(value.{{ field.name()|var_name }}, into: buf)
+        {{ field|write_fn }}(value.{{ field.name()|var_name }}, into: &buf)
         {%- endfor %}
     }
 }
