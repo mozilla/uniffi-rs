@@ -21,6 +21,7 @@ mod compounds;
 mod custom;
 mod enum_;
 mod error;
+mod external;
 mod miscellany;
 mod object;
 mod primitives;
@@ -323,7 +324,7 @@ impl SwiftCodeOracle {
             Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
             Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
-            Type::External { .. } => panic!("no support for external types yet"),
+            Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
             Type::Unresolved { name } => {
                 unreachable!("Type `{name}` must be resolved before calling create_code_type")
