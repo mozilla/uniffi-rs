@@ -357,10 +357,10 @@ local checkout of <code>uniffi_build</code> <em>and</em> enable the <code>builti
 </ul>
 <p>For example, you will probably end up with Cargo.toml looking something like:</p>
 <pre><code class="language-toml">[dependencies]
-uniffi = { path = &quot;path/to/uniffi-rs/uniffi }
+uniffi = { path = &quot;path/to/uniffi-rs/uniffi&quot; }
 ...
 [build-dependencies]
-uniffi_build = { path = &quot;path/to/uniffi-rs/uniffi_build, features=[&quot;builtin-bindgen&quot;] }
+uniffi_build = { path = &quot;path/to/uniffi-rs/uniffi_build&quot;, features=[&quot;builtin-bindgen&quot;] }
 </code></pre>
 <p>Note that <code>path/to/uniffi-rs</code> should be the path to the root of the <code>uniffi</code>
 source tree - ie, the 2 path specs above point to different sub-directories
