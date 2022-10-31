@@ -164,12 +164,12 @@
 <p>They can provide Rust code access available to the host language, but not easily replicated
 in Rust.</p>
 <ul>
-<li>accessing device APIs</li>
+<li>accessing device APIs.</li>
 <li>provide glue to clip together Rust components at runtime.</li>
 <li>access shared resources and assets bundled with the app.</li>
 </ul>
 <h1><a class="header" href="#using-callback-interfaces" id="using-callback-interfaces">Using callback interfaces</a></h1>
-<h2><a class="header" href="#1-define-a-rust-trait" id="1-define-a-rust-trait">1. Define a Rust trait.</a></h2>
+<h2><a class="header" href="#1-define-a-rust-trait" id="1-define-a-rust-trait">1. Define a Rust trait</a></h2>
 <p>This toy example defines a way of Rust accessing a key-value store exposed
 by the host operating system (e.g. the key chain).</p>
 <pre><pre class="playground"><code class="language-rust no_run">
@@ -208,7 +208,7 @@ uses <code>uniffi::UnexpectedUniFFICallbackError</code> for these cases.  Your c
 <code>From&lt;uniffi::UnexpectedUniFFICallbackError&gt;</code> impl for your error type to handle those or
 the UniFFI scaffolding code will fail to compile.  See <code>example/callbacks</code> for an
 example of how to do this.</p>
-<h2><a class="header" href="#3-define-a-callback-interface-in-the-udl" id="3-define-a-callback-interface-in-the-udl">3. Define a callback interface in the UDL.</a></h2>
+<h2><a class="header" href="#3-define-a-callback-interface-in-the-udl" id="3-define-a-callback-interface-in-the-udl">3. Define a callback interface in the UDL</a></h2>
 <pre><code class="language-webidl">callback interface Keychain {
     [Throws=KeyChainError]
     string? get(string key);
@@ -217,7 +217,7 @@ example of how to do this.</p>
     void put(string key, string data);
 };
 </code></pre>
-<h2><a class="header" href="#4-and-allow-it-to-be-passed-into-rust" id="4-and-allow-it-to-be-passed-into-rust">4. And allow it to be passed into Rust.</a></h2>
+<h2><a class="header" href="#4-and-allow-it-to-be-passed-into-rust" id="4-and-allow-it-to-be-passed-into-rust">4. And allow it to be passed into Rust</a></h2>
 <p>Here, we define a constructor to pass the keychain to rust, and then another method
 which may use it.</p>
 <p>In UDL:</p>
@@ -245,7 +245,7 @@ impl Authenticator {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<h2><a class="header" href="#5-create-an-foreign-language-implementation-of-the-callback-interface" id="5-create-an-foreign-language-implementation-of-the-callback-interface">5. Create an foreign language implementation of the callback interface.</a></h2>
+<h2><a class="header" href="#5-create-an-foreign-language-implementation-of-the-callback-interface" id="5-create-an-foreign-language-implementation-of-the-callback-interface">5. Create an foreign language implementation of the callback interface</a></h2>
 <p>In this example, here's a Kotlin implementation.</p>
 <pre><code class="language-kotlin">class KotlinKeychain: Keychain {
     override fun get(key: String): String? {
@@ -269,7 +269,7 @@ impl Authenticator {
 }
 </code></pre>
 <p>Note: in Swift, this must be a <code>class</code>.</p>
-<h2><a class="header" href="#6-pass-the-implementation-to-rust" id="6-pass-the-implementation-to-rust">6. Pass the implementation to Rust.</a></h2>
+<h2><a class="header" href="#6-pass-the-implementation-to-rust" id="6-pass-the-implementation-to-rust">6. Pass the implementation to Rust</a></h2>
 <p>Again, in Kotlin</p>
 <pre><code class="language-kt">val authenticator = Authenticator(KotlinKeychain())
 // later on:

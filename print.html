@@ -689,7 +689,7 @@ interface ArithmeticError {
 impl TodoList {
     fn new() -&gt; Self {
         TodoList {
-            items: RwLock::&lt;Vec::new())
+            items: RwLock::new(Vec::new())
         }
     }
 
@@ -745,7 +745,7 @@ must be given an explicit name, provided in the UDL with the <code>[Name]</code>
     constructor();
     // This alternate constructor makes a new TodoList from a list of string items.
     [Name=new_from_items]
-    constructor(sequence&lt;string&gt; items)
+    constructor(sequence&lt;string&gt; items);
     ...
 </code></pre>
 <p>For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
@@ -946,12 +946,12 @@ impl Counter {
 <p>They can provide Rust code access available to the host language, but not easily replicated
 in Rust.</p>
 <ul>
-<li>accessing device APIs</li>
+<li>accessing device APIs.</li>
 <li>provide glue to clip together Rust components at runtime.</li>
 <li>access shared resources and assets bundled with the app.</li>
 </ul>
 <h1><a class="header" href="#using-callback-interfaces" id="using-callback-interfaces">Using callback interfaces</a></h1>
-<h2><a class="header" href="#1-define-a-rust-trait" id="1-define-a-rust-trait">1. Define a Rust trait.</a></h2>
+<h2><a class="header" href="#1-define-a-rust-trait" id="1-define-a-rust-trait">1. Define a Rust trait</a></h2>
 <p>This toy example defines a way of Rust accessing a key-value store exposed
 by the host operating system (e.g. the key chain).</p>
 <pre><pre class="playground"><code class="language-rust no_run">
@@ -990,7 +990,7 @@ uses <code>uniffi::UnexpectedUniFFICallbackError</code> for these cases.  Your c
 <code>From&lt;uniffi::UnexpectedUniFFICallbackError&gt;</code> impl for your error type to handle those or
 the UniFFI scaffolding code will fail to compile.  See <code>example/callbacks</code> for an
 example of how to do this.</p>
-<h2><a class="header" href="#3-define-a-callback-interface-in-the-udl" id="3-define-a-callback-interface-in-the-udl">3. Define a callback interface in the UDL.</a></h2>
+<h2><a class="header" href="#3-define-a-callback-interface-in-the-udl" id="3-define-a-callback-interface-in-the-udl">3. Define a callback interface in the UDL</a></h2>
 <pre><code class="language-webidl">callback interface Keychain {
     [Throws=KeyChainError]
     string? get(string key);
@@ -999,7 +999,7 @@ example of how to do this.</p>
     void put(string key, string data);
 };
 </code></pre>
-<h2><a class="header" href="#4-and-allow-it-to-be-passed-into-rust" id="4-and-allow-it-to-be-passed-into-rust">4. And allow it to be passed into Rust.</a></h2>
+<h2><a class="header" href="#4-and-allow-it-to-be-passed-into-rust" id="4-and-allow-it-to-be-passed-into-rust">4. And allow it to be passed into Rust</a></h2>
 <p>Here, we define a constructor to pass the keychain to rust, and then another method
 which may use it.</p>
 <p>In UDL:</p>
@@ -1027,7 +1027,7 @@ impl Authenticator {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<h2><a class="header" href="#5-create-an-foreign-language-implementation-of-the-callback-interface" id="5-create-an-foreign-language-implementation-of-the-callback-interface">5. Create an foreign language implementation of the callback interface.</a></h2>
+<h2><a class="header" href="#5-create-an-foreign-language-implementation-of-the-callback-interface" id="5-create-an-foreign-language-implementation-of-the-callback-interface">5. Create an foreign language implementation of the callback interface</a></h2>
 <p>In this example, here's a Kotlin implementation.</p>
 <pre><code class="language-kotlin">class KotlinKeychain: Keychain {
     override fun get(key: String): String? {
@@ -1051,7 +1051,7 @@ impl Authenticator {
 }
 </code></pre>
 <p>Note: in Swift, this must be a <code>class</code>.</p>
-<h2><a class="header" href="#6-pass-the-implementation-to-rust" id="6-pass-the-implementation-to-rust">6. Pass the implementation to Rust.</a></h2>
+<h2><a class="header" href="#6-pass-the-implementation-to-rust" id="6-pass-the-implementation-to-rust">6. Pass the implementation to Rust</a></h2>
 <p>Again, in Kotlin</p>
 <pre><code class="language-kt">val authenticator = Authenticator(KotlinKeychain())
 // later on:
@@ -1080,11 +1080,11 @@ Alternatively, ensure that the number of objects that can ever be created is bou
 <h1><a class="header" href="#external-types" id="external-types">External types</a></h1>
 <p><em>Note: The facility described in this document is not yet available for all foreign language
 bindings.</em></p>
-<p>UniFFI supports refering to types defined outside of the UDL file. These types must be
+<p>UniFFI supports referring to types defined outside of the UDL file. These types must be
 either:</p>
 <ol>
 <li>A locally defined type which <a href="udl/./custom_types.html">wraps a UniFFI primitive type</a>.</li>
-<li>A &quot;UniFFI compatible&quot; type <a href="udl/./ext_types_external.html">in another crate</a></li>
+<li>A &quot;UniFFI compatible&quot; type <a href="udl/./ext_types_external.html">in another crate</a>.</li>
 </ol>
 <p>Specifically, &quot;UniFFI compatible&quot; means either a type defined in <code>udl</code> in an external crate, or
 a type defined in another crate that satisfies (1).</p>
@@ -1096,8 +1096,8 @@ bindings.</em></p>
 <p>It is possible to use types defined by UniFFI in an external crate. For example, let's assume
 that you have an existing crate named <code>demo_crate</code> with the following UDL:</p>
 <pre><code class="language-idl">dictionary DemoDict {
-  string string_val,
-  boolean bool_val,
+  string string_val;
+  boolean bool_val;
 };
 </code></pre>
 <p>And further, assume that you have another crate called <code>consuming-crate</code> which would like to use
@@ -1108,8 +1108,8 @@ typedef extern DemoDict;
 
 // Now define our own dictionary which references the imported type.
 dictionary ConsumingDict {
-  DemoDict demo_dict,
-  boolean another_bool,
+  DemoDict demo_dict;
+  boolean another_bool;
 };
 
 </code></pre>
@@ -1234,9 +1234,9 @@ impl UniffiCustomTypeConverter for ExampleHandle {
     type Builtin = i64;
 
     fn into_custom(val: Self::Builtin) -&gt; uniffi::Result&lt;Self&gt; {
-        if (val == 0) {
+        if val == 0 {
             Err(ExampleErrors::InvalidHandle.into())
-        else if (val == -1) {
+        else if val == -1 {
             Err(SomeOtherError.into()) // SomeOtherError decl. not shown.
         } else {
             Ok(Handle(val))
@@ -1584,7 +1584,7 @@ value to and from an appropriate type. For complex types such as optionals and
 records we currently implement lifting and lowering by serializing into a byte
 buffer, but this is an implementation detail that may change in future. (See
 <a href="internals//docs/adr/0002-serialize-complex-datatypes.html">ADR-0002</a> for the reasoning
-behind this choice).</p>
+behind this choice.)</p>
 <p>As a concrete example, consider this interface for accumulating a list of integers:</p>
 <pre><code class="language-idl">namespace example {
   sequence&lt;i32&gt; add_to_list(i32 item);

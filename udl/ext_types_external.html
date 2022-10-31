@@ -165,8 +165,8 @@ bindings.</em></p>
 <p>It is possible to use types defined by UniFFI in an external crate. For example, let's assume
 that you have an existing crate named <code>demo_crate</code> with the following UDL:</p>
 <pre><code class="language-idl">dictionary DemoDict {
-  string string_val,
-  boolean bool_val,
+  string string_val;
+  boolean bool_val;
 };
 </code></pre>
 <p>And further, assume that you have another crate called <code>consuming-crate</code> which would like to use
@@ -177,8 +177,8 @@ typedef extern DemoDict;
 
 // Now define our own dictionary which references the imported type.
 dictionary ConsumingDict {
-  DemoDict demo_dict,
-  boolean another_bool,
+  DemoDict demo_dict;
+  boolean another_bool;
 };
 
 </code></pre>

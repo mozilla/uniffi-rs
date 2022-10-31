@@ -173,7 +173,7 @@
 impl TodoList {
     fn new() -&gt; Self {
         TodoList {
-            items: RwLock::&lt;Vec::new())
+            items: RwLock::new(Vec::new())
         }
     }
 
@@ -229,7 +229,7 @@ must be given an explicit name, provided in the UDL with the <code>[Name]</code>
     constructor();
     // This alternate constructor makes a new TodoList from a list of string items.
     [Name=new_from_items]
-    constructor(sequence&lt;string&gt; items)
+    constructor(sequence&lt;string&gt; items);
     ...
 </code></pre>
 <p>For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar

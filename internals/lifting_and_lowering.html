@@ -175,7 +175,7 @@ value to and from an appropriate type. For complex types such as optionals and
 records we currently implement lifting and lowering by serializing into a byte
 buffer, but this is an implementation detail that may change in future. (See
 <a href="/docs/adr/0002-serialize-complex-datatypes.html">ADR-0002</a> for the reasoning
-behind this choice).</p>
+behind this choice.)</p>
 <p>As a concrete example, consider this interface for accumulating a list of integers:</p>
 <pre><code class="language-idl">namespace example {
   sequence&lt;i32&gt; add_to_list(i32 item);
