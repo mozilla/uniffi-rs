@@ -105,9 +105,9 @@ impl UniffiCustomTypeConverter for ExampleHandle {
     type Builtin = i64;
 
     fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        if (val == 0) {
+        if val == 0 {
             Err(ExampleErrors::InvalidHandle.into())
-        else if (val == -1) {
+        else if val == -1 {
             Err(SomeOtherError.into()) // SomeOtherError decl. not shown.
         } else {
             Ok(Handle(val))
