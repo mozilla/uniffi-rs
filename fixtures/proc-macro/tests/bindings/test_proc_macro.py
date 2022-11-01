@@ -10,5 +10,10 @@ assert one.inner == 123
 two = Two("a", None)
 assert take_two(two) == "a"
 
+obj = make_object()
+assert obj.is_heavy() == MaybeBool.UNCERTAIN
+
+assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
+
 # just make sure this works / doesn't crash
-three = Three(make_object())
+three = Three(obj)
