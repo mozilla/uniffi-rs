@@ -24,6 +24,13 @@ pub struct Three {
 pub struct Object;
 
 #[uniffi::export]
+impl Object {
+    fn is_heavy(&self) -> MaybeBool {
+        MaybeBool::Uncertain
+    }
+}
+
+#[uniffi::export]
 fn make_one(inner: i32) -> One {
     One { inner }
 }
@@ -38,8 +45,20 @@ fn make_object() -> Arc<Object> {
     Arc::new(Object)
 }
 
+#[derive(uniffi::Enum)]
+pub enum MaybeBool {
+    True,
+    False,
+    Uncertain,
+}
+
+#[uniffi::export]
+fn enum_identity(value: MaybeBool) -> MaybeBool {
+    value
+}
+
 include!(concat!(env!("OUT_DIR"), "/proc-macro.uniffi.rs"));
 
 mod uniffi_types {
-    pub use crate::{Object, One, Three, Two};
+    pub use crate::{MaybeBool, Object, One, Three, Two};
 }
