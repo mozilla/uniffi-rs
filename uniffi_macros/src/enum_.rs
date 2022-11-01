@@ -21,7 +21,7 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
             let write_match_arms = variants.iter().enumerate().map(|(i, v)| {
                 let v_ident = &v.ident;
                 let fields = v.fields.iter().map(|f| &f.ident);
-                let idx = Index::from(i);
+                let idx = Index::from(i + 1);
                 let write_fields = v.fields.iter().map(write_field);
 
                 quote! {
@@ -36,7 +36,7 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
             };
 
             let try_read_match_arms = variants.iter().enumerate().map(|(i, v)| {
-                let idx = Index::from(i);
+                let idx = Index::from(i + 1);
                 let v_ident = &v.ident;
                 let try_read_fields = v.fields.iter().map(try_read_field);
 
