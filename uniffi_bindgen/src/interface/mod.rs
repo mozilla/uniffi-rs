@@ -77,7 +77,7 @@ pub use record::{Field, Record};
 
 pub mod ffi;
 pub use ffi::{FFIArgument, FFIFunction, FFIType};
-use uniffi_meta::{MethodMetadata, ObjectMetadata};
+use uniffi_meta::{FnMetadata, MethodMetadata, ObjectMetadata};
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
@@ -123,7 +123,7 @@ impl ComponentInterface {
             bail!("parse error");
         }
         // Unconditionally add the String type, which is used by the panic handling
-        ci.types.add_known_type(&Type::String);
+        ci.types.add_known_type(&Type::String)?;
         // We process the WebIDL definitions in two passes.
         // First, go through and look for all the named types.
         ci.types.add_type_definitions_from(defns.as_slice())?;
@@ -544,15 +544,7 @@ impl ComponentInterface {
         Ok(())
     }
 
-    /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
-    pub(super) fn add_function_definition(&mut self, defn: Function) -> Result<()> {
-        for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_);
-        }
-        if let Some(ty) = &defn.return_type {
-            self.types.add_known_type(ty);
-        }
-
+    fn add_function_impl(&mut self, defn: Function) -> Result<()> {
         // Since functions are not a first-class type, we have to check for duplicates here
         // rather than relying on the type-finding pass to catch them.
         if self.functions.iter().any(|f| f.name == defn.name) {
@@ -562,19 +554,29 @@ impl ComponentInterface {
             bail!("Conflicting type definition for \"{}\"", defn.name());
         }
         self.functions.push(defn);
+
         Ok(())
     }
 
-    pub(super) fn add_method_definition(&mut self, meta: MethodMetadata) {
-        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
-
-        let defn: Method = meta.into();
+    /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
+    fn add_function_definition(&mut self, defn: Function) -> Result<()> {
         for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_);
+            self.types.add_known_type(&arg.type_)?;
         }
         if let Some(ty) = &defn.return_type {
-            self.types.add_known_type(ty);
+            self.types.add_known_type(ty)?;
         }
+
+        self.add_function_impl(defn)
+    }
+
+    pub(super) fn add_fn_meta(&mut self, meta: FnMetadata) -> Result<()> {
+        self.add_function_impl(meta.into())
+    }
+
+    pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) {
+        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
+        let defn: Method = meta.into();
         object.methods.push(defn);
     }
 
@@ -670,6 +672,11 @@ impl ComponentInterface {
                     None => bail!("Failed to resolve type `{unresolved_ty_name}`"),
                 }
             })?;
+
+            // The proc-macro scanning metadata code doesn't add known types
+            // when they could contain unresolved types, so we have to do it
+            // here after replacing unresolveds.
+            self.types.add_known_type(ty)?;
         }
 
         Ok(())
