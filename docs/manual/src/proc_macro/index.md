@@ -1,9 +1,9 @@
 # Experimental: Attributes and Derives
 
 UniFFI is in the process of having its interface definition mechanism rewritten to avoid the
-duplication of function signatures and type definitions between Rust code and the UDL file.
-The new interface definition mechanism is based on [Procedural Macros][] (proc-macros),
-specifically the attribute and derive macros.
+duplication of function signatures and type definitions between Rust code and the UDL file (and the
+possibility for the two to go out of sync). The new interface definition mechanism is based on
+[Procedural Macros][] (proc-macros), specifically the attribute and derive macros.
 
 This rewrite is not yet complete, but can already have UniFFI extract some kinds of definitions out
 of your Rust code, in addition to what is declared in the UDL file. However, you have to make sure
@@ -52,6 +52,10 @@ User-defined types are also supported in a limited manner: records (structs with
 their definition. Opaque objects (`interface` in UDL) can always be used regardless of whether they
 are defined in UDL and / or via derive macro; they just need to be put inside an `Arc` as always.
 
+User-defined types also have to be (re-)exported from a module called `uniffi_types` at the crate
+root. This is required to ensure that a given type name always means the same thing across all uses
+of `#[uniffi::export]` across the whole module tree.
+
 ## The `uniffi::Record` derive
 
 The `Record` derive macro exposes a `struct` with named fields over FFI. All types that are
@@ -63,6 +67,14 @@ field types are UniFFI builtin types; user-defined types might be allowed in the
 have to maintain a consistent field order between the Rust and UDL files (otherwise compilation
 will fail).
 
+```rust
+#[derive(uniffi::Record)]
+pub struct MyRecord {
+    pub field_a: String,
+    pub field_b: Option<Arc<MyObject>>,
+}
+```
+
 ## The `uniffi::Enum` derive
 
 The `Enum` derive macro works much like the `Record` derive macro. Any fields inside variants must
@@ -72,6 +84,17 @@ also supported as field types.
 It is permitted to use this macro on a type that is also defined in the UDL file as long as the
 two definitions are equal in the names and ordering of variants and variant fields, and any field
 types inside variants are UniFFI builtin types; user-defined types might be allowed in the future.
+
+```rust
+#[derive(uniffi::Enum)]
+pub enum MyEnum {
+    Fieldless,
+    WithFields {
+        foo: u8,
+        bar: Vec<i32>,
+    },
+}
+```
 
 ## The `uniffi::Object` derive
 
@@ -117,5 +140,5 @@ impl Foo {
 ## Other limitations
 
 In addition to the per-item limitations of the macros presented above, there is also currently a
-global restriction: You can only use the proc-macros inside of a crate whose name is the same as
-the namespace in your UDL file. This restriction will be lifted in the future.
+global restriction: You can only use the proc-macros inside a crate whose name is the same as the
+namespace in your UDL file. This restriction will be lifted in the future.
