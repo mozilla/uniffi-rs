@@ -235,7 +235,7 @@ impl TypeUniverse {
                 type_.canonical_name(),
             );
         }
-        self.add_known_type(&type_);
+        self.add_known_type(&type_)?;
         match self.type_definitions.entry(name.to_string()) {
             Entry::Occupied(o) => {
                 let existing_def = o.get();
@@ -273,11 +273,10 @@ impl TypeUniverse {
     }
 
     /// Add a [Type] to the set of all types seen in the component interface.
-    pub fn add_known_type(&mut self, type_: &Type) {
-        // Don't add unresolved types, they are only useful as placeholders
-        // inside function / method signatures.
+    pub fn add_known_type(&mut self, type_: &Type) -> Result<()> {
+        // Adding potentially-unresolved types is a footgun, make sure we don't do that.
         if matches!(type_, Type::Unresolved { .. }) {
-            return;
+            bail!("Unresolved types must be resolved before being added to known types");
         }
 
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
@@ -289,15 +288,17 @@ impl TypeUniverse {
             // this is important if the inner type isn't ever mentioned outside one of these
             // generic builtin types.
             match type_ {
-                Type::Optional(t) => self.add_known_type(t),
-                Type::Sequence(t) => self.add_known_type(t),
+                Type::Optional(t) => self.add_known_type(t)?,
+                Type::Sequence(t) => self.add_known_type(t)?,
                 Type::Map(k, v) => {
-                    self.add_known_type(k);
-                    self.add_known_type(v);
+                    self.add_known_type(k)?;
+                    self.add_known_type(v)?;
                 }
                 _ => {}
             }
         }
+
+        Ok(())
     }
 
     /// Iterator over all the known types in this universe.

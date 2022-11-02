@@ -16,6 +16,12 @@ pub struct Two {
 }
 
 #[derive(uniffi::Record)]
+pub struct NestedRecord {
+    // This used to result in an error in bindings generation
+    user_type_in_builtin_generic: Option<Two>,
+}
+
+#[derive(uniffi::Record)]
 pub struct Three {
     obj: Arc<Object>,
 }
@@ -60,5 +66,5 @@ fn enum_identity(value: MaybeBool) -> MaybeBool {
 include!(concat!(env!("OUT_DIR"), "/proc-macro.uniffi.rs"));
 
 mod uniffi_types {
-    pub use crate::{MaybeBool, Object, One, Three, Two};
+    pub use crate::{MaybeBool, NestedRecord, Object, One, Three, Two};
 }

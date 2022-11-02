@@ -53,31 +53,25 @@ pub fn add_to_ci(
 
         match item {
             Metadata::Func(meta) => {
-                iface.add_function_definition(meta.into())?;
+                iface.add_fn_meta(meta)?;
             }
             Metadata::Method(meta) => {
-                iface.add_method_definition(meta);
+                iface.add_method_meta(meta);
             }
             Metadata::Record(meta) => {
                 let ty = Type::Record(meta.name.clone());
-                iface.types.add_known_type(&ty);
+                iface.types.add_known_type(&ty)?;
                 iface.types.add_type_definition(&meta.name, ty)?;
 
                 let record: Record = meta.into();
-                for field in record.fields() {
-                    iface.types.add_known_type(field.type_());
-                }
                 iface.add_record_definition(record)?;
             }
             Metadata::Enum(meta) => {
                 let ty = Type::Enum(meta.name.clone());
-                iface.types.add_known_type(&ty);
+                iface.types.add_known_type(&ty)?;
                 iface.types.add_type_definition(&meta.name, ty)?;
 
                 let enum_: Enum = meta.into();
-                for field in enum_.variants().iter().flat_map(|v| v.fields()) {
-                    iface.types.add_known_type(field.type_());
-                }
                 iface.add_enum_definition(enum_)?;
             }
             Metadata::Object(meta) => {
