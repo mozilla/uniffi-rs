@@ -92,12 +92,6 @@
 <span id="86">86</span>
 <span id="87">87</span>
 <span id="88">88</span>
-<span id="89">89</span>
-<span id="90">90</span>
-<span id="91">91</span>
-<span id="92">92</span>
-<span id="93">93</span>
-<span id="94">94</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -153,31 +147,25 @@
 
         <span class="kw">match</span> <span class="ident">item</span> {
             <span class="ident">Metadata::Func</span>(<span class="ident">meta</span>) =&gt; {
-                <span class="ident">iface</span>.<span class="ident">add_function_definition</span>(<span class="ident">meta</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+                <span class="ident">iface</span>.<span class="ident">add_fn_meta</span>(<span class="ident">meta</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">Metadata::Method</span>(<span class="ident">meta</span>) =&gt; {
-                <span class="ident">iface</span>.<span class="ident">add_method_definition</span>(<span class="ident">meta</span>);
+                <span class="ident">iface</span>.<span class="ident">add_method_meta</span>(<span class="ident">meta</span>);
             }
             <span class="ident">Metadata::Record</span>(<span class="ident">meta</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="ident">Type::Record</span>(<span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">clone</span>());
-                <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>);
+                <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>)<span class="question-mark">?</span>;
                 <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="kw-2">&amp;</span><span class="ident">meta</span>.<span class="ident">name</span>, <span class="ident">ty</span>)<span class="question-mark">?</span>;
 
                 <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">Record</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">into</span>();
-                <span class="kw">for</span> <span class="ident">field</span> <span class="kw">in</span> <span class="ident">record</span>.<span class="ident">fields</span>() {
-                    <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">field</span>.<span class="ident">type_</span>());
-                }
                 <span class="ident">iface</span>.<span class="ident">add_record_definition</span>(<span class="ident">record</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">Metadata::Enum</span>(<span class="ident">meta</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="ident">Type::Enum</span>(<span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">clone</span>());
-                <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>);
+                <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>)<span class="question-mark">?</span>;
                 <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_type_definition</span>(<span class="kw-2">&amp;</span><span class="ident">meta</span>.<span class="ident">name</span>, <span class="ident">ty</span>)<span class="question-mark">?</span>;
 
                 <span class="kw">let</span> <span class="ident">enum_</span>: <span class="ident">Enum</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">into</span>();
-                <span class="kw">for</span> <span class="ident">field</span> <span class="kw">in</span> <span class="ident">enum_</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">fields</span>()) {
-                    <span class="ident">iface</span>.<span class="ident">types</span>.<span class="ident">add_known_type</span>(<span class="ident">field</span>.<span class="ident">type_</span>());
-                }
                 <span class="ident">iface</span>.<span class="ident">add_enum_definition</span>(<span class="ident">enum_</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">Metadata::Object</span>(<span class="ident">meta</span>) =&gt; {
