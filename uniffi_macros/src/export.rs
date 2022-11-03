@@ -18,7 +18,7 @@ use crate::{
     util::{assert_type_eq, create_metadata_static_var},
 };
 
-// TODO(jplatte): Ensure no generics, no async, …
+// TODO(jplatte): Ensure no generics, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, whereever possible
 
 pub enum ExportItem {

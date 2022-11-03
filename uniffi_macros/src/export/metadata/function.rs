@@ -20,6 +20,7 @@ fn fn_metadata(sig: &syn::Signature, mod_path: &[String]) -> syn::Result<FnMetad
     Ok(FnMetadata {
         module_path: mod_path.to_owned(),
         name: sig.ident.to_string(),
+        is_async: sig.asyncness.is_some(),
         inputs: fn_param_metadata(&sig.inputs)?,
         return_type: return_type_metadata(&sig.output)?,
     })

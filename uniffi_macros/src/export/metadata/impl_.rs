@@ -77,6 +77,7 @@ fn method_metadata(
     Ok(MethodMetadata {
         module_path: mod_path.to_owned(),
         self_name: self_name.to_owned(),
+        is_async: f.sig.asyncness.is_some(),
         name: f.sig.ident.to_string(),
         inputs: fn_param_metadata(&f.sig.inputs)?,
         return_type: return_type_metadata(&f.sig.output)?,
