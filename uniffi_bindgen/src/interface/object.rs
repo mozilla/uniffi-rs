@@ -347,6 +347,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 pub struct Method {
     pub(super) name: String,
     pub(super) object_name: String,
+    pub(super) is_async: bool,
     pub(super) return_type: Option<Type>,
     pub(super) arguments: Vec<Argument>,
     pub(super) ffi_func: FFIFunction,
@@ -430,7 +431,7 @@ impl Method {
 impl From<uniffi_meta::MethodMetadata> for Method {
     fn from(meta: uniffi_meta::MethodMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
-
+        let is_async = meta.is_async;
         let return_type = meta.return_type.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
@@ -442,6 +443,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
         Self {
             name: meta.name,
             object_name: meta.self_name,
+            is_async,
             arguments,
             return_type,
             ffi_func,
@@ -488,6 +490,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             },
             // We don't know the name of the containing `Object` at this point, fill it in later.
             object_name: Default::default(),
+            is_async: false,
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),

@@ -54,6 +54,7 @@ use super::{APIConverter, ComponentInterface};
 #[derive(Debug, Clone)]
 pub struct Function {
     pub(super) name: String,
+    pub(super) is_async: bool,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     pub(super) ffi_func: FFIFunction,
@@ -63,6 +64,10 @@ pub struct Function {
 impl Function {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn is_async(&self) -> bool {
+        self.is_async
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -123,7 +128,7 @@ impl From<uniffi_meta::FnParamMetadata> for Argument {
 impl From<uniffi_meta::FnMetadata> for Function {
     fn from(meta: uniffi_meta::FnMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
-
+        let is_async = meta.is_async;
         let return_type = meta.return_type.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
@@ -134,6 +139,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
 
         Self {
             name: meta.name,
+            is_async,
             arguments,
             return_type,
             ffi_func,
@@ -174,6 +180,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
                 None => bail!("anonymous functions are not supported {:?}", self),
                 Some(id) => id.0.to_string(),
             },
+            is_async: false,
             return_type,
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
