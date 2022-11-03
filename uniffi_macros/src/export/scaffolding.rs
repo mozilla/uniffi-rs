@@ -158,6 +158,18 @@ fn gen_ffi_function(
             output = None;
             return_expr = rust_fn_call;
         }
+        ReturnType::Type(_, ty) if sig.asyncness.is_some() => {
+            output = Some(quote! {
+               -> ::uniffi::FfiFuture<<#ty as ::uniffi::FfiConverter>::FfiType>
+            });
+            return_expr = quote! {
+                ::uniffi::FfiFuture::new(
+                    async move {
+                        <#ty as ::uniffi::FfiConverter>::lower(#rust_fn_call.await)
+                    }
+                )
+            };
+        }
         ReturnType::Type(_, ty) => {
             output = Some(quote! {
                 -> <#ty as ::uniffi::FfiConverter>::FfiType
