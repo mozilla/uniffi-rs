@@ -1,0 +1,361 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Experimental: Attributes and Derives - The UniFFI user guide</title>
+        
+        
+
+
+        <!-- Custom HTML head -->
+        
+
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        
+        <link rel="icon" href="../favicon.svg">
+        
+        
+        <link rel="shortcut icon" href="../favicon.png">
+        
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li><li class="chapter-item expanded "><a href="../udl/callback_interfaces.html"><strong aria-hidden="true">3.7.</strong> Callback Interfaces</a></li><li class="chapter-item expanded "><a href="../udl/ext_types.html"><strong aria-hidden="true">3.8.</strong> External Types</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/ext_types_external.html"><strong aria-hidden="true">3.8.1.</strong> Declaring External Types</a></li><li class="chapter-item expanded "><a href="../udl/custom_types.html"><strong aria-hidden="true">3.8.2.</strong> Declaring Custom Types</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../proc_macro/index.html" class="active"><strong aria-hidden="true">4.</strong> Experimental: Attributes and Derives</a></li><li class="chapter-item expanded affix "><li class="part-title">Kotlin</li><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">5.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded affix "><li class="part-title">Swift</li><li class="chapter-item expanded "><a href="../swift/overview.html"><strong aria-hidden="true">6.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../swift/configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../swift/module.html"><strong aria-hidden="true">8.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">9.</strong> Integrating with XCode</a></li><li class="chapter-item expanded affix "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/design_principles.html"><strong aria-hidden="true">10.</strong> Design Principles</a></li><li class="chapter-item expanded "><a href="../internals/crates.html"><strong aria-hidden="true">11.</strong> Navigating the Code</a></li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">12.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">13.</strong> Managing Object References</a></li><li class="chapter-item expanded "><a href="../internals/rendering_foreign_bindings.html"><strong aria-hidden="true">14.</strong> Rendering Foreign Bindings</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">The UniFFI user guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#experimental-attributes-and-derives" id="experimental-attributes-and-derives">Experimental: Attributes and Derives</a></h1>
+<p>UniFFI is in the process of having its interface definition mechanism rewritten to avoid the
+duplication of function signatures and type definitions between Rust code and the UDL file (and the
+possibility for the two to go out of sync). The new interface definition mechanism is based on
+<a href="https://doc.rust-lang.org/reference/procedural-macros.html">Procedural Macros</a> (proc-macros), specifically the attribute and derive macros.</p>
+<p>This rewrite is not yet complete, but can already have UniFFI extract some kinds of definitions out
+of your Rust code, in addition to what is declared in the UDL file. However, you have to make sure
+that the UDL file is still valid on its own: All types referenced in fields, parameter and return
+types in UDL must also be declared in UDL.</p>
+<h2><a class="header" href="#the-uniffiexport-attribute" id="the-uniffiexport-attribute">The <code>#[uniffi::export]</code> attribute</a></h2>
+<p>The most important proc-macro is the <code>export</code> attribute. It can be used on functions and <code>impl</code>
+blocks to make UniFFI aware of them.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[uniffi::export]
+fn hello_ffi() {
+    println!(&quot;Hello from Rust!&quot;);
+}
+
+// Corresponding UDL:
+//
+// interface MyObject {};
+struct MyObject {
+    // ...
+}
+
+#[uniffi::export]
+impl MyObject {
+    // All methods must have a `self` argument
+    fn method_a(&amp;self) {
+        // ...
+    }
+
+    // Arc&lt;Self&gt; is also supported
+    fn method_b(self: Arc&lt;Self&gt;) {
+        // ...
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Most UniFFI <a href="../udl/builtin_types.html">builtin types</a> can be used as parameter and return types.
+When a type is not supported, you will get a clear compiler error about it.</p>
+<p>User-defined types are also supported in a limited manner: records (structs with named fields,
+<code>dictionary</code> in UDL) and enums can be used when the corresponding derive macro is used at
+their definition. Opaque objects (<code>interface</code> in UDL) can always be used regardless of whether they
+are defined in UDL and / or via derive macro; they just need to be put inside an <code>Arc</code> as always.</p>
+<p>User-defined types also have to be (re-)exported from a module called <code>uniffi_types</code> at the crate
+root. This is required to ensure that a given type name always means the same thing across all uses
+of <code>#[uniffi::export]</code> across the whole module tree.</p>
+<h2><a class="header" href="#the-uniffirecord-derive" id="the-uniffirecord-derive">The <code>uniffi::Record</code> derive</a></h2>
+<p>The <code>Record</code> derive macro exposes a <code>struct</code> with named fields over FFI. All types that are
+supported as parameter and return types by <code>#[uniffi::export]</code> are also supported as field types
+here.</p>
+<p>It is permitted to use this macro on a type that is also defined in the UDL file, as long as all
+field types are UniFFI builtin types; user-defined types might be allowed in the future. You also
+have to maintain a consistent field order between the Rust and UDL files (otherwise compilation
+will fail).</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(uniffi::Record)]
+pub struct MyRecord {
+    pub field_a: String,
+    pub field_b: Option&lt;Arc&lt;MyObject&gt;&gt;,
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2><a class="header" href="#the-uniffienum-derive" id="the-uniffienum-derive">The <code>uniffi::Enum</code> derive</a></h2>
+<p>The <code>Enum</code> derive macro works much like the <code>Record</code> derive macro. Any fields inside variants must
+be named. All types that are supported as parameter and return types by <code>#[uniffi::export]</code> are
+also supported as field types.</p>
+<p>It is permitted to use this macro on a type that is also defined in the UDL file as long as the
+two definitions are equal in the names and ordering of variants and variant fields, and any field
+types inside variants are UniFFI builtin types; user-defined types might be allowed in the future.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(uniffi::Enum)]
+pub enum MyEnum {
+    Fieldless,
+    WithFields {
+        foo: u8,
+        bar: Vec&lt;i32&gt;,
+    },
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2><a class="header" href="#the-uniffiobject-derive" id="the-uniffiobject-derive">The <code>uniffi::Object</code> derive</a></h2>
+<p>This derive can be used to replace an <code>interface</code> definition in UDL. Every object type must have
+<em>either</em> an <code>interface</code> definition in UDL <em>or</em> use this derive macro. However, <code>#[uniffi::export]</code>
+can be used on an impl block for an object type regardless of whether this derive is used. You can
+also mix and match, and define some method of an object via proc-macro while falling back to UDL
+for methods that are not supported by <code>#[uniffi::export]</code> yet; just make sure to use separate
+<code>impl</code> blocks:</p>
+<pre><code class="language-idl">// UDL file
+
+interface Foo {
+    void method_a();
+};
+</code></pre>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Rust file
+
+// Not deriving uniffi::Object since it is defined in UDL
+struct Foo {
+    // ...
+}
+
+// Implementation of the method defined in UDL
+impl Foo {
+    fn method_a(&amp;self) {
+        // ...
+    }
+}
+
+// Another impl block with an additional method
+#[uniffi::export]
+impl Foo {
+    fn method_b(&amp;self) {
+        // ...
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2><a class="header" href="#other-limitations" id="other-limitations">Other limitations</a></h2>
+<p>In addition to the per-item limitations of the macros presented above, there is also currently a
+global restriction: You can only use the proc-macros inside a crate whose name is the same as the
+namespace in your UDL file. This restriction will be lifted in the future.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../udl/custom_types.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../kotlin/gradle.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="../udl/custom_types.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="../kotlin/gradle.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>
