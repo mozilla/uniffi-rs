@@ -24,6 +24,7 @@ import enum
 import struct
 import contextlib
 import datetime
+import asyncio
 {%- for module_name in self.imports() %}
 import {{ module_name }}
 {%- endfor %}

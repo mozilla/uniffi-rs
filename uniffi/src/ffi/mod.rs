@@ -3,14 +3,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 pub mod ffidefault;
-pub mod ffifutures;
+pub mod ffifuture;
 pub mod foreignbytes;
 pub mod foreigncallbacks;
 pub mod rustbuffer;
 pub mod rustcalls;
 
 use ffidefault::FfiDefault;
-pub use ffifutures::*;
+pub use ffifuture::*;
 pub use foreignbytes::*;
 pub use foreigncallbacks::*;
 pub use rustbuffer::*;

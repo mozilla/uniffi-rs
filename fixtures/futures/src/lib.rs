@@ -3,6 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #[uniffi::export]
+fn get_string() -> String {
+    "I am a string".to_owned()
+}
+
+#[uniffi::export]
 async fn get_future() -> String {
     "I am a future".to_owned()
 }
+
+include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));

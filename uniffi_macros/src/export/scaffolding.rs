@@ -153,11 +153,13 @@ fn gen_ffi_function(
     // FIXME(jplatte): Use an extra trait implemented for `T: FfiConverter` as
     // well as `()` so no different codegen is needed?
     let (output, return_expr);
+
     match &sig.output {
         ReturnType::Default => {
             output = None;
             return_expr = rust_fn_call;
         }
+
         ReturnType::Type(_, ty) if sig.asyncness.is_some() => {
             output = Some(quote! {
                -> ::uniffi::FfiFuture<<#ty as ::uniffi::FfiConverter>::FfiType>
@@ -170,6 +172,7 @@ fn gen_ffi_function(
                 )
             };
         }
+
         ReturnType::Type(_, ty) => {
             output = Some(quote! {
                 -> <#ty as ::uniffi::FfiConverter>::FfiType

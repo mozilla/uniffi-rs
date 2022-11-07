@@ -13,5 +13,5 @@ crate-type = ["staticlib", "cdylib"]
 [dependencies]
 uniffi = { path = "../../uniffi", features = ["builtin-bindgen"] }
 
-[dev-dependencies]
-uniffi_macros = { path = "../../uniffi_macros" }
+[build-dependencies]
+uniffi_build = { path = "../../uniffi_build", features = ["builtin-bindgen"] }
