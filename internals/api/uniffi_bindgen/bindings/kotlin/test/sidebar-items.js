@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["build_jar","Generate kotlin bindings for the given namespace, then use the kotlin command-line tools to compile them into a .jar file."],["calc_classpath",""],["generate_sources",""],["run_test","Run Kotlin tests for a UniFFI test fixture"]]};

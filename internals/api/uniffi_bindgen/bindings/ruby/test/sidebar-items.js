@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["generate_sources",""],["run_test","Run Ruby tests for a UniFFI test fixture"]]};

@@ -670,10 +670,6 @@
 <span id="664">664</span>
 <span id="665">665</span>
 <span id="666">666</span>
-<span id="667">667</span>
-<span id="668">668</span>
-<span id="669">669</span>
-<span id="670">670</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -720,10 +716,6 @@
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">ffi</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ffi</span>::<span class="kw-2">*</span>;
-
-<span class="comment">// It would be nice if this module was behind a cfg(test) guard, but it</span>
-<span class="comment">// doesn&#39;t work between crates so let&#39;s hope LLVM tree-shaking works well.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">testing</span>;
 
 <span class="comment">// Re-export the libs that we use in the generated code,</span>
 <span class="comment">// so the consumer doesn&#39;t have to depend on them directly.</span>

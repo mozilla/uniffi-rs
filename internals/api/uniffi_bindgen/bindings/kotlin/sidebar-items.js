@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["classpath_for_testing",""],["compile_bindings","Generate kotlin bindings for the given namespace, then use the kotlin command-line tools to compile them into a .jar file."],["full_bindings_path",""],["run_script","Execute the specifed kotlin script, with classpath based on the generated"],["write_bindings",""]],"mod":[["gen_kotlin",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["full_bindings_path",""],["run_test","Run Kotlin tests for a UniFFI test fixture"],["write_bindings",""]],"mod":[["gen_kotlin",""],["test",""]]};

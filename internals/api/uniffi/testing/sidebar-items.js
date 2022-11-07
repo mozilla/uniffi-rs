@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["ensure_compiled_cdylib","Ensure that a uniffi component crate is compiled and ready for use."],["run_foreign_language_testcase","Execute the given foreign-language script as part of a rust test suite."],["run_uniffi_bindgen_test","Execute the `uniffi-bindgen test` command."]],"static":[["COMPILED_COMPONENTS",""],["UNIFFI_BINDGEN",""]]};
