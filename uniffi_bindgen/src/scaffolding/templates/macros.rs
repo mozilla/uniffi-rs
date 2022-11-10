@@ -11,14 +11,14 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
         match {{- arg.type_().borrow()|ffi_converter }}::try_lift(r#{{ arg.name() }}) {
         {%- if arg.by_ref() %}
             Ok(ref val) => val,
-        {% else %}
+        {%- else %}
             Ok(val) => val,
-        {% endif %}
+        {%- endif %}
 
-        {# If this function returns an error, we attempt to downcast errors doing arg
+        {#- If this function returns an error, we attempt to downcast errors doing arg
             conversions to this error. If the downcast fails or the function doesn't
             return an error, we just panic.
-        #}
+        -#}
         {%- match func.throws_type() -%}
         {%- when Some with (e) %}
             Err(err) => return Err(uniffi::lower_anyhow_error_or_panic::<{{ e|ffi_converter_name }}>(err, "{{ arg.name() }}")),
