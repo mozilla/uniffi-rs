@@ -12,6 +12,14 @@ pub enum ChronologicalError {
     TimeDiffError { a: SystemTime, b: SystemTime },
 }
 
+fn return_timestamp(a: SystemTime) -> Result<SystemTime> {
+    Ok(a)
+}
+
+fn return_duration(a: Duration) -> Result<Duration> {
+    Ok(a)
+}
+
 fn add(a: SystemTime, b: Duration) -> Result<SystemTime> {
     a.checked_add(b)
         .ok_or(ChronologicalError::TimeOverflow { a, b })

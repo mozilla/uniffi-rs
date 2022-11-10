@@ -6,6 +6,12 @@ enum ChronologicalError {
 
 namespace chronological {
   [Throws=ChronologicalError]
+  timestamp return_timestamp(timestamp a);
+
+  [Throws=ChronologicalError]
+  duration return_duration(duration a);
+
+  [Throws=ChronologicalError]
   timestamp add(timestamp a, duration b);
 
   [Throws=ChronologicalError]
