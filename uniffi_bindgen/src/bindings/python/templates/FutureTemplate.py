@@ -1,13 +1,15 @@
 
+FUTURE_WAKER_T = ctypes.CFUNCTYPE(ctypes.c_uint8)
+
 class RustFuture(ctypes.Structure):
     # def __init__:
-    def poll(self):
-        return rust_call(_UniFFILib.{{ ci.ffi_future_poll().name() }}, self)
+    def poll(self, waker: FUTURE_WAKER_T):
+        return rust_call(_UniFFILib.{{ ci.ffi_future_poll().name() }}, self, waker)
 
 class FuturePoll(enum.Enum):
     PENDING = 0
     DONE = 1
-        
+
 class Future:
     def __init__(self, future: any):
         self._asyncio_future_blocking = False
@@ -16,8 +18,9 @@ class Future:
         self._result = None
         self._future = future
         self._waker = None
+        self._ffi_waker = None
         self._callbacks = []
-        
+
         def poll():
             state, self._result = (self._future)()
 
@@ -25,10 +28,16 @@ class Future:
                 self.set_result(self._result)
                 self._state = state
 
+            return 0
+
         self._waker = poll
-        
+        self._ffi_waker = FUTURE_WAKER_T(self._waker)
+
     def _future_waker(self) -> any:
         return self._waker
+
+    def _future_ffi_waker(self):
+        return self._ffi_waker
 
     def done(self) -> bool:
         return self._state == FuturePoll.DONE

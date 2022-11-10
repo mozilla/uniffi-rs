@@ -97,6 +97,7 @@ mod filters {
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
             FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
             FFIType::Future => todo!(),
+            FFIType::FutureWaker => todo!(),
         })
     }
 

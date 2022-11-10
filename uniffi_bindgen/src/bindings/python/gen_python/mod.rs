@@ -305,6 +305,7 @@ impl CodeOracle for PythonCodeOracle {
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
             FFIType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
             FFIType::Future => "RustFuture".to_string(),
+            FFIType::FutureWaker => "FUTURE_WAKER_T".to_string(),
         }
     }
 }

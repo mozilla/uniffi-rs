@@ -286,6 +286,7 @@ impl CodeOracle for KotlinCodeOracle {
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FFIType::ForeignCallback => "ForeignCallback".to_string(),
             FFIType::Future => todo!(),
+            FFIType::FutureWaker => todo!(),
         }
     }
 }

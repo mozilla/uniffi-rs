@@ -379,6 +379,7 @@ impl CodeOracle for SwiftCodeOracle {
             FFIType::ForeignBytes => "ForeignBytes".into(),
             FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
             FFIType::Future => todo!(),
+            FFIType::FutureWaker => todo!(),
         }
     }
 }
@@ -452,6 +453,7 @@ pub mod filters {
             FFIType::ForeignBytes => "ForeignBytes".into(),
             FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
             FFIType::Future => todo!(),
+            FFIType::FutureWaker => todo!(),
         })
     }
 

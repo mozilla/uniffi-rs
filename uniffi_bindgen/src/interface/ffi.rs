@@ -48,6 +48,8 @@ pub enum FFIType {
     ForeignCallback,
     /// A future.
     Future,
+    /// A future waker function pointer.
+    FutureWaker,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
 }

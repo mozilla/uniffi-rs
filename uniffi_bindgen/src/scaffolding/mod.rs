@@ -77,6 +77,7 @@ mod filters {
             FFIType::ForeignBytes => "uniffi::ForeignBytes".into(),
             FFIType::ForeignCallback => "uniffi::ForeignCallback".into(),
             FFIType::Future => "uniffi::RustFuture".into(),
+            FFIType::FutureWaker => "*const uniffi::RustFutureForeignWaker".into(),
         })
     }
 

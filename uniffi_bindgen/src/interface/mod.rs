@@ -427,7 +427,7 @@ impl ComponentInterface {
                 },
                 FFIArgument {
                     name: "waker".to_string(),
-                    type_: FFIType::ForeignCallback,
+                    type_: FFIType::FutureWaker,
                 },
             ],
             return_type: Some(FFIType::UInt8),
