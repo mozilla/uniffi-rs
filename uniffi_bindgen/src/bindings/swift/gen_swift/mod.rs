@@ -378,6 +378,7 @@ impl CodeOracle for SwiftCodeOracle {
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
             FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
+            FFIType::Future => todo!(),
         }
     }
 }
@@ -450,6 +451,7 @@ pub mod filters {
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
             FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
+            FFIType::Future => todo!(),
         })
     }
 

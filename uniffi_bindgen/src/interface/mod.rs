@@ -415,6 +415,25 @@ impl ComponentInterface {
         }
     }
 
+    /// Builtin FFI function for polling a `RustFuture`.
+    pub fn ffi_future_poll(&self) -> FFIFunction {
+        FFIFunction {
+            name: format!("ffi_{}_future_poll", self.ffi_namespace()),
+            is_async: false,
+            arguments: vec![
+                FFIArgument {
+                    name: "future".to_string(),
+                    type_: FFIType::Future,
+                },
+                FFIArgument {
+                    name: "waker".to_string(),
+                    type_: FFIType::ForeignCallback,
+                },
+            ],
+            return_type: Some(FFIType::UInt8),
+        }
+    }
+
     /// List the definitions of all FFI functions in the interface.
     ///
     /// The set of FFI functions is derived automatically from the set of higher-level types
@@ -423,6 +442,7 @@ impl ComponentInterface {
         self.iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
+            .chain(self.iter_future_ffi_function_definitions())
     }
 
     /// List all FFI functions definitions for user-defined interfaces
@@ -446,7 +466,7 @@ impl ComponentInterface {
             .chain(self.functions.iter().map(|f| &f.ffi_func))
     }
 
-    /// List all FFI functions definitions for RustBuffer functionality
+    /// List all FFI functions definitions for RustBuffer functionality.
     pub fn iter_rust_buffer_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> {
         [
             self.ffi_rustbuffer_alloc(),
@@ -457,7 +477,11 @@ impl ComponentInterface {
         .into_iter()
     }
 
-    //
+    /// List all FFI functions definitions for RustFuture functionality.
+    pub fn iter_future_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> {
+        [self.ffi_future_poll()].into_iter()
+    }
+
     // Private methods for building a ComponentInterface.
     //
 

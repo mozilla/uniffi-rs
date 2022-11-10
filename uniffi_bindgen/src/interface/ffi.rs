@@ -46,6 +46,8 @@ pub enum FFIType {
     /// A pointer to a single function in to the foreign language.
     /// This function contains all the machinery to make callbacks work on the foreign language side.
     ForeignCallback,
+    /// A future.
+    Future,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
 }

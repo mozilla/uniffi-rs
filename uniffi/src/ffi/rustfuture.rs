@@ -8,11 +8,11 @@ use std::{
 };
 
 #[repr(transparent)]
-pub struct FfiFuture<T>(Pin<Box<dyn Future<Output = T> + Send + 'static>>)
+pub struct RustFuture<T>(Pin<Box<dyn Future<Output = T> + Send + 'static>>)
 where
     T: Send + 'static;
 
-impl<T> FfiFuture<T>
+impl<T> RustFuture<T>
 where
     T: Send + 'static,
 {
@@ -34,7 +34,7 @@ where
     }
 }
 
-impl<T> FfiDefault for FfiFuture<T>
+impl<T> FfiDefault for RustFuture<T>
 where
     T: Send + 'static + FfiDefault,
 {
@@ -43,11 +43,11 @@ where
     }
 }
 
-struct FfiTaskWakerBuilder<F>(F)
+struct RustTaskWakerBuilder<F>(F)
 where
     F: Fn() + Send + Sync + 'static;
 
-impl<F> FfiTaskWakerBuilder<F>
+impl<F> RustTaskWakerBuilder<F>
 where
     F: Fn() + Send + Sync + 'static,
 {

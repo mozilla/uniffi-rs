@@ -1,7 +1,8 @@
-class FfiFuture(ctypes.Structure):
-    _fields_ = [
-        ("waker", ctypes.c_uint32),
-    ]
+
+class RustFuture(ctypes.Structure):
+    # def __init__:
+    def poll(self):
+        return rust_call(_UniFFILib.{{ ci.ffi_future_poll().name() }}, self)
 
 class FuturePoll(enum.Enum):
     PENDING = 0
@@ -25,9 +26,6 @@ class Future:
                 self._state = state
 
         self._waker = poll
-
-        # Poll it once.
-        (self._future_waker())()
         
     def _future_waker(self) -> any:
         return self._waker

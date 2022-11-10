@@ -304,6 +304,7 @@ impl CodeOracle for PythonCodeOracle {
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
             FFIType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
+            FFIType::Future => "RustFuture".to_string(),
         }
     }
 }
