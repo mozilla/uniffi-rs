@@ -32,8 +32,20 @@ def loadIndirect():
 
 _UniFFILib = loadIndirect()
 {%- for func in ci.iter_ffi_function_definitions() %}
+{%- if func.is_async() %}
+
+# ASYNC
+_UniFFILib.{{ func.name() }}.argtypes = (
+    {%- call py::arg_list_ffi_decl(func) -%}
+)
+_UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}FfiFuture{% when None %}None{% endmatch %}
+
+{%- else %}
+
 _UniFFILib.{{ func.name() }}.argtypes = (
     {%- call py::arg_list_ffi_decl(func) -%}
 )
 _UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
+
+{%- endif %}
 {%- endfor %}

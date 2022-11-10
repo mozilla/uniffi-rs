@@ -134,6 +134,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
 
         let ffi_func = FFIFunction {
             name: ffi_name,
+            is_async,
             ..FFIFunction::default()
         };
 

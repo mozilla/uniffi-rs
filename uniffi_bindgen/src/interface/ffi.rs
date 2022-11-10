@@ -59,6 +59,7 @@ pub enum FFIType {
 #[derive(Debug, Default, Clone)]
 pub struct FFIFunction {
     pub(super) name: String,
+    pub(super) is_async: bool,
     pub(super) arguments: Vec<FFIArgument>,
     pub(super) return_type: Option<FFIType>,
 }
@@ -67,9 +68,15 @@ impl FFIFunction {
     pub fn name(&self) -> &str {
         &self.name
     }
+
+    pub fn is_async(&self) -> bool {
+        self.is_async
+    }
+
     pub fn arguments(&self) -> Vec<&FFIArgument> {
         self.arguments.iter().collect()
     }
+
     pub fn return_type(&self) -> Option<&FFIType> {
         self.return_type.as_ref()
     }

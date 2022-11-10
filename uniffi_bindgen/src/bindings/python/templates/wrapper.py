@@ -25,6 +25,7 @@ import struct
 import contextlib
 import datetime
 import asyncio
+import enum
 {%- for module_name in self.imports() %}
 import {{ module_name }}
 {%- endfor %}
@@ -35,6 +36,7 @@ DEFAULT = object()
 {% include "RustBufferTemplate.py" %}
 {% include "Helpers.py" %}
 {% include "RustBufferHelper.py" %}
+{% include "FutureTemplate.py" %}
 
 # Contains loading, initialization code,
 # and the FFI Function declarations in a com.sun.jna.Library.

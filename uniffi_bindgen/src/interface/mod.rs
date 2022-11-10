@@ -81,7 +81,6 @@ use uniffi_meta::{MethodMetadata, ObjectMetadata};
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
-///
 #[derive(Debug, Default)]
 pub struct ComponentInterface {
     /// Every ComponentInterface gets tagged with the version of uniffi used to create it.
@@ -356,6 +355,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_alloc(&self) -> FFIFunction {
         FFIFunction {
             name: format!("ffi_{}_rustbuffer_alloc", self.ffi_namespace()),
+            is_async: false,
             arguments: vec![FFIArgument {
                 name: "size".to_string(),
                 type_: FFIType::Int32,
@@ -370,6 +370,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_from_bytes(&self) -> FFIFunction {
         FFIFunction {
             name: format!("ffi_{}_rustbuffer_from_bytes", self.ffi_namespace()),
+            is_async: false,
             arguments: vec![FFIArgument {
                 name: "bytes".to_string(),
                 type_: FFIType::ForeignBytes,
@@ -384,6 +385,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_free(&self) -> FFIFunction {
         FFIFunction {
             name: format!("ffi_{}_rustbuffer_free", self.ffi_namespace()),
+            is_async: false,
             arguments: vec![FFIArgument {
                 name: "buf".to_string(),
                 type_: FFIType::RustBuffer,
@@ -398,6 +400,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_reserve(&self) -> FFIFunction {
         FFIFunction {
             name: format!("ffi_{}_rustbuffer_reserve", self.ffi_namespace()),
+            is_async: false,
             arguments: vec![
                 FFIArgument {
                     name: "buf".to_string(),
