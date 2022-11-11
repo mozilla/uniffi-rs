@@ -418,7 +418,7 @@ impl ComponentInterface {
     /// Builtin FFI function for polling a `RustFuture`.
     pub fn ffi_rustfuture_poll(&self) -> FFIFunction {
         FFIFunction {
-            name: format!("ffi_{}_future_poll", self.ffi_namespace()),
+            name: format!("ffi_{}_rustfuture_poll", self.ffi_namespace()),
             is_async: false,
             arguments: vec![
                 FFIArgument {
