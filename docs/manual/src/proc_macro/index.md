@@ -12,6 +12,17 @@ types in UDL must also be declared in UDL.
 
 [Procedural Macros]: https://doc.rust-lang.org/reference/procedural-macros.html
 
+**⚠ Warning ⚠** As the page title says, this is experimental. Bugs are expected and if you want to
+try it is recommended that you use `uniffi` as a git dependency so you don't run into issues that
+are already fixed.
+
+## Build workflow
+
+Before any of the things discussed below work, make sure to update your bindings generation steps
+to start with a build of your library and add
+`--lib-file <CARGO WORKSPACE>/target/<TARGET>/<BUILT CDYLIB OR STATICLIB>` to your `uniffi-bindgen`
+command line invocation.
+
 ## The `#[uniffi::export]` attribute
 
 The most important proc-macro is the `export` attribute. It can be used on functions and `impl`
