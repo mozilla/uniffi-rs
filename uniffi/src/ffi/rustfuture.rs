@@ -1,14 +1,17 @@
+use crate::{call_with_output, RustBuffer, RustCallStatus};
+
 use super::FfiDefault;
 use std::{
     future::{self, Future},
     mem::{self, ManuallyDrop},
     pin::Pin,
-    sync::Arc,
+    ptr::NonNull,
+    sync::{Arc, Mutex},
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
 };
 
 #[repr(transparent)]
-pub struct RustFuture<T>(Pin<Box<dyn Future<Output = T> + Send + 'static>>)
+pub struct RustFuture<T>(Mutex<Pin<Box<dyn Future<Output = T> + Send + 'static>>>)
 where
     T: Send + 'static;
 
@@ -20,7 +23,7 @@ where
     where
         F: Future<Output = T> + Send + 'static,
     {
-        Self(Box::pin(future))
+        Self(Mutex::new(Box::pin(future)))
     }
 
     pub fn poll(&mut self, waker_pointer: *const RustFutureForeignWaker) -> bool {
@@ -31,8 +34,9 @@ where
             ))
         };
         let mut context = Context::from_waker(&waker);
+        let future = self.0.get_mut().unwrap();
 
-        match Pin::new(&mut self.0).poll(&mut context) {
+        match Pin::new(future).poll(&mut context) {
             Poll::Ready(_result) => true,
             Poll::Pending => false,
         }
@@ -83,4 +87,20 @@ impl RustTaskWakerBuilder {
         let waker: *const RustFutureForeignWaker = mem::transmute(foreign_waker);
         drop(Arc::from_raw(waker));
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn uniffi_rustfuture_poll(
+    future: Option<NonNull<RustFuture<RustBuffer>>>,
+    waker: Option<NonNull<RustFutureForeignWaker>>,
+    call_status: &mut RustCallStatus,
+) -> bool {
+    let future: NonNull<RustFuture<RustBuffer>> = future.expect("`future` is a null pointer");
+    let waker: NonNull<RustFutureForeignWaker> = waker.expect("`waker` is a null pointer");
+
+    let future: *mut RustFuture<RustBuffer> = future.as_ptr();
+
+    call_with_output(call_status, || {
+        future.as_mut().unwrap().poll(waker.as_ptr())
+    })
 }
