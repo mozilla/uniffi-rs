@@ -36,7 +36,7 @@ DEFAULT = object()
 {% include "RustBufferTemplate.py" %}
 {% include "Helpers.py" %}
 {% include "RustBufferHelper.py" %}
-{% include "FutureTemplate.py" %}
+{% include "RustFutureTemplate.py" %}
 
 # Contains loading, initialization code,
 # and the FFI Function declarations in a com.sun.jna.Library.

@@ -4,7 +4,7 @@ FUTURE_WAKER_T = ctypes.CFUNCTYPE(ctypes.c_uint8)
 class RustFuture(ctypes.Structure):
     # def __init__:
     def poll(self, waker: FUTURE_WAKER_T):
-        return rust_call(_UniFFILib.{{ ci.ffi_future_poll().name() }}, self, waker)
+        return rust_call(_UniFFILib.{{ ci.ffi_rustfuture_poll().name() }}, self, waker)
 
 class FuturePoll(enum.Enum):
     PENDING = 0

@@ -416,7 +416,7 @@ impl ComponentInterface {
     }
 
     /// Builtin FFI function for polling a `RustFuture`.
-    pub fn ffi_future_poll(&self) -> FFIFunction {
+    pub fn ffi_rustfuture_poll(&self) -> FFIFunction {
         FFIFunction {
             name: format!("ffi_{}_future_poll", self.ffi_namespace()),
             is_async: false,
@@ -479,7 +479,7 @@ impl ComponentInterface {
 
     /// List all FFI functions definitions for RustFuture functionality.
     pub fn iter_future_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> {
-        [self.ffi_future_poll()].into_iter()
+        [self.ffi_rustfuture_poll()].into_iter()
     }
 
     // Private methods for building a ComponentInterface.
