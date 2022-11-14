@@ -423,7 +423,7 @@ impl ComponentInterface {
             arguments: vec![
                 FFIArgument {
                     name: "future".to_string(),
-                    type_: FFIType::Future,
+                    type_: FFIType::Pointer(Box::new(FFIType::Future)),
                 },
                 FFIArgument {
                     name: "waker".to_string(),

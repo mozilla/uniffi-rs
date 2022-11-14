@@ -1,14 +1,25 @@
 
 FUTURE_WAKER_T = ctypes.CFUNCTYPE(ctypes.c_uint8)
 
-class RustFuture(ctypes.Structure):
-    # def __init__:
-    def poll(self, waker: FUTURE_WAKER_T):
-        return rust_call(_UniFFILib.{{ ci.ffi_rustfuture_poll().name() }}, self, waker)
-
 class FuturePoll(enum.Enum):
     PENDING = 0
     DONE = 1
+
+class RustFuture(ctypes.Structure):
+    _fields_ = [
+        ("_padding", ctypes.POINTER(ctypes.c_int)),
+    ]
+
+    def set_waker(self, waker):
+        self._ffi_waker = FUTURE_WAKER_T(waker)
+
+    def poll(self) -> FuturePoll:
+        result = rust_call(_UniFFILib.{{ ci.ffi_rustfuture_poll().name() }}, self, self._ffi_waker)
+
+        if result == 1:
+            return FuturePoll.DONE
+
+        return FuturePoll.PENDING
 
 class Future:
     def __init__(self, future: any):
@@ -21,23 +32,19 @@ class Future:
         self._ffi_waker = None
         self._callbacks = []
 
-        def poll():
+        def waker():
             state, self._result = (self._future)()
 
             if state == FuturePoll.DONE:
                 self.set_result(self._result)
                 self._state = state
 
-            return 0
+            return FuturePoll.PENDING
 
-        self._waker = poll
-        self._ffi_waker = FUTURE_WAKER_T(self._waker)
+        self._waker = waker
 
     def _future_waker(self) -> any:
         return self._waker
-
-    def _future_ffi_waker(self):
-        return self._ffi_waker
 
     def done(self) -> bool:
         return self._state == FuturePoll.DONE
@@ -87,6 +94,9 @@ class Future:
 
         return removed_count
 
+    def cancel(self, msg=None):
+        pass # TODO
+
     def __await__(self):
         if not self.done():
             self._asyncio_future_blocking = True
@@ -98,3 +108,4 @@ class Future:
         return self.result()
 
     __iter__ = __await__
+

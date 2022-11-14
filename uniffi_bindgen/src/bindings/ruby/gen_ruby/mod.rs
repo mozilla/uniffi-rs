@@ -92,6 +92,7 @@ mod filters {
             FFIType::UInt64 => ":uint64".to_string(),
             FFIType::Float32 => ":float".to_string(),
             FFIType::Float64 => ":double".to_string(),
+            FFIType::Pointer(_) => todo!("`Pointer` is not implemented"),
             FFIType::RustArcPtr(_) => ":pointer".to_string(),
             FFIType::RustBuffer => "RustBuffer.by_value".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),

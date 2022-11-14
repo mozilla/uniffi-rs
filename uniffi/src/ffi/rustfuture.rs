@@ -11,7 +11,7 @@ use std::{
 };
 
 /// `RustFuture` must have the size of a pointer.
-#[repr(C)]
+#[repr(transparent)]
 pub struct RustFuture(Box<Mutex<Pin<Box<dyn Future<Output = RustBuffer> + Send + 'static>>>>);
 
 impl RustFuture {

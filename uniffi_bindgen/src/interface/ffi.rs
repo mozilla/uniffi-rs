@@ -31,6 +31,8 @@ pub enum FFIType {
     Int64,
     Float32,
     Float64,
+    /// A pointer to another type.
+    Pointer(Box<Self>),
     /// A `*const c_void` pointer to a rust-owned `Arc<T>`.
     /// If you've got one of these, you must call the appropriate rust function to free it.
     /// The templates will generate a unique `free` function for each T.
