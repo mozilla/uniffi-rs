@@ -19,14 +19,10 @@ impl RustFuture {
     where
         F: Future<Output = RustBuffer> + Send + 'static,
     {
-        println!("---> [rust] RustFuture::new");
-
         Self(Box::new(Mutex::new(Box::pin(future))))
     }
 
     pub fn poll(&mut self, waker_pointer: *const RustFutureForeignWaker) -> bool {
-        println!("---> [rust] RustFuture::poll");
-
         let waker = unsafe {
             Waker::from_raw(RawWaker::new(
                 Arc::into_raw(Arc::new(waker_pointer)) as *const (),
@@ -35,26 +31,7 @@ impl RustFuture {
         };
         let mut context = Context::from_waker(&waker);
 
-        println!("---> [rust] huh?");
-        let zero = &mut self.0;
-        println!("---> [rust] huh!");
-        let m = zero.get_mut();
-        println!("---> [rust] ok?");
-
-        let future = match m {
-            Ok(m) => {
-                println!("---> [rust] OK!");
-                m
-            }
-            Err(e) => {
-                println!("---> [rust] {e}");
-                return false;
-            }
-        };
-
-        // let future = self.0.get_mut().expect("arf");
-
-        println!("---> [rust] here?");
+        let future = self.0.get_mut().expect("arf");
 
         match Pin::new(future).poll(&mut context) {
             Poll::Ready(_result) => true,

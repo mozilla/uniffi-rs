@@ -9,6 +9,7 @@ fn get_string() -> String {
 
 #[uniffi::export]
 async fn get_future() -> String {
+    println!("Hello Future");
     "I am a future".to_owned()
 }
 

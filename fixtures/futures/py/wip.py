@@ -320,19 +320,14 @@ class FuturePoll(enum.Enum):
 
 class RustFuture(ctypes.Structure):
     _fields_ = [
-        # ("future", ctypes.POINTER(ctypes.c_int)),
-        ("future", ctypes.c_void_p),
+        ("_padding", ctypes.POINTER(ctypes.c_int)),
     ]
 
     def set_waker(self, waker):
         self._ffi_waker = FUTURE_WAKER_T(waker)
 
     def poll(self) -> FuturePoll:
-        print('---> [python] RustFuture::poll')
-
-        print(f'--------------> self: {self}')
         result = rust_call(_UniFFILib.ffi_uniffi_futures_1b3b_rustfuture_poll, self, self._ffi_waker)
-        print('enfin ici ?')
 
         if result == 1:
             return FuturePoll.DONE
@@ -341,8 +336,6 @@ class RustFuture(ctypes.Structure):
 
 class Future:
     def __init__(self, future: any):
-        print('---> [python] Future.__init__')
-
         self._asyncio_future_blocking = False
         self._loop = asyncio.get_event_loop()
         self._state = FuturePoll.PENDING
@@ -353,7 +346,6 @@ class Future:
         self._callbacks = []
 
         def waker():
-            print('---> [python] Future.__init__.waker')
             state, self._result = (self._future)()
 
             if state == FuturePoll.DONE:
@@ -546,19 +538,13 @@ async def get_future():
     future = None
     future_waker = None
 
-    print('---> [python] get_future! Let\'s start!')
-
     def trampoline() -> (FuturePoll, any):
         nonlocal rust_future
 
-        print(f'---> [python] get_future.trampoline')
-
         if rust_future is None:
-            print('---> [python] get_future.trampoline / calling the real Rust get_future')
             rust_future = rust_call(_UniFFILib._uniffi_uniffi_futures_get_future_c29d,)
             rust_future.set_waker(future_waker)
 
-        print('---> [python] get_future.trampoline / polling the Rust future')
         poll_result = rust_future.poll()
 
         if poll_result is FuturePoll.DONE:
@@ -570,16 +556,12 @@ async def get_future():
     future_waker = future._future_waker()
 
     # Poll it once.
-    print('---> [python] get_future / polls the trampoline once')
     (future_waker)()
-
-    print(f'rust_future: {rust_future}')
 
     return await future
 
 def get_string():
     return FfiConverterString.lift(rust_call(_UniFFILib._uniffi_uniffi_futures_get_string_7792,))
-
 
 __all__ = [
     "InternalError",
