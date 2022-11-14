@@ -7,7 +7,7 @@ class FuturePoll(enum.Enum):
 
 class RustFuture(ctypes.Structure):
     _fields_ = [
-        ("_padding", ctypes.POINTER(ctypes.c_int)),
+        ("_padding", ctypes.c_void_p),
     ]
 
     def set_waker(self, waker):
