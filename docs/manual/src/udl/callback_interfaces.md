@@ -23,12 +23,12 @@ pub trait Keychain: Send + Sync + Debug {
 }
 ```
 
-### Why + Send + Sync?
+### Why Send + Sync?
 
 The concrete types that UniFFI generates for callback interfaces implement `Send`, `Sync`, and `Debug`, so it's safe to
 include these as supertraits of your callback interface trait.  This isn't strictly necessary, but it's often useful.  In
-particular, `Sync + Send` is useful when:
-  - Storing `Box<dyn CallbackInterfaceTrait>` types inside a type that needs to be `Send + Send` (for example a UniFFI
+particular, `Send + Sync` is useful when:
+  - Storing `Box<dyn CallbackInterfaceTrait>` types inside a type that needs to be `Send + Sync` (for example a UniFFI
     interface type)
   - Storing `Box<dyn CallbackInterfaceTrait>` inside a global `Mutex` or `RwLock`
 

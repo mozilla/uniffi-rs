@@ -4,7 +4,9 @@
 
 Install the `uniffi-bindgen` binary on your system using:
 
-`cargo install uniffi_bindgen`
+```
+cargo install uniffi_bindgen
+```
 
 You can see what it can do with `uniffi-bindgen --help`, but let's leave it aside for now.
 
@@ -17,7 +19,7 @@ In this case, just use `cargo run` in the `uniffi_bindgen` crate directory.
 For example, from the root of the `uniffi-rs` repo, execute:
 
 ```shell
-% cd uniffi_bindgen/src
+% cd uniffi_bindgen
 % cargo run -- --help
 ```
 
@@ -28,6 +30,7 @@ the docs for `cargo run` for more information and options.
 
 Ensure your crate builds as a `cdylib` by adding
 ```toml
+[lib]
 crate-type = ["cdylib"]
 name = "<library name>"
 ```
