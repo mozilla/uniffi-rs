@@ -21,6 +21,6 @@ uniffi-bindgen generate src/math.udl --language swift
 ```
 then check out `src/math.swift`
 
-Note that these commands could be integrated as part of your gradle/XCode build process.
+Note that these commands could be integrated as part of your gradle/Xcode build process.
 
 This is it, you have an MVP integration of UniFFI in your project.
