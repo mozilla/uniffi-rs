@@ -162,7 +162,8 @@ fn gen_ffi_function(
 
         ReturnType::Type(_, ty) if sig.asyncness.is_some() => {
             output = Some(quote! {
-               -> ::uniffi::RustFuture<<#ty as ::uniffi::FfiConverter>::FfiType>
+               // -> ::uniffi::RustFuture<<#ty as ::uniffi::FfiConverter>::FfiType>
+               -> ::uniffi::RustFuture
             });
             return_expr = quote! {
                 ::uniffi::RustFuture::new(

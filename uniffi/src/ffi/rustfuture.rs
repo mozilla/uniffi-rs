@@ -10,23 +10,23 @@ use std::{
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
 };
 
-#[repr(transparent)]
-pub struct RustFuture<T>(Mutex<Pin<Box<dyn Future<Output = T> + Send + 'static>>>)
-where
-    T: Send + 'static;
+/// `RustFuture` must have the size of a pointer.
+#[repr(C)]
+pub struct RustFuture(Box<Mutex<Pin<Box<dyn Future<Output = RustBuffer> + Send + 'static>>>>);
 
-impl<T> RustFuture<T>
-where
-    T: Send + 'static,
-{
+impl RustFuture {
     pub fn new<F>(future: F) -> Self
     where
-        F: Future<Output = T> + Send + 'static,
+        F: Future<Output = RustBuffer> + Send + 'static,
     {
-        Self(Mutex::new(Box::pin(future)))
+        println!("---> [rust] RustFuture::new");
+
+        Self(Box::new(Mutex::new(Box::pin(future))))
     }
 
     pub fn poll(&mut self, waker_pointer: *const RustFutureForeignWaker) -> bool {
+        println!("---> [rust] RustFuture::poll");
+
         let waker = unsafe {
             Waker::from_raw(RawWaker::new(
                 Arc::into_raw(Arc::new(waker_pointer)) as *const (),
@@ -34,7 +34,27 @@ where
             ))
         };
         let mut context = Context::from_waker(&waker);
-        let future = self.0.get_mut().unwrap();
+
+        println!("---> [rust] huh?");
+        let zero = &mut self.0;
+        println!("---> [rust] huh!");
+        let m = zero.get_mut();
+        println!("---> [rust] ok?");
+
+        let future = match m {
+            Ok(m) => {
+                println!("---> [rust] OK!");
+                m
+            }
+            Err(e) => {
+                println!("---> [rust] {e}");
+                return false;
+            }
+        };
+
+        // let future = self.0.get_mut().expect("arf");
+
+        println!("---> [rust] here?");
 
         match Pin::new(future).poll(&mut context) {
             Poll::Ready(_result) => true,
@@ -43,14 +63,66 @@ where
     }
 }
 
-impl<T> FfiDefault for RustFuture<T>
-where
-    T: Send + 'static + FfiDefault,
-{
+impl FfiDefault for RustFuture {
     fn ffi_default() -> Self {
-        Self::new(future::ready(T::ffi_default()))
+        Self::new(async { RustBuffer::default() })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rust_future_size() {
+        assert_eq!(
+            mem::size_of_val(&RustFuture::new(async { unreachable!() })),
+            mem::size_of::<*const u8>(),
+        );
+    }
+}
+
+// #[repr(transparent)]
+// pub struct RustFuture<T>(Mutex<Pin<Box<dyn Future<Output = T> + Send + 'static>>>)
+// where
+//     T: Send + 'static;
+
+// impl<T> RustFuture<T>
+// where
+//     T: Send + 'static,
+// {
+//     pub fn new<F>(future: F) -> Self
+//     where
+//         F: Future<Output = T> + Send + 'static,
+//     {
+//         Self(Mutex::new(Box::pin(future)))
+//     }
+
+//     pub fn poll(&mut self, waker_pointer: *const RustFutureForeignWaker) -> bool {
+//         let waker = unsafe {
+//             Waker::from_raw(RawWaker::new(
+//                 Arc::into_raw(Arc::new(waker_pointer)) as *const (),
+//                 &RustTaskWakerBuilder::VTABLE,
+//             ))
+//         };
+//         let mut context = Context::from_waker(&waker);
+//         let future = self.0.get_mut().unwrap();
+
+//         match Pin::new(future).poll(&mut context) {
+//             Poll::Ready(_result) => true,
+//             Poll::Pending => false,
+//         }
+//     }
+// }
+
+// impl<T> FfiDefault for RustFuture<T>
+// where
+//     T: Send + 'static + FfiDefault,
+// {
+//     fn ffi_default() -> Self {
+//         Self::new(future::ready(T::ffi_default()))
+//     }
+// }
 
 pub type RustFutureForeignWaker = extern "C" fn();
 
@@ -91,14 +163,14 @@ impl RustTaskWakerBuilder {
 
 #[no_mangle]
 pub unsafe extern "C" fn uniffi_rustfuture_poll(
-    future: Option<NonNull<RustFuture<RustBuffer>>>,
+    future: Option<NonNull<RustFuture>>,
     waker: Option<NonNull<RustFutureForeignWaker>>,
     call_status: &mut RustCallStatus,
 ) -> bool {
-    let future: NonNull<RustFuture<RustBuffer>> = future.expect("`future` is a null pointer");
+    let future: NonNull<RustFuture> = future.expect("`future` is a null pointer");
     let waker: NonNull<RustFutureForeignWaker> = waker.expect("`waker` is a null pointer");
 
-    let future: *mut RustFuture<RustBuffer> = future.as_ptr();
+    let future: *mut RustFuture = future.as_ptr();
 
     call_with_output(call_status, || {
         future.as_mut().unwrap().poll(waker.as_ptr())
