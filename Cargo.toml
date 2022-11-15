@@ -22,6 +22,7 @@ members = [
   "fixtures/ext-types/guid",
   "fixtures/ext-types/uniffi-one",
   "fixtures/ext-types/lib",
+  "fixtures/ext-types/lib-with-separate-swift-modules/",
 
   # we should roll the above and below up somehow that makes sense...
   "fixtures/external-types/crate-one",

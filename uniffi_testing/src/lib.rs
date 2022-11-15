@@ -23,6 +23,10 @@ struct UniFFITestingMetadata {
     /// directory
     #[serde(rename = "external-crates")]
     external_crates: Option<Vec<String>>,
+    /// Should generated files for Swift external crates be compiled as separate modules?  The
+    /// default is to compile them all together into 1 module.
+    #[serde(default, rename = "swift-use-separate-modules")]
+    swift_use_separate_modules: bool,
 }
 
 // A source to compile for a test
@@ -130,6 +134,13 @@ impl UniFFITestHelper {
         match cdylib_files.len() {
             1 => Ok(cdylib_files[0].to_owned()),
             n => bail!("Found {n} cdylib files for {}", package.name),
+        }
+    }
+
+    pub fn swift_use_separate_modules(&self) -> bool {
+        match &self.metadata {
+            Some(metadata) => metadata.swift_use_separate_modules,
+            None => false,
         }
     }
 

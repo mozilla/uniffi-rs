@@ -70,6 +70,26 @@ rust-crate-name = "kotlin.package.name"
 
 ### Swift
 
-For Swift, you must compile all generated `.swift` files together in a single
-module since the generate code expects that it can access external types
-without importing them.
+For Swift, there are 2 ways to use the UniFFI-generated Swift code:
+  - Compile all source files together in the same module.
+  - Compile each source file into a different module.
+
+By default, UniFFI assumes that the source files will be compiled together, so
+external types will be automatically available and nothing needs to be configured.
+
+If you compile each source file into a different module, then you need to
+add configuration to `uniffi.toml`.
+
+```
+[bindings.swift.external_types]
+in_different_modules = true
+```
+
+By default, UniFFI assumes the module name is the same as Rust crate name
+specified in the UDL file (with hyphens replaced with underscores). You can
+override this with the `bindings.swift.external_types.module_names` config key:
+
+```
+[bindings.swift.external_types.module_names]
+my-rust-crate-name = "my_swift_module_name"
+```

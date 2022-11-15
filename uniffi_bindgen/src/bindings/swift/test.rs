@@ -26,13 +26,32 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
         GeneratedSources::new(&test_helper.cdylib_path()?, &out_dir, &test_helper)
             .context("generate_sources()")?;
 
-    // Compile the generated sources together to create a single swift module
-    compile_swift_module(
-        &out_dir,
-        &calc_module_name(&generated_sources.main_source_filename),
-        &generated_sources.generated_swift_files,
-        &generated_sources.module_map,
-    )?;
+    if test_helper.swift_use_separate_modules() {
+        // Compile each external sources into a separate swift module
+        for swift_file in generated_sources.external_swift_files() {
+            let filename = swift_file.file_name().unwrap();
+            compile_swift_module(
+                &out_dir,
+                &calc_module_name(filename),
+                [swift_file],
+                &generated_sources.module_map,
+            )?
+        }
+        compile_swift_module(
+            &out_dir,
+            &calc_module_name(&generated_sources.main_source_filename),
+            &[generated_sources.main_source_filename],
+            &generated_sources.module_map,
+        )?;
+    } else {
+        // Compile the generated sources together to create a single swift module
+        compile_swift_module(
+            &out_dir,
+            &calc_module_name(&generated_sources.main_source_filename),
+            &generated_sources.generated_swift_files,
+            &generated_sources.module_map,
+        )?;
+    }
 
     // Run the test script against compiled bindings
 
@@ -192,6 +211,13 @@ impl GeneratedSources {
             Some(library_path),
             false,
         )
+    }
+
+    fn external_swift_files(&self) -> impl Iterator<Item = &Utf8Path> {
+        self.generated_swift_files
+            .iter()
+            .filter(|path| path.file_name().unwrap() != self.main_source_filename)
+            .map(std::ops::Deref::deref)
     }
 }
 
