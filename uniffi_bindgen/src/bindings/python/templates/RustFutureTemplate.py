@@ -37,9 +37,8 @@ class Future:
 
             if state == FuturePoll.DONE:
                 self.set_result(self._result)
-                self._state = state
 
-            return FuturePoll.PENDING
+            return 0
 
         self._waker = waker
 
@@ -72,21 +71,21 @@ class Future:
         self._callbacks[:] = []
 
         for callback, context in callbacks:
-            self._loop.call_soon(callback, self, context=context)
+            self._loop.call_soon_threadsafe(callback, self, context=context)
 
-    def add_done_callback(self, fn, *, context=None):
+    def add_done_callback(self, callback, *, context=None):
         if self._state != FuturePoll.PENDING:
-            self._loop.call_soon(fn, self, context=context)
+            self._loop.call_soon_threadsafe(callback, self, context=context)
         else:
             if context is None:
                 context = contextvars.copy_context()
 
-            self._callbacks.append((fn, context))
+            self._callbacks.append((callback, context))
 
-    def remove_done_callback(self, fn):
-        filtered_callbacks = [(callback, context)
-                              for (callback, context) in self._callbacks
-                              if callback != fn]
+    def remove_done_callback(self, callback):
+        filtered_callbacks = [(other_callback, context)
+                              for (other_callback, context) in self._callbacks
+                              if other_callback != callback]
         removed_count = len(self._callbacks) - len(filtered_callbacks)
 
         if removed_count:
