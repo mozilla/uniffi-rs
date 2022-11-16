@@ -434,6 +434,19 @@ impl ComponentInterface {
         }
     }
 
+    /// Builtin FFI function for dropping a `RustFuture`.
+    pub fn ffi_rustfuture_drop(&self) -> FFIFunction {
+        FFIFunction {
+            name: format!("ffi_{}_rustfuture_drop", self.ffi_namespace()),
+            is_async: false,
+            arguments: vec![FFIArgument {
+                name: "future".to_string(),
+                type_: FFIType::Pointer(Box::new(FFIType::Future)),
+            }],
+            return_type: None,
+        }
+    }
+
     /// List the definitions of all FFI functions in the interface.
     ///
     /// The set of FFI functions is derived automatically from the set of higher-level types
@@ -479,7 +492,7 @@ impl ComponentInterface {
 
     /// List all FFI functions definitions for RustFuture functionality.
     pub fn iter_future_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> {
-        [self.ffi_rustfuture_poll()].into_iter()
+        [self.ffi_rustfuture_poll(), self.ffi_rustfuture_drop()].into_iter()
     }
 
     // Private methods for building a ComponentInterface.

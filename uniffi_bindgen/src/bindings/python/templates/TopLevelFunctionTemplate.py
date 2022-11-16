@@ -22,14 +22,20 @@ async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
         else:
             return (FuturePoll.PENDING, None)
 
+    # Create our own `Future`.
     future = Future(trampoline)
     future_waker = future._future_waker()
 
     # Poll it once.
     (future_waker)()
 
-    return await future
+    # Let's wait on it.
+    result = await future
 
+    # Dropping the `rust_future`.
+    rust_call(_UniFFILib.{{ ci.ffi_rustfuture_drop().name() }}, rust_future)
+
+    return result
 {%- else %}
 
 def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):

@@ -2,7 +2,7 @@ use crate::{call_with_output, RustBuffer, RustCallStatus};
 
 use super::FfiDefault;
 use std::{
-    future::{self, Future},
+    future::Future,
     mem::{self, ManuallyDrop},
     pin::Pin,
     ptr::NonNull,
@@ -36,8 +36,6 @@ impl RustFuture {
             Poll::Pending => false,
         }
     }
-
-    pub fn destroy(self) {}
 }
 
 impl FfiDefault for RustFuture {
@@ -150,12 +148,19 @@ pub unsafe extern "C" fn uniffi_rustfuture_poll(
     waker: Option<NonNull<RustFutureForeignWaker>>,
     call_status: &mut RustCallStatus,
 ) -> bool {
-    let future: &mut RustFuture = future.expect("`future` is a null pointer");
-    let waker: NonNull<RustFutureForeignWaker> = waker.expect("`waker` is a null pointer");
+    let future = future.expect("`future` is a null pointer");
+    let waker = waker.expect("`waker` is a null pointer");
 
     let future_mutex = Mutex::new(future);
 
     call_with_output(call_status, || {
         future_mutex.lock().unwrap().poll(waker.as_ptr())
     })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn uniffi_rustfuture_drop(
+    _future: Option<Box<RustFuture>>,
+    _call_status: &mut RustCallStatus,
+) {
 }
