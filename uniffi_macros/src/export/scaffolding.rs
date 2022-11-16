@@ -163,14 +163,14 @@ fn gen_ffi_function(
         ReturnType::Type(_, ty) if sig.asyncness.is_some() => {
             output = Some(quote! {
                // -> ::uniffi::RustFuture<<#ty as ::uniffi::FfiConverter>::FfiType>
-               -> ::uniffi::RustFuture
+               -> Box<::uniffi::RustFuture>
             });
             return_expr = quote! {
-                ::uniffi::RustFuture::new(
+                Box::new(::uniffi::RustFuture::new(
                     async move {
                         <#ty as ::uniffi::FfiConverter>::lower(#rust_fn_call.await)
                     }
-                )
+                ))
             };
         }
 

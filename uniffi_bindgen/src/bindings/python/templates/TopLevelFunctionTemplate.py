@@ -14,9 +14,8 @@ async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
 
         if rust_future is None:
             rust_future = {% call py::to_ffi_call(func) %}
-            rust_future.set_waker(future_waker)
 
-        poll_result = rust_future.poll()
+        poll_result = rust_future.contents.poll(future._future_ffi_waker())
 
         if poll_result is FuturePoll.DONE:
             return (FuturePoll.DONE, 42)

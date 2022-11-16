@@ -12,14 +12,14 @@ use std::{
 
 /// `RustFuture` must have the size of a pointer.
 #[repr(transparent)]
-pub struct RustFuture(Box<Mutex<Pin<Box<dyn Future<Output = RustBuffer> + Send + 'static>>>>);
+pub struct RustFuture(Pin<Box<dyn Future<Output = RustBuffer> + Send + 'static>>);
 
 impl RustFuture {
     pub fn new<F>(future: F) -> Self
     where
         F: Future<Output = RustBuffer> + Send + 'static,
     {
-        Self(Box::new(Mutex::new(Box::pin(future))))
+        Self(Box::pin(future))
     }
 
     pub fn poll(&mut self, waker_pointer: *const RustFutureForeignWaker) -> bool {
@@ -31,18 +31,24 @@ impl RustFuture {
         };
         let mut context = Context::from_waker(&waker);
 
-        let future = self.0.get_mut().expect("arf");
-
-        match Pin::new(future).poll(&mut context) {
+        match Pin::new(&mut self.0).poll(&mut context) {
             Poll::Ready(_result) => true,
             Poll::Pending => false,
         }
     }
+
+    pub fn destroy(self) {}
 }
 
 impl FfiDefault for RustFuture {
     fn ffi_default() -> Self {
         Self::new(async { RustBuffer::default() })
+    }
+}
+
+impl FfiDefault for Box<RustFuture> {
+    fn ffi_default() -> Self {
+        Box::new(RustFuture::ffi_default())
     }
 }
 
@@ -140,16 +146,16 @@ impl RustTaskWakerBuilder {
 
 #[no_mangle]
 pub unsafe extern "C" fn uniffi_rustfuture_poll(
-    future: Option<NonNull<RustFuture>>,
+    future: Option<&mut RustFuture>,
     waker: Option<NonNull<RustFutureForeignWaker>>,
     call_status: &mut RustCallStatus,
 ) -> bool {
-    let future: NonNull<RustFuture> = future.expect("`future` is a null pointer");
+    let future: &mut RustFuture = future.expect("`future` is a null pointer");
     let waker: NonNull<RustFutureForeignWaker> = waker.expect("`waker` is a null pointer");
 
-    let future: *mut RustFuture = future.as_ptr();
+    let future_mutex = Mutex::new(future);
 
     call_with_output(call_status, || {
-        future.as_mut().unwrap().poll(waker.as_ptr())
+        future_mutex.lock().unwrap().poll(waker.as_ptr())
     })
 }

@@ -10,11 +10,8 @@ class RustFuture(ctypes.Structure):
         ("_padding", ctypes.c_void_p),
     ]
 
-    def set_waker(self, waker):
-        self._ffi_waker = FUTURE_WAKER_T(waker)
-
-    def poll(self) -> FuturePoll:
-        result = rust_call(_UniFFILib.{{ ci.ffi_rustfuture_poll().name() }}, self, self._ffi_waker)
+    def poll(self, ffi_waker) -> FuturePoll:
+        result = rust_call(_UniFFILib.{{ ci.ffi_rustfuture_poll().name() }}, self, ffi_waker)
 
         if result == 1:
             return FuturePoll.DONE
@@ -41,9 +38,13 @@ class Future:
             return 0
 
         self._waker = waker
+        self._ffi_waker = FUTURE_WAKER_T(waker)
 
     def _future_waker(self) -> any:
         return self._waker
+
+    def _future_ffi_waker(self) -> FUTURE_WAKER_T:
+        return self._ffi_waker
 
     def done(self) -> bool:
         return self._state == FuturePoll.DONE
