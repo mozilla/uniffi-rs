@@ -1,0 +1,2 @@
+[bindings.swift.external_types]
+in_different_modules = true

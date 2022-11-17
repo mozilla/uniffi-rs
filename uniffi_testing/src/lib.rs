@@ -16,10 +16,17 @@ use std::{
     process::{Command, Stdio},
 };
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct UniFFITestingMetadata {
+    /// Crates that hold external types used by this crate.  When running the tests, we will build
+    /// the libraries and generate the source files for those crates and put them in the test
+    /// directory
     #[serde(rename = "external-crates")]
     external_crates: Option<Vec<String>>,
+    /// Should generated files for Swift external crates be compiled as separate modules?  The
+    /// default is to compile them all together into 1 module.
+    #[serde(default, rename = "swift-use-separate-modules")]
+    swift_use_separate_modules: bool,
 }
 
 // A source to compile for a test
@@ -130,6 +137,13 @@ impl UniFFITestHelper {
         }
     }
 
+    pub fn swift_use_separate_modules(&self) -> bool {
+        match &self.metadata {
+            Some(metadata) => metadata.swift_use_separate_modules,
+            None => false,
+        }
+    }
+
     /// Create at `out_dir` for testing
     ///
     /// This directory can be used for:
@@ -188,8 +202,18 @@ impl UniFFITestHelper {
 
     /// Get paths to the UDL and config files for a fixture
     pub fn get_compile_sources(&self) -> Result<Vec<CompileSource>> {
-        std::iter::once(self.package.clone())
-            .chain(self.find_packages_for_external_crates()?)
+        Ok(std::iter::once(self.get_main_compile_source()?)
+            .chain(self.get_external_compile_sources()?)
+            .collect())
+    }
+
+    pub fn get_main_compile_source(&self) -> Result<CompileSource> {
+        self.find_compile_source(&self.package.clone())
+    }
+
+    pub fn get_external_compile_sources(&self) -> Result<Vec<CompileSource>> {
+        self.find_packages_for_external_crates()?
+            .into_iter()
             .map(|p| self.find_compile_source(&p))
             .collect()
     }

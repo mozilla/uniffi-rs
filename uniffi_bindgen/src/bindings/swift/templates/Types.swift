@@ -64,6 +64,9 @@
 {%- when Type::Custom { name, builtin } %}
 {%- include "CustomType.swift" %}
 
+{%- when Type::External { crate_name, name } %}
+{%- include "ExternalType.swift" %}
+
 {%- when Type::Enum(name) %}
 {%- include "EnumTemplate.swift" %}
 
@@ -84,7 +87,6 @@
 
 {%- when Type::Map(key_type, value_type) %}
 {%- include "MapTemplate.swift" %}
-
 
 {%- else %}
 {%- endmatch %}

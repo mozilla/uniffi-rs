@@ -8,7 +8,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 use anyhow::{Context, Result};
 use askama::Template;
-use heck::{ToLowerCamelCase, ToUpperCamelCase};
+use heck::{ToLowerCamelCase, ToSnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
@@ -21,6 +21,7 @@ mod compounds;
 mod custom;
 mod enum_;
 mod error;
+mod external;
 mod miscellany;
 mod object;
 mod primitives;
@@ -40,6 +41,8 @@ pub struct Config {
     omit_argument_labels: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
+    #[serde(default)]
+    external_types: ExternalTypesConfig,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -48,6 +51,14 @@ pub struct CustomTypeConfig {
     type_name: Option<String>,
     into_custom: TemplateExpression,
     from_custom: TemplateExpression,
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct ExternalTypesConfig {
+    #[serde(default)]
+    in_different_modules: bool,
+    #[serde(default)]
+    module_names: HashMap<String, String>,
 }
 
 impl Config {
@@ -131,6 +142,16 @@ impl MergeWith for Config {
                 .omit_argument_labels
                 .merge_with(&other.omit_argument_labels),
             custom_types: self.custom_types.merge_with(&other.custom_types),
+            external_types: self.external_types.merge_with(&other.external_types),
+        }
+    }
+}
+
+impl MergeWith for ExternalTypesConfig {
+    fn merge_with(&self, other: &Self) -> Self {
+        ExternalTypesConfig {
+            in_different_modules: self.in_different_modules || other.in_different_modules,
+            module_names: self.module_names.merge_with(&other.module_names),
         }
     }
 }
@@ -206,6 +227,21 @@ impl<'a> TypeRenderer<'a> {
     fn add_import(&self, name: &str) -> &str {
         self.imports.borrow_mut().insert(name.to_owned());
         ""
+    }
+
+    /// Get the Swift module name for an external type
+    fn external_types_in_different_modules(&self) -> bool {
+        self.config.external_types.in_different_modules
+    }
+
+    /// Get the Swift module name for an external type
+    fn external_type_module_name(&self, name: &str) -> String {
+        self.config
+            .external_types
+            .module_names
+            .get(name)
+            .cloned()
+            .unwrap_or_else(|| name.to_snake_case())
     }
 }
 
@@ -323,7 +359,7 @@ impl SwiftCodeOracle {
             Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
             Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
-            Type::External { .. } => panic!("no support for external types yet"),
+            Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
             Type::Unresolved { name } => {
                 unreachable!("Type `{name}` must be resolved before calling create_code_type")
