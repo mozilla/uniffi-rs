@@ -26,7 +26,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
             Err(err) => panic!("Failed to convert arg '{}': {}", "{{ arg.name() }}", err),
         {%- endmatch %}
         }
-        {%- if !loop.last %}, {% endif %}
+        {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}
 
