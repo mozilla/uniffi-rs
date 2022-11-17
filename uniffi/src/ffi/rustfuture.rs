@@ -1,4 +1,4 @@
-use crate::{call_with_output, RustBuffer, RustCallStatus};
+use crate::{call_with_output, FfiConverter, RustCallStatus};
 
 use super::FfiDefault;
 use std::{
@@ -12,12 +12,17 @@ use std::{
 
 /// `RustFuture` must have the size of a pointer.
 #[repr(transparent)]
-pub struct RustFuture(Pin<Box<dyn Future<Output = RustBuffer> + Send + 'static>>);
+pub struct RustFuture<T>(Pin<Box<dyn Future<Output = T> + Send + 'static>>)
+where
+    T: FfiConverter;
 
-impl RustFuture {
+impl<T> RustFuture<T>
+where
+    T: FfiConverter,
+{
     pub fn new<F>(future: F) -> Self
     where
-        F: Future<Output = RustBuffer> + Send + 'static,
+        F: Future<Output = T> + Send + 'static,
     {
         Self(Box::pin(future))
     }
@@ -38,13 +43,19 @@ impl RustFuture {
     }
 }
 
-impl FfiDefault for RustFuture {
+impl<T> FfiDefault for RustFuture<T>
+where
+    T: FfiConverter,
+{
     fn ffi_default() -> Self {
-        Self::new(async { RustBuffer::default() })
+        Self::new(async { unreachable!("A default future must not be polled") })
     }
 }
 
-impl FfiDefault for Box<RustFuture> {
+impl<T> FfiDefault for Box<RustFuture<T>>
+where
+    T: FfiConverter,
+{
     fn ffi_default() -> Self {
         Box::new(RustFuture::ffi_default())
     }
@@ -57,7 +68,7 @@ mod tests {
     #[test]
     fn test_rust_future_size() {
         assert_eq!(
-            mem::size_of_val(&RustFuture::new(async { unreachable!() })),
+            mem::size_of_val(&RustFuture::<()>::new(async { unreachable!() })),
             mem::size_of::<*const u8>(),
         );
     }
@@ -100,12 +111,15 @@ impl RustTaskWakerBuilder {
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn uniffi_rustfuture_poll(
-    future: Option<&mut RustFuture>,
+#[doc(hidden)]
+pub fn uniffi_rustfuture_poll<T>(
+    future: Option<&mut RustFuture<T>>,
     waker: Option<NonNull<RustFutureForeignWaker>>,
     call_status: &mut RustCallStatus,
-) -> bool {
+) -> bool
+where
+    T: FfiConverter,
+{
     let future = future.expect("`future` is a null pointer");
     let waker = waker.expect("`waker` is a null pointer");
 
@@ -116,9 +130,11 @@ pub unsafe extern "C" fn uniffi_rustfuture_poll(
     })
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn uniffi_rustfuture_drop(
-    _future: Option<Box<RustFuture>>,
+#[doc(hidden)]
+pub fn uniffi_rustfuture_drop<T>(
+    _future: Option<Box<RustFuture<T>>>,
     _call_status: &mut RustCallStatus,
-) {
+) where
+    T: FfiConverter,
+{
 }

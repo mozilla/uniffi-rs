@@ -153,6 +153,7 @@ fn gen_ffi_function(
     // FIXME(jplatte): Use an extra trait implemented for `T: FfiConverter` as
     // well as `()` so no different codegen is needed?
     let (output, return_expr);
+    let mut extra_functions = Vec::new();
 
     match &sig.output {
         ReturnType::Default => {
@@ -162,16 +163,44 @@ fn gen_ffi_function(
 
         ReturnType::Type(_, ty) if sig.asyncness.is_some() => {
             output = Some(quote! {
-               // -> ::uniffi::RustFuture<<#ty as ::uniffi::FfiConverter>::FfiType>
-               -> Box<::uniffi::RustFuture>
+               -> Box<::uniffi::RustFuture<#ty>>
             });
             return_expr = quote! {
                 Box::new(::uniffi::RustFuture::new(
                     async move {
-                        <#ty as ::uniffi::FfiConverter>::lower(#rust_fn_call.await)
+                        // <#ty as ::uniffi::FfiConverter>::lower(#rust_fn_call.await)
+                        #rust_fn_call.await
                     }
                 ))
             };
+
+            let ffi_poll_ident = format_ident!("{}_poll", ffi_ident);
+            let ffi_drop_ident = format_ident!("{}_drop", ffi_ident);
+
+            // Poll function.
+            extra_functions.push(quote! {
+                #[doc(hidden)]
+                #[no_mangle]
+                pub extern "C" fn #ffi_poll_ident(
+                    future: core::option::Option<&mut uniffi::RustFuture<#ty>>,
+                    waker: core::option::Option<core::ptr::NonNull<uniffi::RustFutureForeignWaker>>,
+                    call_status: &mut uniffi::RustCallStatus,
+                ) -> bool {
+                    uniffi::ffi::uniffi_rustfuture_poll(future, waker, call_status)
+                }
+            });
+
+            // Drop function.
+            extra_functions.push(quote! {
+                #[doc(hidden)]
+                #[no_mangle]
+                pub extern "C" fn #ffi_drop_ident(
+                    future: core::option::Option<Box<uniffi::RustFuture<#ty>>>,
+                    call_status: &mut uniffi::RustCallStatus,
+                ) {
+                    uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
+                }
+            });
         }
 
         ReturnType::Type(_, ty) => {
@@ -196,5 +225,7 @@ fn gen_ffi_function(
                 #return_expr
             })
         }
+
+        #( #extra_functions )*
     }
 }

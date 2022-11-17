@@ -40,6 +40,19 @@ _UniFFILib.{{ func.name() }}.argtypes = (
 )
 _UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}ctypes.POINTER(RustFuture){% when None %}None{% endmatch %}
 
+_UniFFILib.{{ func.name() }}_poll.argtypes = (
+    ctypes.POINTER(RustFuture),
+    FUTURE_WAKER_T,
+    ctypes.POINTER(RustCallStatus),
+)
+_UniFFILib.{{ func.name() }}_poll.restype = ctypes.c_uint8
+
+_UniFFILib.{{ func.name() }}_drop.argtypes = (
+    ctypes.POINTER(RustFuture),
+    ctypes.POINTER(RustCallStatus),
+)
+_UniFFILib.{{ func.name() }}_drop.restype = None
+
 {%- else %}
 
 _UniFFILib.{{ func.name() }}.argtypes = (

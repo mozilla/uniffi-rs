@@ -10,14 +10,6 @@ class RustFuture(ctypes.Structure):
         ("_padding", ctypes.c_void_p),
     ]
 
-    def poll(self, ffi_waker) -> FuturePoll:
-        result = rust_call(_UniFFILib.{{ ci.ffi_rustfuture_poll().name() }}, self, ffi_waker)
-
-        if result == 1:
-            return FuturePoll.DONE
-
-        return FuturePoll.PENDING
-
 class Future:
     def __init__(self, future: any):
         self._asyncio_future_blocking = False

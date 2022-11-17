@@ -18,7 +18,6 @@ uniffi::deps::static_assertions::assert_impl_all!({{ k|type_rs }}: ::std::cmp::E
 {% endfor %}
 
 {% include "RustBuffer.rs" %}
-{% include "RustFuture.rs" %}
 
 // Error definitions, corresponding to `error` in the UDL.
 {% for e in ci.error_definitions() %}
