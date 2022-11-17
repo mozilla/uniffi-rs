@@ -63,48 +63,6 @@ mod tests {
     }
 }
 
-// #[repr(transparent)]
-// pub struct RustFuture<T>(Mutex<Pin<Box<dyn Future<Output = T> + Send + 'static>>>)
-// where
-//     T: Send + 'static;
-
-// impl<T> RustFuture<T>
-// where
-//     T: Send + 'static,
-// {
-//     pub fn new<F>(future: F) -> Self
-//     where
-//         F: Future<Output = T> + Send + 'static,
-//     {
-//         Self(Mutex::new(Box::pin(future)))
-//     }
-
-//     pub fn poll(&mut self, waker_pointer: *const RustFutureForeignWaker) -> bool {
-//         let waker = unsafe {
-//             Waker::from_raw(RawWaker::new(
-//                 Arc::into_raw(Arc::new(waker_pointer)) as *const (),
-//                 &RustTaskWakerBuilder::VTABLE,
-//             ))
-//         };
-//         let mut context = Context::from_waker(&waker);
-//         let future = self.0.get_mut().unwrap();
-
-//         match Pin::new(future).poll(&mut context) {
-//             Poll::Ready(_result) => true,
-//             Poll::Pending => false,
-//         }
-//     }
-// }
-
-// impl<T> FfiDefault for RustFuture<T>
-// where
-//     T: Send + 'static + FfiDefault,
-// {
-//     fn ffi_default() -> Self {
-//         Self::new(future::ready(T::ffi_default()))
-//     }
-// }
-
 pub type RustFutureForeignWaker = extern "C" fn();
 
 struct RustTaskWakerBuilder;
