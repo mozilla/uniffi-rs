@@ -186,6 +186,9 @@
 <span id="180">180</span>
 <span id="181">181</span>
 <span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -196,7 +199,7 @@
 <span class="kw">use</span> <span class="ident">goblin</span>::{
     <span class="ident">archive::Archive</span>,
     <span class="ident">elf::Elf</span>,
-    <span class="ident">mach</span>::{<span class="ident">segment::Section</span>, <span class="ident">symbols</span>, <span class="ident">Mach</span>, <span class="ident">MachO</span>},
+    <span class="ident">mach</span>::{<span class="ident">segment::Section</span>, <span class="ident">symbols</span>, <span class="ident">Mach</span>, <span class="ident">MachO</span>, <span class="ident">SingleArch</span>},
     <span class="ident">pe::PE</span>,
     <span class="ident">Object</span>,
 };
@@ -264,7 +267,10 @@
     <span class="kw">match</span> <span class="ident">mach</span> {
         <span class="ident">Mach::Binary</span>(<span class="ident">macho</span>) =&gt; <span class="ident">extract_from_macho</span>(<span class="ident">macho</span>, <span class="ident">file_data</span>),
         <span class="comment">// Multi-binary library, just extract the first one</span>
-        <span class="ident">Mach::Fat</span>(<span class="ident">multi_arch</span>) =&gt; <span class="ident">extract_from_macho</span>(<span class="ident">multi_arch</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>, <span class="ident">file_data</span>),
+        <span class="ident">Mach::Fat</span>(<span class="ident">multi_arch</span>) =&gt; <span class="kw">match</span> <span class="ident">multi_arch</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span> {
+            <span class="ident">SingleArch::MachO</span>(<span class="ident">macho</span>) =&gt; <span class="ident">extract_from_macho</span>(<span class="ident">macho</span>, <span class="ident">file_data</span>),
+            <span class="ident">SingleArch::Archive</span>(<span class="ident">archive</span>) =&gt; <span class="ident">extract_from_archive</span>(<span class="ident">archive</span>, <span class="ident">file_data</span>),
+        },
     }
 }
 
