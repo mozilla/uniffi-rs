@@ -8,7 +8,7 @@
 //!
 //! A `CodeType` is needed for each type that will cross the FFI. It should provide helper machinery
 //! in the target language to lift from and lower into a value of that type into a primitive type
-//! (the FFIType), and foreign language expressions that call into the machinery. This helper code
+//! (the FfiType), and foreign language expressions that call into the machinery. This helper code
 //! can be provided by a template file.
 //!
 //! A `CodeDeclaration` is needed for each type that is declared in the UDL file. This has access to

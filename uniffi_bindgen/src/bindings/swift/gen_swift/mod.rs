@@ -363,22 +363,22 @@ impl CodeOracle for SwiftCodeOracle {
         format!("`{}`", self.class_name(nm))
     }
 
-    fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
+    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
-            FFIType::Int8 => "int8_t".into(),
-            FFIType::UInt8 => "uint8_t".into(),
-            FFIType::Int16 => "int16_t".into(),
-            FFIType::UInt16 => "uint16_t".into(),
-            FFIType::Int32 => "int32_t".into(),
-            FFIType::UInt32 => "uint32_t".into(),
-            FFIType::Int64 => "int64_t".into(),
-            FFIType::UInt64 => "uint64_t".into(),
-            FFIType::Float32 => "float".into(),
-            FFIType::Float64 => "double".into(),
-            FFIType::RustArcPtr(_) => "void*_Nonnull".into(),
-            FFIType::RustBuffer => "RustBuffer".into(),
-            FFIType::ForeignBytes => "ForeignBytes".into(),
-            FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
+            FfiType::Int8 => "int8_t".into(),
+            FfiType::UInt8 => "uint8_t".into(),
+            FfiType::Int16 => "int16_t".into(),
+            FfiType::UInt16 => "uint16_t".into(),
+            FfiType::Int32 => "int32_t".into(),
+            FfiType::UInt32 => "uint32_t".into(),
+            FfiType::Int64 => "int64_t".into(),
+            FfiType::UInt64 => "uint64_t".into(),
+            FfiType::Float32 => "float".into(),
+            FfiType::Float64 => "double".into(),
+            FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
+            FfiType::RustBuffer => "RustBuffer".into(),
+            FfiType::ForeignBytes => "ForeignBytes".into(),
+            FfiType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
         }
     }
 }
@@ -428,29 +428,29 @@ pub mod filters {
         Ok(codetype.literal(oracle, literal))
     }
 
-    /// Get the Swift syntax for representing a given low-level `FFIType`.
-    pub fn ffi_type_name(type_: &FFIType) -> Result<String, askama::Error> {
+    /// Get the Swift syntax for representing a given low-level `FfiType`.
+    pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
     }
 
     /// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see
     /// #1106 for details
-    pub fn type_ffi_lowered(ffi_type: &FFIType) -> Result<String, askama::Error> {
+    pub fn type_ffi_lowered(ffi_type: &FfiType) -> Result<String, askama::Error> {
         Ok(match ffi_type {
-            FFIType::Int8 => "Int8".into(),
-            FFIType::UInt8 => "UInt8".into(),
-            FFIType::Int16 => "Int16".into(),
-            FFIType::UInt16 => "UInt16".into(),
-            FFIType::Int32 => "Int32".into(),
-            FFIType::UInt32 => "UInt32".into(),
-            FFIType::Int64 => "Int64".into(),
-            FFIType::UInt64 => "UInt64".into(),
-            FFIType::Float32 => "float".into(),
-            FFIType::Float64 => "double".into(),
-            FFIType::RustArcPtr(_) => "void*_Nonnull".into(),
-            FFIType::RustBuffer => "RustBuffer".into(),
-            FFIType::ForeignBytes => "ForeignBytes".into(),
-            FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
+            FfiType::Int8 => "Int8".into(),
+            FfiType::UInt8 => "UInt8".into(),
+            FfiType::Int16 => "Int16".into(),
+            FfiType::UInt16 => "UInt16".into(),
+            FfiType::Int32 => "Int32".into(),
+            FfiType::UInt32 => "UInt32".into(),
+            FfiType::Int64 => "Int64".into(),
+            FfiType::UInt64 => "UInt64".into(),
+            FfiType::Float32 => "float".into(),
+            FfiType::Float64 => "double".into(),
+            FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
+            FfiType::RustBuffer => "RustBuffer".into(),
+            FfiType::ForeignBytes => "ForeignBytes".into(),
+            FfiType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
         })
     }
 

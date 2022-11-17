@@ -60,22 +60,22 @@ mod filters {
         })
     }
 
-    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
+    pub fn type_ffi(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(match type_ {
-            FFIType::Int8 => "i8".into(),
-            FFIType::UInt8 => "u8".into(),
-            FFIType::Int16 => "i16".into(),
-            FFIType::UInt16 => "u16".into(),
-            FFIType::Int32 => "i32".into(),
-            FFIType::UInt32 => "u32".into(),
-            FFIType::Int64 => "i64".into(),
-            FFIType::UInt64 => "u64".into(),
-            FFIType::Float32 => "f32".into(),
-            FFIType::Float64 => "f64".into(),
-            FFIType::RustArcPtr(_) => "*const std::os::raw::c_void".into(),
-            FFIType::RustBuffer => "uniffi::RustBuffer".into(),
-            FFIType::ForeignBytes => "uniffi::ForeignBytes".into(),
-            FFIType::ForeignCallback => "uniffi::ForeignCallback".into(),
+            FfiType::Int8 => "i8".into(),
+            FfiType::UInt8 => "u8".into(),
+            FfiType::Int16 => "i16".into(),
+            FfiType::UInt16 => "u16".into(),
+            FfiType::Int32 => "i32".into(),
+            FfiType::UInt32 => "u32".into(),
+            FfiType::Int64 => "i64".into(),
+            FfiType::UInt64 => "u64".into(),
+            FfiType::Float32 => "f32".into(),
+            FfiType::Float64 => "f64".into(),
+            FfiType::RustArcPtr(_) => "*const std::os::raw::c_void".into(),
+            FfiType::RustBuffer => "uniffi::RustBuffer".into(),
+            FfiType::ForeignBytes => "uniffi::ForeignBytes".into(),
+            FfiType::ForeignCallback => "uniffi::ForeignCallback".into(),
         })
     }
 

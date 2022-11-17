@@ -63,7 +63,7 @@ use std::{collections::HashSet, iter};
 
 use anyhow::{bail, Result};
 
-use super::ffi::{FFIArgument, FFIFunction, FFIType};
+use super::ffi::{FFIArgument, FFIFunction, FfiType};
 use super::function::Argument;
 use super::types::{Type, TypeIterator};
 use super::{
@@ -165,7 +165,7 @@ impl Object {
         }
         self.ffi_func_free.arguments = vec![FFIArgument {
             name: "ptr".to_string(),
-            type_: FFIType::RustArcPtr(self.name().to_string()),
+            type_: FfiType::RustArcPtr(self.name().to_string()),
         }];
         self.ffi_func_free.return_type = None;
 
@@ -291,7 +291,7 @@ impl Constructor {
     fn derive_ffi_func(&mut self, ci_prefix: &str, obj_name: &str) {
         self.ffi_func.name = format!("{ci_prefix}_{obj_name}_{}", self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
-        self.ffi_func.return_type = Some(FFIType::RustArcPtr(obj_name.to_string()));
+        self.ffi_func.return_type = Some(FfiType::RustArcPtr(obj_name.to_string()));
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -342,7 +342,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 // Represents an instance method for an object type.
 //
 // The FFI will represent this as a function whose first/self argument is a
-// `FFIType::RustArcPtr` to the instance.
+// `FfiType::RustArcPtr` to the instance.
 #[derive(Debug, Clone)]
 pub struct Method {
     pub(super) name: String,

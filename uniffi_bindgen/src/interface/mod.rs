@@ -76,7 +76,7 @@ mod record;
 pub use record::{Field, Record};
 
 pub mod ffi;
-pub use ffi::{FFIArgument, FFIFunction, FFIType};
+pub use ffi::{FFIArgument, FFIFunction, FfiType};
 use uniffi_meta::{FnMetadata, MethodMetadata, ObjectMetadata};
 
 /// The main public interface for this module, representing the complete details of an interface exposed
@@ -358,9 +358,9 @@ impl ComponentInterface {
             name: format!("ffi_{}_rustbuffer_alloc", self.ffi_namespace()),
             arguments: vec![FFIArgument {
                 name: "size".to_string(),
-                type_: FFIType::Int32,
+                type_: FfiType::Int32,
             }],
-            return_type: Some(FFIType::RustBuffer),
+            return_type: Some(FfiType::RustBuffer),
         }
     }
 
@@ -372,9 +372,9 @@ impl ComponentInterface {
             name: format!("ffi_{}_rustbuffer_from_bytes", self.ffi_namespace()),
             arguments: vec![FFIArgument {
                 name: "bytes".to_string(),
-                type_: FFIType::ForeignBytes,
+                type_: FfiType::ForeignBytes,
             }],
-            return_type: Some(FFIType::RustBuffer),
+            return_type: Some(FfiType::RustBuffer),
         }
     }
 
@@ -386,7 +386,7 @@ impl ComponentInterface {
             name: format!("ffi_{}_rustbuffer_free", self.ffi_namespace()),
             arguments: vec![FFIArgument {
                 name: "buf".to_string(),
-                type_: FFIType::RustBuffer,
+                type_: FfiType::RustBuffer,
             }],
             return_type: None,
         }
@@ -401,14 +401,14 @@ impl ComponentInterface {
             arguments: vec![
                 FFIArgument {
                     name: "buf".to_string(),
-                    type_: FFIType::RustBuffer,
+                    type_: FfiType::RustBuffer,
                 },
                 FFIArgument {
                     name: "additional".to_string(),
-                    type_: FFIType::Int32,
+                    type_: FfiType::Int32,
                 },
             ],
-            return_type: Some(FFIType::RustBuffer),
+            return_type: Some(FfiType::RustBuffer),
         }
     }
 
