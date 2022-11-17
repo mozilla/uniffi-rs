@@ -19,14 +19,14 @@
 //!
 //! As a developer working on UniFFI itself, you're likely to spend a fair bit of time thinking
 //! about how these API-level types map into the lower-level types of the FFI layer as represented
-//! by the [`ffi::FFIType`](super::ffi::FFIType) enum, but that's a detail that is invisible to end users.
+//! by the [`ffi::FfiType`](super::ffi::FfiType) enum, but that's a detail that is invisible to end users.
 
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap, iter};
 
 use anyhow::{bail, Result};
 use heck::ToUpperCamelCase;
 
-use super::ffi::FFIType;
+use super::ffi::FfiType;
 
 mod finder;
 pub(super) use finder::TypeFinder;
@@ -127,7 +127,7 @@ impl Type {
         }
     }
 
-    pub fn ffi_type(&self) -> FFIType {
+    pub fn ffi_type(&self) -> FfiType {
         self.into()
     }
 
@@ -142,33 +142,33 @@ impl Type {
 }
 
 /// When passing data across the FFI, each `Type` value will be lowered into a corresponding
-/// `FFIType` value. This conversion tells you which one.
+/// `FfiType` value. This conversion tells you which one.
 ///
-/// Note that the conversion is one-way - given an FFIType, it is not in general possible to
+/// Note that the conversion is one-way - given an FfiType, it is not in general possible to
 /// tell what the corresponding Type is that it's being used to represent.
-impl From<&Type> for FFIType {
-    fn from(t: &Type) -> FFIType {
+impl From<&Type> for FfiType {
+    fn from(t: &Type) -> FfiType {
         match t {
             // Types that are the same map to themselves, naturally.
-            Type::UInt8 => FFIType::UInt8,
-            Type::Int8 => FFIType::Int8,
-            Type::UInt16 => FFIType::UInt16,
-            Type::Int16 => FFIType::Int16,
-            Type::UInt32 => FFIType::UInt32,
-            Type::Int32 => FFIType::Int32,
-            Type::UInt64 => FFIType::UInt64,
-            Type::Int64 => FFIType::Int64,
-            Type::Float32 => FFIType::Float32,
-            Type::Float64 => FFIType::Float64,
+            Type::UInt8 => FfiType::UInt8,
+            Type::Int8 => FfiType::Int8,
+            Type::UInt16 => FfiType::UInt16,
+            Type::Int16 => FfiType::Int16,
+            Type::UInt32 => FfiType::UInt32,
+            Type::Int32 => FfiType::Int32,
+            Type::UInt64 => FfiType::UInt64,
+            Type::Int64 => FfiType::Int64,
+            Type::Float32 => FfiType::Float32,
+            Type::Float64 => FfiType::Float64,
             // Booleans lower into an Int8, to work around a bug in JNA.
-            Type::Boolean => FFIType::Int8,
+            Type::Boolean => FfiType::Int8,
             // Strings are always owned rust values.
             // We might add a separate type for borrowed strings in future.
-            Type::String => FFIType::RustBuffer,
+            Type::String => FfiType::RustBuffer,
             // Objects are pointers to an Arc<>
-            Type::Object(name) => FFIType::RustArcPtr(name.to_owned()),
+            Type::Object(name) => FfiType::RustArcPtr(name.to_owned()),
             // Callback interfaces are passed as opaque integer handles.
-            Type::CallbackInterface(_) => FFIType::UInt64,
+            Type::CallbackInterface(_) => FfiType::UInt64,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
             Type::Enum(_)
             | Type::Error(_)
@@ -178,17 +178,17 @@ impl From<&Type> for FFIType {
             | Type::Map(_, _)
             | Type::Timestamp
             | Type::Duration
-            | Type::External { .. } => FFIType::RustBuffer,
-            Type::Custom { builtin, .. } => FFIType::from(builtin.as_ref()),
+            | Type::External { .. } => FfiType::RustBuffer,
+            Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
             Type::Unresolved { name } => {
-                unreachable!("Type `{name}` must be resolved before lowering to FFIType")
+                unreachable!("Type `{name}` must be resolved before lowering to FfiType")
             }
         }
     }
 }
 
 // Needed for rust scaffolding askama template
-impl From<&&Type> for FFIType {
+impl From<&&Type> for FfiType {
     fn from(ty: &&Type) -> Self {
         (*ty).into()
     }

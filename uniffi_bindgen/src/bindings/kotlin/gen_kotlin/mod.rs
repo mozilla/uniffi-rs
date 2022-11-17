@@ -270,21 +270,21 @@ impl CodeOracle for KotlinCodeOracle {
         }
     }
 
-    fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
+    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
             // support them yet. Thus, we use the signed variants to represent both signed and unsigned
             // types from the component API.
-            FFIType::Int8 | FFIType::UInt8 => "Byte".to_string(),
-            FFIType::Int16 | FFIType::UInt16 => "Short".to_string(),
-            FFIType::Int32 | FFIType::UInt32 => "Int".to_string(),
-            FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
-            FFIType::Float32 => "Float".to_string(),
-            FFIType::Float64 => "Double".to_string(),
-            FFIType::RustArcPtr(_) => "Pointer".to_string(),
-            FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
-            FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
-            FFIType::ForeignCallback => "ForeignCallback".to_string(),
+            FfiType::Int8 | FfiType::UInt8 => "Byte".to_string(),
+            FfiType::Int16 | FfiType::UInt16 => "Short".to_string(),
+            FfiType::Int32 | FfiType::UInt32 => "Int".to_string(),
+            FfiType::Int64 | FfiType::UInt64 => "Long".to_string(),
+            FfiType::Float32 => "Float".to_string(),
+            FfiType::Float64 => "Double".to_string(),
+            FfiType::RustArcPtr(_) => "Pointer".to_string(),
+            FfiType::RustBuffer => "RustBuffer.ByValue".to_string(),
+            FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+            FfiType::ForeignCallback => "ForeignCallback".to_string(),
         }
     }
 }
@@ -338,8 +338,8 @@ pub mod filters {
         Ok(codetype.literal(oracle(), literal))
     }
 
-    /// Get the Kotlin syntax for representing a given low-level `FFIType`.
-    pub fn ffi_type_name(type_: &FFIType) -> Result<String, askama::Error> {
+    /// Get the Kotlin syntax for representing a given low-level `FfiType`.
+    pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
     }
 

@@ -19,7 +19,7 @@
 /// "owned" types (the recipient must free it, or pass it to someone else) and
 /// "borrowed" types (the sender must keep it alive for the duration of the call).
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum FFIType {
+pub enum FfiType {
     // N.B. there are no booleans at this layer, since they cause problems for JNA.
     UInt8,
     Int8,
@@ -60,7 +60,7 @@ pub enum FFIType {
 pub struct FFIFunction {
     pub(super) name: String,
     pub(super) arguments: Vec<FFIArgument>,
-    pub(super) return_type: Option<FFIType>,
+    pub(super) return_type: Option<FfiType>,
 }
 
 impl FFIFunction {
@@ -70,7 +70,7 @@ impl FFIFunction {
     pub fn arguments(&self) -> Vec<&FFIArgument> {
         self.arguments.iter().collect()
     }
-    pub fn return_type(&self) -> Option<&FFIType> {
+    pub fn return_type(&self) -> Option<&FfiType> {
         self.return_type.as_ref()
     }
 }
@@ -81,14 +81,14 @@ impl FFIFunction {
 #[derive(Debug, Clone)]
 pub struct FFIArgument {
     pub(super) name: String,
-    pub(super) type_: FFIType,
+    pub(super) type_: FfiType,
 }
 
 impl FFIArgument {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn type_(&self) -> FFIType {
+    pub fn type_(&self) -> FfiType {
         self.type_.clone()
     }
 }

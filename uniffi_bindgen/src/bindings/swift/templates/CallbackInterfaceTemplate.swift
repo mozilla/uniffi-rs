@@ -125,7 +125,7 @@ fileprivate struct {{ ffi_converter_name }} {
 
 extension {{ ffi_converter_name }} : FfiConverter {
     typealias SwiftType = {{ type_name }}
-    // We can use Handle as the FFIType because it's a typealias to UInt64
+    // We can use Handle as the FfiType because it's a typealias to UInt64
     typealias FfiType = UniFFICallbackHandle
 
     public static func lift(_ handle: UniFFICallbackHandle) throws -> SwiftType {

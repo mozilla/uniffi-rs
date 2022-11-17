@@ -288,22 +288,22 @@ impl CodeOracle for PythonCodeOracle {
         }
     }
 
-    fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
+    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
-            FFIType::Int8 => "ctypes.c_int8".to_string(),
-            FFIType::UInt8 => "ctypes.c_uint8".to_string(),
-            FFIType::Int16 => "ctypes.c_int16".to_string(),
-            FFIType::UInt16 => "ctypes.c_uint16".to_string(),
-            FFIType::Int32 => "ctypes.c_int32".to_string(),
-            FFIType::UInt32 => "ctypes.c_uint32".to_string(),
-            FFIType::Int64 => "ctypes.c_int64".to_string(),
-            FFIType::UInt64 => "ctypes.c_uint64".to_string(),
-            FFIType::Float32 => "ctypes.c_float".to_string(),
-            FFIType::Float64 => "ctypes.c_double".to_string(),
-            FFIType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
-            FFIType::RustBuffer => "RustBuffer".to_string(),
-            FFIType::ForeignBytes => "ForeignBytes".to_string(),
-            FFIType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
+            FfiType::Int8 => "ctypes.c_int8".to_string(),
+            FfiType::UInt8 => "ctypes.c_uint8".to_string(),
+            FfiType::Int16 => "ctypes.c_int16".to_string(),
+            FfiType::UInt16 => "ctypes.c_uint16".to_string(),
+            FfiType::Int32 => "ctypes.c_int32".to_string(),
+            FfiType::UInt32 => "ctypes.c_uint32".to_string(),
+            FfiType::Int64 => "ctypes.c_int64".to_string(),
+            FfiType::UInt64 => "ctypes.c_uint64".to_string(),
+            FfiType::Float32 => "ctypes.c_float".to_string(),
+            FfiType::Float64 => "ctypes.c_double".to_string(),
+            FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
+            FfiType::RustBuffer => "RustBuffer".to_string(),
+            FfiType::ForeignBytes => "ForeignBytes".to_string(),
+            FfiType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
         }
     }
 }
@@ -354,8 +354,8 @@ pub mod filters {
         Ok(codetype.literal(oracle, literal))
     }
 
-    /// Get the Python syntax for representing a given low-level `FFIType`.
-    pub fn ffi_type_name(type_: &FFIType) -> Result<String, askama::Error> {
+    /// Get the Python syntax for representing a given low-level `FfiType`.
+    pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
     }
 
