@@ -1134,6 +1134,24 @@ include!(concat!(env!(&quot;OUT_DIR&quot;), &quot;/consuming_crate.uniffi.rs&quo
 </span></code></pre></pre>
 <p>Your <code>Cargo.toml</code> must reference the external crate as normal.</p>
 <p>The <code>External</code> attribute can be specified on dictionaries, enums and errors.</p>
+<h2><a class="header" href="#foreign-bindings" id="foreign-bindings">Foreign bindings</a></h2>
+<p>The foreign bindings will also need to know how to access the external type,
+which varies slightly for each language:</p>
+<h3><a class="header" href="#kotlin-1" id="kotlin-1">Kotlin</a></h3>
+<p>For Kotlin, the generated code needs to import the external types from the
+Kotlin module that corresponds to the Rust crate.  By default, UniFFI assumes
+that the Kotlin module name matches the Rust crate name, but this can be
+configured in <code>uniffi.toml</code> with an entry like this:</p>
+<pre><code>[bindings.kotlin.external_packages]
+# Map the crate names from [External={name}] into Kotlin package names
+rust-crate-name = &quot;kotlin.package.name&quot;
+</code></pre>
+<p>See the <a href="https://github.com/mozilla/uniffi-rs/blob/main/fixtures/ext-types/lib/uniffi.toml"><code>ext-types</code> fixture</a>
+for an example</p>
+<h3><a class="header" href="#swift-1" id="swift-1">Swift</a></h3>
+<p>For Swift, you must compile all generated <code>.swift</code> files together in a single
+module since the generate code expects that it can access external types
+without importing them.</p>
 <h1><a class="header" href="#custom-types" id="custom-types">Custom types</a></h1>
 <p>Custom types allow you to extend the UniFFI type system to support types from your Rust crate or 3rd
 party libraries.  This relies on a <a href="udl/./builtin_types.html">builtin</a> UDL type move data across the

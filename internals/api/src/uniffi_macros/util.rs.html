@@ -158,7 +158,6 @@
 <span id="152">152</span>
 <span id="153">153</span>
 <span id="154">154</span>
-<span id="155">155</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -220,7 +219,6 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mod_path</span>() -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
-    <span class="kw">use</span> <span class="ident">quote::quote</span>;
 
     <span class="kw">let</span> <span class="ident">module_path_invoc</span> <span class="op">=</span> <span class="ident">TokenStream::from</span>(<span class="macro">quote!</span> { <span class="macro">::core::module_path!</span>() });
     <span class="comment">// We ask the compiler what `module_path!()` expands to here.</span>
