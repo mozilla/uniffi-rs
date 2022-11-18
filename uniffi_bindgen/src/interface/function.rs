@@ -36,7 +36,7 @@ use std::hash::{Hash, Hasher};
 
 use anyhow::{bail, Result};
 
-use super::ffi::{FFIArgument, FfiFunction};
+use super::ffi::{FfiArgument, FfiFunction};
 use super::literal::{convert_default_value, Literal};
 use super::types::{Type, TypeIterator};
 use super::{
@@ -216,9 +216,9 @@ impl Argument {
     }
 }
 
-impl From<&Argument> for FFIArgument {
-    fn from(a: &Argument) -> FFIArgument {
-        FFIArgument {
+impl From<&Argument> for FfiArgument {
+    fn from(a: &Argument) -> FfiArgument {
+        FfiArgument {
             name: a.name.clone(),
             type_: (&a.type_).into(),
         }

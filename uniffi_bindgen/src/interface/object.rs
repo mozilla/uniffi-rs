@@ -63,7 +63,7 @@ use std::{collections::HashSet, iter};
 
 use anyhow::{bail, Result};
 
-use super::ffi::{FFIArgument, FfiFunction, FfiType};
+use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::function::Argument;
 use super::types::{Type, TypeIterator};
 use super::{
@@ -163,7 +163,7 @@ impl Object {
         if self.ffi_func_free.name().is_empty() {
             self.ffi_func_free.name = format!("ffi_{ci_prefix}_{}_object_free", self.name);
         }
-        self.ffi_func_free.arguments = vec![FFIArgument {
+        self.ffi_func_free.arguments = vec![FfiArgument {
             name: "ptr".to_string(),
             type_: FfiType::RustArcPtr(self.name().to_string()),
         }];
