@@ -25,7 +25,7 @@ Our current system for handling this is to have exactly 2 matches against `Type`
      - Base classes and helper classes, for example
        [`ObjectRuntime.kt`](https://github.com/mozilla/uniffi-rs/blob/main/uniffi_bindgen/src/bindings/kotlin/templates/ObjectRuntime.kt)
        contains shared functionality for all the `Type::Object` types.
-     - The FFIConverter class definition.  This handles [lifting and lowering
+     - The FfiConverter class definition.  This handles [lifting and lowering
        types across the FFI](./lifting_and_lowering.md) for the type.
      - Initialization functions
      - Importing dependencies
@@ -35,7 +35,7 @@ Our current system for handling this is to have exactly 2 matches against `Type`
   - The other match lives in the Rust code.  We map each `Type` variant to a implementation of the `CodeType` trait that
     renders identifiers and names related to the type, including:
     - The name of the type in the foreign language
-    - The name of the `FFIConverter` class
+    - The name of the `FfiConverter` class
     - The name of the initialization function
     - See
       [`KotlinCodeOracle::create_code_type()`](https://github.com/mozilla/uniffi-rs/blob/470740289258e1f06171a976d8e15978f028e391/uniffi_bindgen/src/bindings/kotlin/gen_kotlin/mod.rs#L198-L230)
@@ -55,8 +55,8 @@ Why is the code organized like this?  For a few reasons:
     example, at one point the logic to lift/lower a type lived in the Rust code as a function that generated the
     expression in the foreign language.  However, it was not clear at all how to make this work for external types,
     it would probably require parsing multiple UDL files and managing multiple ComponentInterfaces.  Putting the logic
-    to lift/lower the type in the `FFIConverter` class simplifies this, because we can import the external
-    `FFIConverter` class and use that. We only need to know the name of the `FFIConverter` class which is a simpler
+    to lift/lower the type in the `FfiConverter` class simplifies this, because we can import the external
+    `FfiConverter` class and use that. We only need to know the name of the `FfiConverter` class which is a simpler
     task.
 
 ## Askama extensions

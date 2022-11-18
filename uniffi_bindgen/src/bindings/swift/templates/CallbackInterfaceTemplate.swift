@@ -100,7 +100,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
         }
     }
 
-// FFIConverter protocol for callback interfaces
+// FfiConverter protocol for callback interfaces
 fileprivate struct {{ ffi_converter_name }} {
     // Initialize our callback method with the scaffolding code
     private static var callbackInitialized = false
