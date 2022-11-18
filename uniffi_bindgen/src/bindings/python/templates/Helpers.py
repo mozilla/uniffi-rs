@@ -36,7 +36,7 @@ def rust_call_with_error(error_ffi_converter, fn, *args):
     # Call a rust function and handle any errors
     #
     # This function is used for rust calls that return Result<> and therefore can set the CALL_ERROR status code.
-    # error_ffi_converter must be set to the FFIConverter for the error class that corresponds to the result.
+    # error_ffi_converter must be set to the FfiConverter for the error class that corresponds to the result.
     call_status = RustCallStatus(code=RustCallStatus.CALL_SUCCESS, error_buf=RustBuffer(0, 0, None))
 
     args_with_error = args + (ctypes.byref(call_status),)
