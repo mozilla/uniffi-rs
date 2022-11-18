@@ -63,7 +63,7 @@ use std::{collections::HashSet, iter};
 
 use anyhow::{bail, Result};
 
-use super::ffi::{FFIArgument, FFIFunction, FfiType};
+use super::ffi::{FFIArgument, FfiFunction, FfiType};
 use super::function::Argument;
 use super::types::{Type, TypeIterator};
 use super::{
@@ -91,7 +91,7 @@ pub struct Object {
     pub(super) name: String,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
-    pub(super) ffi_func_free: FFIFunction,
+    pub(super) ffi_func_free: FfiFunction,
     pub(super) uses_deprecated_threadsafe_attribute: bool,
 }
 
@@ -143,7 +143,7 @@ impl Object {
         }
     }
 
-    pub fn ffi_object_free(&self) -> &FFIFunction {
+    pub fn ffi_object_free(&self) -> &FfiFunction {
         &self.ffi_func_free
     }
 
@@ -151,7 +151,7 @@ impl Object {
         self.uses_deprecated_threadsafe_attribute
     }
 
-    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FFIFunction> {
+    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
         iter::once(&self.ffi_func_free)
             .chain(self.constructors.iter().map(|f| &f.ffi_func))
             .chain(self.methods.iter().map(|f| &f.ffi_func))
@@ -249,7 +249,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 pub struct Constructor {
     pub(super) name: String,
     pub(super) arguments: Vec<Argument>,
-    pub(super) ffi_func: FFIFunction,
+    pub(super) ffi_func: FfiFunction,
     pub(super) attributes: ConstructorAttributes,
 }
 
@@ -266,7 +266,7 @@ impl Constructor {
         self.arguments.to_vec()
     }
 
-    pub fn ffi_func(&self) -> &FFIFunction {
+    pub fn ffi_func(&self) -> &FfiFunction {
         &self.ffi_func
     }
 
@@ -349,7 +349,7 @@ pub struct Method {
     pub(super) object_name: String,
     pub(super) return_type: Option<Type>,
     pub(super) arguments: Vec<Argument>,
-    pub(super) ffi_func: FFIFunction,
+    pub(super) ffi_func: FfiFunction,
     pub(super) attributes: MethodAttributes,
 }
 
@@ -383,7 +383,7 @@ impl Method {
         self.return_type.as_ref()
     }
 
-    pub fn ffi_func(&self) -> &FFIFunction {
+    pub fn ffi_func(&self) -> &FfiFunction {
         &self.ffi_func
     }
 
@@ -434,9 +434,9 @@ impl From<uniffi_meta::MethodMetadata> for Method {
         let return_type = meta.return_type.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
-        let ffi_func = FFIFunction {
+        let ffi_func = FfiFunction {
             name: ffi_name,
-            ..FFIFunction::default()
+            ..FfiFunction::default()
         };
 
         Self {

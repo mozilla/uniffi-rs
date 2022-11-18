@@ -36,7 +36,7 @@ use std::hash::{Hash, Hasher};
 
 use anyhow::{bail, Result};
 
-use super::ffi::{FFIArgument, FFIFunction};
+use super::ffi::{FFIArgument, FfiFunction};
 use super::literal::{convert_default_value, Literal};
 use super::types::{Type, TypeIterator};
 use super::{
@@ -56,7 +56,7 @@ pub struct Function {
     pub(super) name: String,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
-    pub(super) ffi_func: FFIFunction,
+    pub(super) ffi_func: FfiFunction,
     pub(super) attributes: FunctionAttributes,
 }
 
@@ -77,7 +77,7 @@ impl Function {
         self.return_type.as_ref()
     }
 
-    pub fn ffi_func(&self) -> &FFIFunction {
+    pub fn ffi_func(&self) -> &FfiFunction {
         &self.ffi_func
     }
 
@@ -127,9 +127,9 @@ impl From<uniffi_meta::FnMetadata> for Function {
         let return_type = meta.return_type.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
-        let ffi_func = FFIFunction {
+        let ffi_func = FfiFunction {
             name: ffi_name,
-            ..FFIFunction::default()
+            ..FfiFunction::default()
         };
 
         Self {

@@ -54,16 +54,16 @@ pub enum FfiType {
 ///
 /// These can't be declared explicitly in the UDL, but rather, are derived automatically
 /// from the high-level interface. Each callable thing in the component API will have a
-/// corresponding `FFIFunction` through which it can be invoked, and UniFFI also provides
-/// some built-in `FFIFunction` helpers for use in the foreign language bindings.
+/// corresponding `FfiFunction` through which it can be invoked, and UniFFI also provides
+/// some built-in `FfiFunction` helpers for use in the foreign language bindings.
 #[derive(Debug, Default, Clone)]
-pub struct FFIFunction {
+pub struct FfiFunction {
     pub(super) name: String,
     pub(super) arguments: Vec<FFIArgument>,
     pub(super) return_type: Option<FfiType>,
 }
 
-impl FFIFunction {
+impl FfiFunction {
     pub fn name(&self) -> &str {
         &self.name
     }
