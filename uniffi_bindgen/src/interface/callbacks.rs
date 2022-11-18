@@ -37,7 +37,7 @@ use std::hash::{Hash, Hasher};
 
 use anyhow::{bail, Result};
 
-use super::ffi::{FFIArgument, FfiFunction, FfiType};
+use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::object::Method;
 use super::types::{Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
@@ -76,7 +76,7 @@ impl CallbackInterface {
 
     pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) {
         self.ffi_init_callback.name = format!("ffi_{ci_prefix}_{}_init_callback", self.name);
-        self.ffi_init_callback.arguments = vec![FFIArgument {
+        self.ffi_init_callback.arguments = vec![FfiArgument {
             name: "callback_stub".to_string(),
             type_: FfiType::ForeignCallback,
         }];

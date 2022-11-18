@@ -76,7 +76,7 @@ mod record;
 pub use record::{Field, Record};
 
 pub mod ffi;
-pub use ffi::{FFIArgument, FfiFunction, FfiType};
+pub use ffi::{FfiArgument, FfiFunction, FfiType};
 use uniffi_meta::{FnMetadata, MethodMetadata, ObjectMetadata};
 
 /// The main public interface for this module, representing the complete details of an interface exposed
@@ -356,7 +356,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_alloc(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_alloc", self.ffi_namespace()),
-            arguments: vec![FFIArgument {
+            arguments: vec![FfiArgument {
                 name: "size".to_string(),
                 type_: FfiType::Int32,
             }],
@@ -370,7 +370,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_from_bytes(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_from_bytes", self.ffi_namespace()),
-            arguments: vec![FFIArgument {
+            arguments: vec![FfiArgument {
                 name: "bytes".to_string(),
                 type_: FfiType::ForeignBytes,
             }],
@@ -384,7 +384,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_free(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_free", self.ffi_namespace()),
-            arguments: vec![FFIArgument {
+            arguments: vec![FfiArgument {
                 name: "buf".to_string(),
                 type_: FfiType::RustBuffer,
             }],
@@ -399,11 +399,11 @@ impl ComponentInterface {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_reserve", self.ffi_namespace()),
             arguments: vec![
-                FFIArgument {
+                FfiArgument {
                     name: "buf".to_string(),
                     type_: FfiType::RustBuffer,
                 },
-                FFIArgument {
+                FfiArgument {
                     name: "additional".to_string(),
                     type_: FfiType::Int32,
                 },

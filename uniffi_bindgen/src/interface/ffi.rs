@@ -59,7 +59,7 @@ pub enum FfiType {
 #[derive(Debug, Default, Clone)]
 pub struct FfiFunction {
     pub(super) name: String,
-    pub(super) arguments: Vec<FFIArgument>,
+    pub(super) arguments: Vec<FfiArgument>,
     pub(super) return_type: Option<FfiType>,
 }
 
@@ -67,7 +67,7 @@ impl FfiFunction {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn arguments(&self) -> Vec<&FFIArgument> {
+    pub fn arguments(&self) -> Vec<&FfiArgument> {
         self.arguments.iter().collect()
     }
     pub fn return_type(&self) -> Option<&FfiType> {
@@ -79,12 +79,12 @@ impl FfiFunction {
 ///
 /// Each argument has a name and a type.
 #[derive(Debug, Clone)]
-pub struct FFIArgument {
+pub struct FfiArgument {
     pub(super) name: String,
     pub(super) type_: FfiType,
 }
 
-impl FFIArgument {
+impl FfiArgument {
     pub fn name(&self) -> &str {
         &self.name
     }
