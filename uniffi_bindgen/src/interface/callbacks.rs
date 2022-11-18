@@ -37,7 +37,7 @@ use std::hash::{Hash, Hasher};
 
 use anyhow::{bail, Result};
 
-use super::ffi::{FFIArgument, FFIFunction, FfiType};
+use super::ffi::{FFIArgument, FfiFunction, FfiType};
 use super::object::Method;
 use super::types::{Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
@@ -46,7 +46,7 @@ use super::{APIConverter, ComponentInterface};
 pub struct CallbackInterface {
     pub(super) name: String,
     pub(super) methods: Vec<Method>,
-    pub(super) ffi_init_callback: FFIFunction,
+    pub(super) ffi_init_callback: FfiFunction,
 }
 
 impl CallbackInterface {
@@ -70,7 +70,7 @@ impl CallbackInterface {
         self.methods.iter().collect()
     }
 
-    pub fn ffi_init_callback(&self) -> &FFIFunction {
+    pub fn ffi_init_callback(&self) -> &FfiFunction {
         &self.ffi_init_callback
     }
 

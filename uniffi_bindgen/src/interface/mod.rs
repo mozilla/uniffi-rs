@@ -76,7 +76,7 @@ mod record;
 pub use record::{Field, Record};
 
 pub mod ffi;
-pub use ffi::{FFIArgument, FFIFunction, FfiType};
+pub use ffi::{FFIArgument, FfiFunction, FfiType};
 use uniffi_meta::{FnMetadata, MethodMetadata, ObjectMetadata};
 
 /// The main public interface for this module, representing the complete details of an interface exposed
@@ -353,8 +353,8 @@ impl ComponentInterface {
     /// Builtin FFI function for allocating a new `RustBuffer`.
     /// This is needed so that the foreign language bindings can create buffers in which to pass
     /// complex data types across the FFI.
-    pub fn ffi_rustbuffer_alloc(&self) -> FFIFunction {
-        FFIFunction {
+    pub fn ffi_rustbuffer_alloc(&self) -> FfiFunction {
+        FfiFunction {
             name: format!("ffi_{}_rustbuffer_alloc", self.ffi_namespace()),
             arguments: vec![FFIArgument {
                 name: "size".to_string(),
@@ -367,8 +367,8 @@ impl ComponentInterface {
     /// Builtin FFI function for copying foreign-owned bytes
     /// This is needed so that the foreign language bindings can create buffers in which to pass
     /// complex data types across the FFI.
-    pub fn ffi_rustbuffer_from_bytes(&self) -> FFIFunction {
-        FFIFunction {
+    pub fn ffi_rustbuffer_from_bytes(&self) -> FfiFunction {
+        FfiFunction {
             name: format!("ffi_{}_rustbuffer_from_bytes", self.ffi_namespace()),
             arguments: vec![FFIArgument {
                 name: "bytes".to_string(),
@@ -381,8 +381,8 @@ impl ComponentInterface {
     /// Builtin FFI function for freeing a `RustBuffer`.
     /// This is needed so that the foreign language bindings can free buffers in which they received
     /// complex data types returned across the FFI.
-    pub fn ffi_rustbuffer_free(&self) -> FFIFunction {
-        FFIFunction {
+    pub fn ffi_rustbuffer_free(&self) -> FfiFunction {
+        FfiFunction {
             name: format!("ffi_{}_rustbuffer_free", self.ffi_namespace()),
             arguments: vec![FFIArgument {
                 name: "buf".to_string(),
@@ -395,8 +395,8 @@ impl ComponentInterface {
     /// Builtin FFI function for reserving extra space in a `RustBuffer`.
     /// This is needed so that the foreign language bindings can grow buffers used for passing
     /// complex data types across the FFI.
-    pub fn ffi_rustbuffer_reserve(&self) -> FFIFunction {
-        FFIFunction {
+    pub fn ffi_rustbuffer_reserve(&self) -> FfiFunction {
+        FfiFunction {
             name: format!("ffi_{}_rustbuffer_reserve", self.ffi_namespace()),
             arguments: vec![
                 FFIArgument {
@@ -416,7 +416,7 @@ impl ComponentInterface {
     ///
     /// The set of FFI functions is derived automatically from the set of higher-level types
     /// along with the builtin FFI helper functions.
-    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> + '_ {
+    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
         self.iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
@@ -428,7 +428,7 @@ impl ComponentInterface {
     ///   - Top-level functions
     ///   - Object methods
     ///   - Callback interfaces
-    pub fn iter_user_ffi_function_definitions(&self) -> impl Iterator<Item = &FFIFunction> + '_ {
+    pub fn iter_user_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> + '_ {
         iter::empty()
             .chain(
                 self.objects
@@ -444,7 +444,7 @@ impl ComponentInterface {
     }
 
     /// List all FFI functions definitions for RustBuffer functionality
-    pub fn iter_rust_buffer_ffi_function_definitions(&self) -> impl Iterator<Item = FFIFunction> {
+    pub fn iter_rust_buffer_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> {
         [
             self.ffi_rustbuffer_alloc(),
             self.ffi_rustbuffer_from_bytes(),
