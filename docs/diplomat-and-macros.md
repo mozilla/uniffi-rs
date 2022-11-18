@@ -78,13 +78,13 @@ Let's look at diplomat's simple example:
 ```rust
 #[diplomat::bridge]
 mod ffi {
-    pub struct MyFFIType {
+    pub struct MyFfiType {
         pub a: i32,
         pub b: bool,
     }
 
-    impl MyFFIType {
-        pub fn create() -> MyFFIType { ... }
+    impl MyFfiType {
+        pub fn create() -> MyFfiType { ... }
         ...
     }
 }
@@ -93,15 +93,15 @@ mod ffi {
 This works fine, but starts to come unstuck if you want the types defined somewhere else. In this trivial example, something like:
 
 ```Rust
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
 
 #[diplomat::bridge]
 mod ffi {
-    impl MyFFIType {
-        pub fn create() -> MyFFIType { ... }
+    impl MyFfiType {
+        pub fn create() -> MyFfiType { ... }
         ...
     }
 }
@@ -114,7 +114,7 @@ From the Rust side of the world, this is probably solvable by sprinkling more ma
 
 ```Rust
 #[uniffi::magic]
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
@@ -152,7 +152,7 @@ actually *process* the entire crate, just modules tagged as a bridge), but could
 extended to do so.
 
 But in both cases, for our problematic example above, this process never sees the layout of the
-`MyFFIType` struct because it's not inside the processed module, so that layout can't be
+`MyFfiType` struct because it's not inside the processed module, so that layout can't be
 communicated to the foreign bindings.
 As noted above, this is considered a feature for diplomat, but a limitation for UniFFI.
 
@@ -184,7 +184,7 @@ In other words, borrowing the example above:
 
 ```Rust
 #[uniffi::magic]
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
@@ -204,12 +204,12 @@ in UDL and in Rust. So instead of having:
 
 ```
 // In a UDL file:
-dictionary MyFFIType {
+dictionary MyFfiType {
     i32 a;
     bool b;
 };
 // Then in Rust:
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
@@ -218,7 +218,7 @@ pub struct MyFFIType {
 we could have:
 ```rust
 // In the Rust implementation, in some other module.
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
@@ -228,13 +228,13 @@ pub struct MyFFIType {
 mod ffi {
 
     #[ffi::magic_external_type_declaration]
-    pub struct MyFFIType {
+    pub struct MyFfiType {
         pub a: i32,
         pub b: bool,
     }
 
-    impl MyFFIType {
-        pub fn create() -> MyFFIType { ... }
+    impl MyFfiType {
+        pub fn create() -> MyFfiType { ... }
         ...
     }
 }
@@ -242,7 +242,7 @@ mod ffi {
 
 So while we haven't exactly reduced the duplication, we have removed the UDL.
 We probably also haven't helped with documentation, because the natural location for
-the documentation of `MyFFIType` is probably at the *actual* implementation.
+the documentation of `MyFfiType` is probably at the *actual* implementation.
 
 While it might not solve all our problems, it is worthy of serious consideration - fewer problems
 is still a worthwhile goal, and needing a UDL file and parser seems like one worth removing.
