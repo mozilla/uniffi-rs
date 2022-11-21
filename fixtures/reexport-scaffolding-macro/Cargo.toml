@@ -18,6 +18,6 @@ uniffi-fixture-coverall = { path = "../coverall" }
 uniffi = { path = "../../uniffi", features=["builtin-bindgen"] }
 
 [dev-dependencies]
-cargo_metadata = "0.14"
+cargo_metadata = "0.15"
 libloading = "0.7"
 uniffi_bindgen = { path = "../../uniffi_bindgen" }
