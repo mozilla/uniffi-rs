@@ -12,7 +12,9 @@ use std::{
 
 /// `RustFuture` must have the size of a pointer.
 #[repr(transparent)]
-pub struct RustFuture<T>(Pin<Box<dyn Future<Output = T> + Send + 'static>>)
+pub struct RustFuture<T>(
+    Pin<Box<dyn Future<Output = <T as FfiConverter>::RustType> + Send + 'static>>,
+)
 where
     T: FfiConverter;
 
@@ -22,12 +24,15 @@ where
 {
     pub fn new<F>(future: F) -> Self
     where
-        F: Future<Output = T> + Send + 'static,
+        F: Future<Output = <T as FfiConverter>::RustType> + Send + 'static,
     {
         Self(Box::pin(future))
     }
 
-    pub fn poll(&mut self, waker_pointer: *const RustFutureForeignWaker) -> bool {
+    pub fn poll(
+        &mut self,
+        waker_pointer: *const RustFutureForeignWaker,
+    ) -> Option<<T as FfiConverter>::FfiType> {
         let waker = unsafe {
             Waker::from_raw(RawWaker::new(
                 Arc::into_raw(Arc::new(waker_pointer)) as *const (),
@@ -37,8 +42,8 @@ where
         let mut context = Context::from_waker(&waker);
 
         match Pin::new(&mut self.0).poll(&mut context) {
-            Poll::Ready(_result) => true,
-            Poll::Pending => false,
+            Poll::Ready(result) => Some(<T as FfiConverter>::lower(result)),
+            Poll::Pending => None,
         }
     }
 }
@@ -68,7 +73,7 @@ mod tests {
     #[test]
     fn test_rust_future_size() {
         assert_eq!(
-            mem::size_of_val(&RustFuture::<()>::new(async { unreachable!() })),
+            mem::size_of_val(&RustFuture::<bool>::new(async { unreachable!() })),
             mem::size_of::<*const u8>(),
         );
     }
@@ -116,7 +121,7 @@ pub fn uniffi_rustfuture_poll<T>(
     future: Option<&mut RustFuture<T>>,
     waker: Option<NonNull<RustFutureForeignWaker>>,
     call_status: &mut RustCallStatus,
-) -> bool
+) -> Option<<T as FfiConverter>::FfiType>
 where
     T: FfiConverter,
 {

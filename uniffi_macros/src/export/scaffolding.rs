@@ -185,7 +185,7 @@ fn gen_ffi_function(
                     future: core::option::Option<&mut uniffi::RustFuture<#ty>>,
                     waker: core::option::Option<core::ptr::NonNull<uniffi::RustFutureForeignWaker>>,
                     call_status: &mut uniffi::RustCallStatus,
-                ) -> bool {
+                ) -> Option<<#ty as ::uniffi::FfiConverter>::FfiType> {
                     uniffi::ffi::uniffi_rustfuture_poll(future, waker, call_status)
                 }
             });
