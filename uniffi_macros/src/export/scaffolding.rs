@@ -168,7 +168,6 @@ fn gen_ffi_function(
             return_expr = quote! {
                 Box::new(::uniffi::RustFuture::new(
                     async move {
-                        // <#ty as ::uniffi::FfiConverter>::lower(#rust_fn_call.await)
                         #rust_fn_call.await
                     }
                 ))
@@ -184,9 +183,10 @@ fn gen_ffi_function(
                 pub extern "C" fn #ffi_poll_ident(
                     future: core::option::Option<&mut uniffi::RustFuture<#ty>>,
                     waker: core::option::Option<core::ptr::NonNull<uniffi::RustFutureForeignWaker>>,
+                    polled_result: &mut <#ty as ::uniffi::FfiConverter>::FfiType,
                     call_status: &mut uniffi::RustCallStatus,
-                ) -> Option<<#ty as ::uniffi::FfiConverter>::FfiType> {
-                    uniffi::ffi::uniffi_rustfuture_poll(future, waker, call_status)
+                ) -> bool {
+                    uniffi::ffi::uniffi_rustfuture_poll(future, waker, polled_result, call_status)
                 }
             });
 

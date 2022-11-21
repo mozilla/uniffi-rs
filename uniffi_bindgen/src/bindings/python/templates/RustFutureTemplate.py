@@ -1,14 +1,14 @@
 
 FUTURE_WAKER_T = ctypes.CFUNCTYPE(ctypes.c_uint8)
 
-class FuturePoll(enum.Enum):
-    PENDING = 0
-    DONE = 1
-
 class RustFuture(ctypes.Structure):
     _fields_ = [
         ("_padding", ctypes.c_void_p),
     ]
+
+class FuturePoll(enum.Enum):
+    PENDING = 0
+    DONE = 1
 
 class Future:
     def __init__(self, future: any):

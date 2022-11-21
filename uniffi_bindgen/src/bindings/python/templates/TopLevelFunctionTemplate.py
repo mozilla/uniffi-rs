@@ -15,9 +15,13 @@ async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
         if rust_future is None:
             rust_future = {% call py::to_ffi_call(func) %}
 
-        poll_result = rust_call(_UniFFILib.{{ func.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker())
+        poll_result = RustBuffer()
+        is_ready = rust_call(_UniFFILib.{{ func.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.byref(poll_result))
+        
+        print(f"poll_result: {poll_result}")
+        print(f"is_ready: {is_ready}")
 
-        if poll_result == 1:
+        if is_ready is True:
             return (FuturePoll.DONE, 42)
         else:
             return (FuturePoll.PENDING, None)

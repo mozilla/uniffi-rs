@@ -50,9 +50,3 @@ impl FfiDefault for crate::RustBuffer {
         unsafe { Self::from_raw_parts(std::ptr::null_mut(), 0, 0) }
     }
 }
-
-impl<T> FfiDefault for Option<T> {
-    fn ffi_default() -> Self {
-        None
-    }
-}

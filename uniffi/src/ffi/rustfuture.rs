@@ -32,7 +32,7 @@ where
     pub fn poll(
         &mut self,
         waker_pointer: *const RustFutureForeignWaker,
-    ) -> Option<<T as FfiConverter>::FfiType> {
+    ) -> Poll<<T as FfiConverter>::FfiType> {
         let waker = unsafe {
             Waker::from_raw(RawWaker::new(
                 Arc::into_raw(Arc::new(waker_pointer)) as *const (),
@@ -41,10 +41,9 @@ where
         };
         let mut context = Context::from_waker(&waker);
 
-        match Pin::new(&mut self.0).poll(&mut context) {
-            Poll::Ready(result) => Some(<T as FfiConverter>::lower(result)),
-            Poll::Pending => None,
-        }
+        Pin::new(&mut self.0)
+            .poll(&mut context)
+            .map(|result| <T as FfiConverter>::lower(result))
     }
 }
 
@@ -116,12 +115,19 @@ impl RustTaskWakerBuilder {
     }
 }
 
+impl<T> FfiDefault for Poll<T> {
+    fn ffi_default() -> Self {
+        Self::Pending
+    }
+}
+
 #[doc(hidden)]
 pub fn uniffi_rustfuture_poll<T>(
     future: Option<&mut RustFuture<T>>,
     waker: Option<NonNull<RustFutureForeignWaker>>,
+    polled_result: &mut <T as FfiConverter>::FfiType,
     call_status: &mut RustCallStatus,
-) -> Option<<T as FfiConverter>::FfiType>
+) -> bool
 where
     T: FfiConverter,
 {
@@ -130,9 +136,17 @@ where
 
     let future_mutex = Mutex::new(future);
 
-    call_with_output(call_status, || {
+    match call_with_output(call_status, || {
         future_mutex.lock().unwrap().poll(waker.as_ptr())
-    })
+    }) {
+        Poll::Ready(result) => {
+            *polled_result = result;
+
+            true
+        }
+
+        Poll::Pending => false,
+    }
 }
 
 #[doc(hidden)]

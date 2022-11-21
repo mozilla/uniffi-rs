@@ -42,9 +42,10 @@ _UniFFILib.{{ func.name() }}.restype = ctypes.POINTER(RustFuture)
 _UniFFILib.{{ func.name() }}_poll.argtypes = (
     ctypes.POINTER(RustFuture),
     FUTURE_WAKER_T,
+    ctypes.POINTER({% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}any{% endmatch %}),
     ctypes.POINTER(RustCallStatus),
 )
-_UniFFILib.{{ func.name() }}_poll.restype = {% match func.return_type() %}{% when Some with (type_) %}Optional[{{ type_|ffi_type_name}}]{% when None %}None{% endmatch %}
+_UniFFILib.{{ func.name() }}_poll.restype = ctypes.c_bool
 
 _UniFFILib.{{ func.name() }}_drop.argtypes = (
     ctypes.POINTER(RustFuture),
