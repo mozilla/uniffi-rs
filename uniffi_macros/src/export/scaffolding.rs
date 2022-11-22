@@ -68,8 +68,11 @@ pub(super) fn gen_method_scaffolding(
         }
         _ => {
             assoc_fn_error = Some(
-                syn::Error::new_spanned(sig, "associated functions are not currently supported")
-                    .into_compile_error(),
+                syn::Error::new_spanned(
+                    &sig.ident,
+                    "associated functions are not currently supported",
+                )
+                .into_compile_error(),
             );
             params_args.extend(collect_params(&sig.inputs, RECEIVER_ERROR));
             quote! { #self_ident:: }
