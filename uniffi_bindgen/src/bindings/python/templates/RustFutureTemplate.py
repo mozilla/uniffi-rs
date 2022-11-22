@@ -22,10 +22,13 @@ class Future:
         self._callbacks = []
 
         def waker():
-            state, self._result = (self._future)()
+            def async_waker():
+                state, self._result = (self._future)()
 
-            if state == FuturePoll.DONE:
-                self.set_result(self._result)
+                if state == FuturePoll.DONE:
+                    self.set_result(self._result)
+
+            self._loop.call_soon_threadsafe(async_waker)
 
             return 0
 

@@ -35,7 +35,6 @@ impl Future for TimerFuture {
             Poll::Ready(())
         } else {
             shared_state.waker = Some(cx.waker().clone());
-            drop(shared_state);
             Poll::Pending
         }
     }
@@ -57,7 +56,6 @@ impl TimerFuture {
             shared_state.completed = true;
 
             if let Some(waker) = shared_state.waker.take() {
-                drop(shared_state);
                 waker.wake();
             }
         });
