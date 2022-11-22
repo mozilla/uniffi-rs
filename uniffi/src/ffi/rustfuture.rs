@@ -126,30 +126,44 @@ impl RustTaskWakerBuilder {
         Self::drop_waker,
     );
 
+    /// This function will be called when the `RawWaker` gets cloned, e.g. when
+    /// the `Waker` in which the `RawWaker` is stored gets cloned.
     unsafe fn clone_waker(foreign_waker: *const ()) -> RawWaker {
         Arc::increment_strong_count(foreign_waker);
 
         RawWaker::new(foreign_waker, &Self::VTABLE)
     }
 
+    /// This function will be called when `wake` is called on the `Waker`. It
+    /// must wake up the task associated with this `RawWaker`.
     unsafe fn wake(foreign_waker: *const ()) {
         let waker: *const RustFutureForeignWaker = mem::transmute(foreign_waker);
         let waker = Arc::from_raw(waker);
         (waker)();
     }
 
+    /// This function will be called when `wake_by_ref` is called on the
+    /// `Waker`. It must wake up the task associated with this `RawWaker`.
     unsafe fn wake_by_ref(foreign_waker: *const ()) {
         let waker: *const RustFutureForeignWaker = mem::transmute(foreign_waker);
         let waker = ManuallyDrop::new(Arc::from_raw(waker));
         (waker)();
     }
 
+    /// This function gets called when a `RawWaker` gets dropped.
     unsafe fn drop_waker(foreign_waker: *const ()) {
         let waker: *const RustFutureForeignWaker = mem::transmute(foreign_waker);
         drop(Arc::from_raw(waker));
     }
 }
 
+/// Poll a `RustFuture`. If the `RustFuture` is ready, the function returns
+// `true` and puts the result inside `polled_result`, otherwise it returns `false`
+// and _doesn't change_ the value inside `polled_result`.
+///
+/// # Panics
+///
+/// The function panics if `future` or `waker` is a NULL pointer.
 #[doc(hidden)]
 pub fn uniffi_rustfuture_poll<T>(
     future: Option<&mut RustFuture<T>>,
@@ -178,6 +192,11 @@ where
     }
 }
 
+/// Drop a `RustFuture`.
+///
+/// Because this function takes ownership of `future` (by `Box`ing it), the
+/// future will be dropped naturally by the compiler at the end of the function
+/// scope.
 #[doc(hidden)]
 pub fn uniffi_rustfuture_drop<T>(
     _future: Option<Box<RustFuture<T>>>,
