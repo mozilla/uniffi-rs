@@ -374,13 +374,10 @@ impl CodeOracle for SwiftCodeOracle {
             FFIType::UInt64 => "uint64_t".into(),
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
-            FFIType::Pointer(_) => todo!("`Pointer` is not implemented"),
             FFIType::RustArcPtr(_) => "void*_Nonnull".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
             FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
-            FFIType::Future => todo!(),
-            FFIType::FutureWaker => todo!(),
         }
     }
 }
@@ -449,13 +446,10 @@ pub mod filters {
             FFIType::UInt64 => "UInt64".into(),
             FFIType::Float32 => "float".into(),
             FFIType::Float64 => "double".into(),
-            FFIType::Pointer(_) => todo!("`Pointer` is not implemented"),
             FFIType::RustArcPtr(_) => "void*_Nonnull".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
             FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
-            FFIType::Future => todo!(),
-            FFIType::FutureWaker => todo!(),
         })
     }
 

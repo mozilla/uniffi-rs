@@ -72,13 +72,10 @@ mod filters {
             FFIType::UInt64 => "u64".into(),
             FFIType::Float32 => "f32".into(),
             FFIType::Float64 => "f64".into(),
-            FFIType::Pointer(_) => todo!("`Pointer` is not implemented"),
             FFIType::RustArcPtr(_) => "*const std::os::raw::c_void".into(),
             FFIType::RustBuffer => "uniffi::RustBuffer".into(),
             FFIType::ForeignBytes => "uniffi::ForeignBytes".into(),
             FFIType::ForeignCallback => "uniffi::ForeignCallback".into(),
-            FFIType::Future => "uniffi::RustFuture".into(),
-            FFIType::FutureWaker => "*const uniffi::RustFutureForeignWaker".into(),
         })
     }
 

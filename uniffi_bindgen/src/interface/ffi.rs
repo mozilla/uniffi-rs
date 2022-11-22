@@ -31,8 +31,6 @@ pub enum FFIType {
     Int64,
     Float32,
     Float64,
-    /// A pointer to another type.
-    Pointer(Box<Self>),
     /// A `*const c_void` pointer to a rust-owned `Arc<T>`.
     /// If you've got one of these, you must call the appropriate rust function to free it.
     /// The templates will generate a unique `free` function for each T.
@@ -48,10 +46,6 @@ pub enum FFIType {
     /// A pointer to a single function in to the foreign language.
     /// This function contains all the machinery to make callbacks work on the foreign language side.
     ForeignCallback,
-    /// A future.
-    Future,
-    /// A future waker function pointer.
-    FutureWaker,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
 }

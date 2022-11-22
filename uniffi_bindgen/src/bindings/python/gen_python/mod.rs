@@ -300,16 +300,10 @@ impl CodeOracle for PythonCodeOracle {
             FFIType::UInt64 => "ctypes.c_uint64".to_string(),
             FFIType::Float32 => "ctypes.c_float".to_string(),
             FFIType::Float64 => "ctypes.c_double".to_string(),
-            FFIType::Pointer(ref ffi_type) => {
-                let pointer = self.ffi_type_label(ffi_type);
-                format!("ctypes.POINTER({pointer})")
-            }
             FFIType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
             FFIType::RustBuffer => "RustBuffer".to_string(),
             FFIType::ForeignBytes => "ForeignBytes".to_string(),
             FFIType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
-            FFIType::Future => "RustFuture".to_string(),
-            FFIType::FutureWaker => "FUTURE_WAKER_T".to_string(),
         }
     }
 }
