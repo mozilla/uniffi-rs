@@ -127,8 +127,7 @@ impl RustTaskWakerBuilder {
     );
 
     unsafe fn clone_waker(foreign_waker: *const ()) -> RawWaker {
-        let arc = ManuallyDrop::new(Arc::from_raw(foreign_waker));
-        mem::forget(arc.clone());
+        Arc::increment_strong_count(foreign_waker);
 
         RawWaker::new(foreign_waker, &Self::VTABLE)
     }
