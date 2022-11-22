@@ -168,6 +168,14 @@ possibility for the two to go out of sync). The new interface definition mechani
 of your Rust code, in addition to what is declared in the UDL file. However, you have to make sure
 that the UDL file is still valid on its own: All types referenced in fields, parameter and return
 types in UDL must also be declared in UDL.</p>
+<p><strong>⚠ Warning ⚠</strong> As the page title says, this is experimental. Bugs are expected and if you want to
+try it is recommended that you use <code>uniffi</code> as a git dependency so you don't run into issues that
+are already fixed.</p>
+<h2><a class="header" href="#build-workflow" id="build-workflow">Build workflow</a></h2>
+<p>Before any of the things discussed below work, make sure to update your bindings generation steps
+to start with a build of your library and add
+<code>--lib-file &lt;CARGO WORKSPACE&gt;/target/&lt;TARGET&gt;/&lt;BUILT CDYLIB OR STATICLIB&gt;</code> to your <code>uniffi-bindgen</code>
+command line invocation.</p>
 <h2><a class="header" href="#the-uniffiexport-attribute" id="the-uniffiexport-attribute">The <code>#[uniffi::export]</code> attribute</a></h2>
 <p>The most important proc-macro is the <code>export</code> attribute. It can be used on functions and <code>impl</code>
 blocks to make UniFFI aware of them.</p>
