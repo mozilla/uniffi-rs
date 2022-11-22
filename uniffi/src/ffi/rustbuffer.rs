@@ -60,8 +60,6 @@ pub struct RustBuffer {
     data: *mut u8,
 }
 
-unsafe impl Send for RustBuffer {}
-
 impl RustBuffer {
     /// Creates an empty `RustBuffer`.
     ///
