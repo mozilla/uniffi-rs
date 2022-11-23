@@ -2,7 +2,6 @@
 
 async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
     {%- call py::setup_args(func) %}
-
     rust_future = None
     future = None
     future_waker = None
