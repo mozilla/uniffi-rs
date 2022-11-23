@@ -239,10 +239,12 @@ impl TypeUniverse {
         match self.type_definitions.entry(name.to_string()) {
             Entry::Occupied(o) => {
                 let existing_def = o.get();
-                if type_ == *existing_def && matches!(type_, Type::Record(_) | Type::Enum(_)) {
-                    // UDL and proc-macro metadata are allowed to define the same record and enum
-                    // types, if the definitions match (fields and variants are checked in
-                    // add_record_definition and add_enum_definition)
+                if type_ == *existing_def
+                    && matches!(type_, Type::Record(_) | Type::Enum(_) | Type::Error(_))
+                {
+                    // UDL and proc-macro metadata are allowed to define the same record, enum and
+                    // error types, if the definitions match (fields and variants are checked in
+                    // add_{record,enum,error}_definition)
                     Ok(())
                 } else {
                     bail!(

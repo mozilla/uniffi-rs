@@ -94,7 +94,7 @@ use super::{APIConverter, ComponentInterface};
 /// they're handled in the FFI very differently. We create them in `uniffi::call_with_result()` if
 /// the wrapped function returns an `Err` value
 /// struct and assign an integer error code to each variant.
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Error {
     pub name: String,
     enum_: Enum,
@@ -159,7 +159,7 @@ mod test {
             enum Testing { "one", "two", "three" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.error_definitions().len(), 1);
+        assert_eq!(ci.error_definitions().count(), 1);
         let error = ci.get_error_definition("Testing").unwrap();
         assert_eq!(
             error
@@ -182,7 +182,7 @@ mod test {
             enum Testing { "one", "two", "one" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.error_definitions().len(), 1);
+        assert_eq!(ci.error_definitions().count(), 1);
         assert_eq!(
             ci.get_error_definition("Testing").unwrap().variants().len(),
             3
@@ -201,7 +201,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
-        assert_eq!(ci.error_definitions().len(), 1);
+        assert_eq!(ci.error_definitions().count(), 1);
         let error: &Error = ci.get_error_definition("Testing").unwrap();
         assert_eq!(
             error
