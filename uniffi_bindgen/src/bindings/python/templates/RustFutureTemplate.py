@@ -35,6 +35,9 @@ class Future:
         self._waker = waker
         self._ffi_waker = FUTURE_WAKER_T(waker)
 
+    def init(self):
+        (self._waker)()
+
     def _future_waker(self) -> any:
         return self._waker
 
