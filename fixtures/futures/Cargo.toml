@@ -2,7 +2,7 @@
 name = "uniffi-fixture-futures"
 version = "0.21.0"
 authors = ["Ivan Enderlin <ivan@mnt.io>"]
-edition = "2018"
+edition = "2021"
 license = "MPL-2.0"
 publish = false
 
@@ -12,6 +12,9 @@ crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 uniffi = { path = "../../uniffi", features = ["builtin-bindgen"] }
+
+[dev-dependencies]
+uniffi_macros = { path = "../../uniffi_macros" }
 
 [build-dependencies]
 uniffi_build = { path = "../../uniffi_build", features = ["builtin-bindgen"] }
