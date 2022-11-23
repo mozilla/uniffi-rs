@@ -75,6 +75,7 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
     let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
 
     quote! {
+        #[automatically_derived]
         impl ::uniffi::RustBufferFfiConverter for #ident {
             type RustType = Self;
 

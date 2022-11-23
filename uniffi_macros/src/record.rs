@@ -43,6 +43,7 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
     let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
 
     quote! {
+        #[automatically_derived]
         impl ::uniffi::RustBufferFfiConverter for #ident {
             type RustType = Self;
 
