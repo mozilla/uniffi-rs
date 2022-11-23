@@ -15,6 +15,7 @@ use syn::{parse_macro_input, LitStr};
 use util::rewrite_self_type;
 
 mod enum_;
+mod error;
 mod export;
 mod object;
 mod record;
@@ -22,7 +23,8 @@ mod test;
 mod util;
 
 use self::{
-    enum_::expand_enum, export::expand_export, object::expand_object, record::expand_record,
+    enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
+    record::expand_record,
 };
 
 /// A macro to build testcases for a component's generated bindings.
@@ -101,6 +103,17 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input);
 
     expand_object(input, mod_path).into()
+}
+
+#[proc_macro_derive(Error)]
+pub fn derive_error(input: TokenStream) -> TokenStream {
+    let mod_path = match util::mod_path() {
+        Ok(p) => p,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let input = parse_macro_input!(input);
+
+    expand_error(input, mod_path).into()
 }
 
 /// A helper macro to include generated component scaffolding.

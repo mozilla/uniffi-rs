@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::interface::{ComponentInterface, Enum, Record, Type};
+use crate::interface::{ComponentInterface, Enum, Error, Record, Type};
 use anyhow::anyhow;
 use uniffi_meta::Metadata;
 
@@ -38,6 +38,10 @@ pub fn add_to_ci(
             ),
             Metadata::Object(meta) => (
                 format!("object `{}`", meta.name),
+                meta.module_path.first().unwrap(),
+            ),
+            Metadata::Error(meta) => (
+                format!("error `{}`", meta.name),
                 meta.module_path.first().unwrap(),
             ),
         };
@@ -76,6 +80,14 @@ pub fn add_to_ci(
             }
             Metadata::Object(meta) => {
                 iface.add_object_free_fn(meta);
+            }
+            Metadata::Error(meta) => {
+                let ty = Type::Error(meta.name.clone());
+                iface.types.add_known_type(&ty)?;
+                iface.types.add_type_definition(&meta.name, ty)?;
+
+                let error: Error = meta.into();
+                iface.add_error_definition(error)?;
             }
         }
     }

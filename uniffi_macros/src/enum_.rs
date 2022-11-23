@@ -16,7 +16,32 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
 
     let ident = &input.ident;
 
-    let (write_impl, try_read_impl) = match &variants {
+    let ffi_converter_impl = enum_ffi_converter_impl(&variants, ident);
+
+    let meta_static_var = if let Some(variants) = variants {
+        match enum_metadata(ident, variants, module_path) {
+            Ok(metadata) => create_metadata_static_var(ident, metadata.into()),
+            Err(e) => e.into_compile_error(),
+        }
+    } else {
+        syn::Error::new(Span::call_site(), "This derive must only be used on enums")
+            .into_compile_error()
+    };
+
+    let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
+
+    quote! {
+        #ffi_converter_impl
+        #meta_static_var
+        #type_assertion
+    }
+}
+
+pub(crate) fn enum_ffi_converter_impl(
+    variants: &Option<Punctuated<Variant, Token![,]>>,
+    ident: &Ident,
+) -> TokenStream {
+    let (write_impl, try_read_impl) = match variants {
         Some(variants) => {
             let write_match_arms = variants.iter().enumerate().map(|(i, v)| {
                 let v_ident = &v.ident;
@@ -62,18 +87,6 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
         }
     };
 
-    let meta_static_var = if let Some(variants) = variants {
-        match enum_metadata(ident, variants, module_path) {
-            Ok(metadata) => create_metadata_static_var(ident, metadata.into()),
-            Err(e) => e.into_compile_error(),
-        }
-    } else {
-        syn::Error::new(Span::call_site(), "This derive must only be used on enums")
-            .into_compile_error()
-    };
-
-    let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
-
     quote! {
         #[automatically_derived]
         impl ::uniffi::RustBufferFfiConverter for #ident {
@@ -87,9 +100,6 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
                 #try_read_impl
             }
         }
-
-        #meta_static_var
-        #type_assertion
     }
 }
 
@@ -111,7 +121,7 @@ fn enum_metadata(
     })
 }
 
-fn variant_metadata(v: &Variant) -> syn::Result<VariantMetadata> {
+pub(crate) fn variant_metadata(v: &Variant) -> syn::Result<VariantMetadata> {
     let name = v.ident.to_string();
     let fields = v
         .fields
