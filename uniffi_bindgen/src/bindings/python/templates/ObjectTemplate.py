@@ -34,6 +34,42 @@ class {{ type_name }}(object):
     {% endfor %}
 
     {% for meth in obj.methods() -%}
+    {% if meth.is_async() %}
+    async def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
+        {%- call py::setup_args_extra_indent(meth) %}
+        rust_future = None
+        future = None
+
+        def trampoline() -> (FuturePoll, any):
+            nonlocal rust_future
+
+            if rust_future is None:
+                rust_future = {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
+
+            poll_result = {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|ffi_type_name }}{% when None %}None{% endmatch %}()
+            is_ready = rust_call(_UniFFILib.{{ meth.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.byref(poll_result))
+
+            if is_ready is True:
+                result = {% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|lift_fn }}(poll_result){% when None %}None{% endmatch %}
+
+                return (FuturePoll.DONE, result)
+            else:
+                return (FuturePoll.PENDING, None)
+
+        # Create our own `Future`.
+        future = Future(trampoline)
+
+        # Poll it once.
+        future.init()
+
+        # Let's wait on it.
+        result = await future
+
+        # Drop the `rust_future`.
+        rust_call(_UniFFILib.{{ meth.ffi_func().name() }}_drop, rust_future)
+
+        return result
+    {% else %}
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
@@ -48,6 +84,7 @@ class {{ type_name }}(object):
         {%- call py::setup_args_extra_indent(meth) %}
         {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
     {% endmatch %}
+    {% endif %}
     {% endfor %}
 
 

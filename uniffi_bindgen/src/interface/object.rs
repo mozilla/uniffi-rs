@@ -359,6 +359,10 @@ impl Method {
         &self.name
     }
 
+    pub fn is_async(&self) -> bool {
+        self.is_async
+    }
+
     pub fn arguments(&self) -> Vec<&Argument> {
         self.arguments.iter().collect()
     }
@@ -437,6 +441,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
 
         let ffi_func = FFIFunction {
             name: ffi_name,
+            is_async,
             ..FFIFunction::default()
         };
 
