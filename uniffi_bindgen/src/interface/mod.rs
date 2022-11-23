@@ -100,7 +100,7 @@ pub struct ComponentInterface {
     functions: Vec<Function>,
     objects: Vec<Object>,
     callback_interfaces: Vec<CallbackInterface>,
-    errors: Vec<Error>,
+    errors: BTreeMap<String, Error>,
 }
 
 impl ComponentInterface {
@@ -207,14 +207,13 @@ impl ComponentInterface {
     }
 
     /// Get the definitions for every Error type in the interface.
-    pub fn error_definitions(&self) -> &[Error] {
-        &self.errors
+    pub fn error_definitions(&self) -> impl Iterator<Item = &Error> {
+        self.errors.values()
     }
 
     /// Get an Error definition by name, or None if no such Error is defined.
     pub fn get_error_definition(&self, name: &str) -> Option<&Error> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.errors.iter().find(|e| e.name == name)
+        self.errors.get(name)
     }
 
     /// Should we generate read (and lift) functions for errors?
@@ -598,9 +597,25 @@ impl ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed error definition to the `ComponentInterface`.
-    fn add_error_definition(&mut self, defn: Error) {
-        // Note that there will be no duplicates thanks to the previous type-finding pass.
-        self.errors.push(defn);
+    fn add_error_definition(&mut self, defn: Error) -> Result<()> {
+        match self.errors.entry(defn.name().to_owned()) {
+            Entry::Vacant(v) => {
+                v.insert(defn);
+            }
+            Entry::Occupied(o) => {
+                let existing_def = o.get();
+                if defn != *existing_def {
+                    bail!(
+                        "Mismatching definition for error `{}`!\n\
+                         existing definition: {existing_def:#?},\n\
+                         new definition: {defn:#?}",
+                        defn.name(),
+                    );
+                }
+            }
+        }
+
+        Ok(())
     }
 
     /// Resolve unresolved types within proc-macro function / method signatures.
@@ -917,7 +932,7 @@ impl APIBuilder for weedle::Definition<'_> {
                 let attrs = attributes::EnumAttributes::try_from(d.attributes.as_ref())?;
                 if attrs.contains_error_attr() {
                     let err = d.convert(ci)?;
-                    ci.add_error_definition(err);
+                    ci.add_error_definition(err)?;
                 } else {
                     let e = d.convert(ci)?;
                     ci.add_enum_definition(e)?;
@@ -934,7 +949,7 @@ impl APIBuilder for weedle::Definition<'_> {
                     ci.add_enum_definition(e)?;
                 } else if attrs.contains_error_attr() {
                     let e = d.convert(ci)?;
-                    ci.add_error_definition(e);
+                    ci.add_error_definition(e)?;
                 } else {
                     let obj = d.convert(ci)?;
                     ci.add_object_definition(obj);
