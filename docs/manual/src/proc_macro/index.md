@@ -67,6 +67,12 @@ User-defined types also have to be (re-)exported from a module called `uniffi_ty
 root. This is required to ensure that a given type name always means the same thing across all uses
 of `#[uniffi::export]` across the whole module tree.
 
+```rust
+mod uniffi_types {
+    pub use path::to::MyObject;
+}
+```
+
 ## The `uniffi::Record` derive
 
 The `Record` derive macro exposes a `struct` with named fields over FFI. All types that are
