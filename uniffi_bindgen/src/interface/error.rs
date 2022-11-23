@@ -135,6 +135,20 @@ impl Error {
     }
 }
 
+impl From<uniffi_meta::ErrorMetadata> for Error {
+    fn from(meta: uniffi_meta::ErrorMetadata) -> Self {
+        let flat = meta.variants.iter().all(|v| v.fields.is_empty());
+        Self {
+            name: meta.name.clone(),
+            enum_: Enum {
+                name: meta.name,
+                variants: meta.variants.into_iter().map(Into::into).collect(),
+                flat,
+            },
+        }
+    }
+}
+
 impl APIConverter<Error> for weedle::EnumDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Error> {
         Ok(Error::from_enum(APIConverter::<Enum>::convert(self, ci)?))

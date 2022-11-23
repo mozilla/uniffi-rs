@@ -121,6 +121,14 @@ impl ObjectMetadata {
     }
 }
 
+/// Currently a copy of `EnumMetadata`, but likely to be changed in the future.
+#[derive(Clone, Debug, Hash, Deserialize, Serialize)]
+pub struct ErrorMetadata {
+    pub module_path: Vec<String>,
+    pub name: String,
+    pub variants: Vec<VariantMetadata>,
+}
+
 /// Returns the last 16 bits of the value's hash as computed with [`DefaultHasher`].
 ///
 /// To be used as a checksum of FFI symbols, as a safeguard against different UniFFI versions being
@@ -144,6 +152,7 @@ pub enum Metadata {
     Record(RecordMetadata),
     Enum(EnumMetadata),
     Object(ObjectMetadata),
+    Error(ErrorMetadata),
 }
 
 impl From<FnMetadata> for Metadata {
@@ -173,5 +182,11 @@ impl From<EnumMetadata> for Metadata {
 impl From<ObjectMetadata> for Metadata {
     fn from(v: ObjectMetadata) -> Self {
         Self::Object(v)
+    }
+}
+
+impl From<ErrorMetadata> for Metadata {
+    fn from(v: ErrorMetadata) -> Self {
+        Self::Error(v)
     }
 }

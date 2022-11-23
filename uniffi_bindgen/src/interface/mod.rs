@@ -597,7 +597,7 @@ impl ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed error definition to the `ComponentInterface`.
-    fn add_error_definition(&mut self, defn: Error) -> Result<()> {
+    pub(super) fn add_error_definition(&mut self, defn: Error) -> Result<()> {
         match self.errors.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
                 v.insert(defn);
