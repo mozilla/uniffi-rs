@@ -24,9 +24,7 @@ use std::{
 /// parameter `T`, the procedural macros will do a monomorphisation phase so that
 /// all the API has all their types known.
 #[repr(transparent)]
-pub struct RustFuture<T>(
-    Pin<Box<dyn Future<Output = <T as FfiConverter>::RustType> + Send + 'static>>,
-)
+pub struct RustFuture<T>(Pin<Box<dyn Future<Output = <T as FfiConverter>::RustType> + 'static>>)
 where
     T: FfiConverter;
 
@@ -38,7 +36,7 @@ where
     /// of kind `FfiConverter::RustType`.
     pub fn new<F>(future: F) -> Self
     where
-        F: Future<Output = <T as FfiConverter>::RustType> + Send + 'static,
+        F: Future<Output = <T as FfiConverter>::RustType> + 'static,
     {
         Self(Box::pin(future))
     }
