@@ -79,10 +79,29 @@ async fn say_after(secs: u8, who: String) -> String {
 }
 
 #[uniffi::export]
-async fn sleep(secs: u8) -> bool {
+pub async fn sleep(secs: u8) -> bool {
     TimerFuture::new(Duration::from_secs(secs.into())).await;
 
     true
 }
 
+#[uniffi::export]
+fn new_megaphone() -> Arc<Megaphone> {
+    Arc::new(Megaphone)
+}
+
+#[derive(uniffi::Object)]
+pub struct Megaphone;
+
+#[uniffi::export]
+impl Megaphone {
+    async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
+        say_after(secs, who).await.to_uppercase()
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
+
+mod uniffi_types {
+    pub(crate) use super::Megaphone;
+}

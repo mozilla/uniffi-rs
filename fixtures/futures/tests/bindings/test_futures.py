@@ -1,4 +1,4 @@
-from uniffi_futures import always_ready, sleep, say_after
+from uniffi_futures import always_ready, sleep, say_after, new_megaphone
 import unittest
 from datetime import datetime
 import asyncio
@@ -58,6 +58,19 @@ class TestFutures(unittest.TestCase):
             self.assertTrue(t_delta > 2 and t_delta < 2.1)
             self.assertEqual(result_alice, 'Hello, Alice!')
             self.assertEqual(result_bob, 'Hello, Bob!')
+
+        asyncio.run(test())
+
+    def test_async_methods(self):
+        async def test():
+            megaphone = new_megaphone()
+            t0 = now()
+            result_alice = await megaphone.say_after(2, 'Alice')
+            t1 = now()
+
+            t_delta = (t1 - t0).total_seconds()
+            self.assertTrue(t_delta > 2 and t_delta < 2.1)
+            self.assertEqual(result_alice, 'HELLO, ALICE!')
 
         asyncio.run(test())
 
