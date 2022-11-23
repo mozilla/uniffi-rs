@@ -11,11 +11,6 @@ use std::{
     time::Duration,
 };
 
-#[uniffi::export]
-fn get_string() -> String {
-    "I am a string".to_owned()
-}
-
 pub struct TimerFuture {
     shared_state: Arc<Mutex<SharedState>>,
 }
@@ -63,15 +58,26 @@ impl TimerFuture {
         TimerFuture { shared_state }
     }
 }
+
 #[uniffi::export]
-async fn get_future() -> String {
-    println!("--> [rust] get_future");
-
-    println!("--> [rust] start timer");
+async fn say() -> String {
     TimerFuture::new(Duration::from_secs(2)).await;
-    println!("--> [rust] timer ended");
 
-    "I am a future".to_owned()
+    format!("Hello, Future!")
+}
+
+#[uniffi::export]
+async fn say_after(secs: u8, who: String) -> String {
+    TimerFuture::new(Duration::from_secs(secs.into())).await;
+
+    format!("Hello, {who}!")
+}
+
+#[uniffi::export]
+async fn sleep(secs: u8) -> bool {
+    TimerFuture::new(Duration::from_secs(secs.into())).await;
+
+    true
 }
 
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
