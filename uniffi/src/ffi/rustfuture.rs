@@ -50,7 +50,7 @@ where
     /// the foreign language's runtime/executor**. Hence the possibility for
     /// the foreign language to provide its own waker function: Rust can signal
     /// something has happened within the future and should be polled again.
-    pub fn poll(
+    fn poll(
         &mut self,
         foreign_waker_pointer: *const RustFutureForeignWaker,
     ) -> Poll<<T as FfiConverter>::FfiType> {
