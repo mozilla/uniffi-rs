@@ -60,6 +60,11 @@ impl TimerFuture {
 }
 
 #[uniffi::export]
+async fn always_ready() -> bool {
+    true
+}
+
+#[uniffi::export]
 async fn say() -> String {
     TimerFuture::new(Duration::from_secs(2)).await;
 

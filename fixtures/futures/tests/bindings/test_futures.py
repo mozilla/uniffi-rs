@@ -1,4 +1,4 @@
-from uniffi_futures import sleep, say_after
+from uniffi_futures import always_ready, sleep, say_after
 import unittest
 from datetime import datetime
 import asyncio
@@ -7,8 +7,17 @@ def now():
     return datetime.now()
 
 class TestFutures(unittest.TestCase):
-    def test_hello(self):
-        self.assertEqual('foo', 'foo')
+    def test_always_ready(self):
+        async def test():
+            t0 = now()
+            result = await always_ready()
+            t1 = now()
+
+            t_delta = (t1 - t0).total_seconds()
+            self.assertTrue(t_delta < 0.1)
+            self.assertEqual(result, True)
+
+        asyncio.run(test())
 
     def test_sleep(self):
         async def test():
