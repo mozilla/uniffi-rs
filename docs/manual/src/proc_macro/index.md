@@ -69,7 +69,7 @@ of `#[uniffi::export]` across the whole module tree.
 
 ```rust
 mod uniffi_types {
-    pub use path::to::MyObject;
+    pub(crate) use path::to::MyObject;
 }
 ```
 
