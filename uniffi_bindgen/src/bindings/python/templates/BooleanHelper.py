@@ -9,7 +9,7 @@ class FfiConverterBool:
 
     @staticmethod
     def lift(value):
-        return int(value) != 0
+        return value != 0
 
     @staticmethod
     def lower(value):
