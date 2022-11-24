@@ -182,11 +182,12 @@ fn gen_ffi_function(
                 #[no_mangle]
                 pub extern "C" fn #ffi_poll_ident(
                     future: core::option::Option<&mut uniffi::RustFuture<#ty>>,
-                    waker: core::option::Option<core::ptr::NonNull<uniffi::RustFutureForeignWaker>>,
+                    waker: core::option::Option<core::ptr::NonNull<uniffi::RustFutureForeignWakerFunction>>,
+                    waker_environment: *const uniffi::RustFutureForeignWakerEnvironment,
                     polled_result: &mut <#ty as ::uniffi::FfiConverter>::FfiType,
                     call_status: &mut uniffi::RustCallStatus,
                 ) -> bool {
-                    uniffi::ffi::uniffi_rustfuture_poll(future, waker, polled_result, call_status)
+                    uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
                 }
             });
 

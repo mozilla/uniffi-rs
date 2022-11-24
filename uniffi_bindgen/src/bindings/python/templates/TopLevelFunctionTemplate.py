@@ -12,7 +12,7 @@ async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
             rust_future = {% call py::to_ffi_call(func) %}
 
         poll_result = {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|ffi_type_name }}{% when None %}None{% endmatch %}()
-        is_ready = rust_call(_UniFFILib.{{ func.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.byref(poll_result))
+        is_ready = rust_call(_UniFFILib.{{ func.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.c_void_p(), ctypes.byref(poll_result))
 
         if is_ready is True:
             result = {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|lift_fn }}(poll_result){% when None %}None{% endmatch %}

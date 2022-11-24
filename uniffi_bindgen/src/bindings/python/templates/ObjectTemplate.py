@@ -47,7 +47,7 @@ class {{ type_name }}(object):
                 rust_future = {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
 
             poll_result = {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|ffi_type_name }}{% when None %}None{% endmatch %}()
-            is_ready = rust_call(_UniFFILib.{{ meth.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.byref(poll_result))
+            is_ready = rust_call(_UniFFILib.{{ meth.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.c_void_p(), ctypes.byref(poll_result))
 
             if is_ready is True:
                 result = {% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|lift_fn }}(poll_result){% when None %}None{% endmatch %}

@@ -2,6 +2,7 @@ use crate::{call_with_output, FfiConverter, RustCallStatus};
 
 use super::FfiDefault;
 use std::{
+    ffi::c_void,
     future::Future,
     mem::{self, ManuallyDrop},
     pin::Pin,
@@ -52,11 +53,15 @@ where
     /// something has happened within the future and should be polled again.
     fn poll(
         &mut self,
-        foreign_waker_pointer: *const RustFutureForeignWaker,
+        foreign_waker: *const RustFutureForeignWakerFunction,
+        foreign_waker_environment: *const RustFutureForeignWakerEnvironment,
     ) -> Poll<<T as FfiConverter>::FfiType> {
         let waker = unsafe {
             Waker::from_raw(RawWaker::new(
-                Arc::into_raw(Arc::new(foreign_waker_pointer)) as *const (),
+                Arc::into_raw(Arc::new(RustFutureForeignWaker {
+                    waker: foreign_waker,
+                    waker_environment: foreign_waker_environment,
+                })) as *const (),
                 &RustTaskWakerBuilder::VTABLE,
             ))
         };
@@ -111,7 +116,15 @@ mod tests {
 /// the foreign language's waker which is called by the `RustFuture` (more
 /// precisely, by its inner future) to signal the foreign language that
 /// something has happened. See [`RustFuture::poll`] to learn more.
-pub type RustFutureForeignWaker = extern "C" fn();
+pub type RustFutureForeignWakerFunction =
+    unsafe extern "C" fn(*const RustFutureForeignWakerEnvironment);
+pub type RustFutureForeignWakerEnvironment = c_void;
+
+#[derive(Debug)]
+struct RustFutureForeignWaker {
+    waker: *const RustFutureForeignWakerFunction,
+    waker_environment: *const RustFutureForeignWakerEnvironment,
+}
 
 /// Zero-sized type to create the VTable for the `RawWaker`.
 struct RustTaskWakerBuilder;
@@ -127,7 +140,8 @@ impl RustTaskWakerBuilder {
     /// This function will be called when the `RawWaker` gets cloned, e.g. when
     /// the `Waker` in which the `RawWaker` is stored gets cloned.
     unsafe fn clone_waker(foreign_waker: *const ()) -> RawWaker {
-        Arc::increment_strong_count(foreign_waker);
+        let waker = foreign_waker as *const RustFutureForeignWaker;
+        Arc::increment_strong_count(waker);
 
         RawWaker::new(foreign_waker, &Self::VTABLE)
     }
@@ -135,22 +149,26 @@ impl RustTaskWakerBuilder {
     /// This function will be called when `wake` is called on the `Waker`. It
     /// must wake up the task associated with this `RawWaker`.
     unsafe fn wake(foreign_waker: *const ()) {
-        let waker: *const RustFutureForeignWaker = mem::transmute(foreign_waker);
+        let waker = foreign_waker as *const RustFutureForeignWaker;
         let waker = Arc::from_raw(waker);
-        (waker)();
+
+        let func = mem::transmute::<_, RustFutureForeignWakerFunction>(waker.waker);
+        func(waker.waker_environment);
     }
 
     /// This function will be called when `wake_by_ref` is called on the
     /// `Waker`. It must wake up the task associated with this `RawWaker`.
     unsafe fn wake_by_ref(foreign_waker: *const ()) {
-        let waker: *const RustFutureForeignWaker = mem::transmute(foreign_waker);
+        let waker = foreign_waker as *const RustFutureForeignWaker;
         let waker = ManuallyDrop::new(Arc::from_raw(waker));
-        (waker)();
+
+        let func = mem::transmute::<_, RustFutureForeignWakerFunction>(waker.waker);
+        func(waker.waker_environment);
     }
 
     /// This function gets called when a `RawWaker` gets dropped.
     unsafe fn drop_waker(foreign_waker: *const ()) {
-        let waker: *const RustFutureForeignWaker = mem::transmute(foreign_waker);
+        let waker = foreign_waker as *const RustFutureForeignWaker;
         drop(Arc::from_raw(waker));
     }
 }
@@ -165,7 +183,8 @@ impl RustTaskWakerBuilder {
 #[doc(hidden)]
 pub fn uniffi_rustfuture_poll<T>(
     future: Option<&mut RustFuture<T>>,
-    waker: Option<NonNull<RustFutureForeignWaker>>,
+    waker: Option<NonNull<RustFutureForeignWakerFunction>>,
+    waker_environment: *const RustFutureForeignWakerEnvironment,
     polled_result: &mut <T as FfiConverter>::FfiType,
     call_status: &mut RustCallStatus,
 ) -> bool
@@ -178,7 +197,10 @@ where
     let future_mutex = Mutex::new(future);
 
     match call_with_output(call_status, || {
-        future_mutex.lock().unwrap().poll(waker.as_ptr())
+        future_mutex
+            .lock()
+            .unwrap()
+            .poll(waker.as_ptr(), waker_environment)
     }) {
         Poll::Ready(result) => {
             *polled_result = result;

@@ -1,5 +1,6 @@
 
-FUTURE_WAKER_T = ctypes.CFUNCTYPE(ctypes.c_uint8)
+FUTURE_WAKER_ENVIRONMENT_T = ctypes.c_void_p
+FUTURE_WAKER_T = ctypes.CFUNCTYPE(ctypes.c_uint8, FUTURE_WAKER_ENVIRONMENT_T)
 
 # Opaque type.
 class RustFuture(ctypes.Structure):
@@ -20,7 +21,7 @@ class Future:
         self._ffi_waker = None
         self._callbacks = []
 
-        def waker():
+        def waker(_env: ctypes.c_void_p):
             def async_waker():
                 state, self._result = (self._future)()
 
@@ -35,7 +36,7 @@ class Future:
         self._ffi_waker = FUTURE_WAKER_T(waker)
 
     def init(self):
-        (self._waker)()
+        (self._waker)(ctypes.c_void_p())
 
     def _future_waker(self) -> any:
         return self._waker
