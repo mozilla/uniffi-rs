@@ -656,21 +656,21 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="ident">String</span> {
         <span class="kw">match</span> <span class="ident">ffi_type</span> {
             <span class="comment">// Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not</span>
             <span class="comment">// support them yet. Thus, we use the signed variants to represent both signed and unsigned</span>
             <span class="comment">// types from the component API.</span>
-            <span class="ident">FFIType::Int8</span> <span class="op">|</span> <span class="ident">FFIType::UInt8</span> =&gt; <span class="string">&quot;Byte&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Int16</span> <span class="op">|</span> <span class="ident">FFIType::UInt16</span> =&gt; <span class="string">&quot;Short&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Int32</span> <span class="op">|</span> <span class="ident">FFIType::UInt32</span> =&gt; <span class="string">&quot;Int&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Int64</span> <span class="op">|</span> <span class="ident">FFIType::UInt64</span> =&gt; <span class="string">&quot;Long&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Float32</span> =&gt; <span class="string">&quot;Float&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Float64</span> =&gt; <span class="string">&quot;Double&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer.ByValue&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Int8</span> <span class="op">|</span> <span class="ident">FfiType::UInt8</span> =&gt; <span class="string">&quot;Byte&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Int16</span> <span class="op">|</span> <span class="ident">FfiType::UInt16</span> =&gt; <span class="string">&quot;Short&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Int32</span> <span class="op">|</span> <span class="ident">FfiType::UInt32</span> =&gt; <span class="string">&quot;Int&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Int64</span> <span class="op">|</span> <span class="ident">FfiType::UInt64</span> =&gt; <span class="string">&quot;Long&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Float32</span> =&gt; <span class="string">&quot;Float&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Float64</span> =&gt; <span class="string">&quot;Double&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer.ByValue&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.<span class="ident">to_string</span>(),
         }
     }
 }
@@ -724,8 +724,8 @@
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">literal</span>(<span class="ident">oracle</span>(), <span class="ident">literal</span>))
     }
 
-    <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FFIType`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FfiType`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">ffi_type_label</span>(<span class="ident">type_</span>))
     }
 

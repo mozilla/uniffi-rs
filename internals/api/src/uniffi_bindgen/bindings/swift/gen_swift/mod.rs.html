@@ -845,22 +845,22 @@
         <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, <span class="self">self</span>.<span class="ident">class_name</span>(<span class="ident">nm</span>))
     }
 
-    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="ident">String</span> {
         <span class="kw">match</span> <span class="ident">ffi_type</span> {
-            <span class="ident">FFIType::Int8</span> =&gt; <span class="string">&quot;int8_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt8</span> =&gt; <span class="string">&quot;uint8_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int16</span> =&gt; <span class="string">&quot;int16_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt16</span> =&gt; <span class="string">&quot;uint16_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int32</span> =&gt; <span class="string">&quot;int32_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt32</span> =&gt; <span class="string">&quot;uint32_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int64</span> =&gt; <span class="string">&quot;int64_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt64</span> =&gt; <span class="string">&quot;uint64_t&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Float32</span> =&gt; <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Float64</span> =&gt; <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Int8</span> =&gt; <span class="string">&quot;int8_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::UInt8</span> =&gt; <span class="string">&quot;uint8_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Int16</span> =&gt; <span class="string">&quot;int16_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::UInt16</span> =&gt; <span class="string">&quot;uint16_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Int32</span> =&gt; <span class="string">&quot;int32_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::UInt32</span> =&gt; <span class="string">&quot;uint32_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Int64</span> =&gt; <span class="string">&quot;int64_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::UInt64</span> =&gt; <span class="string">&quot;uint64_t&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Float32</span> =&gt; <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Float64</span> =&gt; <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
         }
     }
 }
@@ -910,29 +910,29 @@
         <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">literal</span>(<span class="ident">oracle</span>, <span class="ident">literal</span>))
     }
 
-    <span class="doccomment">/// Get the Swift syntax for representing a given low-level `FFIType`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Get the Swift syntax for representing a given low-level `FfiType`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">ffi_type_label</span>(<span class="ident">type_</span>))
     }
 
     <span class="doccomment">/// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see</span>
     <span class="doccomment">/// #1106 for details</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi_lowered</span>(<span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi_lowered</span>(<span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">ffi_type</span> {
-            <span class="ident">FFIType::Int8</span> =&gt; <span class="string">&quot;Int8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt8</span> =&gt; <span class="string">&quot;UInt8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int16</span> =&gt; <span class="string">&quot;Int16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt16</span> =&gt; <span class="string">&quot;UInt16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int32</span> =&gt; <span class="string">&quot;Int32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt32</span> =&gt; <span class="string">&quot;UInt32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Int64</span> =&gt; <span class="string">&quot;Int64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::UInt64</span> =&gt; <span class="string">&quot;UInt64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Float32</span> =&gt; <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::Float64</span> =&gt; <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FFIType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Int8</span> =&gt; <span class="string">&quot;Int8&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::UInt8</span> =&gt; <span class="string">&quot;UInt8&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Int16</span> =&gt; <span class="string">&quot;Int16&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::UInt16</span> =&gt; <span class="string">&quot;UInt16&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Int32</span> =&gt; <span class="string">&quot;Int32&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::UInt32</span> =&gt; <span class="string">&quot;UInt32&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Int64</span> =&gt; <span class="string">&quot;Int64&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::UInt64</span> =&gt; <span class="string">&quot;UInt64&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Float32</span> =&gt; <span class="string">&quot;float&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::Float64</span> =&gt; <span class="string">&quot;double&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">into</span>(),
+            <span class="ident">FfiType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.<span class="ident">to_string</span>(),
         })
     }
 

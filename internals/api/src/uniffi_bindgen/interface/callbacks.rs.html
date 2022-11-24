@@ -219,7 +219,7 @@
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi</span>::{<span class="ident">FFIArgument</span>, <span class="ident">FFIFunction</span>, <span class="ident">FFIType</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi</span>::{<span class="ident">FfiArgument</span>, <span class="ident">FfiFunction</span>, <span class="ident">FfiType</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::object::Method</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
@@ -228,7 +228,7 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CallbackInterface</span> {
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">methods</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Method</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">ffi_init_callback</span>: <span class="ident">FFIFunction</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">ffi_init_callback</span>: <span class="ident">FfiFunction</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">CallbackInterface</span> {
@@ -252,15 +252,15 @@
         <span class="self">self</span>.<span class="ident">methods</span>.<span class="ident">iter</span>().<span class="ident">collect</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_init_callback</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">FFIFunction</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_init_callback</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">FfiFunction</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ffi_init_callback</span>
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">derive_ffi_funcs</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ci_prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
         <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;ffi_{ci_prefix}_{}_init_callback&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>);
-        <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">arguments</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">FFIArgument</span> {
+        <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">arguments</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">FfiArgument</span> {
             <span class="ident">name</span>: <span class="string">&quot;callback_stub&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">type_</span>: <span class="ident">FFIType::ForeignCallback</span>,
+            <span class="ident">type_</span>: <span class="ident">FfiType::ForeignCallback</span>,
         }];
         <span class="self">self</span>.<span class="ident">ffi_init_callback</span>.<span class="ident">return_type</span> <span class="op">=</span> <span class="prelude-val">None</span>;
     }

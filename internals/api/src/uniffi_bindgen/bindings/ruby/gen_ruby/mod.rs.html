@@ -359,22 +359,22 @@
 <span class="kw">mod</span> <span class="ident">filters</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">FFIType::Int8</span> =&gt; <span class="string">&quot;:int8&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::UInt8</span> =&gt; <span class="string">&quot;:uint8&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Int16</span> =&gt; <span class="string">&quot;:int16&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::UInt16</span> =&gt; <span class="string">&quot;:uint16&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Int32</span> =&gt; <span class="string">&quot;:int32&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::UInt32</span> =&gt; <span class="string">&quot;:uint32&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Int64</span> =&gt; <span class="string">&quot;:int64&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::UInt64</span> =&gt; <span class="string">&quot;:uint64&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Float32</span> =&gt; <span class="string">&quot;:float&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::Float64</span> =&gt; <span class="string">&quot;:double&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;:pointer&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer.by_value&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FFIType::ForeignCallback</span> =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
+            <span class="ident">FfiType::Int8</span> =&gt; <span class="string">&quot;:int8&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::UInt8</span> =&gt; <span class="string">&quot;:uint8&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Int16</span> =&gt; <span class="string">&quot;:int16&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::UInt16</span> =&gt; <span class="string">&quot;:uint16&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Int32</span> =&gt; <span class="string">&quot;:int32&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::UInt32</span> =&gt; <span class="string">&quot;:uint32&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Int64</span> =&gt; <span class="string">&quot;:int64&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::UInt64</span> =&gt; <span class="string">&quot;:uint64&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Float32</span> =&gt; <span class="string">&quot;:float&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::Float64</span> =&gt; <span class="string">&quot;:double&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;:pointer&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer.by_value&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">FfiType::ForeignCallback</span> =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
         })
     }
 

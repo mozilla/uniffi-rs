@@ -44,7 +44,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">CodeType</span>, <span class="ident">TypeIdentifier</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::interface::FFIType</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::interface::FfiType</span>;
 
 <span class="doccomment">/// An object to look up a foreign language code specific renderer for a given type used.</span>
 <span class="doccomment">/// Every `Type` referred to in the `ComponentInterface` should map to a corresponding</span>
@@ -72,7 +72,7 @@
     <span class="doccomment">/// Get the idiomatic rendering of an error name.</span>
     <span class="kw">fn</span> <span class="ident">error_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span>;
 
-    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FFIType</span>) -&gt; <span class="ident">String</span>;
+    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="ident">String</span>;
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>

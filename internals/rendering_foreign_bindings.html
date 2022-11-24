@@ -181,7 +181,7 @@ helper code, including:
 <li>Base classes and helper classes, for example
 <a href="https://github.com/mozilla/uniffi-rs/blob/main/uniffi_bindgen/src/bindings/kotlin/templates/ObjectRuntime.kt"><code>ObjectRuntime.kt</code></a>
 contains shared functionality for all the <code>Type::Object</code> types.</li>
-<li>The FFIConverter class definition.  This handles <a href="./lifting_and_lowering.html">lifting and lowering
+<li>The FfiConverter class definition.  This handles <a href="./lifting_and_lowering.html">lifting and lowering
 types across the FFI</a> for the type.</li>
 <li>Initialization functions</li>
 <li>Importing dependencies</li>
@@ -194,7 +194,7 @@ for an example.</li>
 renders identifiers and names related to the type, including:
 <ul>
 <li>The name of the type in the foreign language</li>
-<li>The name of the <code>FFIConverter</code> class</li>
+<li>The name of the <code>FfiConverter</code> class</li>
 <li>The name of the initialization function</li>
 <li>See
 <a href="https://github.com/mozilla/uniffi-rs/blob/470740289258e1f06171a976d8e15978f028e391/uniffi_bindgen/src/bindings/kotlin/gen_kotlin/mod.rs#L198-L230"><code>KotlinCodeOracle::create_code_type()</code></a>
@@ -217,8 +217,8 @@ the top-level template Struct then they are accessible from all child templates.
 example, at one point the logic to lift/lower a type lived in the Rust code as a function that generated the
 expression in the foreign language.  However, it was not clear at all how to make this work for external types,
 it would probably require parsing multiple UDL files and managing multiple ComponentInterfaces.  Putting the logic
-to lift/lower the type in the <code>FFIConverter</code> class simplifies this, because we can import the external
-<code>FFIConverter</code> class and use that. We only need to know the name of the <code>FFIConverter</code> class which is a simpler
+to lift/lower the type in the <code>FfiConverter</code> class simplifies this, because we can import the external
+<code>FfiConverter</code> class and use that. We only need to know the name of the <code>FfiConverter</code> class which is a simpler
 task.</li>
 </ul>
 <h2><a class="header" href="#askama-extensions" id="askama-extensions">Askama extensions</a></h2>

@@ -125,7 +125,7 @@
 <span class="doccomment">/// &quot;owned&quot; types (the recipient must free it, or pass it to someone else) and</span>
 <span class="doccomment">/// &quot;borrowed&quot; types (the sender must keep it alive for the duration of the call).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">FFIType</span> {
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">FfiType</span> {
     <span class="comment">// N.B. there are no booleans at this layer, since they cause problems for JNA.</span>
     <span class="ident">UInt8</span>,
     <span class="ident">Int8</span>,
@@ -160,23 +160,23 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// These can&#39;t be declared explicitly in the UDL, but rather, are derived automatically</span>
 <span class="doccomment">/// from the high-level interface. Each callable thing in the component API will have a</span>
-<span class="doccomment">/// corresponding `FFIFunction` through which it can be invoked, and UniFFI also provides</span>
-<span class="doccomment">/// some built-in `FFIFunction` helpers for use in the foreign language bindings.</span>
+<span class="doccomment">/// corresponding `FfiFunction` through which it can be invoked, and UniFFI also provides</span>
+<span class="doccomment">/// some built-in `FfiFunction` helpers for use in the foreign language bindings.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FFIFunction</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FfiFunction</span> {
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FFIArgument</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">return_type</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FFIType</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FfiArgument</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">return_type</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FfiType</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">FFIFunction</span> {
+<span class="kw">impl</span> <span class="ident">FfiFunction</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arguments</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">FFIArgument</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arguments</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">FfiArgument</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>().<span class="ident">collect</span>()
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">return_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">FFIType</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">return_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">FfiType</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">return_type</span>.<span class="ident">as_ref</span>()
     }
 }
@@ -185,16 +185,16 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Each argument has a name and a type.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FFIArgument</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FfiArgument</span> {
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">type_</span>: <span class="ident">FFIType</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">type_</span>: <span class="ident">FfiType</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">FFIArgument</span> {
+<span class="kw">impl</span> <span class="ident">FfiArgument</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">FFIType</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">FfiType</span> {
         <span class="self">self</span>.<span class="ident">type_</span>.<span class="ident">clone</span>()
     }
 }
