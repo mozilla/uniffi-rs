@@ -8,6 +8,11 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.21.0...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+
+- `uniffi_bindgen`: Renamed `FFIArgument`, `FFIFunction` and `FFIType` to
+  `FfiArgument`, `FfiFunction` and `FfiType`
+
 ### What's changed
 
 - Added support for Swift external types
