@@ -64,7 +64,7 @@ where
 
         Pin::new(&mut self.0)
             .poll(&mut context)
-            .map(|result| <T as FfiConverter>::lower(result))
+            .map(<T as FfiConverter>::lower)
     }
 }
 
