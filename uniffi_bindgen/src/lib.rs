@@ -96,6 +96,7 @@ const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
+#[cfg(feature = "clap")]
 use clap::{Parser, Subcommand};
 use fs_err::{self as fs, File};
 use serde::{Deserialize, Serialize};
@@ -452,6 +453,7 @@ impl<V: Clone> MergeWith for HashMap<String, V> {
 // structs to help our cmdline parsing. Note that docstrings below form part
 // of the "help" output.
 /// Scaffolding and bindings generator for Rust
+#[cfg(feature = "clap")]
 #[derive(Parser)]
 #[clap(name = "uniffi-bindgen")]
 #[clap(version = clap::crate_version!())]
@@ -461,6 +463,7 @@ struct Cli {
     command: Commands,
 }
 
+#[cfg(feature = "clap")]
 #[derive(Subcommand)]
 enum Commands {
     /// Generate foreign language bindings
@@ -514,6 +517,7 @@ enum Commands {
     },
 }
 
+#[cfg(feature = "clap")]
 pub fn run_main() -> Result<()> {
     let cli = Cli::parse();
     match &cli.command {

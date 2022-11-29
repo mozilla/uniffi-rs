@@ -19,7 +19,7 @@ log = "0.4"
 once_cell = "1.12"
 # Regular dependencies
 paste = "1.0"
-uniffi_bindgen = { path = "../uniffi_bindgen", optional = true, version = "=0.21.0" }
+uniffi_bindgen = { path = "../uniffi_bindgen", default-features = false, optional = true, version = "=0.21.0" }
 uniffi_macros = { path = "../uniffi_macros", version = "=0.21.0" }
 static_assertions = "1.1.0"
 
