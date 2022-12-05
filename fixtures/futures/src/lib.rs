@@ -60,6 +60,11 @@ impl TimerFuture {
 }
 
 #[uniffi::export]
+fn greet(who: String) -> String {
+    format!("Hello, {who}")
+}
+
+#[uniffi::export]
 async fn always_ready() -> bool {
     true
 }
@@ -71,37 +76,37 @@ async fn say() -> String {
     format!("Hello, Future!")
 }
 
-#[uniffi::export]
-async fn say_after(secs: u8, who: String) -> String {
-    TimerFuture::new(Duration::from_secs(secs.into())).await;
+// #[uniffi::export]
+// async fn say_after(secs: u8, who: String) -> String {
+//     TimerFuture::new(Duration::from_secs(secs.into())).await;
 
-    format!("Hello, {who}!")
-}
+//     format!("Hello, {who}!")
+// }
 
-#[uniffi::export]
-pub async fn sleep(secs: u8) -> bool {
-    TimerFuture::new(Duration::from_secs(secs.into())).await;
+// #[uniffi::export]
+// pub async fn sleep(secs: u8) -> bool {
+//     TimerFuture::new(Duration::from_secs(secs.into())).await;
 
-    true
-}
+//     true
+// }
 
-#[uniffi::export]
-fn new_megaphone() -> Arc<Megaphone> {
-    Arc::new(Megaphone)
-}
+// #[uniffi::export]
+// fn new_megaphone() -> Arc<Megaphone> {
+//     Arc::new(Megaphone)
+// }
 
-#[derive(uniffi::Object)]
-pub struct Megaphone;
+// #[derive(uniffi::Object)]
+// pub struct Megaphone;
 
-#[uniffi::export]
-impl Megaphone {
-    async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
-        say_after(secs, who).await.to_uppercase()
-    }
-}
+// #[uniffi::export]
+// impl Megaphone {
+//     async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
+//         say_after(secs, who).await.to_uppercase()
+//     }
+// }
 
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
 
 mod uniffi_types {
-    pub(crate) use super::Megaphone;
+    // pub(crate) use super::Megaphone;
 }

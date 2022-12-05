@@ -1,35 +1,51 @@
 {%- if func.is_async() %}
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
-public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) async {% call swift::throws(func) %} -> {{ return_type|type_name }} {
-    let rustFuture = {% call swift::to_ffi_call(func) %}
 
-    struct Env {
-        var rustFuture: UnsafePointer<RustFuture>
-        var continuation: CheckedContinuation<Bool, Never>
+fileprivate class _UniFFI_{{ func.name()|class_name }}_Env {
+    var rustFuture: OpaquePointer
+    var continuation: CheckedContinuation<{{ return_type|type_name }}, Never>
+    
+    init(rustyFuture: OpaquePointer, continuation: CheckedContinuation<{{ return_type|type_name }}, Never>) {
+        self.rustFuture = rustyFuture
+        self.continuation = continuation
     }
     
+    deinit {
+        try! rustCall {
+            {{ func.ffi_func().name() }}_drop(self.rustFuture, $0)
+        }
+    }
+}
+
+fileprivate func _UniFFI_{{ func.name()|class_name }}_waker(raw_env: UnsafeMutableRawPointer?) {
+    Task {
+        let env = Unmanaged<_UniFFI_{{ func.name()|class_name }}_Env>.fromOpaque(raw_env!)
+        let env_ref = env.takeUnretainedValue()
+        let polledResult = UnsafeMutablePointer<{% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Int{% endmatch %}>.allocate(capacity: 1)
+        let isReady = try! rustCall() {
+            {{ func.ffi_func().name() }}_poll(
+                env_ref.rustFuture,
+                _UniFFI_{{ func.name()|class_name }}_waker,
+                env.toOpaque(),
+                polledResult,
+                $0
+            )
+        }
+
+        if isReady {
+            env_ref.continuation.resume(returning: try! {{ return_type|lift_fn }}(polledResult.pointee))
+            env.release()
+        }
+    }
+}
+
+public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) async {% call swift::throws(func) %} -> {{ return_type|type_name }} {
+    let future = {% call swift::to_ffi_call(func) %}
+
     return await withCheckedContinuation { continuation in
-        func waker(env: UnsafePointer<Env>) {
-            let polledResult = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
-            let isReady = try! rustCall() {
-                {{ func.ffi_func().name() }}_poll(env.pointee.rustFuture, waker, env, polledResult, $0)
-            }
-
-            if isReady {
-                try! rustCall {
-                    {{ func.ffi_func().name() }}_drop(rustFuture, $0)
-                }
-                env.pointee.continuation.resume(with: {{ return_type|lift_fn }}(polledResult))
-            }
-        }
-        
-        let env = Env {
-            rustFuture = rustFuture
-            continuation = continuation
-        }
-
-        waker(env: &env)
+        let env = Unmanaged.passRetained(_UniFFI_{{ func.name()|class_name }}_Env(rustyFuture: future, continuation: continuation))
+        _UniFFI_{{ func.name()|class_name }}_waker(raw_env: env.toOpaque())
     }
 }
 
