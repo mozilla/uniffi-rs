@@ -96,8 +96,6 @@ const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
-#[cfg(feature = "clap")]
-use clap::{Parser, Subcommand};
 use fs_err::{self as fs, File};
 use serde::{Deserialize, Serialize};
 use std::io::prelude::*;
@@ -448,108 +446,6 @@ impl<V: Clone> MergeWith for HashMap<String, V> {
         }
         merged
     }
-}
-
-// structs to help our cmdline parsing. Note that docstrings below form part
-// of the "help" output.
-/// Scaffolding and bindings generator for Rust
-#[cfg(feature = "clap")]
-#[derive(Parser)]
-#[clap(name = "uniffi-bindgen")]
-#[clap(version = clap::crate_version!())]
-#[clap(propagate_version = true)]
-struct Cli {
-    #[clap(subcommand)]
-    command: Commands,
-}
-
-#[cfg(feature = "clap")]
-#[derive(Subcommand)]
-enum Commands {
-    /// Generate foreign language bindings
-    Generate {
-        /// Foreign language(s) for which to build bindings.
-        #[clap(long, short, possible_values = &["kotlin", "python", "swift", "ruby"])]
-        language: Vec<String>,
-
-        /// Directory in which to write generated files. Default is same folder as .udl file.
-        #[clap(long, short)]
-        out_dir: Option<Utf8PathBuf>,
-
-        /// Do not try to format the generated bindings.
-        #[clap(long, short)]
-        no_format: bool,
-
-        /// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.
-        #[clap(long, short)]
-        config: Option<Utf8PathBuf>,
-
-        /// Extract proc-macro metadata from a native lib (cdylib or staticlib) for this crate.
-        #[clap(long)]
-        lib_file: Option<Utf8PathBuf>,
-
-        /// Path to the UDL file.
-        udl_file: Utf8PathBuf,
-    },
-
-    /// Generate Rust scaffolding code
-    Scaffolding {
-        /// Directory in which to write generated files. Default is same folder as .udl file.
-        #[clap(long, short)]
-        out_dir: Option<Utf8PathBuf>,
-
-        /// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.
-        #[clap(long, short)]
-        config: Option<Utf8PathBuf>,
-
-        /// Do not try to format the generated bindings.
-        #[clap(long, short)]
-        no_format: bool,
-
-        /// Path to the UDL file.
-        udl_file: Utf8PathBuf,
-    },
-
-    /// Print the JSON representation of the interface from a dynamic library
-    PrintJson {
-        /// Path to the library file (.so, .dll, .dylib, or .a)
-        path: Utf8PathBuf,
-    },
-}
-
-#[cfg(feature = "clap")]
-pub fn run_main() -> Result<()> {
-    let cli = Cli::parse();
-    match &cli.command {
-        Commands::Generate {
-            language,
-            out_dir,
-            no_format,
-            config,
-            lib_file,
-            udl_file,
-        } => generate_bindings(
-            udl_file,
-            config.as_deref(),
-            language.iter().map(String::as_str).collect(),
-            out_dir.as_deref(),
-            lib_file.as_deref(),
-            !no_format,
-        ),
-        Commands::Scaffolding {
-            out_dir,
-            config,
-            no_format,
-            udl_file,
-        } => generate_component_scaffolding(
-            udl_file,
-            config.as_deref(),
-            out_dir.as_deref(),
-            !no_format,
-        ),
-        Commands::PrintJson { path } => print_json(path),
-    }?;
-    Ok(())
 }
 
 // FIXME(HACK):

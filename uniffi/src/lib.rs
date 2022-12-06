@@ -2,11 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#[cfg(feature = "clap")]
+mod cli;
 /// Reexport items from other uniffi creates
 pub use uniffi_bindgen::bindings::kotlin::run_test as kotlin_run_test;
 pub use uniffi_bindgen::bindings::python::run_test as python_run_test;
 pub use uniffi_bindgen::bindings::ruby::run_test as ruby_run_test;
 pub use uniffi_bindgen::bindings::swift::run_test as swift_run_test;
+pub use uniffi_bindgen::{generate_bindings, generate_component_scaffolding, print_json};
 pub use uniffi_build::generate_scaffolding;
 pub use uniffi_core::*;
 pub use uniffi_macros::{
@@ -22,6 +25,7 @@ mod test {
     }
 }
 
+#[cfg(feature = "clap")]
 pub fn uniffi_bindgen_main() {
-    uniffi_bindgen::run_main().unwrap();
+    cli::run_main().unwrap();
 }

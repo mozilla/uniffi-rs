@@ -15,6 +15,9 @@ uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.22.0" }
 uniffi_build = { path = "../uniffi_build", version = "=0.22.0" }
 uniffi_core = { path = "../uniffi_core", version = "=0.22.0" }
 uniffi_macros = { path = "../uniffi_macros", version = "=0.22.0" }
+anyhow = "1"
+camino = "1.0.8"
+clap = { version = "3.1", features = ["cargo", "std", "derive"], optional = true }
 
 [dev-dependencies]
 trybuild = "1"
@@ -22,3 +25,7 @@ trybuild = "1"
 [[bin]]
 name = "run-uniffi-bindgen"
 path = "run-uniffi-bindgen.rs"
+required-features = ["clap"]
+
+[features]
+default = ["clap"]
