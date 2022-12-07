@@ -15,6 +15,5 @@ build:
 	# magic.
 	cp ../../../../target/release/uniffi_futuresFFI.modulemap ../../../../target/release/module.modulemap
 
-
 run:
 	swift run

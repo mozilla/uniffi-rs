@@ -184,13 +184,13 @@ fn gen_ffi_function(
                 #[doc(hidden)]
                 #[no_mangle]
                 pub extern "C" fn #ffi_poll_ident(
-                    future: core::option::Option<&mut uniffi::RustFuture<#ty>>,
-                    waker: core::option::Option<core::ptr::NonNull<uniffi::RustFutureForeignWakerFunction>>,
-                    waker_environment: *const uniffi::RustFutureForeignWakerEnvironment,
+                    future: core::option::Option<&mut ::uniffi::RustFuture<#ty>>,
+                    waker: core::option::Option<core::ptr::NonNull<::uniffi::RustFutureForeignWakerFunction>>,
+                    waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
                     polled_result: &mut <#ty as ::uniffi::FfiConverter>::FfiType,
-                    call_status: &mut uniffi::RustCallStatus,
+                    call_status: &mut ::uniffi::RustCallStatus,
                 ) -> bool {
-                    uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
+                    ::uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
                 }
             });
 
@@ -199,10 +199,10 @@ fn gen_ffi_function(
                 #[doc(hidden)]
                 #[no_mangle]
                 pub extern "C" fn #ffi_drop_ident(
-                    future: core::option::Option<Box<uniffi::RustFuture<#ty>>>,
-                    call_status: &mut uniffi::RustCallStatus,
+                    future: core::option::Option<Box<::uniffi::RustFuture<#ty>>>,
+                    call_status: &mut ::uniffi::RustCallStatus,
                 ) {
-                    uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
+                    ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
                 }
             });
         }
