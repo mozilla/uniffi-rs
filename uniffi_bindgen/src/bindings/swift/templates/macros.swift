@@ -88,6 +88,10 @@
     RustCallStatus *_Nonnull out_status
 {%- endmacro -%}
 
+{%- macro async(func) %}
+{%- if func.is_async() %}async{% endif %}
+{%- endmacro -%}
+
 {%- macro throws(func) %}
 {%- if func.throws() %}throws{% endif %}
 {%- endmacro -%}

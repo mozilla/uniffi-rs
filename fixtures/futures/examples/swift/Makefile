@@ -17,7 +17,4 @@ build:
 
 
 run:
-	# swiftc -I ../../../../target/release -l../../../../target/release/libuniffi_futures.dylib -Xcc -fmodule-map-file=../../../../target/release/uniffi_futuresFFI.modulemap -parse-as-library demo.swift
-	# swiftc -parse-as-library demo.swift
-	# ./demo
 	swift run
