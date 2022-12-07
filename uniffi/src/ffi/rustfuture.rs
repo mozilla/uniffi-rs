@@ -73,21 +73,12 @@ where
     }
 }
 
-impl<T> FfiDefault for RustFuture<T>
+impl<T> FfiDefault for Option<Box<RustFuture<T>>>
 where
     T: FfiConverter,
 {
     fn ffi_default() -> Self {
-        Self::new(async { unreachable!("A default future must not be polled") })
-    }
-}
-
-impl<T> FfiDefault for Box<RustFuture<T>>
-where
-    T: FfiConverter,
-{
-    fn ffi_default() -> Self {
-        Box::new(RustFuture::ffi_default())
+        None
     }
 }
 

@@ -162,15 +162,18 @@ fn gen_ffi_function(
         }
 
         ReturnType::Type(_, ty) if sig.asyncness.is_some() => {
+            // The function returns `Option<Box<…>>` so that the `FfiDefault`
+            // implementation can return `None` rather than `Box`, which could
+            // leak data in case of errors.
             output = Some(quote! {
-               -> Box<::uniffi::RustFuture<#ty>>
+               -> Option<Box<::uniffi::RustFuture<#ty>>>
             });
             return_expr = quote! {
-                Box::new(::uniffi::RustFuture::new(
+                Some(Box::new(::uniffi::RustFuture::new(
                     async move {
                         #rust_fn_call.await
                     }
-                ))
+                )))
             };
 
             let ffi_poll_ident = format_ident!("{}_poll", ffi_ident);
