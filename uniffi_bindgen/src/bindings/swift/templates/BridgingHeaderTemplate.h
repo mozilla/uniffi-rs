@@ -61,7 +61,7 @@ bool {{ func.name() }}_poll(
     RustFuture*_Nonnull const,
     rust_future_waker_t _Nonnull,
     rust_future_waker_environment_t*_Nullable const,
-    {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}void{% endmatch %}*,
+    {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}void{% endmatch %}*_Nullable,
     RustCallStatus*_Nonnull
 );
 
