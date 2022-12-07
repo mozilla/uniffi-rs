@@ -1,26 +1,42 @@
 import uniffi_futures
+import Foundation // to get `Date` and `DateFormatter`
+
+func showTime() {
+	let now = Date()
+	let formatter = DateFormatter()
+	formatter.timeStyle = .medium
+	print("[time \(formatter.string(from: now))]")
+}
 
 @main
 struct Testing {
 	static func main() async throws {
-		print("a")
+		print("Let's start!\n")
 
-		let x1 = await alwaysReady()
-		print("alwaysReady: \(x1)")
+		print("Wait 2secs before greeting you, dear public!\n")
 
-		let x2 = await say()
-		print("say: \(x2)")
+		showTime()
+		let result = await sayAfter(secs: 2, who: "You")
+		print("result: \(result)")
+		showTime()
 
-		let x3 = await sayAfter(secs: 3, who: "World")
-		print("say_after: \(x3)")
+		print("\nWouha, 'tired. Let's sleep for 3secs!\n")
 
-		let x4 = await sleep(secs: 2)
-		print("sleep: \(x4)")
+		showTime()
+		let _ = await sleep(secs: 3)
+		showTime()
 
-		let m = newMegaphone()
-		let x5 = await m.sayAfter(secs: 2, who: "Gordon")
-		print("Megaphone::say_after \(x5)")
+		print("\nIs it really blocking? Nah. Let's greet Alice and Bob after resp. 2secs and 3secs _concurrently_!\n")
 
-		print("b")
+		async let alice = sayAfter(secs: 2, who: "Alice")
+		async let bob = sayAfter(secs: 3, who: "Bob")
+
+		showTime()
+		let (result_alice, result_bob) = await (alice, bob)
+		print("result_alice: \(result_alice)")
+		print("result_bob: \(result_bob)")
+		showTime()
+
+		print("\nSee, it tooks 3secs, not 5secs!")
 	}
 }
