@@ -5,12 +5,12 @@
 fileprivate class _UniFFI_{{ func.name()|class_name }}_Env {
     var rustFuture: OpaquePointer
     var continuation: CheckedContinuation<{{ return_type|type_name }}, Never>
-    
+
     init(rustyFuture: OpaquePointer, continuation: CheckedContinuation<{{ return_type|type_name }}, Never>) {
         self.rustFuture = rustyFuture
         self.continuation = continuation
     }
-    
+
     deinit {
         try! rustCall {
             {{ func.ffi_func().name() }}_drop(self.rustFuture, $0)
