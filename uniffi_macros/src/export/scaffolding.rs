@@ -179,7 +179,7 @@ fn gen_ffi_function(
             let ffi_poll_ident = format_ident!("{}_poll", ffi_ident);
             let ffi_drop_ident = format_ident!("{}_drop", ffi_ident);
 
-            // Poll function.
+            // Monomorphised poll function.
             extra_functions.push(quote! {
                 #[doc(hidden)]
                 #[no_mangle]
@@ -194,7 +194,7 @@ fn gen_ffi_function(
                 }
             });
 
-            // Drop function.
+            // Monomorphised drop function.
             extra_functions.push(quote! {
                 #[doc(hidden)]
                 #[no_mangle]
