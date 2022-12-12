@@ -25,7 +25,7 @@
 //! }
 //! ```
 //!
-//! I Rust, this `async fn` syntax is strictly equivalent to:
+//! In Rust, this `async fn` syntax is strictly equivalent to:
 //!
 //! ```rust,ignore
 //! #[uniffi::export]
