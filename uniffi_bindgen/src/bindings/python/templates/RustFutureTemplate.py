@@ -1,8 +1,10 @@
 
+{# See `uniffi::RustFutureForeignWakerEnvironment` #}
 FUTURE_WAKER_ENVIRONMENT_T = ctypes.c_void_p
+{# See `uniffi::RustFutureForeignWakerFunction` #}
 FUTURE_WAKER_T = ctypes.CFUNCTYPE(ctypes.c_uint8, FUTURE_WAKER_ENVIRONMENT_T)
 
-# Opaque type.
+# `RustFuture` is an opaque type.
 class RustFuture(ctypes.Structure):
     pass
 
@@ -11,24 +13,25 @@ class FuturePoll(enum.Enum):
     DONE = 1
 
 class Future:
-    def __init__(self, future: any):
+    def __init__(self, future_trampoline: any):
         self._asyncio_future_blocking = False
         self._loop = asyncio.get_event_loop()
         self._state = FuturePoll.PENDING
         self._result = None
-        self._future = future
         self._waker = None
         self._ffi_waker = None
         self._callbacks = []
 
+        # The foreign waker, which will be called by Rust.
         def waker(_env: ctypes.c_void_p):
-            def async_waker():
-                state, self._result = (self._future)()
+            def scheduled_waker():
+                state, result = (future_trampoline)()
 
                 if state == FuturePoll.DONE:
-                    self.set_result(self._result)
+                    self.set_result(result)
 
-            self._loop.call_soon_threadsafe(async_waker)
+            # Ask the executor to schedule to poll the future.
+            self._loop.call_soon_threadsafe(scheduled_waker)
 
             return 0
 
@@ -36,6 +39,7 @@ class Future:
         self._ffi_waker = FUTURE_WAKER_T(waker)
 
     def init(self):
+        # Poll the future.
         (self._waker)(ctypes.c_void_p())
 
     def _future_waker(self) -> any:
