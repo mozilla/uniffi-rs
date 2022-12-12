@@ -4,7 +4,7 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use syn::{FnArg, Pat};
+use syn::{parse_quote, FnArg, Pat};
 
 use super::{FunctionReturn, Signature};
 
@@ -157,41 +157,33 @@ fn gen_ffi_function(
     let name = &sig.ident;
     let name_s = name.to_string();
 
-    // FIXME(jplatte): Use an extra trait implemented for `T: FfiConverter` as
-    // well as `()` so no different codegen is needed?
-    let (output, return_expr);
-    match &sig.output {
-        Some(FunctionReturn { ty, throws }) => {
-            output = Some(quote! {
-                -> <#ty as ::uniffi::FfiConverter>::FfiType
-            });
-
-            return_expr = if let Some(error_ident) = throws {
-                quote! {
-                    ::uniffi::call_with_result(call_status, || {
-                        let val = #rust_fn_call.map_err(|e| {
-                            <#error_ident as ::uniffi::FfiConverter>::lower(
-                                ::std::convert::Into::into(e),
-                            )
-                        })?;
-                        Ok(<#ty as ::uniffi::FfiConverter>::lower(val))
-                    })
-                }
-            } else {
-                quote! {
-                    ::uniffi::call_with_output(call_status, || {
-                        <#ty as ::uniffi::FfiConverter>::lower(#rust_fn_call)
-                    })
-                }
-            };
-        }
+    let unit_slot;
+    let (ty, throws) = match &sig.output {
+        Some(FunctionReturn { ty, throws }) => (ty, throws),
         None => {
-            output = None;
-            return_expr = quote! {
-                ::uniffi::call_with_output(call_status, || #rust_fn_call)
-            };
+            unit_slot = parse_quote! { () };
+            (&unit_slot, &None)
         }
-    }
+    };
+
+    let return_expr = if let Some(error_ident) = throws {
+        quote! {
+            ::uniffi::call_with_result(call_status, || {
+                let val = #rust_fn_call.map_err(|e| {
+                    <#error_ident as ::uniffi::FfiConverter>::lower(
+                        ::std::convert::Into::into(e),
+                    )
+                })?;
+                Ok(<#ty as ::uniffi::FfiReturn>::lower(val))
+            })
+        }
+    } else {
+        quote! {
+            ::uniffi::call_with_output(call_status, || {
+                <#ty as ::uniffi::FfiReturn>::lower(#rust_fn_call)
+            })
+        }
+    };
 
     quote! {
         #[doc(hidden)]
@@ -199,7 +191,7 @@ fn gen_ffi_function(
         pub extern "C" fn #ffi_ident(
             #(#params,)*
             call_status: &mut ::uniffi::RustCallStatus,
-        ) #output {
+        ) -> <#ty as ::uniffi::FfiReturn>::FfiType {
             ::uniffi::deps::log::debug!(#name_s);
             #return_expr
         }

@@ -4,7 +4,7 @@
 
 use uniffi_meta::MethodMetadata;
 
-use super::convert::{convert_type, fn_param_metadata, type_as_type_path};
+use super::convert::{convert_return_type, fn_param_metadata, type_as_type_path};
 use crate::export::{ExportItem, Method, Signature};
 
 pub(super) fn gen_impl_metadata(
@@ -75,10 +75,10 @@ fn method_metadata(
     mod_path: &[String],
 ) -> syn::Result<MethodMetadata> {
     let (return_type, throws) = match &sig.output {
-        Some(ret) => {
-            let ty = convert_type(&ret.ty)?;
-            (Some(ty), ret.throws.as_ref().map(ToString::to_string))
-        }
+        Some(ret) => (
+            convert_return_type(&ret.ty)?,
+            ret.throws.as_ref().map(ToString::to_string),
+        ),
         None => (None, None),
     };
 

@@ -34,6 +34,13 @@ pub(super) fn fn_param_metadata(params: &[syn::FnArg]) -> syn::Result<Vec<FnPara
         .collect()
 }
 
+pub(crate) fn convert_return_type(ty: &syn::Type) -> syn::Result<Option<Type>> {
+    match ty {
+        syn::Type::Tuple(tup) if tup.elems.is_empty() => Ok(None),
+        _ => convert_type(ty).map(Some),
+    }
+}
+
 pub(crate) fn convert_type(ty: &syn::Type) -> syn::Result<Type> {
     let type_path = type_as_type_path(ty)?;
 

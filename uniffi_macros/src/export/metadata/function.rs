@@ -4,7 +4,7 @@
 
 use uniffi_meta::FnMetadata;
 
-use super::convert::{convert_type, fn_param_metadata};
+use super::convert::{convert_return_type, fn_param_metadata};
 use crate::export::{ExportItem, Signature};
 
 pub(super) fn gen_fn_metadata(sig: syn::Signature, mod_path: &[String]) -> syn::Result<ExportItem> {
@@ -15,10 +15,10 @@ pub(super) fn gen_fn_metadata(sig: syn::Signature, mod_path: &[String]) -> syn::
 
 fn fn_metadata(sig: &Signature, mod_path: &[String]) -> syn::Result<FnMetadata> {
     let (return_type, throws) = match &sig.output {
-        Some(ret) => {
-            let ty = convert_type(&ret.ty)?;
-            (Some(ty), ret.throws.as_ref().map(ToString::to_string))
-        }
+        Some(ret) => (
+            convert_return_type(&ret.ty)?,
+            ret.throws.as_ref().map(ToString::to_string),
+        ),
         None => (None, None),
     };
 
