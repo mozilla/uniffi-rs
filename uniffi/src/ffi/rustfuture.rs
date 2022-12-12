@@ -310,11 +310,9 @@ where
     ) -> Poll<<T as FfiConverter>::FfiType> {
         let waker = unsafe {
             Waker::from_raw(RawWaker::new(
-                Arc::into_raw(Arc::new(RustFutureForeignWaker {
-                    waker: foreign_waker,
-                    waker_environment: foreign_waker_environment,
-                })) as *const (),
-                &RustTaskWakerBuilder::VTABLE,
+                RustFutureForeignWaker::new(foreign_waker, foreign_waker_environment)
+                    .into_unit_ptr(),
+                &RustFutureForeignRawWaker::VTABLE,
             ))
         };
         let mut context = Context::from_waker(&waker);
@@ -342,7 +340,7 @@ impl<T> FfiDefault for Poll<T> {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests_rust_future {
     use super::*;
 
     #[test]
@@ -373,10 +371,36 @@ struct RustFutureForeignWaker {
     waker_environment: *const RustFutureForeignWakerEnvironment,
 }
 
-/// Zero-sized type to create the VTable for the `RawWaker`.
-struct RustTaskWakerBuilder;
+impl RustFutureForeignWaker {
+    fn new(
+        waker: *const RustFutureForeignWakerFunction,
+        waker_environment: *const RustFutureForeignWakerEnvironment,
+    ) -> Self {
+        Self {
+            waker,
+            waker_environment,
+        }
+    }
 
-impl RustTaskWakerBuilder {
+    fn into_unit_ptr(self) -> *const () {
+        Arc::into_raw(Arc::new(self)) as *const ()
+    }
+
+    unsafe fn increment_reference_count(me: *const ()) {
+        Arc::increment_strong_count(me as *const Self);
+    }
+
+    unsafe fn from_unit_ptr(me: *const ()) -> Arc<Self> {
+        Arc::from_raw(me as *const Self)
+    }
+}
+
+/// Zero-sized type to create the VTable
+/// ([Virtual method table](https://en.wikipedia.org/wiki/Virtual_method_table))
+/// for the `RawWaker`.
+struct RustFutureForeignRawWaker;
+
+impl RustFutureForeignRawWaker {
     const VTABLE: RawWakerVTable = RawWakerVTable::new(
         Self::clone_waker,
         Self::wake,
@@ -387,8 +411,7 @@ impl RustTaskWakerBuilder {
     /// This function will be called when the `RawWaker` gets cloned, e.g. when
     /// the `Waker` in which the `RawWaker` is stored gets cloned.
     unsafe fn clone_waker(foreign_waker: *const ()) -> RawWaker {
-        let waker = foreign_waker as *const RustFutureForeignWaker;
-        Arc::increment_strong_count(waker);
+        RustFutureForeignWaker::increment_reference_count(foreign_waker);
 
         RawWaker::new(foreign_waker, &Self::VTABLE)
     }
@@ -396,33 +419,119 @@ impl RustTaskWakerBuilder {
     /// This function will be called when `wake` is called on the `Waker`. It
     /// must wake up the task associated with this `RawWaker`.
     unsafe fn wake(foreign_waker: *const ()) {
-        let waker = foreign_waker as *const RustFutureForeignWaker;
-        let waker = Arc::from_raw(waker);
-
+        let waker = RustFutureForeignWaker::from_unit_ptr(foreign_waker);
         let func = mem::transmute::<_, RustFutureForeignWakerFunction>(waker.waker);
+
         func(waker.waker_environment);
     }
 
     /// This function will be called when `wake_by_ref` is called on the
     /// `Waker`. It must wake up the task associated with this `RawWaker`.
     unsafe fn wake_by_ref(foreign_waker: *const ()) {
-        let waker = foreign_waker as *const RustFutureForeignWaker;
-        let waker = ManuallyDrop::new(Arc::from_raw(waker));
-
+        let waker = ManuallyDrop::new(RustFutureForeignWaker::from_unit_ptr(foreign_waker));
         let func = mem::transmute::<_, RustFutureForeignWakerFunction>(waker.waker);
+
         func(waker.waker_environment);
     }
 
     /// This function gets called when a `RawWaker` gets dropped.
     unsafe fn drop_waker(foreign_waker: *const ()) {
-        let waker = foreign_waker as *const RustFutureForeignWaker;
-        drop(Arc::from_raw(waker));
+        drop(RustFutureForeignWaker::from_unit_ptr(foreign_waker));
     }
 }
 
-/// Poll a `RustFuture`. If the `RustFuture` is ready, the function returns
-// `true` and puts the result inside `polled_result`, otherwise it returns `false`
-// and _doesn't change_ the value inside `polled_result`.
+#[cfg(test)]
+mod tests_raw_waker_vtable {
+    use super::*;
+    use std::{cell::RefCell, ptr};
+
+    // This entire `RustFuture` stuff assumes the waker lives in the foreign
+    // language, but for the sake of testing, we will fake it.
+    extern "C" fn waker(env: *const c_void) {
+        let env = ManuallyDrop::new(unsafe { Box::from_raw(env as *mut RefCell<bool>) });
+        env.replace(true);
+
+        // do something smart!
+    }
+
+    #[test]
+    fn test_rust_future_foreign_waker_basic_manipulations() {
+        let foreign_waker_ptr =
+            RustFutureForeignWaker::new(waker as _, ptr::null()).into_unit_ptr();
+        let foreign_waker: Arc<RustFutureForeignWaker> =
+            unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
+
+        assert_eq!(Arc::strong_count(&foreign_waker), 1);
+    }
+
+    #[test]
+    fn test_clone_and_drop_waker() {
+        let foreign_waker_ptr =
+            RustFutureForeignWaker::new(waker as _, ptr::null()).into_unit_ptr();
+        let foreign_waker = unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
+
+        let _ = unsafe { RustFutureForeignRawWaker::clone_waker(foreign_waker_ptr) };
+        assert_eq!(Arc::strong_count(&foreign_waker), 2);
+
+        unsafe { RustFutureForeignRawWaker::drop_waker(foreign_waker_ptr) };
+        assert_eq!(Arc::strong_count(&foreign_waker), 1);
+    }
+
+    #[test]
+    fn test_wake() {
+        let foreign_waker_environment_ptr = Box::into_raw(Box::new(RefCell::new(false)));
+        let foreign_waker_ptr =
+            RustFutureForeignWaker::new(waker as _, foreign_waker_environment_ptr as *const _)
+                .into_unit_ptr();
+        let foreign_waker = unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
+
+        // Clone to increase the strong count, so that we can see if it's been dropped by `wake` later.
+        let _ = unsafe { RustFutureForeignRawWaker::clone_waker(foreign_waker_ptr) };
+        assert_eq!(Arc::strong_count(&foreign_waker), 2);
+
+        // Let's call the waker.
+        unsafe { RustFutureForeignRawWaker::wake(foreign_waker_ptr) };
+
+        // Has it been called?
+        let foreign_waker_environment = unsafe { Box::from_raw(foreign_waker_environment_ptr) };
+        assert_eq!(foreign_waker_environment.take(), true);
+
+        // Has the waker been dropped?
+        assert_eq!(Arc::strong_count(&foreign_waker), 1);
+    }
+
+    #[test]
+    fn test_wake_by_ref() {
+        let foreign_waker_environment_ptr = Box::into_raw(Box::new(RefCell::new(false)));
+        let foreign_waker_ptr =
+            RustFutureForeignWaker::new(waker as _, foreign_waker_environment_ptr as *const _)
+                .into_unit_ptr();
+        let foreign_waker = unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
+
+        // Clone to increase the strong count, so that we can see if it has not been dropped by `wake_by_ref` later.
+        let _ = unsafe { RustFutureForeignRawWaker::clone_waker(foreign_waker_ptr) };
+        assert_eq!(Arc::strong_count(&foreign_waker), 2);
+
+        // Let's call the waker by reference.
+        unsafe { RustFutureForeignRawWaker::wake_by_ref(foreign_waker_ptr) };
+
+        // Has it been called?
+        let foreign_waker_environment = unsafe { Box::from_raw(foreign_waker_environment_ptr) };
+        assert_eq!(foreign_waker_environment.take(), true);
+
+        // Has the waker not been dropped?
+        assert_eq!(Arc::strong_count(&foreign_waker), 2);
+
+        // Dropping manually to avoid data leak.
+        unsafe { RustFutureForeignRawWaker::drop_waker(foreign_waker_ptr) };
+    }
+}
+
+/// Poll a [`RustFuture`]. If the `RustFuture` is ready, the function returns
+/// `true` and puts the result inside `polled_result`, otherwise it returns `false`
+/// and _doesn't change_ the value inside `polled_result`.
+///
+/// Please see the module documentation to learn more.
 ///
 /// # Panics
 ///
