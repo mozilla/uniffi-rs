@@ -90,7 +90,7 @@
 //! * Finally, the classical `call_status`, which is part of the calling API of `uniffi`.
 //!
 //! So, everytime this function is called, it polls the `RustFuture` after
-//! having reconstitued a valid [`Waker`] for it. As said earlier, we will come
+//! having reconstituted a valid [`Waker`] for it. As said earlier, we will come
 //! back to it.
 //!
 //! The last generated function is the _drop function_:
@@ -106,7 +106,7 @@
 //! ```
 //!
 //! First off, this _drop function_ is responsible to drop the `RustFuture`. It's
-//! clear by looking at its signature: It receives a `Option<Box<RustFuture<_>>>`,
+//! clear by looking at its signature: It receives an `Option<Box<RustFuture<_>>>`,
 //! i.e. it takes ownership of the `RustFuture` _via_ `Box`!
 //!
 //! Similarly to the _poll function_, it forwards everything to
@@ -154,11 +154,12 @@
 //!
 //! Our _poll function_ receives a waker function pointer, along with a waker
 //! environment. We said that the waker function lives in the foreign language
-//! land. That's really important. It cannot live inside Rust because Rust isn't
-//! aware of which foreign language it is run from. It is UniFFI's job to
-//! write a proper waker function, that will use the native foreign language's
-//! executor provided by the language itself or by some common library (e.g.
-//! `asyncio` in Python), to ask to poll the future again.
+//! land. That's really important. It cannot live inside Rust because Rust
+//! isn't aware of which foreign language it is run from, and thus doesn't know
+//! which executor is used. It is UniFFI's job to write a proper foreign waker
+//! function, that will use the native foreign language's executor provided
+//! by the foreign language itself (e.g. `Task` in Swift) or by some common
+//! libraries (e.g. `asyncio` in Python), to ask to poll the future again.
 //!
 //! ## The workflow
 //!
