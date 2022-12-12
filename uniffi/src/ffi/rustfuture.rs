@@ -193,11 +193,11 @@
 //! This code will call the waker. That's nice and all. However, when the waker
 //! function is called by `waker.wake()`, this code above has not returned yet.
 //! And the waker function, as designed so far, will call the _poll function_
-//! on the Rust side, which… may use the same lock (`a_shared_state`), which
-//! is not released yet: there is a dead-lock! Rust is not responsible of that,
-//! kind of. Rust **must ignore how the executor works**, all `Future`s are
-//! executor- agnostic by design. To avoid creating problem, the waker must
-//! “cut” the flow, so that Rust code can continue to run as expected, and
+//! of the Rust `Future`  which… may use the same lock (`a_shared_state`),
+//! which is not released yet: there is a dead-lock! Rust is not responsible of
+//! that, kind of. Rust **must ignore how the executor works**, all `Future`s
+//! are executor-agnostic by design. To avoid creating problems, the waker
+//! must “cut” the flow, so that Rust code can continue to run as expected, and
 //! after that, the _poll function_ must be called.
 //!
 //! Put it differently, the waker function must call the _poll function_ _as
