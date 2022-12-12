@@ -63,8 +63,33 @@ fn enum_identity(value: MaybeBool) -> MaybeBool {
     value
 }
 
+#[derive(uniffi::Error)]
+pub enum BasicError {
+    InvalidInput,
+    OsError,
+    ThisIsNotAFlatErrorType { field: u32 },
+}
+
+#[uniffi::export]
+fn always_fails() -> Result<(), BasicError> {
+    Err(BasicError::OsError)
+}
+
+#[uniffi::export]
+impl Object {
+    fn do_stuff(&self, times: u32) -> Result<(), BasicError> {
+        match times {
+            0 => Err(BasicError::InvalidInput),
+            _ => {
+                // do stuff
+                Ok(())
+            }
+        }
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/proc-macro.uniffi.rs"));
 
 mod uniffi_types {
-    pub use crate::{MaybeBool, NestedRecord, Object, One, Three, Two};
+    pub use crate::{BasicError, MaybeBool, NestedRecord, Object, One, Three, Two};
 }
