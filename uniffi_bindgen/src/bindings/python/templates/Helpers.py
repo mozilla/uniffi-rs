@@ -45,7 +45,7 @@ def rust_call_with_error(error_ffi_converter, fn, *args):
         return result
     elif call_status.code == RustCallStatus.CALL_ERROR:
         if error_ffi_converter is None:
-            call_status.err_buf.contents.free()
+            call_status.error_buf.free()
             raise InternalError("rust_call_with_error: CALL_ERROR, but error_ffi_converter is None")
         else:
             raise error_ffi_converter.lift(call_status.error_buf)
