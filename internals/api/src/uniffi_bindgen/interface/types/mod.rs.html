@@ -343,6 +343,8 @@
 <span id="337">337</span>
 <span id="338">338</span>
 <span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -584,10 +586,12 @@
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">type_definitions</span>.<span class="ident">entry</span>(<span class="ident">name</span>.<span class="ident">to_string</span>()) {
             <span class="ident">Entry::Occupied</span>(<span class="ident">o</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">existing_def</span> <span class="op">=</span> <span class="ident">o</span>.<span class="ident">get</span>();
-                <span class="kw">if</span> <span class="ident">type_</span> <span class="op">==</span> <span class="kw-2">*</span><span class="ident">existing_def</span> <span class="op">&amp;&amp;</span> <span class="macro">matches!</span>(<span class="ident">type_</span>, <span class="ident">Type::Record</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Enum</span>(<span class="kw">_</span>)) {
-                    <span class="comment">// UDL and proc-macro metadata are allowed to define the same record and enum</span>
-                    <span class="comment">// types, if the definitions match (fields and variants are checked in</span>
-                    <span class="comment">// add_record_definition and add_enum_definition)</span>
+                <span class="kw">if</span> <span class="ident">type_</span> <span class="op">==</span> <span class="kw-2">*</span><span class="ident">existing_def</span>
+                    <span class="op">&amp;&amp;</span> <span class="macro">matches!</span>(<span class="ident">type_</span>, <span class="ident">Type::Record</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Enum</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Error</span>(<span class="kw">_</span>))
+                {
+                    <span class="comment">// UDL and proc-macro metadata are allowed to define the same record, enum and</span>
+                    <span class="comment">// error types, if the definitions match (fields and variants are checked in</span>
+                    <span class="comment">// add_{record,enum,error}_definition)</span>
                     <span class="prelude-val">Ok</span>(())
                 } <span class="kw">else</span> {
                     <span class="macro">bail!</span>(

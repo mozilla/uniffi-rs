@@ -625,9 +625,6 @@
 <span id="619">619</span>
 <span id="620">620</span>
 <span id="621">621</span>
-<span id="622">622</span>
-<span id="623">623</span>
-<span id="624">624</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -693,14 +690,11 @@
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
 
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::attributes</span>::{<span class="ident">Attribute</span>, <span class="ident">ConstructorAttributes</span>, <span class="ident">InterfaceAttributes</span>, <span class="ident">MethodAttributes</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi</span>::{<span class="ident">FfiArgument</span>, <span class="ident">FfiFunction</span>, <span class="ident">FfiType</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::function::Argument</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
-<span class="kw">use</span> <span class="kw">super</span>::{
-    <span class="ident">attributes</span>::{<span class="ident">ConstructorAttributes</span>, <span class="ident">InterfaceAttributes</span>, <span class="ident">MethodAttributes</span>},
-    <span class="ident">convert_type</span>,
-};
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">convert_type</span>, <span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
 
 <span class="doccomment">/// An &quot;object&quot; is an opaque type that can be instantiated and passed around by reference,</span>
 <span class="doccomment">/// have methods called on it, and so on - basically your classic Object Oriented Programming</span>
@@ -1075,7 +1069,7 @@
             <span class="ident">arguments</span>,
             <span class="ident">return_type</span>,
             <span class="ident">ffi_func</span>,
-            <span class="ident">attributes</span>: <span class="ident">Default::default</span>(),
+            <span class="ident">attributes</span>: <span class="ident">meta</span>.<span class="ident">throws</span>.<span class="ident">map</span>(<span class="ident">Attribute::Throws</span>).<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
         }
     }
 }
