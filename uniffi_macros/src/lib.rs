@@ -105,7 +105,7 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
     expand_object(input, mod_path).into()
 }
 
-#[proc_macro_derive(Error)]
+#[proc_macro_derive(Error, attributes(uniffi))]
 pub fn derive_error(input: TokenStream) -> TokenStream {
     let mod_path = match util::mod_path() {
         Ok(p) => p,

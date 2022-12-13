@@ -137,13 +137,12 @@ impl Error {
 
 impl From<uniffi_meta::ErrorMetadata> for Error {
     fn from(meta: uniffi_meta::ErrorMetadata) -> Self {
-        let flat = meta.variants.iter().all(|v| v.fields.is_empty());
         Self {
             name: meta.name.clone(),
             enum_: Enum {
                 name: meta.name,
                 variants: meta.variants.into_iter().map(Into::into).collect(),
-                flat,
+                flat: meta.flat,
             },
         }
     }

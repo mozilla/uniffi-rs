@@ -29,5 +29,5 @@ obj.doStuff(5u)
 try {
     obj.doStuff(0u)
     throw RuntimeException("doStuff should throw if its argument is 0")
-} catch (e: BasicException) {
+} catch (e: FlatException) {
 }
