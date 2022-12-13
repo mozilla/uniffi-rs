@@ -67,7 +67,6 @@ fn enum_identity(value: MaybeBool) -> MaybeBool {
 pub enum BasicError {
     InvalidInput,
     OsError,
-    ThisIsNotAFlatErrorType { field: u32 },
 }
 
 #[uniffi::export]
@@ -75,11 +74,24 @@ fn always_fails() -> Result<(), BasicError> {
     Err(BasicError::OsError)
 }
 
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+#[uniffi(flat_error)]
+#[non_exhaustive]
+pub enum FlatError {
+    #[error("Invalid input")]
+    InvalidInput,
+
+    // Inner types that aren't FFI-convertible, as well as unnamed fields,
+    // are allowed for flat errors
+    #[error("OS error: {0}")]
+    OsError(std::io::Error),
+}
+
 #[uniffi::export]
 impl Object {
-    fn do_stuff(&self, times: u32) -> Result<(), BasicError> {
+    fn do_stuff(&self, times: u32) -> Result<(), FlatError> {
         match times {
-            0 => Err(BasicError::InvalidInput),
+            0 => Err(FlatError::InvalidInput),
             _ => {
                 // do stuff
                 Ok(())
@@ -91,5 +103,5 @@ impl Object {
 include!(concat!(env!("OUT_DIR"), "/proc-macro.uniffi.rs"));
 
 mod uniffi_types {
-    pub use crate::{BasicError, MaybeBool, NestedRecord, Object, One, Three, Two};
+    pub use crate::{BasicError, FlatError, MaybeBool, NestedRecord, Object, One, Three, Two};
 }

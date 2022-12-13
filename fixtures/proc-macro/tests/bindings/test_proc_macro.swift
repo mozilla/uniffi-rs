@@ -29,5 +29,5 @@ try! obj.doStuff(times: 5)
 do {
     try obj.doStuff(times: 0)
     fatalError("doStuff should throw if its argument is 0")
-} catch BasicError.InvalidInput {
+} catch FlatError.InvalidInput {
 }

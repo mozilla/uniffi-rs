@@ -98,7 +98,7 @@ fn field_metadata(f: &Field) -> syn::Result<FieldMetadata> {
     })
 }
 
-pub fn write_field(f: &Field) -> TokenStream {
+fn write_field(f: &Field) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 

@@ -16,7 +16,7 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
 
     let ident = &input.ident;
 
-    let ffi_converter_impl = enum_ffi_converter_impl(&variants, ident);
+    let ffi_converter_impl = enum_ffi_converter_impl(variants.as_ref(), ident);
 
     let meta_static_var = if let Some(variants) = variants {
         match enum_metadata(ident, variants, module_path) {
@@ -38,7 +38,7 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
 }
 
 pub(crate) fn enum_ffi_converter_impl(
-    variants: &Option<Punctuated<Variant, Token![,]>>,
+    variants: Option<&Punctuated<Variant, Token![,]>>,
     ident: &Ident,
 ) -> TokenStream {
     let (write_impl, try_read_impl) = match variants {
@@ -150,7 +150,7 @@ fn field_metadata(f: &Field, v: &Variant) -> syn::Result<FieldMetadata> {
     })
 }
 
-pub fn write_field(f: &Field) -> TokenStream {
+fn write_field(f: &Field) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 

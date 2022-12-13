@@ -29,7 +29,7 @@ obj.do_stuff(5)
 
 try:
     obj.do_stuff(0)
-except BasicError.InvalidInput:
+except FlatError.InvalidInput:
     pass
 else:
     raise Exception("do_stuff should throw if its argument is 0")

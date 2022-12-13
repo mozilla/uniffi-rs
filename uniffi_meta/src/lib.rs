@@ -123,12 +123,12 @@ impl ObjectMetadata {
     }
 }
 
-/// Currently a copy of `EnumMetadata`, but likely to be changed in the future.
 #[derive(Clone, Debug, Hash, Deserialize, Serialize)]
 pub struct ErrorMetadata {
     pub module_path: Vec<String>,
     pub name: String,
     pub variants: Vec<VariantMetadata>,
+    pub flat: bool,
 }
 
 /// Returns the last 16 bits of the value's hash as computed with [`DefaultHasher`].
