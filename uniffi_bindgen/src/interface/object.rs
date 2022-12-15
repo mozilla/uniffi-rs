@@ -58,10 +58,11 @@
 //! ```
 
 use std::convert::TryFrom;
-use std::hash::{Hash, Hasher};
+use std::hash::Hasher;
 use std::{collections::HashSet, iter};
 
 use anyhow::{bail, Result};
+use uniffi_meta::Checksum;
 
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::function::Argument;
@@ -190,17 +191,17 @@ impl Object {
     }
 }
 
-impl Hash for Object {
-    fn hash<H: Hasher>(&self, state: &mut H) {
+impl Checksum for Object {
+    fn checksum<H: Hasher>(&self, state: &mut H) {
         // We don't include the FFIFunc in the hash calculation, because:
         //  - it is entirely determined by the other fields,
         //    so excluding it is safe.
         //  - its `name` property includes a checksum derived from  the very
         //    hash value we're trying to calculate here, so excluding it
         //    avoids a weird circular depenendency in the calculation.
-        self.name.hash(state);
-        self.constructors.hash(state);
-        self.methods.hash(state);
+        self.name.checksum(state);
+        self.constructors.checksum(state);
+        self.methods.checksum(state);
     }
 }
 
@@ -299,17 +300,17 @@ impl Constructor {
     }
 }
 
-impl Hash for Constructor {
-    fn hash<H: Hasher>(&self, state: &mut H) {
+impl Checksum for Constructor {
+    fn checksum<H: Hasher>(&self, state: &mut H) {
         // We don't include the FFIFunc in the hash calculation, because:
         //  - it is entirely determined by the other fields,
         //    so excluding it is safe.
         //  - its `name` property includes a checksum derived from  the very
         //    hash value we're trying to calculate here, so excluding it
         //    avoids a weird circular depenendency in the calculation.
-        self.name.hash(state);
-        self.arguments.hash(state);
-        self.attributes.hash(state);
+        self.name.checksum(state);
+        self.arguments.checksum(state);
+        self.attributes.checksum(state);
     }
 }
 
@@ -450,19 +451,19 @@ impl From<uniffi_meta::MethodMetadata> for Method {
     }
 }
 
-impl Hash for Method {
-    fn hash<H: Hasher>(&self, state: &mut H) {
+impl Checksum for Method {
+    fn checksum<H: Hasher>(&self, state: &mut H) {
         // We don't include the FFIFunc in the hash calculation, because:
         //  - it is entirely determined by the other fields,
         //    so excluding it is safe.
         //  - its `name` property includes a checksum derived from  the very
         //    hash value we're trying to calculate here, so excluding it
         //    avoids a weird circular depenendency in the calculation.
-        self.name.hash(state);
-        self.object_name.hash(state);
-        self.arguments.hash(state);
-        self.return_type.hash(state);
-        self.attributes.hash(state);
+        self.name.checksum(state);
+        self.object_name.checksum(state);
+        self.arguments.checksum(state);
+        self.return_type.checksum(state);
+        self.attributes.checksum(state);
     }
 }
 

@@ -47,7 +47,7 @@
 use std::{
     collections::HashSet,
     convert::TryFrom,
-    hash::{Hash, Hasher},
+    hash::Hasher,
     iter,
 };
 
@@ -77,7 +77,7 @@ pub use record::{Field, Record};
 
 pub mod ffi;
 pub use ffi::{FFIArgument, FFIFunction, FFIType};
-use uniffi_meta::{MethodMetadata, ObjectMetadata};
+use uniffi_meta::{Checksum, MethodMetadata, ObjectMetadata};
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
@@ -327,10 +327,6 @@ impl ComponentInterface {
     ///
     /// Note that this is designed to prevent accidents, not attacks, so there is no need for the
     /// checksum to be cryptographically secure.
-    ///
-    /// TODO: it's not clear to me if the derivation of `Hash` is actually deterministic enough to
-    /// ensure the guarantees above, or if it might be sensitive to e.g. compiler-driven re-ordering
-    /// of struct field. Let's see how it goes...
     pub fn checksum(&self) -> u16 {
         uniffi_meta::checksum(self)
     }
@@ -672,20 +668,18 @@ impl ComponentInterface {
     }
 }
 
-/// `ComponentInterface` structs can be hashed, but this is mostly a convenient way to
-/// produce a checksum of their contents. They're not really intended to live in a hashtable.
-impl Hash for ComponentInterface {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        // We can't hash `self.types`, but its contents are implied by the other fields
+impl Checksum for ComponentInterface {
+    fn checksum<H: Hasher>(&self, state: &mut H) {
+        // We can't checksum `self.types`, but its contents are implied by the other fields
         // anyway, so it's safe to ignore it.
-        self.uniffi_version.hash(state);
-        self.namespace.hash(state);
-        self.enums.hash(state);
-        self.records.hash(state);
-        self.functions.hash(state);
-        self.objects.hash(state);
-        self.callback_interfaces.hash(state);
-        self.errors.hash(state);
+        self.uniffi_version.checksum(state);
+        self.namespace.checksum(state);
+        self.enums.checksum(state);
+        self.records.checksum(state);
+        self.functions.checksum(state);
+        self.objects.checksum(state);
+        self.callback_interfaces.checksum(state);
+        self.errors.checksum(state);
     }
 }
 

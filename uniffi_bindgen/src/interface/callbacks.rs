@@ -33,9 +33,10 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use std::hash::{Hash, Hasher};
+use std::hash::Hasher;
 
 use anyhow::{bail, Result};
+use uniffi_meta::Checksum;
 
 use super::ffi::{FFIArgument, FFIFunction, FFIType};
 use super::object::Method;
@@ -88,16 +89,16 @@ impl CallbackInterface {
     }
 }
 
-impl Hash for CallbackInterface {
-    fn hash<H: Hasher>(&self, state: &mut H) {
+impl Checksum for CallbackInterface {
+    fn checksum<H: Hasher>(&self, state: &mut H) {
         // We don't include the FFIFunc in the hash calculation, because:
         //  - it is entirely determined by the other fields,
         //    so excluding it is safe.
         //  - its `name` property includes a checksum derived from  the very
         //    hash value we're trying to calculate here, so excluding it
         //    avoids a weird circular depenendency in the calculation.
-        self.name.hash(state);
-        self.methods.hash(state);
+        self.name.checksum(state);
+        self.methods.checksum(state);
     }
 }
 
