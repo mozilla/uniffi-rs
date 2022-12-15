@@ -77,6 +77,7 @@
 //! ```
 
 use anyhow::{bail, Result};
+use uniffi_meta::Checksum;
 
 use super::record::Field;
 use super::types::{Type, TypeIterator};
@@ -87,7 +88,7 @@ use super::{APIConverter, ComponentInterface};
 ///
 /// Enums are passed across the FFI by serializing to a bytebuffer, with a
 /// i32 indicating the variant followed by the serialization of each field.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Enum {
     pub(super) name: String,
     pub(super) variants: Vec<Variant>,
@@ -185,7 +186,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 /// Represents an individual variant in an Enum.
 ///
 /// Each variant has a name and zero or more fields.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Checksum)]
 pub struct Variant {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
