@@ -47,7 +47,6 @@
 use std::{
     collections::HashSet,
     convert::TryFrom,
-    hash::Hasher,
     iter,
 };
 
@@ -82,17 +81,21 @@ use uniffi_meta::{Checksum, MethodMetadata, ObjectMetadata};
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
 ///
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Checksum)]
 pub struct ComponentInterface {
     /// Every ComponentInterface gets tagged with the version of uniffi used to create it.
     /// This helps us avoid using a lib compiled with one version together with bindings created
     /// using a different version, which might introduce unsafety.
     uniffi_version: String,
     /// All of the types used in the interface.
+    // We can't checksum `self.types`, but its contents are implied by the other fields
+    // anyway, so it's safe to ignore it.
+    #[checksum_ignore]
     pub(super) types: TypeUniverse,
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
     namespace: String,
     /// The internal unique prefix used to namespace FFI symbols
+    #[checksum_ignore]
     ffi_namespace: String,
     /// The high-level API provided by the component.
     enums: Vec<Enum>,
@@ -665,21 +668,6 @@ impl ComponentInterface {
             callback.derive_ffi_funcs(&ci_prefix);
         }
         Ok(())
-    }
-}
-
-impl Checksum for ComponentInterface {
-    fn checksum<H: Hasher>(&self, state: &mut H) {
-        // We can't checksum `self.types`, but its contents are implied by the other fields
-        // anyway, so it's safe to ignore it.
-        self.uniffi_version.checksum(state);
-        self.namespace.checksum(state);
-        self.enums.checksum(state);
-        self.records.checksum(state);
-        self.functions.checksum(state);
-        self.objects.checksum(state);
-        self.callback_interfaces.checksum(state);
-        self.errors.checksum(state);
     }
 }
 

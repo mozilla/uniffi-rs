@@ -58,7 +58,6 @@
 //! ```
 
 use std::convert::TryFrom;
-use std::hash::Hasher;
 use std::{collections::HashSet, iter};
 
 use anyhow::{bail, Result};
@@ -87,12 +86,20 @@ use super::{APIConverter, ComponentInterface};
 ///
 /// TODO:
 ///  - maybe "Class" would be a better name than "Object" here?
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Object {
     pub(super) name: String,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
+    // We don't include the FFIFunc in the hash calculation, because:
+    //  - it is entirely determined by the other fields,
+    //    so excluding it is safe.
+    //  - its `name` property includes a checksum derived from  the very
+    //    hash value we're trying to calculate here, so excluding it
+    //    avoids a weird circular depenendency in the calculation.
+    #[checksum_ignore]
     pub(super) ffi_func_free: FFIFunction,
+    #[checksum_ignore]
     pub(super) uses_deprecated_threadsafe_attribute: bool,
 }
 
@@ -191,20 +198,6 @@ impl Object {
     }
 }
 
-impl Checksum for Object {
-    fn checksum<H: Hasher>(&self, state: &mut H) {
-        // We don't include the FFIFunc in the hash calculation, because:
-        //  - it is entirely determined by the other fields,
-        //    so excluding it is safe.
-        //  - its `name` property includes a checksum derived from  the very
-        //    hash value we're trying to calculate here, so excluding it
-        //    avoids a weird circular depenendency in the calculation.
-        self.name.checksum(state);
-        self.constructors.checksum(state);
-        self.methods.checksum(state);
-    }
-}
-
 impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Object> {
         if self.inheritance.is_some() {
@@ -246,10 +239,17 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 //
 // In the FFI, this will be a function that returns a pointer to an instance
 // of the corresponding object type.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Constructor {
     pub(super) name: String,
     pub(super) arguments: Vec<Argument>,
+    // We don't include the FFIFunc in the hash calculation, because:
+    //  - it is entirely determined by the other fields,
+    //    so excluding it is safe.
+    //  - its `name` property includes a checksum derived from  the very
+    //    hash value we're trying to calculate here, so excluding it
+    //    avoids a weird circular depenendency in the calculation.
+    #[checksum_ignore]
     pub(super) ffi_func: FFIFunction,
     pub(super) attributes: ConstructorAttributes,
 }
@@ -300,20 +300,6 @@ impl Constructor {
     }
 }
 
-impl Checksum for Constructor {
-    fn checksum<H: Hasher>(&self, state: &mut H) {
-        // We don't include the FFIFunc in the hash calculation, because:
-        //  - it is entirely determined by the other fields,
-        //    so excluding it is safe.
-        //  - its `name` property includes a checksum derived from  the very
-        //    hash value we're trying to calculate here, so excluding it
-        //    avoids a weird circular depenendency in the calculation.
-        self.name.checksum(state);
-        self.arguments.checksum(state);
-        self.attributes.checksum(state);
-    }
-}
-
 impl Default for Constructor {
     fn default() -> Self {
         Constructor {
@@ -344,12 +330,19 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 //
 // The FFI will represent this as a function whose first/self argument is a
 // `FFIType::RustArcPtr` to the instance.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Method {
     pub(super) name: String,
     pub(super) object_name: String,
-    pub(super) return_type: Option<Type>,
     pub(super) arguments: Vec<Argument>,
+    pub(super) return_type: Option<Type>,
+    // We don't include the FFIFunc in the hash calculation, because:
+    //  - it is entirely determined by the other fields,
+    //    so excluding it is safe.
+    //  - its `name` property includes a checksum derived from  the very
+    //    hash value we're trying to calculate here, so excluding it
+    //    avoids a weird circular depenendency in the calculation.
+    #[checksum_ignore]
     pub(super) ffi_func: FFIFunction,
     pub(super) attributes: MethodAttributes,
 }
@@ -448,22 +441,6 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             ffi_func,
             attributes: Default::default(),
         }
-    }
-}
-
-impl Checksum for Method {
-    fn checksum<H: Hasher>(&self, state: &mut H) {
-        // We don't include the FFIFunc in the hash calculation, because:
-        //  - it is entirely determined by the other fields,
-        //    so excluding it is safe.
-        //  - its `name` property includes a checksum derived from  the very
-        //    hash value we're trying to calculate here, so excluding it
-        //    avoids a weird circular depenendency in the calculation.
-        self.name.checksum(state);
-        self.object_name.checksum(state);
-        self.arguments.checksum(state);
-        self.return_type.checksum(state);
-        self.attributes.checksum(state);
     }
 }
 

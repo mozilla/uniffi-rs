@@ -32,7 +32,6 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 use std::convert::TryFrom;
-use std::hash::Hasher;
 
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
@@ -52,11 +51,18 @@ use super::{APIConverter, ComponentInterface};
 /// and has a corresponding standalone function in the foreign language bindings.
 ///
 /// In the FFI, this will be a standalone function with appropriately lowered types.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Function {
     pub(super) name: String,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
+    // We don't include the FFIFunc in the hash calculation, because:
+    //  - it is entirely determined by the other fields,
+    //    so excluding it is safe.
+    //  - its `name` property includes a checksum derived from  the very
+    //    hash value we're trying to calculate here, so excluding it
+    //    avoids a weird circular depenendency in the calculation.
+    #[checksum_ignore]
     pub(super) ffi_func: FFIFunction,
     pub(super) attributes: FunctionAttributes,
 }
@@ -140,21 +146,6 @@ impl From<uniffi_meta::FnMetadata> for Function {
             ffi_func,
             attributes: Default::default(),
         }
-    }
-}
-
-impl Checksum for Function {
-    fn checksum<H: Hasher>(&self, state: &mut H) {
-        // We don't include the FFIFunc in the hash calculation, because:
-        //  - it is entirely determined by the other fields,
-        //    so excluding it is safe.
-        //  - its `name` property includes a checksum derived from  the very
-        //    hash value we're trying to calculate here, so excluding it
-        //    avoids a weird circular depenendency in the calculation.
-        self.name.checksum(state);
-        self.arguments.checksum(state);
-        self.return_type.checksum(state);
-        self.attributes.checksum(state);
     }
 }
 
