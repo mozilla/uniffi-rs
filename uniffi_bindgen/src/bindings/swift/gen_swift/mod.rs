@@ -377,7 +377,7 @@ impl CodeOracle for SwiftCodeOracle {
             FFIType::RustArcPtr(_) => "void*_Nonnull".into(),
             FFIType::RustBuffer => "RustBuffer".into(),
             FFIType::ForeignBytes => "ForeignBytes".into(),
-            FFIType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
+            FFIType::ForeignCallback => "ForeignCallback _Nonnull".to_string(),
         }
     }
 }

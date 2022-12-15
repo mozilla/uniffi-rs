@@ -343,6 +343,27 @@ pub mod filters {
         Ok(oracle().ffi_type_label(type_))
     }
 
+    /// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see
+    /// #1106 for details
+    pub fn type_ffi_lowered(ffi_type: &FFIType) -> Result<String, askama::Error> {
+        Ok(match ffi_type {
+            FFIType::Int8 => "Byte".into(),
+            FFIType::UInt8 => "Byte".into(),
+            FFIType::Int16 => "Short".into(),
+            FFIType::UInt16 => "Short".into(),
+            FFIType::Int32 => "Int".into(),
+            FFIType::UInt32 => "Int".into(),
+            FFIType::Int64 => "Long".into(),
+            FFIType::UInt64 => "Long".into(),
+            FFIType::Float32 => "Float".into(),
+            FFIType::Float64 => "Double".into(),
+            FFIType::RustArcPtr(_) => "Pointer".into(),
+            FFIType::RustBuffer => "RustBuffer".into(),
+            FFIType::ForeignBytes => "ForeignBytes".into(),
+            FFIType::ForeignCallback => "ForeignCallback".to_string(),
+        })
+    }
+
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
     pub fn class_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().class_name(nm))

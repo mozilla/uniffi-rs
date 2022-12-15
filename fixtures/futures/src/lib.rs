@@ -73,52 +73,68 @@ async fn always_ready() -> bool {
     true
 }
 
-/// Async function that says something after 2s.
-#[uniffi::export]
-async fn say() -> String {
-    TimerFuture::new(Duration::from_secs(2)).await;
+// #[doc(hidden)]
+// #[no_mangle]
+// pub extern "C" fn _uniffi_testing(
+//     future: core::option::Option<&mut ::uniffi::RustFuture<bool>>,
+//     waker: core::option::Option<core::ptr::NonNull<::uniffi::RustFutureForeignWakerFunction>>,
+//     waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
+//     polled_result: &mut <bool as ::uniffi::FfiConverter>::FfiType,
+//     call_status: &mut ::uniffi::RustCallStatus,
+// ) -> bool {
+//     println!("inside [RUST]");
+//     dbg!(waker);
+//     dbg!(waker_environment);
+//     dbg!(&polled_result);
+//     false
+// }
 
-    format!("Hello, Future!")
-}
+// /// Async function that says something after 2s.
+// #[uniffi::export]
+// async fn say() -> String {
+//     TimerFuture::new(Duration::from_secs(2)).await;
 
-/// Async function that says something after a certain time.
-#[uniffi::export]
-async fn say_after(secs: u8, who: String) -> String {
-    TimerFuture::new(Duration::from_secs(secs.into())).await;
+//     format!("Hello, Future!")
+// }
 
-    format!("Hello, {who}!")
-}
+// /// Async function that says something after a certain time.
+// #[uniffi::export]
+// async fn say_after(secs: u8, who: String) -> String {
+//     TimerFuture::new(Duration::from_secs(secs.into())).await;
 
-/// Async function that sleeps!
-#[uniffi::export]
-pub async fn sleep(secs: u8) -> bool {
-    TimerFuture::new(Duration::from_secs(secs.into())).await;
+//     format!("Hello, {who}!")
+// }
 
-    true
-}
+// /// Async function that sleeps!
+// #[uniffi::export]
+// pub async fn sleep(secs: u8) -> bool {
+//     TimerFuture::new(Duration::from_secs(secs.into())).await;
 
-/// Sync function that generates a new `Megaphone`.
-///
-/// It builds a `Megaphone` which has async methods on it.
-#[uniffi::export]
-fn new_megaphone() -> Arc<Megaphone> {
-    Arc::new(Megaphone)
-}
+//     true
+// }
 
-/// A megaphone. Be careful with the neighbours.
-#[derive(uniffi::Object)]
-pub struct Megaphone;
+// /// Sync function that generates a new `Megaphone`.
+// ///
+// /// It builds a `Megaphone` which has async methods on it.
+// #[uniffi::export]
+// fn new_megaphone() -> Arc<Megaphone> {
+//     Arc::new(Megaphone)
+// }
 
-#[uniffi::export]
-impl Megaphone {
-    /// An async function that yells something after a certain time.
-    async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
-        say_after(secs, who).await.to_uppercase()
-    }
-}
+// /// A megaphone. Be careful with the neighbours.
+// #[derive(uniffi::Object)]
+// pub struct Megaphone;
+
+// #[uniffi::export]
+// impl Megaphone {
+//     /// An async function that yells something after a certain time.
+//     async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
+//         say_after(secs, who).await.to_uppercase()
+//     }
+// }
 
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
 
 mod uniffi_types {
-    pub(crate) use super::Megaphone;
+    // pub(crate) use super::Megaphone;
 }
