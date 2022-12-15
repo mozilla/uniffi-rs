@@ -2,10 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{
-    collections::hash_map::DefaultHasher,
-    hash::{Hash, Hasher},
-};
+use std::hash::{Hash, Hasher};
 pub use uniffi_checksum_derive::Checksum;
 
 use serde::{Deserialize, Serialize};
@@ -180,12 +177,12 @@ impl ObjectMetadata {
     }
 }
 
-/// Returns the last 16 bits of the value's hash as computed with [`DefaultHasher`].
+/// Returns the last 16 bits of the value's hash as computed with [`SipHasher13`].
 ///
 /// To be used as a checksum of FFI symbols, as a safeguard against different UniFFI versions being
 /// used for scaffolding and bindings generation.
 pub fn checksum<T: Checksum>(val: &T) -> u16 {
-    let mut hasher = DefaultHasher::new();
+    let mut hasher = siphasher::sip::SipHasher13::new();
     val.checksum(&mut hasher);
     (hasher.finish() & 0x000000000000FFFF) as u16
 }
