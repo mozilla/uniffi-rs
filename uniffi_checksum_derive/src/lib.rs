@@ -7,9 +7,22 @@
 
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, Data, DeriveInput, Expr, ExprLit, Fields, Index, Lit};
+use syn::{parse_macro_input, Attribute, Data, DeriveInput, Expr, ExprLit, Fields, Index, Lit};
 
-#[proc_macro_derive(Checksum)]
+fn has_ignore_attribute(attrs: &[Attribute]) -> bool {
+    attrs.iter().any(|attr| {
+        if attr.path.is_ident("checksum_ignore") {
+            if !attr.tokens.is_empty() {
+                panic!("#[checksum_ignore] doesn't accept extra information");
+            }
+            true
+        } else {
+            false
+        }
+    })
+}
+
+#[proc_macro_derive(Checksum, attributes(checksum_ignore))]
 pub fn checksum_derive(input: TokenStream) -> TokenStream {
     let input: DeriveInput = parse_macro_input!(input);
 
@@ -31,6 +44,9 @@ pub fn checksum_derive(input: TokenStream) -> TokenStream {
             let mut next_discriminant = 0u64;
             let match_inner = enum_.variants.iter().map(|variant| {
                 let ident = &variant.ident;
+                if has_ignore_attribute(&variant.attrs) {
+                    panic!("#[checksum_ignore] is not supported in enums");
+                }
                 match &variant.discriminant {
                     Some((_, Expr::Lit(ExprLit { lit: Lit::Int(value), .. }))) => {
                         next_discriminant = value.base10_parse::<u64>().unwrap();
@@ -84,18 +100,19 @@ pub fn checksum_derive(input: TokenStream) -> TokenStream {
             }
         }
         Data::Struct(struct_) => {
-            let stmts =
-                struct_
-                    .fields
-                    .iter()
-                    .enumerate()
-                    .map(|(num, field)| match field.ident.as_ref() {
+            let stmts = struct_
+                .fields
+                .iter()
+                .enumerate()
+                .filter_map(|(num, field)| {
+                    (!has_ignore_attribute(&field.attrs)).then(|| match field.ident.as_ref() {
                         Some(ident) => quote! { Checksum::checksum(&self.#ident, state); },
                         None => {
                             let i = Index::from(num);
                             quote! { Checksum::checksum(&self.#i, state); }
                         }
-                    });
+                    })
+                });
             quote! {
                 #(#stmts)*
             }
