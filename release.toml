@@ -1,7 +1,5 @@
 tag-name = "v{{version}}"
-dev-version = false
 consolidate-commits = true
-consolidate-pushes = true
 
 shared-version=true
 
