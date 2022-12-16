@@ -44,11 +44,7 @@
 //!
 //!   * Error messages and general developer experience leave a lot to be desired.
 
-use std::{
-    collections::HashSet,
-    convert::TryFrom,
-    iter,
-};
+use std::{collections::HashSet, convert::TryFrom, iter};
 
 use anyhow::{bail, Result};
 
