@@ -1,7 +1,11 @@
 [package]
 name = "uniffi_testing"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 version = "0.21.1"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+description = "a multi-language bindings generator for rust (testing helpers)"
+documentation = "https://mozilla.github.io/uniffi-rs"
+homepage = "https://mozilla.github.io/uniffi-rs"
+repository = "https://github.com/mozilla/uniffi-rs"
 edition = "2021"
 license = "MPL-2.0"
 
