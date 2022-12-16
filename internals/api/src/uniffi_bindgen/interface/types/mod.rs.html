@@ -345,6 +345,7 @@
 <span id="339">339</span>
 <span id="340">340</span>
 <span id="341">341</span>
+<span id="342">342</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -372,6 +373,7 @@
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">heck::ToUpperCamelCase</span>;
+<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi::FfiType</span>;
 
@@ -383,7 +385,7 @@
 <span class="doccomment">/// Represents all the different high-level types that can be used in a component interface.</span>
 <span class="doccomment">/// At this level we identify user-defined types by name, without knowing any details</span>
 <span class="doccomment">/// of their internal structure apart from what type of thing they are (record, enum, etc).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Hash</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Checksum</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Type</span> {
     <span class="comment">// Primitive types.</span>
     <span class="ident">UInt8</span>,

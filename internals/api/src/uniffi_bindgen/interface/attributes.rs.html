@@ -762,6 +762,7 @@
 <span id="756">756</span>
 <span id="757">757</span>
 <span id="758">758</span>
+<span id="759">759</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -779,13 +780,14 @@
 <span class="doccomment">//! if we grow significantly more complicated attribute handling.</span>
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
 
 <span class="doccomment">/// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This is a convenience enum for parsing UDL attributes and erroring out if we encounter</span>
 <span class="doccomment">/// any unsupported ones. These don&#39;t convert directly into parts of a `ComponentInterface`, but</span>
 <span class="doccomment">/// may influence the properties of things like functions and arguments.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum</span> <span class="ident">Attribute</span> {
     <span class="ident">ByRef</span>,
     <span class="ident">Enum</span>,
@@ -883,7 +885,7 @@
 
 <span class="doccomment">/// Attributes that can be attached to an `enum` definition in the UDL.</span>
 <span class="doccomment">/// There&#39;s only one case here: using `[Error]` to mark an enum as an error class.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">EnumAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">EnumAttributes</span> {
@@ -919,7 +921,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This supports the `[Throws=ErrorName]` attribute for functions that</span>
 <span class="doccomment">/// can produce an error.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">FunctionAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">FunctionAttributes</span> {
@@ -968,7 +970,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This supports the `[ByRef]` attribute for arguments that should be passed</span>
 <span class="doccomment">/// by reference in the generated Rust scaffolding.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">ArgumentAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">ArgumentAttributes</span> {
@@ -1003,7 +1005,7 @@
 }
 
 <span class="doccomment">/// Represents UDL attributes that might appear on an `interface` definition.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">InterfaceAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">InterfaceAttributes</span> {
@@ -1057,7 +1059,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This supports the `[Throws=ErrorName]` attribute for constructors that can produce</span>
 <span class="doccomment">/// an error, and the `[Name=MethodName]` for non-default constructors.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">ConstructorAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">ConstructorAttributes</span> {
@@ -1096,7 +1098,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This supports the `[Throws=ErrorName]` attribute for methods that can produce</span>
 <span class="doccomment">/// an error, and the `[Self=ByArc]` attribute for methods that take `Arc&lt;Self&gt;` as receiver.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">MethodAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">MethodAttributes</span> {
@@ -1151,7 +1153,7 @@
 <span class="doccomment">/// Actually we only support one of these right now, `[Self=ByArc]`.</span>
 <span class="doccomment">/// We might add more in future, e.g. a `[Self=ByRef]` if there are cases</span>
 <span class="doccomment">/// where we need to force the receiver to be taken by reference.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum</span> <span class="ident">SelfType</span> {
     <span class="ident">ByArc</span>, <span class="comment">// Method receiver is `Arc&lt;Self&gt;`.</span>
 }
@@ -1174,7 +1176,7 @@
 <span class="doccomment">/// Represents UDL attributes that might appear on a typedef</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This supports the `[External=&quot;crate_name&quot;]` and `[Custom]` attributes for types.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">TypedefAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">TypedefAttributes</span> {

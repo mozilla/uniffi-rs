@@ -189,6 +189,7 @@
 <span id="183">183</span>
 <span id="184">184</span>
 <span id="185">185</span>
+<span id="186">186</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -199,12 +200,13 @@
 <span class="doccomment">//! which appear in places such as default arguments.</span>
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types::Type</span>;
 
 <span class="comment">// Represents a literal value.</span>
 <span class="comment">// Used for e.g. default argument values.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Checksum</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Literal</span> {
     <span class="ident">Boolean</span>(<span class="ident">bool</span>),
     <span class="ident">String</span>(<span class="ident">String</span>),
@@ -226,7 +228,7 @@
 
 <span class="comment">// Represent the radix of integer literal values.</span>
 <span class="comment">// We preserve the radix into the generated bindings for readability reasons.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Checksum</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Radix</span> {
     <span class="ident">Decimal</span> <span class="op">=</span> <span class="number">10</span>,
     <span class="ident">Octal</span> <span class="op">=</span> <span class="number">8</span>,

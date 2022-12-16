@@ -173,13 +173,6 @@
 <span id="167">167</span>
 <span id="168">168</span>
 <span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
@@ -215,19 +208,25 @@
 <span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
 <span class="doccomment">//! ```</span>
 
-<span class="kw">use</span> <span class="ident">std::hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>};
-
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi</span>::{<span class="ident">FfiArgument</span>, <span class="ident">FfiFunction</span>, <span class="ident">FfiType</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::object::Method</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CallbackInterface</span> {
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">methods</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Method</span><span class="op">&gt;</span>,
+    <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:</span>
+    <span class="comment">//  - it is entirely determined by the other fields,</span>
+    <span class="comment">//    so excluding it is safe.</span>
+    <span class="comment">//  - its `name` property includes a checksum derived from  the very</span>
+    <span class="comment">//    hash value we&#39;re trying to calculate here, so excluding it</span>
+    <span class="comment">//    avoids a weird circular depenendency in the calculation.</span>
+    <span class="attribute">#[<span class="ident">checksum_ignore</span>]</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">ffi_init_callback</span>: <span class="ident">FfiFunction</span>,
 }
 
@@ -267,19 +266,6 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
         <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">methods</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">Method::iter_types</span>))
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">CallbackInterface</span> {
-    <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">H</span>) {
-        <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:</span>
-        <span class="comment">//  - it is entirely determined by the other fields,</span>
-        <span class="comment">//    so excluding it is safe.</span>
-        <span class="comment">//  - its `name` property includes a checksum derived from  the very</span>
-        <span class="comment">//    hash value we&#39;re trying to calculate here, so excluding it</span>
-        <span class="comment">//    avoids a weird circular depenendency in the calculation.</span>
-        <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
-        <span class="self">self</span>.<span class="ident">methods</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
     }
 }
 
