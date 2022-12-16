@@ -6,7 +6,7 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.21.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.21.1...HEAD).
 
 ### ⚠️ Breaking Changes ⚠️
 
@@ -16,6 +16,15 @@
 ### What's changed
 
 - Added support for Swift external types
+
+## v0.21.1 - (_2022-12-16_)
+
+[All changes in v0.21.1](https://github.com/mozilla/uniffi-rs/compare/v0.21.0...v0.21.1).
+
+### What's changed
+
+- Replace checksum mechanism for function naming to give consistent results, independent of the target's endianness and bit width.
+  This should have no visible effect on the outside.
 
 ## v0.21.0 - (_2022-10-14_)
 
