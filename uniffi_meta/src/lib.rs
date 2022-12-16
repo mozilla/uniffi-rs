@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::hash::{Hash, Hasher};
+use std::hash::Hasher;
 pub use uniffi_checksum_derive::Checksum;
 
 use serde::{Deserialize, Serialize};
@@ -17,7 +17,7 @@ pub trait Checksum {
 
 impl Checksum for bool {
     fn checksum<H: Hasher>(&self, state: &mut H) {
-        Hash::hash(self, state);
+        state.write_u8(*self as u8);
     }
 }
 
@@ -68,7 +68,8 @@ impl<T: Checksum> Checksum for Option<T> {
 
 impl Checksum for str {
     fn checksum<H: Hasher>(&self, state: &mut H) {
-        Hash::hash(self, state);
+        state.write(self.as_bytes());
+        state.write_u8(0xff);
     }
 }
 
