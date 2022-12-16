@@ -4,7 +4,7 @@
 
 use std::{
     collections::BTreeMap,
-    hash::{Hash, Hasher},
+    hash::Hasher,
 };
 pub use uniffi_checksum_derive::Checksum;
 
@@ -20,7 +20,7 @@ pub trait Checksum {
 
 impl Checksum for bool {
     fn checksum<H: Hasher>(&self, state: &mut H) {
-        Hash::hash(self, state);
+        state.write_u8(*self as u8);
     }
 }
 
@@ -81,7 +81,8 @@ impl<T: Checksum> Checksum for Option<T> {
 
 impl Checksum for str {
     fn checksum<H: Hasher>(&self, state: &mut H) {
-        Hash::hash(self, state);
+        state.write(self.as_bytes());
+        state.write_u8(0xff);
     }
 }
 
