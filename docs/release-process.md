@@ -2,7 +2,7 @@
 ## Release Process
 
 We use [cargo-release](https://crates.io/crates/cargo-release) to simplify the release process.
-(We rely on v0.18 or later because it has support for workspaces. Install this with
+(We rely on v0.22 or later because it has support for workspaces. Install this with
 `cargo install cargo-release`, not to be confused with the different `cargo install release`!)
 It's not (yet) quite an ideal fit for our workflow, but it helps! Steps:
 
