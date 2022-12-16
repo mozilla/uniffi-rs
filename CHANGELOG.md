@@ -16,6 +16,13 @@
 ### What's changed
 
 - Added support for Swift external types
+- Fix whitespace issues in scaffolding code breaking some versions of `rustfmt`
+- Fix ruby time support
+- proc-macro
+  - Document (experimental) proc-macro support
+  - Support fallible functions
+  - Add Enum derive macro
+  - Add Error derive macro
 
 ## v0.21.1 - (_2022-12-16_)
 
