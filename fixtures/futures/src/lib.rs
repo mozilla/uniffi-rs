@@ -73,45 +73,29 @@ async fn always_ready() -> bool {
     true
 }
 
-// #[doc(hidden)]
-// #[no_mangle]
-// pub extern "C" fn _uniffi_testing(
-//     future: core::option::Option<&mut ::uniffi::RustFuture<bool>>,
-//     waker: core::option::Option<core::ptr::NonNull<::uniffi::RustFutureForeignWakerFunction>>,
-//     waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
-//     polled_result: &mut <bool as ::uniffi::FfiConverter>::FfiType,
-//     call_status: &mut ::uniffi::RustCallStatus,
-// ) -> bool {
-//     println!("inside [RUST]");
-//     dbg!(waker);
-//     dbg!(waker_environment);
-//     dbg!(&polled_result);
-//     false
-// }
+/// Async function that says something after 2s.
+#[uniffi::export]
+async fn say() -> String {
+    TimerFuture::new(Duration::from_secs(2)).await;
 
-// /// Async function that says something after 2s.
-// #[uniffi::export]
-// async fn say() -> String {
-//     TimerFuture::new(Duration::from_secs(2)).await;
+    format!("Hello, Future!")
+}
 
-//     format!("Hello, Future!")
-// }
+/// Async function that says something after a certain time.
+#[uniffi::export]
+async fn say_after(secs: u8, who: String) -> String {
+    TimerFuture::new(Duration::from_secs(secs.into())).await;
 
-// /// Async function that says something after a certain time.
-// #[uniffi::export]
-// async fn say_after(secs: u8, who: String) -> String {
-//     TimerFuture::new(Duration::from_secs(secs.into())).await;
+    format!("Hello, {who}!")
+}
 
-//     format!("Hello, {who}!")
-// }
+/// Async function that sleeps!
+#[uniffi::export]
+pub async fn sleep(secs: u8) -> bool {
+    TimerFuture::new(Duration::from_secs(secs.into())).await;
 
-// /// Async function that sleeps!
-// #[uniffi::export]
-// pub async fn sleep(secs: u8) -> bool {
-//     TimerFuture::new(Duration::from_secs(secs.into())).await;
-
-//     true
-// }
+    true
+}
 
 // /// Sync function that generates a new `Megaphone`.
 // ///

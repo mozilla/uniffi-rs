@@ -8,34 +8,54 @@
 {%- when Some with (return_type) %}
 
 suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}) = suspendCoroutine<{{ return_type|type_name }}> { continuation ->
-    val rustFuture = {% call kt::to_ffi_call(func) %}
-    
     class Waker: RustFutureWaker {
-        override fun callback(env: Pointer?) {
-            val polledResult =  {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Int{% endmatch %}ByReference()
-            val isReady = rustCall() { _status ->
-                _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}_poll(
-                    rustFuture,
-                    this,
-                    null, // env
-                    polledResult,
-                    _status
-                )
-            }
-            
-            if (isReady) {
-                continuation.resume({{ return_type|lift_fn}}(polledResult.getValue()))
-                rustCall() { _status ->
-                    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}_drop(rustFuture, _status)
+        override fun callback(envCStructure: RustFutureWakerEnvironmentCStructure?) {
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch {
+                val hash = envCStructure!!.hash
+                val env = _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.get(hash)!!
+
+                val polledResult =  {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Byte{% endmatch %}ByReference()
+                val isReady = rustCall() { _status ->
+                    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}_poll(
+                        env.rustFuture,
+                        env.waker,
+                        env.asCStructure,
+                        polledResult,
+                        _status
+                    )
+                }
+
+                if (isReady) {
+                    @Suppress("UNCHECKED_CAST")
+                    (env.continuation as Continuation<{{ return_type|type_name }}>).resume({{ return_type|lift_fn}}(polledResult.getValue()))
+
+                    _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.remove(hash)
+                    rustCall() { _status ->
+                        _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}_drop(env.rustFuture, _status)
+                    }
                 }
             }
         }
     }
-    
+
+    class Env(
+        override val rustFuture: RustFuture,
+        override val continuation: Continuation<{{ return_type|type_name }}>,
+        override val waker: Waker,
+        override val asCStructure: RustFutureWakerEnvironmentCStructure,
+    ): RustFutureWakerEnvironment<{{ return_type|type_name }}>
+
+    val rustFuture = {% call kt::to_ffi_call(func) %}
+
+    val env = Env(rustFuture, continuation, Waker(), RustFutureWakerEnvironmentCStructure())
+    val envHash = env.hashCode()
+    env.asCStructure.hash = envHash
+
+    _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.put(envHash, env)
+
     val waker = Waker()
-    waker.callback(null)
-    
-    println("ennnd?")
+    waker.callback(env.asCStructure)
 }
 
 {% when None %}

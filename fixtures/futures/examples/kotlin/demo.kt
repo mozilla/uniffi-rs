@@ -6,9 +6,10 @@ import uniffi.fixture.futures.*
 
 fun main() = runBlocking {
     launch {
-        delay(100L)
-        println(greet("Gordon"))
-        println(alwaysReady())
+        println("greet(\"Gordon\"): ${greet("Gordon")}")
+        println("alwaysReady: ${alwaysReady()}")
+        println("say: ${say()}")
+        println("sayAfter: ${sayAfter(2.toUByte(), "Alice")}")
         println("bbb")
     }
     println("aaa")

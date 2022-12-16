@@ -29,6 +29,10 @@ internal interface _UniFFILib : Library {
             }
             {% endif %}
         }
+
+        internal val FUTURE_WAKER_ENVIRONMENTS: ConcurrentHashMap<Int, RustFutureWakerEnvironment<out Any>> by lazy {
+            ConcurrentHashMap(8)
+        }
     }
 
     {% for func in ci.iter_ffi_function_definitions() -%}
@@ -36,15 +40,15 @@ internal interface _UniFFILib : Library {
     fun {{ func.name() }}(
         {%- call kt::arg_list_ffi_decl(func) %}
     ): RustFuture
-    
+
     fun {{ func.name() }}_poll(
         rustFuture: RustFuture,
         waker: RustFutureWaker,
-        wakerEnv: Pointer?,
+        wakerEnv: RustFutureWakerEnvironmentCStructure?,
         polledResult: {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Int{% endmatch %}ByReference,
         _uniffi_out_err: RustCallStatus
     ): Boolean
-    
+
     fun {{ func.name() }}_drop(
         `rust_future`: RustFuture,
         _uniffi_out_err: RustCallStatus

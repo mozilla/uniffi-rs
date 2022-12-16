@@ -25,7 +25,9 @@ import com.sun.jna.Callback
 import com.sun.jna.ptr.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.*
+import kotlinx.coroutines.*
 
 {%- for imported_class in self.imports() %}
 import {{ imported_class }}
