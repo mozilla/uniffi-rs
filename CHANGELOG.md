@@ -17,6 +17,11 @@
 
 - Added support for Swift external types
 
+### What's changed
+
+- Replace checksum mechanism for function naming to give consistent results, independent of the target's endianness and bit width.
+  This should have no visible effect on the outside.
+
 ## v0.21.0 - (_2022-10-14_)
 
 [All changes in v0.21.0](https://github.com/mozilla/uniffi-rs/compare/v0.20.0...v0.21.0).
