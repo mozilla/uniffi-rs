@@ -6,23 +6,36 @@ import kotlin.system.*
 import uniffi.fixture.futures.*
 
 fun main() = runBlocking {
-    val time1 = measureTimeMillis {
-        val alice = sayAfter(2.toUByte(), "Alice")
-        val bob = sayAfter(3.toUByte(), "Bob")
+    println("Let's start!\n")
 
-        println("alice: ${alice}")
-        println("bob: ${bob}")
+    println("Wait 2secs before greeting you, dear public!")
+
+    var time = measureTimeMillis {
+        val result = sayAfter(2.toUByte(), "You")
+        println("result: ${result}")
     }
 
-    println("time: ${time1}")
+    println("[in ${time / 1000.toDouble()}sec]")
 
-    val time2 = measureTimeMillis {
+    println("\nWouah, 'tired. Let's sleep for 3secs!")
+
+    time = measureTimeMillis {
+        sleep(3.toUByte())
+    }
+
+    println("[in ${time / 1000.toDouble()}sec]")
+
+    println("\nIs it really blocking? Nah. Let's greet Alice and Bob after resp. 2secs and 3secs _concurrently_!")
+
+    time = measureTimeMillis {
         val alice = async { sayAfter(2.toUByte(), "Alice") }
-        val bob = async { sayAfter(2.toUByte(), "Bob") }
+        val bob = async { sayAfter(3.toUByte(), "Bob") }
 
         println("alice: ${alice.await()}")
         println("bob: ${bob.await()}")
     }
 
-    println("time: ${time2}")
+    println("[in ${time / 1000.toDouble()}sec]")
+
+    println("\nSee, it took 3secs, not 5secs!")
 }
