@@ -100,7 +100,7 @@ impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_>
             bail!("callback interface attributes are not supported yet");
         }
         if self.inheritance.is_some() {
-            bail!("callback interface inheritence is not supported");
+            bail!("callback interface inheritance is not supported");
         }
         let mut object = CallbackInterface::new(self.identifier.0.to_string());
         for member in &self.members.body {

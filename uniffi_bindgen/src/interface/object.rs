@@ -71,7 +71,7 @@ use super::{convert_type, APIConverter, ComponentInterface};
 
 /// An "object" is an opaque type that can be instantiated and passed around by reference,
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
-/// type of deal, except without elaborate inheritence hierarchies.
+/// type of deal, except without elaborate inheritance hierarchies.
 ///
 /// In UDL these correspond to the `interface` keyword.
 ///
@@ -198,7 +198,7 @@ impl Object {
 impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Object> {
         if self.inheritance.is_some() {
-            bail!("interface inheritence is not supported");
+            bail!("interface inheritance is not supported");
         }
         let mut object = Object::new(self.identifier.0.to_string());
         let attributes = match &self.attributes {

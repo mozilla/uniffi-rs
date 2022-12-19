@@ -159,7 +159,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
 impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Enum> {
         if self.inheritance.is_some() {
-            bail!("interface inheritence is not supported for enum interfaces");
+            bail!("interface inheritance is not supported for enum interfaces");
         }
         // We don't need to check `self.attributes` here; if calling code has dispatched
         // to this impl then we already know there was an `[Enum]` attribute.
