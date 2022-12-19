@@ -11,6 +11,10 @@ namespace chronological {
   [Throws=ChronologicalError]
   duration return_duration(duration a);
 
+  string to_string_timestamp(timestamp a);
+
+  timestamp get_pre_epoch_timestamp();
+
   [Throws=ChronologicalError]
   timestamp add(timestamp a, duration b);
 
