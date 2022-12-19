@@ -9,7 +9,8 @@ interface RustFutureWakerEnvironment<C> {
     val rustFuture: RustFuture
     val continuation: Continuation<C>
     val waker: RustFutureWaker
-    val asCStructure: RustFutureWakerEnvironmentCStructure
+    val selfAsCStructure: RustFutureWakerEnvironmentCStructure
+    val coroutineScope: CoroutineScope
 }
 
 @Structure.FieldOrder("hash")

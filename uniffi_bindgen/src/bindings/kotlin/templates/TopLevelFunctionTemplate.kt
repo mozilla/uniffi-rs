@@ -7,20 +7,19 @@
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
 
-suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}) = suspendCoroutine<{{ return_type|type_name }}> { continuation ->
+suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {{ return_type|type_name }} {
     class Waker: RustFutureWaker {
         override fun callback(envCStructure: RustFutureWakerEnvironmentCStructure?) {
-            @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch {
-                val hash = envCStructure!!.hash
-                val env = _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.get(hash)!!
+            val hash = envCStructure!!.hash
+            val env = _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.get(hash)!!
 
+            env.coroutineScope.launch {
                 val polledResult =  {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Byte{% endmatch %}ByReference()
                 val isReady = rustCall() { _status ->
                     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}_poll(
                         env.rustFuture,
                         env.waker,
-                        env.asCStructure,
+                        env.selfAsCStructure,
                         polledResult,
                         _status
                     )
@@ -43,19 +42,28 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}) = su
         override val rustFuture: RustFuture,
         override val continuation: Continuation<{{ return_type|type_name }}>,
         override val waker: Waker,
-        override val asCStructure: RustFutureWakerEnvironmentCStructure,
+        override val selfAsCStructure: RustFutureWakerEnvironmentCStructure,
+        override val coroutineScope: CoroutineScope,
     ): RustFutureWakerEnvironment<{{ return_type|type_name }}>
 
-    val rustFuture = {% call kt::to_ffi_call(func) %}
+    val result: {{ return_type|type_name }}
 
-    val env = Env(rustFuture, continuation, Waker(), RustFutureWakerEnvironmentCStructure())
-    val envHash = env.hashCode()
-    env.asCStructure.hash = envHash
+    coroutineScope {
+        result = suspendCoroutine<{{ return_type|type_name }}> { continuation ->
+            val rustFuture = {% call kt::to_ffi_call(func) %}
 
-    _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.put(envHash, env)
+            val env = Env(rustFuture, continuation, Waker(), RustFutureWakerEnvironmentCStructure(), this)
+            val envHash = env.hashCode()
+            env.selfAsCStructure.hash = envHash
 
-    val waker = Waker()
-    waker.callback(env.asCStructure)
+            _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.put(envHash, env)
+
+            val waker = Waker()
+            waker.callback(env.selfAsCStructure)
+        }
+    }
+
+    return result
 }
 
 {% when None %}
