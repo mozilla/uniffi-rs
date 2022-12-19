@@ -5,13 +5,13 @@ interface RustFutureWaker: Callback {
     fun callback(envCStructure: RustFutureWakerEnvironmentCStructure?)
 }
 
-interface RustFutureWakerEnvironment<C> {
-    val rustFuture: RustFuture
-    val continuation: Continuation<C>
-    val waker: RustFutureWaker
-    val selfAsCStructure: RustFutureWakerEnvironmentCStructure
-    val coroutineScope: CoroutineScope
-}
+class RustFutureWakerEnvironment<C>(
+    val rustFuture: RustFuture,
+    val continuation: Continuation<C>,
+    val waker: RustFutureWaker,
+    val selfAsCStructure: RustFutureWakerEnvironmentCStructure,
+    val coroutineScope: CoroutineScope,
+)
 
 @Structure.FieldOrder("hash")
 class RustFutureWakerEnvironmentCStructure: Structure() {

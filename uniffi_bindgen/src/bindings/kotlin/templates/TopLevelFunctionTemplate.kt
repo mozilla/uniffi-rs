@@ -38,21 +38,13 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {{ 
         }
     }
 
-    class Env(
-        override val rustFuture: RustFuture,
-        override val continuation: Continuation<{{ return_type|type_name }}>,
-        override val waker: Waker,
-        override val selfAsCStructure: RustFutureWakerEnvironmentCStructure,
-        override val coroutineScope: CoroutineScope,
-    ): RustFutureWakerEnvironment<{{ return_type|type_name }}>
-
     val result: {{ return_type|type_name }}
 
     coroutineScope {
         result = suspendCoroutine<{{ return_type|type_name }}> { continuation ->
             val rustFuture = {% call kt::to_ffi_call(func) %}
 
-            val env = Env(rustFuture, continuation, Waker(), RustFutureWakerEnvironmentCStructure(), this)
+            val env = RustFutureWakerEnvironment(rustFuture, continuation, Waker(), RustFutureWakerEnvironmentCStructure(), this)
             val envHash = env.hashCode()
             env.selfAsCStructure.hash = envHash
 
