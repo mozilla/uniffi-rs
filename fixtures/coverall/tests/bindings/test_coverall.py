@@ -77,7 +77,7 @@ class TestCoverall(unittest.TestCase):
             Coveralls.fallible_new("", True)
 
         with self.assertRaisesRegex(InternalError, "expected panic: woe is me"):
-            Coveralls.panicing_new("expected panic: woe is me")
+            Coveralls.panicking_new("expected panic: woe is me")
 
         # in the absence of cycles Python is deterministic in killing refs
         coveralls2 = None

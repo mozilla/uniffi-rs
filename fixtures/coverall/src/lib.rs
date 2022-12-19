@@ -173,7 +173,7 @@ impl Coveralls {
         self.name.clone()
     }
 
-    fn panicing_new(message: String) -> Self {
+    fn panicking_new(message: String) -> Self {
         panic!("{message}");
     }
 

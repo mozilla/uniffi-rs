@@ -102,7 +102,7 @@ impl Enum {
     }
 
     pub fn type_(&self) -> Type {
-        // *sigh* at the clone here, the relationship between a ComponentInterace
+        // *sigh* at the clone here, the relationship between a ComponentInterface
         // and its contained types could use a bit of a cleanup.
         Type::Enum(self.name.clone())
     }
@@ -159,7 +159,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
 impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Enum> {
         if self.inheritance.is_some() {
-            bail!("interface inheritence is not supported for enum interfaces");
+            bail!("interface inheritance is not supported for enum interfaces");
         }
         // We don't need to check `self.attributes` here; if calling code has dispatched
         // to this impl then we already know there was an `[Enum]` attribute.
@@ -240,7 +240,7 @@ impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
             };
             match &self.return_type {
                 ReturnType::Type(Single(NonAny(Identifier(id)))) => id.type_.0.to_owned(),
-                _ => bail!("enum interface members must have plain identifers as names"),
+                _ => bail!("enum interface members must have plain identifiers as names"),
             }
         };
         Ok(Variant {

@@ -15,7 +15,7 @@ Newcomers are recommended to explore them in the following order:
 * [`./todolist`](./todolist/) is a simplistic todo-list that can only add items and show the last item,
   meant to show how interacting with strings works.
 * [`./rondpoint`](./rondpoint/) exercises complex data types by round-tripping them from the foreign-language
-  code, through rust and back agian.
+  code, through rust and back again.
 * [`./fxa-client`](./fxa-client/) doesn't work yet, but it contains aspirational example of what the UDL
   might look like for an actual real-world component.
 

@@ -77,11 +77,11 @@ class TestCoverall < Test::Unit::TestCase
     end
 
     assert_raise Coverall::InternalError do
-      Coverall::Coveralls.panicing_new('expected panic: woe is me')
+      Coverall::Coveralls.panicking_new('expected panic: woe is me')
     end
 
     assert_raise_message /expected panic: woe is me/ do
-      Coverall::Coveralls.panicing_new('expected panic: woe is me')
+      Coverall::Coveralls.panicking_new('expected panic: woe is me')
     end
 
     begin
@@ -229,7 +229,7 @@ class TestCoverall < Test::Unit::TestCase
     coveralls = Coverall::Coveralls.new "test_bad_objects"
     patch = Coverall::Patch.new Coverall::Color::RED
     # `coveralls.take_other` wants `Coveralls` not `Patch`
-    assert_raise_message /Expected a Coveralls intance, got.*Patch/ do
+    assert_raise_message /Expected a Coveralls instance, got.*Patch/ do
       coveralls.take_other patch
     end
   end

@@ -456,7 +456,7 @@ impl ComponentInterface {
     ///
     /// This method uses the current state of our `TypeUniverse` to turn a weedle type expression
     /// into a concrete `Type` (or error if the type expression is not well defined). It abstracts
-    /// away the complexity of walking weedle's type struct heirarchy by dispatching to the `TypeResolver`
+    /// away the complexity of walking weedle's type struct hierarchy by dispatching to the `TypeResolver`
     /// trait.
     fn resolve_type_expression<T: types::TypeResolver>(&mut self, expr: T) -> Result<Type> {
         self.types.resolve_type_expression(expr)

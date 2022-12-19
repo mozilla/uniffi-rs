@@ -14,7 +14,7 @@ use crate::MergeWith;
 const RESERVED_WORDS: &[&str] = &[
     "alias", "and", "BEGIN", "begin", "break", "case", "class", "def", "defined?", "do", "else",
     "elsif", "END", "end", "ensure", "false", "for", "if", "module", "next", "nil", "not", "or",
-    "redo", "rescue", "retry", "return", "self", "super", "then", "true", "undef", "unles",
+    "redo", "rescue", "retry", "return", "self", "super", "then", "true", "undef", "unless",
     "until", "when", "while", "yield", "__FILE__", "__LINE__",
 ];
 

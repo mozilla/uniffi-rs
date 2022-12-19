@@ -29,7 +29,7 @@ fileprivate extension ForeignBytes {
 // values of that type in a buffer.
 
 // Helper classes/extensions that don't change.
-// Someday, this will be in a libray of its own.
+// Someday, this will be in a library of its own.
 
 fileprivate extension Data {
     init(rustBuffer: RustBuffer) {

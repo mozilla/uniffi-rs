@@ -110,7 +110,7 @@ impl Error {
     }
 
     pub fn type_(&self) -> Type {
-        // *sigh* at the clone here, the relationship between a ComponentInterace
+        // *sigh* at the clone here, the relationship between a ComponentInterface
         // and its contained types could use a bit of a cleanup.
         Type::Error(self.name.clone())
     }

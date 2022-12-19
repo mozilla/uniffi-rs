@@ -71,12 +71,12 @@ use super::{convert_type, APIConverter, ComponentInterface};
 
 /// An "object" is an opaque type that can be instantiated and passed around by reference,
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
-/// type of deal, except without elaborate inheritence hierarchies.
+/// type of deal, except without elaborate inheritance hierarchies.
 ///
 /// In UDL these correspond to the `interface` keyword.
 ///
 /// At the FFI layer, objects are represented by an opaque integer handle and a set of functions
-/// a common prefix. The object's constuctors are functions that return new objects by handle,
+/// a common prefix. The object's constructors are functions that return new objects by handle,
 /// and its methods are functions that take a handle as first argument. The foreign language
 /// binding code is expected to stitch these functions back together into an appropriate class
 /// definition (or that language's equivalent thereof).
@@ -93,7 +93,7 @@ pub struct Object {
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
     //    hash value we're trying to calculate here, so excluding it
-    //    avoids a weird circular depenendency in the calculation.
+    //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func_free: FfiFunction,
     #[checksum_ignore]
@@ -198,7 +198,7 @@ impl Object {
 impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Object> {
         if self.inheritance.is_some() {
-            bail!("interface inheritence is not supported");
+            bail!("interface inheritance is not supported");
         }
         let mut object = Object::new(self.identifier.0.to_string());
         let attributes = match &self.attributes {
@@ -245,7 +245,7 @@ pub struct Constructor {
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
     //    hash value we're trying to calculate here, so excluding it
-    //    avoids a weird circular depenendency in the calculation.
+    //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
     pub(super) attributes: ConstructorAttributes,
@@ -338,7 +338,7 @@ pub struct Method {
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
     //    hash value we're trying to calculate here, so excluding it
-    //    avoids a weird circular depenendency in the calculation.
+    //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
     pub(super) attributes: MethodAttributes,

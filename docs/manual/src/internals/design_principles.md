@@ -49,7 +49,7 @@ raw `Arc` pointers, which both simplified the code and removed some runtime over
 
 **Violation:** The tool currently passes structured data over the FFI by serializing it to a byte
 buffer, favouring ease of implementation and understanding over performance. This was fine as a starting
-point! However, we have not done any work to measure the performace impact or iterate towards something
+point! However, we have not done any work to measure the performance impact or iterate towards something
 with lower overhead (such as using `repr(C)` structs).
 
 

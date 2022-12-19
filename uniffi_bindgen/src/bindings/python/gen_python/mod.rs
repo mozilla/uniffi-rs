@@ -214,7 +214,7 @@ impl PythonCodeOracle {
     // template code.
     //
     //   - When adding additional types here, make sure to also add a match arm to the `Types.py` template.
-    //   - To keep things managable, let's try to limit ourselves to these 2 mega-matches
+    //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         match type_ {
             Type::UInt8 => Box::new(primitives::UInt8CodeType),

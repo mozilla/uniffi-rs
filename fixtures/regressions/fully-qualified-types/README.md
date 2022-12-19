@@ -11,7 +11,7 @@ to compile if the scaffolding depends on particular types being
 in scope.
 
 There deliberately aren't any tests in this crate; the test is
-whether or not it compiles successully. If you find that this crate
+whether or not it compiles successfully. If you find that this crate
 no longer compiles, you've probably added some generated scaffolding
 code that is depending on a particular type name being in scope.
 Change it to use a fully-qualified name, e.g. `std::collections::HashMap`

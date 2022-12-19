@@ -18,7 +18,7 @@ use super::{Type, TypeUniverse};
 
 /// Trait to help resolving an UDL type node to a [`Type`].
 ///
-/// Ths trait does structural matching against type-related weedle AST nodes from
+/// This trait does structural matching against type-related weedle AST nodes from
 /// a parsed UDL file, turning them into a corresponding [`Type`] struct. It uses the
 /// known type definitions in a [`TypeUniverse`] to resolve names to types.
 ///

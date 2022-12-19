@@ -50,7 +50,7 @@ pub struct CallbackInterface {
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
     //    hash value we're trying to calculate here, so excluding it
-    //    avoids a weird circular depenendency in the calculation.
+    //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_init_callback: FfiFunction,
 }
@@ -100,7 +100,7 @@ impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_>
             bail!("callback interface attributes are not supported yet");
         }
         if self.inheritance.is_some() {
-            bail!("callback interface inheritence is not supported");
+            bail!("callback interface inheritance is not supported");
         }
         let mut object = CallbackInterface::new(self.identifier.0.to_string());
         for member in &self.members.body {

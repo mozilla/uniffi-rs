@@ -31,7 +31,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
 {%- endmacro -%}
 
 {#-
-// Arglist as used in the _UniFFILib function declations.
+// Arglist as used in the _UniFFILib function declarations.
 // Note unfiltered name but type_ffi filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}

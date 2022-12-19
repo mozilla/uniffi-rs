@@ -71,7 +71,7 @@ impl Record {
     }
 
     pub fn type_(&self) -> Type {
-        // *sigh* at the clone here, the relationship between a ComponentInterace
+        // *sigh* at the clone here, the relationship between a ComponentInterface
         // and its contained types could use a bit of a cleanup.
         Type::Record(self.name.clone())
     }
@@ -100,7 +100,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
             bail!("dictionary attributes are not supported yet");
         }
         if self.inheritance.is_some() {
-            bail!("dictionary inheritence is not supported");
+            bail!("dictionary inheritance is not supported");
         }
         Ok(Record {
             name: self.identifier.0.to_string(),
