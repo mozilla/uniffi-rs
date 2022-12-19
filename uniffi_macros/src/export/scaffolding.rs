@@ -184,8 +184,8 @@ fn gen_ffi_function(
                 #[doc(hidden)]
                 #[no_mangle]
                 pub extern "C" fn #ffi_poll_ident(
-                    future: core::option::Option<&mut ::uniffi::RustFuture<#ty>>,
-                    waker: core::option::Option<core::ptr::NonNull<::uniffi::RustFutureForeignWakerFunction>>,
+                    future: ::std::option::Option<&mut ::uniffi::RustFuture<#ty>>,
+                    waker: ::std::option::Option<::std::ptr::NonNull<::uniffi::RustFutureForeignWakerFunction>>,
                     waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
                     polled_result: &mut <#ty as ::uniffi::FfiConverter>::FfiType,
                     call_status: &mut ::uniffi::RustCallStatus,
@@ -199,7 +199,7 @@ fn gen_ffi_function(
                 #[doc(hidden)]
                 #[no_mangle]
                 pub extern "C" fn #ffi_drop_ident(
-                    future: core::option::Option<Box<::uniffi::RustFuture<#ty>>>,
+                    future: ::std::option::Option<::std::boxed::Box<::uniffi::RustFuture<#ty>>>,
                     call_status: &mut ::uniffi::RustCallStatus,
                 ) {
                     ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)

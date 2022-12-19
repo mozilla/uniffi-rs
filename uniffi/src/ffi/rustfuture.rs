@@ -1,16 +1,16 @@
 //! [`RustFuture`] represents a [`Future`] that can be sent over FFI safely-ish.
 //!
 //! The [`RustFuture`] is parameterized by `T` which implements [`FfiConverter`].
-//! Thus, the `Future` outputs of value of kind `FfiConverter::RustType`.
+//! Thus, the `Future` outputs a value of kind `FfiConverter::RustType`.
 //! The `poll` method maps this `FfiConverter::RustType` to
 //! `FfiConverter::FfiType` when the inner `Future` is ready.
 //!
 //! This type may not be instantiated directly, but _via_ the procedural macros,
-//! such as `#[uniffi::export]`. A `RustFuture` is created, boxed, and then is
-//! manipulated by (hidden) “assistant” functions, resp. `uniffi_rustfuture_poll` and
-//! `uniffi_rustfuture_drop`. Because the `RustFuture` type contains a generic
-//! parameter `T`, the procedural macros will do a monomorphisation phase so that
-//! all the API has all their types statically known.
+//! such as `#[uniffi::export]`. A `RustFuture` is created, boxed, and then
+//! manipulated by (hidden) helper functions, resp. `uniffi_rustfuture_poll`
+//! and `uniffi_rustfuture_drop`. Because the `RustFuture` type contains a
+//! generic parameter `T`, the procedural macros will do a monomorphisation
+//! phase so that all the API has all their types statically known.
 //!
 //! # The big picture
 //!
@@ -39,7 +39,7 @@
 //! created, as such:
 //!
 //! ```rust,ignore
-//! /// The `hello` function, as seen from the outside. It returns a “`Future`”, or
+//! /// The `hello` function, as seen from the outside. It returns a `Future`, or
 //! /// more precisely, a `RustFuture` that wraps the returned future.
 //! #[no_mangle]
 //! pub extern "C" fn _uniffi_hello(
@@ -72,16 +72,16 @@
 //! Let's analyse this function because it's an important one:
 //!
 //! * First off, this _poll FFI function_ forwards everything to
-//!   `uniffi_rustfuture_poll`. This later is generic, while the former has been
-//!   monomorphised by the procedural macros.
+//!   `uniffi_rustfuture_poll`. The latter is generic, while the former has been
+//!   monomorphised by the procedural macro.
 //!
 //! * Second, it receives the `RustFuture` as an `Option<&mut RustFuture<_>>`. It
 //!   doesn't take ownership of the `RustFuture`! It borrows it (mutably). It's
 //!   wrapped inside an `Option` to check whether it's a null pointer or not.
 //!
 //! * Third, it receives a _waker_ as a pair of a _function pointer_ plus its
-//!   _environment_ if any: a null pointer is purposely allowed for the environment.
-//!   This waker function lives on the foreign language land. We will come back
+//!   _environment_, if any; a null pointer is purposely allowed for the environment.
+//!   This waker function lives on the foreign language side. We will come back
 //!   to it in a second.
 //!
 //! * Fourth, it receives an in-out `polled_result` argument, that is filled with the
@@ -113,7 +113,7 @@
 //! `uniffi_rustfuture_drop`, which is the generic version of the monomorphised _drop
 //! function_.
 //!
-//! ## How `Future` works exactly?
+//! ## How does `Future` work exactly?
 //!
 //! A [`Future`] in Rust does nothing. When calling an async function, it just
 //! returns a `Future` but nothing has happened yet. To start the computation,
@@ -124,40 +124,39 @@
 //! > Please, try to poll me later, maybe the result will be ready!
 //!
 //! This model is very different than what other languages do, but it can actually
-//! be mangled quite easily, hopefully for us!
+//! be translated quite easily, fortunately for us!
 //!
 //! But… wait a minute… who is responsible to poll the `Future` if a `Future` does
-//! nothing? Well, it's _the executor_ (sometimes also called _the runtime_ but not
-//! here). The executor is responsible _to drive_ the `Future`: that's where
-//! they are polled.
+//! nothing? Well, it's _the executor_. The executor is responsible _to drive_ the
+//! `Future`: that's where they are polled.
 //!
-//! But… wait another minute… how the executor knows when to poll a [`Future`]?
-//! Does it poll them randomly in a forever loop? Well, no, actually it depends
-//! of the executor! A well-designed `Future` and executor work as follows.
+//! But… wait another minute… how does the executor know when to poll a [`Future`]?
+//! Does it poll them randomly in an endless loop? Well, no, actually it depends
+//! on the executor! A well-designed `Future` and executor work as follows.
 //! Normally, when [`Future::poll`] is called, a [`Context`] argument is
 //! passed to it. It contains a [`Waker`]. The [`Waker`] is built on top of a
 //! [`RawWaker`] which implements whatever is necessary. Usually, a waker will
 //! signal the executor to poll a particular `Future`. A `Future` will clone
 //! or pass-by-ref the waker to somewhere, as a callback, a completion, a
 //! function, or anything, to the system that is responsible to notify when a
-//! task is completed. So, to recap, the waker is _not_ responsible to wake the
-//! `Future`, it _is_ responsible to _signal_ the executor that a particular
-//! `Future` must be polled again. That's why the documentation of
+//! task is completed. So, to recap, the waker is _not_ responsible for waking the
+//! `Future`, it _is_ responsible for _signaling_ the executor that a particular
+//! `Future` should be polled again. That's why the documentation of
 //! [`Poll::Pending`] specifies:
 //!
 //! > When a function returns `Pending`, the function must also ensure that the
 //! > current task is scheduled to be awoken when progress can be made.
 //!
-//! “awoken” is done by using the `Waker`.
+//! “awakening” is done by using the `Waker`.
 //!
 //! ## Awaken from the foreign language land
 //!
 //! Our _poll function_ receives a waker function pointer, along with a waker
-//! environment. We said that the waker function lives in the foreign language
-//! land. That's really important. It cannot live inside Rust because Rust
+//! environment. We said that the waker function lives on the foreign language
+//! side. That's really important. It cannot live inside Rust because Rust
 //! isn't aware of which foreign language it is run from, and thus doesn't know
 //! which executor is used. It is UniFFI's job to write a proper foreign waker
-//! function, that will use the native foreign language's executor provided
+//! function that will use the native foreign language's executor provided
 //! by the foreign language itself (e.g. `Task` in Swift) or by some common
 //! libraries (e.g. `asyncio` in Python), to ask to poll the future again.
 //!
@@ -174,7 +173,7 @@
 //!      function_ will lift the value and will drop the future with the _drop function_
 //!      (`_uniffi_hello_drop`),
 //!
-//!    - Either the future is pending (not ready), and is responsible to register
+//!    - or the future is pending (not ready), and is responsible to register
 //!      the waker (as explained above).
 //!
 //! 3. When the waker is called, it calls the _poll function_, so we basically jump
@@ -200,7 +199,7 @@
 //! must “cut” the flow, so that Rust code can continue to run as expected, and
 //! after that, the _poll function_ must be called.
 //!
-//! Put it differently, the waker function must call the _poll function_ _as
+//! Put differently, the waker function must call the _poll function_ _as
 //! soon as possible_, not _immediately_. It actually makes sense: The waker
 //! must signal the executor to schedule a poll for a specific `Future` when
 //! possible; it's not an inline operation. The implementation of the waker
