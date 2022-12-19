@@ -77,11 +77,11 @@ class TestCoverall < Test::Unit::TestCase
     end
 
     assert_raise Coverall::InternalError do
-      Coverall::Coveralls.panicing_new('expected panic: woe is me')
+      Coverall::Coveralls.panicking_new('expected panic: woe is me')
     end
 
     assert_raise_message /expected panic: woe is me/ do
-      Coverall::Coveralls.panicing_new('expected panic: woe is me')
+      Coverall::Coveralls.panicking_new('expected panic: woe is me')
     end
 
     begin
