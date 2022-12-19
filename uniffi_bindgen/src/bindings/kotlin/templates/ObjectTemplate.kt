@@ -5,6 +5,13 @@
 
 public interface {{ type_name }}Interface {
     {% for meth in obj.methods() -%}
+    {%- if meth.is_async() -%}
+    suspend fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %})
+    {%- match meth.return_type() -%}
+    {%- when Some with (return_type) %}: {{ return_type|type_name -}}
+    {%- else -%}
+    {%- endmatch -%}
+    {%- else -%}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) %}
     @Throws({{ throwable|type_name }}::class)
@@ -14,7 +21,8 @@ public interface {{ type_name }}Interface {
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) %}: {{ return_type|type_name -}}
     {%- else -%}
-    {%- endmatch %}
+    {%- endmatch -%}
+    {%- endif -%}
     {% endfor %}
 }
 
@@ -44,11 +52,74 @@ class {{ type_name }}(
     }
 
     {% for meth in obj.methods() -%}
+    {%- if meth.is_async() -%}
+    {%- match meth.return_type() -%}
+    {%- when Some with (return_type) %}
+    override suspend fun {{ meth.name()|fn_name }}({%- call kt::arg_list_protocol(meth) -%}): {{ return_type|type_name }} {
+        class Waker: RustFutureWaker {
+            override fun callback(envCStructure: RustFutureWakerEnvironmentCStructure?) {
+                val hash = envCStructure!!.hash
+                val env = _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.get(hash)!!
+
+                env.coroutineScope.launch {
+                    val polledResult =  {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Byte{% endmatch %}ByReference()
+                    val isReady = rustCall() { _status ->
+                        _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}_poll(
+                            env.rustFuture,
+                            env.waker,
+                            env.selfAsCStructure,
+                            polledResult,
+                            _status
+                        )
+                    }
+
+                    if (isReady) {
+                        @Suppress("UNCHECKED_CAST")
+                        (env.continuation as Continuation<{{ return_type|type_name }}>).resume({{ return_type|lift_fn}}(polledResult.getValue()))
+
+                        _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.remove(hash)
+                        rustCall() { _status ->
+                            _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}_drop(env.rustFuture, _status)
+                        }
+                    }
+                }
+            }
+        }
+
+        val result: {{ return_type|type_name }}
+
+        coroutineScope {
+            result = suspendCoroutine<{{ return_type|type_name }}> { continuation ->
+                val rustFuture = callWithPointer {
+                    {% call kt::to_ffi_call_with_prefix("it", meth) %}
+                }
+
+                val env = RustFutureWakerEnvironment(rustFuture, continuation, Waker(), RustFutureWakerEnvironmentCStructure(), this)
+                val envHash = env.hashCode()
+                env.selfAsCStructure.hash = envHash
+
+                _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.put(envHash, env)
+
+                val waker = Waker()
+                waker.callback(env.selfAsCStructure)
+            }
+        }
+
+        return result
+    }
+
+    {% when None %}
+
+    // TODO
+    {% endmatch %}
+    {%- else -%}
+
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) %}
     @Throws({{ throwable|type_name }}::class)
     {%- else -%}
     {%- endmatch %}
+
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) -%}
@@ -65,6 +136,7 @@ class {{ type_name }}(
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }
     {% endmatch %}
+    {% endif %}
     {% endfor %}
 
     {% if !obj.alternate_constructors().is_empty() -%}

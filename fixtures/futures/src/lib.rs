@@ -97,28 +97,28 @@ pub async fn sleep(secs: u8) -> bool {
     true
 }
 
-// /// Sync function that generates a new `Megaphone`.
-// ///
-// /// It builds a `Megaphone` which has async methods on it.
-// #[uniffi::export]
-// fn new_megaphone() -> Arc<Megaphone> {
-//     Arc::new(Megaphone)
-// }
+/// Sync function that generates a new `Megaphone`.
+///
+/// It builds a `Megaphone` which has async methods on it.
+#[uniffi::export]
+fn new_megaphone() -> Arc<Megaphone> {
+    Arc::new(Megaphone)
+}
 
-// /// A megaphone. Be careful with the neighbours.
-// #[derive(uniffi::Object)]
-// pub struct Megaphone;
+/// A megaphone. Be careful with the neighbours.
+#[derive(uniffi::Object)]
+pub struct Megaphone;
 
-// #[uniffi::export]
-// impl Megaphone {
-//     /// An async function that yells something after a certain time.
-//     async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
-//         say_after(secs, who).await.to_uppercase()
-//     }
-// }
+#[uniffi::export]
+impl Megaphone {
+    /// An async function that yells something after a certain time.
+    async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
+        say_after(secs, who).await.to_uppercase()
+    }
+}
 
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
 
 mod uniffi_types {
-    // pub(crate) use super::Megaphone;
+    pub(crate) use super::Megaphone;
 }
