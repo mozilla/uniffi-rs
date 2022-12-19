@@ -50,7 +50,7 @@ pub struct CallbackInterface {
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
     //    hash value we're trying to calculate here, so excluding it
-    //    avoids a weird circular depenendency in the calculation.
+    //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_init_callback: FfiFunction,
 }
