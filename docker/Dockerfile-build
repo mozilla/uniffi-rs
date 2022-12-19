@@ -75,4 +75,14 @@ RUN mkdir -p /tmp/setup-jna \
     && cd ../ \
     && rm -rf ./setup-jna
 
+RUN mkdir -p /tmp/setup-kotlinx \
+    && cd /tmp/setup-kotlinx \
+    && curl -o kotlinx-coroutines-core-jvm.jar https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.6.4/kotlinx-coroutines-core-jvm-1.6.4.jar -o kotlinx-coroutines-core-jvm.jar \
+    # XXX TODO: should check a sha256sum or something here...
+    && sudo mv kotlinx-coroutines-core-jvm.jar /opt \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /home/circleci/.bashrc \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /home/circleci/.profile \
+    && cd ../ \
+    && rm -rf ./setup-kotlinx
+
 RUN sudo gem install ffi --no-document
