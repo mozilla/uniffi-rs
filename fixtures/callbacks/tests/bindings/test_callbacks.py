@@ -8,7 +8,7 @@ import unittest
 # A bit more systematic in testing, but this time in English.
 #
 # 1. Pass in the callback as arguments.
-# Make the callback methods use multiple aruments, with a variety of types, and
+# Make the callback methods use multiple arguments, with a variety of types, and
 # with a variety of return types.
 rust_getters = RustGetters()
 
