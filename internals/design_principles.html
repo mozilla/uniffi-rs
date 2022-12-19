@@ -193,7 +193,7 @@ performance. As we got more experience and confidence with the approach and tool
 raw <code>Arc</code> pointers, which both simplified the code and removed some runtime overheads.</p>
 <p><strong>Violation:</strong> The tool currently passes structured data over the FFI by serializing it to a byte
 buffer, favouring ease of implementation and understanding over performance. This was fine as a starting
-point! However, we have not done any work to measure the performace impact or iterate towards something
+point! However, we have not done any work to measure the performance impact or iterate towards something
 with lower overhead (such as using <code>repr(C)</code> structs).</p>
 <h3><a class="header" href="#produce-bindings-that-feel-idiomatic-for-the-target-language" id="produce-bindings-that-feel-idiomatic-for-the-target-language">Produce bindings that feel idiomatic for the target language</a></h3>
 <p>The generated bindings should feel idiomatic for their end users, and what feels idiomatic can differ

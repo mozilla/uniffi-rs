@@ -579,7 +579,7 @@
     <span class="comment">// template code.</span>
     <span class="comment">//</span>
     <span class="comment">//   - When adding additional types here, make sure to also add a match arm to the `Types.kt` template.</span>
-    <span class="comment">//   - To keep things managable, let&#39;s try to limit ourselves to these 2 mega-matches</span>
+    <span class="comment">//   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches</span>
     <span class="kw">fn</span> <span class="ident">create_code_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="ident">TypeIdentifier</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">type_</span> {
             <span class="ident">Type::UInt8</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt8CodeType</span>),

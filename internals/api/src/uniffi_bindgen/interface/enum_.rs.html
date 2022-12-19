@@ -543,7 +543,7 @@
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Type</span> {
-        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterace</span>
+        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterface</span>
         <span class="comment">// and its contained types could use a bit of a cleanup.</span>
         <span class="ident">Type::Enum</span>(<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>())
     }
@@ -600,7 +600,7 @@
 <span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Enum</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::InterfaceDefinition</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Enum</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inheritance</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail!</span>(<span class="string">&quot;interface inheritence is not supported for enum interfaces&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;interface inheritance is not supported for enum interfaces&quot;</span>);
         }
         <span class="comment">// We don&#39;t need to check `self.attributes` here; if calling code has dispatched</span>
         <span class="comment">// to this impl then we already know there was an `[Enum]` attribute.</span>
@@ -681,7 +681,7 @@
             };
             <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">return_type</span> {
                 <span class="ident">ReturnType::Type</span>(<span class="ident">Single</span>(<span class="ident">NonAny</span>(<span class="ident">Identifier</span>(<span class="ident">id</span>)))) =&gt; <span class="ident">id</span>.<span class="ident">type_</span>.<span class="number">0</span>.<span class="ident">to_owned</span>(),
-                <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;enum interface members must have plain identifers as names&quot;</span>),
+                <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;enum interface members must have plain identifiers as names&quot;</span>),
             }
         };
         <span class="prelude-val">Ok</span>(<span class="ident">Variant</span> {

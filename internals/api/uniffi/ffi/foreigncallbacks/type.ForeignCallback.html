@@ -21,8 +21,8 @@ passing individual arguments to the user’s callback.</li>
 buffer to write the result into.</li>
 <li>A callback returns:
 <ul>
-<li><code>-2</code> An error occured that was serialized to buf_ptr</li>
-<li><code>-1</code> An unexpected error ocurred</li>
+<li><code>-2</code> An error occurred that was serialized to buf_ptr</li>
+<li><code>-1</code> An unexpected error occurred</li>
 <li><code>0</code> is a deprecated way to signal that if the call succeeded, but did not modify buf_ptr</li>
 <li><code>1</code> If the call succeeded.  For non-void functions the return value should be serialized
 to buf_ptr.

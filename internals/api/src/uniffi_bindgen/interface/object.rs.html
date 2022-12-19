@@ -676,12 +676,12 @@
 
 <span class="doccomment">/// An &quot;object&quot; is an opaque type that can be instantiated and passed around by reference,</span>
 <span class="doccomment">/// have methods called on it, and so on - basically your classic Object Oriented Programming</span>
-<span class="doccomment">/// type of deal, except without elaborate inheritence hierarchies.</span>
+<span class="doccomment">/// type of deal, except without elaborate inheritance hierarchies.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// In UDL these correspond to the `interface` keyword.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// At the FFI layer, objects are represented by an opaque integer handle and a set of functions</span>
-<span class="doccomment">/// a common prefix. The object&#39;s constuctors are functions that return new objects by handle,</span>
+<span class="doccomment">/// a common prefix. The object&#39;s constructors are functions that return new objects by handle,</span>
 <span class="doccomment">/// and its methods are functions that take a handle as first argument. The foreign language</span>
 <span class="doccomment">/// binding code is expected to stitch these functions back together into an appropriate class</span>
 <span class="doccomment">/// definition (or that language&#39;s equivalent thereof).</span>
@@ -698,7 +698,7 @@
     <span class="comment">//    so excluding it is safe.</span>
     <span class="comment">//  - its `name` property includes a checksum derived from  the very</span>
     <span class="comment">//    hash value we&#39;re trying to calculate here, so excluding it</span>
-    <span class="comment">//    avoids a weird circular depenendency in the calculation.</span>
+    <span class="comment">//    avoids a weird circular dependency in the calculation.</span>
     <span class="attribute">#[<span class="ident">checksum_ignore</span>]</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">ffi_func_free</span>: <span class="ident">FfiFunction</span>,
     <span class="attribute">#[<span class="ident">checksum_ignore</span>]</span>
@@ -803,7 +803,7 @@
 <span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Object</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::InterfaceDefinition</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Object</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inheritance</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail!</span>(<span class="string">&quot;interface inheritence is not supported&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;interface inheritance is not supported&quot;</span>);
         }
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">object</span> <span class="op">=</span> <span class="ident">Object::new</span>(<span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>());
         <span class="kw">let</span> <span class="ident">attributes</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attributes</span> {
@@ -850,7 +850,7 @@
     <span class="comment">//    so excluding it is safe.</span>
     <span class="comment">//  - its `name` property includes a checksum derived from  the very</span>
     <span class="comment">//    hash value we&#39;re trying to calculate here, so excluding it</span>
-    <span class="comment">//    avoids a weird circular depenendency in the calculation.</span>
+    <span class="comment">//    avoids a weird circular dependency in the calculation.</span>
     <span class="attribute">#[<span class="ident">checksum_ignore</span>]</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">ffi_func</span>: <span class="ident">FfiFunction</span>,
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">attributes</span>: <span class="ident">ConstructorAttributes</span>,
@@ -943,7 +943,7 @@
     <span class="comment">//    so excluding it is safe.</span>
     <span class="comment">//  - its `name` property includes a checksum derived from  the very</span>
     <span class="comment">//    hash value we&#39;re trying to calculate here, so excluding it</span>
-    <span class="comment">//    avoids a weird circular depenendency in the calculation.</span>
+    <span class="comment">//    avoids a weird circular dependency in the calculation.</span>
     <span class="attribute">#[<span class="ident">checksum_ignore</span>]</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">ffi_func</span>: <span class="ident">FfiFunction</span>,
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">attributes</span>: <span class="ident">MethodAttributes</span>,

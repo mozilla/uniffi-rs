@@ -346,7 +346,7 @@
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Type</span> {
-        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterace</span>
+        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterface</span>
         <span class="comment">// and its contained types could use a bit of a cleanup.</span>
         <span class="ident">Type::Error</span>(<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>())
     }

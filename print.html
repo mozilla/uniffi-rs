@@ -278,7 +278,7 @@ Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code
 <ul>
 <li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any udl file, even if there ain't any exposed function (e.g. <code>namespace foo {}</code>).</li>
 <li>The <code>add</code> function is in the <code>namespace</code> block. That's because on the Rust side it is a top-level <em>function</em>, we will see later how to to handle <em>methods</em>.</li>
-<li>Rust's <code>u32</code> is also UDL's <code>u32</code>, but it is not always true! (TODO table correspondance)</li>
+<li>Rust's <code>u32</code> is also UDL's <code>u32</code>, but it is not always true! (TODO table correspondence)</li>
 </ul>
 <p><strong>Note:</strong> If any of the things you expose in the <code>udl</code> file do not have an equivalent in your Rust crate, you will get a hard error. Try changing the <code>u32</code> result type to <code>u64</code> and see what happens!</p>
 <h1><a class="header" href="#rust-scaffolding" id="rust-scaffolding">Rust scaffolding</a></h1>
@@ -1182,7 +1182,7 @@ Rust scaffolding - it is defined as:</p>
 }
 </code></pre>
 <p>where <code>Builtin</code> is the Rust type corresponding to the UniFFI builtin-type - <code>i64</code> in the example above. Thus, the trait
-implemention for <code>Handle</code> would look something like:</p>
+implementation for <code>Handle</code> would look something like:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -1734,7 +1734,7 @@ performance. As we got more experience and confidence with the approach and tool
 raw <code>Arc</code> pointers, which both simplified the code and removed some runtime overheads.</p>
 <p><strong>Violation:</strong> The tool currently passes structured data over the FFI by serializing it to a byte
 buffer, favouring ease of implementation and understanding over performance. This was fine as a starting
-point! However, we have not done any work to measure the performace impact or iterate towards something
+point! However, we have not done any work to measure the performance impact or iterate towards something
 with lower overhead (such as using <code>repr(C)</code> structs).</p>
 <h3><a class="header" href="#produce-bindings-that-feel-idiomatic-for-the-target-language" id="produce-bindings-that-feel-idiomatic-for-the-target-language">Produce bindings that feel idiomatic for the target language</a></h3>
 <p>The generated bindings should feel idiomatic for their end users, and what feels idiomatic can differ

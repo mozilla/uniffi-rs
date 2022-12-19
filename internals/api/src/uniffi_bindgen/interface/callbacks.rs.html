@@ -225,7 +225,7 @@
     <span class="comment">//    so excluding it is safe.</span>
     <span class="comment">//  - its `name` property includes a checksum derived from  the very</span>
     <span class="comment">//    hash value we&#39;re trying to calculate here, so excluding it</span>
-    <span class="comment">//    avoids a weird circular depenendency in the calculation.</span>
+    <span class="comment">//    avoids a weird circular dependency in the calculation.</span>
     <span class="attribute">#[<span class="ident">checksum_ignore</span>]</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">ffi_init_callback</span>: <span class="ident">FfiFunction</span>,
 }
@@ -275,7 +275,7 @@
             <span class="macro">bail!</span>(<span class="string">&quot;callback interface attributes are not supported yet&quot;</span>);
         }
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inheritance</span>.<span class="ident">is_some</span>() {
-            <span class="macro">bail!</span>(<span class="string">&quot;callback interface inheritence is not supported&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">&quot;callback interface inheritance is not supported&quot;</span>);
         }
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">object</span> <span class="op">=</span> <span class="ident">CallbackInterface::new</span>(<span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>());
         <span class="kw">for</span> <span class="ident">member</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">members</span>.<span class="ident">body</span> {

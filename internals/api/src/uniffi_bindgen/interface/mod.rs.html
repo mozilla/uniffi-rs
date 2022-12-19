@@ -1674,7 +1674,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method uses the current state of our `TypeUniverse` to turn a weedle type expression</span>
     <span class="doccomment">/// into a concrete `Type` (or error if the type expression is not well defined). It abstracts</span>
-    <span class="doccomment">/// away the complexity of walking weedle&#39;s type struct heirarchy by dispatching to the `TypeResolver`</span>
+    <span class="doccomment">/// away the complexity of walking weedle&#39;s type struct hierarchy by dispatching to the `TypeResolver`</span>
     <span class="doccomment">/// trait.</span>
     <span class="kw">fn</span> <span class="ident">resolve_type_expression</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">types::TypeResolver</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">expr</span>: <span class="ident">T</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">types</span>.<span class="ident">resolve_type_expression</span>(<span class="ident">expr</span>)

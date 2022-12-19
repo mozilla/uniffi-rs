@@ -875,7 +875,7 @@
     <span class="doccomment">/// Lower a rust value of the target type, into an FFI value of type Self::FfiType.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This trait method is used for sending data from rust to the foreign language code,</span>
-    <span class="doccomment">/// by (hopefully cheaply!) converting it into someting that can be passed over the FFI</span>
+    <span class="doccomment">/// by (hopefully cheaply!) converting it into something that can be passed over the FFI</span>
     <span class="doccomment">/// and reconstructed on the other side.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note that this method takes an owned `Self::RustType`; this allows it to transfer ownership</span>
@@ -898,7 +898,7 @@
     <span class="doccomment">/// in cases where we&#39;re not able to use a special-purpose FFI type and must fall back to</span>
     <span class="doccomment">/// sending serialized bytes.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Note that this method takes an owned `Self::RustType` because it&#39;s transfering ownership</span>
+    <span class="doccomment">/// Note that this method takes an owned `Self::RustType` because it&#39;s transferring ownership</span>
     <span class="doccomment">/// to the foreign language code via the RustBuffer.</span>
     <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>);
 

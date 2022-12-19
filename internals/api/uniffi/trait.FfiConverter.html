@@ -40,7 +40,7 @@ the data for transfer. In theory it could be possible to build a matching
 serialization is simpler and safer as a starting point.</p>
 </div></details></div><h2 id="required-methods" class="small-section-header">Required Methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><details class="rustdoc-toggle" open><summary><div id="tymethod.lower" class="method has-srclink"><div class="rightside"><a class="srclink" href="../src/uniffi/lib.rs.html#177">source</a></div><h4 class="code-header">fn <a href="#tymethod.lower" class="fnname">lower</a>(obj: Self::<a class="associatedtype" href="trait.FfiConverter.html#associatedtype.RustType" title="type uniffi::FfiConverter::RustType">RustType</a>) -&gt; Self::<a class="associatedtype" href="trait.FfiConverter.html#associatedtype.FfiType" title="type uniffi::FfiConverter::FfiType">FfiType</a></h4></div></summary><div class="docblock"><p>Lower a rust value of the target type, into an FFI value of type Self::FfiType.</p>
 <p>This trait method is used for sending data from rust to the foreign language code,
-by (hopefully cheaply!) converting it into someting that can be passed over the FFI
+by (hopefully cheaply!) converting it into something that can be passed over the FFI
 and reconstructed on the other side.</p>
 <p>Note that this method takes an owned <code>Self::RustType</code>; this allows it to transfer ownership
 in turn to the foreign language code, e.g. by boxing the value and passing a pointer.</p>
@@ -54,7 +54,7 @@ values of type Self::FfiType, this method is fallible.</p>
 <p>This trait method can be used for sending data from rust to the foreign language code,
 in cases where we’re not able to use a special-purpose FFI type and must fall back to
 sending serialized bytes.</p>
-<p>Note that this method takes an owned <code>Self::RustType</code> because it’s transfering ownership
+<p>Note that this method takes an owned <code>Self::RustType</code> because it’s transferring ownership
 to the foreign language code via the RustBuffer.</p>
 </div></details><details class="rustdoc-toggle" open><summary><div id="tymethod.try_read" class="method has-srclink"><div class="rightside"><a class="srclink" href="../src/uniffi/lib.rs.html#211">source</a></div><h4 class="code-header">fn <a href="#tymethod.try_read" class="fnname">try_read</a>(buf: &amp;mut &amp;[<a class="primitive" href="https://doc.rust-lang.org/1.63.0/std/primitive.u8.html">u8</a>]) -&gt; <a class="type" href="type.Result.html" title="type uniffi::Result">Result</a>&lt;Self::<a class="associatedtype" href="trait.FfiConverter.html#associatedtype.RustType" title="type uniffi::FfiConverter::RustType">RustType</a>&gt;</h4></div></summary><div class="docblock"><p>Read a rust value from a buffer, received over the FFI in serialized form.</p>
 <p>This trait method can be used for receiving data from the foreign language code in rust,
