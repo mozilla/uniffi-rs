@@ -113,7 +113,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
                 }
                 // 0 is a deprecated method to indicates success for void returns
                 0 => {
-                    uniffi::deps::log::error!("UniFFI: Callback interface returned 0. Please update the bindings code to return 1 for all successfull calls");
+                    uniffi::deps::log::error!("UniFFI: Callback interface returned 0. Please update the bindings code to return 1 for all successful calls");
                     {% match (meth.return_type(), meth.throws()) %}
                     {% when (Some(_), _) %}
                     panic!("Callback returned 0 when we were expecting a return value");
@@ -170,7 +170,7 @@ unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
     type FfiType = u64;
 
     // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
-    // probably a way to, but this carries lots of thread safety risks, down to impedence
+    // probably a way to, but this carries lots of thread safety risks, down to impedance
     // mismatches between Rust and foreign languages, and our uncertainty around implementations of
     // concurrent handlemaps.
     //

@@ -76,7 +76,7 @@ use super::{convert_type, APIConverter, ComponentInterface};
 /// In UDL these correspond to the `interface` keyword.
 ///
 /// At the FFI layer, objects are represented by an opaque integer handle and a set of functions
-/// a common prefix. The object's constuctors are functions that return new objects by handle,
+/// a common prefix. The object's constructors are functions that return new objects by handle,
 /// and its methods are functions that take a handle as first argument. The foreign language
 /// binding code is expected to stitch these functions back together into an appropriate class
 /// definition (or that language's equivalent thereof).

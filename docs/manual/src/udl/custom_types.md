@@ -36,7 +36,7 @@ trait UniffiCustomTypeConverter {
 ```
 
 where `Builtin` is the Rust type corresponding to the UniFFI builtin-type - `i64` in the example above. Thus, the trait
-implemention for `Handle` would look something like:
+implementation for `Handle` would look something like:
 
 ```rust
 impl UniffiCustomTypeConverter for Handle {

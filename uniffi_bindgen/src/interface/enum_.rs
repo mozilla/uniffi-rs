@@ -240,7 +240,7 @@ impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
             };
             match &self.return_type {
                 ReturnType::Type(Single(NonAny(Identifier(id)))) => id.type_.0.to_owned(),
-                _ => bail!("enum interface members must have plain identifers as names"),
+                _ => bail!("enum interface members must have plain identifiers as names"),
             }
         };
         Ok(Variant {

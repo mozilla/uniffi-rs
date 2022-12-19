@@ -146,7 +146,7 @@ considered canonical.
 In both diplomat and [#416](https://github.com/mozilla/uniffi-rs/pull/416), the approach taken
 is very similar - it takes a path to a the Rust source file/tree, and uses `syn` to locate the special modules (ie, ones annotated with `#[diplomat:bridge]` in the case of diplomat.)
 
-While some details differ, this is just a matter of implementation - #416 isn't quite as agressive
+While some details differ, this is just a matter of implementation - #416 isn't quite as aggressive
 about consuming the entire crate to find multiple FFI modules (and even then, diplomat doesn't
 actually *process* the entire crate, just modules tagged as a bridge), but could easily be
 extended to do so.
@@ -160,7 +160,7 @@ This is the problem which caused us to decide to stop working on
 [#416](https://github.com/mozilla/uniffi-rs/pull/416) - the current world where the type universe
 is described externally doesn't have this limitation - only the UDL file needs to be parsed when
 generating the foreign bindings. The application-services team has
-concluded that none of our non-trival use-cases for UniFFI could be described using macros,
+concluded that none of our non-trivial use-cases for UniFFI could be described using macros,
 so supporting both mechanisms is pain for no gain.
 
 As noted in #416, `wasm-bindgen` has a similarly shaped problem, and solves it by having

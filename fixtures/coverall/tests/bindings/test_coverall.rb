@@ -229,7 +229,7 @@ class TestCoverall < Test::Unit::TestCase
     coveralls = Coverall::Coveralls.new "test_bad_objects"
     patch = Coverall::Patch.new Coverall::Color::RED
     # `coveralls.take_other` wants `Coveralls` not `Patch`
-    assert_raise_message /Expected a Coveralls intance, got.*Patch/ do
+    assert_raise_message /Expected a Coveralls instance, got.*Patch/ do
       coveralls.take_other patch
     end
   end

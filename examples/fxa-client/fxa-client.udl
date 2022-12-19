@@ -77,7 +77,7 @@ dictionary DeviceConnectedData {
   string name;
 };
 
-dictionary DeviceDisconnecedData {
+dictionary DeviceDisconnectedData {
   required string id;
   required boolean is_local_device;
 };
@@ -85,7 +85,7 @@ dictionary DeviceDisconnecedData {
 dictionary AccountEvent {
   AccountEventType type;
   // No support for union types yet...
-  // (IncomingDeviceCommand or DeviceConnectedData or DeviceDisconnectesData) data;
+  // (IncomingDeviceCommand or DeviceConnectedData or DeviceDisconnectedData) data;
 };
 
 dictionary MigrationState {
@@ -94,7 +94,7 @@ dictionary MigrationState {
 
 interface FirefoxAccount {
   constructor(string content_url, string client_id, string redirect_uri, optional string token_server_url_override);
-  /*static FirefoxAccont fromJSON(string json); TODO: alternative constructors */
+  /*static FirefoxAccount fromJSON(string json); TODO: alternative constructors */
   string toJSON();
 
   string getPairingAuthorityURL();
@@ -110,7 +110,7 @@ interface FirefoxAccount {
 
   IntrospectInfo checkAuthorizationStatus();
   AccessTokenInfo getAccessToken(string scope, optional u32 ttl);
-  string getSessionToken(); // really whish we weren't exposing this... :-(
+  string getSessionToken(); // really wish we weren't exposing this... :-(
   string getCurrentDeviceId();
   string authorizeOAuthCode(string client_id, sequence<string> scopes, string state, optional string access_type = "online");
   void clearAccessTokenCache();

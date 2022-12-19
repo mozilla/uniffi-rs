@@ -169,7 +169,7 @@ pub unsafe trait FfiConverter: Sized {
     /// Lower a rust value of the target type, into an FFI value of type Self::FfiType.
     ///
     /// This trait method is used for sending data from rust to the foreign language code,
-    /// by (hopefully cheaply!) converting it into someting that can be passed over the FFI
+    /// by (hopefully cheaply!) converting it into something that can be passed over the FFI
     /// and reconstructed on the other side.
     ///
     /// Note that this method takes an owned `Self::RustType`; this allows it to transfer ownership
@@ -192,7 +192,7 @@ pub unsafe trait FfiConverter: Sized {
     /// in cases where we're not able to use a special-purpose FFI type and must fall back to
     /// sending serialized bytes.
     ///
-    /// Note that this method takes an owned `Self::RustType` because it's transfering ownership
+    /// Note that this method takes an owned `Self::RustType` because it's transferring ownership
     /// to the foreign language code via the RustBuffer.
     fn write(obj: Self::RustType, buf: &mut Vec<u8>);
 

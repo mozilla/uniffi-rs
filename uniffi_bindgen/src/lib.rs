@@ -181,7 +181,7 @@ impl<'de> Deserialize<'de> for EmptyBindingGeneratorConfig {
 
 // Load the binding-specific config
 //
-// This function calulates the location of the config TOML file, parses it, and returns the result
+// This function calculates the location of the config TOML file, parses it, and returns the result
 // as a toml::Value
 //
 // If there is an error parsing the file then Err will be returned. If the file is missing or the

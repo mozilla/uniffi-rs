@@ -71,7 +71,7 @@ but we are glad to continue having this option as a Plan B.
 
 ### Option B: Move to using WebAssembly and wasm-bindgen
 
-The approach we've taken with rust components has many similarites to WebAssembly, particularly the
+The approach we've taken with rust components has many similarities to WebAssembly, particularly the
 [WebAssembly Interface Types](https://hacks.mozilla.org/2019/08/webassembly-interface-types/) proposal.
 We could try to use [`wasm-bindgen`](https://github.com/rustwasm/wasm-bindgen) to automatically generating
 bindings to our rust code, and rely on the portable nature of WebAssembly to run on multiple platforms.
@@ -86,7 +86,7 @@ bindings to our rust code, and rely on the portable nature of WebAssembly to run
 * Bad, because this is a significant departure from how we've written components in the past, which adds
   timeline risk to shipping this solution.
 
-Ultimately, we can imagine a world in which the WebAssembly ecosystem is sufficently advanced to
+Ultimately, we can imagine a world in which the WebAssembly ecosystem is sufficiently advanced to
 make this the most compelling option, but that world seems far enough away that it doesn't make
 sense for us to pursue this right now.
 
@@ -118,7 +118,7 @@ making the integration work.
 
 ### Option D: Write and maintain a custom tool that automates our current best practices
 
-We can take the patterns we've established for writting the FFI layer and foreign language bindings
+We can take the patterns we've established for writing the FFI layer and foreign language bindings
 by hand, and encapsulate them in a custom tool to automatically generate similar code.
 
 * Good, because it would realize the goal of avoiding hand-written boilerplate.
