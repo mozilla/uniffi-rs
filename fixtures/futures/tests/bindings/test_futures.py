@@ -1,4 +1,4 @@
-from uniffi_futures import always_ready, sleep, say_after, new_megaphone
+from uniffi_futures import always_ready, void, sleep, say_after, new_megaphone
 import unittest
 from datetime import datetime
 import asyncio
@@ -16,6 +16,18 @@ class TestFutures(unittest.TestCase):
             t_delta = (t1 - t0).total_seconds()
             self.assertTrue(t_delta < 0.1)
             self.assertEqual(result, True)
+
+        asyncio.run(test())
+
+    def test_void(self):
+        async def test():
+            t0 = now()
+            result = await void()
+            t1 = now()
+
+            t_delta = (t1 - t0).total_seconds()
+            self.assertTrue(t_delta < 0.1)
+            self.assertEqual(result, None)
 
         asyncio.run(test())
 

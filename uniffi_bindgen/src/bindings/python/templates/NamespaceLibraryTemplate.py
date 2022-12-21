@@ -43,7 +43,7 @@ _UniFFILib.{{ func.name() }}_poll.argtypes = (
     ctypes.POINTER(RustFuture),
     FUTURE_WAKER_T,
     FUTURE_WAKER_ENVIRONMENT_T,
-    ctypes.POINTER({% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}any{% endmatch %}),
+    {% match func.return_type() %}{% when Some with (type_) %}ctypes.POINTER({{ type_|ffi_type_name }}){% when None %}ctypes.c_void_p{% endmatch %},
     ctypes.POINTER(RustCallStatus),
 )
 _UniFFILib.{{ func.name() }}_poll.restype = ctypes.c_bool

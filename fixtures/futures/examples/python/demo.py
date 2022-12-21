@@ -1,4 +1,4 @@
-from uniffi_futures import sleep, say, say_after
+from uniffi_futures import sleep, say, say_after, void
 import asyncio
 import time
 

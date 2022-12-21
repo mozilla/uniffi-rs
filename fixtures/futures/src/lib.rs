@@ -73,6 +73,9 @@ async fn always_ready() -> bool {
     true
 }
 
+#[uniffi::export]
+async fn void() {}
+
 /// Async function that says something after 2s.
 #[uniffi::export]
 async fn say() -> String {
