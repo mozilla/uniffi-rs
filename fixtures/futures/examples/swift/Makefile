@@ -9,7 +9,7 @@ build:
 		-L /Users/hwhost/Development/Element/uniffi-rs/target/release/ \
 		-luniffi_futures \
 		-Xcc -fmodule-map-file=/Users/hwhost/Development/Element/uniffi-rs/target/release/uniffi_futuresFFI.modulemap \
-		/Users/hwhost/Development/Element/uniffi-rs/target/release/uniffi_futures.swift
+		../../../../target/release/uniffi_futures.swift
 	# There is no equivalent to `-Xcc -fmodule-map-file` in `Package.swift`. The
 	# only solution is to rename the modulemap to… `module.modulemap`, and boom,
 	# magic.

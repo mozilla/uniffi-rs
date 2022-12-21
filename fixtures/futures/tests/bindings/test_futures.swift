@@ -18,6 +18,20 @@ Task {
 	counter.leave()
 }
 
+// Test `void`
+counter.enter()
+
+Task {
+	let t0 = Date()
+	await void()
+	let t1 = Date()
+
+	let tDelta = DateInterval(start: t0, end: t1)
+	assert(tDelta.duration < 0.1)
+
+	counter.leave()
+}
+
 // Test `Sleep`
 counter.enter()
 
