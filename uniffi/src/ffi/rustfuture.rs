@@ -1,9 +1,9 @@
 //! [`RustFuture`] represents a [`Future`] that can be sent over FFI safely-ish.
 //!
-//! The [`RustFuture`] is parameterized by `T` which implements [`FfiConverter`].
-//! Thus, the `Future` outputs a value of kind `FfiConverter::RustType`.
-//! The `poll` method maps this `FfiConverter::RustType` to
-//! `FfiConverter::FfiType` when the inner `Future` is ready.
+//! The [`RustFuture`] is parameterized by `T` which implements [`FfiReturn`],
+//! which has a blanket-implementation for [`FfiConverter`]. Thus, the inner
+//! `Future` outputs a value of kind `FfiReturn`. The `poll` method maps this
+//! value to `FfiResult::FfiType` when the inner `Future` is ready.
 //!
 //! This type may not be instantiated directly, but _via_ the procedural macros,
 //! such as `#[uniffi::export]`. A `RustFuture` is created, boxed, and then
@@ -62,7 +62,7 @@
 //!     future: Option<&mut ::uniffi::RustFuture<bool>>,
 //!     waker: Option<NonNull<::uniffi::RustFutureForeignWakerFunction>>,
 //!     waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
-//!     polled_result: &mut <bool as ::uniffi::FfiConverter>::FfiType,
+//!     polled_result: &mut <bool as ::uniffi::FfiReturn>::FfiType,
 //!     call_status:: &mut ::uniffi::RustCallStatus,
 //! ) -> bool {
 //!     ::uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
@@ -252,9 +252,9 @@
 //! [`Context`]: https://doc.rust-lang.org/std/task/struct.Context.html
 //! [`Waker`]: https://doc.rust-lang.org/std/task/struct.Waker.html
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
-use crate::{call_with_output, FfiConverter, RustCallStatus};
 
 use super::FfiDefault;
+use crate::{call_with_output, FfiReturn, RustCallStatus};
 use std::{
     ffi::c_void,
     future::Future,
@@ -267,26 +267,24 @@ use std::{
 
 /// `RustFuture` represents a [`Future`] that can be sent over FFI safely-ish.
 ///
-/// The `RustFuture` is parameterized by `T` which implements [`FfiConverter`].
-/// Thus, the `Future` outputs of value of kind `FfiConverter::RustType`.
-/// The `poll` method maps this `FfiConverter::RustType` to
-/// `FfiConverter::FfiType` when the inner `Future` is ready.
+/// The [`RustFuture`] is parameterized by `T` which implements [`FfiReturn`],
+/// which has a blanket-implementation for [`FfiConverter`]. Thus, the inner
+/// `Future` outputs a value of kind `FfiReturn`. The `poll` method maps this
+/// value to `FfiResult::FfiType` when the inner `Future` is ready.
 ///
 /// See the module documentation to learn more.
 #[repr(transparent)]
-pub struct RustFuture<T>(Pin<Box<dyn Future<Output = <T as FfiConverter>::RustType> + 'static>>)
-where
-    T: FfiConverter;
+pub struct RustFuture<T>(Pin<Box<dyn Future<Output = T> + 'static>>);
 
 impl<T> RustFuture<T>
 where
-    T: FfiConverter,
+    T: FfiReturn,
 {
     /// Create a new `RustFuture` from a regular `Future` that outputs a value
     /// of kind `FfiConverter::RustType`.
     pub fn new<F>(future: F) -> Self
     where
-        F: Future<Output = <T as FfiConverter>::RustType> + 'static,
+        F: Future<Output = T> + 'static,
     {
         Self(Box::pin(future))
     }
@@ -307,7 +305,7 @@ where
         &mut self,
         foreign_waker: *const RustFutureForeignWakerFunction,
         foreign_waker_environment: *const RustFutureForeignWakerEnvironment,
-    ) -> Poll<<T as FfiConverter>::FfiType> {
+    ) -> Poll<T::FfiType> {
         let waker = unsafe {
             Waker::from_raw(RawWaker::new(
                 RustFutureForeignWaker::new(foreign_waker, foreign_waker_environment)
@@ -317,15 +315,13 @@ where
         };
         let mut context = Context::from_waker(&waker);
 
-        Pin::new(&mut self.0)
-            .poll(&mut context)
-            .map(<T as FfiConverter>::lower)
+        Pin::new(&mut self.0).poll(&mut context).map(T::lower)
     }
 }
 
 impl<T> FfiDefault for Option<Box<RustFuture<T>>>
 where
-    T: FfiConverter,
+    T: FfiReturn,
 {
     fn ffi_default() -> Self {
         None
@@ -541,11 +537,11 @@ pub fn uniffi_rustfuture_poll<T>(
     future: Option<&mut RustFuture<T>>,
     waker: Option<NonNull<RustFutureForeignWakerFunction>>,
     waker_environment: *const RustFutureForeignWakerEnvironment,
-    polled_result: &mut <T as FfiConverter>::FfiType,
+    polled_result: &mut T::FfiType,
     call_status: &mut RustCallStatus,
 ) -> bool
 where
-    T: FfiConverter,
+    T: FfiReturn,
 {
     let future = future.expect("`future` is a null pointer");
     let waker = waker.expect("`waker` is a null pointer");
@@ -580,6 +576,6 @@ pub fn uniffi_rustfuture_drop<T>(
     _future: Option<Box<RustFuture<T>>>,
     _call_status: &mut RustCallStatus,
 ) where
-    T: FfiConverter,
+    T: FfiReturn,
 {
 }

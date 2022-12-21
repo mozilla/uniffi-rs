@@ -192,13 +192,7 @@ fn gen_ffi_function(
     };
 
     let body_expr = match throws {
-        Some(_) if is_async => {
-            quote! {
-                unimplemented!("Fallible `Future` are not supported yet.");
-            }
-        }
-
-        None if is_async => {
+        _ if is_async => {
             quote! {
                 ::uniffi::call_with_output(call_status, || {
                     Some(Box::new(::uniffi::RustFuture::new(
@@ -245,7 +239,7 @@ fn gen_ffi_function(
                 future: ::std::option::Option<&mut ::uniffi::RustFuture<#return_ty>>,
                 waker: ::std::option::Option<::std::ptr::NonNull<::uniffi::RustFutureForeignWakerFunction>>,
                 waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
-                polled_result: &mut <#return_ty as ::uniffi::FfiConverter>::FfiType,
+                polled_result: &mut <#return_ty as ::uniffi::FfiReturn>::FfiType,
                 call_status: &mut ::uniffi::RustCallStatus,
             ) -> bool {
                 ::uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
