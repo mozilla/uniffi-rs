@@ -70,7 +70,7 @@ do {
     // do {
     //     try coveralls.falliblePanic(message: "Expected Panic!!")
     // } catch CoverallError.TooManyHoles {
-    //     fatalError("Should have paniced!")
+    //     fatalError("Should have panicked!")
     // }
     coveralls.takeOther(other: nil);
     assert(coveralls.strongCount() == 2);

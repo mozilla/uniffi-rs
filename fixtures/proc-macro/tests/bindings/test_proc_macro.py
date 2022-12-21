@@ -10,5 +10,26 @@ assert one.inner == 123
 two = Two("a", None)
 assert take_two(two) == "a"
 
+obj = make_object()
+assert obj.is_heavy() == MaybeBool.UNCERTAIN
+
+assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
+
 # just make sure this works / doesn't crash
-three = Three(make_object())
+three = Three(obj)
+
+try:
+    always_fails()
+except BasicError.OsError:
+    pass
+else:
+    raise Exception("always_fails should have thrown")
+
+obj.do_stuff(5)
+
+try:
+    obj.do_stuff(0)
+except FlatError.InvalidInput:
+    pass
+else:
+    raise Exception("do_stuff should throw if its argument is 0")

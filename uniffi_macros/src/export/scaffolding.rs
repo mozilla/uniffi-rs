@@ -4,7 +4,9 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use syn::{FnArg, Pat, ReturnType, Signature};
+use syn::{parse_quote, FnArg, Pat};
+
+use super::{FunctionReturn, Signature};
 
 pub(super) fn gen_fn_scaffolding(
     sig: &Signature,
@@ -31,7 +33,7 @@ pub(super) fn gen_fn_scaffolding(
 }
 
 pub(super) fn gen_method_scaffolding(
-    sig: &syn::Signature,
+    sig: &Signature,
     mod_path: &[String],
     checksum: u16,
     self_ident: &Ident,
@@ -68,8 +70,11 @@ pub(super) fn gen_method_scaffolding(
         }
         _ => {
             assoc_fn_error = Some(
-                syn::Error::new_spanned(sig, "associated functions are not currently supported")
-                    .into_compile_error(),
+                syn::Error::new_spanned(
+                    &sig.ident,
+                    "associated functions are not currently supported",
+                )
+                .into_compile_error(),
             );
             params_args.extend(collect_params(&sig.inputs, RECEIVER_ERROR));
             quote! { #self_ident:: }
@@ -127,6 +132,8 @@ fn collect_params<'a>(
         let arg_n = format_ident!("arg{i}");
         let param = quote! { #arg_n: <#ty as ::uniffi::FfiConverter>::FfiType };
 
+        // FIXME: With UDL, fallible functions use uniffi::lower_anyhow_error_or_panic instead of
+        // panicking unconditionally. This seems cleaner though.
         let panic_fmt = match name {
             Some(name) => format!("Failed to convert arg '{name}': {{}}"),
             None => format!("Failed to convert arg #{i}: {{}}"),
@@ -142,79 +149,120 @@ fn collect_params<'a>(
 }
 
 fn gen_ffi_function(
-    sig: &syn::Signature,
+    sig: &Signature,
     ffi_ident: Ident,
     params: &[TokenStream],
     rust_fn_call: TokenStream,
 ) -> TokenStream {
-    let name = &sig.ident;
-    let name_s = name.to_string();
-
-    // FIXME(jplatte): Use an extra trait implemented for `T: FfiConverter` as
-    // well as `()` so no different codegen is needed?
-    let (output, return_expr);
+    let name = sig.ident.to_string();
     let mut extra_functions = Vec::new();
+    let unit_slot;
+    let is_async = sig.is_async;
 
-    match &sig.output {
-        ReturnType::Default => {
-            output = None;
-            return_expr = rust_fn_call;
+    let (return_ty, return_expr, throws) = match &sig.output {
+        Some(FunctionReturn { ty, throws }) if is_async => (
+            ty,
+            quote! { Option<Box<::uniffi::RustFuture<#ty>>> },
+            throws,
+        ),
+
+        None if is_async => {
+            unit_slot = parse_quote! { () };
+
+            (
+                &unit_slot,
+                quote! { Option<Box<::uniffi::RustFuture<()>>> },
+                &None,
+            )
         }
 
-        ReturnType::Type(_, ty) if sig.asyncness.is_some() => {
-            // The function returns `Option<Box<…>>` so that the `FfiDefault`
-            // implementation can return `None` rather than `Box`, which could
-            // leak data in case of errors.
-            output = Some(quote! {
-               -> Option<Box<::uniffi::RustFuture<#ty>>>
-            });
-            return_expr = quote! {
-                Some(Box::new(::uniffi::RustFuture::new(
-                    async move {
-                        #rust_fn_call.await
-                    }
-                )))
-            };
-
-            let ffi_poll_ident = format_ident!("{}_poll", ffi_ident);
-            let ffi_drop_ident = format_ident!("{}_drop", ffi_ident);
-
-            // Monomorphised poll function.
-            extra_functions.push(quote! {
-                #[doc(hidden)]
-                #[no_mangle]
-                pub extern "C" fn #ffi_poll_ident(
-                    future: ::std::option::Option<&mut ::uniffi::RustFuture<#ty>>,
-                    waker: ::std::option::Option<::std::ptr::NonNull<::uniffi::RustFutureForeignWakerFunction>>,
-                    waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
-                    polled_result: &mut <#ty as ::uniffi::FfiConverter>::FfiType,
-                    call_status: &mut ::uniffi::RustCallStatus,
-                ) -> bool {
-                    ::uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
-                }
-            });
-
-            // Monomorphised drop function.
-            extra_functions.push(quote! {
-                #[doc(hidden)]
-                #[no_mangle]
-                pub extern "C" fn #ffi_drop_ident(
-                    future: ::std::option::Option<::std::boxed::Box<::uniffi::RustFuture<#ty>>>,
-                    call_status: &mut ::uniffi::RustCallStatus,
-                ) {
-                    ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
-                }
-            });
+        Some(FunctionReturn { ty, throws }) => {
+            (ty, quote! { <#ty as ::uniffi::FfiReturn>::FfiType }, throws)
         }
 
-        ReturnType::Type(_, ty) => {
-            output = Some(quote! {
-                -> <#ty as ::uniffi::FfiConverter>::FfiType
-            });
-            return_expr = quote! {
-                <#ty as ::uniffi::FfiConverter>::lower(#rust_fn_call)
-            };
+        None => {
+            unit_slot = parse_quote! { () };
+
+            (
+                &unit_slot,
+                quote! { <() as ::uniffi::FfiReturn>::FfiType },
+                &None,
+            )
         }
+    };
+
+    let body_expr = match throws {
+        Some(_) if is_async => {
+            quote! {
+                unimplemented!("Fallible `Future` are not supported yet.");
+            }
+        }
+
+        None if is_async => {
+            quote! {
+                ::uniffi::call_with_output(call_status, || {
+                    Some(Box::new(::uniffi::RustFuture::new(
+                        async move {
+                            #rust_fn_call.await
+                        }
+                    )))
+                })
+            }
+        }
+
+        Some(error_ident) => {
+            quote! {
+                ::uniffi::call_with_result(call_status, || {
+                    let val = #rust_fn_call.map_err(|e| {
+                        <#error_ident as ::uniffi::FfiConverter>::lower(
+                            ::std::convert::Into::into(e),
+                        )
+                    })?;
+
+                    Ok(<#return_ty as ::uniffi::FfiReturn>::lower(val))
+                })
+            }
+        }
+
+        None => {
+            quote! {
+                ::uniffi::call_with_output(call_status, || {
+                    <#return_ty as ::uniffi::FfiReturn>::lower(#rust_fn_call)
+                })
+            }
+        }
+    };
+
+    if is_async {
+        let ffi_poll_ident = format_ident!("{}_poll", ffi_ident);
+        let ffi_drop_ident = format_ident!("{}_drop", ffi_ident);
+
+        // Monomorphised poll function.
+        extra_functions.push(quote! {
+            #[doc(hidden)]
+            #[no_mangle]
+            pub extern "C" fn #ffi_poll_ident(
+                future: ::std::option::Option<&mut ::uniffi::RustFuture<#return_ty>>,
+                waker: ::std::option::Option<::std::ptr::NonNull<::uniffi::RustFutureForeignWakerFunction>>,
+                waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
+                polled_result: &mut <#return_ty as ::uniffi::FfiConverter>::FfiType,
+                call_status: &mut ::uniffi::RustCallStatus,
+            ) -> bool {
+                ::uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
+            }
+        });
+
+        // Monomorphised drop function.
+        extra_functions.push(quote! {
+            #[doc(hidden)]
+            #[no_mangle]
+            pub extern "C" fn #ffi_drop_ident(
+                future: ::std::option::Option<::std::boxed::Box<::uniffi::RustFuture<#return_ty>>>,
+                call_status: &mut ::uniffi::RustCallStatus,
+            ) {
+                ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
+            }
+        });
     }
 
     quote! {
@@ -223,11 +271,9 @@ fn gen_ffi_function(
         pub extern "C" fn #ffi_ident(
             #(#params,)*
             call_status: &mut ::uniffi::RustCallStatus,
-        ) #output {
-            ::uniffi::deps::log::debug!(#name_s);
-            ::uniffi::call_with_output(call_status, || {
-                #return_expr
-            })
+        ) -> #return_expr {
+            ::uniffi::deps::log::debug!(#name);
+            #body_expr
         }
 
         #( #extra_functions )*

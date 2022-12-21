@@ -14,7 +14,7 @@ use crate::MergeWith;
 const RESERVED_WORDS: &[&str] = &[
     "alias", "and", "BEGIN", "begin", "break", "case", "class", "def", "defined?", "do", "else",
     "elsif", "END", "end", "ensure", "false", "for", "if", "module", "next", "nil", "not", "or",
-    "redo", "rescue", "retry", "return", "self", "super", "then", "true", "undef", "unles",
+    "redo", "rescue", "retry", "return", "self", "super", "then", "true", "undef", "unless",
     "until", "when", "while", "yield", "__FILE__", "__LINE__",
 ];
 
@@ -80,22 +80,22 @@ impl<'a> RubyWrapper<'a> {
 mod filters {
     use super::*;
 
-    pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
+    pub fn type_ffi(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(match type_ {
-            FFIType::Int8 => ":int8".to_string(),
-            FFIType::UInt8 => ":uint8".to_string(),
-            FFIType::Int16 => ":int16".to_string(),
-            FFIType::UInt16 => ":uint16".to_string(),
-            FFIType::Int32 => ":int32".to_string(),
-            FFIType::UInt32 => ":uint32".to_string(),
-            FFIType::Int64 => ":int64".to_string(),
-            FFIType::UInt64 => ":uint64".to_string(),
-            FFIType::Float32 => ":float".to_string(),
-            FFIType::Float64 => ":double".to_string(),
-            FFIType::RustArcPtr(_) => ":pointer".to_string(),
-            FFIType::RustBuffer => "RustBuffer.by_value".to_string(),
-            FFIType::ForeignBytes => "ForeignBytes".to_string(),
-            FFIType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
+            FfiType::Int8 => ":int8".to_string(),
+            FfiType::UInt8 => ":uint8".to_string(),
+            FfiType::Int16 => ":int16".to_string(),
+            FfiType::UInt16 => ":uint16".to_string(),
+            FfiType::Int32 => ":int32".to_string(),
+            FfiType::UInt32 => ":uint32".to_string(),
+            FfiType::Int64 => ":int64".to_string(),
+            FfiType::UInt64 => ":uint64".to_string(),
+            FfiType::Float32 => ":float".to_string(),
+            FfiType::Float64 => ":double".to_string(),
+            FfiType::RustArcPtr(_) => ":pointer".to_string(),
+            FfiType::RustBuffer => "RustBuffer.by_value".to_string(),
+            FfiType::ForeignBytes => "ForeignBytes".to_string(),
+            FfiType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
         })
     }
 

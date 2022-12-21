@@ -62,7 +62,7 @@ interface Coveralls {
     constructor(string name, boolean should_fail);
 
     // Always panics, just to test panics in ctors are handled.
-    [Name="panicing_new"]
+    [Name="panicking_new"]
     constructor(string message);
 
     string get_name();

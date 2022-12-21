@@ -36,7 +36,7 @@ trait UniffiCustomTypeConverter {
 ```
 
 where `Builtin` is the Rust type corresponding to the UniFFI builtin-type - `i64` in the example above. Thus, the trait
-implemention for `Handle` would look something like:
+implementation for `Handle` would look something like:
 
 ```rust
 impl UniffiCustomTypeConverter for Handle {
@@ -81,14 +81,14 @@ For example, consider the following UDL:
 typedef i64 Handle;
 
 [Error]
-enum ExampleErrors {
+enum ExampleError {
     "InvalidHandle"
 };
 
 namespace errors_example {
     take_handle_1(Handle handle);
 
-    [Throws=ExampleErrors]
+    [Throws=ExampleError]
     take_handle_2(Handle handle);
 }
 ```
@@ -96,7 +96,7 @@ namespace errors_example {
 and the following Rust:
 ```rust
 #[derive(Debug, thiserror::Error)]
-pub enum ExampleErrors {
+pub enum ExampleError {
     #[error("The handle is invalid")]
     InvalidHandle,
 }
@@ -105,22 +105,22 @@ impl UniffiCustomTypeConverter for ExampleHandle {
     type Builtin = i64;
 
     fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        if (val == 0) {
+        if val == 0 {
             Err(ExampleErrors::InvalidHandle.into())
-        else if (val == -1) {
+        } else if val == -1 {
             Err(SomeOtherError.into()) // SomeOtherError decl. not shown.
         } else {
             Ok(Handle(val))
         }
     }
-    ...
+    // ...
 }
 ```
 
 The behavior of the generated scaffolding will be:
 
 * Calling `take_handle_1` with a value of `0` or `-1` will always panic.
-* Calling `take_handle_2` with a value of `0` will return `Err(ExampleErrors)` exception
+* Calling `take_handle_2` with a value of `0` will throw an `ExampleError` exception
 * Calling `take_handle_2` with a value of `-1` will always panic.
 * All other values will return `Ok(ExampleHandle)`
 

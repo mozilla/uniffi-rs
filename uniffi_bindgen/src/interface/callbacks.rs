@@ -33,20 +33,26 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use std::hash::{Hash, Hasher};
-
 use anyhow::{bail, Result};
+use uniffi_meta::Checksum;
 
-use super::ffi::{FFIArgument, FFIFunction, FFIType};
+use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::object::Method;
 use super::types::{Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Checksum)]
 pub struct CallbackInterface {
     pub(super) name: String,
     pub(super) methods: Vec<Method>,
-    pub(super) ffi_init_callback: FFIFunction,
+    // We don't include the FFIFunc in the hash calculation, because:
+    //  - it is entirely determined by the other fields,
+    //    so excluding it is safe.
+    //  - its `name` property includes a checksum derived from  the very
+    //    hash value we're trying to calculate here, so excluding it
+    //    avoids a weird circular dependency in the calculation.
+    #[checksum_ignore]
+    pub(super) ffi_init_callback: FfiFunction,
 }
 
 impl CallbackInterface {
@@ -70,15 +76,15 @@ impl CallbackInterface {
         self.methods.iter().collect()
     }
 
-    pub fn ffi_init_callback(&self) -> &FFIFunction {
+    pub fn ffi_init_callback(&self) -> &FfiFunction {
         &self.ffi_init_callback
     }
 
     pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) {
         self.ffi_init_callback.name = format!("ffi_{ci_prefix}_{}_init_callback", self.name);
-        self.ffi_init_callback.arguments = vec![FFIArgument {
+        self.ffi_init_callback.arguments = vec![FfiArgument {
             name: "callback_stub".to_string(),
-            type_: FFIType::ForeignCallback,
+            type_: FfiType::ForeignCallback,
         }];
         self.ffi_init_callback.return_type = None;
     }
@@ -88,26 +94,13 @@ impl CallbackInterface {
     }
 }
 
-impl Hash for CallbackInterface {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        // We don't include the FFIFunc in the hash calculation, because:
-        //  - it is entirely determined by the other fields,
-        //    so excluding it is safe.
-        //  - its `name` property includes a checksum derived from  the very
-        //    hash value we're trying to calculate here, so excluding it
-        //    avoids a weird circular depenendency in the calculation.
-        self.name.hash(state);
-        self.methods.hash(state);
-    }
-}
-
 impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<CallbackInterface> {
         if self.attributes.is_some() {
             bail!("callback interface attributes are not supported yet");
         }
         if self.inheritance.is_some() {
-            bail!("callback interface inheritence is not supported");
+            bail!("callback interface inheritance is not supported");
         }
         let mut object = CallbackInterface::new(self.identifier.0.to_string());
         for member in &self.members.body {

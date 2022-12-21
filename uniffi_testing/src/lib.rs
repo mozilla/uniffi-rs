@@ -4,7 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 
 use anyhow::{bail, Result};
 use camino::{Utf8Path, Utf8PathBuf};
-use cargo_metadata::{Artifact, Message, Metadata, MetadataCommand, Package, Target};
+use cargo_metadata::{Message, Metadata, MetadataCommand, Package, Target};
 use fs_err as fs;
 use once_cell::sync::Lazy;
 use serde::Deserialize;
@@ -16,8 +16,11 @@ use std::{
     process::{Command, Stdio},
 };
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct UniFFITestingMetadata {
+    /// Crates that hold external types used by this crate.  When running the tests, we will build
+    /// the libraries and generate the source files for those crates and put them in the test
+    /// directory
     #[serde(rename = "external-crates")]
     external_crates: Option<Vec<String>>,
 }
@@ -112,21 +115,21 @@ impl UniFFITestHelper {
                     }
                 }
                 _ => None,
+            });
+        let cdylib_files: Vec<Utf8PathBuf> = artifacts
+            .into_iter()
+            .flat_map(|artifact| {
+                artifact
+                    .filenames
+                    .into_iter()
+                    .filter(|nm| matches!(nm.extension(), Some(DLL_EXTENSION)))
+                    .collect::<Vec<Utf8PathBuf>>()
             })
-            .collect::<Vec<Artifact>>();
-        let artifact = match artifacts.len() {
-            1 => &artifacts[0],
-            n => bail!("Found {n} artifacts for target {}", target.name),
-        };
-        let cdylib_files: Vec<_> = artifact
-            .filenames
-            .iter()
-            .filter(|nm| matches!(nm.extension(), Some(DLL_EXTENSION)))
             .collect();
 
         match cdylib_files.len() {
             1 => Ok(cdylib_files[0].to_owned()),
-            n => bail!("Found {n} cdylib files for {}", artifact.target.name),
+            n => bail!("Found {n} cdylib files for {}", package.name),
         }
     }
 
@@ -163,10 +166,8 @@ impl UniFFITestHelper {
     ///
     /// Returns the path to the copied library
     pub fn copy_cdylibs_to_out_dir(&self, out_dir: impl AsRef<Utf8Path>) -> Result<()> {
-        let cdylib_paths = std::iter::once(self.package.clone())
-            .chain(self.find_packages_for_external_crates()?)
-            .map(|p| Self::find_cdylib_path(&p))
-            .collect::<Result<Vec<_>>>()?;
+        let cdylib_paths =
+            std::iter::once(self.cdylib_path()?).chain(self.external_cdylib_paths()?);
 
         for path in cdylib_paths {
             let dest = out_dir.as_ref().join(path.file_name().unwrap());
@@ -175,10 +176,33 @@ impl UniFFITestHelper {
         Ok(())
     }
 
+    /// Get the path to the cdylib file for this package
+    pub fn cdylib_path(&self) -> Result<Utf8PathBuf> {
+        Self::find_cdylib_path(&self.package)
+    }
+
+    /// Get the path to the cdylib file for external crates listed in `Cargo.toml`
+    pub fn external_cdylib_paths(&self) -> Result<Vec<Utf8PathBuf>> {
+        self.find_packages_for_external_crates()?
+            .into_iter()
+            .map(|p| Self::find_cdylib_path(&p))
+            .collect()
+    }
+
     /// Get paths to the UDL and config files for a fixture
     pub fn get_compile_sources(&self) -> Result<Vec<CompileSource>> {
-        std::iter::once(self.package.clone())
-            .chain(self.find_packages_for_external_crates()?)
+        Ok(std::iter::once(self.get_main_compile_source()?)
+            .chain(self.get_external_compile_sources()?)
+            .collect())
+    }
+
+    pub fn get_main_compile_source(&self) -> Result<CompileSource> {
+        self.find_compile_source(&self.package.clone())
+    }
+
+    pub fn get_external_compile_sources(&self) -> Result<Vec<CompileSource>> {
+        self.find_packages_for_external_crates()?
+            .into_iter()
             .map(|p| self.find_compile_source(&p))
             .collect()
     }

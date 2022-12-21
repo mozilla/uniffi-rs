@@ -45,6 +45,7 @@
 //! ```
 
 use anyhow::{bail, Result};
+use uniffi_meta::Checksum;
 
 use super::types::{Type, TypeIterator};
 use super::{
@@ -58,7 +59,7 @@ use super::{APIConverter, ComponentInterface};
 /// In the FFI these are represented as a byte buffer, which one side explicitly
 /// serializes the data into and the other serializes it out of. So I guess they're
 /// kind of like "pass by clone" values.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Record {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
@@ -70,7 +71,7 @@ impl Record {
     }
 
     pub fn type_(&self) -> Type {
-        // *sigh* at the clone here, the relationship between a ComponentInterace
+        // *sigh* at the clone here, the relationship between a ComponentInterface
         // and its contained types could use a bit of a cleanup.
         Type::Record(self.name.clone())
     }
@@ -99,7 +100,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
             bail!("dictionary attributes are not supported yet");
         }
         if self.inheritance.is_some() {
-            bail!("dictionary inheritence is not supported");
+            bail!("dictionary inheritance is not supported");
         }
         Ok(Record {
             name: self.identifier.0.to_string(),
@@ -109,7 +110,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
 }
 
 // Represents an individual field on a Record.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Checksum)]
 pub struct Field {
     pub(super) name: String,
     pub(super) type_: Type,

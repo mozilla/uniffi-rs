@@ -6,7 +6,36 @@
 
 ## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.21.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...HEAD).
+
+## v0.22.0 - (_2022-12-16_)
+
+[All changes in v0.22.0](https://github.com/mozilla/uniffi-rs/compare/v0.21.1...v0.22.0).
+
+### ⚠️ Breaking Changes ⚠️
+
+- `uniffi_bindgen`: Renamed `FFIArgument`, `FFIFunction` and `FFIType` to
+  `FfiArgument`, `FfiFunction` and `FfiType`
+
+### What's changed
+
+- Added support for Swift external types
+- Fix whitespace issues in scaffolding code breaking some versions of `rustfmt`
+- Fix ruby time support
+- proc-macro
+  - Document (experimental) proc-macro support
+  - Support fallible functions
+  - Add Enum derive macro
+  - Add Error derive macro
+
+## v0.21.1 - (_2022-12-16_)
+
+[All changes in v0.21.1](https://github.com/mozilla/uniffi-rs/compare/v0.21.0...v0.21.1).
+
+### What's changed
+
+- Replace checksum mechanism for function naming to give consistent results, independent of the target's endianness and bit width.
+  This should have no visible effect on the outside.
 
 ## v0.21.0 - (_2022-10-14_)
 
@@ -228,7 +257,7 @@
 - Fixed an accidental regression in v0.13.0 where errors were no longer being coerced
   to the correct type via `Into`. If the UDL declares a `[Throws=ExampleError]` function
   or method, the underlying implementation can now return anything that is `Into<ExampleError>`,
-  matching the implicit `Into` behavoir of Rust's `?` operator.
+  matching the implicit `Into` behavior of Rust's `?` operator.
 - Fixed an accidental regression in v0.13.0 where the generated Rust scaffolding assumed
   that the `HashMap` type would be in scope. It now uses fully-qualified type names in order
   to be more robust.

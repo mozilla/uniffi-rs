@@ -5,13 +5,13 @@ Callback interfaces are traits specified in UDL which can be implemented by fore
 They can provide Rust code access available to the host language, but not easily replicated
 in Rust.
 
- * accessing device APIs
+ * accessing device APIs.
  * provide glue to clip together Rust components at runtime.
  * access shared resources and assets bundled with the app.
 
 # Using callback interfaces
 
-## 1. Define a Rust trait.
+## 1. Define a Rust trait
 
 This toy example defines a way of Rust accessing a key-value store exposed
 by the host operating system (e.g. the key chain).
@@ -23,12 +23,12 @@ pub trait Keychain: Send + Sync + Debug {
 }
 ```
 
-### Why + Send + Sync?
+### Why Send + Sync?
 
 The concrete types that UniFFI generates for callback interfaces implement `Send`, `Sync`, and `Debug`, so it's safe to
 include these as supertraits of your callback interface trait.  This isn't strictly necessary, but it's often useful.  In
-particular, `Sync + Send` is useful when:
-  - Storing `Box<dyn CallbackInterfaceTrait>` types inside a type that needs to be `Send + Send` (for example a UniFFI
+particular, `Send + Sync` is useful when:
+  - Storing `Box<dyn CallbackInterfaceTrait>` types inside a type that needs to be `Send + Sync` (for example a UniFFI
     interface type)
   - Storing `Box<dyn CallbackInterfaceTrait>` inside a global `Mutex` or `RwLock`
 
@@ -57,7 +57,7 @@ uses `uniffi::UnexpectedUniFFICallbackError` for these cases.  Your code must in
 the UniFFI scaffolding code will fail to compile.  See `example/callbacks` for an
 example of how to do this.
 
-## 3. Define a callback interface in the UDL.
+## 3. Define a callback interface in the UDL
 
 ```webidl
 callback interface Keychain {
@@ -69,7 +69,7 @@ callback interface Keychain {
 };
 ```
 
-## 4. And allow it to be passed into Rust.
+## 4. And allow it to be passed into Rust
 
 Here, we define a constructor to pass the keychain to rust, and then another method
 which may use it.
@@ -101,7 +101,7 @@ impl Authenticator {
 }
 ```
 
-## 5. Create an foreign language implementation of the callback interface.
+## 5. Create an foreign language implementation of the callback interface
 
 In this example, here's a Kotlin implementation.
 
@@ -133,7 +133,7 @@ class SwiftKeychain: Keychain {
 
 Note: in Swift, this must be a `class`.
 
-## 6. Pass the implementation to Rust.
+## 6. Pass the implementation to Rust
 
 Again, in Kotlin
 

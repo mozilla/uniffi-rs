@@ -8,13 +8,14 @@ publish = false
 
 [lib]
 name = "uniffi_futures"
-crate-type = ["staticlib", "cdylib"]
+crate-type = ["lib", "cdylib"]
 
 [dependencies]
 uniffi = { path = "../../uniffi", features = ["builtin-bindgen"] }
 
 [dev-dependencies]
-uniffi_macros = { path = "../../uniffi_macros" }
+uniffi_bindgen = {path = "../../uniffi_bindgen"}
+uniffi_macros = {path = "../../uniffi_macros"}
 
 [build-dependencies]
 uniffi_build = { path = "../../uniffi_build", features = ["builtin-bindgen"] }

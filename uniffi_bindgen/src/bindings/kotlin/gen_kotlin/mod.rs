@@ -193,7 +193,7 @@ impl KotlinCodeOracle {
     // template code.
     //
     //   - When adding additional types here, make sure to also add a match arm to the `Types.kt` template.
-    //   - To keep things managable, let's try to limit ourselves to these 2 mega-matches
+    //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         match type_ {
             Type::UInt8 => Box::new(primitives::UInt8CodeType),
@@ -270,21 +270,21 @@ impl CodeOracle for KotlinCodeOracle {
         }
     }
 
-    fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
+    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
             // support them yet. Thus, we use the signed variants to represent both signed and unsigned
             // types from the component API.
-            FFIType::Int8 | FFIType::UInt8 => "Byte".to_string(),
-            FFIType::Int16 | FFIType::UInt16 => "Short".to_string(),
-            FFIType::Int32 | FFIType::UInt32 => "Int".to_string(),
-            FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
-            FFIType::Float32 => "Float".to_string(),
-            FFIType::Float64 => "Double".to_string(),
-            FFIType::RustArcPtr(_) => "Pointer".to_string(),
-            FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
-            FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
-            FFIType::ForeignCallback => "ForeignCallback".to_string(),
+            FfiType::Int8 | FfiType::UInt8 => "Byte".to_string(),
+            FfiType::Int16 | FfiType::UInt16 => "Short".to_string(),
+            FfiType::Int32 | FfiType::UInt32 => "Int".to_string(),
+            FfiType::Int64 | FfiType::UInt64 => "Long".to_string(),
+            FfiType::Float32 => "Float".to_string(),
+            FfiType::Float64 => "Double".to_string(),
+            FfiType::RustArcPtr(_) => "Pointer".to_string(),
+            FfiType::RustBuffer => "RustBuffer.ByValue".to_string(),
+            FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+            FfiType::ForeignCallback => "ForeignCallback".to_string(),
         }
     }
 }
@@ -338,29 +338,29 @@ pub mod filters {
         Ok(codetype.literal(oracle(), literal))
     }
 
-    /// Get the Kotlin syntax for representing a given low-level `FFIType`.
-    pub fn ffi_type_name(type_: &FFIType) -> Result<String, askama::Error> {
+    /// Get the Kotlin syntax for representing a given low-level `FfiType`.
+    pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
     }
 
     /// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see
     /// #1106 for details
-    pub fn type_ffi_lowered(ffi_type: &FFIType) -> Result<String, askama::Error> {
+    pub fn type_ffi_lowered(ffi_type: &FfiType) -> Result<String, askama::Error> {
         Ok(match ffi_type {
-            FFIType::Int8 => "Byte".into(),
-            FFIType::UInt8 => "Byte".into(),
-            FFIType::Int16 => "Short".into(),
-            FFIType::UInt16 => "Short".into(),
-            FFIType::Int32 => "Int".into(),
-            FFIType::UInt32 => "Int".into(),
-            FFIType::Int64 => "Long".into(),
-            FFIType::UInt64 => "Long".into(),
-            FFIType::Float32 => "Float".into(),
-            FFIType::Float64 => "Double".into(),
-            FFIType::RustArcPtr(_) => "Pointer".into(),
-            FFIType::RustBuffer => "RustBuffer".into(),
-            FFIType::ForeignBytes => "ForeignBytes".into(),
-            FFIType::ForeignCallback => "ForeignCallback".to_string(),
+            FfiType::Int8 => "Byte".into(),
+            FfiType::UInt8 => "Byte".into(),
+            FfiType::Int16 => "Short".into(),
+            FfiType::UInt16 => "Short".into(),
+            FfiType::Int32 => "Int".into(),
+            FfiType::UInt32 => "Int".into(),
+            FfiType::Int64 => "Long".into(),
+            FfiType::UInt64 => "Long".into(),
+            FfiType::Float32 => "Float".into(),
+            FfiType::Float64 => "Double".into(),
+            FfiType::RustArcPtr(_) => "Pointer".into(),
+            FfiType::RustBuffer => "RustBuffer".into(),
+            FfiType::ForeignBytes => "ForeignBytes".into(),
+            FfiType::ForeignCallback => "ForeignCallback".to_string(),
         })
     }
 

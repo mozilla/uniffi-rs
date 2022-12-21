@@ -16,7 +16,7 @@ In other words: how do we build an MVP of this tool that is both *minimal* and *
 ## Decision Drivers
 
 * Strictly timebox our efforts to "prove out" the approach.
-* Establish whether we can effecitvely maintain this kind of tool as a team.
+* Establish whether we can effectively maintain this kind of tool as a team.
 * Support initial development of a new rust component with externally-imposed, near-term deadlines.
 
 ## Considered Options
@@ -128,7 +128,7 @@ on our tool, and magic things into existence as part of `cargo build`.
   and we don't know exactly how that will work yet.
 * Bad, because it could be hard to integrate with e.g. a gradle-based build system for android packages.
 * Bad, because build scripts aren't supposed to create files outside of the rust target directory,
-  but it doesn't realy make sense to generate foreign language bindings into that directory.
+  but it doesn't really make sense to generate foreign language bindings into that directory.
 
 Ultimately, this approach does not provide enough flexibility for initial consumers, risking them
 declaring it a bad fit based on non-essential details of the tool itself.

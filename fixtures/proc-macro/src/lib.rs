@@ -16,12 +16,25 @@ pub struct Two {
 }
 
 #[derive(uniffi::Record)]
+pub struct NestedRecord {
+    // This used to result in an error in bindings generation
+    user_type_in_builtin_generic: Option<Two>,
+}
+
+#[derive(uniffi::Record)]
 pub struct Three {
     obj: Arc<Object>,
 }
 
 #[derive(uniffi::Object)]
 pub struct Object;
+
+#[uniffi::export]
+impl Object {
+    fn is_heavy(&self) -> MaybeBool {
+        MaybeBool::Uncertain
+    }
+}
 
 #[uniffi::export]
 fn make_one(inner: i32) -> One {
@@ -38,8 +51,57 @@ fn make_object() -> Arc<Object> {
     Arc::new(Object)
 }
 
+#[derive(uniffi::Enum)]
+pub enum MaybeBool {
+    True,
+    False,
+    Uncertain,
+}
+
+#[uniffi::export]
+fn enum_identity(value: MaybeBool) -> MaybeBool {
+    value
+}
+
+#[derive(uniffi::Error)]
+pub enum BasicError {
+    InvalidInput,
+    OsError,
+}
+
+#[uniffi::export]
+fn always_fails() -> Result<(), BasicError> {
+    Err(BasicError::OsError)
+}
+
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+#[uniffi(flat_error)]
+#[non_exhaustive]
+pub enum FlatError {
+    #[error("Invalid input")]
+    InvalidInput,
+
+    // Inner types that aren't FFI-convertible, as well as unnamed fields,
+    // are allowed for flat errors
+    #[error("OS error: {0}")]
+    OsError(std::io::Error),
+}
+
+#[uniffi::export]
+impl Object {
+    fn do_stuff(&self, times: u32) -> Result<(), FlatError> {
+        match times {
+            0 => Err(FlatError::InvalidInput),
+            _ => {
+                // do stuff
+                Ok(())
+            }
+        }
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/proc-macro.uniffi.rs"));
 
 mod uniffi_types {
-    pub use crate::{Object, One, Three, Two};
+    pub use crate::{BasicError, FlatError, MaybeBool, NestedRecord, Object, One, Three, Two};
 }

@@ -1,6 +1,6 @@
 [package]
 name = "uniffi-fixture-simple-fns"
-version = "0.21.0"
+version = "0.22.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -8,7 +8,7 @@ publish = false
 
 [lib]
 name = "uniffi_simple_fns"
-crate-type = ["staticlib", "cdylib"]
+crate-type = ["lib", "cdylib"]
 
 [dependencies]
 uniffi = { path = "../../uniffi", features = ["builtin-bindgen"] }
@@ -17,4 +17,5 @@ uniffi = { path = "../../uniffi", features = ["builtin-bindgen"] }
 uniffi_build = { path = "../../uniffi_build", features = ["builtin-bindgen"] }
 
 [dev-dependencies]
-uniffi_macros = { path = "../../uniffi_macros" }
+uniffi_bindgen = {path = "../../uniffi_bindgen"}
+uniffi_macros = {path = "../../uniffi_macros"}

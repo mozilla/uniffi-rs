@@ -1,7 +1,7 @@
 [package]
 name = "uniffi-fixture-regression-cdylib-dependency-ffi-crate"
 edition = "2021"
-version = "0.21.0"
+version = "0.22.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 publish = false
@@ -11,9 +11,12 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_empty"
 
 [dependencies]
-uniffi_macros = {path = "../../../../uniffi_macros"}
 uniffi = {path = "../../../../uniffi", features=["builtin-bindgen"]}
 uniffi-fixture-regression-cdylib-dependency = {path = "../cdylib-dependency"}
 
 [build-dependencies]
 uniffi_build = {path = "../../../../uniffi_build", features=["builtin-bindgen"]}
+
+[dev-dependencies]
+uniffi_bindgen = {path = "../../../../uniffi_bindgen"}
+uniffi_macros = {path = "../../../../uniffi_macros"}

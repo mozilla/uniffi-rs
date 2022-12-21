@@ -1,18 +1,21 @@
 [package]
 name = "uniffi-fixture-swift-omit-argument-labels"
-version = "0.21.0"
+version = "0.22.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 license = "MPL-2.0"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]
 name = "uniffi_omit_argument_labels"
 
 [dependencies]
-uniffi_macros = {path = "../../uniffi_macros"}
 uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
 
 [build-dependencies]
 uniffi_build = {path = "../../uniffi_build", features=["builtin-bindgen"]}
+
+[dev-dependencies]
+uniffi_bindgen = {path = "../../uniffi_bindgen"}
+uniffi_macros = {path = "../../uniffi_macros"}

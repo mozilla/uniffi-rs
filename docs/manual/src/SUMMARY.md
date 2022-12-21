@@ -19,6 +19,7 @@
   - [External Types](./udl/ext_types.md)
     - [Declaring External Types](./udl/ext_types_external.md)
     - [Declaring Custom Types](./udl/custom_types.md)
+- [Experimental: Attributes and Derives](./proc_macro/index.md)
 
 # Kotlin
 
@@ -29,7 +30,7 @@
 - [Overview](./swift/overview.md)
 - [Configuration](./swift/configuration.md)
 - [Building a Swift module](./swift/module.md)
-- [Integrating with XCode](./swift/xcode.md)
+- [Integrating with Xcode](./swift/xcode.md)
 
 # Internals
 - [Design Principles](./internals/design_principles.md)

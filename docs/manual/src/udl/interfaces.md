@@ -14,7 +14,7 @@ struct TodoList {
 impl TodoList {
     fn new() -> Self {
         TodoList {
-            items: RwLock::<Vec::new())
+            items: RwLock::new(Vec::new())
         }
     }
 
@@ -85,7 +85,7 @@ interface TodoList {
     constructor();
     // This alternate constructor makes a new TodoList from a list of string items.
     [Name=new_from_items]
-    constructor(sequence<string> items)
+    constructor(sequence<string> items);
     ...
 ```
 

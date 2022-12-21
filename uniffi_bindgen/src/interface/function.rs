@@ -32,18 +32,15 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 use std::convert::TryFrom;
-use std::hash::{Hash, Hasher};
 
 use anyhow::{bail, Result};
+use uniffi_meta::Checksum;
 
-use super::ffi::{FFIArgument, FFIFunction};
+use super::attributes::{ArgumentAttributes, Attribute, FunctionAttributes};
+use super::ffi::{FfiArgument, FfiFunction};
 use super::literal::{convert_default_value, Literal};
 use super::types::{Type, TypeIterator};
-use super::{
-    attributes::{ArgumentAttributes, FunctionAttributes},
-    convert_type,
-};
-use super::{APIConverter, ComponentInterface};
+use super::{convert_type, APIConverter, ComponentInterface};
 
 /// Represents a standalone function.
 ///
@@ -51,13 +48,20 @@ use super::{APIConverter, ComponentInterface};
 /// and has a corresponding standalone function in the foreign language bindings.
 ///
 /// In the FFI, this will be a standalone function with appropriately lowered types.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Function {
     pub(super) name: String,
     pub(super) is_async: bool,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
-    pub(super) ffi_func: FFIFunction,
+    // We don't include the FFIFunc in the hash calculation, because:
+    //  - it is entirely determined by the other fields,
+    //    so excluding it is safe.
+    //  - its `name` property includes a checksum derived from  the very
+    //    hash value we're trying to calculate here, so excluding it
+    //    avoids a weird circular dependency in the calculation.
+    #[checksum_ignore]
+    pub(super) ffi_func: FfiFunction,
     pub(super) attributes: FunctionAttributes,
 }
 
@@ -82,7 +86,7 @@ impl Function {
         self.return_type.as_ref()
     }
 
-    pub fn ffi_func(&self) -> &FFIFunction {
+    pub fn ffi_func(&self) -> &FfiFunction {
         &self.ffi_func
     }
 
@@ -132,10 +136,10 @@ impl From<uniffi_meta::FnMetadata> for Function {
         let return_type = meta.return_type.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
-        let ffi_func = FFIFunction {
+        let ffi_func = FfiFunction {
             name: ffi_name,
             is_async,
-            ..FFIFunction::default()
+            ..FfiFunction::default()
         };
 
         Self {
@@ -144,23 +148,8 @@ impl From<uniffi_meta::FnMetadata> for Function {
             arguments,
             return_type,
             ffi_func,
-            attributes: Default::default(),
+            attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
         }
-    }
-}
-
-impl Hash for Function {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        // We don't include the FFIFunc in the hash calculation, because:
-        //  - it is entirely determined by the other fields,
-        //    so excluding it is safe.
-        //  - its `name` property includes a checksum derived from  the very
-        //    hash value we're trying to calculate here, so excluding it
-        //    avoids a weird circular depenendency in the calculation.
-        self.name.hash(state);
-        self.arguments.hash(state);
-        self.return_type.hash(state);
-        self.attributes.hash(state);
     }
 }
 
@@ -193,7 +182,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
 /// Represents an argument to a function/constructor/method call.
 ///
 /// Each argument has a name and a type, along with some optional metadata.
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Argument {
     pub(super) name: String,
     pub(super) type_: Type,
@@ -224,9 +213,9 @@ impl Argument {
     }
 }
 
-impl From<&Argument> for FFIArgument {
-    fn from(a: &Argument) -> FFIArgument {
-        FFIArgument {
+impl From<&Argument> for FfiArgument {
+    fn from(a: &Argument) -> FfiArgument {
+        FfiArgument {
             name: a.name.clone(),
             type_: (&a.type_).into(),
         }

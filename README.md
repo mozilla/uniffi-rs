@@ -44,6 +44,15 @@ Other tools we know of which try and solve a similarly shaped problem are:
 
 (Please open a PR if you think other tools should be listed!)
 
+## External resources
+
+There are a few third-party resources that make it easier to work with UniFFI:
+
+* [Kotlin Multiplatform support](https://gitlab.com/trixnity/uniffi-kotlin-multiplatform-bindings). The repository contains Kotlin Multiplatform bindings generation for UniFFI, letting you target both JVM and Native.
+* [Plugin support for `.udl` files](https://github.com/Lonami/uniffi-dl) for the IDEA platform ([*uniffi-dl* in the JetBrains marketplace](https://plugins.jetbrains.com/plugin/20527-uniffi-dl)). It provides syntax highlighting, code folding, code completion, reference resolution and navigation (among others features) for the [UniFFI Definition Language (UDL)](https://mozilla.github.io/uniffi-rs/).
+
+(Please open a PR if you think other resources should be listed!)
+
 ## Contributing
 
 If this tool sounds interesting to you, please help us develop it! You can:

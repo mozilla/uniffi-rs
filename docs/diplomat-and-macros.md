@@ -78,13 +78,13 @@ Let's look at diplomat's simple example:
 ```rust
 #[diplomat::bridge]
 mod ffi {
-    pub struct MyFFIType {
+    pub struct MyFfiType {
         pub a: i32,
         pub b: bool,
     }
 
-    impl MyFFIType {
-        pub fn create() -> MyFFIType { ... }
+    impl MyFfiType {
+        pub fn create() -> MyFfiType { ... }
         ...
     }
 }
@@ -93,15 +93,15 @@ mod ffi {
 This works fine, but starts to come unstuck if you want the types defined somewhere else. In this trivial example, something like:
 
 ```Rust
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
 
 #[diplomat::bridge]
 mod ffi {
-    impl MyFFIType {
-        pub fn create() -> MyFFIType { ... }
+    impl MyFfiType {
+        pub fn create() -> MyFfiType { ... }
         ...
     }
 }
@@ -114,7 +114,7 @@ From the Rust side of the world, this is probably solvable by sprinkling more ma
 
 ```Rust
 #[uniffi::magic]
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
@@ -146,13 +146,13 @@ considered canonical.
 In both diplomat and [#416](https://github.com/mozilla/uniffi-rs/pull/416), the approach taken
 is very similar - it takes a path to a the Rust source file/tree, and uses `syn` to locate the special modules (ie, ones annotated with `#[diplomat:bridge]` in the case of diplomat.)
 
-While some details differ, this is just a matter of implementation - #416 isn't quite as agressive
+While some details differ, this is just a matter of implementation - #416 isn't quite as aggressive
 about consuming the entire crate to find multiple FFI modules (and even then, diplomat doesn't
 actually *process* the entire crate, just modules tagged as a bridge), but could easily be
 extended to do so.
 
 But in both cases, for our problematic example above, this process never sees the layout of the
-`MyFFIType` struct because it's not inside the processed module, so that layout can't be
+`MyFfiType` struct because it's not inside the processed module, so that layout can't be
 communicated to the foreign bindings.
 As noted above, this is considered a feature for diplomat, but a limitation for UniFFI.
 
@@ -160,7 +160,7 @@ This is the problem which caused us to decide to stop working on
 [#416](https://github.com/mozilla/uniffi-rs/pull/416) - the current world where the type universe
 is described externally doesn't have this limitation - only the UDL file needs to be parsed when
 generating the foreign bindings. The application-services team has
-concluded that none of our non-trival use-cases for UniFFI could be described using macros,
+concluded that none of our non-trivial use-cases for UniFFI could be described using macros,
 so supporting both mechanisms is pain for no gain.
 
 As noted in #416, `wasm-bindgen` has a similarly shaped problem, and solves it by having
@@ -184,7 +184,7 @@ In other words, borrowing the example above:
 
 ```Rust
 #[uniffi::magic]
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
@@ -204,12 +204,12 @@ in UDL and in Rust. So instead of having:
 
 ```
 // In a UDL file:
-dictionary MyFFIType {
+dictionary MyFfiType {
     i32 a;
     bool b;
 };
 // Then in Rust:
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
@@ -218,7 +218,7 @@ pub struct MyFFIType {
 we could have:
 ```rust
 // In the Rust implementation, in some other module.
-pub struct MyFFIType {
+pub struct MyFfiType {
     pub a: i32,
     pub b: bool,
 }
@@ -228,13 +228,13 @@ pub struct MyFFIType {
 mod ffi {
 
     #[ffi::magic_external_type_declaration]
-    pub struct MyFFIType {
+    pub struct MyFfiType {
         pub a: i32,
         pub b: bool,
     }
 
-    impl MyFFIType {
-        pub fn create() -> MyFFIType { ... }
+    impl MyFfiType {
+        pub fn create() -> MyFfiType { ... }
         ...
     }
 }
@@ -242,7 +242,7 @@ mod ffi {
 
 So while we haven't exactly reduced the duplication, we have removed the UDL.
 We probably also haven't helped with documentation, because the natural location for
-the documentation of `MyFFIType` is probably at the *actual* implementation.
+the documentation of `MyFfiType` is probably at the *actual* implementation.
 
 While it might not solve all our problems, it is worthy of serious consideration - fewer problems
 is still a worthwhile goal, and needing a UDL file and parser seems like one worth removing.

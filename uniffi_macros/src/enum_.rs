@@ -16,12 +16,37 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
 
     let ident = &input.ident;
 
-    let (write_impl, try_read_impl) = match &variants {
+    let ffi_converter_impl = enum_ffi_converter_impl(variants.as_ref(), ident);
+
+    let meta_static_var = if let Some(variants) = variants {
+        match enum_metadata(ident, variants, module_path) {
+            Ok(metadata) => create_metadata_static_var(ident, metadata.into()),
+            Err(e) => e.into_compile_error(),
+        }
+    } else {
+        syn::Error::new(Span::call_site(), "This derive must only be used on enums")
+            .into_compile_error()
+    };
+
+    let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
+
+    quote! {
+        #ffi_converter_impl
+        #meta_static_var
+        #type_assertion
+    }
+}
+
+pub(crate) fn enum_ffi_converter_impl(
+    variants: Option<&Punctuated<Variant, Token![,]>>,
+    ident: &Ident,
+) -> TokenStream {
+    let (write_impl, try_read_impl) = match variants {
         Some(variants) => {
             let write_match_arms = variants.iter().enumerate().map(|(i, v)| {
                 let v_ident = &v.ident;
                 let fields = v.fields.iter().map(|f| &f.ident);
-                let idx = Index::from(i);
+                let idx = Index::from(i + 1);
                 let write_fields = v.fields.iter().map(write_field);
 
                 quote! {
@@ -36,7 +61,7 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
             };
 
             let try_read_match_arms = variants.iter().enumerate().map(|(i, v)| {
-                let idx = Index::from(i);
+                let idx = Index::from(i + 1);
                 let v_ident = &v.ident;
                 let try_read_fields = v.fields.iter().map(try_read_field);
 
@@ -62,19 +87,8 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
         }
     };
 
-    let meta_static_var = if let Some(variants) = variants {
-        match enum_metadata(ident, variants, module_path) {
-            Ok(metadata) => create_metadata_static_var(ident, metadata.into()),
-            Err(e) => e.into_compile_error(),
-        }
-    } else {
-        syn::Error::new(Span::call_site(), "This derive must only be used on enums")
-            .into_compile_error()
-    };
-
-    let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
-
     quote! {
+        #[automatically_derived]
         impl ::uniffi::RustBufferFfiConverter for #ident {
             type RustType = Self;
 
@@ -86,9 +100,6 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
                 #try_read_impl
             }
         }
-
-        #meta_static_var
-        #type_assertion
     }
 }
 
@@ -110,7 +121,7 @@ fn enum_metadata(
     })
 }
 
-fn variant_metadata(v: &Variant) -> syn::Result<VariantMetadata> {
+pub(crate) fn variant_metadata(v: &Variant) -> syn::Result<VariantMetadata> {
     let name = v.ident.to_string();
     let fields = v
         .fields
@@ -139,7 +150,7 @@ fn field_metadata(f: &Field, v: &Variant) -> syn::Result<FieldMetadata> {
     })
 }
 
-pub fn write_field(f: &Field) -> TokenStream {
+fn write_field(f: &Field) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 

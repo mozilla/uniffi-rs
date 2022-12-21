@@ -155,7 +155,7 @@ The [`uniffi_bindgen::interface::Object`](https://github.com/mozilla/uniffi-rs/b
 would grow a corresponding boolean `threadsafe` field and corresponding public accessor.
 When [building an instance of this struct from the UDL](https://github.com/mozilla/uniffi-rs/blob/803bb3d79daa8ea088fb2d8f05c08ada09821986/uniffi_bindgen/src/interface/mod.rs#L786),
 we would inspect the list of attributes to look for one named "Threadsafe" and set the field
-if present. The way that we [handle the `[ByRef]` annotation on method arugments](https://github.com/mozilla/uniffi-rs/blob/803bb3d79daa8ea088fb2d8f05c08ada09821986/uniffi_bindgen/src/interface/mod.rs#L658)
+if present. The way that we [handle the `[ByRef]` annotation on method arguments](https://github.com/mozilla/uniffi-rs/blob/803bb3d79daa8ea088fb2d8f05c08ada09821986/uniffi_bindgen/src/interface/mod.rs#L658)
 will likely serve as a good example to follow.
 
 ### Implement a less-locking HandleMap variant

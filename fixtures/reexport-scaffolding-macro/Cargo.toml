@@ -1,6 +1,6 @@
 [package]
 name = "uniffi-fixture-reexport-scaffolding-macro"
-version = "0.21.0"
+version = "0.22.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -18,6 +18,6 @@ uniffi-fixture-coverall = { path = "../coverall" }
 uniffi = { path = "../../uniffi", features=["builtin-bindgen"] }
 
 [dev-dependencies]
-cargo_metadata = "0.14"
+cargo_metadata = "0.15"
 libloading = "0.7"
 uniffi_bindgen = { path = "../../uniffi_bindgen" }

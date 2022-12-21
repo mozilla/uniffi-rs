@@ -77,6 +77,7 @@
 //! ```
 
 use anyhow::{bail, Result};
+use uniffi_meta::Checksum;
 
 use super::record::Field;
 use super::types::{Type, TypeIterator};
@@ -87,7 +88,7 @@ use super::{APIConverter, ComponentInterface};
 ///
 /// Enums are passed across the FFI by serializing to a bytebuffer, with a
 /// i32 indicating the variant followed by the serialization of each field.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Enum {
     pub(super) name: String,
     pub(super) variants: Vec<Variant>,
@@ -101,7 +102,7 @@ impl Enum {
     }
 
     pub fn type_(&self) -> Type {
-        // *sigh* at the clone here, the relationship between a ComponentInterace
+        // *sigh* at the clone here, the relationship between a ComponentInterface
         // and its contained types could use a bit of a cleanup.
         Type::Enum(self.name.clone())
     }
@@ -158,7 +159,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
 impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Enum> {
         if self.inheritance.is_some() {
-            bail!("interface inheritence is not supported for enum interfaces");
+            bail!("interface inheritance is not supported for enum interfaces");
         }
         // We don't need to check `self.attributes` here; if calling code has dispatched
         // to this impl then we already know there was an `[Enum]` attribute.
@@ -185,7 +186,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 /// Represents an individual variant in an Enum.
 ///
 /// Each variant has a name and zero or more fields.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Checksum)]
 pub struct Variant {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
@@ -239,7 +240,7 @@ impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
             };
             match &self.return_type {
                 ReturnType::Type(Single(NonAny(Identifier(id)))) => id.type_.0.to_owned(),
-                _ => bail!("enum interface members must have plain identifers as names"),
+                _ => bail!("enum interface members must have plain identifiers as names"),
             }
         };
         Ok(Variant {
@@ -288,7 +289,7 @@ impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
 
 #[cfg(test)]
 mod test {
-    use super::super::ffi::FFIType;
+    use super::super::ffi::FfiType;
     use super::*;
 
     #[test]
@@ -405,12 +406,12 @@ mod test {
         // difficult atop the current factoring of `ComponentInterface` and friends).
         let farg = ci.get_function_definition("takes_an_enum").unwrap();
         assert_eq!(*farg.arguments()[0].type_(), Type::Enum("TestEnum".into()));
-        assert_eq!(farg.ffi_func().arguments()[0].type_(), FFIType::RustBuffer);
+        assert_eq!(farg.ffi_func().arguments()[0].type_(), FfiType::RustBuffer);
         let fret = ci.get_function_definition("returns_an_enum").unwrap();
         assert!(matches!(fret.return_type(), Some(Type::Enum(nm)) if nm == "TestEnum"));
         assert!(matches!(
             fret.ffi_func().return_type(),
-            Some(FFIType::RustBuffer)
+            Some(FfiType::RustBuffer)
         ));
 
         // Enums with associated data pass over the FFI as bytebuffers.
@@ -421,14 +422,14 @@ mod test {
             *farg.arguments()[0].type_(),
             Type::Enum("TestEnumWithData".into())
         );
-        assert_eq!(farg.ffi_func().arguments()[0].type_(), FFIType::RustBuffer);
+        assert_eq!(farg.ffi_func().arguments()[0].type_(), FfiType::RustBuffer);
         let fret = ci
             .get_function_definition("returns_an_enum_with_data")
             .unwrap();
         assert!(matches!(fret.return_type(), Some(Type::Enum(nm)) if nm == "TestEnumWithData"));
         assert!(matches!(
             fret.ffi_func().return_type(),
-            Some(FFIType::RustBuffer)
+            Some(FfiType::RustBuffer)
         ));
     }
 }

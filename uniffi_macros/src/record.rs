@@ -43,6 +43,7 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
     let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
 
     quote! {
+        #[automatically_derived]
         impl ::uniffi::RustBufferFfiConverter for #ident {
             type RustType = Self;
 
@@ -97,7 +98,7 @@ fn field_metadata(f: &Field) -> syn::Result<FieldMetadata> {
     })
 }
 
-pub fn write_field(f: &Field) -> TokenStream {
+fn write_field(f: &Field) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 
