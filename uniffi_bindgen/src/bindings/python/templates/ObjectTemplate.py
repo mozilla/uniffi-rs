@@ -44,7 +44,7 @@ class {{ type_name }}(object):
         def trampoline() -> (FuturePoll, any):
             nonlocal rust_future
 
-            {% match func.ffi_func().return_type() %}
+            {% match meth.ffi_func().return_type() %}
             {% when Some with (return_type) %}
             polled_result = {{ return_type|ffi_type_name }}()
             is_ready = rust_call(_UniFFILib.{{ func.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.c_void_p(), ctypes.byref(polled_result))
@@ -53,7 +53,7 @@ class {{ type_name }}(object):
             {% endmatch %}
 
             if is_ready is True:
-                result = {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|lift_fn }}(polled_result){% when None %}None{% endmatch %}
+                result = {% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|lift_fn }}(polled_result){% when None %}None{% endmatch %}
 
                 return (FuturePoll.DONE, result)
             else:
