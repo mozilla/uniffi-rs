@@ -11,7 +11,7 @@ fun main() = runBlocking {
     println("Wait 2secs before greeting you, dear public!")
 
     var time = measureTimeMillis {
-        val result = sayAfter(2.toUByte(), "You")
+        val result = sayAfter(2U, "You")
         println("result: ${result}")
     }
 
@@ -20,7 +20,7 @@ fun main() = runBlocking {
     println("\nWouah, 'tired. Let's sleep for 3secs!")
 
     time = measureTimeMillis {
-        sleep(3.toUByte())
+        sleep(3U)
     }
 
     println("[in ${time / 1000.toDouble()}sec]")
@@ -28,8 +28,8 @@ fun main() = runBlocking {
     println("\nIs it really blocking? Nah. Let's greet Alice and Bob after resp. 2secs and 3secs _concurrently_!")
 
     time = measureTimeMillis {
-        val alice = async { sayAfter(2.toUByte(), "Alice") }
-        val bob = async { sayAfter(3.toUByte(), "Bob") }
+        val alice = async { sayAfter(2U, "Alice") }
+        val bob = async { sayAfter(3U, "Bob") }
 
         println("alice: ${alice.await()}")
         println("bob: ${bob.await()}")
