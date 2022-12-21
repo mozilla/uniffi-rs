@@ -4,6 +4,9 @@ description = "a multi-language bindings generator for rust"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
 repository = "https://github.com/mozilla/uniffi-rs"
+# Incrementing the minor version here means a breaking change to consumers.
+#   * See `docs/uniffi-versioning.md` for guidance on when to increment this
+#   * Make sure to also update `uniffi_bindgen::UNIFFI_CONTRACT_VERSION"
 version = "0.22.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"

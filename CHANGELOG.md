@@ -8,6 +8,10 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+
+- `uniffi_bindgen`: Removed the `run_main` function.  It's moved to `uniffi::uniffi_bindgen_main` and now unconditionally succeeds rather than return a `Result<()>`
+
 ### What's changed
 
 - Callback interface method calls are no longer logged (#1439)

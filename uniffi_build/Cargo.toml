@@ -17,3 +17,5 @@ uniffi_bindgen = { path = "../uniffi_bindgen", default-features = false, version
 
 [features]
 default = []
+# Deprecated feature that doesn't do anything anymore, but we still allow for backwards-compatibility.
+builtin-bindgen = []
