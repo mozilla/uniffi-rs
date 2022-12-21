@@ -44,11 +44,16 @@ class {{ type_name }}(object):
         def trampoline() -> (FuturePoll, any):
             nonlocal rust_future
 
-            poll_result = {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|ffi_type_name }}{% when None %}None{% endmatch %}()
-            is_ready = rust_call(_UniFFILib.{{ meth.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.c_void_p(), ctypes.byref(poll_result))
+            {% match func.ffi_func().return_type() %}
+            {% when Some with (return_type) %}
+            polled_result = {{ return_type|ffi_type_name }}()
+            is_ready = rust_call(_UniFFILib.{{ func.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.c_void_p(), ctypes.byref(polled_result))
+            {% when None %}
+            is_ready = rust_call(_UniFFILib.{{ func.ffi_func().name() }}_poll, rust_future, future._future_ffi_waker(), ctypes.c_void_p(), ctypes.c_void_p())
+            {% endmatch %}
 
             if is_ready is True:
-                result = {% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|lift_fn }}(poll_result){% when None %}None{% endmatch %}
+                result = {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|lift_fn }}(polled_result){% when None %}None{% endmatch %}
 
                 return (FuturePoll.DONE, result)
             else:
