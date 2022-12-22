@@ -40,10 +40,8 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     {# // TODO: Maybe merge the two templates (i.e the one with a return type and the one without) #}
     {% for meth in obj.methods() -%}
     {%- if meth.is_async() -%}
-    {%- match meth.return_type() -%}
-    {%- when Some with (return_type) %}
 
-    public func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) %}) async {% call swift::throws(meth) %} -> {{ return_type|type_name}} {
+    public func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) -%}) async {% call swift::throws(meth) %}{% match meth.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
         let future = {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
 
         return await withCheckedContinuation { continuation in
@@ -52,11 +50,6 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
         }
     }
 
-    {%- when None -%}
-
-    // TODO: {{ meth.name()|fn_name }} is async but doesn't return anything
-
-    {%- endmatch -%}
     {%- else -%}
 
     {%- match meth.return_type() -%}
@@ -79,14 +72,12 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
 
 {% for meth in obj.methods() -%}
 {%- if meth.is_async() -%}
-{%- match meth.return_type() -%}
-{%- when Some with (return_type) %}
 
 fileprivate class _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_Env {
     var rustFuture: OpaquePointer
-    var continuation: CheckedContinuation<{{ return_type|type_name }}, Never>
+    var continuation: CheckedContinuation<{% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, Never>
 
-    init(rustyFuture: OpaquePointer, continuation: CheckedContinuation<{{ return_type|type_name }}, Never>) {
+    init(rustyFuture: OpaquePointer, continuation: CheckedContinuation<{% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, Never>) {
         self.rustFuture = rustyFuture
         self.continuation = continuation
     }
@@ -102,7 +93,12 @@ fileprivate func _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_waker(raw
     Task {
         let env = Unmanaged<_UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_Env>.fromOpaque(raw_env!)
         let env_ref = env.takeUnretainedValue()
-        let polledResult = UnsafeMutablePointer<{% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Int{% endmatch %}>.allocate(capacity: 1)
+        let polledResult = {% match meth.ffi_func().return_type() -%}
+        {%- when Some with (return_type) -%}
+            UnsafeMutablePointer<{{ return_type|type_ffi_lowered }}>.allocate(capacity: 1)
+        {%- when None -%}
+            UnsafeMutableRawPointer.allocate(byteCount: 0, alignment: 0)
+        {%- endmatch %}
         let isReady = try! rustCall() {
             {{ meth.ffi_func().name() }}_poll(
                 env_ref.rustFuture,
@@ -114,17 +110,19 @@ fileprivate func _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_waker(raw
         }
 
         if isReady {
-            env_ref.continuation.resume(returning: try! {{ return_type|lift_fn }}(polledResult.pointee))
+            env_ref.continuation.resume(returning: {% match meth.return_type() -%}
+            {%- when Some with (return_type) -%}
+                try! {{ return_type|lift_fn }}(polledResult.move())
+            {%- when None -%}
+                ()
+            {%- endmatch -%}
+            )
+            polledResult.deallocate()
             env.release()
         }
     }
 }
 
-{%- when None -%}
-
-// TODO: {{ meth.name()|fn_name }} is async but doesn't return anything
-
-{%- endmatch -%}
 {%- endif -%}
 {% endfor %}
 
