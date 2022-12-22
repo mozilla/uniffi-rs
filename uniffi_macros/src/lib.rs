@@ -47,11 +47,12 @@ pub fn build_foreign_language_testcases(tokens: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn export(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
     let input2 = proc_macro2::TokenStream::from(input.clone());
 
     let gen_output = || {
         let mod_path = util::mod_path()?;
+        let args = syn::parse(attr_args)?;
         let mut item = syn::parse(input)?;
 
         // If the input is an `impl` block, rewrite any uses of the `Self` type
@@ -61,7 +62,7 @@ pub fn export(_attr: TokenStream, input: TokenStream) -> TokenStream {
         rewrite_self_type(&mut item);
 
         let metadata = export::gen_metadata(item, &mod_path)?;
-        Ok(expand_export(metadata, &mod_path))
+        Ok(expand_export(metadata, args, &mod_path))
     };
     let output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 

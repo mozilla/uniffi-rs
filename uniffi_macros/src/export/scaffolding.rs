@@ -4,14 +4,15 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use syn::{parse_quote, FnArg, Pat};
+use syn::{parse_quote, spanned::Spanned, FnArg, Pat};
 
-use super::{FunctionReturn, Signature};
+use super::{AsyncRuntime, ExportAttributeArguments, FunctionReturn, Signature};
 
 pub(super) fn gen_fn_scaffolding(
     sig: &Signature,
     mod_path: &[String],
     checksum: u16,
+    arguments: &ExportAttributeArguments,
 ) -> TokenStream {
     let name = &sig.ident;
     let name_s = name.to_string();
@@ -29,7 +30,7 @@ pub(super) fn gen_fn_scaffolding(
         #name(#(#args),*)
     };
 
-    gen_ffi_function(sig, ffi_ident, &params, fn_call)
+    gen_ffi_function(sig, ffi_ident, &params, fn_call, arguments)
 }
 
 pub(super) fn gen_method_scaffolding(
@@ -37,6 +38,7 @@ pub(super) fn gen_method_scaffolding(
     mod_path: &[String],
     checksum: u16,
     self_ident: &Ident,
+    arguments: &ExportAttributeArguments,
 ) -> TokenStream {
     let name = &sig.ident;
     let name_s = name.to_string();
@@ -88,7 +90,7 @@ pub(super) fn gen_method_scaffolding(
         #fn_call_prefix #name(#(#args),*)
     };
 
-    gen_ffi_function(sig, ffi_ident, &params, fn_call)
+    gen_ffi_function(sig, ffi_ident, &params, fn_call, arguments)
 }
 
 fn is_receiver(fn_arg: &FnArg) -> bool {
@@ -153,6 +155,7 @@ fn gen_ffi_function(
     ffi_ident: Ident,
     params: &[TokenStream],
     rust_fn_call: TokenStream,
+    arguments: &ExportAttributeArguments,
 ) -> TokenStream {
     let name = sig.ident.to_string();
     let mut extra_functions = Vec::new();
@@ -193,9 +196,14 @@ fn gen_ffi_function(
 
     let body_expr = match throws {
         _ if is_async => {
+            let rust_future_ctor = match &arguments.async_runtime {
+                Some(AsyncRuntime::Tokio(_)) => quote! { new_tokio },
+                None => quote! { new },
+            };
+
             quote! {
                 ::uniffi::call_with_output(call_status, || {
-                    Some(Box::new(::uniffi::RustFuture::new(
+                    Some(Box::new(::uniffi::RustFuture::#rust_future_ctor(
                         async move {
                             #rust_fn_call.await
                         }
@@ -259,6 +267,17 @@ fn gen_ffi_function(
         });
     }
 
+    let argument_error = match &arguments.async_runtime {
+        Some(async_runtime) if !is_async => Some(
+            syn::Error::new(
+                async_runtime.span(),
+                "this attribute is only allowed on async functions",
+            )
+            .into_compile_error(),
+        ),
+        _ => None,
+    };
+
     quote! {
         #[doc(hidden)]
         #[no_mangle]
@@ -271,5 +290,7 @@ fn gen_ffi_function(
         }
 
         #( #extra_functions )*
+
+        #argument_error
     }
 }
