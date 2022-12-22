@@ -323,7 +323,7 @@ where
         };
         let mut context = Context::from_waker(&waker);
 
-        Pin::new(&mut self.0).poll(&mut context).map(T::lower)
+        self.0.as_mut().poll(&mut context).map(T::lower)
     }
 }
 
