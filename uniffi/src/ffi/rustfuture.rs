@@ -304,7 +304,7 @@ where
     /// [`Context`]: https://doc.rust-lang.org/std/task/struct.Context.html
     fn poll(
         &mut self,
-        foreign_waker: *const RustFutureForeignWakerFunction,
+        foreign_waker: RustFutureForeignWakerFunction,
         foreign_waker_environment: *const RustFutureForeignWakerEnvironment,
     ) -> Poll<T::FfiType> {
         let waker = unsafe {
@@ -339,6 +339,7 @@ impl<T> FfiDefault for Poll<T> {
 #[cfg(test)]
 mod tests_rust_future {
     use super::*;
+    use std::mem;
 
     #[test]
     fn test_rust_future_size() {
@@ -364,13 +365,13 @@ pub type RustFutureForeignWakerEnvironment = c_void;
 
 #[derive(Debug)]
 struct RustFutureForeignWaker {
-    waker: *const RustFutureForeignWakerFunction,
+    waker: RustFutureForeignWakerFunction,
     waker_environment: *const RustFutureForeignWakerEnvironment,
 }
 
 impl RustFutureForeignWaker {
     fn new(
-        waker: *const RustFutureForeignWakerFunction,
+        waker: RustFutureForeignWakerFunction,
         waker_environment: *const RustFutureForeignWakerEnvironment,
     ) -> Self {
         Self {
@@ -417,7 +418,7 @@ impl RustFutureForeignRawWaker {
     /// must wake up the task associated with this `RawWaker`.
     unsafe fn wake(foreign_waker: *const ()) {
         let waker = RustFutureForeignWaker::from_unit_ptr(foreign_waker);
-        let func = mem::transmute::<_, RustFutureForeignWakerFunction>(waker.waker);
+        let func = waker.waker;
 
         func(waker.waker_environment);
     }
@@ -426,7 +427,7 @@ impl RustFutureForeignRawWaker {
     /// `Waker`. It must wake up the task associated with this `RawWaker`.
     unsafe fn wake_by_ref(foreign_waker: *const ()) {
         let waker = ManuallyDrop::new(RustFutureForeignWaker::from_unit_ptr(foreign_waker));
-        let func = mem::transmute::<_, RustFutureForeignWakerFunction>(waker.waker);
+        let func = waker.waker;
 
         func(waker.waker_environment);
     }
@@ -491,7 +492,7 @@ mod tests_raw_waker_vtable {
 
         // Has it been called?
         let foreign_waker_environment = unsafe { Box::from_raw(foreign_waker_environment_ptr) };
-        assert_eq!(foreign_waker_environment.take(), true);
+        assert!(foreign_waker_environment.take());
 
         // Has the waker been dropped?
         assert_eq!(Arc::strong_count(&foreign_waker), 1);
@@ -514,7 +515,7 @@ mod tests_raw_waker_vtable {
 
         // Has it been called?
         let foreign_waker_environment = unsafe { Box::from_raw(foreign_waker_environment_ptr) };
-        assert_eq!(foreign_waker_environment.take(), true);
+        assert!(foreign_waker_environment.take());
 
         // Has the waker not been dropped?
         assert_eq!(Arc::strong_count(&foreign_waker), 2);
@@ -536,7 +537,7 @@ mod tests_raw_waker_vtable {
 #[doc(hidden)]
 pub fn uniffi_rustfuture_poll<T>(
     future: Option<&mut RustFuture<T>>,
-    waker: Option<NonNull<RustFutureForeignWakerFunction>>,
+    waker: Option<RustFutureForeignWakerFunction>,
     waker_environment: *const RustFutureForeignWakerEnvironment,
     polled_result: &mut T::FfiType,
     call_status: &mut RustCallStatus,
@@ -550,10 +551,7 @@ where
     let future_mutex = Mutex::new(future);
 
     match call_with_output(call_status, || {
-        future_mutex
-            .lock()
-            .unwrap()
-            .poll(waker.as_ptr(), waker_environment)
+        future_mutex.lock().unwrap().poll(waker, waker_environment)
     }) {
         Poll::Ready(result) => {
             *polled_result = result;
