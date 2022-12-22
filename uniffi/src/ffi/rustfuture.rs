@@ -260,8 +260,9 @@ use std::{
     ffi::c_void,
     future::Future,
     mem::ManuallyDrop,
+    panic,
     pin::Pin,
-    sync::{Arc, Mutex},
+    sync::Arc,
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
 };
 
@@ -553,14 +554,12 @@ pub fn uniffi_rustfuture_poll<T>(
 where
     T: FfiReturn,
 {
-    let future = future.expect("`future` is a null pointer");
+    // If polling the future panics, an error will be recorded in call_status and the future will
+    // be dropped, so there is no potential for observing any inconsistent state in it.
+    let mut future = panic::AssertUnwindSafe(future.expect("`future` is a null pointer"));
     let waker = waker.expect("`waker` is a null pointer");
 
-    let future_mutex = Mutex::new(future);
-
-    match call_with_output(call_status, || {
-        future_mutex.lock().unwrap().poll(waker, waker_environment)
-    }) {
+    match call_with_output(call_status, move || future.poll(waker, waker_environment)) {
         Poll::Ready(result) => {
             *polled_result = result;
 
