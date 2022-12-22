@@ -1,9 +1,10 @@
 //! [`RustFuture`] represents a [`Future`] that can be sent over FFI safely-ish.
 //!
-//! The [`RustFuture`] is parameterized by `T` which implements [`FfiReturn`],
-//! which has a blanket-implementation for [`FfiConverter`]. Thus, the inner
-//! `Future` outputs a value of kind `FfiReturn`. The `poll` method maps this
-//! value to `FfiResult::FfiType` when the inner `Future` is ready.
+//! The [`RustFuture`] is parameterized by `T` which implements
+//! [`FfiReturn`], which has a blanket-implementation for [`FfiConverter`][crate::FfiConverter].
+//! Thus, the inner `Future` outputs a value of kind
+//! `FfiReturn`. The `poll` method maps this value to `FfiResult::FfiType` when
+//! the inner `Future` is ready.
 //!
 //! This type may not be instantiated directly, but _via_ the procedural macros,
 //! such as `#[uniffi::export]`. A `RustFuture` is created, boxed, and then
@@ -258,19 +259,19 @@ use crate::{call_with_output, FfiReturn, RustCallStatus};
 use std::{
     ffi::c_void,
     future::Future,
-    mem::{self, ManuallyDrop},
+    mem::ManuallyDrop,
     pin::Pin,
-    ptr::NonNull,
     sync::{Arc, Mutex},
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
 };
 
 /// `RustFuture` represents a [`Future`] that can be sent over FFI safely-ish.
 ///
-/// The [`RustFuture`] is parameterized by `T` which implements [`FfiReturn`],
-/// which has a blanket-implementation for [`FfiConverter`]. Thus, the inner
-/// `Future` outputs a value of kind `FfiReturn`. The `poll` method maps this
-/// value to `FfiResult::FfiType` when the inner `Future` is ready.
+/// The [`RustFuture`] is parameterized by `T` which implements
+/// [`FfiReturn`], which has a blanket-implementation for [`FfiConverter`][crate::FfiConverter].
+/// Thus, the inner `Future` outputs a value of kind
+/// `FfiReturn`. The `poll` method maps this value to `FfiResult::FfiType` when
+/// the inner `Future` is ready.
 ///
 /// See the module documentation to learn more.
 #[repr(transparent)]
