@@ -289,6 +289,14 @@ where
         Self(Box::pin(future))
     }
 
+    #[cfg(feature = "tokio")]
+    pub fn new_tokio<F>(future: F) -> Self
+    where
+        F: Future<Output = T> + 'static,
+    {
+        Self(Box::pin(async_compat::Compat::new(future)))
+    }
+
     /// Poll the future. It basically maps
     /// `<T as FfiConverter>::RustType` to `<T as FfiConverter>::FfiType` when
     /// the inner future is ready.
