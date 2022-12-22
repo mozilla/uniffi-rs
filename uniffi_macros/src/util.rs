@@ -5,11 +5,7 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use syn::{
-    parse::{Parse, ParseStream},
-    punctuated::Punctuated,
-    spanned::Spanned,
-    visit_mut::VisitMut,
-    Attribute, Item, Token, Type,
+    parse::ParseStream, spanned::Spanned, visit_mut::VisitMut, Attribute, Item, Token, Type,
 };
 use uniffi_meta::Metadata;
 
@@ -166,23 +162,27 @@ pub fn chain<T>(
     a.into_iter().chain(b)
 }
 
-pub trait UniffiAttribute: Default + Parse {
+pub trait UniffiAttribute: Default {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self>;
     fn merge(self, other: Self) -> syn::Result<Self>;
+}
+
+pub fn parse_comma_separated<T: UniffiAttribute>(input: ParseStream<'_>) -> syn::Result<T> {
+    let punctuated = input.parse_terminated::<T, Token![,]>(T::parse_one)?;
+    punctuated.into_iter().try_fold(T::default(), T::merge)
 }
 
 #[derive(Default)]
 struct AttributeNotAllowedHere;
 
-impl Parse for AttributeNotAllowedHere {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+impl UniffiAttribute for AttributeNotAllowedHere {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         Err(syn::Error::new(
             input.span(),
             "UniFFI attributes are not currently recognized in this position",
         ))
     }
-}
 
-impl UniffiAttribute for AttributeNotAllowedHere {
     fn merge(self, _other: Self) -> syn::Result<Self> {
         Ok(Self)
     }
@@ -198,9 +198,8 @@ impl AttributeSliceExt for [Attribute] {
         self.iter()
             .filter(|attr| attr.path.is_ident("uniffi"))
             .try_fold(T::default(), |res, attr| {
-                let list: Punctuated<T, Token![,]> =
-                    attr.parse_args_with(Punctuated::parse_terminated)?;
-                list.into_iter().try_fold(res, T::merge)
+                let parsed = attr.parse_args_with(parse_comma_separated)?;
+                res.merge(parsed)
             })
     }
 
@@ -210,13 +209,13 @@ impl AttributeSliceExt for [Attribute] {
     }
 }
 
-pub fn either_attribute_arg<T: ToTokens>(a: Option<T>, b: Option<T>) -> syn::Result<Option<T>> {
+pub fn either_attribute_arg<T: Spanned>(a: Option<T>, b: Option<T>) -> syn::Result<Option<T>> {
     match (a, b) {
         (None, None) => Ok(None),
         (Some(val), None) | (None, Some(val)) => Ok(Some(val)),
         (Some(a), Some(b)) => {
-            let mut error = syn::Error::new_spanned(a, "redundant attribute argument");
-            error.combine(syn::Error::new_spanned(b, "note: first one here"));
+            let mut error = syn::Error::new(a.span(), "redundant attribute argument");
+            error.combine(syn::Error::new(b.span(), "note: first one here"));
             Err(error)
         }
     }

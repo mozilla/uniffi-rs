@@ -1,10 +1,6 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{
-    parse::{Parse, ParseStream},
-    punctuated::Punctuated,
-    Data, DeriveInput, Index, Token, Variant,
-};
+use syn::{parse::ParseStream, punctuated::Punctuated, Data, DeriveInput, Index, Token, Variant};
 use uniffi_meta::{ErrorMetadata, VariantMetadata};
 
 use crate::{
@@ -154,14 +150,12 @@ struct ErrorAttr {
     flat: Option<kw::flat_error>,
 }
 
-impl Parse for ErrorAttr {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+impl UniffiAttribute for ErrorAttr {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let flat = input.parse()?;
         Ok(ErrorAttr { flat })
     }
-}
 
-impl UniffiAttribute for ErrorAttr {
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
             flat: either_attribute_arg(self.flat, other.flat)?,
