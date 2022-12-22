@@ -5,7 +5,7 @@
 {%- else -%}
 {%- endmatch %}
 
-suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}Unit{% endmatch %} {
+suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% match func.return_type() %}{% when Some with (return_type) %}: {{ return_type|type_name }}{% when None %}{% endmatch %} {
     class Waker: RustFutureWaker {
         override fun callback(envCStructure: RustFutureWakerEnvironmentCStructure?) {
             val hash = envCStructure!!.hash

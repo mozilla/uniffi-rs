@@ -9,7 +9,7 @@ public interface {{ type_name }}Interface {
     suspend fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %})
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) %}: {{ return_type|type_name -}}
-    {%- else -%}
+    {%- when None -%}
     {%- endmatch -%}
     {%- else -%}
     {%- match meth.throws_type() -%}
@@ -53,16 +53,14 @@ class {{ type_name }}(
 
     {% for meth in obj.methods() -%}
     {%- if meth.is_async() -%}
-    {%- match meth.return_type() -%}
-    {%- when Some with (return_type) %}
-    override suspend fun {{ meth.name()|fn_name }}({%- call kt::arg_list_protocol(meth) -%}): {{ return_type|type_name }} {
+    override suspend fun {{ meth.name()|fn_name }}({%- call kt::arg_list_protocol(meth) -%}){% match meth.return_type() %}{% when Some with (return_type) %}: {{ return_type|type_name }}{% when None %}{% endmatch %} {
         class Waker: RustFutureWaker {
             override fun callback(envCStructure: RustFutureWakerEnvironmentCStructure?) {
                 val hash = envCStructure!!.hash
                 val env = _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.get(hash)!!
 
                 env.coroutineScope.launch {
-                    val polledResult =  {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Byte{% endmatch %}ByReference()
+                    val polledResult =  {% match meth.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Pointer{% endmatch %}ByReference()
                     val isReady = rustCall() { _status ->
                         _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}_poll(
                             env.rustFuture,
@@ -75,7 +73,12 @@ class {{ type_name }}(
 
                     if (isReady) {
                         @Suppress("UNCHECKED_CAST")
-                        (env.continuation as Continuation<{{ return_type|type_name }}>).resume({{ return_type|lift_fn}}(polledResult.getValue()))
+                        {% match meth.return_type() -%}
+                        {%- when Some with (return_type) -%}
+                            (env.continuation as Continuation<{{ return_type|type_name }}>).resume({{ return_type|lift_fn}}(polledResult.getValue()))
+                        {%- when None -%}
+                            (env.continuation as Continuation<Unit>).resume(Unit)
+                        {%- endmatch %}
 
                         _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.remove(hash)
                         rustCall() { _status ->
@@ -86,10 +89,10 @@ class {{ type_name }}(
             }
         }
 
-        val result: {{ return_type|type_name }}
+        val result: {% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}Unit{% endmatch %}
 
         coroutineScope {
-            result = suspendCoroutine<{{ return_type|type_name }}> { continuation ->
+            result = suspendCoroutine<{% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}Unit{% endmatch %}> { continuation ->
                 val rustFuture = callWithPointer {
                     {% call kt::to_ffi_call_with_prefix("it", meth) %}
                 }
@@ -108,10 +111,6 @@ class {{ type_name }}(
         return result
     }
 
-    {% when None %}
-
-    // TODO
-    {% endmatch %}
     {%- else -%}
 
     {%- match meth.throws_type() -%}
