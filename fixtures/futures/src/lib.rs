@@ -81,7 +81,7 @@ async fn void() {}
 async fn say() -> String {
     TimerFuture::new(Duration::from_secs(2)).await;
 
-    format!("Hello, Future!")
+    "Hello, Future!".to_string()
 }
 
 /// Async function that says something after a certain time.
