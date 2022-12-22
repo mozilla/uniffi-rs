@@ -45,7 +45,7 @@ internal interface _UniFFILib : Library {
         rustFuture: RustFuture,
         waker: RustFutureWaker,
         wakerEnv: RustFutureWakerEnvironmentCStructure?,
-        polledResult: {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Int{% endmatch %}ByReference,
+        polledResult: {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Pointer{% endmatch %}ByReference,
         _uniffi_out_err: RustCallStatus
     ): Boolean
 

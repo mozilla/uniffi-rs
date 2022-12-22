@@ -4,17 +4,15 @@
 @Throws({{ throwable|type_name }}::class)
 {%- else -%}
 {%- endmatch %}
-{%- match func.return_type() -%}
-{%- when Some with (return_type) %}
 
-suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {{ return_type|type_name }} {
+suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}Unit{% endmatch %} {
     class Waker: RustFutureWaker {
         override fun callback(envCStructure: RustFutureWakerEnvironmentCStructure?) {
             val hash = envCStructure!!.hash
             val env = _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.get(hash)!!
 
             env.coroutineScope.launch {
-                val polledResult =  {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Byte{% endmatch %}ByReference()
+                val polledResult =  {% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Pointer{% endmatch %}ByReference()
                 val isReady = rustCall() { _status ->
                     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}_poll(
                         env.rustFuture,
@@ -27,7 +25,12 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {{ 
 
                 if (isReady) {
                     @Suppress("UNCHECKED_CAST")
-                    (env.continuation as Continuation<{{ return_type|type_name }}>).resume({{ return_type|lift_fn}}(polledResult.getValue()))
+                    {% match func.return_type() -%}
+                    {%- when Some with (return_type) -%}
+                        (env.continuation as Continuation<{{ return_type|type_name }}>).resume({{ return_type|lift_fn}}(polledResult.getValue()))
+                    {%- when None -%}
+                        (env.continuation as Continuation<Unit>).resume(Unit)
+                    {%- endmatch %}
 
                     _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.remove(hash)
                     rustCall() { _status ->
@@ -38,10 +41,10 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {{ 
         }
     }
 
-    val result: {{ return_type|type_name }}
+    val result: {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}Unit{% endmatch %}
 
     coroutineScope {
-        result = suspendCoroutine<{{ return_type|type_name }}> { continuation ->
+        result = suspendCoroutine<{% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}Unit{% endmatch %}> { continuation ->
             val rustFuture = {% call kt::to_ffi_call(func) %}
 
             val env = RustFutureWakerEnvironment(rustFuture, continuation, Waker(), RustFutureWakerEnvironmentCStructure(), this)
@@ -58,10 +61,6 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {{ 
     return result
 }
 
-{% when None %}
-
-// TODO
-{% endmatch %}
 {%- else %}
 {%- match func.throws_type() -%}
 {%- when Some with (throwable) %}
