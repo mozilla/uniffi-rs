@@ -208,6 +208,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 395A8838251A062D00562F33 /* Build configuration list for PBXNativeTarget "IOSApp" */;
 			buildPhases = (
+				6C1D133F295C9B5600275D4D /* Generate Binding (incase build rule never ran) */,
 				CEEB59EB25263ECE003C87D1 /* Build Universal Binary for todolist */,
 				39ADC3D125E980F1000EE485 /* Build Universal Binary for arithmetic */,
 				395A880F251A062C00562F33 /* Sources */,
@@ -347,6 +348,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "bash $SRCROOT/xc-universal-binary.sh libarithmetical.a uniffi-example-arithmetic $SRCROOT/../../.. $CONFIGURATION\n";
+		};
+		6C1D133F295C9B5600275D4D /* Generate Binding (incase build rule never ran) */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate Binding (incase build rule never ran)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "bash $SRCROOT/xc-generate-binding.sh\n";
 		};
 		CEEB59EB25263ECE003C87D1 /* Build Universal Binary for todolist */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -537,6 +556,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"IOSApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 43AQ936H96;
 				ENABLE_PREVIEWS = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				INFOPLIST_FILE = IOSApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -561,6 +581,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"IOSApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 43AQ936H96;
 				ENABLE_PREVIEWS = YES;
+				"EXCLUDED_ARCHS[sdk=*]" = arm64;
 				INFOPLIST_FILE = IOSApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
