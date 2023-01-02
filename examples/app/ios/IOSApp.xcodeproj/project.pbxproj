@@ -34,7 +34,7 @@
 				"$(SRCROOT)/Generated/$(INPUT_FILE_BASE)FFI.h",
 				"$(SRCROOT)/Generated/$(INPUT_FILE_BASE).swift",
 			);
-			script = "# Generate swift bindings for the todolist rust library.\necho \"Generating files for $INPUT_FILE_PATH\"\n\"$SRCROOT/../../../target/debug/uniffi-bindgen\" generate \"$INPUT_FILE_PATH\" --language swift --out-dir \"$SRCROOT/Generated\"\necho \"Generated files for $INPUT_FILE_BASE in $SRCROOT/Generated\"\n";
+			script = "# Generate swift bindings for the todolist rust library.\necho \"Generating files for $INPUT_FILE_PATH\"\n$HOME/.cargo/bin/cargo run -p uniffi-bindgen-cli -- \\\n    generate \"$INPUT_FILE_PATH\" \\\n    --language swift \\\n    --out-dir \"$SRCROOT/Generated\"\necho \"Generated files for $INPUT_FILE_BASE in $SRCROOT/Generated\"\n";
 		};
 /* End PBXBuildRule section */
 
@@ -346,7 +346,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "bash $SRCROOT/xc-universal-binary.sh libarithmetical.a uniffi-example-arithmetic $SRCROOT/../../.. $CONFIGURATION\n";
+			shellScript = "bash $SRCROOT/xc-universal-binary.sh uniffi-example-arithmetic $SRCROOT/../../.. $CONFIGURATION\n";
 		};
 		CEEB59EB25263ECE003C87D1 /* Build Universal Binary for todolist */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -364,7 +364,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "bash $SRCROOT/xc-universal-binary.sh libuniffi_todolist.a uniffi-example-todolist $SRCROOT/../../.. $CONFIGURATION\n";
+			shellScript = "bash $SRCROOT/xc-universal-binary.sh uniffi-example-todolist $SRCROOT/../../.. $CONFIGURATION\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -543,7 +543,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../../target/universal/debug";
+				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "../../../target/aarch64-apple-ios/debug";
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=arm64]" = "../../../target/aarch64-apple-ios-sim/debug";
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=x86_64]" = "../../../target/x86_64-apple-ios/debug";
 				PRODUCT_BUNDLE_IDENTIFIER = org.mozilla.example.uniffi.IOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "IOSApp-Bridging-Header.h";
@@ -567,7 +569,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../../target/universal/release";
+				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "../../../target/aarch64-apple-ios/release";
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=arm64]" = "../../../target/aarch64-apple-ios-sim/release";
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=x86_64]" = "../../../target/x86_64-apple-ios/release";
 				PRODUCT_BUNDLE_IDENTIFIER = org.mozilla.example.uniffi.IOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "IOSApp-Bridging-Header.h";
