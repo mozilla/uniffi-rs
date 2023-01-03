@@ -1,0 +1,21 @@
+[package]
+name = "uniffi-fixture-logging-callback-interface"
+edition = "2021"
+version = "0.22.0"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "uniffi_regression_logging_callback_interface"
+
+[dependencies]
+log = "0.4"
+uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+
+[build-dependencies]
+uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
+
+[dev-dependencies]
+uniffi_bindgen = {path = "../../../uniffi_bindgen"}
+uniffi_macros = {path = "../../../uniffi_macros"}

@@ -1,0 +1,8 @@
+namespace regression_logging_callback_interface {
+  void install_logger(Logger logger);
+  void log_something();
+};
+
+callback interface Logger {
+    void log_message(string message);
+};

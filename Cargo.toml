@@ -38,6 +38,7 @@ members = [
   "fixtures/regressions/kotlin-experimental-unsigned-types",
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",
+  "fixtures/regressions/logging-callback-interface",
   "fixtures/regressions/missing-newline",
   "fixtures/regressions/swift-callbacks-omit-labels",
   "fixtures/regressions/swift-dictionary-nesting",

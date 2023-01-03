@@ -8,6 +8,10 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...HEAD).
 
+### What's changed
+
+- Callback interface method calls are no longer logged (#1439)
+
 ## v0.22.0 - (_2022-12-16_)
 
 [All changes in v0.22.0](https://github.com/mozilla/uniffi-rs/compare/v0.21.1...v0.22.0).
