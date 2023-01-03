@@ -13,7 +13,7 @@
 //! The Rust code that implements a component, and the foreign language bindings that consume it,
 //! will both typically deal with such types as their core concern.
 //!
-//! The set of all [`Type`]s used in a component interface is represented by a [`TypeUniverse`],
+//! The set of all [`Type`]s used in a component interface is represented by a `TypeUniverse`,
 //! which can be used by the bindings generator code to determine what type-related helper
 //! functions to emit for a given component.
 //!
