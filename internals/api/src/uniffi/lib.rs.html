@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uniffi/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../uniffi/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -706,704 +700,703 @@
 <span id="700">700</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Runtime support code for uniffi</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This crate provides the small amount of runtime code that is required by the generated uniffi</span>
-<span class="doccomment">//! component scaffolding in order to transfer data back and forth across the C-style FFI layer,</span>
-<span class="doccomment">//! as well as some utilities for testing the generated bindings.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The key concept here is the [`FfiConverter`] trait, which is responsible for converting between</span>
-<span class="doccomment">//! a Rust type and a low-level C-style type that can be passed across the FFI:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!  * How to [represent](FfiConverter::FfiType) values of the Rust type in the low-level C-style type</span>
-<span class="doccomment">//!    system of the FFI layer.</span>
-<span class="doccomment">//!  * How to [&quot;lower&quot;](FfiConverter::lower) values of the Rust type into an appropriate low-level</span>
-<span class="doccomment">//!    FFI value.</span>
-<span class="doccomment">//!  * How to [&quot;lift&quot;](FfiConverter::try_lift) low-level FFI values back into values of the Rust</span>
-<span class="doccomment">//!    type.</span>
-<span class="doccomment">//!  * How to [write](FfiConverter::write) values of the Rust type into a buffer, for cases</span>
-<span class="doccomment">//!    where they are part of a compound data structure that is serialized for transfer.</span>
-<span class="doccomment">//!  * How to [read](FfiConverter::try_read) values of the Rust type from buffer, for cases</span>
-<span class="doccomment">//!    where they are received as part of a compound data structure that was serialized for transfer.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This logic encapsulates the Rust-side handling of data transfer. Each foreign-language binding</span>
-<span class="doccomment">//! must also implement a matching set of data-handling rules for each data type.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! In addition to the core `FfiConverter` trait, we provide a handful of struct definitions useful</span>
-<span class="doccomment">//! for passing core rust types over the FFI, such as [`RustBuffer`].</span>
+</span><span class="doccomment">//! # Runtime support code for uniffi
+//!
+//! This crate provides the small amount of runtime code that is required by the generated uniffi
+//! component scaffolding in order to transfer data back and forth across the C-style FFI layer,
+//! as well as some utilities for testing the generated bindings.
+//!
+//! The key concept here is the [`FfiConverter`] trait, which is responsible for converting between
+//! a Rust type and a low-level C-style type that can be passed across the FFI:
+//!
+//!  * How to [represent](FfiConverter::FfiType) values of the Rust type in the low-level C-style type
+//!    system of the FFI layer.
+//!  * How to [&quot;lower&quot;](FfiConverter::lower) values of the Rust type into an appropriate low-level
+//!    FFI value.
+//!  * How to [&quot;lift&quot;](FfiConverter::try_lift) low-level FFI values back into values of the Rust
+//!    type.
+//!  * How to [write](FfiConverter::write) values of the Rust type into a buffer, for cases
+//!    where they are part of a compound data structure that is serialized for transfer.
+//!  * How to [read](FfiConverter::try_read) values of the Rust type from buffer, for cases
+//!    where they are received as part of a compound data structure that was serialized for transfer.
+//!
+//! This logic encapsulates the Rust-side handling of data transfer. Each foreign-language binding
+//! must also implement a matching set of data-handling rules for each data type.
+//!
+//! In addition to the core `FfiConverter` trait, we provide a handful of struct definitions useful
+//! for passing core rust types over the FFI, such as [`RustBuffer`].
 
-<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">rust_2018_idioms</span>, <span class="ident">unused_qualifications</span>)]</span>
+</span><span class="attribute">#![warn(rust_2018_idioms, unused_qualifications)]
 
-<span class="kw">use</span> <span class="ident">anyhow::bail</span>;
-<span class="kw">use</span> <span class="ident">bytes::buf</span>::{<span class="ident">Buf</span>, <span class="ident">BufMut</span>};
-<span class="kw">use</span> <span class="ident">paste::paste</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">collections::HashMap</span>,
-    <span class="ident">convert::TryFrom</span>,
-    <span class="ident">time</span>::{<span class="ident">Duration</span>, <span class="ident">SystemTime</span>},
+</span><span class="kw">use </span>anyhow::bail;
+<span class="kw">use </span>bytes::buf::{Buf, BufMut};
+<span class="kw">use </span>paste::paste;
+<span class="kw">use </span>std::{
+    collections::HashMap,
+    convert::TryFrom,
+    time::{Duration, SystemTime},
 };
 
-<span class="comment">// Make Result&lt;&gt; public to support external impls of FfiConverter</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">anyhow::Result</span>;
+<span class="comment">// Make Result&lt;&gt; public to support external impls of FfiConverter
+</span><span class="kw">pub use </span>anyhow::Result;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">ffi</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ffi</span>::<span class="kw-2">*</span>;
+<span class="kw">pub mod </span>ffi;
+<span class="kw">pub use </span>ffi::<span class="kw-2">*</span>;
 
-<span class="comment">// Re-export the libs that we use in the generated code,</span>
-<span class="comment">// so the consumer doesn&#39;t have to depend on them directly.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">deps</span> {
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">anyhow</span>;
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">bytes</span>;
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">log</span>;
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">static_assertions</span>;
+<span class="comment">// Re-export the libs that we use in the generated code,
+// so the consumer doesn&#39;t have to depend on them directly.
+</span><span class="kw">pub mod </span>deps {
+    <span class="kw">pub use </span>anyhow;
+    <span class="kw">pub use </span>bytes;
+    <span class="kw">pub use </span>log;
+    <span class="kw">pub use </span>static_assertions;
 }
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">uniffi_macros</span>::{<span class="ident">export</span>, <span class="ident">Enum</span>, <span class="ident">Error</span>, <span class="ident">Object</span>, <span class="ident">Record</span>};
+<span class="kw">pub use </span>uniffi_macros::{export, Enum, Error, Object, Record};
 
-<span class="kw">mod</span> <span class="ident">panichook</span>;
+<span class="kw">mod </span>panichook;
 
-<span class="kw">const</span> <span class="ident">PACKAGE_VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
+<span class="kw">const </span>PACKAGE_VERSION: <span class="kw-2">&amp;</span>str = <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
 
-<span class="comment">// For the significance of this magic number 10 here, and the reason that</span>
-<span class="comment">// it can&#39;t be a named constant, see the `check_compatible_version` function.</span>
-<span class="macro">static_assertions::const_assert!</span>(<span class="ident">PACKAGE_VERSION</span>.<span class="ident">as_bytes</span>().<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">10</span>);
+<span class="comment">// For the significance of this magic number 10 here, and the reason that
+// it can&#39;t be a named constant, see the `check_compatible_version` function.
+</span><span class="macro">static_assertions::const_assert!</span>(PACKAGE_VERSION.as_bytes().len() &lt; <span class="number">10</span>);
 
-<span class="doccomment">/// Check whether the uniffi runtime version is compatible a given uniffi_bindgen version.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The result of this check may be used to ensure that generated Rust scaffolding is</span>
-<span class="doccomment">/// using a compatible version of the uniffi runtime crate. It&#39;s a `const fn` so that it</span>
-<span class="doccomment">/// can be used to perform such a check at compile time.</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::len_zero</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">check_compatible_version</span>(<span class="ident">bindgen_version</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
-    <span class="comment">// While UniFFI is still under heavy development, we require that</span>
-    <span class="comment">// the runtime support crate be precisely the same version as the</span>
-    <span class="comment">// build-time bindgen crate.</span>
-    <span class="comment">//</span>
-    <span class="comment">// What we want to achieve here is checking two strings for equality.</span>
-    <span class="comment">// Unfortunately Rust doesn&#39;t yet support calling the `&amp;str` equals method</span>
-    <span class="comment">// in a const context. We can hack around that by doing a byte-by-byte</span>
-    <span class="comment">// comparison of the underlying bytes.</span>
-    <span class="kw">let</span> <span class="ident">package_version</span> <span class="op">=</span> <span class="ident">PACKAGE_VERSION</span>.<span class="ident">as_bytes</span>();
-    <span class="kw">let</span> <span class="ident">bindgen_version</span> <span class="op">=</span> <span class="ident">bindgen_version</span>.<span class="ident">as_bytes</span>();
-    <span class="comment">// What we want to achieve here is a loop over the underlying bytes,</span>
-    <span class="comment">// something like:</span>
-    <span class="comment">// ```</span>
-    <span class="comment">//  if package_version.len() != bindgen_version.len() {</span>
-    <span class="comment">//      return false</span>
-    <span class="comment">//  }</span>
-    <span class="comment">//  for i in 0..package_version.len() {</span>
-    <span class="comment">//      if package_version[i] != bindgen_version[i] {</span>
-    <span class="comment">//          return false</span>
-    <span class="comment">//      }</span>
-    <span class="comment">//  }</span>
-    <span class="comment">//  return true</span>
-    <span class="comment">// ```</span>
-    <span class="comment">// Unfortunately stable Rust doesn&#39;t allow `if` or `for` in const contexts,</span>
-    <span class="comment">// so code like the above would only work in nightly. We can hack around it by</span>
-    <span class="comment">// statically asserting that the string is shorter than a certain length</span>
-    <span class="comment">// (currently 10 bytes) and then manually unrolling that many iterations of the loop.</span>
-    <span class="comment">//</span>
-    <span class="comment">// Yes, I am aware that this is horrific, but the externally-visible</span>
-    <span class="comment">// behaviour is quite nice for consumers!</span>
-    <span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="ident">bindgen_version</span>.<span class="ident">len</span>()
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">0</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">0</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">1</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">1</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">2</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">2</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">3</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">3</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">3</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">4</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">4</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">4</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">5</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">5</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">5</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">6</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">6</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">6</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">7</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">7</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">7</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">8</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">8</span>])
-        <span class="op">&amp;&amp;</span> (<span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">9</span> <span class="op">|</span><span class="op">|</span> <span class="ident">package_version</span>[<span class="number">9</span>] <span class="op">==</span> <span class="ident">bindgen_version</span>[<span class="number">9</span>])
-        <span class="op">&amp;&amp;</span> <span class="ident">package_version</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">10</span>
-}
+<span class="doccomment">/// Check whether the uniffi runtime version is compatible a given uniffi_bindgen version.
+///
+/// The result of this check may be used to ensure that generated Rust scaffolding is
+/// using a compatible version of the uniffi runtime crate. It&#39;s a `const fn` so that it
+/// can be used to perform such a check at compile time.
+</span><span class="attribute">#[allow(clippy::len_zero)]
+</span><span class="kw">pub const fn </span>check_compatible_version(bindgen_version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; bool {
+    <span class="comment">// While UniFFI is still under heavy development, we require that
+    // the runtime support crate be precisely the same version as the
+    // build-time bindgen crate.
+    //
+    // What we want to achieve here is checking two strings for equality.
+    // Unfortunately Rust doesn&#39;t yet support calling the `&amp;str` equals method
+    // in a const context. We can hack around that by doing a byte-by-byte
+    // comparison of the underlying bytes.
+    </span><span class="kw">let </span>package_version = PACKAGE_VERSION.as_bytes();
+    <span class="kw">let </span>bindgen_version = bindgen_version.as_bytes();
+    <span class="comment">// What we want to achieve here is a loop over the underlying bytes,
+    // something like:
+    // ```
+    //  if package_version.len() != bindgen_version.len() {
+    //      return false
+    //  }
+    //  for i in 0..package_version.len() {
+    //      if package_version[i] != bindgen_version[i] {
+    //          return false
+    //      }
+    //  }
+    //  return true
+    // ```
+    // Unfortunately stable Rust doesn&#39;t allow `if` or `for` in const contexts,
+    // so code like the above would only work in nightly. We can hack around it by
+    // statically asserting that the string is shorter than a certain length
+    // (currently 10 bytes) and then manually unrolling that many iterations of the loop.
+    //
+    // Yes, I am aware that this is horrific, but the externally-visible
+    // behaviour is quite nice for consumers!
+    </span>package_version.len() == bindgen_version.len()
+        &amp;&amp; (package_version.len() == <span class="number">0 </span>|| package_version[<span class="number">0</span>] == bindgen_version[<span class="number">0</span>])
+        &amp;&amp; (package_version.len() &lt;= <span class="number">1 </span>|| package_version[<span class="number">1</span>] == bindgen_version[<span class="number">1</span>])
+        &amp;&amp; (package_version.len() &lt;= <span class="number">2 </span>|| package_version[<span class="number">2</span>] == bindgen_version[<span class="number">2</span>])
+        &amp;&amp; (package_version.len() &lt;= <span class="number">3 </span>|| package_version[<span class="number">3</span>] == bindgen_version[<span class="number">3</span>])
+        &amp;&amp; (package_version.len() &lt;= <span class="number">4 </span>|| package_version[<span class="number">4</span>] == bindgen_version[<span class="number">4</span>])
+        &amp;&amp; (package_version.len() &lt;= <span class="number">5 </span>|| package_version[<span class="number">5</span>] == bindgen_version[<span class="number">5</span>])
+        &amp;&amp; (package_version.len() &lt;= <span class="number">6 </span>|| package_version[<span class="number">6</span>] == bindgen_version[<span class="number">6</span>])
+        &amp;&amp; (package_version.len() &lt;= <span class="number">7 </span>|| package_version[<span class="number">7</span>] == bindgen_version[<span class="number">7</span>])
+        &amp;&amp; (package_version.len() &lt;= <span class="number">8 </span>|| package_version[<span class="number">8</span>] == bindgen_version[<span class="number">8</span>])
+        &amp;&amp; (package_version.len() &lt;= <span class="number">9 </span>|| package_version[<span class="number">9</span>] == bindgen_version[<span class="number">9</span>])
+        &amp;&amp; package_version.len() &lt; <span class="number">10
+</span>}
 
-<span class="doccomment">/// Assert that the uniffi runtime version matches an expected value.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is a helper hook for the generated Rust scaffolding, to produce a compile-time</span>
-<span class="doccomment">/// error if the version of `uniffi_bindgen` used to generate the scaffolding was</span>
-<span class="doccomment">/// incompatible with the version of `uniffi` being used at runtime.</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
-<span class="macro">macro_rules!</span> <span class="ident">assert_compatible_version</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">v</span>:<span class="ident">expr</span> $(,)<span class="question-mark">?</span>) =&gt; {
-        <span class="macro">uniffi::deps::static_assertions::const_assert!</span>(<span class="ident">uniffi::check_compatible_version</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">v</span>));
+<span class="doccomment">/// Assert that the uniffi runtime version matches an expected value.
+///
+/// This is a helper hook for the generated Rust scaffolding, to produce a compile-time
+/// error if the version of `uniffi_bindgen` used to generate the scaffolding was
+/// incompatible with the version of `uniffi` being used at runtime.
+</span><span class="attribute">#[macro_export]
+</span><span class="macro">macro_rules! </span>assert_compatible_version {
+    (<span class="macro-nonterminal">$v</span>:expr $(,)<span class="question-mark">?</span>) =&gt; {
+        <span class="macro">uniffi::deps::static_assertions::const_assert!</span>(uniffi::check_compatible_version(<span class="macro-nonterminal">$v</span>));
     };
 }
 
-<span class="doccomment">/// Trait defining how to transfer values via the FFI layer.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The `FfiConverter` trait defines how to pass values of a particular type back-and-forth over</span>
-<span class="doccomment">/// the uniffi generated FFI layer, both as standalone argument or return values, and as</span>
-<span class="doccomment">/// part of serialized compound data structures.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// (This trait is like the `IntoFfi` trait from `ffi_support`, but local to this crate</span>
-<span class="doccomment">/// so that we can add some alternative implementations for different builtin types,</span>
-<span class="doccomment">/// and so that we can add support for receiving as well as returning).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Safety</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is an unsafe trait (implementing it requires `unsafe impl`) because we can&#39;t guarantee</span>
-<span class="doccomment">/// that it&#39;s safe to pass your type out to foreign-language code and back again. Buggy</span>
-<span class="doccomment">/// implementations of this trait might violate some assumptions made by the generated code,</span>
-<span class="doccomment">/// or might not match with the corresponding code in the generated foreign-language bindings.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// In general, you should not need to implement this trait by hand, and should instead rely on</span>
-<span class="doccomment">/// implementations generated from your component UDL via the `uniffi-bindgen scaffolding` command.</span>
+<span class="doccomment">/// Trait defining how to transfer values via the FFI layer.
+///
+/// The `FfiConverter` trait defines how to pass values of a particular type back-and-forth over
+/// the uniffi generated FFI layer, both as standalone argument or return values, and as
+/// part of serialized compound data structures.
+///
+/// (This trait is like the `IntoFfi` trait from `ffi_support`, but local to this crate
+/// so that we can add some alternative implementations for different builtin types,
+/// and so that we can add support for receiving as well as returning).
+///
+/// ## Safety
+///
+/// This is an unsafe trait (implementing it requires `unsafe impl`) because we can&#39;t guarantee
+/// that it&#39;s safe to pass your type out to foreign-language code and back again. Buggy
+/// implementations of this trait might violate some assumptions made by the generated code,
+/// or might not match with the corresponding code in the generated foreign-language bindings.
+///
+/// In general, you should not need to implement this trait by hand, and should instead rely on
+/// implementations generated from your component UDL via the `uniffi-bindgen scaffolding` command.
 
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">FfiConverter</span>: <span class="ident">Sized</span> {
-    <span class="doccomment">/// The type used in Rust code.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// For primitive / standard types, we implement `FfiConverter` on the type itself with `RustType=Self`.</span>
-    <span class="doccomment">/// For user-defined types we create a unit struct and implement it there.  This sidesteps</span>
-    <span class="doccomment">/// Rust&#39;s orphan rules (ADR-0006).</span>
-    <span class="kw">type</span> <span class="ident">RustType</span>;
+</span><span class="kw">pub unsafe trait </span>FfiConverter: Sized {
+    <span class="doccomment">/// The type used in Rust code.
+    ///
+    /// For primitive / standard types, we implement `FfiConverter` on the type itself with `RustType=Self`.
+    /// For user-defined types we create a unit struct and implement it there.  This sidesteps
+    /// Rust&#39;s orphan rules (ADR-0006).
+    </span><span class="kw">type </span>RustType;
 
-    <span class="doccomment">/// The low-level type used for passing values of this type over the FFI.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This must be a C-compatible type (e.g. a numeric primitive, a `#[repr(C)]` struct) into</span>
-    <span class="doccomment">/// which values of the target rust type can be converted.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// For complex data types, we currently recommend using `RustBuffer` and serializing</span>
-    <span class="doccomment">/// the data for transfer. In theory it could be possible to build a matching</span>
-    <span class="doccomment">/// `#[repr(C)]` struct for a complex data type and pass that instead, but explicit</span>
-    <span class="doccomment">/// serialization is simpler and safer as a starting point.</span>
-    <span class="kw">type</span> <span class="ident">FfiType</span>;
+    <span class="doccomment">/// The low-level type used for passing values of this type over the FFI.
+    ///
+    /// This must be a C-compatible type (e.g. a numeric primitive, a `#[repr(C)]` struct) into
+    /// which values of the target rust type can be converted.
+    ///
+    /// For complex data types, we currently recommend using `RustBuffer` and serializing
+    /// the data for transfer. In theory it could be possible to build a matching
+    /// `#[repr(C)]` struct for a complex data type and pass that instead, but explicit
+    /// serialization is simpler and safer as a starting point.
+    </span><span class="kw">type </span>FfiType;
 
-    <span class="doccomment">/// Lower a rust value of the target type, into an FFI value of type Self::FfiType.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This trait method is used for sending data from rust to the foreign language code,</span>
-    <span class="doccomment">/// by (hopefully cheaply!) converting it into something that can be passed over the FFI</span>
-    <span class="doccomment">/// and reconstructed on the other side.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note that this method takes an owned `Self::RustType`; this allows it to transfer ownership</span>
-    <span class="doccomment">/// in turn to the foreign language code, e.g. by boxing the value and passing a pointer.</span>
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span>;
+    <span class="doccomment">/// Lower a rust value of the target type, into an FFI value of type Self::FfiType.
+    ///
+    /// This trait method is used for sending data from rust to the foreign language code,
+    /// by (hopefully cheaply!) converting it into something that can be passed over the FFI
+    /// and reconstructed on the other side.
+    ///
+    /// Note that this method takes an owned `Self::RustType`; this allows it to transfer ownership
+    /// in turn to the foreign language code, e.g. by boxing the value and passing a pointer.
+    </span><span class="kw">fn </span>lower(obj: <span class="self">Self</span>::RustType) -&gt; <span class="self">Self</span>::FfiType;
 
-    <span class="doccomment">/// Lift a rust value of the target type, from an FFI value of type Self::FfiType.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This trait method is used for receiving data from the foreign language code in rust,</span>
-    <span class="doccomment">/// by (hopefully cheaply!) converting it from a low-level FFI value of type Self::FfiType</span>
-    <span class="doccomment">/// into a high-level rust value of the target type.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Since we cannot statically guarantee that the foreign-language code will send valid</span>
-    <span class="doccomment">/// values of type Self::FfiType, this method is fallible.</span>
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span>;
+    <span class="doccomment">/// Lift a rust value of the target type, from an FFI value of type Self::FfiType.
+    ///
+    /// This trait method is used for receiving data from the foreign language code in rust,
+    /// by (hopefully cheaply!) converting it from a low-level FFI value of type Self::FfiType
+    /// into a high-level rust value of the target type.
+    ///
+    /// Since we cannot statically guarantee that the foreign-language code will send valid
+    /// values of type Self::FfiType, this method is fallible.
+    </span><span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt;;
 
-    <span class="doccomment">/// Write a rust value into a buffer, to send over the FFI in serialized form.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This trait method can be used for sending data from rust to the foreign language code,</span>
-    <span class="doccomment">/// in cases where we&#39;re not able to use a special-purpose FFI type and must fall back to</span>
-    <span class="doccomment">/// sending serialized bytes.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note that this method takes an owned `Self::RustType` because it&#39;s transferring ownership</span>
-    <span class="doccomment">/// to the foreign language code via the RustBuffer.</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>);
+    <span class="doccomment">/// Write a rust value into a buffer, to send over the FFI in serialized form.
+    ///
+    /// This trait method can be used for sending data from rust to the foreign language code,
+    /// in cases where we&#39;re not able to use a special-purpose FFI type and must fall back to
+    /// sending serialized bytes.
+    ///
+    /// Note that this method takes an owned `Self::RustType` because it&#39;s transferring ownership
+    /// to the foreign language code via the RustBuffer.
+    </span><span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;);
 
-    <span class="doccomment">/// Read a rust value from a buffer, received over the FFI in serialized form.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This trait method can be used for receiving data from the foreign language code in rust,</span>
-    <span class="doccomment">/// in cases where we&#39;re not able to use a special-purpose FFI type and must fall back to</span>
-    <span class="doccomment">/// receiving serialized bytes.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Since we cannot statically guarantee that the foreign-language code will send valid</span>
-    <span class="doccomment">/// serialized bytes for the target type, this method is fallible.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note the slightly unusual type here - we want a mutable reference to a slice of bytes,</span>
-    <span class="doccomment">/// because we want to be able to advance the start of the slice after reading an item</span>
-    <span class="doccomment">/// from it (but will not mutate the actual contents of the slice).</span>
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span>;
+    <span class="doccomment">/// Read a rust value from a buffer, received over the FFI in serialized form.
+    ///
+    /// This trait method can be used for receiving data from the foreign language code in rust,
+    /// in cases where we&#39;re not able to use a special-purpose FFI type and must fall back to
+    /// receiving serialized bytes.
+    ///
+    /// Since we cannot statically guarantee that the foreign-language code will send valid
+    /// serialized bytes for the target type, this method is fallible.
+    ///
+    /// Note the slightly unusual type here - we want a mutable reference to a slice of bytes,
+    /// because we want to be able to advance the start of the slice after reading an item
+    /// from it (but will not mutate the actual contents of the slice).
+    </span><span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt;;
 }
 
-<span class="doccomment">/// Types that can be returned from exported functions.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Blanket-implemented by any FfiConverter with RustType = Self, but additionally implemented by</span>
-<span class="doccomment">/// the unit type.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This helper trait is currently only used to simplify the code generated by the export macro and</span>
-<span class="doccomment">/// is not part of the public interface of the library, hence its documentation is hidden.</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">FfiReturn</span>: <span class="ident">Sized</span> {
-    <span class="kw">type</span> <span class="ident">FfiType</span>;
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span>;
+<span class="doccomment">/// Types that can be returned from exported functions.
+///
+/// Blanket-implemented by any FfiConverter with RustType = Self, but additionally implemented by
+/// the unit type.
+///
+/// This helper trait is currently only used to simplify the code generated by the export macro and
+/// is not part of the public interface of the library, hence its documentation is hidden.
+</span><span class="attribute">#[doc(hidden)]
+</span><span class="kw">pub unsafe trait </span>FfiReturn: Sized {
+    <span class="kw">type </span>FfiType;
+    <span class="kw">fn </span>lower(<span class="self">self</span>) -&gt; <span class="self">Self</span>::FfiType;
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">FfiReturn</span> <span class="kw">for</span> <span class="ident">T</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">FfiConverter</span><span class="op">&lt;</span><span class="ident">RustType</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">unsafe impl</span>&lt;T&gt; FfiReturn <span class="kw">for </span>T
+<span class="kw">where
+    </span>T: FfiConverter&lt;RustType = T&gt;,
 {
-    <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::FfiType</span>;
+    <span class="kw">type </span>FfiType = &lt;<span class="self">Self </span><span class="kw">as </span>FfiConverter&gt;::FfiType;
 
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
-        <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::lower</span>(<span class="self">self</span>)
+    <span class="kw">fn </span>lower(<span class="self">self</span>) -&gt; <span class="self">Self</span>::FfiType {
+        &lt;<span class="self">Self </span><span class="kw">as </span>FfiConverter&gt;::lower(<span class="self">self</span>)
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">FfiReturn</span> <span class="kw">for</span> () {
-    <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> ();
+<span class="kw">unsafe impl </span>FfiReturn <span class="kw">for </span>() {
+    <span class="kw">type </span>FfiType = ();
 
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
-        <span class="self">self</span>
-    }
+    <span class="kw">fn </span>lower(<span class="self">self</span>) -&gt; <span class="self">Self</span>::FfiType {
+        <span class="self">self
+    </span>}
 }
 
-<span class="doccomment">/// A helper function to ensure we don&#39;t read past the end of a buffer.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Rust won&#39;t actually let us read past the end of a buffer, but the `Buf` trait does not support</span>
-<span class="doccomment">/// returning an explicit error in this case, and will instead panic. This is a look-before-you-leap</span>
-<span class="doccomment">/// helper function to instead return an explicit error, to help with debugging.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_remaining</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">num_bytes</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">buf</span>.<span class="ident">remaining</span>() <span class="op">&lt;</span> <span class="ident">num_bytes</span> {
+<span class="doccomment">/// A helper function to ensure we don&#39;t read past the end of a buffer.
+///
+/// Rust won&#39;t actually let us read past the end of a buffer, but the `Buf` trait does not support
+/// returning an explicit error in this case, and will instead panic. This is a look-before-you-leap
+/// helper function to instead return an explicit error, to help with debugging.
+</span><span class="kw">pub fn </span>check_remaining(buf: <span class="kw-2">&amp;</span>[u8], num_bytes: usize) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">if </span>buf.remaining() &lt; num_bytes {
         <span class="macro">bail!</span>(
             <span class="string">&quot;not enough bytes remaining in buffer ({} &lt; {num_bytes})&quot;</span>,
-            <span class="ident">buf</span>.<span class="ident">remaining</span>(),
+            buf.remaining(),
         );
     }
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Blanket implementation of `FfiConverter` for numeric primitives.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Numeric primitives have a straightforward mapping into C-compatible numeric types,</span>
-<span class="doccomment">/// sice they are themselves a C-compatible numeric type!</span>
-<span class="macro">macro_rules!</span> <span class="ident">impl_via_ffi_for_num_primitive</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>,)<span class="op">+</span>) =&gt; { <span class="macro">impl_via_ffi_for_num_primitive!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>),<span class="op">+</span>); };
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="kw-2">*</span>) =&gt; {
+<span class="doccomment">/// Blanket implementation of `FfiConverter` for numeric primitives.
+///
+/// Numeric primitives have a straightforward mapping into C-compatible numeric types,
+/// sice they are themselves a C-compatible numeric type!
+</span><span class="macro">macro_rules! </span>impl_via_ffi_for_num_primitive {
+    ($(<span class="macro-nonterminal">$T</span>:ty,)+) =&gt; { <span class="macro">impl_via_ffi_for_num_primitive!</span>($(<span class="macro-nonterminal">$T</span>),+); };
+    ($(<span class="macro-nonterminal">$T</span>:ty),<span class="kw-2">*</span>) =&gt; {
             $(
-                <span class="macro">paste!</span> {
-                    <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">FfiConverter</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
-                        <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
-                        <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="self">Self</span>;
+                <span class="macro">paste! </span>{
+                    <span class="kw">unsafe impl </span>FfiConverter <span class="kw">for </span><span class="macro-nonterminal">$T </span>{
+                        <span class="kw">type </span>RustType = <span class="self">Self</span>;
+                        <span class="kw">type </span>FfiType = <span class="self">Self</span>;
 
-                        <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
-                            <span class="ident">obj</span>
+                        <span class="kw">fn </span>lower(obj: <span class="self">Self</span>::RustType) -&gt; <span class="self">Self</span>::FfiType {
+                            obj
                         }
 
-                        <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-                            <span class="prelude-val">Ok</span>(<span class="ident">v</span>)
+                        <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+                            <span class="prelude-val">Ok</span>(v)
                         }
 
-                        <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-                            <span class="ident">buf</span>.[<span class="op">&lt;</span><span class="ident">put_</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span><span class="op">&gt;</span>](<span class="ident">obj</span>);
+                        <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+                            buf.[&lt;put_ <span class="macro-nonterminal">$T</span>&gt;](obj);
                         }
 
-                        <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-                            <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span><span class="op">&gt;</span>())<span class="question-mark">?</span>;
-                            <span class="prelude-val">Ok</span>(<span class="ident">buf</span>.[<span class="op">&lt;</span><span class="ident">get_</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span><span class="op">&gt;</span>]())
+                        <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+                            check_remaining(buf, std::mem::size_of::&lt;<span class="macro-nonterminal">$T</span>&gt;())<span class="question-mark">?</span>;
+                            <span class="prelude-val">Ok</span>(buf.[&lt;get_ <span class="macro-nonterminal">$T</span>&gt;]())
                         }
                     }
                 }
-            )<span class="op">*</span>
+            )*
     };
 }
 
-<span class="macro">impl_via_ffi_for_num_primitive!</span> {
-    <span class="ident">i8</span>, <span class="ident">u8</span>, <span class="ident">i16</span>, <span class="ident">u16</span>, <span class="ident">i32</span>, <span class="ident">u32</span>, <span class="ident">i64</span>, <span class="ident">u64</span>, <span class="ident">f32</span>, <span class="ident">f64</span>
+<span class="macro">impl_via_ffi_for_num_primitive! </span>{
+    i8, u8, i16, u16, i32, u32, i64, u64, f32, f64
 }
 
-<span class="doccomment">/// Support for passing boolean values via the FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Booleans are passed as an `i8` in order to avoid problems with handling</span>
-<span class="doccomment">/// C-compatible boolean values on JVM-based languages.</span>
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">FfiConverter</span> <span class="kw">for</span> <span class="ident">bool</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
-    <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="ident">i8</span>;
+<span class="doccomment">/// Support for passing boolean values via the FFI.
+///
+/// Booleans are passed as an `i8` in order to avoid problems with handling
+/// C-compatible boolean values on JVM-based languages.
+</span><span class="kw">unsafe impl </span>FfiConverter <span class="kw">for </span>bool {
+    <span class="kw">type </span>RustType = <span class="self">Self</span>;
+    <span class="kw">type </span>FfiType = i8;
 
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
-        <span class="ident">i8::from</span>(<span class="ident">obj</span>)
+    <span class="kw">fn </span>lower(obj: <span class="self">Self</span>::RustType) -&gt; <span class="self">Self</span>::FfiType {
+        i8::from(obj)
     }
 
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">v</span> {
-            <span class="number">0</span> =&gt; <span class="bool-val">false</span>,
-            <span class="number">1</span> =&gt; <span class="bool-val">true</span>,
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;unexpected byte for Boolean&quot;</span>),
+    <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>v {
+            <span class="number">0 </span>=&gt; <span class="bool-val">false</span>,
+            <span class="number">1 </span>=&gt; <span class="bool-val">true</span>,
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;unexpected byte for Boolean&quot;</span>),
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-        <span class="ident">buf</span>.<span class="ident">put_i8</span>(<span class="op">&lt;</span><span class="ident">bool</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::lower</span>(<span class="ident">obj</span>));
+    <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        buf.put_i8(&lt;bool <span class="kw">as </span>FfiConverter&gt;::lower(obj));
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
-        <span class="op">&lt;</span><span class="ident">bool</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_lift</span>(<span class="ident">buf</span>.<span class="ident">get_i8</span>())
-    }
-}
-
-<span class="doccomment">/// Support for passing Strings via the FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Unlike many other implementations of `FfiConverter`, this passes a struct containing</span>
-<span class="doccomment">/// a raw pointer rather than copying the data from one side to the other. This is a</span>
-<span class="doccomment">/// safety hazard, but turns out to be pretty nice for useability. This struct</span>
-<span class="doccomment">/// *must* be a valid `RustBuffer` and it *must* contain valid utf-8 data (in other</span>
-<span class="doccomment">/// words, it *must* be a `Vec&lt;u8&gt;` suitable for use as an actual rust `String`).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// When serialized in a buffer, strings are represented as a i32 byte length</span>
-<span class="doccomment">/// followed by utf8-encoded bytes. (It&#39;s a signed integer because unsigned types are</span>
-<span class="doccomment">/// currently experimental in Kotlin).</span>
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">FfiConverter</span> <span class="kw">for</span> <span class="ident">String</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
-    <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="ident">RustBuffer</span>;
-
-    <span class="comment">// This returns a struct with a raw pointer to the underlying bytes, so it&#39;s very</span>
-    <span class="comment">// important that it consume ownership of the String, which is relinquished to the</span>
-    <span class="comment">// foreign language code (and can be restored by it passing the pointer back).</span>
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
-        <span class="ident">RustBuffer::from_vec</span>(<span class="ident">obj</span>.<span class="ident">into_bytes</span>())
-    }
-
-    <span class="comment">// The argument here *must* be a uniquely-owned `RustBuffer` previously obtained</span>
-    <span class="comment">// from `lower` above, and hence must be the bytes of a valid rust string.</span>
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">destroy_into_vec</span>();
-        <span class="comment">// This turns the buffer back into a `String` without copying the data</span>
-        <span class="comment">// and without re-checking it for validity of the utf8. If the `RustBuffer`</span>
-        <span class="comment">// came from a valid String then there&#39;s no point in re-checking the utf8,</span>
-        <span class="comment">// and if it didn&#39;t then bad things are probably going to happen regardless</span>
-        <span class="comment">// of whether we check for valid utf8 data or not.</span>
-        <span class="prelude-val">Ok</span>(<span class="kw">unsafe</span> { <span class="ident">String::from_utf8_unchecked</span>(<span class="ident">v</span>) })
-    }
-
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-        <span class="comment">// N.B. `len()` gives us the length in bytes, not in chars or graphemes.</span>
-        <span class="comment">// TODO: it would be nice not to panic here.</span>
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">i32::try_from</span>(<span class="ident">obj</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">buf</span>.<span class="ident">put_i32</span>(<span class="ident">len</span>); <span class="comment">// We limit strings to u32::MAX bytes</span>
-        <span class="ident">buf</span>.<span class="ident">put</span>(<span class="ident">obj</span>.<span class="ident">as_bytes</span>());
-    }
-
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">buf</span>.<span class="ident">get_i32</span>())<span class="question-mark">?</span>;
-        <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="ident">len</span>)<span class="question-mark">?</span>;
-        <span class="comment">// N.B: In the general case `Buf::chunk()` may return partial data.</span>
-        <span class="comment">// But in the specific case of `&lt;&amp;[u8] as Buf&gt;` it returns the full slice,</span>
-        <span class="comment">// so there is no risk of having less than `len` bytes available here.</span>
-        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">buf</span>.<span class="ident">chunk</span>()[..<span class="ident">len</span>];
-        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">String::from_utf8</span>(<span class="ident">bytes</span>.<span class="ident">to_vec</span>())<span class="question-mark">?</span>;
-        <span class="ident">buf</span>.<span class="ident">advance</span>(<span class="ident">len</span>);
-        <span class="prelude-val">Ok</span>(<span class="ident">res</span>)
+    <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        check_remaining(buf, <span class="number">1</span>)<span class="question-mark">?</span>;
+        &lt;bool <span class="kw">as </span>FfiConverter&gt;::try_lift(buf.get_i8())
     }
 }
 
-<span class="doccomment">/// A helper trait to implement lowering/lifting using a `RustBuffer`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For complex types where it&#39;s too fiddly or too unsafe to convert them into a special-purpose</span>
-<span class="doccomment">/// C-compatible value, you can use this trait to implement `lower()` in terms of `write()` and</span>
-<span class="doccomment">/// `lift` in terms of `read()`.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">RustBufferFfiConverter</span>: <span class="ident">Sized</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span>;
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>);
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span>;
-}
+<span class="doccomment">/// Support for passing Strings via the FFI.
+///
+/// Unlike many other implementations of `FfiConverter`, this passes a struct containing
+/// a raw pointer rather than copying the data from one side to the other. This is a
+/// safety hazard, but turns out to be pretty nice for useability. This struct
+/// *must* be a valid `RustBuffer` and it *must* contain valid utf-8 data (in other
+/// words, it *must* be a `Vec&lt;u8&gt;` suitable for use as an actual rust `String`).
+///
+/// When serialized in a buffer, strings are represented as a i32 byte length
+/// followed by utf8-encoded bytes. (It&#39;s a signed integer because unsigned types are
+/// currently experimental in Kotlin).
+</span><span class="kw">unsafe impl </span>FfiConverter <span class="kw">for </span>String {
+    <span class="kw">type </span>RustType = <span class="self">Self</span>;
+    <span class="kw">type </span>FfiType = RustBuffer;
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">RustBufferFfiConverter</span><span class="op">&gt;</span> <span class="ident">FfiConverter</span> <span class="kw">for</span> <span class="ident">T</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="ident">T::RustType</span>;
-    <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="ident">RustBuffer</span>;
-
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident">RustBuffer</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-        <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">RustBufferFfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">obj</span>, <span class="kw-2">&amp;mut</span> <span class="ident">buf</span>);
-        <span class="ident">RustBuffer::from_vec</span>(<span class="ident">buf</span>)
+    <span class="comment">// This returns a struct with a raw pointer to the underlying bytes, so it&#39;s very
+    // important that it consume ownership of the String, which is relinquished to the
+    // foreign language code (and can be restored by it passing the pointer back).
+    </span><span class="kw">fn </span>lower(obj: <span class="self">Self</span>::RustType) -&gt; <span class="self">Self</span>::FfiType {
+        RustBuffer::from_vec(obj.into_bytes())
     }
 
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident">RustBuffer</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">destroy_into_vec</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">vec</span>.<span class="ident">as_slice</span>();
-        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">T::try_read</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">buf</span>.<span class="ident">remaining</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+    <span class="comment">// The argument here *must* be a uniquely-owned `RustBuffer` previously obtained
+    // from `lower` above, and hence must be the bytes of a valid rust string.
+    </span><span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        <span class="kw">let </span>v = v.destroy_into_vec();
+        <span class="comment">// This turns the buffer back into a `String` without copying the data
+        // and without re-checking it for validity of the utf8. If the `RustBuffer`
+        // came from a valid String then there&#39;s no point in re-checking the utf8,
+        // and if it didn&#39;t then bad things are probably going to happen regardless
+        // of whether we check for valid utf8 data or not.
+        </span><span class="prelude-val">Ok</span>(<span class="kw">unsafe </span>{ String::from_utf8_unchecked(v) })
+    }
+
+    <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        <span class="comment">// N.B. `len()` gives us the length in bytes, not in chars or graphemes.
+        // TODO: it would be nice not to panic here.
+        </span><span class="kw">let </span>len = i32::try_from(obj.len()).unwrap();
+        buf.put_i32(len); <span class="comment">// We limit strings to u32::MAX bytes
+        </span>buf.put(obj.as_bytes());
+    }
+
+    <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        check_remaining(buf, <span class="number">4</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>len = usize::try_from(buf.get_i32())<span class="question-mark">?</span>;
+        check_remaining(buf, len)<span class="question-mark">?</span>;
+        <span class="comment">// N.B: In the general case `Buf::chunk()` may return partial data.
+        // But in the specific case of `&lt;&amp;[u8] as Buf&gt;` it returns the full slice,
+        // so there is no risk of having less than `len` bytes available here.
+        </span><span class="kw">let </span>bytes = <span class="kw-2">&amp;</span>buf.chunk()[..len];
+        <span class="kw">let </span>res = String::from_utf8(bytes.to_vec())<span class="question-mark">?</span>;
+        buf.advance(len);
+        <span class="prelude-val">Ok</span>(res)
+    }
+}
+
+<span class="doccomment">/// A helper trait to implement lowering/lifting using a `RustBuffer`
+///
+/// For complex types where it&#39;s too fiddly or too unsafe to convert them into a special-purpose
+/// C-compatible value, you can use this trait to implement `lower()` in terms of `write()` and
+/// `lift` in terms of `read()`.
+</span><span class="kw">pub trait </span>RustBufferFfiConverter: Sized {
+    <span class="kw">type </span>RustType;
+    <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;);
+    <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt;;
+}
+
+<span class="kw">unsafe impl</span>&lt;T: RustBufferFfiConverter&gt; FfiConverter <span class="kw">for </span>T {
+    <span class="kw">type </span>RustType = T::RustType;
+    <span class="kw">type </span>FfiType = RustBuffer;
+
+    <span class="kw">fn </span>lower(obj: <span class="self">Self</span>::RustType) -&gt; RustBuffer {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf = Vec::new();
+        &lt;T <span class="kw">as </span>RustBufferFfiConverter&gt;::write(obj, <span class="kw-2">&amp;mut </span>buf);
+        RustBuffer::from_vec(buf)
+    }
+
+    <span class="kw">fn </span>try_lift(v: RustBuffer) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        <span class="kw">let </span>vec = v.destroy_into_vec();
+        <span class="kw">let </span><span class="kw-2">mut </span>buf = vec.as_slice();
+        <span class="kw">let </span>value = T::try_read(<span class="kw-2">&amp;mut </span>buf)<span class="question-mark">?</span>;
+        <span class="kw">if </span>buf.remaining() != <span class="number">0 </span>{
             <span class="macro">bail!</span>(<span class="string">&quot;junk data left in buffer after lifting&quot;</span>)
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">value</span>)
+        <span class="prelude-val">Ok</span>(value)
     }
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-        <span class="ident">T::write</span>(<span class="ident">obj</span>, <span class="ident">buf</span>)
+    <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        T::write(obj, buf)
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="ident">T::try_read</span>(<span class="ident">buf</span>)
+    <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        T::try_read(buf)
     }
 }
 
-<span class="doccomment">/// Support for passing timestamp values via the FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Timestamps values are currently always passed by serializing to a buffer.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Timestamps are represented on the buffer by an i64 that indicates the</span>
-<span class="doccomment">/// direction and the magnitude in seconds of the offset from epoch, and a</span>
-<span class="doccomment">/// u32 that indicates the nanosecond portion of the offset magnitude. The</span>
-<span class="doccomment">/// nanosecond portion is expected to be between 0 and 999,999,999.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// To build an epoch offset the absolute value of the seconds portion of the</span>
-<span class="doccomment">/// offset should be combined with the nanosecond portion. This is because</span>
-<span class="doccomment">/// the sign of the seconds portion represents the direction of the offset</span>
-<span class="doccomment">/// overall. The sign of the seconds portion can then be used to determine</span>
-<span class="doccomment">/// if the total offset should be added to or subtracted from the unix epoch.</span>
-<span class="kw">impl</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">SystemTime</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
+<span class="doccomment">/// Support for passing timestamp values via the FFI.
+///
+/// Timestamps values are currently always passed by serializing to a buffer.
+///
+/// Timestamps are represented on the buffer by an i64 that indicates the
+/// direction and the magnitude in seconds of the offset from epoch, and a
+/// u32 that indicates the nanosecond portion of the offset magnitude. The
+/// nanosecond portion is expected to be between 0 and 999,999,999.
+///
+/// To build an epoch offset the absolute value of the seconds portion of the
+/// offset should be combined with the nanosecond portion. This is because
+/// the sign of the seconds portion represents the direction of the offset
+/// overall. The sign of the seconds portion can then be used to determine
+/// if the total offset should be added to or subtracted from the unix epoch.
+</span><span class="kw">impl </span>RustBufferFfiConverter <span class="kw">for </span>SystemTime {
+    <span class="kw">type </span>RustType = <span class="self">Self</span>;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sign</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">epoch_offset</span> <span class="op">=</span> <span class="ident">obj</span>
-            .<span class="ident">duration_since</span>(<span class="ident">SystemTime::UNIX_EPOCH</span>)
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">error</span><span class="op">|</span> {
-                <span class="ident">sign</span> <span class="op">=</span> <span class="op">-</span><span class="number">1</span>;
-                <span class="ident">error</span>.<span class="ident">duration</span>()
+    <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        <span class="kw">let </span><span class="kw-2">mut </span>sign = <span class="number">1</span>;
+        <span class="kw">let </span>epoch_offset = obj
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap_or_else(|error| {
+                sign = -<span class="number">1</span>;
+                error.duration()
             });
-        <span class="comment">// This panic should never happen as SystemTime typically stores seconds as i64</span>
-        <span class="kw">let</span> <span class="ident">seconds</span> <span class="op">=</span> <span class="ident">sign</span>
-            <span class="op">*</span> <span class="ident">i64::try_from</span>(<span class="ident">epoch_offset</span>.<span class="ident">as_secs</span>())
-                .<span class="ident">expect</span>(<span class="string">&quot;SystemTime overflow, seconds greater than i64::MAX&quot;</span>);
+        <span class="comment">// This panic should never happen as SystemTime typically stores seconds as i64
+        </span><span class="kw">let </span>seconds = sign
+            * i64::try_from(epoch_offset.as_secs())
+                .expect(<span class="string">&quot;SystemTime overflow, seconds greater than i64::MAX&quot;</span>);
 
-        <span class="ident">buf</span>.<span class="ident">put_i64</span>(<span class="ident">seconds</span>);
-        <span class="ident">buf</span>.<span class="ident">put_u32</span>(<span class="ident">epoch_offset</span>.<span class="ident">subsec_nanos</span>());
+        buf.put_i64(seconds);
+        buf.put_u32(epoch_offset.subsec_nanos());
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">12</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">seconds</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">get_i64</span>();
-        <span class="kw">let</span> <span class="ident">nanos</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">get_u32</span>();
-        <span class="kw">let</span> <span class="ident">epoch_offset</span> <span class="op">=</span> <span class="ident">Duration::new</span>(<span class="ident">seconds</span>.<span class="ident">wrapping_abs</span>() <span class="kw">as</span> <span class="ident">u64</span>, <span class="ident">nanos</span>);
+    <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        check_remaining(buf, <span class="number">12</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>seconds = buf.get_i64();
+        <span class="kw">let </span>nanos = buf.get_u32();
+        <span class="kw">let </span>epoch_offset = Duration::new(seconds.wrapping_abs() <span class="kw">as </span>u64, nanos);
 
-        <span class="kw">if</span> <span class="ident">seconds</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">SystemTime::UNIX_EPOCH</span> <span class="op">+</span> <span class="ident">epoch_offset</span>)
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">SystemTime::UNIX_EPOCH</span> <span class="op">-</span> <span class="ident">epoch_offset</span>)
+        <span class="kw">if </span>seconds &gt;= <span class="number">0 </span>{
+            <span class="prelude-val">Ok</span>(SystemTime::UNIX_EPOCH + epoch_offset)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Ok</span>(SystemTime::UNIX_EPOCH - epoch_offset)
         }
     }
 }
 
-<span class="doccomment">/// Support for passing duration values via the FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Duration values are currently always passed by serializing to a buffer.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Durations are represented on the buffer by a u64 that indicates the</span>
-<span class="doccomment">/// magnitude in seconds, and a u32 that indicates the nanosecond portion</span>
-<span class="doccomment">/// of the magnitude. The nanosecond portion is expected to be between 0</span>
-<span class="doccomment">/// and 999,999,999.</span>
-<span class="kw">impl</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">Duration</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
+<span class="doccomment">/// Support for passing duration values via the FFI.
+///
+/// Duration values are currently always passed by serializing to a buffer.
+///
+/// Durations are represented on the buffer by a u64 that indicates the
+/// magnitude in seconds, and a u32 that indicates the nanosecond portion
+/// of the magnitude. The nanosecond portion is expected to be between 0
+/// and 999,999,999.
+</span><span class="kw">impl </span>RustBufferFfiConverter <span class="kw">for </span>Duration {
+    <span class="kw">type </span>RustType = <span class="self">Self</span>;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-        <span class="ident">buf</span>.<span class="ident">put_u64</span>(<span class="ident">obj</span>.<span class="ident">as_secs</span>());
-        <span class="ident">buf</span>.<span class="ident">put_u32</span>(<span class="ident">obj</span>.<span class="ident">subsec_nanos</span>());
+    <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        buf.put_u64(obj.as_secs());
+        buf.put_u32(obj.subsec_nanos());
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">12</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">Duration::new</span>(<span class="ident">buf</span>.<span class="ident">get_u64</span>(), <span class="ident">buf</span>.<span class="ident">get_u32</span>()))
+    <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        check_remaining(buf, <span class="number">12</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(Duration::new(buf.get_u64(), buf.get_u32()))
     }
 }
 
-<span class="doccomment">/// Support for passing optional values via the FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Optional values are currently always passed by serializing to a buffer.</span>
-<span class="doccomment">/// We write either a zero byte for `None`, or a one byte followed by the containing</span>
-<span class="doccomment">/// item for `Some`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// In future we could do the same optimization as rust uses internally, where the</span>
-<span class="doccomment">/// `None` option is represented as a null pointer and the `Some` as a valid pointer,</span>
-<span class="doccomment">/// but that seems more fiddly and less safe in the short term, so it can wait.</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">FfiConverter</span><span class="op">&gt;</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T::RustType</span><span class="op">&gt;</span>;
+<span class="doccomment">/// Support for passing optional values via the FFI.
+///
+/// Optional values are currently always passed by serializing to a buffer.
+/// We write either a zero byte for `None`, or a one byte followed by the containing
+/// item for `Some`.
+///
+/// In future we could do the same optimization as rust uses internally, where the
+/// `None` option is represented as a null pointer and the `Some` as a valid pointer,
+/// but that seems more fiddly and less safe in the short term, so it can wait.
+</span><span class="kw">impl</span>&lt;T: FfiConverter&gt; RustBufferFfiConverter <span class="kw">for </span><span class="prelude-ty">Option</span>&lt;T&gt; {
+    <span class="kw">type </span>RustType = <span class="prelude-ty">Option</span>&lt;T::RustType&gt;;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-        <span class="kw">match</span> <span class="ident">obj</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="ident">buf</span>.<span class="ident">put_i8</span>(<span class="number">0</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; {
-                <span class="ident">buf</span>.<span class="ident">put_i8</span>(<span class="number">1</span>);
-                <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">v</span>, <span class="ident">buf</span>);
+    <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        <span class="kw">match </span>obj {
+            <span class="prelude-val">None </span>=&gt; buf.put_i8(<span class="number">0</span>),
+            <span class="prelude-val">Some</span>(v) =&gt; {
+                buf.put_i8(<span class="number">1</span>);
+                &lt;T <span class="kw">as </span>FfiConverter&gt;::write(v, buf);
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">buf</span>.<span class="ident">get_i8</span>() {
-            <span class="number">0</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="number">1</span> =&gt; <span class="prelude-val">Some</span>(<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;unexpected tag byte for Option&quot;</span>),
+    <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        check_remaining(buf, <span class="number">1</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>buf.get_i8() {
+            <span class="number">0 </span>=&gt; <span class="prelude-val">None</span>,
+            <span class="number">1 </span>=&gt; <span class="prelude-val">Some</span>(&lt;T <span class="kw">as </span>FfiConverter&gt;::try_read(buf)<span class="question-mark">?</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;unexpected tag byte for Option&quot;</span>),
         })
     }
 }
 
-<span class="doccomment">/// Support for passing vectors of values via the FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Vectors are currently always passed by serializing to a buffer.</span>
-<span class="doccomment">/// We write a `i32` item count followed by each item in turn.</span>
-<span class="doccomment">/// (It&#39;s a signed type due to limits of the JVM).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Ideally we would pass `Vec&lt;u8&gt;` directly as a `RustBuffer` rather</span>
-<span class="doccomment">/// than serializing, and perhaps even pass other vector types using a</span>
-<span class="doccomment">/// similar struct. But that&#39;s for future work.</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">FfiConverter</span><span class="op">&gt;</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T::RustType</span><span class="op">&gt;</span>;
+<span class="doccomment">/// Support for passing vectors of values via the FFI.
+///
+/// Vectors are currently always passed by serializing to a buffer.
+/// We write a `i32` item count followed by each item in turn.
+/// (It&#39;s a signed type due to limits of the JVM).
+///
+/// Ideally we would pass `Vec&lt;u8&gt;` directly as a `RustBuffer` rather
+/// than serializing, and perhaps even pass other vector types using a
+/// similar struct. But that&#39;s for future work.
+</span><span class="kw">impl</span>&lt;T: FfiConverter&gt; RustBufferFfiConverter <span class="kw">for </span>Vec&lt;T&gt; {
+    <span class="kw">type </span>RustType = Vec&lt;T::RustType&gt;;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-        <span class="comment">// TODO: would be nice not to panic here :-/</span>
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">i32::try_from</span>(<span class="ident">obj</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">buf</span>.<span class="ident">put_i32</span>(<span class="ident">len</span>); <span class="comment">// We limit arrays to i32::MAX items</span>
-        <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">obj</span> {
-            <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">item</span>, <span class="ident">buf</span>);
+    <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        <span class="comment">// TODO: would be nice not to panic here :-/
+        </span><span class="kw">let </span>len = i32::try_from(obj.len()).unwrap();
+        buf.put_i32(len); <span class="comment">// We limit arrays to i32::MAX items
+        </span><span class="kw">for </span>item <span class="kw">in </span>obj {
+            &lt;T <span class="kw">as </span>FfiConverter&gt;::write(item, buf);
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">buf</span>.<span class="ident">get_i32</span>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">len</span>);
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">len</span> {
-            <span class="ident">vec</span>.<span class="ident">push</span>(<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>)
+    <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        check_remaining(buf, <span class="number">4</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>len = usize::try_from(buf.get_i32())<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>vec = Vec::with_capacity(len);
+        <span class="kw">for _ in </span><span class="number">0</span>..len {
+            vec.push(&lt;T <span class="kw">as </span>FfiConverter&gt;::try_read(buf)<span class="question-mark">?</span>)
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">vec</span>)
+        <span class="prelude-val">Ok</span>(vec)
     }
 }
 
-<span class="doccomment">/// Support for associative arrays via the FFI.</span>
-<span class="doccomment">/// Note that because of webidl limitations,</span>
-<span class="doccomment">/// the key must always be of the String type.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// HashMaps are currently always passed by serializing to a buffer.</span>
-<span class="doccomment">/// We write a `i32` entries count followed by each entry (string</span>
-<span class="doccomment">/// key followed by the value) in turn.</span>
-<span class="doccomment">/// (It&#39;s a signed type due to limits of the JVM).</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">FfiConverter</span>, <span class="ident">V</span>: <span class="ident">FfiConverter</span><span class="op">&gt;</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">K::RustType</span>: <span class="ident">std::hash::Hash</span> <span class="op">+</span> <span class="ident">Eq</span>,
+<span class="doccomment">/// Support for associative arrays via the FFI.
+/// Note that because of webidl limitations,
+/// the key must always be of the String type.
+///
+/// HashMaps are currently always passed by serializing to a buffer.
+/// We write a `i32` entries count followed by each entry (string
+/// key followed by the value) in turn.
+/// (It&#39;s a signed type due to limits of the JVM).
+</span><span class="kw">impl</span>&lt;K: FfiConverter, V: FfiConverter&gt; RustBufferFfiConverter <span class="kw">for </span>HashMap&lt;K, V&gt;
+<span class="kw">where
+    </span>K::RustType: std::hash::Hash + Eq,
 {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">K::RustType</span>, <span class="ident">V::RustType</span><span class="op">&gt;</span>;
+    <span class="kw">type </span>RustType = HashMap&lt;K::RustType, V::RustType&gt;;
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-        <span class="comment">// TODO: would be nice not to panic here :-/</span>
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">i32::try_from</span>(<span class="ident">obj</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">buf</span>.<span class="ident">put_i32</span>(<span class="ident">len</span>); <span class="comment">// We limit HashMaps to i32::MAX entries</span>
-        <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">obj</span> {
-            <span class="op">&lt;</span><span class="ident">K</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">key</span>, <span class="ident">buf</span>);
-            <span class="op">&lt;</span><span class="ident">V</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">value</span>, <span class="ident">buf</span>);
+    <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        <span class="comment">// TODO: would be nice not to panic here :-/
+        </span><span class="kw">let </span>len = i32::try_from(obj.len()).unwrap();
+        buf.put_i32(len); <span class="comment">// We limit HashMaps to i32::MAX entries
+        </span><span class="kw">for </span>(key, value) <span class="kw">in </span>obj {
+            &lt;K <span class="kw">as </span>FfiConverter&gt;::write(key, buf);
+            &lt;V <span class="kw">as </span>FfiConverter&gt;::write(value, buf);
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">usize::try_from</span>(<span class="ident">buf</span>.<span class="ident">get_i32</span>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="ident">HashMap::with_capacity</span>(<span class="ident">len</span>);
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">len</span> {
-            <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">K</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">V</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>;
-            <span class="ident">map</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">value</span>);
+    <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        check_remaining(buf, <span class="number">4</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>len = usize::try_from(buf.get_i32())<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>map = HashMap::with_capacity(len);
+        <span class="kw">for _ in </span><span class="number">0</span>..len {
+            <span class="kw">let </span>key = &lt;K <span class="kw">as </span>FfiConverter&gt;::try_read(buf)<span class="question-mark">?</span>;
+            <span class="kw">let </span>value = &lt;V <span class="kw">as </span>FfiConverter&gt;::try_read(buf)<span class="question-mark">?</span>;
+            map.insert(key, value);
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">map</span>)
+        <span class="prelude-val">Ok</span>(map)
     }
 }
 
-<span class="doccomment">/// Support for passing reference-counted shared objects via the FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// To avoid dealing with complex lifetime semantics over the FFI, any data passed</span>
-<span class="doccomment">/// by reference must be encapsulated in an `Arc`, and must be safe to share</span>
-<span class="doccomment">/// across threads.</span>
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span> <span class="ident">FfiConverter</span> <span class="kw">for</span> <span class="ident">std::sync::Arc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
-    <span class="comment">// Don&#39;t use a pointer to &lt;T&gt; as that requires a `pub &lt;T&gt;`</span>
-    <span class="kw">type</span> <span class="ident">FfiType</span> <span class="op">=</span> <span class="kw-2">*const</span> <span class="ident">std::os::raw::c_void</span>;
+<span class="doccomment">/// Support for passing reference-counted shared objects via the FFI.
+///
+/// To avoid dealing with complex lifetime semantics over the FFI, any data passed
+/// by reference must be encapsulated in an `Arc`, and must be safe to share
+/// across threads.
+</span><span class="kw">unsafe impl</span>&lt;T: Sync + Send&gt; FfiConverter <span class="kw">for </span>std::sync::Arc&lt;T&gt; {
+    <span class="kw">type </span>RustType = <span class="self">Self</span>;
+    <span class="comment">// Don&#39;t use a pointer to &lt;T&gt; as that requires a `pub &lt;T&gt;`
+    </span><span class="kw">type </span>FfiType = <span class="kw-2">*const </span>std::os::raw::c_void;
 
-    <span class="doccomment">/// When lowering, we have an owned `Arc&lt;T&gt;` and we transfer that ownership</span>
-    <span class="doccomment">/// to the foreign-language code, &quot;leaking&quot; it out of Rust&#39;s ownership system</span>
-    <span class="doccomment">/// as a raw pointer. This works safely because we have unique ownership of `self`.</span>
-    <span class="doccomment">/// The foreign-language code is responsible for freeing this by calling the</span>
-    <span class="doccomment">/// `ffi_object_free` FFI function provided by the corresponding UniFFI type.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Safety: when freeing the resulting pointer, the foreign-language code must</span>
-    <span class="doccomment">/// call the destructor function specific to the type `T`. Calling the destructor</span>
-    <span class="doccomment">/// function for other types may lead to undefined behaviour.</span>
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>) -&gt; <span class="ident"><span class="self">Self</span>::FfiType</span> {
-        <span class="ident">std::sync::Arc::into_raw</span>(<span class="ident">obj</span>) <span class="kw">as</span> <span class="ident"><span class="self">Self</span>::FfiType</span>
+    <span class="doccomment">/// When lowering, we have an owned `Arc&lt;T&gt;` and we transfer that ownership
+    /// to the foreign-language code, &quot;leaking&quot; it out of Rust&#39;s ownership system
+    /// as a raw pointer. This works safely because we have unique ownership of `self`.
+    /// The foreign-language code is responsible for freeing this by calling the
+    /// `ffi_object_free` FFI function provided by the corresponding UniFFI type.
+    ///
+    /// Safety: when freeing the resulting pointer, the foreign-language code must
+    /// call the destructor function specific to the type `T`. Calling the destructor
+    /// function for other types may lead to undefined behaviour.
+    </span><span class="kw">fn </span>lower(obj: <span class="self">Self</span>::RustType) -&gt; <span class="self">Self</span>::FfiType {
+        std::sync::Arc::into_raw(obj) <span class="kw">as </span><span class="self">Self</span>::FfiType
     }
 
-    <span class="doccomment">/// When lifting, we receive a &quot;borrow&quot; of the `Arc&lt;T&gt;` that is owned by</span>
-    <span class="doccomment">/// the foreign-language code, and make a clone of it for our own use.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Safety: the provided value must be a pointer previously obtained by calling</span>
-    <span class="doccomment">/// the `lower()` or `write()` method of this impl.</span>
-    <span class="kw">fn</span> <span class="ident">try_lift</span>(<span class="ident">v</span>: <span class="ident"><span class="self">Self</span>::FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">v</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">T</span>;
-        <span class="comment">// We musn&#39;t drop the `Arc&lt;T&gt;` that is owned by the foreign-language code.</span>
-        <span class="kw">let</span> <span class="ident">foreign_arc</span> <span class="op">=</span> <span class="ident">std::mem::ManuallyDrop::new</span>(<span class="kw">unsafe</span> { <span class="ident"><span class="self">Self</span>::from_raw</span>(<span class="ident">v</span>) });
-        <span class="comment">// Take a clone for our own use.</span>
-        <span class="prelude-val">Ok</span>(<span class="ident">std::sync::Arc::clone</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">foreign_arc</span>))
+    <span class="doccomment">/// When lifting, we receive a &quot;borrow&quot; of the `Arc&lt;T&gt;` that is owned by
+    /// the foreign-language code, and make a clone of it for our own use.
+    ///
+    /// Safety: the provided value must be a pointer previously obtained by calling
+    /// the `lower()` or `write()` method of this impl.
+    </span><span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        <span class="kw">let </span>v = v <span class="kw">as </span><span class="kw-2">*const </span>T;
+        <span class="comment">// We musn&#39;t drop the `Arc&lt;T&gt;` that is owned by the foreign-language code.
+        </span><span class="kw">let </span>foreign_arc = std::mem::ManuallyDrop::new(<span class="kw">unsafe </span>{ <span class="self">Self</span>::from_raw(v) });
+        <span class="comment">// Take a clone for our own use.
+        </span><span class="prelude-val">Ok</span>(std::sync::Arc::clone(<span class="kw-2">&amp;*</span>foreign_arc))
     }
 
-    <span class="doccomment">/// When writing as a field of a complex structure, make a clone and transfer ownership</span>
-    <span class="doccomment">/// of it to the foreign-language code by writing its pointer into the buffer.</span>
-    <span class="doccomment">/// The foreign-language code is responsible for freeing this by calling the</span>
-    <span class="doccomment">/// `ffi_object_free` FFI function provided by the corresponding UniFFI type.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Safety: when freeing the resulting pointer, the foreign-language code must</span>
-    <span class="doccomment">/// call the destructor function specific to the type `T`. Calling the destructor</span>
-    <span class="doccomment">/// function for other types may lead to undefined behaviour.</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-        <span class="macro">static_assertions::const_assert!</span>(<span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="kw-2">*const</span> <span class="ident">std::ffi::c_void</span><span class="op">&gt;</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span>);
-        <span class="ident">buf</span>.<span class="ident">put_u64</span>(<span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::lower</span>(<span class="ident">obj</span>) <span class="kw">as</span> <span class="ident">u64</span>);
+    <span class="doccomment">/// When writing as a field of a complex structure, make a clone and transfer ownership
+    /// of it to the foreign-language code by writing its pointer into the buffer.
+    /// The foreign-language code is responsible for freeing this by calling the
+    /// `ffi_object_free` FFI function provided by the corresponding UniFFI type.
+    ///
+    /// Safety: when freeing the resulting pointer, the foreign-language code must
+    /// call the destructor function specific to the type `T`. Calling the destructor
+    /// function for other types may lead to undefined behaviour.
+    </span><span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        <span class="macro">static_assertions::const_assert!</span>(std::mem::size_of::&lt;<span class="kw-2">*const </span>std::ffi::c_void&gt;() &lt;= <span class="number">8</span>);
+        buf.put_u64(&lt;<span class="self">Self </span><span class="kw">as </span>FfiConverter&gt;::lower(obj) <span class="kw">as </span>u64);
     }
 
-    <span class="doccomment">/// When reading as a field of a complex structure, we receive a &quot;borrow&quot; of the `Arc&lt;T&gt;`</span>
-    <span class="doccomment">/// that is owned by the foreign-language code, and make a clone for our own use.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Safety: the buffer must contain a pointer previously obtained by calling</span>
-    <span class="doccomment">/// the `lower()` or `write()` method of this impl.</span>
-    <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::RustType</span><span class="op">&gt;</span> {
-        <span class="macro">static_assertions::const_assert!</span>(<span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="kw-2">*const</span> <span class="ident">std::ffi::c_void</span><span class="op">&gt;</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span>);
-        <span class="ident">check_remaining</span>(<span class="ident">buf</span>, <span class="number">8</span>)<span class="question-mark">?</span>;
-        <span class="ident"><span class="self">Self</span>::try_lift</span>(<span class="ident">buf</span>.<span class="ident">get_u64</span>() <span class="kw">as</span> <span class="ident"><span class="self">Self</span>::FfiType</span>)
+    <span class="doccomment">/// When reading as a field of a complex structure, we receive a &quot;borrow&quot; of the `Arc&lt;T&gt;`
+    /// that is owned by the foreign-language code, and make a clone for our own use.
+    ///
+    /// Safety: the buffer must contain a pointer previously obtained by calling
+    /// the `lower()` or `write()` method of this impl.
+    </span><span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::RustType&gt; {
+        <span class="macro">static_assertions::const_assert!</span>(std::mem::size_of::&lt;<span class="kw-2">*const </span>std::ffi::c_void&gt;() &lt;= <span class="number">8</span>);
+        check_remaining(buf, <span class="number">8</span>)<span class="question-mark">?</span>;
+        <span class="self">Self</span>::try_lift(buf.get_u64() <span class="kw">as </span><span class="self">Self</span>::FfiType)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_anyhow_error_or_panic</span><span class="op">&lt;</span><span class="ident">ErrConverter</span><span class="op">&gt;</span>(
-    <span class="ident">err</span>: <span class="ident">anyhow::Error</span>,
-    <span class="ident">arg_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="ident">ErrConverter::FfiType</span>
-<span class="kw">where</span>
-    <span class="ident">ErrConverter</span>: <span class="ident">FfiConverter</span>,
-    <span class="ident">ErrConverter::RustType</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">std::fmt::Debug</span> <span class="op">+</span> <span class="ident">std::fmt::Display</span>,
+<span class="kw">pub fn </span>lower_anyhow_error_or_panic&lt;ErrConverter&gt;(
+    err: anyhow::Error,
+    arg_name: <span class="kw-2">&amp;</span>str,
+) -&gt; ErrConverter::FfiType
+<span class="kw">where
+    </span>ErrConverter: FfiConverter,
+    ErrConverter::RustType: <span class="lifetime">&#39;static </span>+ Sync + Send + std::fmt::Debug + std::fmt::Display,
 {
-    <span class="kw">match</span> <span class="ident">err</span>.<span class="ident">downcast</span>::<span class="op">&lt;</span><span class="ident">ErrConverter::RustType</span><span class="op">&gt;</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">actual_error</span>) =&gt; <span class="ident">ErrConverter::lower</span>(<span class="ident">actual_error</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">ohno</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert arg &#39;{arg_name}&#39;: {ohno}&quot;</span>),
+    <span class="kw">match </span>err.downcast::&lt;ErrConverter::RustType&gt;() {
+        <span class="prelude-val">Ok</span>(actual_error) =&gt; ErrConverter::lower(actual_error),
+        <span class="prelude-val">Err</span>(ohno) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert arg &#39;{arg_name}&#39;: {ohno}&quot;</span>),
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="ident">std::time</span>::{<span class="ident">Duration</span>, <span class="ident">SystemTime</span>};
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use </span>std::time::{Duration, SystemTime};
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::FfiConverter</span> <span class="kw">as</span> <span class="kw">_</span>;
+    <span class="kw">use </span><span class="kw">super</span>::FfiConverter <span class="kw">as _</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">trybuild_ui_tests</span>() {
-        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">trybuild::TestCases::new</span>();
-        <span class="ident">t</span>.<span class="ident">compile_fail</span>(<span class="string">&quot;tests/ui/*.rs&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>trybuild_ui_tests() {
+        <span class="kw">let </span>t = trybuild::TestCases::new();
+        t.compile_fail(<span class="string">&quot;tests/ui/*.rs&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">timestamp_roundtrip_post_epoch</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">SystemTime::UNIX_EPOCH</span> <span class="op">+</span> <span class="ident">Duration::new</span>(<span class="number">100</span>, <span class="number">100</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">SystemTime::try_lift</span>(<span class="ident">SystemTime::lower</span>(<span class="ident">expected</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to lift!&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">result</span>)
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>timestamp_roundtrip_post_epoch() {
+        <span class="kw">let </span>expected = SystemTime::UNIX_EPOCH + Duration::new(<span class="number">100</span>, <span class="number">100</span>);
+        <span class="kw">let </span>result = SystemTime::try_lift(SystemTime::lower(expected)).expect(<span class="string">&quot;Failed to lift!&quot;</span>);
+        <span class="macro">assert_eq!</span>(expected, result)
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">timestamp_roundtrip_pre_epoch</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">SystemTime::UNIX_EPOCH</span> <span class="op">-</span> <span class="ident">Duration::new</span>(<span class="number">100</span>, <span class="number">100</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">SystemTime::try_lift</span>(<span class="ident">SystemTime::lower</span>(<span class="ident">expected</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to lift!&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>timestamp_roundtrip_pre_epoch() {
+        <span class="kw">let </span>expected = SystemTime::UNIX_EPOCH - Duration::new(<span class="number">100</span>, <span class="number">100</span>);
+        <span class="kw">let </span>result = SystemTime::try_lift(SystemTime::lower(expected)).expect(<span class="string">&quot;Failed to lift!&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">expected</span>, <span class="ident">result</span>,
-            <span class="string">&quot;Expected results after lowering and lifting to be equal&quot;</span>
-        )
+            expected, result,
+            <span class="string">&quot;Expected results after lowering and lifting to be equal&quot;
+        </span>)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

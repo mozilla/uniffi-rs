@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi/src/ffi/foreigncallbacks.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>foreigncallbacks.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi/src/ffi/foreigncallbacks.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>foreigncallbacks.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -235,233 +229,232 @@
 <span id="229">229</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! Callback interfaces are traits specified in UDL which can be implemented by foreign languages.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Using callback interfaces</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! 1. Define a Rust trait.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This toy example defines a way of Rust accessing a key-value store exposed</span>
-<span class="doccomment">//! by the host operating system (e.g. the key chain).</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! trait Keychain: Send {</span>
-<span class="doccomment">//!   fn get(&amp;self, key: String) -&gt; Option&lt;String&gt;;</span>
-<span class="doccomment">//!   fn put(&amp;self, key: String, value: String);</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! 2. Define a callback interface in the UDL</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```idl</span>
-<span class="doccomment">//! callback interface Keychain {</span>
-<span class="doccomment">//!     string? get(string key);</span>
-<span class="doccomment">//!     void put(string key, string data);</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! 3. And allow it to be passed into Rust.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Here, we define a constructor to pass the keychain to rust, and then another method</span>
-<span class="doccomment">//! which may use it.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! In UDL:</span>
-<span class="doccomment">//! ```idl</span>
-<span class="doccomment">//! object Authenticator {</span>
-<span class="doccomment">//!     constructor(Keychain keychain);</span>
-<span class="doccomment">//!     void login();</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! In Rust:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!# trait Keychain: Send {</span>
-<span class="doccomment">//!#  fn get(&amp;self, key: String) -&gt; Option&lt;String&gt;;</span>
-<span class="doccomment">//!#  fn put(&amp;self, key: String, value: String);</span>
-<span class="doccomment">//!# }</span>
-<span class="doccomment">//! struct Authenticator {</span>
-<span class="doccomment">//!   keychain: Box&lt;dyn Keychain&gt;,</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! impl Authenticator {</span>
-<span class="doccomment">//!   pub fn new(keychain: Box&lt;dyn Keychain&gt;) -&gt; Self {</span>
-<span class="doccomment">//!     Self { keychain }</span>
-<span class="doccomment">//!   }</span>
-<span class="doccomment">//!   pub fn login(&amp;self) {</span>
-<span class="doccomment">//!     let username = self.keychain.get(&quot;username&quot;.into());</span>
-<span class="doccomment">//!     let password = self.keychain.get(&quot;password&quot;.into());</span>
-<span class="doccomment">//!   }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! 4. Create an foreign language implementation of the callback interface.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! In this example, here&#39;s a Kotlin implementation.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```kotlin</span>
-<span class="doccomment">//! class AndroidKeychain: Keychain {</span>
-<span class="doccomment">//!     override fun get(key: String): String? {</span>
-<span class="doccomment">//!         // … elide the implementation.</span>
-<span class="doccomment">//!         return value</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//!     override fun put(key: String) {</span>
-<span class="doccomment">//!         // … elide the implementation.</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! 5. Pass the implementation to Rust.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Again, in Kotlin</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```kotlin</span>
-<span class="doccomment">//! val authenticator = Authenticator(AndroidKeychain())</span>
-<span class="doccomment">//! authenticator.login()</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # How it works.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## High level</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Uniffi generates a protocol or interface in client code in the foreign language must implement.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For each callback interface, a `CallbackInternals` (on the Foreign Language side) and `ForeignCallbackInternals`</span>
-<span class="doccomment">//! (on Rust side) manages the process through a `ForeignCallback`. There is one `ForeignCallback` per callback interface.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Passing a callback interface implementation from foreign language (e.g. `AndroidKeychain`) into Rust causes the</span>
-<span class="doccomment">//! `KeychainCallbackInternals` to store the instance in a handlemap.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The object handle is passed over to Rust, and used to instantiate a struct `KeychainProxy` which implements</span>
-<span class="doccomment">//! the trait. This proxy implementation is generate by Uniffi. The `KeychainProxy` object is then passed to</span>
-<span class="doccomment">//! client code as `Box&lt;dyn Keychain&gt;`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Methods on `KeychainProxy` objects (e.g. `self.keychain.get(&quot;username&quot;.into())`) encode the arguments into a `RustBuffer`.</span>
-<span class="doccomment">//! Using the `ForeignCallback`, it calls the `CallbackInternals` object on the foreign language side using the</span>
-<span class="doccomment">//! object handle, and the method selector.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The `CallbackInternals` object unpacks the arguments from the passed buffer, gets the object out from the handlemap,</span>
-<span class="doccomment">//! and calls the actual implementation of the method.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! If there&#39;s a return value, it is packed up in to another `RustBuffer` and used as the return value for</span>
-<span class="doccomment">//! `ForeignCallback`. The caller of `ForeignCallback`, the `KeychainProxy` unpacks the returned buffer into the correct</span>
-<span class="doccomment">//! type and then returns to client code.</span>
-<span class="doccomment">//!</span>
+</span><span class="doccomment">//! Callback interfaces are traits specified in UDL which can be implemented by foreign languages.
+//!
+//! # Using callback interfaces
+//!
+//! 1. Define a Rust trait.
+//!
+//! This toy example defines a way of Rust accessing a key-value store exposed
+//! by the host operating system (e.g. the key chain).
+//!
+//! ```
+//! trait Keychain: Send {
+//!   fn get(&amp;self, key: String) -&gt; Option&lt;String&gt;;
+//!   fn put(&amp;self, key: String, value: String);
+//! }
+//! ```
+//!
+//! 2. Define a callback interface in the UDL
+//!
+//! ```idl
+//! callback interface Keychain {
+//!     string? get(string key);
+//!     void put(string key, string data);
+//! };
+//! ```
+//!
+//! 3. And allow it to be passed into Rust.
+//!
+//! Here, we define a constructor to pass the keychain to rust, and then another method
+//! which may use it.
+//!
+//! In UDL:
+//! ```idl
+//! object Authenticator {
+//!     constructor(Keychain keychain);
+//!     void login();
+//! }
+//! ```
+//!
+//! In Rust:
+//!
+//! ```
+//!# trait Keychain: Send {
+//!#  fn get(&amp;self, key: String) -&gt; Option&lt;String&gt;;
+//!#  fn put(&amp;self, key: String, value: String);
+//!# }
+//! struct Authenticator {
+//!   keychain: Box&lt;dyn Keychain&gt;,
+//! }
+//!
+//! impl Authenticator {
+//!   pub fn new(keychain: Box&lt;dyn Keychain&gt;) -&gt; Self {
+//!     Self { keychain }
+//!   }
+//!   pub fn login(&amp;self) {
+//!     let username = self.keychain.get(&quot;username&quot;.into());
+//!     let password = self.keychain.get(&quot;password&quot;.into());
+//!   }
+//! }
+//! ```
+//! 4. Create an foreign language implementation of the callback interface.
+//!
+//! In this example, here&#39;s a Kotlin implementation.
+//!
+//! ```kotlin
+//! class AndroidKeychain: Keychain {
+//!     override fun get(key: String): String? {
+//!         // … elide the implementation.
+//!         return value
+//!     }
+//!     override fun put(key: String) {
+//!         // … elide the implementation.
+//!     }
+//! }
+//! ```
+//! 5. Pass the implementation to Rust.
+//!
+//! Again, in Kotlin
+//!
+//! ```kotlin
+//! val authenticator = Authenticator(AndroidKeychain())
+//! authenticator.login()
+//! ```
+//!
+//! # How it works.
+//!
+//! ## High level
+//!
+//! Uniffi generates a protocol or interface in client code in the foreign language must implement.
+//!
+//! For each callback interface, a `CallbackInternals` (on the Foreign Language side) and `ForeignCallbackInternals`
+//! (on Rust side) manages the process through a `ForeignCallback`. There is one `ForeignCallback` per callback interface.
+//!
+//! Passing a callback interface implementation from foreign language (e.g. `AndroidKeychain`) into Rust causes the
+//! `KeychainCallbackInternals` to store the instance in a handlemap.
+//!
+//! The object handle is passed over to Rust, and used to instantiate a struct `KeychainProxy` which implements
+//! the trait. This proxy implementation is generate by Uniffi. The `KeychainProxy` object is then passed to
+//! client code as `Box&lt;dyn Keychain&gt;`.
+//!
+//! Methods on `KeychainProxy` objects (e.g. `self.keychain.get(&quot;username&quot;.into())`) encode the arguments into a `RustBuffer`.
+//! Using the `ForeignCallback`, it calls the `CallbackInternals` object on the foreign language side using the
+//! object handle, and the method selector.
+//!
+//! The `CallbackInternals` object unpacks the arguments from the passed buffer, gets the object out from the handlemap,
+//! and calls the actual implementation of the method.
+//!
+//! If there&#39;s a return value, it is packed up in to another `RustBuffer` and used as the return value for
+//! `ForeignCallback`. The caller of `ForeignCallback`, the `KeychainProxy` unpacks the returned buffer into the correct
+//! type and then returns to client code.
+//!
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::RustBuffer</span>;
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::os::raw::c_int</span>;
-<span class="kw">use</span> <span class="ident">std::sync::atomic</span>::{<span class="ident">AtomicUsize</span>, <span class="ident">Ordering</span>};
+</span><span class="kw">use </span><span class="kw">super</span>::RustBuffer;
+<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::os::raw::c_int;
+<span class="kw">use </span>std::sync::atomic::{AtomicUsize, Ordering};
 
-<span class="doccomment">/// ForeignCallback is the Rust representation of a foreign language function.</span>
-<span class="doccomment">/// It is the basis for all callbacks interfaces. It is registered exactly once per callback interface,</span>
-<span class="doccomment">/// at library start up time.</span>
-<span class="doccomment">/// Calling this method is only done by generated objects which mirror callback interfaces objects in the foreign language.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * The `handle` is the key into a handle map on the other side of the FFI used to look up the foreign language object</span>
-<span class="doccomment">///   that implements the callback interface/trait.</span>
-<span class="doccomment">/// * The `method` selector specifies the method that will be called on the object, by looking it up in a list of methods from</span>
-<span class="doccomment">///   the IDL. The index is 1 indexed. Note that the list of methods is generated by at uniffi from the IDL and used in all</span>
-<span class="doccomment">///   bindings: so we can rely on the method list being stable within the same run of uniffi.</span>
-<span class="doccomment">/// * `args` is a serialized buffer of arguments to the function. UniFFI will deserialize it before</span>
-<span class="doccomment">///   passing individual arguments to the user&#39;s callback.</span>
-<span class="doccomment">/// * `buf_ptr` is a pointer to where the resulting buffer will be written. UniFFI will allocate a</span>
-<span class="doccomment">///   buffer to write the result into.</span>
-<span class="doccomment">/// * A callback returns:</span>
-<span class="doccomment">///    - `-2` An error occurred that was serialized to buf_ptr</span>
-<span class="doccomment">///    - `-1` An unexpected error occurred</span>
-<span class="doccomment">///    - `0` is a deprecated way to signal that if the call succeeded, but did not modify buf_ptr</span>
-<span class="doccomment">///    - `1` If the call succeeded.  For non-void functions the return value should be serialized</span>
-<span class="doccomment">///      to buf_ptr.</span>
-<span class="doccomment">///   Note: The output buffer might still contain 0 bytes of data.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ForeignCallback</span> <span class="op">=</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(
-    <span class="ident">handle</span>: <span class="ident">u64</span>,
-    <span class="ident">method</span>: <span class="ident">u32</span>,
-    <span class="ident">args</span>: <span class="ident">RustBuffer</span>,
-    <span class="ident">buf_ptr</span>: <span class="kw-2">*mut</span> <span class="ident">RustBuffer</span>,
-) -&gt; <span class="ident">c_int</span>;
+<span class="doccomment">/// ForeignCallback is the Rust representation of a foreign language function.
+/// It is the basis for all callbacks interfaces. It is registered exactly once per callback interface,
+/// at library start up time.
+/// Calling this method is only done by generated objects which mirror callback interfaces objects in the foreign language.
+///
+/// * The `handle` is the key into a handle map on the other side of the FFI used to look up the foreign language object
+///   that implements the callback interface/trait.
+/// * The `method` selector specifies the method that will be called on the object, by looking it up in a list of methods from
+///   the IDL. The index is 1 indexed. Note that the list of methods is generated by at uniffi from the IDL and used in all
+///   bindings: so we can rely on the method list being stable within the same run of uniffi.
+/// * `args` is a serialized buffer of arguments to the function. UniFFI will deserialize it before
+///   passing individual arguments to the user&#39;s callback.
+/// * `buf_ptr` is a pointer to where the resulting buffer will be written. UniFFI will allocate a
+///   buffer to write the result into.
+/// * A callback returns:
+///    - `-2` An error occurred that was serialized to buf_ptr
+///    - `-1` An unexpected error occurred
+///    - `0` is a deprecated way to signal that if the call succeeded, but did not modify buf_ptr
+///    - `1` If the call succeeded.  For non-void functions the return value should be serialized
+///      to buf_ptr.
+///   Note: The output buffer might still contain 0 bytes of data.
+</span><span class="kw">pub type </span>ForeignCallback = <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(
+    handle: u64,
+    method: u32,
+    args: RustBuffer,
+    buf_ptr: <span class="kw-2">*mut </span>RustBuffer,
+) -&gt; c_int;
 
-<span class="doccomment">/// The method index used by the Drop trait to communicate to the foreign language side that Rust has finished with it,</span>
-<span class="doccomment">/// and it can be deleted from the handle map.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IDX_CALLBACK_FREE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="doccomment">/// The method index used by the Drop trait to communicate to the foreign language side that Rust has finished with it,
+/// and it can be deleted from the handle map.
+</span><span class="kw">pub const </span>IDX_CALLBACK_FREE: u32 = <span class="number">0</span>;
 
-<span class="comment">// Overly-paranoid sanity checking to ensure that these types are</span>
-<span class="comment">// convertible between each-other. `transmute` actually should check this for</span>
-<span class="comment">// us too, but this helps document the invariants we rely on in this code.</span>
-<span class="comment">//</span>
-<span class="comment">// Note that these are guaranteed by</span>
-<span class="comment">// https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html</span>
-<span class="comment">// and thus this is a little paranoid.</span>
-<span class="macro">static_assertions::assert_eq_size!</span>(<span class="ident">usize</span>, <span class="ident">ForeignCallback</span>);
-<span class="macro">static_assertions::assert_eq_size!</span>(<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ForeignCallback</span><span class="op">&gt;</span>);
+<span class="comment">// Overly-paranoid sanity checking to ensure that these types are
+// convertible between each-other. `transmute` actually should check this for
+// us too, but this helps document the invariants we rely on in this code.
+//
+// Note that these are guaranteed by
+// https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html
+// and thus this is a little paranoid.
+</span><span class="macro">static_assertions::assert_eq_size!</span>(usize, ForeignCallback);
+<span class="macro">static_assertions::assert_eq_size!</span>(usize, <span class="prelude-ty">Option</span>&lt;ForeignCallback&gt;);
 
-<span class="doccomment">/// Struct to hold a foreign callback.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ForeignCallbackInternals</span> {
-    <span class="ident">callback_ptr</span>: <span class="ident">AtomicUsize</span>,
+<span class="doccomment">/// Struct to hold a foreign callback.
+</span><span class="kw">pub struct </span>ForeignCallbackInternals {
+    callback_ptr: AtomicUsize,
 }
 
-<span class="kw">const</span> <span class="ident">EMPTY_PTR</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">const </span>EMPTY_PTR: usize = <span class="number">0</span>;
 
-<span class="kw">impl</span> <span class="ident">ForeignCallbackInternals</span> {
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">ForeignCallbackInternals</span> {
-            <span class="ident">callback_ptr</span>: <span class="ident">AtomicUsize::new</span>(<span class="ident">EMPTY_PTR</span>),
+<span class="kw">impl </span>ForeignCallbackInternals {
+    <span class="kw">pub const fn </span>new() -&gt; <span class="self">Self </span>{
+        ForeignCallbackInternals {
+            callback_ptr: AtomicUsize::new(EMPTY_PTR),
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_callback</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">ForeignCallback</span>) {
-        <span class="kw">let</span> <span class="ident">as_usize</span> <span class="op">=</span> <span class="ident">callback</span> <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">let</span> <span class="ident">old_ptr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">callback_ptr</span>.<span class="ident">compare_exchange</span>(
-            <span class="ident">EMPTY_PTR</span>,
-            <span class="ident">as_usize</span>,
-            <span class="ident">Ordering::SeqCst</span>,
-            <span class="ident">Ordering::SeqCst</span>,
+    <span class="kw">pub fn </span>set_callback(<span class="kw-2">&amp;</span><span class="self">self</span>, callback: ForeignCallback) {
+        <span class="kw">let </span>as_usize = callback <span class="kw">as </span>usize;
+        <span class="kw">let </span>old_ptr = <span class="self">self</span>.callback_ptr.compare_exchange(
+            EMPTY_PTR,
+            as_usize,
+            Ordering::SeqCst,
+            Ordering::SeqCst,
         );
-        <span class="kw">match</span> <span class="ident">old_ptr</span> {
-            <span class="comment">// We get the previous value back. If this is anything except EMPTY_PTR,</span>
-            <span class="comment">// then this has been set before we get here.</span>
-            <span class="prelude-val">Ok</span>(<span class="ident">EMPTY_PTR</span>) =&gt; (),
-            <span class="kw">_</span> =&gt;
-            <span class="comment">// This is an internal bug, the other side of the FFI should ensure</span>
-            <span class="comment">// it sets this only once.</span>
-            {
+        <span class="kw">match </span>old_ptr {
+            <span class="comment">// We get the previous value back. If this is anything except EMPTY_PTR,
+            // then this has been set before we get here.
+            </span><span class="prelude-val">Ok</span>(EMPTY_PTR) =&gt; (),
+            <span class="kw">_ </span>=&gt;
+            <span class="comment">// This is an internal bug, the other side of the FFI should ensure
+            // it sets this only once.
+            </span>{
                 <span class="macro">panic!</span>(<span class="string">&quot;Bug: call set_callback multiple times. This is likely a uniffi bug&quot;</span>)
             }
         };
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_callback</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ForeignCallback</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">ptr_value</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">callback_ptr</span>.<span class="ident">load</span>(<span class="ident">Ordering::SeqCst</span>);
-        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ForeignCallback</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">ptr_value</span>) }
+    <span class="kw">pub fn </span>get_callback(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;ForeignCallback&gt; {
+        <span class="kw">let </span>ptr_value = <span class="self">self</span>.callback_ptr.load(Ordering::SeqCst);
+        <span class="kw">unsafe </span>{ std::mem::transmute::&lt;usize, <span class="prelude-ty">Option</span>&lt;ForeignCallback&gt;&gt;(ptr_value) }
     }
 }
 
-<span class="doccomment">/// Used when internal/unexpected error happened when calling a foreign callback, for example when</span>
-<span class="doccomment">/// a unknown exception is raised</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// User callback error types must implement a From impl from this type to their own error type.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UnexpectedUniFFICallbackError</span> {
-    <span class="kw">pub</span> <span class="ident">reason</span>: <span class="ident">String</span>,
+<span class="doccomment">/// Used when internal/unexpected error happened when calling a foreign callback, for example when
+/// a unknown exception is raised
+///
+/// User callback error types must implement a From impl from this type to their own error type.
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>UnexpectedUniFFICallbackError {
+    <span class="kw">pub </span>reason: String,
 }
 
-<span class="kw">impl</span> <span class="ident">UnexpectedUniFFICallbackError</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_reason</span>(<span class="ident">reason</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">reason</span> }
+<span class="kw">impl </span>UnexpectedUniFFICallbackError {
+    <span class="kw">pub fn </span>from_reason(reason: String) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ reason }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">UnexpectedUniFFICallbackError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>UnexpectedUniFFICallbackError {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
         <span class="macro">write!</span>(
-            <span class="ident">f</span>,
+            f,
             <span class="string">&quot;UnexpectedUniFFICallbackError(reason: {:?})&quot;</span>,
-            <span class="self">self</span>.<span class="ident">reason</span>
+            <span class="self">self</span>.reason
         )
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::error::Error</span> <span class="kw">for</span> <span class="ident">UnexpectedUniFFICallbackError</span> {}
+<span class="kw">impl </span>std::error::Error <span class="kw">for </span>UnexpectedUniFFICallbackError {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

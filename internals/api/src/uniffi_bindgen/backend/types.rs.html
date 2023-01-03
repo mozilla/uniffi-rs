@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/backend/types.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>types.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/backend/types.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>types.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -245,243 +239,242 @@
 <span id="239">239</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Backend traits</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module provides a number of traits useful for implementing a backend for Uniffi.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! A `CodeType` is needed for each type that will cross the FFI. It should provide helper machinery</span>
-<span class="doccomment">//! in the target language to lift from and lower into a value of that type into a primitive type</span>
-<span class="doccomment">//! (the FfiType), and foreign language expressions that call into the machinery. This helper code</span>
-<span class="doccomment">//! can be provided by a template file.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! A `CodeDeclaration` is needed for each type that is declared in the UDL file. This has access to</span>
-<span class="doccomment">//! the [crate::interface::ComponentInterface], which is the closest thing to an Intermediate Representation.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `CodeDeclaration`s provide the target language&#39;s version of the UDL type, including forwarding method calls</span>
-<span class="doccomment">//! into Rust. It is likely if you&#39;re implementing a `CodeDeclaration` for this purpose, it will also need to cross</span>
-<span class="doccomment">//! the FFI, and you&#39;ll also need a `CodeType`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `CodeDeclaration`s can also be used to conditionally include code: e.g. only include the CallbackInterfaceRuntime</span>
-<span class="doccomment">//! if the user has used at least one callback interface.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Each backend has a wrapper template for each file it needs to generate. This should collect the `CodeDeclaration`s that</span>
-<span class="doccomment">//! the backend and `ComponentInterface` between them specify and use them to stitch together a file in the target language.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The `CodeOracle` provides methods to map the `Type` values found in the `ComponentInterface` to the `CodeType`s specified</span>
-<span class="doccomment">//! by the backend. It also provides methods for transforming identifiers into the coding standard for the target language.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Each backend will have its own `filter` module, which is used by the askama templates used in all `CodeType`s and `CodeDeclaration`s.</span>
-<span class="doccomment">//! This filter provides methods to generate expressions and identifiers in the target language. These are all forwarded to the oracle.</span>
+</span><span class="doccomment">//! # Backend traits
+//!
+//! This module provides a number of traits useful for implementing a backend for Uniffi.
+//!
+//! A `CodeType` is needed for each type that will cross the FFI. It should provide helper machinery
+//! in the target language to lift from and lower into a value of that type into a primitive type
+//! (the FfiType), and foreign language expressions that call into the machinery. This helper code
+//! can be provided by a template file.
+//!
+//! A `CodeDeclaration` is needed for each type that is declared in the UDL file. This has access to
+//! the [crate::interface::ComponentInterface], which is the closest thing to an Intermediate Representation.
+//!
+//! `CodeDeclaration`s provide the target language&#39;s version of the UDL type, including forwarding method calls
+//! into Rust. It is likely if you&#39;re implementing a `CodeDeclaration` for this purpose, it will also need to cross
+//! the FFI, and you&#39;ll also need a `CodeType`.
+//!
+//! `CodeDeclaration`s can also be used to conditionally include code: e.g. only include the CallbackInterfaceRuntime
+//! if the user has used at least one callback interface.
+//!
+//! Each backend has a wrapper template for each file it needs to generate. This should collect the `CodeDeclaration`s that
+//! the backend and `ComponentInterface` between them specify and use them to stitch together a file in the target language.
+//!
+//! The `CodeOracle` provides methods to map the `Type` values found in the `ComponentInterface` to the `CodeType`s specified
+//! by the backend. It also provides methods for transforming identifiers into the coding standard for the target language.
+//!
+//! Each backend will have its own `filter` module, which is used by the askama templates used in all `CodeType`s and `CodeDeclaration`s.
+//! This filter provides methods to generate expressions and identifiers in the target language. These are all forwarded to the oracle.
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">CodeOracle</span>, <span class="ident">Literal</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::interface</span>::<span class="kw-2">*</span>;
+</span><span class="kw">use super</span>::{CodeOracle, Literal};
+<span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// A Trait to emit foreign language code to handle referenced types.</span>
-<span class="doccomment">/// A type which is specified in the UDL (i.e. a member of the component interface)</span>
-<span class="doccomment">/// will have a `CodeDeclaration` as well, but for types used e.g. primitive types, Strings, etc</span>
-<span class="doccomment">/// only a `CodeType` is needed.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CodeType</span> {
-    <span class="doccomment">/// The language specific label used to reference this type. This will be used in</span>
-    <span class="doccomment">/// method signatures and property declarations.</span>
-    <span class="kw">fn</span> <span class="ident">type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">String</span>;
+<span class="doccomment">/// A Trait to emit foreign language code to handle referenced types.
+/// A type which is specified in the UDL (i.e. a member of the component interface)
+/// will have a `CodeDeclaration` as well, but for types used e.g. primitive types, Strings, etc
+/// only a `CodeType` is needed.
+</span><span class="kw">pub trait </span>CodeType {
+    <span class="doccomment">/// The language specific label used to reference this type. This will be used in
+    /// method signatures and property declarations.
+    </span><span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String;
 
-    <span class="doccomment">/// A representation of this type label that can be used as part of another</span>
-    <span class="doccomment">/// identifier. e.g. `read_foo()`, or `FooInternals`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is especially useful when creating specialized objects or methods to deal</span>
-    <span class="doccomment">/// with this type only.</span>
-    <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>)
+    <span class="doccomment">/// A representation of this type label that can be used as part of another
+    /// identifier. e.g. `read_foo()`, or `FooInternals`.
+    ///
+    /// This is especially useful when creating specialized objects or methods to deal
+    /// with this type only.
+    </span><span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+        <span class="self">self</span>.type_label(oracle)
     }
 
-    <span class="doccomment">/// A representation of the given literal for this type.</span>
-    <span class="doccomment">/// N.B. `Literal` is aliased from `interface::Literal`, so may not be whole suited to this task.</span>
-    <span class="kw">fn</span> <span class="ident">literal</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">_literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>))
+    <span class="doccomment">/// A representation of the given literal for this type.
+    /// N.B. `Literal` is aliased from `interface::Literal`, so may not be whole suited to this task.
+    </span><span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, _literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
+        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label(oracle))
     }
 
-    <span class="doccomment">/// Name of the FfiConverter</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is the object that contains the lower, write, lift, and read methods for this type.</span>
-    <span class="doccomment">/// Depending on the binding this will either be a singleton or a class with static methods.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is the newer way of handling these methods and replaces the lower, write, lift, and</span>
-    <span class="doccomment">/// read CodeType methods.  Currently only used by Kotlin, but the plan is to move other</span>
-    <span class="doccomment">/// backends to using this.</span>
-    <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">oracle</span>.<span class="ident">class_name</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>)))
+    <span class="doccomment">/// Name of the FfiConverter
+    ///
+    /// This is the object that contains the lower, write, lift, and read methods for this type.
+    /// Depending on the binding this will either be a singleton or a class with static methods.
+    ///
+    /// This is the newer way of handling these methods and replaces the lower, write, lift, and
+    /// read CodeType methods.  Currently only used by Kotlin, but the plan is to move other
+    /// backends to using this.
+    </span><span class="kw">fn </span>ffi_converter_name(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+        oracle.class_name(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.canonical_name(oracle)))
     }
 
-    <span class="doccomment">/// An expression for lowering a value into something we can pass over the FFI.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// N.B. This should align with the `helper_code` generated by this `CodeType`.</span>
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">_nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>))
+    <span class="doccomment">/// An expression for lowering a value into something we can pass over the FFI.
+    ///
+    /// N.B. This should align with the `helper_code` generated by this `CodeType`.
+    </span><span class="kw">fn </span>lower(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, _nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label(oracle))
     }
 
-    <span class="doccomment">/// An expression for writing a value into a byte buffer.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// N.B. This should align with the `helper_code` generated by this `CodeType`.</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">_nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">_target</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>))
+    <span class="doccomment">/// An expression for writing a value into a byte buffer.
+    ///
+    /// N.B. This should align with the `helper_code` generated by this `CodeType`.
+    </span><span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, _nm: <span class="kw-2">&amp;</span>str, _target: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label(oracle))
     }
 
-    <span class="doccomment">/// An expression for lifting a value from something we received over the FFI.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// N.B. This should align with the `helper_code` generated by this `CodeType`.</span>
-    <span class="kw">fn</span> <span class="ident">lift</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">_nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>))
+    <span class="doccomment">/// An expression for lifting a value from something we received over the FFI.
+    ///
+    /// N.B. This should align with the `helper_code` generated by this `CodeType`.
+    </span><span class="kw">fn </span>lift(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, _nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label(oracle))
     }
 
-    <span class="doccomment">/// An expression for reading a value from a byte buffer.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// N.B. This should align with the `helper_code` generated by this `CodeType`.</span>
-    <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">_nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>))
+    <span class="doccomment">/// An expression for reading a value from a byte buffer.
+    ///
+    /// N.B. This should align with the `helper_code` generated by this `CodeType`.
+    </span><span class="kw">fn </span>read(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, _nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label(oracle))
     }
 
-    <span class="doccomment">/// The lift/lower/read/write methods above must be producing expressions that</span>
-    <span class="doccomment">/// can be part of a larger statement. Most of the time, that is a function call</span>
-    <span class="doccomment">/// to do the work for it.</span>
-    <span class="doccomment">/// The functions being called by those expressions should be declared in the</span>
-    <span class="doccomment">/// helper code generated by this method.</span>
-    <span class="kw">fn</span> <span class="ident">helper_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
+    <span class="doccomment">/// The lift/lower/read/write methods above must be producing expressions that
+    /// can be part of a larger statement. Most of the time, that is a function call
+    /// to do the work for it.
+    /// The functions being called by those expressions should be declared in the
+    /// helper code generated by this method.
+    </span><span class="kw">fn </span>helper_code(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="prelude-val">None
+    </span>}
 
-    <span class="doccomment">/// A list of imports that are needed if this type is in use.</span>
-    <span class="doccomment">/// Classes are imported exactly once.</span>
-    <span class="kw">fn</span> <span class="ident">imports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
+    <span class="doccomment">/// A list of imports that are needed if this type is in use.
+    /// Classes are imported exactly once.
+    </span><span class="kw">fn </span>imports(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt; {
+        <span class="prelude-val">None
+    </span>}
 
-    <span class="doccomment">/// Function to run at startup</span>
-    <span class="kw">fn</span> <span class="ident">initialization_fn</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
+    <span class="doccomment">/// Function to run at startup
+    </span><span class="kw">fn </span>initialization_fn(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="prelude-val">None
+    </span>}
 
-    <span class="doccomment">/// An expression to coerce the given variable to the expected type.</span>
-    <span class="kw">fn</span> <span class="ident">coerce</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">_nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">panic!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>));
-    }
-}
-
-<span class="doccomment">/// This trait is used to implement `CodeType` for `Type` and type-like structs (`Record`, `Enum`, `Field`,</span>
-<span class="doccomment">/// etc).  We forward all method calls to a `Box&lt;dyn CodeType&gt;`, which we get by calling</span>
-<span class="doccomment">/// `CodeOracle.find()`.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CodeTypeDispatch</span> {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span>;
-}
-
-<span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">Type</span> {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="self">self</span>)
+    <span class="doccomment">/// An expression to coerce the given variable to the expected type.
+    </span><span class="kw">fn </span>coerce(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, _nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">panic!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label(oracle));
     }
 }
 
-<span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">Record</span> {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>())
+<span class="doccomment">/// This trait is used to implement `CodeType` for `Type` and type-like structs (`Record`, `Enum`, `Field`,
+/// etc).  We forward all method calls to a `Box&lt;dyn CodeType&gt;`, which we get by calling
+/// `CodeOracle.find()`.
+</span><span class="kw">pub trait </span>CodeTypeDispatch {
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt;;
+}
+
+<span class="kw">impl </span>CodeTypeDispatch <span class="kw">for </span>Type {
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        oracle.find(<span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">Enum</span> {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>())
+<span class="kw">impl </span>CodeTypeDispatch <span class="kw">for </span>Record {
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        oracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.type_())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>())
+<span class="kw">impl </span>CodeTypeDispatch <span class="kw">for </span>Enum {
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        oracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.type_())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">Object</span> {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>())
+<span class="kw">impl </span>CodeTypeDispatch <span class="kw">for </span>Error {
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        oracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.type_())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">CallbackInterface</span> {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>())
+<span class="kw">impl </span>CodeTypeDispatch <span class="kw">for </span>Object {
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        oracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.type_())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">Field</span> {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="self">self</span>.<span class="ident">type_</span>())
+<span class="kw">impl </span>CodeTypeDispatch <span class="kw">for </span>CallbackInterface {
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        oracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.type_())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">Argument</span> {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="ident">oracle</span>.<span class="ident">find</span>(<span class="self">self</span>.<span class="ident">type_</span>())
+<span class="kw">impl </span>CodeTypeDispatch <span class="kw">for </span>Field {
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        oracle.find(<span class="self">self</span>.type_())
     }
 }
 
-<span class="comment">// Needed to handle &amp;&amp;Type and &amp;&amp;&amp;Type values, which we sometimes end up with in the template code</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">CodeTypeDispatch</span> <span class="kw">for</span> <span class="ident">T</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">std::ops::Deref</span><span class="op">&lt;</span><span class="ident">Target</span> <span class="op">=</span> <span class="ident">C</span><span class="op">&gt;</span>,
-    <span class="ident">C</span>: <span class="ident">CodeTypeDispatch</span>,
+<span class="kw">impl </span>CodeTypeDispatch <span class="kw">for </span>Argument {
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        oracle.find(<span class="self">self</span>.type_())
+    }
+}
+
+<span class="comment">// Needed to handle &amp;&amp;Type and &amp;&amp;&amp;Type values, which we sometimes end up with in the template code
+</span><span class="kw">impl</span>&lt;T, C&gt; CodeTypeDispatch <span class="kw">for </span>T
+<span class="kw">where
+    </span>T: std::ops::Deref&lt;Target = C&gt;,
+    C: CodeTypeDispatch,
 {
-    <span class="kw">fn</span> <span class="ident">code_type_impl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">deref</span>().<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>)
+    <span class="kw">fn </span>code_type_impl(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        <span class="self">self</span>.deref().code_type_impl(oracle)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">CodeTypeDispatch</span><span class="op">&gt;</span> <span class="ident">CodeType</span> <span class="kw">for</span> <span class="ident">T</span> {
-    <span class="comment">// The above code implements `CodeTypeDispatch` for `Type` and type-like structs (`Record`,</span>
-    <span class="comment">// `Enum`, `Field`, etc).  Now we can leverage that to implement `CodeType` for all of them.</span>
-    <span class="comment">// This allows for simpler template code (`field|lower` instead of `field.type_()|lower`)</span>
-    <span class="kw">fn</span> <span class="ident">type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">type_label</span>(<span class="ident">oracle</span>)
+<span class="kw">impl</span>&lt;T: CodeTypeDispatch&gt; CodeType <span class="kw">for </span>T {
+    <span class="comment">// The above code implements `CodeTypeDispatch` for `Type` and type-like structs (`Record`,
+    // `Enum`, `Field`, etc).  Now we can leverage that to implement `CodeType` for all of them.
+    // This allows for simpler template code (`field|lower` instead of `field.type_()|lower`)
+    </span><span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+        <span class="self">self</span>.code_type_impl(oracle).type_label(oracle)
     }
 
-    <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">canonical_name</span>(<span class="ident">oracle</span>)
+    <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+        <span class="self">self</span>.code_type_impl(oracle).canonical_name(oracle)
     }
 
-    <span class="kw">fn</span> <span class="ident">literal</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">literal</span>(<span class="ident">oracle</span>, <span class="ident">literal</span>)
+    <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
+        <span class="self">self</span>.code_type_impl(oracle).literal(oracle, literal)
     }
 
-    <span class="kw">fn</span> <span class="ident">lower</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">lower</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>)
+    <span class="kw">fn </span>lower(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="self">self</span>.code_type_impl(oracle).lower(oracle, nm)
     }
 
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">write</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>, <span class="ident">target</span>)
+    <span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, nm: <span class="kw-2">&amp;</span>str, target: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="self">self</span>.code_type_impl(oracle).write(oracle, nm, target)
     }
 
-    <span class="kw">fn</span> <span class="ident">lift</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">lift</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>)
+    <span class="kw">fn </span>lift(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="self">self</span>.code_type_impl(oracle).lift(oracle, nm)
     }
 
-    <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">read</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>)
+    <span class="kw">fn </span>read(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="self">self</span>.code_type_impl(oracle).read(oracle, nm)
     }
 
-    <span class="kw">fn</span> <span class="ident">helper_code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">helper_code</span>(<span class="ident">oracle</span>)
+    <span class="kw">fn </span>helper_code(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="self">self</span>.code_type_impl(oracle).helper_code(oracle)
     }
 
-    <span class="kw">fn</span> <span class="ident">imports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">imports</span>(<span class="ident">oracle</span>)
+    <span class="kw">fn </span>imports(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt; {
+        <span class="self">self</span>.code_type_impl(oracle).imports(oracle)
     }
 
-    <span class="kw">fn</span> <span class="ident">initialization_fn</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">initialization_fn</span>(<span class="ident">oracle</span>)
+    <span class="kw">fn </span>initialization_fn(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="self">self</span>.code_type_impl(oracle).initialization_fn(oracle)
     }
 
-    <span class="kw">fn</span> <span class="ident">coerce</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oracle</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">CodeOracle</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">code_type_impl</span>(<span class="ident">oracle</span>).<span class="ident">coerce</span>(<span class="ident">oracle</span>, <span class="ident">nm</span>)
+    <span class="kw">fn </span>coerce(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="self">self</span>.code_type_impl(oracle).coerce(oracle, nm)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

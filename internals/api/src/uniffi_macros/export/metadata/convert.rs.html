@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/export/metadata/convert.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>convert.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../uniffi_macros/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/export/metadata/convert.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>convert.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../uniffi_macros/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -228,91 +222,91 @@
 <span id="222">222</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="kw">use</span> <span class="ident">proc_macro2::Ident</span>;
-<span class="kw">use</span> <span class="ident">quote::ToTokens</span>;
-<span class="kw">use</span> <span class="ident">uniffi_meta</span>::{<span class="ident">FnParamMetadata</span>, <span class="ident">Type</span>};
+</span><span class="kw">use </span>proc_macro2::Ident;
+<span class="kw">use </span>quote::ToTokens;
+<span class="kw">use </span>uniffi_meta::{FnParamMetadata, Type};
 
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">fn_param_metadata</span>(<span class="ident">params</span>: <span class="kw-2">&amp;</span>[<span class="ident">syn::FnArg</span>]) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FnParamMetadata</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">params</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">_is_method</span> <span class="op">=</span> <span class="bool-val">false</span>;
-            <span class="kw">let</span> (<span class="ident">name</span>, <span class="ident">ty</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">a</span> {
-                <span class="comment">// methods currently have an implicit self parameter in uniffi_meta</span>
-                <span class="ident">syn::FnArg::Receiver</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">None</span>,
-                <span class="ident">syn::FnArg::Typed</span>(<span class="ident">pat_ty</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">pat_ty</span>.<span class="ident">pat</span> {
-                        <span class="ident">syn::Pat::Ident</span>(<span class="ident">pat_id</span>) =&gt; <span class="ident">pat_id</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>(),
-                        <span class="kw">_</span> =&gt; <span class="macro">unimplemented!</span>(),
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>fn_param_metadata(params: <span class="kw-2">&amp;</span>[syn::FnArg]) -&gt; syn::Result&lt;Vec&lt;FnParamMetadata&gt;&gt; {
+    params
+        .iter()
+        .filter_map(|a| {
+            <span class="kw">let </span>_is_method = <span class="bool-val">false</span>;
+            <span class="kw">let </span>(name, ty) = <span class="kw">match </span>a {
+                <span class="comment">// methods currently have an implicit self parameter in uniffi_meta
+                </span>syn::FnArg::Receiver(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
+                syn::FnArg::Typed(pat_ty) =&gt; {
+                    <span class="kw">let </span>name = <span class="kw">match </span><span class="kw-2">&amp;*</span>pat_ty.pat {
+                        syn::Pat::Ident(pat_id) =&gt; pat_id.ident.to_string(),
+                        <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(),
                     };
 
-                    <span class="comment">// methods currently have an implicit self parameter in uniffi_meta</span>
-                    <span class="kw">if</span> <span class="ident">name</span> <span class="op">==</span> <span class="string">&quot;self&quot;</span> {
-                        <span class="kw">return</span> <span class="prelude-val">None</span>;
+                    <span class="comment">// methods currently have an implicit self parameter in uniffi_meta
+                    </span><span class="kw">if </span>name == <span class="string">&quot;self&quot; </span>{
+                        <span class="kw">return </span><span class="prelude-val">None</span>;
                     }
 
-                    (<span class="ident">name</span>, <span class="kw-2">&amp;</span><span class="ident">pat_ty</span>.<span class="ident">ty</span>)
+                    (name, <span class="kw-2">&amp;</span>pat_ty.ty)
                 }
             };
 
-            <span class="prelude-val">Some</span>(<span class="ident">convert_type</span>(<span class="ident">ty</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">ty</span><span class="op">|</span> <span class="ident">FnParamMetadata</span> { <span class="ident">name</span>, <span class="ident">ty</span> }))
+            <span class="prelude-val">Some</span>(convert_type(ty).map(|ty| FnParamMetadata { name, ty }))
         })
-        .<span class="ident">collect</span>()
+        .collect()
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">convert_return_type</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Type</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">ty</span> {
-        <span class="ident">syn::Type::Tuple</span>(<span class="ident">tup</span>) <span class="kw">if</span> <span class="ident">tup</span>.<span class="ident">elems</span>.<span class="ident">is_empty</span>() =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-        <span class="kw">_</span> =&gt; <span class="ident">convert_type</span>(<span class="ident">ty</span>).<span class="ident">map</span>(<span class="prelude-val">Some</span>),
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>convert_return_type(ty: <span class="kw-2">&amp;</span>syn::Type) -&gt; syn::Result&lt;<span class="prelude-ty">Option</span>&lt;Type&gt;&gt; {
+    <span class="kw">match </span>ty {
+        syn::Type::Tuple(tup) <span class="kw">if </span>tup.elems.is_empty() =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+        <span class="kw">_ </span>=&gt; convert_type(ty).map(<span class="prelude-val">Some</span>),
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">convert_type</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Type</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">type_path</span> <span class="op">=</span> <span class="ident">type_as_type_path</span>(<span class="ident">ty</span>)<span class="question-mark">?</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>convert_type(ty: <span class="kw-2">&amp;</span>syn::Type) -&gt; syn::Result&lt;Type&gt; {
+    <span class="kw">let </span>type_path = type_as_type_path(ty)<span class="question-mark">?</span>;
 
-    <span class="kw">if</span> <span class="ident">type_path</span>.<span class="ident">qself</span>.<span class="ident">is_some</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new_spanned</span>(
-            <span class="ident">type_path</span>,
+    <span class="kw">if </span>type_path.qself.is_some() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+            type_path,
             <span class="string">&quot;qualified self types are not currently supported by uniffi::export&quot;</span>,
         ));
     }
 
-    <span class="kw">if</span> <span class="ident">type_path</span>.<span class="ident">path</span>.<span class="ident">segments</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new_spanned</span>(
-            <span class="ident">type_path</span>,
+    <span class="kw">if </span>type_path.path.segments.len() &gt; <span class="number">1 </span>{
+        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+            type_path,
             <span class="string">&quot;qualified paths in types are not currently supported by uniffi::export&quot;</span>,
         ));
     }
 
-    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">type_path</span>.<span class="ident">path</span>.<span class="ident">segments</span>.<span class="ident">first</span>() {
-        <span class="prelude-val">Some</span>(<span class="ident">seg</span>) =&gt; <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">seg</span>.<span class="ident">arguments</span> {
-            <span class="ident">syn::PathArguments::None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">convert_bare_type_name</span>(<span class="kw-2">&amp;</span><span class="ident">seg</span>.<span class="ident">ident</span>)),
-            <span class="ident">syn::PathArguments::AngleBracketed</span>(<span class="ident">a</span>) =&gt; <span class="ident">convert_generic_type</span>(<span class="kw-2">&amp;</span><span class="ident">seg</span>.<span class="ident">ident</span>, <span class="ident">a</span>),
-            <span class="ident">syn::PathArguments::Parenthesized</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">type_not_supported</span>(<span class="ident">type_path</span>)),
+    <span class="kw">match </span><span class="kw-2">&amp;</span>type_path.path.segments.first() {
+        <span class="prelude-val">Some</span>(seg) =&gt; <span class="kw">match </span><span class="kw-2">&amp;</span>seg.arguments {
+            syn::PathArguments::None =&gt; <span class="prelude-val">Ok</span>(convert_bare_type_name(<span class="kw-2">&amp;</span>seg.ident)),
+            syn::PathArguments::AngleBracketed(a) =&gt; convert_generic_type(<span class="kw-2">&amp;</span>seg.ident, a),
+            syn::PathArguments::Parenthesized(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(type_not_supported(type_path)),
         },
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new_spanned</span>(
-            <span class="ident">type_path</span>,
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(
+            type_path,
             <span class="string">&quot;unreachable: TypePath must have non-empty segments&quot;</span>,
         )),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">convert_generic_type</span>(
-    <span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>,
-    <span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">syn::AngleBracketedGenericArguments</span>,
-) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">args</span>.<span class="ident">iter</span>();
-    <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-        <span class="comment">// `u8&lt;&gt;` is a valid way to write `u8` in the type namespace, so why not?</span>
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">convert_bare_type_name</span>(<span class="ident">ident</span>)),
-        <span class="prelude-val">Some</span>(<span class="ident">arg1</span>) =&gt; <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-            <span class="prelude-val">None</span> =&gt; <span class="ident">convert_generic_type1</span>(<span class="ident">ident</span>, <span class="ident">arg1</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">arg2</span>) =&gt; <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-                <span class="prelude-val">None</span> =&gt; <span class="ident">convert_generic_type2</span>(<span class="ident">ident</span>, <span class="ident">arg1</span>, <span class="ident">arg2</span>),
-                <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new_spanned</span>(
-                    <span class="ident">ident</span>,
+<span class="kw">fn </span>convert_generic_type(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    a: <span class="kw-2">&amp;</span>syn::AngleBracketedGenericArguments,
+) -&gt; syn::Result&lt;Type&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>it = a.args.iter();
+    <span class="kw">match </span>it.next() {
+        <span class="comment">// `u8&lt;&gt;` is a valid way to write `u8` in the type namespace, so why not?
+        </span><span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(convert_bare_type_name(ident)),
+        <span class="prelude-val">Some</span>(arg1) =&gt; <span class="kw">match </span>it.next() {
+            <span class="prelude-val">None </span>=&gt; convert_generic_type1(ident, arg1),
+            <span class="prelude-val">Some</span>(arg2) =&gt; <span class="kw">match </span>it.next() {
+                <span class="prelude-val">None </span>=&gt; convert_generic_type2(ident, arg1, arg2),
+                <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(
+                    ident,
                     <span class="string">&quot;types with more than two generics are not currently
                      supported by uniffi::export&quot;</span>,
                 )),
@@ -321,126 +315,126 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">convert_bare_type_name</span>(<span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>) -&gt; <span class="ident">Type</span> {
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">ident</span>.<span class="ident">to_string</span>();
-    <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">as_str</span>() {
-        <span class="string">&quot;u8&quot;</span> =&gt; <span class="ident">Type::U8</span>,
-        <span class="string">&quot;u16&quot;</span> =&gt; <span class="ident">Type::U16</span>,
-        <span class="string">&quot;u32&quot;</span> =&gt; <span class="ident">Type::U32</span>,
-        <span class="string">&quot;u64&quot;</span> =&gt; <span class="ident">Type::U64</span>,
-        <span class="string">&quot;i8&quot;</span> =&gt; <span class="ident">Type::I8</span>,
-        <span class="string">&quot;i16&quot;</span> =&gt; <span class="ident">Type::I16</span>,
-        <span class="string">&quot;i32&quot;</span> =&gt; <span class="ident">Type::I32</span>,
-        <span class="string">&quot;i64&quot;</span> =&gt; <span class="ident">Type::I64</span>,
-        <span class="string">&quot;f32&quot;</span> =&gt; <span class="ident">Type::F32</span>,
-        <span class="string">&quot;f64&quot;</span> =&gt; <span class="ident">Type::F64</span>,
-        <span class="string">&quot;bool&quot;</span> =&gt; <span class="ident">Type::Bool</span>,
-        <span class="string">&quot;String&quot;</span> =&gt; <span class="ident">Type::String</span>,
-        <span class="kw">_</span> =&gt; <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> },
+<span class="kw">fn </span>convert_bare_type_name(ident: <span class="kw-2">&amp;</span>Ident) -&gt; Type {
+    <span class="kw">let </span>name = ident.to_string();
+    <span class="kw">match </span>name.as_str() {
+        <span class="string">&quot;u8&quot; </span>=&gt; Type::U8,
+        <span class="string">&quot;u16&quot; </span>=&gt; Type::U16,
+        <span class="string">&quot;u32&quot; </span>=&gt; Type::U32,
+        <span class="string">&quot;u64&quot; </span>=&gt; Type::U64,
+        <span class="string">&quot;i8&quot; </span>=&gt; Type::I8,
+        <span class="string">&quot;i16&quot; </span>=&gt; Type::I16,
+        <span class="string">&quot;i32&quot; </span>=&gt; Type::I32,
+        <span class="string">&quot;i64&quot; </span>=&gt; Type::I64,
+        <span class="string">&quot;f32&quot; </span>=&gt; Type::F32,
+        <span class="string">&quot;f64&quot; </span>=&gt; Type::F64,
+        <span class="string">&quot;bool&quot; </span>=&gt; Type::Bool,
+        <span class="string">&quot;String&quot; </span>=&gt; Type::String,
+        <span class="kw">_ </span>=&gt; Type::Unresolved { name },
     }
 }
 
-<span class="kw">fn</span> <span class="ident">convert_generic_type1</span>(<span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>, <span class="ident">arg</span>: <span class="kw-2">&amp;</span><span class="ident">syn::GenericArgument</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="ident">arg_as_type</span>(<span class="ident">arg</span>)<span class="question-mark">?</span>;
-    <span class="kw">match</span> <span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>() {
-        <span class="string">&quot;Arc&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::ArcObject</span> {
-            <span class="ident">object_name</span>: <span class="ident">type_as_type_name</span>(<span class="ident">arg</span>)<span class="question-mark">?</span>.<span class="ident">to_string</span>(),
+<span class="kw">fn </span>convert_generic_type1(ident: <span class="kw-2">&amp;</span>Ident, arg: <span class="kw-2">&amp;</span>syn::GenericArgument) -&gt; syn::Result&lt;Type&gt; {
+    <span class="kw">let </span>arg = arg_as_type(arg)<span class="question-mark">?</span>;
+    <span class="kw">match </span>ident.to_string().as_str() {
+        <span class="string">&quot;Arc&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Type::ArcObject {
+            object_name: type_as_type_name(arg)<span class="question-mark">?</span>.to_string(),
         }),
-        <span class="string">&quot;Option&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::Option</span> {
-            <span class="ident">inner_type</span>: <span class="ident">convert_type</span>(<span class="ident">arg</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
+        <span class="string">&quot;Option&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Type::Option {
+            inner_type: convert_type(arg)<span class="question-mark">?</span>.into(),
         }),
-        <span class="string">&quot;Vec&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::Vec</span> {
-            <span class="ident">inner_type</span>: <span class="ident">convert_type</span>(<span class="ident">arg</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
+        <span class="string">&quot;Vec&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Type::Vec {
+            inner_type: convert_type(arg)<span class="question-mark">?</span>.into(),
         }),
-        <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">type_not_supported</span>(<span class="ident">ident</span>)),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(type_not_supported(ident)),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">convert_generic_type2</span>(
-    <span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>,
-    <span class="ident">arg1</span>: <span class="kw-2">&amp;</span><span class="ident">syn::GenericArgument</span>,
-    <span class="ident">arg2</span>: <span class="kw-2">&amp;</span><span class="ident">syn::GenericArgument</span>,
-) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">arg1</span> <span class="op">=</span> <span class="ident">arg_as_type</span>(<span class="ident">arg1</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">arg2</span> <span class="op">=</span> <span class="ident">arg_as_type</span>(<span class="ident">arg2</span>)<span class="question-mark">?</span>;
+<span class="kw">fn </span>convert_generic_type2(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    arg1: <span class="kw-2">&amp;</span>syn::GenericArgument,
+    arg2: <span class="kw-2">&amp;</span>syn::GenericArgument,
+) -&gt; syn::Result&lt;Type&gt; {
+    <span class="kw">let </span>arg1 = arg_as_type(arg1)<span class="question-mark">?</span>;
+    <span class="kw">let </span>arg2 = arg_as_type(arg2)<span class="question-mark">?</span>;
 
-    <span class="kw">match</span> <span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>() {
-        <span class="string">&quot;HashMap&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Type::HashMap</span> {
-            <span class="ident">key_type</span>: <span class="ident">convert_type</span>(<span class="ident">arg1</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
-            <span class="ident">value_type</span>: <span class="ident">convert_type</span>(<span class="ident">arg2</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
+    <span class="kw">match </span>ident.to_string().as_str() {
+        <span class="string">&quot;HashMap&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Type::HashMap {
+            key_type: convert_type(arg1)<span class="question-mark">?</span>.into(),
+            value_type: convert_type(arg2)<span class="question-mark">?</span>.into(),
         }),
-        <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">type_not_supported</span>(<span class="ident">ident</span>)),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(type_not_supported(ident)),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">type_as_type_name</span>(<span class="ident">arg</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Type</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Ident</span><span class="op">&gt;</span> {
-    <span class="ident">type_as_type_path</span>(<span class="ident">arg</span>)<span class="question-mark">?</span>
-        .<span class="ident">path</span>
-        .<span class="ident">get_ident</span>()
-        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">type_not_supported</span>(<span class="ident">arg</span>))
+<span class="kw">fn </span>type_as_type_name(arg: <span class="kw-2">&amp;</span>syn::Type) -&gt; syn::Result&lt;<span class="kw-2">&amp;</span>Ident&gt; {
+    type_as_type_path(arg)<span class="question-mark">?
+        </span>.path
+        .get_ident()
+        .ok_or_else(|| type_not_supported(arg))
 }
 
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">type_as_type_path</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Type</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">syn::TypePath</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">ty</span> {
-        <span class="ident">syn::Type::Group</span>(<span class="ident">g</span>) =&gt; <span class="ident">type_as_type_path</span>(<span class="kw-2">&amp;</span><span class="ident">g</span>.<span class="ident">elem</span>),
-        <span class="ident">syn::Type::Paren</span>(<span class="ident">p</span>) =&gt; <span class="ident">type_as_type_path</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>.<span class="ident">elem</span>),
-        <span class="ident">syn::Type::Path</span>(<span class="ident">p</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">p</span>),
-        <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">type_not_supported</span>(<span class="ident">ty</span>)),
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>type_as_type_path(ty: <span class="kw-2">&amp;</span>syn::Type) -&gt; syn::Result&lt;<span class="kw-2">&amp;</span>syn::TypePath&gt; {
+    <span class="kw">match </span>ty {
+        syn::Type::Group(g) =&gt; type_as_type_path(<span class="kw-2">&amp;</span>g.elem),
+        syn::Type::Paren(p) =&gt; type_as_type_path(<span class="kw-2">&amp;</span>p.elem),
+        syn::Type::Path(p) =&gt; <span class="prelude-val">Ok</span>(p),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(type_not_supported(ty)),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">arg_as_type</span>(<span class="ident">arg</span>: <span class="kw-2">&amp;</span><span class="ident">syn::GenericArgument</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">syn::Type</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">arg</span> {
-        <span class="ident">syn::GenericArgument::Type</span>(<span class="ident">t</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">t</span>),
-        <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new_spanned</span>(
-            <span class="ident">arg</span>,
+<span class="kw">fn </span>arg_as_type(arg: <span class="kw-2">&amp;</span>syn::GenericArgument) -&gt; syn::Result&lt;<span class="kw-2">&amp;</span>syn::Type&gt; {
+    <span class="kw">match </span>arg {
+        syn::GenericArgument::Type(t) =&gt; <span class="prelude-val">Ok</span>(t),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(
+            arg,
             <span class="string">&quot;non-type generic parameters are not currently supported by uniffi::export&quot;</span>,
         )),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">type_not_supported</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">ToTokens</span>) -&gt; <span class="ident">syn::Error</span> {
-    <span class="ident">syn::Error::new_spanned</span>(
-        <span class="ident">ty</span>,
+<span class="kw">fn </span>type_not_supported(ty: <span class="kw-2">&amp;</span><span class="kw">impl </span>ToTokens) -&gt; syn::Error {
+    syn::Error::new_spanned(
+        ty,
         <span class="string">&quot;this type is not currently supported by uniffi::export in this position&quot;</span>,
     )
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">try_split_result</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Type</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">syn::Type</span>, <span class="ident">Ident</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">type_path</span> <span class="op">=</span> <span class="ident">type_as_type_path</span>(<span class="ident">ty</span>)<span class="question-mark">?</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>try_split_result(ty: <span class="kw-2">&amp;</span>syn::Type) -&gt; syn::Result&lt;<span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>syn::Type, Ident)&gt;&gt; {
+    <span class="kw">let </span>type_path = type_as_type_path(ty)<span class="question-mark">?</span>;
 
-    <span class="kw">if</span> <span class="ident">type_path</span>.<span class="ident">qself</span>.<span class="ident">is_some</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new_spanned</span>(
-            <span class="ident">type_path</span>,
+    <span class="kw">if </span>type_path.qself.is_some() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+            type_path,
             <span class="string">&quot;qualified self types are not currently supported by uniffi::export&quot;</span>,
         ));
     }
 
-    <span class="kw">if</span> <span class="ident">type_path</span>.<span class="ident">path</span>.<span class="ident">segments</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new_spanned</span>(
-            <span class="ident">type_path</span>,
+    <span class="kw">if </span>type_path.path.segments.len() &gt; <span class="number">1 </span>{
+        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+            type_path,
             <span class="string">&quot;qualified paths in types are not currently supported by uniffi::export&quot;</span>,
         ));
     }
 
-    <span class="kw">let</span> (<span class="ident">ident</span>, <span class="ident">a</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">type_path</span>.<span class="ident">path</span>.<span class="ident">segments</span>.<span class="ident">first</span>() {
-        <span class="prelude-val">Some</span>(<span class="ident">seg</span>) =&gt; <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">seg</span>.<span class="ident">arguments</span> {
-            <span class="ident">syn::PathArguments::AngleBracketed</span>(<span class="ident">a</span>) =&gt; (<span class="kw-2">&amp;</span><span class="ident">seg</span>.<span class="ident">ident</span>, <span class="ident">a</span>),
-            <span class="ident">syn::PathArguments::None</span> <span class="op">|</span> <span class="ident">syn::PathArguments::Parenthesized</span>(<span class="kw">_</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+    <span class="kw">let </span>(ident, a) = <span class="kw">match </span><span class="kw-2">&amp;</span>type_path.path.segments.first() {
+        <span class="prelude-val">Some</span>(seg) =&gt; <span class="kw">match </span><span class="kw-2">&amp;</span>seg.arguments {
+            syn::PathArguments::AngleBracketed(a) =&gt; (<span class="kw-2">&amp;</span>seg.ident, a),
+            syn::PathArguments::None | syn::PathArguments::Parenthesized(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         },
-        <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+        <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
     };
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">args</span>.<span class="ident">iter</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">arg1</span>) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">arg2</span>) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-            <span class="kw">if</span> <span class="ident">it</span>.<span class="ident">next</span>().<span class="ident">is_none</span>() {
-                <span class="kw">let</span> <span class="ident">arg1</span> <span class="op">=</span> <span class="ident">arg_as_type</span>(<span class="ident">arg1</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">arg2</span> <span class="op">=</span> <span class="ident">arg_as_type</span>(<span class="ident">arg2</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>it = a.args.iter();
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(arg1) = it.next() {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(arg2) = it.next() {
+            <span class="kw">if </span>it.next().is_none() {
+                <span class="kw">let </span>arg1 = arg_as_type(arg1)<span class="question-mark">?</span>;
+                <span class="kw">let </span>arg2 = arg_as_type(arg2)<span class="question-mark">?</span>;
 
-                <span class="kw">if</span> <span class="kw">let</span> <span class="string">&quot;Result&quot;</span> <span class="op">=</span> <span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>() {
-                    <span class="kw">let</span> <span class="ident">throws</span> <span class="op">=</span> <span class="ident">type_as_type_name</span>(<span class="ident">arg2</span>)<span class="question-mark">?</span>.<span class="ident">to_owned</span>();
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((<span class="ident">arg1</span>, <span class="ident">throws</span>)));
+                <span class="kw">if let </span><span class="string">&quot;Result&quot; </span>= ident.to_string().as_str() {
+                    <span class="kw">let </span>throws = type_as_type_name(arg2)<span class="question-mark">?</span>.to_owned();
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((arg1, throws)));
                 }
             }
         }
@@ -449,5 +443,4 @@
     <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

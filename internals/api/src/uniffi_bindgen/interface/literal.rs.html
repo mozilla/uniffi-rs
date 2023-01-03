@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/literal.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>literal.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/literal.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>literal.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -192,190 +186,189 @@
 <span id="186">186</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Support for literal values.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module provides support for interpreting literal values from the UDL,</span>
-<span class="doccomment">//! which appear in places such as default arguments.</span>
+</span><span class="doccomment">//! # Support for literal values.
+//!
+//! This module provides support for interpreting literal values from the UDL,
+//! which appear in places such as default arguments.
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
+</span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>uniffi_meta::Checksum;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types::Type</span>;
+<span class="kw">use </span><span class="kw">super</span>::types::Type;
 
-<span class="comment">// Represents a literal value.</span>
-<span class="comment">// Used for e.g. default argument values.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Literal</span> {
-    <span class="ident">Boolean</span>(<span class="ident">bool</span>),
-    <span class="ident">String</span>(<span class="ident">String</span>),
-    <span class="comment">// Integers are represented as the widest representation we can.</span>
-    <span class="comment">// Number formatting vary with language and radix, so we avoid a lot of parsing and</span>
-    <span class="comment">// formatting duplication by using only signed and unsigned variants.</span>
-    <span class="ident">UInt</span>(<span class="ident">u64</span>, <span class="ident">Radix</span>, <span class="ident">Type</span>),
-    <span class="ident">Int</span>(<span class="ident">i64</span>, <span class="ident">Radix</span>, <span class="ident">Type</span>),
-    <span class="comment">// Pass the string representation through as typed in the UDL.</span>
-    <span class="comment">// This avoids a lot of uncertainty around precision and accuracy,</span>
-    <span class="comment">// though bindings for languages less sophisticated number parsing than WebIDL</span>
-    <span class="comment">// will have to do extra work.</span>
-    <span class="ident">Float</span>(<span class="ident">String</span>, <span class="ident">Type</span>),
-    <span class="ident">Enum</span>(<span class="ident">String</span>, <span class="ident">Type</span>),
-    <span class="ident">EmptySequence</span>,
-    <span class="ident">EmptyMap</span>,
-    <span class="ident">Null</span>,
+<span class="comment">// Represents a literal value.
+// Used for e.g. default argument values.
+</span><span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Checksum)]
+</span><span class="kw">pub enum </span>Literal {
+    Boolean(bool),
+    String(String),
+    <span class="comment">// Integers are represented as the widest representation we can.
+    // Number formatting vary with language and radix, so we avoid a lot of parsing and
+    // formatting duplication by using only signed and unsigned variants.
+    </span>UInt(u64, Radix, Type),
+    Int(i64, Radix, Type),
+    <span class="comment">// Pass the string representation through as typed in the UDL.
+    // This avoids a lot of uncertainty around precision and accuracy,
+    // though bindings for languages less sophisticated number parsing than WebIDL
+    // will have to do extra work.
+    </span>Float(String, Type),
+    Enum(String, Type),
+    EmptySequence,
+    EmptyMap,
+    Null,
 }
 
-<span class="comment">// Represent the radix of integer literal values.</span>
-<span class="comment">// We preserve the radix into the generated bindings for readability reasons.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Radix</span> {
-    <span class="ident">Decimal</span> <span class="op">=</span> <span class="number">10</span>,
-    <span class="ident">Octal</span> <span class="op">=</span> <span class="number">8</span>,
-    <span class="ident">Hexadecimal</span> <span class="op">=</span> <span class="number">16</span>,
+<span class="comment">// Represent the radix of integer literal values.
+// We preserve the radix into the generated bindings for readability reasons.
+</span><span class="attribute">#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Checksum)]
+</span><span class="kw">pub enum </span>Radix {
+    Decimal = <span class="number">10</span>,
+    Octal = <span class="number">8</span>,
+    Hexadecimal = <span class="number">16</span>,
 }
 
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">convert_default_value</span>(
-    <span class="ident">default_value</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::literal::DefaultValue</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert_integer</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::literal::IntegerLit</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">string</span>, <span class="ident">radix</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">literal</span> {
-            <span class="ident">weedle::literal::IntegerLit::Dec</span>(<span class="ident">v</span>) =&gt; (<span class="ident">v</span>.<span class="number">0</span>, <span class="ident">Radix::Decimal</span>),
-            <span class="ident">weedle::literal::IntegerLit::Hex</span>(<span class="ident">v</span>) =&gt; (<span class="ident">v</span>.<span class="number">0</span>, <span class="ident">Radix::Hexadecimal</span>),
-            <span class="ident">weedle::literal::IntegerLit::Oct</span>(<span class="ident">v</span>) =&gt; (<span class="ident">v</span>.<span class="number">0</span>, <span class="ident">Radix::Octal</span>),
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>convert_default_value(
+    default_value: <span class="kw-2">&amp;</span>weedle::literal::DefaultValue&lt;<span class="lifetime">&#39;_</span>&gt;,
+    type_: <span class="kw-2">&amp;</span>Type,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Literal&gt; {
+    <span class="kw">fn </span>convert_integer(literal: <span class="kw-2">&amp;</span>weedle::literal::IntegerLit&lt;<span class="lifetime">&#39;_</span>&gt;, type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;Literal&gt; {
+        <span class="kw">let </span>(string, radix) = <span class="kw">match </span>literal {
+            weedle::literal::IntegerLit::Dec(v) =&gt; (v.<span class="number">0</span>, Radix::Decimal),
+            weedle::literal::IntegerLit::Hex(v) =&gt; (v.<span class="number">0</span>, Radix::Hexadecimal),
+            weedle::literal::IntegerLit::Oct(v) =&gt; (v.<span class="number">0</span>, Radix::Octal),
         };
-        <span class="comment">// This is the radix of the parsed number, passed to `from_str_radix`.</span>
-        <span class="kw">let</span> <span class="ident">src_radix</span> <span class="op">=</span> <span class="ident">radix</span> <span class="kw">as</span> <span class="ident">u32</span>;
-        <span class="comment">// This radix tells the backends how to represent the number in the output languages.</span>
-        <span class="kw">let</span> <span class="ident">dest_radix</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">string</span> <span class="op">==</span> <span class="string">&quot;0&quot;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">string</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) {
-            <span class="comment">// 1. weedle parses &quot;0&quot; as an octal literal, but we most likely want to treat this as a decimal.</span>
-            <span class="comment">// 2. Explicitly negatively signed hex numbers won&#39;t convert via i64 very well if they&#39;re not 64 bit.</span>
-            <span class="comment">//    For ease of implementation, output will use decimal.</span>
-            <span class="ident">Radix::Decimal</span>
-        } <span class="kw">else</span> {
-            <span class="ident">radix</span>
-        };
-
-        <span class="comment">// Clippy seems to think we should be using `strip_prefix` here, but</span>
-        <span class="comment">// it seems confused as to what this is actually doing.</span>
-        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::manual_strip</span>)]</span>
-        <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">string</span>.<span class="ident">starts_with</span>(<span class="string">&#39;-&#39;</span>) {
-            (<span class="string">&quot;-&quot;</span>.<span class="ident">to_string</span>() <span class="op">+</span> <span class="ident">string</span>[<span class="number">1</span>..].<span class="ident">trim_start_matches</span>(<span class="string">&quot;0x&quot;</span>)).<span class="ident">to_lowercase</span>()
-        } <span class="kw">else</span> {
-            <span class="ident">string</span>.<span class="ident">trim_start_matches</span>(<span class="string">&quot;0x&quot;</span>).<span class="ident">to_lowercase</span>()
+        <span class="comment">// This is the radix of the parsed number, passed to `from_str_radix`.
+        </span><span class="kw">let </span>src_radix = radix <span class="kw">as </span>u32;
+        <span class="comment">// This radix tells the backends how to represent the number in the output languages.
+        </span><span class="kw">let </span>dest_radix = <span class="kw">if </span>string == <span class="string">&quot;0&quot; </span>|| string.starts_with(<span class="string">&#39;-&#39;</span>) {
+            <span class="comment">// 1. weedle parses &quot;0&quot; as an octal literal, but we most likely want to treat this as a decimal.
+            // 2. Explicitly negatively signed hex numbers won&#39;t convert via i64 very well if they&#39;re not 64 bit.
+            //    For ease of implementation, output will use decimal.
+            </span>Radix::Decimal
+        } <span class="kw">else </span>{
+            radix
         };
 
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type::Int8</span> <span class="op">|</span> <span class="ident">Type::Int16</span> <span class="op">|</span> <span class="ident">Type::Int32</span> <span class="op">|</span> <span class="ident">Type::Int64</span> =&gt; <span class="ident">Literal::Int</span>(
-                <span class="ident">i64::from_str_radix</span>(<span class="kw-2">&amp;</span><span class="ident">string</span>, <span class="ident">src_radix</span>)<span class="question-mark">?</span>,
-                <span class="ident">dest_radix</span>,
-                <span class="ident">type_</span>.<span class="ident">clone</span>(),
+        <span class="comment">// Clippy seems to think we should be using `strip_prefix` here, but
+        // it seems confused as to what this is actually doing.
+        </span><span class="attribute">#[allow(clippy::manual_strip)]
+        </span><span class="kw">let </span>string = <span class="kw">if </span>string.starts_with(<span class="string">&#39;-&#39;</span>) {
+            (<span class="string">&quot;-&quot;</span>.to_string() + string[<span class="number">1</span>..].trim_start_matches(<span class="string">&quot;0x&quot;</span>)).to_lowercase()
+        } <span class="kw">else </span>{
+            string.trim_start_matches(<span class="string">&quot;0x&quot;</span>).to_lowercase()
+        };
+
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
+            Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 =&gt; Literal::Int(
+                i64::from_str_radix(<span class="kw-2">&amp;</span>string, src_radix)<span class="question-mark">?</span>,
+                dest_radix,
+                type_.clone(),
             ),
-            <span class="ident">Type::UInt8</span> <span class="op">|</span> <span class="ident">Type::UInt16</span> <span class="op">|</span> <span class="ident">Type::UInt32</span> <span class="op">|</span> <span class="ident">Type::UInt64</span> =&gt; <span class="ident">Literal::UInt</span>(
-                <span class="ident">u64::from_str_radix</span>(<span class="kw-2">&amp;</span><span class="ident">string</span>, <span class="ident">src_radix</span>)<span class="question-mark">?</span>,
-                <span class="ident">dest_radix</span>,
-                <span class="ident">type_</span>.<span class="ident">clone</span>(),
+            Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 =&gt; Literal::UInt(
+                u64::from_str_radix(<span class="kw-2">&amp;</span>string, src_radix)<span class="question-mark">?</span>,
+                dest_radix,
+                type_.clone(),
             ),
 
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;Cannot coerce literal {} into a non-integer type&quot;</span>, <span class="ident">string</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;Cannot coerce literal {} into a non-integer type&quot;</span>, string),
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">convert_float</span>(<span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::literal::FloatLit</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">literal</span> {
-            <span class="ident">weedle::literal::FloatLit::Value</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="number">0</span>,
+    <span class="kw">fn </span>convert_float(literal: <span class="kw-2">&amp;</span>weedle::literal::FloatLit&lt;<span class="lifetime">&#39;_</span>&gt;, type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;Literal&gt; {
+        <span class="kw">let </span>string = <span class="kw">match </span>literal {
+            weedle::literal::FloatLit::Value(v) =&gt; v.<span class="number">0</span>,
 
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;Infinity and NaN is not currently supported&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;Infinity and NaN is not currently supported&quot;</span>),
         };
 
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type::Float32</span> <span class="op">|</span> <span class="ident">Type::Float64</span> =&gt; <span class="ident">Literal::Float</span>(<span class="ident">string</span>.<span class="ident">to_string</span>(), <span class="ident">type_</span>.<span class="ident">clone</span>()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;Cannot coerce literal {} into a non-float type&quot;</span>, <span class="ident">string</span>),
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
+            Type::Float32 | Type::Float64 =&gt; Literal::Float(string.to_string(), type_.clone()),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;Cannot coerce literal {} into a non-float type&quot;</span>, string),
         })
     }
 
-    <span class="prelude-val">Ok</span>(<span class="kw">match</span> (<span class="ident">default_value</span>, <span class="ident">type_</span>) {
-        (<span class="ident">weedle::literal::DefaultValue::Boolean</span>(<span class="ident">b</span>), <span class="ident">Type::Boolean</span>) =&gt; <span class="ident">Literal::Boolean</span>(<span class="ident">b</span>.<span class="number">0</span>),
-        (<span class="ident">weedle::literal::DefaultValue::String</span>(<span class="ident">s</span>), <span class="ident">Type::String</span>) =&gt; {
-            <span class="comment">// Note that weedle doesn&#39;t parse escaped double quotes.</span>
-            <span class="comment">// Keeping backends using double quotes (possible for all to date)</span>
-            <span class="comment">// means we don&#39;t need to escape single quotes. But we haven&#39;t spent a lot of time</span>
-            <span class="comment">// trying to break default values with weird escapes and quotes.</span>
-            <span class="ident">Literal::String</span>(<span class="ident">s</span>.<span class="number">0</span>.<span class="ident">to_string</span>())
+    <span class="prelude-val">Ok</span>(<span class="kw">match </span>(default_value, type_) {
+        (weedle::literal::DefaultValue::Boolean(b), Type::Boolean) =&gt; Literal::Boolean(b.<span class="number">0</span>),
+        (weedle::literal::DefaultValue::String(s), Type::String) =&gt; {
+            <span class="comment">// Note that weedle doesn&#39;t parse escaped double quotes.
+            // Keeping backends using double quotes (possible for all to date)
+            // means we don&#39;t need to escape single quotes. But we haven&#39;t spent a lot of time
+            // trying to break default values with weird escapes and quotes.
+            </span>Literal::String(s.<span class="number">0</span>.to_string())
         }
-        (<span class="ident">weedle::literal::DefaultValue::EmptyArray</span>(<span class="kw">_</span>), <span class="ident">Type::Sequence</span>(<span class="kw">_</span>)) =&gt; <span class="ident">Literal::EmptySequence</span>,
-        (<span class="ident">weedle::literal::DefaultValue::String</span>(<span class="ident">s</span>), <span class="ident">Type::Enum</span>(<span class="kw">_</span>)) =&gt; {
-            <span class="ident">Literal::Enum</span>(<span class="ident">s</span>.<span class="number">0</span>.<span class="ident">to_string</span>(), <span class="ident">type_</span>.<span class="ident">clone</span>())
+        (weedle::literal::DefaultValue::EmptyArray(<span class="kw">_</span>), Type::Sequence(<span class="kw">_</span>)) =&gt; Literal::EmptySequence,
+        (weedle::literal::DefaultValue::String(s), Type::Enum(<span class="kw">_</span>)) =&gt; {
+            Literal::Enum(s.<span class="number">0</span>.to_string(), type_.clone())
         }
-        (<span class="ident">weedle::literal::DefaultValue::Null</span>(<span class="kw">_</span>), <span class="ident">Type::Optional</span>(<span class="kw">_</span>)) =&gt; <span class="ident">Literal::Null</span>,
-        (<span class="kw">_</span>, <span class="ident">Type::Optional</span>(<span class="ident">inner_type</span>)) =&gt; <span class="ident">convert_default_value</span>(<span class="ident">default_value</span>, <span class="ident">inner_type</span>)<span class="question-mark">?</span>,
+        (weedle::literal::DefaultValue::Null(<span class="kw">_</span>), Type::Optional(<span class="kw">_</span>)) =&gt; Literal::Null,
+        (<span class="kw">_</span>, Type::Optional(inner_type)) =&gt; convert_default_value(default_value, inner_type)<span class="question-mark">?</span>,
 
-        <span class="comment">// We&#39;ll ensure the type safety in the convert_* number methods.</span>
-        (<span class="ident">weedle::literal::DefaultValue::Integer</span>(<span class="ident">i</span>), <span class="kw">_</span>) =&gt; <span class="ident">convert_integer</span>(<span class="ident">i</span>, <span class="ident">type_</span>)<span class="question-mark">?</span>,
-        (<span class="ident">weedle::literal::DefaultValue::Float</span>(<span class="ident">i</span>), <span class="kw">_</span>) =&gt; <span class="ident">convert_float</span>(<span class="ident">i</span>, <span class="ident">type_</span>)<span class="question-mark">?</span>,
+        <span class="comment">// We&#39;ll ensure the type safety in the convert_* number methods.
+        </span>(weedle::literal::DefaultValue::Integer(i), <span class="kw">_</span>) =&gt; convert_integer(i, type_)<span class="question-mark">?</span>,
+        (weedle::literal::DefaultValue::Float(i), <span class="kw">_</span>) =&gt; convert_float(i, type_)<span class="question-mark">?</span>,
 
-        <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;No support for {:?} literal yet&quot;</span>, <span class="ident">default_value</span>),
+        <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;No support for {:?} literal yet&quot;</span>, default_value),
     })
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">weedle::Parse</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>weedle::Parse;
 
-    <span class="kw">fn</span> <span class="ident">parse_and_convert</span>(<span class="ident">expr</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">t</span>: <span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::literal::DefaultValue::parse</span>(<span class="ident">expr</span>).<span class="ident">unwrap</span>();
-        <span class="ident">convert_default_value</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>, <span class="kw-2">&amp;</span><span class="ident">t</span>)
+    <span class="kw">fn </span>parse_and_convert(expr: <span class="kw-2">&amp;</span>str, t: Type) -&gt; <span class="prelude-ty">Result</span>&lt;Literal&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::literal::DefaultValue::parse(expr).unwrap();
+        convert_default_value(<span class="kw-2">&amp;</span>node, <span class="kw-2">&amp;</span>t)
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_default_value_conversion</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_default_value_conversion() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            <span class="ident">parse_and_convert</span>(<span class="string">&quot;0&quot;</span>, <span class="ident">Type::UInt8</span>)<span class="question-mark">?</span>,
-            <span class="ident">Literal::UInt</span>(<span class="number">0</span>, <span class="ident">Radix::Decimal</span>, <span class="ident">Type::UInt8</span>)
+            parse_and_convert(<span class="string">&quot;0&quot;</span>, Type::UInt8)<span class="question-mark">?</span>,
+            Literal::UInt(<span class="number">0</span>, Radix::Decimal, Type::UInt8)
         ));
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            <span class="ident">parse_and_convert</span>(<span class="string">&quot;-12&quot;</span>, <span class="ident">Type::Int32</span>)<span class="question-mark">?</span>,
-            <span class="ident">Literal::Int</span>(<span class="op">-</span><span class="number">12</span>, <span class="ident">Radix::Decimal</span>, <span class="ident">Type::Int32</span>)
-        ));
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;3.14&quot;</span>, <span class="ident">Type::Float32</span>)<span class="question-mark">?</span>, <span class="ident">Literal::Float</span>(<span class="ident">v</span>, <span class="ident">Type::Float32</span>) <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="string">&quot;3.14&quot;</span>)
-        );
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            <span class="ident">parse_and_convert</span>(<span class="string">&quot;false&quot;</span>, <span class="ident">Type::Boolean</span>)<span class="question-mark">?</span>,
-            <span class="ident">Literal::Boolean</span>(<span class="bool-val">false</span>)
+            parse_and_convert(<span class="string">&quot;-12&quot;</span>, Type::Int32)<span class="question-mark">?</span>,
+            Literal::Int(-<span class="number">12</span>, Radix::Decimal, Type::Int32)
         ));
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;\&quot;TEST\&quot;&quot;</span>, <span class="ident">Type::String</span>)<span class="question-mark">?</span>, <span class="ident">Literal::String</span>(<span class="ident">v</span>) <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="string">&quot;TEST&quot;</span>)
+            <span class="macro">matches!</span>(parse_and_convert(<span class="string">&quot;3.14&quot;</span>, Type::Float32)<span class="question-mark">?</span>, Literal::Float(v, Type::Float32) <span class="kw">if </span>v == <span class="string">&quot;3.14&quot;</span>)
+        );
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+            parse_and_convert(<span class="string">&quot;false&quot;</span>, Type::Boolean)<span class="question-mark">?</span>,
+            Literal::Boolean(<span class="bool-val">false</span>)
+        ));
+        <span class="macro">assert!</span>(
+            <span class="macro">matches!</span>(parse_and_convert(<span class="string">&quot;\&quot;TEST\&quot;&quot;</span>, Type::String)<span class="question-mark">?</span>, Literal::String(v) <span class="kw">if </span>v == <span class="string">&quot;TEST&quot;</span>)
         );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;\&quot;one\&quot;&quot;</span>, <span class="ident">Type::Enum</span>(<span class="string">&quot;E&quot;</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>, <span class="ident">Literal::Enum</span>(<span class="ident">v</span>, <span class="ident">Type::Enum</span>(<span class="ident">e</span>)) <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="string">&quot;one&quot;</span> <span class="op">&amp;&amp;</span> <span class="ident">e</span> <span class="op">==</span> <span class="string">&quot;E&quot;</span>)
+            <span class="macro">matches!</span>(parse_and_convert(<span class="string">&quot;\&quot;one\&quot;&quot;</span>, Type::Enum(<span class="string">&quot;E&quot;</span>.into()))<span class="question-mark">?</span>, Literal::Enum(v, Type::Enum(e)) <span class="kw">if </span>v == <span class="string">&quot;one&quot; </span>&amp;&amp; e == <span class="string">&quot;E&quot;</span>)
         );
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            <span class="ident">parse_and_convert</span>(<span class="string">&quot;[]&quot;</span>, <span class="ident">Type::Sequence</span>(<span class="ident">Box::new</span>(<span class="ident">Type::String</span>)))<span class="question-mark">?</span>,
-            <span class="ident">Literal::EmptySequence</span>
+            parse_and_convert(<span class="string">&quot;[]&quot;</span>, Type::Sequence(Box::new(Type::String)))<span class="question-mark">?</span>,
+            Literal::EmptySequence
         ));
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            <span class="ident">parse_and_convert</span>(<span class="string">&quot;null&quot;</span>, <span class="ident">Type::Optional</span>(<span class="ident">Box::new</span>(<span class="ident">Type::String</span>)))<span class="question-mark">?</span>,
-            <span class="ident">Literal::Null</span>
+            parse_and_convert(<span class="string">&quot;null&quot;</span>, Type::Optional(Box::new(Type::String)))<span class="question-mark">?</span>,
+            Literal::Null
         ));
         <span class="prelude-val">Ok</span>(())
     }
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_error_on_type_mismatch</span>() {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_error_on_type_mismatch() {
         <span class="macro">assert_eq!</span>(
-            <span class="ident">parse_and_convert</span>(<span class="string">&quot;0&quot;</span>, <span class="ident">Type::Boolean</span>)
-                .<span class="ident">unwrap_err</span>()
-                .<span class="ident">to_string</span>(),
-            <span class="string">&quot;Cannot coerce literal 0 into a non-integer type&quot;</span>
-        );
-        <span class="macro">assert!</span>(<span class="ident">parse_and_convert</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Type::Boolean</span>)
-            .<span class="ident">unwrap_err</span>()
-            .<span class="ident">to_string</span>()
-            .<span class="ident">starts_with</span>(<span class="string">&quot;No support for&quot;</span>));
+            parse_and_convert(<span class="string">&quot;0&quot;</span>, Type::Boolean)
+                .unwrap_err()
+                .to_string(),
+            <span class="string">&quot;Cannot coerce literal 0 into a non-integer type&quot;
+        </span>);
+        <span class="macro">assert!</span>(parse_and_convert(<span class="string">&quot;{}&quot;</span>, Type::Boolean)
+            .unwrap_err()
+            .to_string()
+            .starts_with(<span class="string">&quot;No support for&quot;</span>));
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

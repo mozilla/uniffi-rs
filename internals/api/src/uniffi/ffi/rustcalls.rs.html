@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi/src/ffi/rustcalls.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>rustcalls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi/src/ffi/rustcalls.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>rustcalls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -285,283 +279,282 @@
 <span id="279">279</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Low-level support for calling rust functions</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module helps the scaffolding code make calls to rust functions and pass back the result to the FFI bindings code.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! It handles:</span>
-<span class="doccomment">//!    - Catching panics</span>
-<span class="doccomment">//!    - Adapting `Result&lt;&gt;` types into either a return value or an error</span>
+</span><span class="doccomment">//! # Low-level support for calling rust functions
+//!
+//! This module helps the scaffolding code make calls to rust functions and pass back the result to the FFI bindings code.
+//!
+//! It handles:
+//!    - Catching panics
+//!    - Adapting `Result&lt;&gt;` types into either a return value or an error
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::FfiDefault</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">FfiConverter</span>, <span class="ident">RustBuffer</span>, <span class="ident">RustBufferFfiConverter</span>};
-<span class="kw">use</span> <span class="ident">anyhow::Result</span>;
-<span class="kw">use</span> <span class="ident">std::mem::MaybeUninit</span>;
-<span class="kw">use</span> <span class="ident">std::panic</span>;
+</span><span class="kw">use </span><span class="kw">super</span>::FfiDefault;
+<span class="kw">use crate</span>::{FfiConverter, RustBuffer, RustBufferFfiConverter};
+<span class="kw">use </span>anyhow::Result;
+<span class="kw">use </span>std::mem::MaybeUninit;
+<span class="kw">use </span>std::panic;
 
-<span class="doccomment">/// Represents the success/error of a rust call</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Usage</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// - The consumer code creates a `RustCallStatus` with an empty `RustBuffer` and `CALL_SUCCESS`</span>
-<span class="doccomment">///   (0) as the status code</span>
-<span class="doccomment">/// - A pointer to this object is passed to the rust FFI function.  This is an</span>
-<span class="doccomment">///   &quot;out parameter&quot; which will be updated with any error that occurred during the function&#39;s</span>
-<span class="doccomment">///   execution.</span>
-<span class="doccomment">/// - After the call, if `code` is `CALL_ERROR` then `error_buf` will be updated to contain</span>
-<span class="doccomment">///   the serialized error object.   The consumer is responsible for freeing `error_buf`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Layout/fields</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The layout of this struct is important since consumers on the other side of the FFI need to</span>
-<span class="doccomment">/// construct it.  If this were a C struct, it would look like:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```c,no_run</span>
-<span class="doccomment">/// struct RustCallStatus {</span>
-<span class="doccomment">///     int8_t code;</span>
-<span class="doccomment">///     RustBuffer error_buf;</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// #### The `code` field.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///  - `CALL_SUCCESS` (0) for successful calls</span>
-<span class="doccomment">///  - `CALL_ERROR` (1) for calls that returned an `Err` value</span>
-<span class="doccomment">///  - `CALL_PANIC` (2) for calls that panicked</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// #### The `error_buf` field.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// - For `CALL_ERROR` this is a `RustBuffer` with the serialized error.  The consumer code is</span>
-<span class="doccomment">///   responsible for freeing this `RustBuffer`.</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RustCallStatus</span> {
-    <span class="kw">pub</span> <span class="ident">code</span>: <span class="ident">i8</span>,
-    <span class="comment">// code is signed because unsigned types are experimental in Kotlin</span>
-    <span class="kw">pub</span> <span class="ident">error_buf</span>: <span class="ident">MaybeUninit</span><span class="op">&lt;</span><span class="ident">RustBuffer</span><span class="op">&gt;</span>,
-    <span class="comment">// error_buf is MaybeUninit to avoid dropping the value that the consumer code sends in:</span>
-    <span class="comment">//   - Consumers should send in a zeroed out RustBuffer.  In this case dropping is a no-op and</span>
-    <span class="comment">//     avoiding the drop is a small optimization.</span>
-    <span class="comment">//   - If consumers pass in invalid data, then we should avoid trying to drop it.  In</span>
-    <span class="comment">//     particular, we don&#39;t want to try to free any data the consumer has allocated.</span>
-    <span class="comment">//</span>
-    <span class="comment">// `MaybeUninit` requires unsafe code, since we are preventing rust from dropping the value.</span>
-    <span class="comment">// To use this safely we need to make sure that no code paths set this twice, since that will</span>
-    <span class="comment">// leak the first `RustBuffer`.</span>
-}
+<span class="doccomment">/// Represents the success/error of a rust call
+///
+/// ## Usage
+///
+/// - The consumer code creates a `RustCallStatus` with an empty `RustBuffer` and `CALL_SUCCESS`
+///   (0) as the status code
+/// - A pointer to this object is passed to the rust FFI function.  This is an
+///   &quot;out parameter&quot; which will be updated with any error that occurred during the function&#39;s
+///   execution.
+/// - After the call, if `code` is `CALL_ERROR` then `error_buf` will be updated to contain
+///   the serialized error object.   The consumer is responsible for freeing `error_buf`.
+///
+/// ## Layout/fields
+///
+/// The layout of this struct is important since consumers on the other side of the FFI need to
+/// construct it.  If this were a C struct, it would look like:
+///
+/// ```c,no_run
+/// struct RustCallStatus {
+///     int8_t code;
+///     RustBuffer error_buf;
+/// };
+/// ```
+///
+/// #### The `code` field.
+///
+///  - `CALL_SUCCESS` (0) for successful calls
+///  - `CALL_ERROR` (1) for calls that returned an `Err` value
+///  - `CALL_PANIC` (2) for calls that panicked
+///
+/// #### The `error_buf` field.
+///
+/// - For `CALL_ERROR` this is a `RustBuffer` with the serialized error.  The consumer code is
+///   responsible for freeing this `RustBuffer`.
+</span><span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>RustCallStatus {
+    <span class="kw">pub </span>code: i8,
+    <span class="comment">// code is signed because unsigned types are experimental in Kotlin
+    </span><span class="kw">pub </span>error_buf: MaybeUninit&lt;RustBuffer&gt;,
+    <span class="comment">// error_buf is MaybeUninit to avoid dropping the value that the consumer code sends in:
+    //   - Consumers should send in a zeroed out RustBuffer.  In this case dropping is a no-op and
+    //     avoiding the drop is a small optimization.
+    //   - If consumers pass in invalid data, then we should avoid trying to drop it.  In
+    //     particular, we don&#39;t want to try to free any data the consumer has allocated.
+    //
+    // `MaybeUninit` requires unsafe code, since we are preventing rust from dropping the value.
+    // To use this safely we need to make sure that no code paths set this twice, since that will
+    // leak the first `RustBuffer`.
+</span>}
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">RustCallStatus</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">code</span>: <span class="number">0</span>,
-            <span class="ident">error_buf</span>: <span class="ident">MaybeUninit::uninit</span>(),
+<span class="kw">impl </span>Default <span class="kw">for </span>RustCallStatus {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            code: <span class="number">0</span>,
+            error_buf: MaybeUninit::uninit(),
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-<span class="kw">const</span> <span class="ident">CALL_SUCCESS</span>: <span class="ident">i8</span> <span class="op">=</span> <span class="number">0</span>; <span class="comment">// CALL_SUCCESS is set by the calling code</span>
-<span class="kw">const</span> <span class="ident">CALL_ERROR</span>: <span class="ident">i8</span> <span class="op">=</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">CALL_PANIC</span>: <span class="ident">i8</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="attribute">#[allow(dead_code)]
+</span><span class="kw">const </span>CALL_SUCCESS: i8 = <span class="number">0</span>; <span class="comment">// CALL_SUCCESS is set by the calling code
+</span><span class="kw">const </span>CALL_ERROR: i8 = <span class="number">1</span>;
+<span class="kw">const </span>CALL_PANIC: i8 = <span class="number">2</span>;
 
-<span class="comment">// A trait for errors that can be thrown to the FFI code</span>
-<span class="comment">//</span>
-<span class="comment">// This gets implemented in uniffi_bindgen/src/scaffolding/templates/ErrorTemplate.rs</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">FfiError</span>: <span class="ident">RustBufferFfiConverter</span> {}
+<span class="comment">// A trait for errors that can be thrown to the FFI code
+//
+// This gets implemented in uniffi_bindgen/src/scaffolding/templates/ErrorTemplate.rs
+</span><span class="kw">pub trait </span>FfiError: RustBufferFfiConverter {}
 
-<span class="comment">// Generalized rust call handling function</span>
-<span class="kw">fn</span> <span class="ident">make_call</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">out_status</span>: <span class="kw-2">&amp;mut</span> <span class="ident">RustCallStatus</span>, <span class="ident">callback</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">panic::UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">RustBuffer</span><span class="op">&gt;</span>,
-    <span class="ident">R</span>: <span class="ident">FfiDefault</span>,
+<span class="comment">// Generalized rust call handling function
+</span><span class="kw">fn </span>make_call&lt;F, R&gt;(out_status: <span class="kw-2">&amp;mut </span>RustCallStatus, callback: F) -&gt; R
+<span class="kw">where
+    </span>F: panic::UnwindSafe + FnOnce() -&gt; <span class="prelude-ty">Result</span>&lt;R, RustBuffer&gt;,
+    R: FfiDefault,
 {
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="ident"><span class="kw">crate</span>::panichook::ensure_setup</span>();
-        <span class="ident">callback</span>()
+    <span class="kw">let </span>result = panic::catch_unwind(|| {
+        <span class="kw">crate</span>::panichook::ensure_setup();
+        callback()
     });
-    <span class="kw">match</span> <span class="ident">result</span> {
-        <span class="comment">// Happy path.  Note: no need to update out_status in this case because the calling code</span>
-        <span class="comment">// initializes it to CALL_SUCCESS</span>
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(<span class="ident">v</span>)) =&gt; <span class="ident">v</span>,
-        <span class="comment">// Callback returned an Err.</span>
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(<span class="ident">buf</span>)) =&gt; {
-            <span class="ident">out_status</span>.<span class="ident">code</span> <span class="op">=</span> <span class="ident">CALL_ERROR</span>;
-            <span class="kw">unsafe</span> {
-                <span class="comment">// Unsafe because we&#39;re setting the `MaybeUninit` value, see above for safety</span>
-                <span class="comment">// invariants.</span>
-                <span class="ident">out_status</span>.<span class="ident">error_buf</span>.<span class="ident">as_mut_ptr</span>().<span class="ident">write</span>(<span class="ident">buf</span>);
+    <span class="kw">match </span>result {
+        <span class="comment">// Happy path.  Note: no need to update out_status in this case because the calling code
+        // initializes it to CALL_SUCCESS
+        </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(v)) =&gt; v,
+        <span class="comment">// Callback returned an Err.
+        </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(buf)) =&gt; {
+            out_status.code = CALL_ERROR;
+            <span class="kw">unsafe </span>{
+                <span class="comment">// Unsafe because we&#39;re setting the `MaybeUninit` value, see above for safety
+                // invariants.
+                </span>out_status.error_buf.as_mut_ptr().write(buf);
             }
-            <span class="ident">R::ffi_default</span>()
+            R::ffi_default()
         }
-        <span class="comment">// Callback panicked</span>
-        <span class="prelude-val">Err</span>(<span class="ident">cause</span>) =&gt; {
-            <span class="ident">out_status</span>.<span class="ident">code</span> <span class="op">=</span> <span class="ident">CALL_PANIC</span>;
-            <span class="comment">// Try to coerce the cause into a RustBuffer containing a String.  Since this code can</span>
-            <span class="comment">// panic, we need to use a second catch_unwind().</span>
-            <span class="kw">let</span> <span class="ident">message_result</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-                <span class="comment">// The documentation suggests that it will *usually* be a str or String.</span>
-                <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">cause</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span>() {
-                    (<span class="kw-2">*</span><span class="ident">s</span>).<span class="ident">to_string</span>()
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">cause</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>() {
-                    <span class="ident">s</span>.<span class="ident">clone</span>()
-                } <span class="kw">else</span> {
-                    <span class="string">&quot;Unknown panic!&quot;</span>.<span class="ident">to_string</span>()
+        <span class="comment">// Callback panicked
+        </span><span class="prelude-val">Err</span>(cause) =&gt; {
+            out_status.code = CALL_PANIC;
+            <span class="comment">// Try to coerce the cause into a RustBuffer containing a String.  Since this code can
+            // panic, we need to use a second catch_unwind().
+            </span><span class="kw">let </span>message_result = panic::catch_unwind(panic::AssertUnwindSafe(<span class="kw">move </span>|| {
+                <span class="comment">// The documentation suggests that it will *usually* be a str or String.
+                </span><span class="kw">let </span>message = <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = cause.downcast_ref::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;() {
+                    (<span class="kw-2">*</span>s).to_string()
+                } <span class="kw">else if let </span><span class="prelude-val">Some</span>(s) = cause.downcast_ref::&lt;String&gt;() {
+                    s.clone()
+                } <span class="kw">else </span>{
+                    <span class="string">&quot;Unknown panic!&quot;</span>.to_string()
                 };
-                <span class="macro">log::error!</span>(<span class="string">&quot;Caught a panic calling rust code: {:?}&quot;</span>, <span class="ident">message</span>);
-                <span class="ident">String::lower</span>(<span class="ident">message</span>)
+                <span class="macro">log::error!</span>(<span class="string">&quot;Caught a panic calling rust code: {:?}&quot;</span>, message);
+                String::lower(message)
             }));
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">buf</span>) <span class="op">=</span> <span class="ident">message_result</span> {
-                <span class="kw">unsafe</span> {
-                    <span class="comment">// Unsafe because we&#39;re setting the `MaybeUninit` value, see above for safety</span>
-                    <span class="comment">// invariants.</span>
-                    <span class="ident">out_status</span>.<span class="ident">error_buf</span>.<span class="ident">as_mut_ptr</span>().<span class="ident">write</span>(<span class="ident">buf</span>);
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(buf) = message_result {
+                <span class="kw">unsafe </span>{
+                    <span class="comment">// Unsafe because we&#39;re setting the `MaybeUninit` value, see above for safety
+                    // invariants.
+                    </span>out_status.error_buf.as_mut_ptr().write(buf);
                 }
             }
-            <span class="comment">// Ignore the error case.  We&#39;ve done all that we can at this point.  In the bindings</span>
-            <span class="comment">// code, we handle this by checking if `error_buf` still has an empty `RustBuffer` and</span>
-            <span class="comment">// using a generic message.</span>
-            <span class="ident">R::ffi_default</span>()
+            <span class="comment">// Ignore the error case.  We&#39;ve done all that we can at this point.  In the bindings
+            // code, we handle this by checking if `error_buf` still has an empty `RustBuffer` and
+            // using a generic message.
+            </span>R::ffi_default()
         }
     }
 }
 
-<span class="doccomment">/// Wrap a rust function call and return the result directly</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `callback` is responsible for making the call to the Rust function.  It must convert any return</span>
-<span class="doccomment">/// value into a type that implements `IntoFfi` (typically handled with `FfiConverter::lower()`).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// - If the function succeeds then the function&#39;s return value will be returned to the outer code</span>
-<span class="doccomment">/// - If the function panics:</span>
-<span class="doccomment">///     - `out_status.code` will be set to `CALL_PANIC`</span>
-<span class="doccomment">///     - the return value is undefined</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_output</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">out_status</span>: <span class="kw-2">&amp;mut</span> <span class="ident">RustCallStatus</span>, <span class="ident">callback</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">panic::UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() -&gt; <span class="ident">R</span>,
-    <span class="ident">R</span>: <span class="ident">FfiDefault</span>,
+<span class="doccomment">/// Wrap a rust function call and return the result directly
+///
+/// `callback` is responsible for making the call to the Rust function.  It must convert any return
+/// value into a type that implements `IntoFfi` (typically handled with `FfiConverter::lower()`).
+///
+/// - If the function succeeds then the function&#39;s return value will be returned to the outer code
+/// - If the function panics:
+///     - `out_status.code` will be set to `CALL_PANIC`
+///     - the return value is undefined
+</span><span class="kw">pub fn </span>call_with_output&lt;F, R&gt;(out_status: <span class="kw-2">&amp;mut </span>RustCallStatus, callback: F) -&gt; R
+<span class="kw">where
+    </span>F: panic::UnwindSafe + FnOnce() -&gt; R,
+    R: FfiDefault,
 {
-    <span class="ident">make_call</span>(<span class="ident">out_status</span>, <span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">callback</span>()))
+    make_call(out_status, || <span class="prelude-val">Ok</span>(callback()))
 }
 
-<span class="doccomment">/// Wrap a rust function call that returns a `Result&lt;_, RustBuffer&gt;`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `callback` is responsible for making the call to the Rust function.</span>
-<span class="doccomment">///   - `callback` must convert any return value into a type that implements `IntoFfi`</span>
-<span class="doccomment">///   - `callback` must convert any `Error` the into a `RustBuffer` to be returned over the FFI</span>
-<span class="doccomment">///   - (Both of these are typically handled with `FfiConverter::lower()`)</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// - If the function returns an `Ok` value it will be unwrapped and returned</span>
-<span class="doccomment">/// - If the function returns an `Err`:</span>
-<span class="doccomment">///     - `out_status.code` will be set to `CALL_ERROR`</span>
-<span class="doccomment">///     - `out_status.error_buf` will be set to a newly allocated `RustBuffer` containing the error.  The calling</span>
-<span class="doccomment">///       code is responsible for freeing the `RustBuffer`</span>
-<span class="doccomment">///     - the return value is undefined</span>
-<span class="doccomment">/// - If the function panics:</span>
-<span class="doccomment">///     - `out_status.code` will be set to `CALL_PANIC`</span>
-<span class="doccomment">///     - the return value is undefined</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_result</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">out_status</span>: <span class="kw-2">&amp;mut</span> <span class="ident">RustCallStatus</span>, <span class="ident">callback</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">panic::UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">RustBuffer</span><span class="op">&gt;</span>,
-    <span class="ident">R</span>: <span class="ident">FfiDefault</span>,
+<span class="doccomment">/// Wrap a rust function call that returns a `Result&lt;_, RustBuffer&gt;`
+///
+/// `callback` is responsible for making the call to the Rust function.
+///   - `callback` must convert any return value into a type that implements `IntoFfi`
+///   - `callback` must convert any `Error` the into a `RustBuffer` to be returned over the FFI
+///   - (Both of these are typically handled with `FfiConverter::lower()`)
+///
+/// - If the function returns an `Ok` value it will be unwrapped and returned
+/// - If the function returns an `Err`:
+///     - `out_status.code` will be set to `CALL_ERROR`
+///     - `out_status.error_buf` will be set to a newly allocated `RustBuffer` containing the error.  The calling
+///       code is responsible for freeing the `RustBuffer`
+///     - the return value is undefined
+/// - If the function panics:
+///     - `out_status.code` will be set to `CALL_PANIC`
+///     - the return value is undefined
+</span><span class="kw">pub fn </span>call_with_result&lt;F, R&gt;(out_status: <span class="kw-2">&amp;mut </span>RustCallStatus, callback: F) -&gt; R
+<span class="kw">where
+    </span>F: panic::UnwindSafe + FnOnce() -&gt; <span class="prelude-ty">Result</span>&lt;R, RustBuffer&gt;,
+    R: FfiDefault,
 {
-    <span class="ident">make_call</span>(<span class="ident">out_status</span>, <span class="ident">callback</span>)
+    make_call(out_status, callback)
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">FfiConverter</span>, <span class="ident">RustBufferFfiConverter</span>};
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use crate</span>::{FfiConverter, RustBufferFfiConverter};
 
-    <span class="kw">fn</span> <span class="ident">function</span>(<span class="ident">a</span>: <span class="ident">u8</span>) -&gt; <span class="ident">i8</span> {
-        <span class="kw">match</span> <span class="ident">a</span> {
-            <span class="number">0</span> =&gt; <span class="number">100</span>,
-            <span class="ident">x</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected value: {x}&quot;</span>),
+    <span class="kw">fn </span>function(a: u8) -&gt; i8 {
+        <span class="kw">match </span>a {
+            <span class="number">0 </span>=&gt; <span class="number">100</span>,
+            x =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected value: {x}&quot;</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">create_call_status</span>() -&gt; <span class="ident">RustCallStatus</span> {
-        <span class="ident">RustCallStatus</span> {
-            <span class="ident">code</span>: <span class="number">0</span>,
-            <span class="ident">error_buf</span>: <span class="ident">MaybeUninit::new</span>(<span class="ident">RustBuffer::new</span>()),
+    <span class="kw">fn </span>create_call_status() -&gt; RustCallStatus {
+        RustCallStatus {
+            code: <span class="number">0</span>,
+            error_buf: MaybeUninit::new(RustBuffer::new()),
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_call_with_output</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">create_call_status</span>();
-        <span class="kw">let</span> <span class="ident">return_value</span> <span class="op">=</span> <span class="ident">call_with_output</span>(<span class="kw-2">&amp;mut</span> <span class="ident">status</span>, <span class="op">|</span><span class="op">|</span> <span class="ident">function</span>(<span class="number">0</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">status</span>.<span class="ident">code</span>, <span class="ident">CALL_SUCCESS</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">return_value</span>, <span class="number">100</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_call_with_output() {
+        <span class="kw">let </span><span class="kw-2">mut </span>status = create_call_status();
+        <span class="kw">let </span>return_value = call_with_output(<span class="kw-2">&amp;mut </span>status, || function(<span class="number">0</span>));
+        <span class="macro">assert_eq!</span>(status.code, CALL_SUCCESS);
+        <span class="macro">assert_eq!</span>(return_value, <span class="number">100</span>);
 
-        <span class="ident">call_with_output</span>(<span class="kw-2">&amp;mut</span> <span class="ident">status</span>, <span class="op">|</span><span class="op">|</span> <span class="ident">function</span>(<span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">status</span>.<span class="ident">code</span>, <span class="ident">CALL_PANIC</span>);
-        <span class="kw">unsafe</span> {
+        call_with_output(<span class="kw-2">&amp;mut </span>status, || function(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(status.code, CALL_PANIC);
+        <span class="kw">unsafe </span>{
             <span class="macro">assert_eq!</span>(
-                <span class="ident">String::try_lift</span>(<span class="ident">status</span>.<span class="ident">error_buf</span>.<span class="ident">assume_init</span>()).<span class="ident">unwrap</span>(),
-                <span class="string">&quot;Unexpected value: 1&quot;</span>
+                String::try_lift(status.error_buf.assume_init()).unwrap(),
+                <span class="string">&quot;Unexpected value: 1&quot;
+            </span>);
+        }
+    }
+
+    <span class="attribute">#[derive(Debug, PartialEq)]
+    </span><span class="kw">struct </span>TestError(String);
+
+    <span class="comment">// Use RustBufferFfiConverter to simplify lifting TestError out of RustBuffer to check it
+    </span><span class="kw">impl </span>RustBufferFfiConverter <span class="kw">for </span>TestError {
+        <span class="kw">type </span>RustType = <span class="self">Self</span>;
+
+        <span class="kw">fn </span>write(obj: <span class="self">Self</span>::RustType, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+            &lt;String <span class="kw">as </span>FfiConverter&gt;::write(obj.<span class="number">0</span>, buf);
+        }
+
+        <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+            String::try_read(buf).map(TestError)
+        }
+    }
+
+    <span class="kw">impl </span>FfiError <span class="kw">for </span>TestError {}
+
+    <span class="kw">fn </span>function_with_result(a: u8) -&gt; <span class="prelude-ty">Result</span>&lt;i8, TestError&gt; {
+        <span class="kw">match </span>a {
+            <span class="number">0 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="number">100</span>),
+            <span class="number">1 </span>=&gt; <span class="prelude-val">Err</span>(TestError(<span class="string">&quot;Error&quot;</span>.to_owned())),
+            x =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected value: {x}&quot;</span>),
+        }
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_call_with_result() {
+        <span class="kw">let </span><span class="kw-2">mut </span>status = create_call_status();
+        <span class="kw">let </span>return_value = call_with_result(<span class="kw-2">&amp;mut </span>status, || {
+            function_with_result(<span class="number">0</span>).map_err(TestError::lower)
+        });
+        <span class="macro">assert_eq!</span>(status.code, CALL_SUCCESS);
+        <span class="macro">assert_eq!</span>(return_value, <span class="number">100</span>);
+
+        call_with_result(<span class="kw-2">&amp;mut </span>status, || {
+            function_with_result(<span class="number">1</span>).map_err(TestError::lower)
+        });
+        <span class="macro">assert_eq!</span>(status.code, CALL_ERROR);
+        <span class="kw">unsafe </span>{
+            <span class="macro">assert_eq!</span>(
+                TestError::try_lift(status.error_buf.assume_init()).unwrap(),
+                TestError(<span class="string">&quot;Error&quot;</span>.to_owned())
             );
         }
-    }
 
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-    <span class="kw">struct</span> <span class="ident">TestError</span>(<span class="ident">String</span>);
-
-    <span class="comment">// Use RustBufferFfiConverter to simplify lifting TestError out of RustBuffer to check it</span>
-    <span class="kw">impl</span> <span class="ident">RustBufferFfiConverter</span> <span class="kw">for</span> <span class="ident">TestError</span> {
-        <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
-
-        <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="ident"><span class="self">Self</span>::RustType</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-            <span class="op">&lt;</span><span class="ident">String</span> <span class="kw">as</span> <span class="ident">FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">obj</span>.<span class="number">0</span>, <span class="ident">buf</span>);
-        }
-
-        <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-            <span class="ident">String::try_read</span>(<span class="ident">buf</span>).<span class="ident">map</span>(<span class="ident">TestError</span>)
-        }
-    }
-
-    <span class="kw">impl</span> <span class="ident">FfiError</span> <span class="kw">for</span> <span class="ident">TestError</span> {}
-
-    <span class="kw">fn</span> <span class="ident">function_with_result</span>(<span class="ident">a</span>: <span class="ident">u8</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="ident">TestError</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">a</span> {
-            <span class="number">0</span> =&gt; <span class="prelude-val">Ok</span>(<span class="number">100</span>),
-            <span class="number">1</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">TestError</span>(<span class="string">&quot;Error&quot;</span>.<span class="ident">to_owned</span>())),
-            <span class="ident">x</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected value: {x}&quot;</span>),
-        }
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_call_with_result</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">create_call_status</span>();
-        <span class="kw">let</span> <span class="ident">return_value</span> <span class="op">=</span> <span class="ident">call_with_result</span>(<span class="kw-2">&amp;mut</span> <span class="ident">status</span>, <span class="op">|</span><span class="op">|</span> {
-            <span class="ident">function_with_result</span>(<span class="number">0</span>).<span class="ident">map_err</span>(<span class="ident">TestError::lower</span>)
+        <span class="kw">let </span><span class="kw-2">mut </span>status = create_call_status();
+        call_with_result(<span class="kw-2">&amp;mut </span>status, || {
+            function_with_result(<span class="number">2</span>).map_err(TestError::lower)
         });
-        <span class="macro">assert_eq!</span>(<span class="ident">status</span>.<span class="ident">code</span>, <span class="ident">CALL_SUCCESS</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">return_value</span>, <span class="number">100</span>);
-
-        <span class="ident">call_with_result</span>(<span class="kw-2">&amp;mut</span> <span class="ident">status</span>, <span class="op">|</span><span class="op">|</span> {
-            <span class="ident">function_with_result</span>(<span class="number">1</span>).<span class="ident">map_err</span>(<span class="ident">TestError::lower</span>)
-        });
-        <span class="macro">assert_eq!</span>(<span class="ident">status</span>.<span class="ident">code</span>, <span class="ident">CALL_ERROR</span>);
-        <span class="kw">unsafe</span> {
+        <span class="macro">assert_eq!</span>(status.code, CALL_PANIC);
+        <span class="kw">unsafe </span>{
             <span class="macro">assert_eq!</span>(
-                <span class="ident">TestError::try_lift</span>(<span class="ident">status</span>.<span class="ident">error_buf</span>.<span class="ident">assume_init</span>()).<span class="ident">unwrap</span>(),
-                <span class="ident">TestError</span>(<span class="string">&quot;Error&quot;</span>.<span class="ident">to_owned</span>())
-            );
-        }
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">create_call_status</span>();
-        <span class="ident">call_with_result</span>(<span class="kw-2">&amp;mut</span> <span class="ident">status</span>, <span class="op">|</span><span class="op">|</span> {
-            <span class="ident">function_with_result</span>(<span class="number">2</span>).<span class="ident">map_err</span>(<span class="ident">TestError::lower</span>)
-        });
-        <span class="macro">assert_eq!</span>(<span class="ident">status</span>.<span class="ident">code</span>, <span class="ident">CALL_PANIC</span>);
-        <span class="kw">unsafe</span> {
-            <span class="macro">assert_eq!</span>(
-                <span class="ident">String::try_lift</span>(<span class="ident">status</span>.<span class="ident">error_buf</span>.<span class="ident">assume_init</span>()).<span class="ident">unwrap</span>(),
-                <span class="string">&quot;Unexpected value: 2&quot;</span>
-            );
+                String::try_lift(status.error_buf.assume_init()).unwrap(),
+                <span class="string">&quot;Unexpected value: 2&quot;
+            </span>);
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

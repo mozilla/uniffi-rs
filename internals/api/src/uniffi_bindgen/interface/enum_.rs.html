@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/enum_.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>enum_.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/enum_.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>enum_.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -441,317 +435,317 @@
 <span id="435">435</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Enum definitions for a `ComponentInterface`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module converts enum definition from UDL into structures that can be</span>
-<span class="doccomment">//! added to a `ComponentInterface`. A declaration in the UDL like this:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! # namespace example {};</span>
-<span class="doccomment">//! enum Example {</span>
-<span class="doccomment">//!   &quot;one&quot;,</span>
-<span class="doccomment">//!   &quot;two&quot;</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Will result in a [`Enum`] member being added to the resulting [`ComponentInterface`]:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! # namespace example {};</span>
-<span class="doccomment">//! # enum Example {</span>
-<span class="doccomment">//! #   &quot;one&quot;,</span>
-<span class="doccomment">//! #   &quot;two&quot;</span>
-<span class="doccomment">//! # };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! let e = ci.get_enum_definition(&quot;Example&quot;).unwrap();</span>
-<span class="doccomment">//! assert_eq!(e.name(), &quot;Example&quot;);</span>
-<span class="doccomment">//! assert_eq!(e.variants().len(), 2);</span>
-<span class="doccomment">//! assert_eq!(e.variants()[0].name(), &quot;one&quot;);</span>
-<span class="doccomment">//! assert_eq!(e.variants()[1].name(), &quot;two&quot;);</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Like in Rust, UniFFI enums can contain associated data, but this needs to be</span>
-<span class="doccomment">//! declared with a different syntax in order to work within the restrictions of</span>
-<span class="doccomment">//! WebIDL. A declaration like this:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! # namespace example {};</span>
-<span class="doccomment">//! [Enum]</span>
-<span class="doccomment">//! interface Example {</span>
-<span class="doccomment">//!   Zero();</span>
-<span class="doccomment">//!   One(u32 first);</span>
-<span class="doccomment">//!   Two(u32 first, string second);</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Will result in an [`Enum`] member whose variants have associated fields:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! # namespace example {};</span>
-<span class="doccomment">//! # [Enum]</span>
-<span class="doccomment">//! # interface ExampleWithData {</span>
-<span class="doccomment">//! #   Zero();</span>
-<span class="doccomment">//! #   One(u32 first);</span>
-<span class="doccomment">//! #   Two(u32 first, string second);</span>
-<span class="doccomment">//! # };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! let e = ci.get_enum_definition(&quot;ExampleWithData&quot;).unwrap();</span>
-<span class="doccomment">//! assert_eq!(e.name(), &quot;ExampleWithData&quot;);</span>
-<span class="doccomment">//! assert_eq!(e.variants().len(), 3);</span>
-<span class="doccomment">//! assert_eq!(e.variants()[0].name(), &quot;Zero&quot;);</span>
-<span class="doccomment">//! assert_eq!(e.variants()[0].fields().len(), 0);</span>
-<span class="doccomment">//! assert_eq!(e.variants()[1].name(), &quot;One&quot;);</span>
-<span class="doccomment">//! assert_eq!(e.variants()[1].fields().len(), 1);</span>
-<span class="doccomment">//! assert_eq!(e.variants()[1].fields()[0].name(), &quot;first&quot;);</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
+</span><span class="doccomment">//! # Enum definitions for a `ComponentInterface`.
+//!
+//! This module converts enum definition from UDL into structures that can be
+//! added to a `ComponentInterface`. A declaration in the UDL like this:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # namespace example {};
+//! enum Example {
+//!   &quot;one&quot;,
+//!   &quot;two&quot;
+//! };
+//! # &quot;##)?;
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+//!
+//! Will result in a [`Enum`] member being added to the resulting [`ComponentInterface`]:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # namespace example {};
+//! # enum Example {
+//! #   &quot;one&quot;,
+//! #   &quot;two&quot;
+//! # };
+//! # &quot;##)?;
+//! let e = ci.get_enum_definition(&quot;Example&quot;).unwrap();
+//! assert_eq!(e.name(), &quot;Example&quot;);
+//! assert_eq!(e.variants().len(), 2);
+//! assert_eq!(e.variants()[0].name(), &quot;one&quot;);
+//! assert_eq!(e.variants()[1].name(), &quot;two&quot;);
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+//!
+//! Like in Rust, UniFFI enums can contain associated data, but this needs to be
+//! declared with a different syntax in order to work within the restrictions of
+//! WebIDL. A declaration like this:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # namespace example {};
+//! [Enum]
+//! interface Example {
+//!   Zero();
+//!   One(u32 first);
+//!   Two(u32 first, string second);
+//! };
+//! # &quot;##)?;
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+//!
+//! Will result in an [`Enum`] member whose variants have associated fields:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # namespace example {};
+//! # [Enum]
+//! # interface ExampleWithData {
+//! #   Zero();
+//! #   One(u32 first);
+//! #   Two(u32 first, string second);
+//! # };
+//! # &quot;##)?;
+//! let e = ci.get_enum_definition(&quot;ExampleWithData&quot;).unwrap();
+//! assert_eq!(e.name(), &quot;ExampleWithData&quot;);
+//! assert_eq!(e.variants().len(), 3);
+//! assert_eq!(e.variants()[0].name(), &quot;Zero&quot;);
+//! assert_eq!(e.variants()[0].fields().len(), 0);
+//! assert_eq!(e.variants()[1].name(), &quot;One&quot;);
+//! assert_eq!(e.variants()[1].fields().len(), 1);
+//! assert_eq!(e.variants()[1].fields()[0].name(), &quot;first&quot;);
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
+</span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>uniffi_meta::Checksum;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::record::Field</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
+<span class="kw">use </span><span class="kw">super</span>::record::Field;
+<span class="kw">use </span><span class="kw">super</span>::types::{Type, TypeIterator};
+<span class="kw">use super</span>::{APIConverter, ComponentInterface};
 
-<span class="doccomment">/// Represents an enum with named variants, each of which may have named</span>
-<span class="doccomment">/// and typed fields.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Enums are passed across the FFI by serializing to a bytebuffer, with a</span>
-<span class="doccomment">/// i32 indicating the variant followed by the serialization of each field.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Enum</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">variants</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Variant</span><span class="op">&gt;</span>,
-    <span class="comment">// &quot;Flat&quot; enums do not have variants with associated data.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">flat</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// Represents an enum with named variants, each of which may have named
+/// and typed fields.
+///
+/// Enums are passed across the FFI by serializing to a bytebuffer, with a
+/// i32 indicating the variant followed by the serialization of each field.
+</span><span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
+</span><span class="kw">pub struct </span>Enum {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) variants: Vec&lt;Variant&gt;,
+    <span class="comment">// &quot;Flat&quot; enums do not have variants with associated data.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) flat: bool,
 }
 
-<span class="kw">impl</span> <span class="ident">Enum</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
+<span class="kw">impl </span>Enum {
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Type</span> {
-        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterface</span>
-        <span class="comment">// and its contained types could use a bit of a cleanup.</span>
-        <span class="ident">Type::Enum</span>(<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>())
+    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
+        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterface
+        // and its contained types could use a bit of a cleanup.
+        </span>Type::Enum(<span class="self">self</span>.name.clone())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variants</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">Variant</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">variants</span>
+    <span class="kw">pub fn </span>variants(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[Variant] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.variants
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_flat</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">flat</span>
+    <span class="kw">pub fn </span>is_flat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.flat
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">Variant::iter_types</span>))
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+        Box::new(<span class="self">self</span>.variants.iter().flat_map(Variant::iter_types))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">uniffi_meta::EnumMetadata</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Enum</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">meta</span>: <span class="ident">uniffi_meta::EnumMetadata</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">flat</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">all</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">fields</span>.<span class="ident">is_empty</span>());
-        <span class="self">Self</span> {
-            <span class="ident">name</span>: <span class="ident">meta</span>.<span class="ident">name</span>,
-            <span class="ident">variants</span>: <span class="ident">meta</span>.<span class="ident">variants</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">Into::into</span>).<span class="ident">collect</span>(),
-            <span class="ident">flat</span>,
+<span class="kw">impl </span>From&lt;uniffi_meta::EnumMetadata&gt; <span class="kw">for </span>Enum {
+    <span class="kw">fn </span>from(meta: uniffi_meta::EnumMetadata) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>flat = meta.variants.iter().all(|v| v.fields.is_empty());
+        <span class="self">Self </span>{
+            name: meta.name,
+            variants: meta.variants.into_iter().map(Into::into).collect(),
+            flat,
         }
     }
 }
 
-<span class="comment">// Note that we have two `APIConverter` impls here - one for the `enum` case</span>
-<span class="comment">// and one for the `[Enum] interface` case.</span>
+<span class="comment">// Note that we have two `APIConverter` impls here - one for the `enum` case
+// and one for the `[Enum] interface` case.
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Enum</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::EnumDefinition</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Enum</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">Enum</span> {
-            <span class="ident">name</span>: <span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
-            <span class="ident">variants</span>: <span class="self">self</span>
-                .<span class="ident">values</span>
-                .<span class="ident">body</span>
-                .<span class="ident">list</span>
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
-                    <span class="prelude-val">Ok</span>(<span class="ident">Variant</span> {
-                        <span class="ident">name</span>: <span class="ident">v</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
-                        ..<span class="ident">Default::default</span>()
+</span><span class="kw">impl </span>APIConverter&lt;Enum&gt; <span class="kw">for </span>weedle::EnumDefinition&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, _ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Enum&gt; {
+        <span class="prelude-val">Ok</span>(Enum {
+            name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
+            variants: <span class="self">self
+                </span>.values
+                .body
+                .list
+                .iter()
+                .map::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>&gt;, <span class="kw">_</span>&gt;(|v| {
+                    <span class="prelude-val">Ok</span>(Variant {
+                        name: v.<span class="number">0</span>.to_string(),
+                        ..Default::default()
                     })
                 })
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
-            <span class="comment">// Enums declared using the `enum` syntax can never have variants with fields.</span>
-            <span class="ident">flat</span>: <span class="bool-val">true</span>,
+                .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>,
+            <span class="comment">// Enums declared using the `enum` syntax can never have variants with fields.
+            </span>flat: <span class="bool-val">true</span>,
         })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Enum</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::InterfaceDefinition</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Enum</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inheritance</span>.<span class="ident">is_some</span>() {
+<span class="kw">impl </span>APIConverter&lt;Enum&gt; <span class="kw">for </span>weedle::InterfaceDefinition&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Enum&gt; {
+        <span class="kw">if </span><span class="self">self</span>.inheritance.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;interface inheritance is not supported for enum interfaces&quot;</span>);
         }
-        <span class="comment">// We don&#39;t need to check `self.attributes` here; if calling code has dispatched</span>
-        <span class="comment">// to this impl then we already know there was an `[Enum]` attribute.</span>
-        <span class="prelude-val">Ok</span>(<span class="ident">Enum</span> {
-            <span class="ident">name</span>: <span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
-            <span class="ident">variants</span>: <span class="self">self</span>
-                .<span class="ident">members</span>
-                .<span class="ident">body</span>
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Variant</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">member</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">member</span> {
-                    <span class="ident">weedle::interface::InterfaceMember::Operation</span>(<span class="ident">t</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">t</span>.<span class="ident">convert</span>(<span class="ident">ci</span>)<span class="question-mark">?</span>),
-                    <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(
+        <span class="comment">// We don&#39;t need to check `self.attributes` here; if calling code has dispatched
+        // to this impl then we already know there was an `[Enum]` attribute.
+        </span><span class="prelude-val">Ok</span>(Enum {
+            name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
+            variants: <span class="self">self
+                </span>.members
+                .body
+                .iter()
+                .map::&lt;<span class="prelude-ty">Result</span>&lt;Variant&gt;, <span class="kw">_</span>&gt;(|member| <span class="kw">match </span>member {
+                    weedle::interface::InterfaceMember::Operation(t) =&gt; <span class="prelude-val">Ok</span>(t.convert(ci)<span class="question-mark">?</span>),
+                    <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(
                         <span class="string">&quot;interface member type {:?} not supported in enum interface&quot;</span>,
-                        <span class="ident">member</span>
+                        member
                     ),
                 })
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
-            <span class="comment">// Enums declared using the `[Enum] interface` syntax might have variants with fields.</span>
-            <span class="ident">flat</span>: <span class="bool-val">false</span>,
+                .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>,
+            <span class="comment">// Enums declared using the `[Enum] interface` syntax might have variants with fields.
+            </span>flat: <span class="bool-val">false</span>,
         })
     }
 }
 
-<span class="doccomment">/// Represents an individual variant in an Enum.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Each variant has a name and zero or more fields.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Variant</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Represents an individual variant in an Enum.
+///
+/// Each variant has a name and zero or more fields.
+</span><span class="attribute">#[derive(Debug, Clone, Default, PartialEq, Eq, Checksum)]
+</span><span class="kw">pub struct </span>Variant {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) fields: Vec&lt;Field&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Variant</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
+<span class="kw">impl </span>Variant {
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">Field</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fields</span>
+    <span class="kw">pub fn </span>fields(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[Field] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.fields
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="op">!</span><span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">is_empty</span>()
+    <span class="kw">pub fn </span>has_fields(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        !<span class="self">self</span>.fields.is_empty()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">Field::iter_types</span>))
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+        Box::new(<span class="self">self</span>.fields.iter().flat_map(Field::iter_types))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">uniffi_meta::VariantMetadata</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Variant</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">meta</span>: <span class="ident">uniffi_meta::VariantMetadata</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">name</span>: <span class="ident">meta</span>.<span class="ident">name</span>,
-            <span class="ident">fields</span>: <span class="ident">meta</span>.<span class="ident">fields</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">Into::into</span>).<span class="ident">collect</span>(),
+<span class="kw">impl </span>From&lt;uniffi_meta::VariantMetadata&gt; <span class="kw">for </span>Variant {
+    <span class="kw">fn </span>from(meta: uniffi_meta::VariantMetadata) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name: meta.name,
+            fields: meta.fields.into_iter().map(Into::into).collect(),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Variant</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::interface::OperationInterfaceMember</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Variant</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">special</span>.<span class="ident">is_some</span>() {
+<span class="kw">impl </span>APIConverter&lt;Variant&gt; <span class="kw">for </span>weedle::interface::OperationInterfaceMember&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Variant&gt; {
+        <span class="kw">if </span><span class="self">self</span>.special.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;special operations not supported&quot;</span>);
         }
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">weedle::interface::StringifierOrStatic::Stringifier</span>(<span class="kw">_</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">modifier</span> {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(weedle::interface::StringifierOrStatic::Stringifier(<span class="kw">_</span>)) = <span class="self">self</span>.modifier {
             <span class="macro">bail!</span>(<span class="string">&quot;stringifiers are not supported&quot;</span>);
         }
-        <span class="comment">// OK, so this is a little weird.</span>
-        <span class="comment">// The syntax we use for enum interface members is `Name(type arg, ...);`, which parses</span>
-        <span class="comment">// as an anonymous operation where `Name` is the return type. We re-interpret it to</span>
-        <span class="comment">// use `Name` as the name of the variant.</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">identifier</span>.<span class="ident">is_some</span>() {
+        <span class="comment">// OK, so this is a little weird.
+        // The syntax we use for enum interface members is `Name(type arg, ...);`, which parses
+        // as an anonymous operation where `Name` is the return type. We re-interpret it to
+        // use `Name` as the name of the variant.
+        </span><span class="kw">if </span><span class="self">self</span>.identifier.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;enum interface members must not have a method name&quot;</span>);
         }
-        <span class="kw">let</span> <span class="ident">name</span>: <span class="ident">String</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">weedle::types</span>::{
-                <span class="ident">NonAnyType::Identifier</span>, <span class="ident">ReturnType</span>, <span class="ident">SingleType::NonAny</span>, <span class="ident">Type::Single</span>,
+        <span class="kw">let </span>name: String = {
+            <span class="kw">use </span>weedle::types::{
+                NonAnyType::Identifier, ReturnType, SingleType::NonAny, Type::Single,
             };
-            <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">return_type</span> {
-                <span class="ident">ReturnType::Type</span>(<span class="ident">Single</span>(<span class="ident">NonAny</span>(<span class="ident">Identifier</span>(<span class="ident">id</span>)))) =&gt; <span class="ident">id</span>.<span class="ident">type_</span>.<span class="number">0</span>.<span class="ident">to_owned</span>(),
-                <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;enum interface members must have plain identifiers as names&quot;</span>),
+            <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.return_type {
+                ReturnType::Type(Single(NonAny(Identifier(id)))) =&gt; id.type_.<span class="number">0</span>.to_owned(),
+                <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;enum interface members must have plain identifiers as names&quot;</span>),
             }
         };
-        <span class="prelude-val">Ok</span>(<span class="ident">Variant</span> {
-            <span class="ident">name</span>,
-            <span class="ident">fields</span>: <span class="self">self</span>
-                .<span class="ident">args</span>
-                .<span class="ident">body</span>
-                .<span class="ident">list</span>
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">arg</span><span class="op">|</span> <span class="ident">arg</span>.<span class="ident">convert</span>(<span class="ident">ci</span>))
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
+        <span class="prelude-val">Ok</span>(Variant {
+            name,
+            fields: <span class="self">self
+                </span>.args
+                .body
+                .list
+                .iter()
+                .map(|arg| arg.convert(ci))
+                .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>,
         })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::argument::Argument</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">weedle::argument::Argument::Single</span>(<span class="ident">t</span>) =&gt; <span class="ident">t</span>.<span class="ident">convert</span>(<span class="ident">ci</span>),
-            <span class="ident">weedle::argument::Argument::Variadic</span>(<span class="kw">_</span>) =&gt; <span class="macro">bail!</span>(<span class="string">&quot;variadic arguments not supported&quot;</span>),
+<span class="kw">impl </span>APIConverter&lt;Field&gt; <span class="kw">for </span>weedle::argument::Argument&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Field&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            weedle::argument::Argument::Single(t) =&gt; t.convert(ci),
+            weedle::argument::Argument::Variadic(<span class="kw">_</span>) =&gt; <span class="macro">bail!</span>(<span class="string">&quot;variadic arguments not supported&quot;</span>),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::argument::SingleArgument</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">type_</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Type::Object</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">type_</span> {
+<span class="kw">impl </span>APIConverter&lt;Field&gt; <span class="kw">for </span>weedle::argument::SingleArgument&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Field&gt; {
+        <span class="kw">let </span>type_ = ci.resolve_type_expression(<span class="kw-2">&amp;</span><span class="self">self</span>.type_)<span class="question-mark">?</span>;
+        <span class="kw">if let </span>Type::Object(<span class="kw">_</span>) = type_ {
             <span class="macro">bail!</span>(<span class="string">&quot;Objects cannot currently be used in enum variant data&quot;</span>);
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">default</span>.<span class="ident">is_some</span>() {
+        <span class="kw">if </span><span class="self">self</span>.default.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;enum interface variant fields must not have default values&quot;</span>);
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">is_some</span>() {
+        <span class="kw">if </span><span class="self">self</span>.attributes.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;enum interface variant fields must not have attributes&quot;</span>);
         }
-        <span class="comment">// TODO: maybe we should use our own `Field` type here with just name and type,</span>
-        <span class="comment">// rather than appropriating record::Field..?</span>
-        <span class="prelude-val">Ok</span>(<span class="ident">Field</span> {
-            <span class="ident">name</span>: <span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
-            <span class="ident">type_</span>,
-            <span class="ident">default</span>: <span class="prelude-val">None</span>,
+        <span class="comment">// TODO: maybe we should use our own `Field` type here with just name and type,
+        // rather than appropriating record::Field..?
+        </span><span class="prelude-val">Ok</span>(Field {
+            name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
+            type_,
+            default: <span class="prelude-val">None</span>,
         })
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span>::ffi::FfiType</span>;
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::ffi::FfiType;
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_duplicate_variants</span>() {
-        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_duplicate_variants() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
             namespace test{};
             // Weird, but currently allowed!
             // We should probably disallow this...
             enum Testing { &quot;one&quot;, &quot;two&quot;, &quot;one&quot; };
         &quot;#</span>;
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">enum_definitions</span>().<span class="ident">count</span>(), <span class="number">1</span>);
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="macro">assert_eq!</span>(ci.enum_definitions().count(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">ci</span>.<span class="ident">get_enum_definition</span>(<span class="string">&quot;Testing&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">variants</span>().<span class="ident">len</span>(),
-            <span class="number">3</span>
-        );
+            ci.get_enum_definition(<span class="string">&quot;Testing&quot;</span>).unwrap().variants().len(),
+            <span class="number">3
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_associated_data</span>() {
-        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r##&quot;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_associated_data() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r##&quot;
             namespace test {
                 void takes_an_enum(TestEnum e);
                 void takes_an_enum_with_data(TestEnumWithData ed);
@@ -774,106 +768,105 @@
                 Two();
             };
         &quot;##</span>;
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">enum_definitions</span>().<span class="ident">count</span>(), <span class="number">3</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">function_definitions</span>().<span class="ident">len</span>(), <span class="number">4</span>);
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="macro">assert_eq!</span>(ci.enum_definitions().count(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(ci.function_definitions().len(), <span class="number">4</span>);
 
-        <span class="comment">// The &quot;flat&quot; enum with no associated data.</span>
-        <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_enum_definition</span>(<span class="string">&quot;TestEnum&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">e</span>.<span class="ident">is_flat</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">e</span>.<span class="ident">variants</span>().<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="comment">// The &quot;flat&quot; enum with no associated data.
+        </span><span class="kw">let </span>e = ci.get_enum_definition(<span class="string">&quot;TestEnum&quot;</span>).unwrap();
+        <span class="macro">assert!</span>(e.is_flat());
+        <span class="macro">assert_eq!</span>(e.variants().len(), <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">e</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">name</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
+            e.variants().iter().map(|v| v.name()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
             <span class="macro">vec!</span>[<span class="string">&quot;one&quot;</span>, <span class="string">&quot;two&quot;</span>]
         );
-        <span class="macro">assert_eq!</span>(<span class="ident">e</span>.<span class="ident">variants</span>()[<span class="number">0</span>].<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">0</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">e</span>.<span class="ident">variants</span>()[<span class="number">1</span>].<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(e.variants()[<span class="number">0</span>].fields().len(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(e.variants()[<span class="number">1</span>].fields().len(), <span class="number">0</span>);
 
-        <span class="comment">// The enum with associated data.</span>
-        <span class="kw">let</span> <span class="ident">ed</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_enum_definition</span>(<span class="string">&quot;TestEnumWithData&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">ed</span>.<span class="ident">is_flat</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">ed</span>.<span class="ident">variants</span>().<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="comment">// The enum with associated data.
+        </span><span class="kw">let </span>ed = ci.get_enum_definition(<span class="string">&quot;TestEnumWithData&quot;</span>).unwrap();
+        <span class="macro">assert!</span>(!ed.is_flat());
+        <span class="macro">assert_eq!</span>(ed.variants().len(), <span class="number">3</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">ed</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">name</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
+            ed.variants().iter().map(|v| v.name()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
             <span class="macro">vec!</span>[<span class="string">&quot;Zero&quot;</span>, <span class="string">&quot;One&quot;</span>, <span class="string">&quot;Two&quot;</span>]
         );
-        <span class="macro">assert_eq!</span>(<span class="ident">ed</span>.<span class="ident">variants</span>()[<span class="number">0</span>].<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(ed.variants()[<span class="number">0</span>].fields().len(), <span class="number">0</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">ed</span>.<span class="ident">variants</span>()[<span class="number">1</span>]
-                .<span class="ident">fields</span>()
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">name</span>())
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
+            ed.variants()[<span class="number">1</span>]
+                .fields()
+                .iter()
+                .map(|f| f.name())
+                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
             <span class="macro">vec!</span>[<span class="string">&quot;first&quot;</span>]
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">ed</span>.<span class="ident">variants</span>()[<span class="number">1</span>]
-                .<span class="ident">fields</span>()
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">type_</span>())
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-            <span class="macro">vec!</span>[<span class="kw-2">&amp;</span><span class="ident">Type::UInt32</span>]
+            ed.variants()[<span class="number">1</span>]
+                .fields()
+                .iter()
+                .map(|f| f.type_())
+                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+            <span class="macro">vec!</span>[<span class="kw-2">&amp;</span>Type::UInt32]
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">ed</span>.<span class="ident">variants</span>()[<span class="number">2</span>]
-                .<span class="ident">fields</span>()
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">name</span>())
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
+            ed.variants()[<span class="number">2</span>]
+                .fields()
+                .iter()
+                .map(|f| f.name())
+                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
             <span class="macro">vec!</span>[<span class="string">&quot;first&quot;</span>, <span class="string">&quot;second&quot;</span>]
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">ed</span>.<span class="ident">variants</span>()[<span class="number">2</span>]
-                .<span class="ident">fields</span>()
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">type_</span>())
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-            <span class="macro">vec!</span>[<span class="kw-2">&amp;</span><span class="ident">Type::UInt32</span>, <span class="kw-2">&amp;</span><span class="ident">Type::String</span>]
+            ed.variants()[<span class="number">2</span>]
+                .fields()
+                .iter()
+                .map(|f| f.type_())
+                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+            <span class="macro">vec!</span>[<span class="kw-2">&amp;</span>Type::UInt32, <span class="kw-2">&amp;</span>Type::String]
         );
 
-        <span class="comment">// The enum declared via interface, but with no associated data.</span>
-        <span class="kw">let</span> <span class="ident">ewd</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_enum_definition</span>(<span class="string">&quot;TestEnumWithoutData&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">ewd</span>.<span class="ident">is_flat</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">ewd</span>.<span class="ident">variants</span>().<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="comment">// The enum declared via interface, but with no associated data.
+        </span><span class="kw">let </span>ewd = ci.get_enum_definition(<span class="string">&quot;TestEnumWithoutData&quot;</span>).unwrap();
+        <span class="macro">assert!</span>(!ewd.is_flat());
+        <span class="macro">assert_eq!</span>(ewd.variants().len(), <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">ewd</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">name</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
+            ewd.variants().iter().map(|v| v.name()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
             <span class="macro">vec!</span>[<span class="string">&quot;One&quot;</span>, <span class="string">&quot;Two&quot;</span>]
         );
-        <span class="macro">assert_eq!</span>(<span class="ident">ewd</span>.<span class="ident">variants</span>()[<span class="number">0</span>].<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">0</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">ewd</span>.<span class="ident">variants</span>()[<span class="number">1</span>].<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(ewd.variants()[<span class="number">0</span>].fields().len(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(ewd.variants()[<span class="number">1</span>].fields().len(), <span class="number">0</span>);
 
-        <span class="comment">// Flat enums pass over the FFI as bytebuffers.</span>
-        <span class="comment">// (It might be nice to optimize these to pass as plain integers, but that&#39;s</span>
-        <span class="comment">// difficult atop the current factoring of `ComponentInterface` and friends).</span>
-        <span class="kw">let</span> <span class="ident">farg</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;takes_an_enum&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="kw-2">*</span><span class="ident">farg</span>.<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(), <span class="ident">Type::Enum</span>(<span class="string">&quot;TestEnum&quot;</span>.<span class="ident">into</span>()));
-        <span class="macro">assert_eq!</span>(<span class="ident">farg</span>.<span class="ident">ffi_func</span>().<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(), <span class="ident">FfiType::RustBuffer</span>);
-        <span class="kw">let</span> <span class="ident">fret</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;returns_an_enum&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">fret</span>.<span class="ident">return_type</span>(), <span class="prelude-val">Some</span>(<span class="ident">Type::Enum</span>(<span class="ident">nm</span>)) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">==</span> <span class="string">&quot;TestEnum&quot;</span>));
+        <span class="comment">// Flat enums pass over the FFI as bytebuffers.
+        // (It might be nice to optimize these to pass as plain integers, but that&#39;s
+        // difficult atop the current factoring of `ComponentInterface` and friends).
+        </span><span class="kw">let </span>farg = ci.get_function_definition(<span class="string">&quot;takes_an_enum&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(<span class="kw-2">*</span>farg.arguments()[<span class="number">0</span>].type_(), Type::Enum(<span class="string">&quot;TestEnum&quot;</span>.into()));
+        <span class="macro">assert_eq!</span>(farg.ffi_func().arguments()[<span class="number">0</span>].type_(), FfiType::RustBuffer);
+        <span class="kw">let </span>fret = ci.get_function_definition(<span class="string">&quot;returns_an_enum&quot;</span>).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(fret.return_type(), <span class="prelude-val">Some</span>(Type::Enum(nm)) <span class="kw">if </span>nm == <span class="string">&quot;TestEnum&quot;</span>));
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            <span class="ident">fret</span>.<span class="ident">ffi_func</span>().<span class="ident">return_type</span>(),
-            <span class="prelude-val">Some</span>(<span class="ident">FfiType::RustBuffer</span>)
+            fret.ffi_func().return_type(),
+            <span class="prelude-val">Some</span>(FfiType::RustBuffer)
         ));
 
-        <span class="comment">// Enums with associated data pass over the FFI as bytebuffers.</span>
-        <span class="kw">let</span> <span class="ident">farg</span> <span class="op">=</span> <span class="ident">ci</span>
-            .<span class="ident">get_function_definition</span>(<span class="string">&quot;takes_an_enum_with_data&quot;</span>)
-            .<span class="ident">unwrap</span>();
+        <span class="comment">// Enums with associated data pass over the FFI as bytebuffers.
+        </span><span class="kw">let </span>farg = ci
+            .get_function_definition(<span class="string">&quot;takes_an_enum_with_data&quot;</span>)
+            .unwrap();
         <span class="macro">assert_eq!</span>(
-            <span class="kw-2">*</span><span class="ident">farg</span>.<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(),
-            <span class="ident">Type::Enum</span>(<span class="string">&quot;TestEnumWithData&quot;</span>.<span class="ident">into</span>())
+            <span class="kw-2">*</span>farg.arguments()[<span class="number">0</span>].type_(),
+            Type::Enum(<span class="string">&quot;TestEnumWithData&quot;</span>.into())
         );
-        <span class="macro">assert_eq!</span>(<span class="ident">farg</span>.<span class="ident">ffi_func</span>().<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>(), <span class="ident">FfiType::RustBuffer</span>);
-        <span class="kw">let</span> <span class="ident">fret</span> <span class="op">=</span> <span class="ident">ci</span>
-            .<span class="ident">get_function_definition</span>(<span class="string">&quot;returns_an_enum_with_data&quot;</span>)
-            .<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">fret</span>.<span class="ident">return_type</span>(), <span class="prelude-val">Some</span>(<span class="ident">Type::Enum</span>(<span class="ident">nm</span>)) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">==</span> <span class="string">&quot;TestEnumWithData&quot;</span>));
+        <span class="macro">assert_eq!</span>(farg.ffi_func().arguments()[<span class="number">0</span>].type_(), FfiType::RustBuffer);
+        <span class="kw">let </span>fret = ci
+            .get_function_definition(<span class="string">&quot;returns_an_enum_with_data&quot;</span>)
+            .unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(fret.return_type(), <span class="prelude-val">Some</span>(Type::Enum(nm)) <span class="kw">if </span>nm == <span class="string">&quot;TestEnumWithData&quot;</span>));
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            <span class="ident">fret</span>.<span class="ident">ffi_func</span>().<span class="ident">return_type</span>(),
-            <span class="prelude-val">Some</span>(<span class="ident">FfiType::RustBuffer</span>)
+            fret.ffi_func().return_type(),
+            <span class="prelude-val">Some</span>(FfiType::RustBuffer)
         ));
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

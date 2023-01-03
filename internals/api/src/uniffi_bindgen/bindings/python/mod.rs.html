@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/python/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/python/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -46,38 +40,38 @@
 <span id="40">40</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">io::Write</span>, <span class="ident">process::Command</span>};
+</span><span class="kw">use </span>std::{io::Write, process::Command};
 
-<span class="kw">use</span> <span class="ident">anyhow::Result</span>;
-<span class="kw">use</span> <span class="ident">camino::Utf8Path</span>;
-<span class="kw">use</span> <span class="ident">fs_err::File</span>;
+<span class="kw">use </span>anyhow::Result;
+<span class="kw">use </span>camino::Utf8Path;
+<span class="kw">use </span>fs_err::File;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gen_python</span>;
-<span class="kw">mod</span> <span class="ident">test</span>;
+<span class="kw">pub mod </span>gen_python;
+<span class="kw">mod </span>test;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span>::interface::ComponentInterface</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gen_python</span>::{<span class="ident">generate_python_bindings</span>, <span class="ident">Config</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">test::run_test</span>;
+<span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::interface::ComponentInterface;
+<span class="kw">pub use </span>gen_python::{generate_python_bindings, Config};
+<span class="kw">pub use </span>test::run_test;
 
-<span class="comment">// Generate python bindings for the given ComponentInterface, in the given output directory.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_bindings</span>(
-    <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
-    <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
-    <span class="ident">try_format_code</span>: <span class="ident">bool</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">py_file</span> <span class="op">=</span> <span class="ident">out_dir</span>.<span class="ident">join</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.py&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>()));
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">py_file</span>)<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">generate_python_bindings</span>(<span class="ident">config</span>, <span class="ident">ci</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+<span class="comment">// Generate python bindings for the given ComponentInterface, in the given output directory.
+</span><span class="kw">pub fn </span>write_bindings(
+    config: <span class="kw-2">&amp;</span>Config,
+    ci: <span class="kw-2">&amp;</span>ComponentInterface,
+    out_dir: <span class="kw-2">&amp;</span>Utf8Path,
+    try_format_code: bool,
+) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let </span>py_file = out_dir.join(<span class="macro">format!</span>(<span class="string">&quot;{}.py&quot;</span>, ci.namespace()));
+    <span class="kw">let </span><span class="kw-2">mut </span>f = File::create(<span class="kw-2">&amp;</span>py_file)<span class="question-mark">?</span>;
+    <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, generate_python_bindings(config, ci)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">if</span> <span class="ident">try_format_code</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;yapf&quot;</span>).<span class="ident">arg</span>(<span class="kw-2">&amp;</span><span class="ident">py_file</span>).<span class="ident">output</span>() {
+    <span class="kw">if </span>try_format_code {
+        <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = Command::new(<span class="string">&quot;yapf&quot;</span>).arg(<span class="kw-2">&amp;</span>py_file).output() {
             <span class="macro">println!</span>(
                 <span class="string">&quot;Warning: Unable to auto-format {} using yapf: {:?}&quot;</span>,
-                <span class="ident">py_file</span>.<span class="ident">file_name</span>().<span class="ident">unwrap</span>(),
-                <span class="ident">e</span>
+                py_file.file_name().unwrap(),
+                e
             )
         }
     }
@@ -85,5 +79,4 @@
     <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

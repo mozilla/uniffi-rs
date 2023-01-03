@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/types/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/types/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -348,346 +342,345 @@
 <span id="342">342</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Basic typesystem for defining a component interface.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module provides the &quot;API-level&quot; typesystem of a UniFFI Rust Component, that is,</span>
-<span class="doccomment">//! the types provided by the Rust implementation and consumed callers of the foreign language</span>
-<span class="doccomment">//! bindings. Think &quot;objects&quot; and &quot;enums&quot; and &quot;records&quot;.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The [`Type`] enum represents high-level types that would appear in the public API of</span>
-<span class="doccomment">//! a component, such as enums and records as well as primitives like ints and strings.</span>
-<span class="doccomment">//! The Rust code that implements a component, and the foreign language bindings that consume it,</span>
-<span class="doccomment">//! will both typically deal with such types as their core concern.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The set of all [`Type`]s used in a component interface is represented by a [`TypeUniverse`],</span>
-<span class="doccomment">//! which can be used by the bindings generator code to determine what type-related helper</span>
-<span class="doccomment">//! functions to emit for a given component.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! As a developer working on UniFFI itself, you&#39;re likely to spend a fair bit of time thinking</span>
-<span class="doccomment">//! about how these API-level types map into the lower-level types of the FFI layer as represented</span>
-<span class="doccomment">//! by the [`ffi::FfiType`](super::ffi::FfiType) enum, but that&#39;s a detail that is invisible to end users.</span>
+</span><span class="doccomment">//! # Basic typesystem for defining a component interface.
+//!
+//! This module provides the &quot;API-level&quot; typesystem of a UniFFI Rust Component, that is,
+//! the types provided by the Rust implementation and consumed callers of the foreign language
+//! bindings. Think &quot;objects&quot; and &quot;enums&quot; and &quot;records&quot;.
+//!
+//! The [`Type`] enum represents high-level types that would appear in the public API of
+//! a component, such as enums and records as well as primitives like ints and strings.
+//! The Rust code that implements a component, and the foreign language bindings that consume it,
+//! will both typically deal with such types as their core concern.
+//!
+//! The set of all [`Type`]s used in a component interface is represented by a `TypeUniverse`,
+//! which can be used by the bindings generator code to determine what type-related helper
+//! functions to emit for a given component.
+//!
+//! As a developer working on UniFFI itself, you&#39;re likely to spend a fair bit of time thinking
+//! about how these API-level types map into the lower-level types of the FFI layer as represented
+//! by the [`ffi::FfiType`](super::ffi::FfiType) enum, but that&#39;s a detail that is invisible to end users.
 
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::hash_map::Entry</span>, <span class="ident">collections::BTreeSet</span>, <span class="ident">collections::HashMap</span>, <span class="ident">iter</span>};
+</span><span class="kw">use </span>std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap, iter};
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">heck::ToUpperCamelCase</span>;
-<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
+<span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>heck::ToUpperCamelCase;
+<span class="kw">use </span>uniffi_meta::Checksum;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi::FfiType</span>;
+<span class="kw">use </span><span class="kw">super</span>::ffi::FfiType;
 
-<span class="kw">mod</span> <span class="ident">finder</span>;
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">use</span> <span class="ident">finder::TypeFinder</span>;
-<span class="kw">mod</span> <span class="ident">resolver</span>;
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">use</span> <span class="ident">resolver</span>::{<span class="ident">resolve_builtin_type</span>, <span class="ident">TypeResolver</span>};
+<span class="kw">mod </span>finder;
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">use </span>finder::TypeFinder;
+<span class="kw">mod </span>resolver;
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">use </span>resolver::{resolve_builtin_type, TypeResolver};
 
-<span class="doccomment">/// Represents all the different high-level types that can be used in a component interface.</span>
-<span class="doccomment">/// At this level we identify user-defined types by name, without knowing any details</span>
-<span class="doccomment">/// of their internal structure apart from what type of thing they are (record, enum, etc).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Checksum</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Type</span> {
-    <span class="comment">// Primitive types.</span>
-    <span class="ident">UInt8</span>,
-    <span class="ident">Int8</span>,
-    <span class="ident">UInt16</span>,
-    <span class="ident">Int16</span>,
-    <span class="ident">UInt32</span>,
-    <span class="ident">Int32</span>,
-    <span class="ident">UInt64</span>,
-    <span class="ident">Int64</span>,
-    <span class="ident">Float32</span>,
-    <span class="ident">Float64</span>,
-    <span class="ident">Boolean</span>,
-    <span class="ident">String</span>,
-    <span class="ident">Timestamp</span>,
-    <span class="ident">Duration</span>,
-    <span class="comment">// Types defined in the component API, each of which has a string name.</span>
-    <span class="ident">Object</span>(<span class="ident">String</span>),
-    <span class="ident">Record</span>(<span class="ident">String</span>),
-    <span class="ident">Enum</span>(<span class="ident">String</span>),
-    <span class="ident">Error</span>(<span class="ident">String</span>),
-    <span class="ident">CallbackInterface</span>(<span class="ident">String</span>),
-    <span class="comment">// Structurally recursive types.</span>
-    <span class="ident">Optional</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
-    <span class="ident">Sequence</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
-    <span class="ident">Map</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>),
-    <span class="comment">// An FfiConverter we `use` from an external crate</span>
-    <span class="ident">External</span> { <span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">crate_name</span>: <span class="ident">String</span> },
-    <span class="comment">// Custom type on the scaffolding side</span>
-    <span class="ident">Custom</span> { <span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">builtin</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> },
-    <span class="comment">// An unresolved user-defined type inside a proc-macro exported function</span>
-    <span class="comment">// signature. Must be replaced by another type before bindings generation.</span>
-    <span class="ident">Unresolved</span> { <span class="ident">name</span>: <span class="ident">String</span> },
+<span class="doccomment">/// Represents all the different high-level types that can be used in a component interface.
+/// At this level we identify user-defined types by name, without knowing any details
+/// of their internal structure apart from what type of thing they are (record, enum, etc).
+</span><span class="attribute">#[derive(Debug, Clone, Eq, PartialEq, Checksum, Ord, PartialOrd)]
+</span><span class="kw">pub enum </span>Type {
+    <span class="comment">// Primitive types.
+    </span>UInt8,
+    Int8,
+    UInt16,
+    Int16,
+    UInt32,
+    Int32,
+    UInt64,
+    Int64,
+    Float32,
+    Float64,
+    Boolean,
+    String,
+    Timestamp,
+    Duration,
+    <span class="comment">// Types defined in the component API, each of which has a string name.
+    </span>Object(String),
+    Record(String),
+    Enum(String),
+    Error(String),
+    CallbackInterface(String),
+    <span class="comment">// Structurally recursive types.
+    </span>Optional(Box&lt;Type&gt;),
+    Sequence(Box&lt;Type&gt;),
+    Map(Box&lt;Type&gt;, Box&lt;Type&gt;),
+    <span class="comment">// An FfiConverter we `use` from an external crate
+    </span>External { name: String, crate_name: String },
+    <span class="comment">// Custom type on the scaffolding side
+    </span>Custom { name: String, builtin: Box&lt;Type&gt; },
+    <span class="comment">// An unresolved user-defined type inside a proc-macro exported function
+    // signature. Must be replaced by another type before bindings generation.
+    </span>Unresolved { name: String },
 }
 
-<span class="kw">impl</span> <span class="ident">Type</span> {
-    <span class="doccomment">/// Get the canonical, unique-within-this-component name for a type.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// When generating helper code for foreign language bindings, it&#39;s sometimes useful to be</span>
-    <span class="doccomment">/// able to name a particular type in order to e.g. call a helper function that is specific</span>
-    <span class="doccomment">/// to that type. We support this by defining a naming convention where each type gets a</span>
-    <span class="doccomment">/// unique canonical name, constructed recursively from the names of its component types (if any).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="comment">// Builtin primitive types, with plain old names.</span>
-            <span class="ident">Type::Int8</span> =&gt; <span class="string">&quot;i8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt8</span> =&gt; <span class="string">&quot;u8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Int16</span> =&gt; <span class="string">&quot;i16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt16</span> =&gt; <span class="string">&quot;u16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Int32</span> =&gt; <span class="string">&quot;i32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt32</span> =&gt; <span class="string">&quot;u32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Int64</span> =&gt; <span class="string">&quot;i64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt64</span> =&gt; <span class="string">&quot;u64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Float32</span> =&gt; <span class="string">&quot;f32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Float64</span> =&gt; <span class="string">&quot;f64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::String</span> =&gt; <span class="string">&quot;string&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Boolean</span> =&gt; <span class="string">&quot;bool&quot;</span>.<span class="ident">into</span>(),
-            <span class="comment">// API defined types.</span>
-            <span class="comment">// Note that these all get unique names, and the parser ensures that the names do not</span>
-            <span class="comment">// conflict with a builtin type. We add a prefix to the name to guard against pathological</span>
-            <span class="comment">// cases like a record named `SequenceRecord` interfering with `sequence&lt;Record&gt;`.</span>
-            <span class="comment">// However, types that support importing all end up with the same prefix of &quot;Type&quot;, so</span>
-            <span class="comment">// that the import handling code knows how to find the remote reference.</span>
-            <span class="ident">Type::Object</span>(<span class="ident">nm</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
-            <span class="ident">Type::Error</span>(<span class="ident">nm</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
-            <span class="ident">Type::Enum</span>(<span class="ident">nm</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
-            <span class="ident">Type::Record</span>(<span class="ident">nm</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
-            <span class="ident">Type::CallbackInterface</span>(<span class="ident">nm</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{nm}&quot;</span>),
-            <span class="ident">Type::Timestamp</span> =&gt; <span class="string">&quot;Timestamp&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Duration</span> =&gt; <span class="string">&quot;Duration&quot;</span>.<span class="ident">into</span>(),
-            <span class="comment">// Recursive types.</span>
-            <span class="comment">// These add a prefix to the name of the underlying type.</span>
-            <span class="comment">// The component API definition cannot give names to recursive types, so as long as the</span>
-            <span class="comment">// prefixes we add here are all unique amongst themselves, then we have no chance of</span>
-            <span class="comment">// acccidentally generating name collisions.</span>
-            <span class="ident">Type::Optional</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Optional{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
-            <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Sequence{}&quot;</span>, <span class="ident">t</span>.<span class="ident">canonical_name</span>()),
-            <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
+<span class="kw">impl </span>Type {
+    <span class="doccomment">/// Get the canonical, unique-within-this-component name for a type.
+    ///
+    /// When generating helper code for foreign language bindings, it&#39;s sometimes useful to be
+    /// able to name a particular type in order to e.g. call a helper function that is specific
+    /// to that type. We support this by defining a naming convention where each type gets a
+    /// unique canonical name, constructed recursively from the names of its component types (if any).
+    </span><span class="kw">pub fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="comment">// Builtin primitive types, with plain old names.
+            </span>Type::Int8 =&gt; <span class="string">&quot;i8&quot;</span>.into(),
+            Type::UInt8 =&gt; <span class="string">&quot;u8&quot;</span>.into(),
+            Type::Int16 =&gt; <span class="string">&quot;i16&quot;</span>.into(),
+            Type::UInt16 =&gt; <span class="string">&quot;u16&quot;</span>.into(),
+            Type::Int32 =&gt; <span class="string">&quot;i32&quot;</span>.into(),
+            Type::UInt32 =&gt; <span class="string">&quot;u32&quot;</span>.into(),
+            Type::Int64 =&gt; <span class="string">&quot;i64&quot;</span>.into(),
+            Type::UInt64 =&gt; <span class="string">&quot;u64&quot;</span>.into(),
+            Type::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
+            Type::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
+            Type::String =&gt; <span class="string">&quot;string&quot;</span>.into(),
+            Type::Boolean =&gt; <span class="string">&quot;bool&quot;</span>.into(),
+            <span class="comment">// API defined types.
+            // Note that these all get unique names, and the parser ensures that the names do not
+            // conflict with a builtin type. We add a prefix to the name to guard against pathological
+            // cases like a record named `SequenceRecord` interfering with `sequence&lt;Record&gt;`.
+            // However, types that support importing all end up with the same prefix of &quot;Type&quot;, so
+            // that the import handling code knows how to find the remote reference.
+            </span>Type::Object(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
+            Type::Error(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
+            Type::Enum(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
+            Type::Record(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
+            Type::CallbackInterface(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{nm}&quot;</span>),
+            Type::Timestamp =&gt; <span class="string">&quot;Timestamp&quot;</span>.into(),
+            Type::Duration =&gt; <span class="string">&quot;Duration&quot;</span>.into(),
+            <span class="comment">// Recursive types.
+            // These add a prefix to the name of the underlying type.
+            // The component API definition cannot give names to recursive types, so as long as the
+            // prefixes we add here are all unique amongst themselves, then we have no chance of
+            // acccidentally generating name collisions.
+            </span>Type::Optional(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Optional{}&quot;</span>, t.canonical_name()),
+            Type::Sequence(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Sequence{}&quot;</span>, t.canonical_name()),
+            Type::Map(k, v) =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;Map{}{}&quot;</span>,
-                <span class="ident">k</span>.<span class="ident">canonical_name</span>().<span class="ident">to_upper_camel_case</span>(),
-                <span class="ident">v</span>.<span class="ident">canonical_name</span>().<span class="ident">to_upper_camel_case</span>()
+                k.canonical_name().to_upper_camel_case(),
+                v.canonical_name().to_upper_camel_case()
             ),
-            <span class="comment">// A type that exists externally.</span>
-            <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
-            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
+            <span class="comment">// A type that exists externally.
+            </span>Type::External { name, .. } | Type::Custom { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
+            Type::Unresolved { name } =&gt; {
                 <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before calling canonical_name&quot;</span>)
             }
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">FfiType</span> {
-        <span class="self">self</span>.<span class="ident">into</span>()
+    <span class="kw">pub fn </span>ffi_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiType {
+        <span class="self">self</span>.into()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">nested_types</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Type::Optional</span>(<span class="ident">t</span>) <span class="op">|</span> <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="ident">t</span>.<span class="ident">iter_types</span>(),
-            <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">k</span>.<span class="ident">iter_types</span>().<span class="ident">chain</span>(<span class="ident">v</span>.<span class="ident">iter_types</span>())),
-            <span class="kw">_</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">iter::empty</span>()),
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+        <span class="kw">let </span>nested_types = <span class="kw">match </span><span class="self">self </span>{
+            Type::Optional(t) | Type::Sequence(t) =&gt; t.iter_types(),
+            Type::Map(k, v) =&gt; Box::new(k.iter_types().chain(v.iter_types())),
+            <span class="kw">_ </span>=&gt; Box::new(iter::empty()),
         };
-        <span class="ident">Box::new</span>(<span class="ident">std::iter::once</span>(<span class="self">self</span>).<span class="ident">chain</span>(<span class="ident">nested_types</span>))
+        Box::new(std::iter::once(<span class="self">self</span>).chain(nested_types))
     }
 }
 
-<span class="doccomment">/// When passing data across the FFI, each `Type` value will be lowered into a corresponding</span>
-<span class="doccomment">/// `FfiType` value. This conversion tells you which one.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Note that the conversion is one-way - given an FfiType, it is not in general possible to</span>
-<span class="doccomment">/// tell what the corresponding Type is that it&#39;s being used to represent.</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Type</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">FfiType</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">t</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="ident">FfiType</span> {
-        <span class="kw">match</span> <span class="ident">t</span> {
-            <span class="comment">// Types that are the same map to themselves, naturally.</span>
-            <span class="ident">Type::UInt8</span> =&gt; <span class="ident">FfiType::UInt8</span>,
-            <span class="ident">Type::Int8</span> =&gt; <span class="ident">FfiType::Int8</span>,
-            <span class="ident">Type::UInt16</span> =&gt; <span class="ident">FfiType::UInt16</span>,
-            <span class="ident">Type::Int16</span> =&gt; <span class="ident">FfiType::Int16</span>,
-            <span class="ident">Type::UInt32</span> =&gt; <span class="ident">FfiType::UInt32</span>,
-            <span class="ident">Type::Int32</span> =&gt; <span class="ident">FfiType::Int32</span>,
-            <span class="ident">Type::UInt64</span> =&gt; <span class="ident">FfiType::UInt64</span>,
-            <span class="ident">Type::Int64</span> =&gt; <span class="ident">FfiType::Int64</span>,
-            <span class="ident">Type::Float32</span> =&gt; <span class="ident">FfiType::Float32</span>,
-            <span class="ident">Type::Float64</span> =&gt; <span class="ident">FfiType::Float64</span>,
-            <span class="comment">// Booleans lower into an Int8, to work around a bug in JNA.</span>
-            <span class="ident">Type::Boolean</span> =&gt; <span class="ident">FfiType::Int8</span>,
-            <span class="comment">// Strings are always owned rust values.</span>
-            <span class="comment">// We might add a separate type for borrowed strings in future.</span>
-            <span class="ident">Type::String</span> =&gt; <span class="ident">FfiType::RustBuffer</span>,
-            <span class="comment">// Objects are pointers to an Arc&lt;&gt;</span>
-            <span class="ident">Type::Object</span>(<span class="ident">name</span>) =&gt; <span class="ident">FfiType::RustArcPtr</span>(<span class="ident">name</span>.<span class="ident">to_owned</span>()),
-            <span class="comment">// Callback interfaces are passed as opaque integer handles.</span>
-            <span class="ident">Type::CallbackInterface</span>(<span class="kw">_</span>) =&gt; <span class="ident">FfiType::UInt64</span>,
-            <span class="comment">// Other types are serialized into a bytebuffer and deserialized on the other side.</span>
-            <span class="ident">Type::Enum</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type::Error</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type::Optional</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type::Sequence</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type::Map</span>(<span class="kw">_</span>, <span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Type::Timestamp</span>
-            <span class="op">|</span> <span class="ident">Type::Duration</span>
-            <span class="op">|</span> <span class="ident">Type::External</span> { .. } =&gt; <span class="ident">FfiType::RustBuffer</span>,
-            <span class="ident">Type::Custom</span> { <span class="ident">builtin</span>, .. } =&gt; <span class="ident">FfiType::from</span>(<span class="ident">builtin</span>.<span class="ident">as_ref</span>()),
-            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
+<span class="doccomment">/// When passing data across the FFI, each `Type` value will be lowered into a corresponding
+/// `FfiType` value. This conversion tells you which one.
+///
+/// Note that the conversion is one-way - given an FfiType, it is not in general possible to
+/// tell what the corresponding Type is that it&#39;s being used to represent.
+</span><span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>Type&gt; <span class="kw">for </span>FfiType {
+    <span class="kw">fn </span>from(t: <span class="kw-2">&amp;</span>Type) -&gt; FfiType {
+        <span class="kw">match </span>t {
+            <span class="comment">// Types that are the same map to themselves, naturally.
+            </span>Type::UInt8 =&gt; FfiType::UInt8,
+            Type::Int8 =&gt; FfiType::Int8,
+            Type::UInt16 =&gt; FfiType::UInt16,
+            Type::Int16 =&gt; FfiType::Int16,
+            Type::UInt32 =&gt; FfiType::UInt32,
+            Type::Int32 =&gt; FfiType::Int32,
+            Type::UInt64 =&gt; FfiType::UInt64,
+            Type::Int64 =&gt; FfiType::Int64,
+            Type::Float32 =&gt; FfiType::Float32,
+            Type::Float64 =&gt; FfiType::Float64,
+            <span class="comment">// Booleans lower into an Int8, to work around a bug in JNA.
+            </span>Type::Boolean =&gt; FfiType::Int8,
+            <span class="comment">// Strings are always owned rust values.
+            // We might add a separate type for borrowed strings in future.
+            </span>Type::String =&gt; FfiType::RustBuffer,
+            <span class="comment">// Objects are pointers to an Arc&lt;&gt;
+            </span>Type::Object(name) =&gt; FfiType::RustArcPtr(name.to_owned()),
+            <span class="comment">// Callback interfaces are passed as opaque integer handles.
+            </span>Type::CallbackInterface(<span class="kw">_</span>) =&gt; FfiType::UInt64,
+            <span class="comment">// Other types are serialized into a bytebuffer and deserialized on the other side.
+            </span>Type::Enum(<span class="kw">_</span>)
+            | Type::Error(<span class="kw">_</span>)
+            | Type::Record(<span class="kw">_</span>)
+            | Type::Optional(<span class="kw">_</span>)
+            | Type::Sequence(<span class="kw">_</span>)
+            | Type::Map(<span class="kw">_</span>, <span class="kw">_</span>)
+            | Type::Timestamp
+            | Type::Duration
+            | Type::External { .. } =&gt; FfiType::RustBuffer,
+            Type::Custom { builtin, .. } =&gt; FfiType::from(builtin.as_ref()),
+            Type::Unresolved { name } =&gt; {
                 <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before lowering to FfiType&quot;</span>)
             }
         }
     }
 }
 
-<span class="comment">// Needed for rust scaffolding askama template</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="op">&amp;&amp;</span><span class="ident">Type</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">FfiType</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">ty</span>: <span class="op">&amp;&amp;</span><span class="ident">Type</span>) -&gt; <span class="self">Self</span> {
-        (<span class="kw-2">*</span><span class="ident">ty</span>).<span class="ident">into</span>()
+<span class="comment">// Needed for rust scaffolding askama template
+</span><span class="kw">impl </span>From&lt;&amp;&amp;Type&gt; <span class="kw">for </span>FfiType {
+    <span class="kw">fn </span>from(ty: &amp;&amp;Type) -&gt; <span class="self">Self </span>{
+        (<span class="kw-2">*</span>ty).into()
     }
 }
 
-<span class="doccomment">/// The set of all possible types used in a particular component interface.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Every component API uses a finite number of types, including primitive types, API-defined</span>
-<span class="doccomment">/// types like records and enums, and recursive types such as sequences of the above. Our</span>
-<span class="doccomment">/// component API doesn&#39;t support fancy generics so this is a finitely-enumerable set, which</span>
-<span class="doccomment">/// is useful to be able to operate on explicitly.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// You could imagine this struct doing some clever interning of names and so-on in future,</span>
-<span class="doccomment">/// to reduce the overhead of passing around [Type] instances. For now we just do a whole</span>
-<span class="doccomment">/// lot of cloning.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">TypeUniverse</span> {
-    <span class="comment">// Named type definitions (including aliases).</span>
-    <span class="ident">type_definitions</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Type</span><span class="op">&gt;</span>,
-    <span class="comment">// All the types in the universe, by canonical type name, in a well-defined order.</span>
-    <span class="ident">all_known_types</span>: <span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>,
+<span class="doccomment">/// The set of all possible types used in a particular component interface.
+///
+/// Every component API uses a finite number of types, including primitive types, API-defined
+/// types like records and enums, and recursive types such as sequences of the above. Our
+/// component API doesn&#39;t support fancy generics so this is a finitely-enumerable set, which
+/// is useful to be able to operate on explicitly.
+///
+/// You could imagine this struct doing some clever interning of names and so-on in future,
+/// to reduce the overhead of passing around [Type] instances. For now we just do a whole
+/// lot of cloning.
+</span><span class="attribute">#[derive(Debug, Default)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>TypeUniverse {
+    <span class="comment">// Named type definitions (including aliases).
+    </span>type_definitions: HashMap&lt;String, Type&gt;,
+    <span class="comment">// All the types in the universe, by canonical type name, in a well-defined order.
+    </span>all_known_types: BTreeSet&lt;Type&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">TypeUniverse</span> {
-    <span class="doccomment">/// Add the definitions of all named [Type]s from a given WebIDL definition.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will fail if you try to add a name for which an existing type definition exists.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">add_type_definitions_from</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TypeFinder</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">defn</span>: <span class="ident">T</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="ident">defn</span>.<span class="ident">add_type_definitions_to</span>(<span class="self">self</span>)
+<span class="kw">impl </span>TypeUniverse {
+    <span class="doccomment">/// Add the definitions of all named [Type]s from a given WebIDL definition.
+    ///
+    /// This will fail if you try to add a name for which an existing type definition exists.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_type_definitions_from&lt;T: TypeFinder&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, defn: T) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        defn.add_type_definitions_to(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Add the definition of a named [Type].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will fail if you try to add a name for which an existing type definition exists.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_type_definition</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">type_</span>: <span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Type::Unresolved</span> { <span class="ident">name</span>: <span class="ident">name_</span> } <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">type_</span> {
-            <span class="macro">assert_eq!</span>(<span class="ident">name</span>, <span class="ident">name_</span>);
+    <span class="doccomment">/// Add the definition of a named [Type].
+    ///
+    /// This will fail if you try to add a name for which an existing type definition exists.
+    </span><span class="kw">pub fn </span>add_type_definition(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, type_: Type) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if let </span>Type::Unresolved { name: name_ } = <span class="kw-2">&amp;</span>type_ {
+            <span class="macro">assert_eq!</span>(name, name_);
             <span class="macro">bail!</span>(<span class="string">&quot;attempted to add type definition of Unresolved for `{name}`&quot;</span>);
         }
 
-        <span class="kw">if</span> <span class="ident">resolve_builtin_type</span>(<span class="ident">name</span>).<span class="ident">is_some</span>() {
+        <span class="kw">if </span>resolve_builtin_type(name).is_some() {
             <span class="macro">bail!</span>(
                 <span class="string">&quot;please don&#39;t shadow builtin types ({name}, {})&quot;</span>,
-                <span class="ident">type_</span>.<span class="ident">canonical_name</span>(),
+                type_.canonical_name(),
             );
         }
-        <span class="self">self</span>.<span class="ident">add_known_type</span>(<span class="kw-2">&amp;</span><span class="ident">type_</span>)<span class="question-mark">?</span>;
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">type_definitions</span>.<span class="ident">entry</span>(<span class="ident">name</span>.<span class="ident">to_string</span>()) {
-            <span class="ident">Entry::Occupied</span>(<span class="ident">o</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">existing_def</span> <span class="op">=</span> <span class="ident">o</span>.<span class="ident">get</span>();
-                <span class="kw">if</span> <span class="ident">type_</span> <span class="op">==</span> <span class="kw-2">*</span><span class="ident">existing_def</span>
-                    <span class="op">&amp;&amp;</span> <span class="macro">matches!</span>(<span class="ident">type_</span>, <span class="ident">Type::Record</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Enum</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Error</span>(<span class="kw">_</span>))
+        <span class="self">self</span>.add_known_type(<span class="kw-2">&amp;</span>type_)<span class="question-mark">?</span>;
+        <span class="kw">match </span><span class="self">self</span>.type_definitions.entry(name.to_string()) {
+            Entry::Occupied(o) =&gt; {
+                <span class="kw">let </span>existing_def = o.get();
+                <span class="kw">if </span>type_ == <span class="kw-2">*</span>existing_def
+                    &amp;&amp; <span class="macro">matches!</span>(type_, Type::Record(<span class="kw">_</span>) | Type::Enum(<span class="kw">_</span>) | Type::Error(<span class="kw">_</span>))
                 {
-                    <span class="comment">// UDL and proc-macro metadata are allowed to define the same record, enum and</span>
-                    <span class="comment">// error types, if the definitions match (fields and variants are checked in</span>
-                    <span class="comment">// add_{record,enum,error}_definition)</span>
-                    <span class="prelude-val">Ok</span>(())
-                } <span class="kw">else</span> {
+                    <span class="comment">// UDL and proc-macro metadata are allowed to define the same record, enum and
+                    // error types, if the definitions match (fields and variants are checked in
+                    // add_{record,enum,error}_definition)
+                    </span><span class="prelude-val">Ok</span>(())
+                } <span class="kw">else </span>{
                     <span class="macro">bail!</span>(
                         <span class="string">&quot;Conflicting type definition for `{name}`! \
                          existing definition: {existing_def:?}, \
-                         new definition: {type_:?}&quot;</span>
-                    );
+                         new definition: {type_:?}&quot;
+                    </span>);
                 }
             }
-            <span class="ident">Entry::Vacant</span>(<span class="ident">e</span>) =&gt; {
-                <span class="ident">e</span>.<span class="ident">insert</span>(<span class="ident">type_</span>);
+            Entry::Vacant(e) =&gt; {
+                e.insert(type_);
                 <span class="prelude-val">Ok</span>(())
             }
         }
     }
 
-    <span class="doccomment">/// Get the [Type] corresponding to a given name, if any.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">get_type_definition</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">type_definitions</span>.<span class="ident">get</span>(<span class="ident">name</span>).<span class="ident">cloned</span>()
+    <span class="doccomment">/// Get the [Type] corresponding to a given name, if any.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>get_type_definition(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
+        <span class="self">self</span>.type_definitions.get(name).cloned()
     }
 
-    <span class="doccomment">/// Get the [Type] corresponding to a given WebIDL type node.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the node is a structural type (e.g. a sequence) then this will also add</span>
-    <span class="doccomment">/// it to the set of all types seen in the component interface.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">resolve_type_expression</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TypeResolver</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">expr</span>: <span class="ident">T</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-        <span class="ident">expr</span>.<span class="ident">resolve_type_expression</span>(<span class="self">self</span>)
+    <span class="doccomment">/// Get the [Type] corresponding to a given WebIDL type node.
+    ///
+    /// If the node is a structural type (e.g. a sequence) then this will also add
+    /// it to the set of all types seen in the component interface.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>resolve_type_expression&lt;T: TypeResolver&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, expr: T) -&gt; <span class="prelude-ty">Result</span>&lt;Type&gt; {
+        expr.resolve_type_expression(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Add a [Type] to the set of all types seen in the component interface.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_known_type</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="comment">// Adding potentially-unresolved types is a footgun, make sure we don&#39;t do that.</span>
-        <span class="kw">if</span> <span class="macro">matches!</span>(<span class="ident">type_</span>, <span class="ident">Type::Unresolved</span> { .. }) {
+    <span class="doccomment">/// Add a [Type] to the set of all types seen in the component interface.
+    </span><span class="kw">pub fn </span>add_known_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="comment">// Adding potentially-unresolved types is a footgun, make sure we don&#39;t do that.
+        </span><span class="kw">if </span><span class="macro">matches!</span>(type_, Type::Unresolved { .. }) {
             <span class="macro">bail!</span>(<span class="string">&quot;Unresolved types must be resolved before being added to known types&quot;</span>);
         }
 
-        <span class="comment">// Types are more likely to already be known than not, so avoid unnecessary cloning.</span>
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">all_known_types</span>.<span class="ident">contains</span>(<span class="ident">type_</span>) {
-            <span class="self">self</span>.<span class="ident">all_known_types</span>.<span class="ident">insert</span>(<span class="ident">type_</span>.<span class="ident">to_owned</span>());
+        <span class="comment">// Types are more likely to already be known than not, so avoid unnecessary cloning.
+        </span><span class="kw">if </span>!<span class="self">self</span>.all_known_types.contains(type_) {
+            <span class="self">self</span>.all_known_types.insert(type_.to_owned());
 
-            <span class="comment">// Add inner types. For UDL, this is actually pointless extra work (as is calling</span>
-            <span class="comment">// add_known_type from add_function_definition), but for the proc-macro frontend</span>
-            <span class="comment">// this is important if the inner type isn&#39;t ever mentioned outside one of these</span>
-            <span class="comment">// generic builtin types.</span>
-            <span class="kw">match</span> <span class="ident">type_</span> {
-                <span class="ident">Type::Optional</span>(<span class="ident">t</span>) =&gt; <span class="self">self</span>.<span class="ident">add_known_type</span>(<span class="ident">t</span>)<span class="question-mark">?</span>,
-                <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="self">self</span>.<span class="ident">add_known_type</span>(<span class="ident">t</span>)<span class="question-mark">?</span>,
-                <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; {
-                    <span class="self">self</span>.<span class="ident">add_known_type</span>(<span class="ident">k</span>)<span class="question-mark">?</span>;
-                    <span class="self">self</span>.<span class="ident">add_known_type</span>(<span class="ident">v</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Add inner types. For UDL, this is actually pointless extra work (as is calling
+            // add_known_type from add_function_definition), but for the proc-macro frontend
+            // this is important if the inner type isn&#39;t ever mentioned outside one of these
+            // generic builtin types.
+            </span><span class="kw">match </span>type_ {
+                Type::Optional(t) =&gt; <span class="self">self</span>.add_known_type(t)<span class="question-mark">?</span>,
+                Type::Sequence(t) =&gt; <span class="self">self</span>.add_known_type(t)<span class="question-mark">?</span>,
+                Type::Map(k, v) =&gt; {
+                    <span class="self">self</span>.add_known_type(k)<span class="question-mark">?</span>;
+                    <span class="self">self</span>.add_known_type(v)<span class="question-mark">?</span>;
                 }
-                <span class="kw">_</span> =&gt; {}
+                <span class="kw">_ </span>=&gt; {}
             }
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Iterator over all the known types in this universe.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_known_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">all_known_types</span>.<span class="ident">iter</span>()
+    <span class="doccomment">/// Iterator over all the known types in this universe.
+    </span><span class="kw">pub fn </span>iter_known_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>Type&gt; {
+        <span class="self">self</span>.all_known_types.iter()
     }
 }
 
-<span class="doccomment">/// An abstract type for an iterator over &amp;Type references.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Ideally we would not need to name this type explicitly, and could just</span>
-<span class="doccomment">/// use an `impl Iterator&lt;Item = &amp;Type&gt;` on any method that yields types.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Type</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span>;
+<span class="doccomment">/// An abstract type for an iterator over &amp;Type references.
+///
+/// Ideally we would not need to name this type explicitly, and could just
+/// use an `impl Iterator&lt;Item = &amp;Type&gt;` on any method that yields types.
+</span><span class="kw">pub type </span>TypeIterator&lt;<span class="lifetime">&#39;a</span>&gt; = Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type&gt; + <span class="lifetime">&#39;a</span>&gt;;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test_type</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test_type {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_canonical_names</span>() {
-        <span class="comment">// Non-exhaustive, but gives a bit of a flavour of what we want.</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">Type::UInt8</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;u8&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">Type::String</span>.<span class="ident">canonical_name</span>(), <span class="string">&quot;string&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_canonical_names() {
+        <span class="comment">// Non-exhaustive, but gives a bit of a flavour of what we want.
+        </span><span class="macro">assert_eq!</span>(Type::UInt8.canonical_name(), <span class="string">&quot;u8&quot;</span>);
+        <span class="macro">assert_eq!</span>(Type::String.canonical_name(), <span class="string">&quot;string&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">Type::Optional</span>(<span class="ident">Box::new</span>(<span class="ident">Type::Sequence</span>(<span class="ident">Box::new</span>(<span class="ident">Type::Object</span>(
-                <span class="string">&quot;Example&quot;</span>.<span class="ident">into</span>()
+            Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object(
+                <span class="string">&quot;Example&quot;</span>.into()
             )))))
-            .<span class="ident">canonical_name</span>(),
-            <span class="string">&quot;OptionalSequenceTypeExample&quot;</span>
-        );
+            .canonical_name(),
+            <span class="string">&quot;OptionalSequenceTypeExample&quot;
+        </span>);
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test_type_universe</span> {
-    <span class="comment">// All the useful functionality of the `TypeUniverse` struct</span>
-    <span class="comment">// is tested as part of the `TypeFinder` and `TypeResolver` test suites.</span>
-}
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test_type_universe {
+    <span class="comment">// All the useful functionality of the `TypeUniverse` struct
+    // is tested as part of the `TypeFinder` and `TypeResolver` test suites.
+</span>}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/kotlin/gen_kotlin/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script defer src="../../../../../source-script.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/kotlin/gen_kotlin/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../normalize.css"><link rel="stylesheet" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script defer src="../../../../../source-script.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -386,384 +380,383 @@
 <span id="380">380</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="kw">use</span> <span class="ident">std::borrow::Borrow</span>;
-<span class="kw">use</span> <span class="ident">std::cell::RefCell</span>;
-<span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">BTreeSet</span>, <span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
+</span><span class="kw">use </span>std::borrow::Borrow;
+<span class="kw">use </span>std::cell::RefCell;
+<span class="kw">use </span>std::collections::{BTreeSet, HashMap, HashSet};
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">askama::Template</span>;
-<span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">ToLowerCamelCase</span>, <span class="ident">ToShoutySnakeCase</span>, <span class="ident">ToUpperCamelCase</span>};
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
+<span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>askama::Template;
+<span class="kw">use </span>heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>::{<span class="ident">CodeOracle</span>, <span class="ident">CodeType</span>, <span class="ident">TemplateExpression</span>, <span class="ident">TypeIdentifier</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::interface</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::MergeWith</span>;
+<span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+<span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::MergeWith;
 
-<span class="kw">mod</span> <span class="ident">callback_interface</span>;
-<span class="kw">mod</span> <span class="ident">compounds</span>;
-<span class="kw">mod</span> <span class="ident">custom</span>;
-<span class="kw">mod</span> <span class="ident">enum_</span>;
-<span class="kw">mod</span> <span class="ident">error</span>;
-<span class="kw">mod</span> <span class="ident">external</span>;
-<span class="kw">mod</span> <span class="ident">miscellany</span>;
-<span class="kw">mod</span> <span class="ident">object</span>;
-<span class="kw">mod</span> <span class="ident">primitives</span>;
-<span class="kw">mod</span> <span class="ident">record</span>;
+<span class="kw">mod </span>callback_interface;
+<span class="kw">mod </span>compounds;
+<span class="kw">mod </span>custom;
+<span class="kw">mod </span>enum_;
+<span class="kw">mod </span>error;
+<span class="kw">mod </span>external;
+<span class="kw">mod </span>miscellany;
+<span class="kw">mod </span>object;
+<span class="kw">mod </span>primitives;
+<span class="kw">mod </span>record;
 
-<span class="comment">// config options to customize the generated Kotlin.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Config</span> {
-    <span class="ident">package_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="ident">cdylib_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="ident">custom_types</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">CustomTypeConfig</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="ident">external_packages</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
+<span class="comment">// config options to customize the generated Kotlin.
+</span><span class="attribute">#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Config {
+    package_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    cdylib_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(default)]
+    </span>custom_types: HashMap&lt;String, CustomTypeConfig&gt;,
+    <span class="attribute">#[serde(default)]
+    </span>external_packages: HashMap&lt;String, String&gt;,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CustomTypeConfig</span> {
-    <span class="ident">imports</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">type_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="ident">into_custom</span>: <span class="ident">TemplateExpression</span>,
-    <span class="ident">from_custom</span>: <span class="ident">TemplateExpression</span>,
+<span class="attribute">#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>CustomTypeConfig {
+    imports: <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt;,
+    type_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    into_custom: TemplateExpression,
+    from_custom: TemplateExpression,
 }
 
-<span class="kw">impl</span> <span class="ident">Config</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">package_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">package_name</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">package_name</span> {
-            <span class="ident">package_name</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> {
-            <span class="string">&quot;uniffi&quot;</span>.<span class="ident">into</span>()
+<span class="kw">impl </span>Config {
+    <span class="kw">pub fn </span>package_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(package_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.package_name {
+            package_name.clone()
+        } <span class="kw">else </span>{
+            <span class="string">&quot;uniffi&quot;</span>.into()
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cdylib_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cdylib_name</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cdylib_name</span> {
-            <span class="ident">cdylib_name</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> {
-            <span class="string">&quot;uniffi&quot;</span>.<span class="ident">into</span>()
-        }
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Config</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Config</span> {
-            <span class="ident">package_name</span>: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffi.{}&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>())),
-            <span class="ident">cdylib_name</span>: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, <span class="ident">ci</span>.<span class="ident">namespace</span>())),
-            <span class="ident">custom_types</span>: <span class="ident">HashMap::new</span>(),
-            <span class="ident">external_packages</span>: <span class="ident">HashMap::new</span>(),
+    <span class="kw">pub fn </span>cdylib_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.cdylib_name {
+            cdylib_name.clone()
+        } <span class="kw">else </span>{
+            <span class="string">&quot;uniffi&quot;</span>.into()
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">MergeWith</span> <span class="kw">for</span> <span class="ident">Config</span> {
-    <span class="kw">fn</span> <span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Config</span> {
-            <span class="ident">package_name</span>: <span class="self">self</span>.<span class="ident">package_name</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">package_name</span>),
-            <span class="ident">cdylib_name</span>: <span class="self">self</span>.<span class="ident">cdylib_name</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">cdylib_name</span>),
-            <span class="ident">custom_types</span>: <span class="self">self</span>.<span class="ident">custom_types</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">custom_types</span>),
-            <span class="ident">external_packages</span>: <span class="self">self</span>.<span class="ident">external_packages</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">external_packages</span>),
+<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>ComponentInterface&gt; <span class="kw">for </span>Config {
+    <span class="kw">fn </span>from(ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="self">Self </span>{
+        Config {
+            package_name: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffi.{}&quot;</span>, ci.namespace())),
+            cdylib_name: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, ci.namespace())),
+            custom_types: HashMap::new(),
+            external_packages: HashMap::new(),
         }
     }
 }
 
-<span class="comment">// Generate kotlin bindings for the given ComponentInterface, as a string.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">KotlinWrapper::new</span>(<span class="ident">config</span>.<span class="ident">clone</span>(), <span class="ident">ci</span>)
-        .<span class="ident">render</span>()
-        .<span class="ident">context</span>(<span class="string">&quot;failed to render kotlin bindings&quot;</span>)
+<span class="kw">impl </span>MergeWith <span class="kw">for </span>Config {
+    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        Config {
+            package_name: <span class="self">self</span>.package_name.merge_with(<span class="kw-2">&amp;</span>other.package_name),
+            cdylib_name: <span class="self">self</span>.cdylib_name.merge_with(<span class="kw-2">&amp;</span>other.cdylib_name),
+            custom_types: <span class="self">self</span>.custom_types.merge_with(<span class="kw-2">&amp;</span>other.custom_types),
+            external_packages: <span class="self">self</span>.external_packages.merge_with(<span class="kw-2">&amp;</span>other.external_packages),
+        }
+    }
 }
 
-<span class="doccomment">/// Renders Kotlin helper code for all types</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This template is a bit different than others in that it stores internal state from the render</span>
-<span class="doccomment">/// process.  Make sure to only call `render()` once.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
-<span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;kt&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;Types.kt&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TypeRenderer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">kotlin_config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Config</span>,
-    <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>,
-    <span class="comment">// Track included modules for the `include_once()` macro</span>
-    <span class="ident">include_once_names</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="comment">// Track imports added with the `add_import()` macro</span>
-    <span class="ident">imports</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="comment">// Generate kotlin bindings for the given ComponentInterface, as a string.
+</span><span class="kw">pub fn </span>generate_bindings(config: <span class="kw-2">&amp;</span>Config, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
+    KotlinWrapper::new(config.clone(), ci)
+        .render()
+        .context(<span class="string">&quot;failed to render kotlin bindings&quot;</span>)
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TypeRenderer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">kotlin_config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">kotlin_config</span>,
-            <span class="ident">ci</span>,
-            <span class="ident">include_once_names</span>: <span class="ident">RefCell::new</span>(<span class="ident">HashSet::new</span>()),
-            <span class="ident">imports</span>: <span class="ident">RefCell::new</span>(<span class="ident">BTreeSet::new</span>()),
+<span class="doccomment">/// Renders Kotlin helper code for all types
+///
+/// This template is a bit different than others in that it stores internal state from the render
+/// process.  Make sure to only call `render()` once.
+</span><span class="attribute">#[derive(Template)]
+#[template(syntax = <span class="string">&quot;kt&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;Types.kt&quot;</span>)]
+</span><span class="kw">pub struct </span>TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
+    kotlin_config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config,
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+    <span class="comment">// Track included modules for the `include_once()` macro
+    </span>include_once_names: RefCell&lt;HashSet&lt;String&gt;&gt;,
+    <span class="comment">// Track imports added with the `add_import()` macro
+    </span>imports: RefCell&lt;BTreeSet&lt;String&gt;&gt;,
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn </span>new(kotlin_config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            kotlin_config,
+            ci,
+            include_once_names: RefCell::new(HashSet::new()),
+            imports: RefCell::new(BTreeSet::new()),
         }
     }
 
-    <span class="comment">// Get the package name for an external type</span>
-    <span class="kw">fn</span> <span class="ident">external_type_package_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">crate_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">kotlin_config</span>.<span class="ident">external_packages</span>.<span class="ident">get</span>(<span class="ident">crate_name</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">clone</span>(),
-            <span class="prelude-val">None</span> =&gt; <span class="ident">crate_name</span>.<span class="ident">to_string</span>(),
+    <span class="comment">// Get the package name for an external type
+    </span><span class="kw">fn </span>external_type_package_name(<span class="kw-2">&amp;</span><span class="self">self</span>, crate_name: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="kw">match </span><span class="self">self</span>.kotlin_config.external_packages.get(crate_name) {
+            <span class="prelude-val">Some</span>(name) =&gt; name.clone(),
+            <span class="prelude-val">None </span>=&gt; crate_name.to_string(),
         }
     }
 
-    <span class="comment">// The following methods are used by the `Types.kt` macros.</span>
+    <span class="comment">// The following methods are used by the `Types.kt` macros.
 
-    <span class="comment">// Helper for the including a template, but only once.</span>
-    <span class="comment">//</span>
-    <span class="comment">// The first time this is called with a name it will return true, indicating that we should</span>
-    <span class="comment">// include the template.  Subsequent calls will return false.</span>
-    <span class="kw">fn</span> <span class="ident">include_once_check</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">include_once_names</span>
-            .<span class="ident">borrow_mut</span>()
-            .<span class="ident">insert</span>(<span class="ident">name</span>.<span class="ident">to_string</span>())
+    // Helper for the including a template, but only once.
+    //
+    // The first time this is called with a name it will return true, indicating that we should
+    // include the template.  Subsequent calls will return false.
+    </span><span class="kw">fn </span>include_once_check(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; bool {
+        <span class="self">self</span>.include_once_names
+            .borrow_mut()
+            .insert(name.to_string())
     }
 
-    <span class="comment">// Helper to add an import statement</span>
-    <span class="comment">//</span>
-    <span class="comment">// Call this inside your template to cause an import statement to be added at the top of the</span>
-    <span class="comment">// file.  Imports will be sorted and de-deuped.</span>
-    <span class="comment">//</span>
-    <span class="comment">// Returns an empty string so that it can be used inside an askama `{{ }}` block.</span>
-    <span class="kw">fn</span> <span class="ident">add_import</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="self">self</span>.<span class="ident">imports</span>.<span class="ident">borrow_mut</span>().<span class="ident">insert</span>(<span class="ident">name</span>.<span class="ident">to_owned</span>());
-        <span class="string">&quot;&quot;</span>
-    }
+    <span class="comment">// Helper to add an import statement
+    //
+    // Call this inside your template to cause an import statement to be added at the top of the
+    // file.  Imports will be sorted and de-deuped.
+    //
+    // Returns an empty string so that it can be used inside an askama `{{ }}` block.
+    </span><span class="kw">fn </span>add_import(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="self">self</span>.imports.borrow_mut().insert(name.to_owned());
+        <span class="string">&quot;&quot;
+    </span>}
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
-<span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;kt&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;wrapper.kt&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KotlinWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">config</span>: <span class="ident">Config</span>,
-    <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>,
-    <span class="ident">type_helper_code</span>: <span class="ident">String</span>,
-    <span class="ident">type_imports</span>: <span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+<span class="attribute">#[derive(Template)]
+#[template(syntax = <span class="string">&quot;kt&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;wrapper.kt&quot;</span>)]
+</span><span class="kw">pub struct </span>KotlinWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
+    config: Config,
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+    type_helper_code: String,
+    type_imports: BTreeSet&lt;String&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">KotlinWrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">config</span>: <span class="ident">Config</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">type_renderer</span> <span class="op">=</span> <span class="ident">TypeRenderer::new</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>, <span class="ident">ci</span>);
-        <span class="kw">let</span> <span class="ident">type_helper_code</span> <span class="op">=</span> <span class="ident">type_renderer</span>.<span class="ident">render</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">type_imports</span> <span class="op">=</span> <span class="ident">type_renderer</span>.<span class="ident">imports</span>.<span class="ident">into_inner</span>();
-        <span class="self">Self</span> {
-            <span class="ident">config</span>,
-            <span class="ident">ci</span>,
-            <span class="ident">type_helper_code</span>,
-            <span class="ident">type_imports</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; KotlinWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>type_renderer = TypeRenderer::new(<span class="kw-2">&amp;</span>config, ci);
+        <span class="kw">let </span>type_helper_code = type_renderer.render().unwrap();
+        <span class="kw">let </span>type_imports = type_renderer.imports.into_inner();
+        <span class="self">Self </span>{
+            config,
+            ci,
+            type_helper_code,
+            type_imports,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initialization_fns</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">ci</span>
-            .<span class="ident">iter_types</span>()
-            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">initialization_fn</span>(<span class="kw-2">&amp;</span><span class="ident">KotlinCodeOracle</span>))
-            .<span class="ident">collect</span>()
+    <span class="kw">pub fn </span>initialization_fns(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;String&gt; {
+        <span class="self">self</span>.ci
+            .iter_types()
+            .filter_map(|t| t.initialization_fn(<span class="kw-2">&amp;</span>KotlinCodeOracle))
+            .collect()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">imports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">type_imports</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>()
+    <span class="kw">pub fn </span>imports(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;String&gt; {
+        <span class="self">self</span>.type_imports.iter().cloned().collect()
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KotlinCodeOracle</span>;
+<span class="attribute">#[derive(Clone)]
+</span><span class="kw">pub struct </span>KotlinCodeOracle;
 
-<span class="kw">impl</span> <span class="ident">KotlinCodeOracle</span> {
-    <span class="comment">// Map `Type` instances to a `Box&lt;dyn CodeType&gt;` for that type.</span>
-    <span class="comment">//</span>
-    <span class="comment">// There is a companion match in `templates/Types.kt` which performs a similar function for the</span>
-    <span class="comment">// template code.</span>
-    <span class="comment">//</span>
-    <span class="comment">//   - When adding additional types here, make sure to also add a match arm to the `Types.kt` template.</span>
-    <span class="comment">//   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches</span>
-    <span class="kw">fn</span> <span class="ident">create_code_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="ident">TypeIdentifier</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type::UInt8</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt8CodeType</span>),
-            <span class="ident">Type::Int8</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Int8CodeType</span>),
-            <span class="ident">Type::UInt16</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt16CodeType</span>),
-            <span class="ident">Type::Int16</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Int16CodeType</span>),
-            <span class="ident">Type::UInt32</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt32CodeType</span>),
-            <span class="ident">Type::Int32</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Int32CodeType</span>),
-            <span class="ident">Type::UInt64</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::UInt64CodeType</span>),
-            <span class="ident">Type::Int64</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Int64CodeType</span>),
-            <span class="ident">Type::Float32</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Float32CodeType</span>),
-            <span class="ident">Type::Float64</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::Float64CodeType</span>),
-            <span class="ident">Type::Boolean</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::BooleanCodeType</span>),
-            <span class="ident">Type::String</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">primitives::StringCodeType</span>),
+<span class="kw">impl </span>KotlinCodeOracle {
+    <span class="comment">// Map `Type` instances to a `Box&lt;dyn CodeType&gt;` for that type.
+    //
+    // There is a companion match in `templates/Types.kt` which performs a similar function for the
+    // template code.
+    //
+    //   - When adding additional types here, make sure to also add a match arm to the `Types.kt` template.
+    //   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches
+    </span><span class="kw">fn </span>create_code_type(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: TypeIdentifier) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        <span class="kw">match </span>type_ {
+            Type::UInt8 =&gt; Box::new(primitives::UInt8CodeType),
+            Type::Int8 =&gt; Box::new(primitives::Int8CodeType),
+            Type::UInt16 =&gt; Box::new(primitives::UInt16CodeType),
+            Type::Int16 =&gt; Box::new(primitives::Int16CodeType),
+            Type::UInt32 =&gt; Box::new(primitives::UInt32CodeType),
+            Type::Int32 =&gt; Box::new(primitives::Int32CodeType),
+            Type::UInt64 =&gt; Box::new(primitives::UInt64CodeType),
+            Type::Int64 =&gt; Box::new(primitives::Int64CodeType),
+            Type::Float32 =&gt; Box::new(primitives::Float32CodeType),
+            Type::Float64 =&gt; Box::new(primitives::Float64CodeType),
+            Type::Boolean =&gt; Box::new(primitives::BooleanCodeType),
+            Type::String =&gt; Box::new(primitives::StringCodeType),
 
-            <span class="ident">Type::Timestamp</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">miscellany::TimestampCodeType</span>),
-            <span class="ident">Type::Duration</span> =&gt; <span class="ident">Box::new</span>(<span class="ident">miscellany::DurationCodeType</span>),
+            Type::Timestamp =&gt; Box::new(miscellany::TimestampCodeType),
+            Type::Duration =&gt; Box::new(miscellany::DurationCodeType),
 
-            <span class="ident">Type::Enum</span>(<span class="ident">id</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">enum_::EnumCodeType::new</span>(<span class="ident">id</span>)),
-            <span class="ident">Type::Object</span>(<span class="ident">id</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">object::ObjectCodeType::new</span>(<span class="ident">id</span>)),
-            <span class="ident">Type::Record</span>(<span class="ident">id</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">record::RecordCodeType::new</span>(<span class="ident">id</span>)),
-            <span class="ident">Type::Error</span>(<span class="ident">id</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">error::ErrorCodeType::new</span>(<span class="ident">id</span>)),
-            <span class="ident">Type::CallbackInterface</span>(<span class="ident">id</span>) =&gt; {
-                <span class="ident">Box::new</span>(<span class="ident">callback_interface::CallbackInterfaceCodeType::new</span>(<span class="ident">id</span>))
+            Type::Enum(id) =&gt; Box::new(enum_::EnumCodeType::new(id)),
+            Type::Object(id) =&gt; Box::new(object::ObjectCodeType::new(id)),
+            Type::Record(id) =&gt; Box::new(record::RecordCodeType::new(id)),
+            Type::Error(id) =&gt; Box::new(error::ErrorCodeType::new(id)),
+            Type::CallbackInterface(id) =&gt; {
+                Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
-            <span class="ident">Type::Optional</span>(<span class="ident">inner</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">compounds::OptionalCodeType::new</span>(<span class="kw-2">*</span><span class="ident">inner</span>)),
-            <span class="ident">Type::Sequence</span>(<span class="ident">inner</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">compounds::SequenceCodeType::new</span>(<span class="kw-2">*</span><span class="ident">inner</span>)),
-            <span class="ident">Type::Map</span>(<span class="ident">key</span>, <span class="ident">value</span>) =&gt; <span class="ident">Box::new</span>(<span class="ident">compounds::MapCodeType::new</span>(<span class="kw-2">*</span><span class="ident">key</span>, <span class="kw-2">*</span><span class="ident">value</span>)),
-            <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">Box::new</span>(<span class="ident">external::ExternalCodeType::new</span>(<span class="ident">name</span>)),
-            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="ident">Box::new</span>(<span class="ident">custom::CustomCodeType::new</span>(<span class="ident">name</span>)),
-            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
+            Type::Optional(inner) =&gt; Box::new(compounds::OptionalCodeType::new(<span class="kw-2">*</span>inner)),
+            Type::Sequence(inner) =&gt; Box::new(compounds::SequenceCodeType::new(<span class="kw-2">*</span>inner)),
+            Type::Map(key, value) =&gt; Box::new(compounds::MapCodeType::new(<span class="kw-2">*</span>key, <span class="kw-2">*</span>value)),
+            Type::External { name, .. } =&gt; Box::new(external::ExternalCodeType::new(name)),
+            Type::Custom { name, .. } =&gt; Box::new(custom::CustomCodeType::new(name)),
+            Type::Unresolved { name } =&gt; {
                 <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before calling create_code_type&quot;</span>)
             }
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">CodeOracle</span> <span class="kw">for</span> <span class="ident">KotlinCodeOracle</span> {
-    <span class="kw">fn</span> <span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">TypeIdentifier</span>) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">CodeType</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">create_code_type</span>(<span class="ident">type_</span>.<span class="ident">clone</span>())
+<span class="kw">impl </span>CodeOracle <span class="kw">for </span>KotlinCodeOracle {
+    <span class="kw">fn </span>find(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>TypeIdentifier) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        <span class="self">self</span>.create_code_type(type_.clone())
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).</span>
-    <span class="kw">fn</span> <span class="ident">class_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_upper_camel_case</span>()
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
+    </span><span class="kw">fn </span>class_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        nm.to_string().to_upper_camel_case()
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.</span>
-    <span class="kw">fn</span> <span class="ident">fn_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_lower_camel_case</span>())
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.
+    </span><span class="kw">fn </span>fn_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, nm.to_string().to_lower_camel_case())
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a variable name.</span>
-    <span class="kw">fn</span> <span class="ident">var_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_lower_camel_case</span>())
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a variable name.
+    </span><span class="kw">fn </span>var_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, nm.to_string().to_lower_camel_case())
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an individual enum variant.</span>
-    <span class="kw">fn</span> <span class="ident">enum_variant_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_shouty_snake_case</span>()
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an individual enum variant.
+    </span><span class="kw">fn </span>enum_variant_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        nm.to_string().to_shouty_snake_case()
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an exception name</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.  Rust code typically uses</span>
-    <span class="doccomment">/// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error</span>
-    <span class="doccomment">/// and is distinguished from an &quot;Exception&quot;.</span>
-    <span class="kw">fn</span> <span class="ident">error_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="comment">// errors are a class in kotlin.</span>
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">class_name</span>(<span class="ident">nm</span>);
-        <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">strip_suffix</span>(<span class="string">&quot;Error&quot;</span>) {
-            <span class="prelude-val">None</span> =&gt; <span class="ident">name</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">stripped</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{stripped}Exception&quot;</span>),
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an exception name
+    ///
+    /// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.  Rust code typically uses
+    /// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error
+    /// and is distinguished from an &quot;Exception&quot;.
+    </span><span class="kw">fn </span>error_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="comment">// errors are a class in kotlin.
+        </span><span class="kw">let </span>name = <span class="self">self</span>.class_name(nm);
+        <span class="kw">match </span>name.strip_suffix(<span class="string">&quot;Error&quot;</span>) {
+            <span class="prelude-val">None </span>=&gt; name,
+            <span class="prelude-val">Some</span>(stripped) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{stripped}Exception&quot;</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">ffi_type_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ffi_type</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">match</span> <span class="ident">ffi_type</span> {
-            <span class="comment">// Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not</span>
-            <span class="comment">// support them yet. Thus, we use the signed variants to represent both signed and unsigned</span>
-            <span class="comment">// types from the component API.</span>
-            <span class="ident">FfiType::Int8</span> <span class="op">|</span> <span class="ident">FfiType::UInt8</span> =&gt; <span class="string">&quot;Byte&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FfiType::Int16</span> <span class="op">|</span> <span class="ident">FfiType::UInt16</span> =&gt; <span class="string">&quot;Short&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FfiType::Int32</span> <span class="op">|</span> <span class="ident">FfiType::UInt32</span> =&gt; <span class="string">&quot;Int&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FfiType::Int64</span> <span class="op">|</span> <span class="ident">FfiType::UInt64</span> =&gt; <span class="string">&quot;Long&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FfiType::Float32</span> =&gt; <span class="string">&quot;Float&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FfiType::Float64</span> =&gt; <span class="string">&quot;Double&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FfiType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FfiType::RustBuffer</span> =&gt; <span class="string">&quot;RustBuffer.ByValue&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FfiType::ForeignBytes</span> =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">FfiType::ForeignCallback</span> =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.<span class="ident">to_string</span>(),
+    <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
+        <span class="kw">match </span>ffi_type {
+            <span class="comment">// Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
+            // support them yet. Thus, we use the signed variants to represent both signed and unsigned
+            // types from the component API.
+            </span>FfiType::Int8 | FfiType::UInt8 =&gt; <span class="string">&quot;Byte&quot;</span>.to_string(),
+            FfiType::Int16 | FfiType::UInt16 =&gt; <span class="string">&quot;Short&quot;</span>.to_string(),
+            FfiType::Int32 | FfiType::UInt32 =&gt; <span class="string">&quot;Int&quot;</span>.to_string(),
+            FfiType::Int64 | FfiType::UInt64 =&gt; <span class="string">&quot;Long&quot;</span>.to_string(),
+            FfiType::Float32 =&gt; <span class="string">&quot;Float&quot;</span>.to_string(),
+            FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.to_string(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer&quot;</span>.to_string(),
+            FfiType::RustBuffer =&gt; <span class="string">&quot;RustBuffer.ByValue&quot;</span>.to_string(),
+            FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.to_string(),
+            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.to_string(),
         }
     }
 }
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">filters</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="kw">pub mod </span>filters {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn</span> <span class="ident">oracle</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">KotlinCodeOracle</span> {
-        <span class="kw-2">&amp;</span><span class="ident">KotlinCodeOracle</span>
+    <span class="kw">fn </span>oracle() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>KotlinCodeOracle {
+        <span class="kw-2">&amp;</span>KotlinCodeOracle
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">type_label</span>(<span class="ident">oracle</span>()))
+    <span class="kw">pub fn </span>type_name(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(codetype.type_label(oracle()))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">canonical_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">canonical_name</span>(<span class="ident">oracle</span>()))
+    <span class="kw">pub fn </span>canonical_name(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(codetype.canonical_name(oracle()))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>()))
+    <span class="kw">pub fn </span>ffi_converter_name(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(codetype.ffi_converter_name(oracle()))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lower_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
+    <span class="kw">pub fn </span>lower_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, codetype.ffi_converter_name(oracle())))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allocation_size_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub fn </span>allocation_size_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
             <span class="string">&quot;{}.allocationSize&quot;</span>,
-            <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())
+            codetype.ffi_converter_name(oracle())
         ))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
+    <span class="kw">pub fn </span>write_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, codetype.ffi_converter_name(oracle())))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lift_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
+    <span class="kw">pub fn </span>lift_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, codetype.ffi_converter_name(oracle())))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_fn</span>(<span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, <span class="ident">codetype</span>.<span class="ident">ffi_converter_name</span>(<span class="ident">oracle</span>())))
+    <span class="kw">pub fn </span>read_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, codetype.ffi_converter_name(oracle())))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">render_literal</span>(
-        <span class="ident">literal</span>: <span class="kw-2">&amp;</span><span class="ident">Literal</span>,
-        <span class="ident">codetype</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">CodeType</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">codetype</span>.<span class="ident">literal</span>(<span class="ident">oracle</span>(), <span class="ident">literal</span>))
+    <span class="kw">pub fn </span>render_literal(
+        literal: <span class="kw-2">&amp;</span>Literal,
+        codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(codetype.literal(oracle(), literal))
     }
 
-    <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FfiType`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_type_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">ffi_type_label</span>(<span class="ident">type_</span>))
+    <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FfiType`.
+    </span><span class="kw">pub fn </span>ffi_type_name(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().ffi_type_label(type_))
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">class_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">class_name</span>(<span class="ident">nm</span>))
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
+    </span><span class="kw">pub fn </span>class_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().class_name(nm))
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fn_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">fn_name</span>(<span class="ident">nm</span>))
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.
+    </span><span class="kw">pub fn </span>fn_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().fn_name(nm))
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a variable name.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">var_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">var_name</span>(<span class="ident">nm</span>))
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a variable name.
+    </span><span class="kw">pub fn </span>var_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().var_name(nm))
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an individual enum variant.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enum_variant</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">enum_variant_name</span>(<span class="ident">nm</span>))
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an individual enum variant.
+    </span><span class="kw">pub fn </span>enum_variant(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().enum_variant_name(nm))
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an exception name, replacing</span>
-    <span class="doccomment">/// `Error` with `Exception`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exception_name</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">oracle</span>().<span class="ident">error_name</span>(<span class="ident">nm</span>))
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an exception name, replacing
+    /// `Error` with `Exception`.
+    </span><span class="kw">pub fn </span>exception_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().error_name(nm))
     }
 
-    <span class="doccomment">/// Remove the &quot;`&quot; chars we put around function/variable names</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// These are used to avoid name clashes with kotlin identifiers, but sometimes you want to</span>
-    <span class="doccomment">/// render the name unquoted.  One example is the message property for errors where we want to</span>
-    <span class="doccomment">/// display the name for the user.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unquote</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">trim_matches</span>(<span class="string">&#39;`&#39;</span>).<span class="ident">to_string</span>())
+    <span class="doccomment">/// Remove the &quot;`&quot; chars we put around function/variable names
+    ///
+    /// These are used to avoid name clashes with kotlin identifiers, but sometimes you want to
+    /// render the name unquoted.  One example is the message property for errors where we want to
+    /// display the name for the user.
+    </span><span class="kw">pub fn </span>unquote(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(nm.trim_matches(<span class="string">&#39;`&#39;</span>).to_string())
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

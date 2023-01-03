@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/export.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>export.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/export.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>export.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -216,214 +210,213 @@
 <span id="210">210</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="kw">use</span> <span class="ident">std::collections::BTreeMap</span>;
+</span><span class="kw">use </span>std::collections::BTreeMap;
 
-<span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>, <span class="ident">quote_spanned</span>};
-<span class="kw">use</span> <span class="ident">uniffi_meta</span>::{<span class="ident">checksum</span>, <span class="ident">FnMetadata</span>, <span class="ident">MethodMetadata</span>, <span class="ident">Type</span>};
+<span class="kw">use </span>proc_macro2::{Ident, TokenStream};
+<span class="kw">use </span>quote::{format_ident, quote, quote_spanned};
+<span class="kw">use </span>uniffi_meta::{checksum, FnMetadata, MethodMetadata, Type};
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">metadata</span>;
-<span class="kw">mod</span> <span class="ident">scaffolding</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>metadata;
+<span class="kw">mod </span>scaffolding;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::metadata::gen_metadata</span>;
-<span class="kw">use</span> <span class="self">self</span>::{
-    <span class="ident">metadata::convert</span>::{<span class="ident">convert_type</span>, <span class="ident">try_split_result</span>},
-    <span class="ident">scaffolding</span>::{<span class="ident">gen_fn_scaffolding</span>, <span class="ident">gen_method_scaffolding</span>},
+<span class="kw">pub use </span><span class="self">self</span>::metadata::gen_metadata;
+<span class="kw">use </span><span class="self">self</span>::{
+    metadata::convert::{convert_type, try_split_result},
+    scaffolding::{gen_fn_scaffolding, gen_method_scaffolding},
 };
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::{<span class="ident">assert_type_eq</span>, <span class="ident">create_metadata_static_var</span>};
+<span class="kw">use </span><span class="kw">crate</span>::util::{assert_type_eq, create_metadata_static_var};
 
-<span class="comment">// TODO(jplatte): Ensure no generics, no async, …</span>
-<span class="comment">// TODO(jplatte): Aggregate errors instead of short-circuiting, wherever possible</span>
+<span class="comment">// TODO(jplatte): Ensure no generics, no async, …
+// TODO(jplatte): Aggregate errors instead of short-circuiting, wherever possible
 
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ExportItem</span> {
-    <span class="ident">Function</span> {
-        <span class="ident">sig</span>: <span class="ident">Signature</span>,
-        <span class="ident">metadata</span>: <span class="ident">FnMetadata</span>,
+</span><span class="kw">pub enum </span>ExportItem {
+    Function {
+        sig: Signature,
+        metadata: FnMetadata,
     },
-    <span class="ident">Impl</span> {
-        <span class="ident">self_ident</span>: <span class="ident">Ident</span>,
-        <span class="ident">methods</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Method</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    Impl {
+        self_ident: Ident,
+        methods: Vec&lt;syn::Result&lt;Method&gt;&gt;,
     },
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Method</span> {
-    <span class="ident">sig</span>: <span class="ident">Signature</span>,
-    <span class="ident">metadata</span>: <span class="ident">MethodMetadata</span>,
+<span class="kw">pub struct </span>Method {
+    sig: Signature,
+    metadata: MethodMetadata,
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Signature</span> {
-    <span class="ident">ident</span>: <span class="ident">Ident</span>,
-    <span class="ident">inputs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">syn::FnArg</span><span class="op">&gt;</span>,
-    <span class="ident">output</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FunctionReturn</span><span class="op">&gt;</span>,
+<span class="kw">pub struct </span>Signature {
+    ident: Ident,
+    inputs: Vec&lt;syn::FnArg&gt;,
+    output: <span class="prelude-ty">Option</span>&lt;FunctionReturn&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Signature</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">item</span>: <span class="ident">syn::Signature</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">item</span>.<span class="ident">output</span> {
-            <span class="ident">syn::ReturnType::Default</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="ident">syn::ReturnType::Type</span>(<span class="kw">_</span>, <span class="ident">ty</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">FunctionReturn::new</span>(<span class="ident">ty</span>)<span class="question-mark">?</span>),
+<span class="kw">impl </span>Signature {
+    <span class="kw">fn </span>new(item: syn::Signature) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>output = <span class="kw">match </span>item.output {
+            syn::ReturnType::Default =&gt; <span class="prelude-val">None</span>,
+            syn::ReturnType::Type(<span class="kw">_</span>, ty) =&gt; <span class="prelude-val">Some</span>(FunctionReturn::new(ty)<span class="question-mark">?</span>),
         };
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
-            <span class="ident">ident</span>: <span class="ident">item</span>.<span class="ident">ident</span>,
-            <span class="ident">inputs</span>: <span class="ident">item</span>.<span class="ident">inputs</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
-            <span class="ident">output</span>,
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            ident: item.ident,
+            inputs: item.inputs.into_iter().collect(),
+            output,
         })
     }
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FunctionReturn</span> {
-    <span class="ident">ty</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">syn::Type</span><span class="op">&gt;</span>,
-    <span class="ident">throws</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Ident</span><span class="op">&gt;</span>,
+<span class="kw">pub struct </span>FunctionReturn {
+    ty: Box&lt;syn::Type&gt;,
+    throws: <span class="prelude-ty">Option</span>&lt;Ident&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">FunctionReturn</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">ty</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">syn::Type</span><span class="op">&gt;</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">try_split_result</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>((<span class="ident">ok_type</span>, <span class="ident">throws</span>)) =&gt; <span class="ident">FunctionReturn</span> {
-                <span class="ident">ty</span>: <span class="ident">Box::new</span>(<span class="ident">ok_type</span>.<span class="ident">to_owned</span>()),
-                <span class="ident">throws</span>: <span class="prelude-val">Some</span>(<span class="ident">throws</span>),
+<span class="kw">impl </span>FunctionReturn {
+    <span class="kw">fn </span>new(ty: Box&lt;syn::Type&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>try_split_result(<span class="kw-2">&amp;</span>ty)<span class="question-mark">? </span>{
+            <span class="prelude-val">Some</span>((ok_type, throws)) =&gt; FunctionReturn {
+                ty: Box::new(ok_type.to_owned()),
+                throws: <span class="prelude-val">Some</span>(throws),
             },
-            <span class="prelude-val">None</span> =&gt; <span class="ident">FunctionReturn</span> { <span class="ident">ty</span>, <span class="ident">throws</span>: <span class="prelude-val">None</span> },
+            <span class="prelude-val">None </span>=&gt; FunctionReturn { ty, throws: <span class="prelude-val">None </span>},
         })
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">expand_export</span>(<span class="ident">metadata</span>: <span class="ident">ExportItem</span>, <span class="ident">mod_path</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>]) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">match</span> <span class="ident">metadata</span> {
-        <span class="ident">ExportItem::Function</span> { <span class="ident">sig</span>, <span class="ident">metadata</span> } =&gt; {
-            <span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="ident">checksum</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>);
-            <span class="kw">let</span> <span class="ident">scaffolding</span> <span class="op">=</span> <span class="ident">gen_fn_scaffolding</span>(<span class="kw-2">&amp;</span><span class="ident">sig</span>, <span class="ident">mod_path</span>, <span class="ident">checksum</span>);
-            <span class="kw">let</span> <span class="ident">type_assertions</span> <span class="op">=</span> <span class="ident">fn_type_assertions</span>(<span class="kw-2">&amp;</span><span class="ident">sig</span>);
-            <span class="kw">let</span> <span class="ident">meta_static_var</span> <span class="op">=</span> <span class="ident">create_metadata_static_var</span>(<span class="kw-2">&amp;</span><span class="ident">sig</span>.<span class="ident">ident</span>, <span class="ident">metadata</span>.<span class="ident">into</span>());
+<span class="kw">pub fn </span>expand_export(metadata: ExportItem, mod_path: <span class="kw-2">&amp;</span>[String]) -&gt; TokenStream {
+    <span class="kw">match </span>metadata {
+        ExportItem::Function { sig, metadata } =&gt; {
+            <span class="kw">let </span>checksum = checksum(<span class="kw-2">&amp;</span>metadata);
+            <span class="kw">let </span>scaffolding = gen_fn_scaffolding(<span class="kw-2">&amp;</span>sig, mod_path, checksum);
+            <span class="kw">let </span>type_assertions = fn_type_assertions(<span class="kw-2">&amp;</span>sig);
+            <span class="kw">let </span>meta_static_var = create_metadata_static_var(<span class="kw-2">&amp;</span>sig.ident, metadata.into());
 
-            <span class="macro">quote!</span> {
-                #<span class="ident">scaffolding</span>
-                #<span class="ident">type_assertions</span>
-                #<span class="ident">meta_static_var</span>
+            <span class="macro">quote! </span>{
+                #scaffolding
+                #type_assertions
+                #meta_static_var
             }
         }
-        <span class="ident">ExportItem::Impl</span> {
-            <span class="ident">methods</span>,
-            <span class="ident">self_ident</span>,
+        ExportItem::Impl {
+            methods,
+            self_ident,
         } =&gt; {
-            <span class="kw">let</span> <span class="ident">method_tokens</span>: <span class="ident">TokenStream</span> <span class="op">=</span> <span class="ident">methods</span>
-                .<span class="ident">into_iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">res</span><span class="op">|</span> {
-                    <span class="ident">res</span>.<span class="ident">map_or_else</span>(
-                        <span class="ident">syn::Error::into_compile_error</span>,
-                        <span class="op">|</span><span class="ident">Method</span> { <span class="ident">sig</span>, <span class="ident">metadata</span> }<span class="op">|</span> {
-                            <span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="ident">checksum</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>);
-                            <span class="kw">let</span> <span class="ident">scaffolding</span> <span class="op">=</span>
-                                <span class="ident">gen_method_scaffolding</span>(<span class="kw-2">&amp;</span><span class="ident">sig</span>, <span class="ident">mod_path</span>, <span class="ident">checksum</span>, <span class="kw-2">&amp;</span><span class="ident">self_ident</span>);
-                            <span class="kw">let</span> <span class="ident">type_assertions</span> <span class="op">=</span> <span class="ident">fn_type_assertions</span>(<span class="kw-2">&amp;</span><span class="ident">sig</span>);
-                            <span class="kw">let</span> <span class="ident">meta_static_var</span> <span class="op">=</span> <span class="ident">create_metadata_static_var</span>(
-                                <span class="kw-2">&amp;</span><span class="macro">format_ident!</span>(<span class="string">&quot;{}_{}&quot;</span>, <span class="ident">metadata</span>.<span class="ident">self_name</span>, <span class="ident">sig</span>.<span class="ident">ident</span>),
-                                <span class="ident">metadata</span>.<span class="ident">into</span>(),
+            <span class="kw">let </span>method_tokens: TokenStream = methods
+                .into_iter()
+                .map(|res| {
+                    res.map_or_else(
+                        syn::Error::into_compile_error,
+                        |Method { sig, metadata }| {
+                            <span class="kw">let </span>checksum = checksum(<span class="kw-2">&amp;</span>metadata);
+                            <span class="kw">let </span>scaffolding =
+                                gen_method_scaffolding(<span class="kw-2">&amp;</span>sig, mod_path, checksum, <span class="kw-2">&amp;</span>self_ident);
+                            <span class="kw">let </span>type_assertions = fn_type_assertions(<span class="kw-2">&amp;</span>sig);
+                            <span class="kw">let </span>meta_static_var = create_metadata_static_var(
+                                <span class="kw-2">&amp;</span><span class="macro">format_ident!</span>(<span class="string">&quot;{}_{}&quot;</span>, metadata.self_name, sig.ident),
+                                metadata.into(),
                             );
 
-                            <span class="macro">quote!</span> {
-                                #<span class="ident">scaffolding</span>
-                                #<span class="ident">type_assertions</span>
-                                #<span class="ident">meta_static_var</span>
+                            <span class="macro">quote! </span>{
+                                #scaffolding
+                                #type_assertions
+                                #meta_static_var
                             }
                         },
                     )
                 })
-                .<span class="ident">collect</span>();
+                .collect();
 
-            <span class="macro">quote_spanned!</span> {<span class="ident">self_ident</span>.<span class="ident">span</span>()=&gt;
+            <span class="macro">quote_spanned! </span>{self_ident.span()=&gt;
                 <span class="macro">::uniffi::deps::static_assertions::assert_type_eq_all!</span>(
-                    #<span class="ident">self_ident</span>,
-                    <span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">self_ident</span>
+                    #self_ident,
+                    <span class="kw">crate</span>::uniffi_types::#self_ident
                 );
 
-                #<span class="ident">method_tokens</span>
+                #method_tokens
             }
         }
     }
 }
 
-<span class="kw">fn</span> <span class="ident">fn_type_assertions</span>(<span class="ident">sig</span>: <span class="kw-2">&amp;</span><span class="ident">Signature</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="comment">// Convert uniffi_meta::Type back to a Rust type</span>
-    <span class="kw">fn</span> <span class="ident">convert_type_back</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="ident">TokenStream</span> {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">ty</span> {
-            <span class="ident">Type::U8</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::u8</span> },
-            <span class="ident">Type::U16</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::u16</span> },
-            <span class="ident">Type::U32</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::u32</span> },
-            <span class="ident">Type::U64</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::u64</span> },
-            <span class="ident">Type::I8</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::i8</span> },
-            <span class="ident">Type::I16</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::i16</span> },
-            <span class="ident">Type::I32</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::i32</span> },
-            <span class="ident">Type::I64</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::i64</span> },
-            <span class="ident">Type::F32</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::f32</span> },
-            <span class="ident">Type::F64</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::f64</span> },
-            <span class="ident">Type::Bool</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::primitive::bool</span> },
-            <span class="ident">Type::String</span> =&gt; <span class="macro">quote!</span> { <span class="ident">::std::string::String</span> },
-            <span class="ident">Type::Option</span> { <span class="ident">inner_type</span> } =&gt; {
-                <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">convert_type_back</span>(<span class="ident">inner_type</span>);
-                <span class="macro">quote!</span> { <span class="ident">::std::option::Option</span><span class="op">&lt;</span>#<span class="ident">inner</span><span class="op">&gt;</span> }
+<span class="kw">fn </span>fn_type_assertions(sig: <span class="kw-2">&amp;</span>Signature) -&gt; TokenStream {
+    <span class="comment">// Convert uniffi_meta::Type back to a Rust type
+    </span><span class="kw">fn </span>convert_type_back(ty: <span class="kw-2">&amp;</span>Type) -&gt; TokenStream {
+        <span class="kw">match </span><span class="kw-2">&amp;</span>ty {
+            Type::U8 =&gt; <span class="macro">quote! </span>{ ::std::primitive::u8 },
+            Type::U16 =&gt; <span class="macro">quote! </span>{ ::std::primitive::u16 },
+            Type::U32 =&gt; <span class="macro">quote! </span>{ ::std::primitive::u32 },
+            Type::U64 =&gt; <span class="macro">quote! </span>{ ::std::primitive::u64 },
+            Type::I8 =&gt; <span class="macro">quote! </span>{ ::std::primitive::i8 },
+            Type::I16 =&gt; <span class="macro">quote! </span>{ ::std::primitive::i16 },
+            Type::I32 =&gt; <span class="macro">quote! </span>{ ::std::primitive::i32 },
+            Type::I64 =&gt; <span class="macro">quote! </span>{ ::std::primitive::i64 },
+            Type::F32 =&gt; <span class="macro">quote! </span>{ ::std::primitive::f32 },
+            Type::F64 =&gt; <span class="macro">quote! </span>{ ::std::primitive::f64 },
+            Type::Bool =&gt; <span class="macro">quote! </span>{ ::std::primitive::bool },
+            Type::String =&gt; <span class="macro">quote! </span>{ ::std::string::String },
+            Type::Option { inner_type } =&gt; {
+                <span class="kw">let </span>inner = convert_type_back(inner_type);
+                <span class="macro">quote! </span>{ ::std::option::Option&lt;#inner&gt; }
             }
-            <span class="ident">Type::Vec</span> { <span class="ident">inner_type</span> } =&gt; {
-                <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">convert_type_back</span>(<span class="ident">inner_type</span>);
-                <span class="macro">quote!</span> { <span class="ident">::std::vec::Vec</span><span class="op">&lt;</span>#<span class="ident">inner</span><span class="op">&gt;</span> }
+            Type::Vec { inner_type } =&gt; {
+                <span class="kw">let </span>inner = convert_type_back(inner_type);
+                <span class="macro">quote! </span>{ ::std::vec::Vec&lt;#inner&gt; }
             }
-            <span class="ident">Type::HashMap</span> {
-                <span class="ident">key_type</span>,
-                <span class="ident">value_type</span>,
+            Type::HashMap {
+                key_type,
+                value_type,
             } =&gt; {
-                <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">convert_type_back</span>(<span class="ident">key_type</span>);
-                <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">convert_type_back</span>(<span class="ident">value_type</span>);
-                <span class="macro">quote!</span> { <span class="ident">::std::collections::HashMap</span><span class="op">&lt;</span>#<span class="ident">key</span>, #<span class="ident">value</span><span class="op">&gt;</span> }
+                <span class="kw">let </span>key = convert_type_back(key_type);
+                <span class="kw">let </span>value = convert_type_back(value_type);
+                <span class="macro">quote! </span>{ ::std::collections::HashMap&lt;#key, #value&gt; }
             }
-            <span class="ident">Type::ArcObject</span> { <span class="ident">object_name</span> } =&gt; {
-                <span class="kw">let</span> <span class="ident">object_ident</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;{object_name}&quot;</span>);
-                <span class="macro">quote!</span> { <span class="ident">::std::sync::Arc</span><span class="op">&lt;</span><span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">object_ident</span><span class="op">&gt;</span> }
+            Type::ArcObject { object_name } =&gt; {
+                <span class="kw">let </span>object_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{object_name}&quot;</span>);
+                <span class="macro">quote! </span>{ ::std::sync::Arc&lt;<span class="kw">crate</span>::uniffi_types::#object_ident&gt; }
             }
-            <span class="ident">Type::Unresolved</span> { <span class="ident">name</span> } =&gt; {
-                <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;{name}&quot;</span>);
-                <span class="macro">quote!</span> { <span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">ident</span> }
+            Type::Unresolved { name } =&gt; {
+                <span class="kw">let </span>ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{name}&quot;</span>);
+                <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident }
             }
         }
     }
 
-    <span class="kw">let</span> <span class="ident">input_types</span> <span class="op">=</span> <span class="ident">sig</span>.<span class="ident">inputs</span>.<span class="ident">iter</span>().<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">input</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">input</span> {
-        <span class="ident">syn::FnArg::Receiver</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
-        <span class="ident">syn::FnArg::Typed</span>(<span class="ident">pat_ty</span>) =&gt; <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">pat_ty</span>.<span class="ident">pat</span> {
-            <span class="comment">// Self type is asserted separately for impl blocks</span>
-            <span class="ident">syn::Pat::Ident</span>(<span class="ident">i</span>) <span class="kw">if</span> <span class="ident">i</span>.<span class="ident">ident</span> <span class="op">==</span> <span class="string">&quot;self&quot;</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="kw">_</span> =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">pat_ty</span>.<span class="ident">ty</span>),
+    <span class="kw">let </span>input_types = sig.inputs.iter().filter_map(|input| <span class="kw">match </span>input {
+        syn::FnArg::Receiver(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
+        syn::FnArg::Typed(pat_ty) =&gt; <span class="kw">match </span><span class="kw-2">&amp;*</span>pat_ty.pat {
+            <span class="comment">// Self type is asserted separately for impl blocks
+            </span>syn::Pat::Ident(i) <span class="kw">if </span>i.ident == <span class="string">&quot;self&quot; </span>=&gt; <span class="prelude-val">None</span>,
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>pat_ty.ty),
         },
     });
-    <span class="kw">let</span> <span class="ident">output_type</span> <span class="op">=</span> <span class="ident">sig</span>.<span class="ident">output</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">ty</span>);
+    <span class="kw">let </span>output_type = sig.output.as_ref().map(|s| <span class="kw-2">&amp;</span>s.ty);
 
-    <span class="kw">let</span> <span class="ident">type_assertions</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input_types</span>
-        .<span class="ident">chain</span>(<span class="ident">output_type</span>)
-        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">ty</span><span class="op">|</span> {
-            <span class="ident">convert_type</span>(<span class="ident">ty</span>).<span class="ident">ok</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">meta_ty</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">expected_ty</span> <span class="op">=</span> <span class="ident">convert_type_back</span>(<span class="kw-2">&amp;</span><span class="ident">meta_ty</span>);
-                <span class="kw">let</span> <span class="ident">assert</span> <span class="op">=</span> <span class="ident">assert_type_eq</span>(<span class="ident">ty</span>, <span class="ident">expected_ty</span>);
-                (<span class="ident">meta_ty</span>, <span class="ident">assert</span>)
+    <span class="kw">let </span>type_assertions: BTreeMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt; = input_types
+        .chain(output_type)
+        .filter_map(|ty| {
+            convert_type(ty).ok().map(|meta_ty| {
+                <span class="kw">let </span>expected_ty = convert_type_back(<span class="kw-2">&amp;</span>meta_ty);
+                <span class="kw">let </span>assert = assert_type_eq(ty, expected_ty);
+                (meta_ty, assert)
             })
         })
-        .<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="ident">input_output_type_assertions</span>: <span class="ident">TokenStream</span> <span class="op">=</span> <span class="ident">type_assertions</span>.<span class="ident">into_values</span>().<span class="ident">collect</span>();
+        .collect();
+    <span class="kw">let </span>input_output_type_assertions: TokenStream = type_assertions.into_values().collect();
 
-    <span class="kw">let</span> <span class="ident">throws_type_assertion</span> <span class="op">=</span> <span class="ident">sig</span>.<span class="ident">output</span>.<span class="ident">as_ref</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">throws</span>.<span class="ident">as_ref</span>()<span class="question-mark">?</span>;
-        <span class="prelude-val">Some</span>(<span class="ident">assert_type_eq</span>(
-            <span class="ident">ident</span>,
-            <span class="macro">quote!</span> { <span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">ident</span> },
+    <span class="kw">let </span>throws_type_assertion = sig.output.as_ref().and_then(|s| {
+        <span class="kw">let </span>ident = s.throws.as_ref()<span class="question-mark">?</span>;
+        <span class="prelude-val">Some</span>(assert_type_eq(
+            ident,
+            <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident },
         ))
     });
 
-    <span class="macro">quote!</span> {
-        #<span class="ident">input_output_type_assertions</span>
-        #<span class="ident">throws_type_assertion</span>
+    <span class="macro">quote! </span>{
+        #input_output_type_assertions
+        #throws_type_assertion
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

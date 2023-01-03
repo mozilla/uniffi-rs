@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -174,176 +168,175 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">Span</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">quote::quote</span>;
-<span class="kw">use</span> <span class="ident">syn</span>::{
-    <span class="ident">parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseStream</span>},
-    <span class="ident">punctuated::Punctuated</span>,
-    <span class="ident">Data</span>, <span class="ident">DeriveInput</span>, <span class="ident">Index</span>, <span class="ident">Token</span>, <span class="ident">Variant</span>,
+</pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
+<span class="kw">use </span>quote::quote;
+<span class="kw">use </span>syn::{
+    parse::{Parse, ParseStream},
+    punctuated::Punctuated,
+    Data, DeriveInput, Index, Token, Variant,
 };
-<span class="kw">use</span> <span class="ident">uniffi_meta</span>::{<span class="ident">ErrorMetadata</span>, <span class="ident">VariantMetadata</span>};
+<span class="kw">use </span>uniffi_meta::{ErrorMetadata, VariantMetadata};
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">enum_</span>::{<span class="ident">enum_ffi_converter_impl</span>, <span class="ident">variant_metadata</span>},
-    <span class="ident">util</span>::{
-        <span class="ident">assert_type_eq</span>, <span class="ident">chain</span>, <span class="ident">create_metadata_static_var</span>, <span class="ident">either_attribute_arg</span>, <span class="ident">AttributeSliceExt</span>,
-        <span class="ident">UniffiAttribute</span>,
+<span class="kw">use crate</span>::{
+    enum_::{enum_ffi_converter_impl, variant_metadata},
+    util::{
+        assert_type_eq, chain, create_metadata_static_var, either_attribute_arg, AttributeSliceExt,
+        UniffiAttribute,
     },
 };
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">expand_error</span>(<span class="ident">input</span>: <span class="ident">DeriveInput</span>, <span class="ident">module_path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">variants</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">input</span>.<span class="ident">data</span> {
-        <span class="ident">Data::Enum</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">e</span>.<span class="ident">variants</span>),
-        <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new</span>(
-            <span class="ident">Span::call_site</span>(),
+<span class="kw">pub fn </span>expand_error(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; TokenStream {
+    <span class="kw">let </span>variants = <span class="kw">match </span>input.data {
+        Data::Enum(e) =&gt; <span class="prelude-val">Ok</span>(e.variants),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new(
+            Span::call_site(),
             <span class="string">&quot;This derive currently only supports enums&quot;</span>,
         )),
     };
 
-    <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">attrs</span>.<span class="ident">parse_uniffi_attributes</span>::<span class="op">&lt;</span><span class="ident">ErrorAttr</span><span class="op">&gt;</span>();
-    <span class="kw">let</span> <span class="ident">ffi_converter_impl</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">attr</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">a</span>) <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">flat</span>.<span class="ident">is_some</span>() =&gt; <span class="ident">flat_error_ffi_converter_impl</span>(<span class="ident">variants</span>.<span class="ident">as_ref</span>().<span class="ident">ok</span>(), <span class="ident">ident</span>),
-        <span class="kw">_</span> =&gt; <span class="ident">enum_ffi_converter_impl</span>(<span class="ident">variants</span>.<span class="ident">as_ref</span>().<span class="ident">ok</span>(), <span class="ident">ident</span>),
+    <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
+    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;ErrorAttr&gt;();
+    <span class="kw">let </span>ffi_converter_impl = <span class="kw">match </span><span class="kw-2">&amp;</span>attr {
+        <span class="prelude-val">Ok</span>(a) <span class="kw">if </span>a.flat.is_some() =&gt; flat_error_ffi_converter_impl(variants.as_ref().ok(), ident),
+        <span class="kw">_ </span>=&gt; enum_ffi_converter_impl(variants.as_ref().ok(), ident),
     };
 
-    <span class="kw">let</span> <span class="ident">meta_static_var</span> <span class="op">=</span> <span class="kw">match</span> (<span class="kw-2">&amp;</span><span class="ident">variants</span>, <span class="kw-2">&amp;</span><span class="ident">attr</span>) {
-        (<span class="prelude-val">Ok</span>(<span class="ident">vs</span>), <span class="prelude-val">Ok</span>(<span class="ident">a</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">error_metadata</span>(<span class="ident">ident</span>, <span class="ident">vs</span>, <span class="ident">module_path</span>, <span class="ident">a</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">metadata</span>) =&gt; <span class="ident">create_metadata_static_var</span>(<span class="ident">ident</span>, <span class="ident">metadata</span>.<span class="ident">into</span>()),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="ident">e</span>.<span class="ident">into_compile_error</span>(),
+    <span class="kw">let </span>meta_static_var = <span class="kw">match </span>(<span class="kw-2">&amp;</span>variants, <span class="kw-2">&amp;</span>attr) {
+        (<span class="prelude-val">Ok</span>(vs), <span class="prelude-val">Ok</span>(a)) =&gt; <span class="prelude-val">Some</span>(<span class="kw">match </span>error_metadata(ident, vs, module_path, a) {
+            <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
+            <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
         }),
-        <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     };
 
-    <span class="kw">let</span> <span class="ident">type_assertion</span> <span class="op">=</span> <span class="ident">assert_type_eq</span>(<span class="ident">ident</span>, <span class="macro">quote!</span> { <span class="ident"><span class="kw">crate</span>::uniffi_types</span>::#<span class="ident">ident</span> });
-    <span class="kw">let</span> <span class="ident">variant_errors</span>: <span class="ident">TokenStream</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">variants</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">vs</span>) =&gt; <span class="ident">vs</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">variant</span><span class="op">|</span> {
-                <span class="ident">chain</span>(
-                    <span class="ident">variant</span>.<span class="ident">attrs</span>.<span class="ident">attributes_not_allowed_here</span>(),
-                    <span class="ident">variant</span>
-                        .<span class="ident">fields</span>
-                        .<span class="ident">iter</span>()
-                        .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">field</span><span class="op">|</span> <span class="ident">field</span>.<span class="ident">attrs</span>.<span class="ident">attributes_not_allowed_here</span>()),
+    <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
+    <span class="kw">let </span>variant_errors: TokenStream = <span class="kw">match </span>variants {
+        <span class="prelude-val">Ok</span>(vs) =&gt; vs
+            .iter()
+            .flat_map(|variant| {
+                chain(
+                    variant.attrs.attributes_not_allowed_here(),
+                    variant
+                        .fields
+                        .iter()
+                        .flat_map(|field| field.attrs.attributes_not_allowed_here()),
                 )
             })
-            .<span class="ident">map</span>(<span class="ident">syn::Error::into_compile_error</span>)
-            .<span class="ident">collect</span>(),
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="ident">e</span>.<span class="ident">into_compile_error</span>(),
+            .map(syn::Error::into_compile_error)
+            .collect(),
+        <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
     };
-    <span class="kw">let</span> <span class="ident">attr_error</span> <span class="op">=</span> <span class="ident">attr</span>.<span class="ident">err</span>().<span class="ident">map</span>(<span class="ident">syn::Error::into_compile_error</span>);
+    <span class="kw">let </span>attr_error = attr.err().map(syn::Error::into_compile_error);
 
-    <span class="macro">quote!</span> {
-        #<span class="ident">ffi_converter_impl</span>
+    <span class="macro">quote! </span>{
+        #ffi_converter_impl
 
-        <span class="attribute">#[<span class="ident">automatically_derived</span>]</span>
-        <span class="kw">impl</span> <span class="ident">::uniffi::FfiError</span> <span class="kw">for</span> #<span class="ident">ident</span> {}
+        <span class="attribute">#[automatically_derived]
+        </span><span class="kw">impl </span>::uniffi::FfiError <span class="kw">for </span>#ident {}
 
-        #<span class="ident">meta_static_var</span>
-        #<span class="ident">type_assertion</span>
-        #<span class="ident">variant_errors</span>
-        #<span class="ident">attr_error</span>
+        #meta_static_var
+        #type_assertion
+        #variant_errors
+        #attr_error
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">flat_error_ffi_converter_impl</span>(
-    <span class="ident">variants</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">Variant</span>, <span class="macro">Token!</span>[,]<span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>,
-) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">write_impl</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">variants</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">variants</span>) =&gt; {
-            <span class="kw">let</span> <span class="ident">write_match_arms</span> <span class="op">=</span> <span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">v</span>)<span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">v_ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">v</span>.<span class="ident">ident</span>;
-                <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">Index::from</span>(<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>flat_error_ffi_converter_impl(
+    variants: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Punctuated&lt;Variant, <span class="macro">Token!</span>[,]&gt;&gt;,
+    ident: <span class="kw-2">&amp;</span>Ident,
+) -&gt; TokenStream {
+    <span class="kw">let </span>write_impl = <span class="kw">match </span>variants {
+        <span class="prelude-val">Some</span>(variants) =&gt; {
+            <span class="kw">let </span>write_match_arms = variants.iter().enumerate().map(|(i, v)| {
+                <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
+                <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
 
-                <span class="macro">quote!</span> {
-                    <span class="self">Self</span>::#<span class="ident">v_ident</span> { .. } =&gt; {
-                        <span class="ident">::uniffi::deps::bytes::BufMut::put_i32</span>(<span class="ident">buf</span>, #<span class="ident">idx</span>);
-                        <span class="op">&lt;</span><span class="ident">::std::string::String</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::write</span>(<span class="ident">error_msg</span>, <span class="ident">buf</span>);
+                <span class="macro">quote! </span>{
+                    <span class="self">Self</span>::#v_ident { .. } =&gt; {
+                        ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
+                        &lt;::std::string::String <span class="kw">as </span>::uniffi::FfiConverter&gt;::write(error_msg, buf);
                     }
                 }
             });
-            <span class="kw">let</span> <span class="ident">write_impl</span> <span class="op">=</span> <span class="macro">quote!</span> {
-                <span class="kw">let</span> <span class="ident">error_msg</span> <span class="op">=</span> <span class="ident">::std::string::ToString::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">obj</span>);
-                <span class="kw">match</span> <span class="ident">obj</span> { #(#<span class="ident">write_match_arms</span>)<span class="op">*</span> }
+            <span class="kw">let </span>write_impl = <span class="macro">quote! </span>{
+                <span class="kw">let </span>error_msg = ::std::string::ToString::to_string(<span class="kw-2">&amp;</span>obj);
+                <span class="kw">match </span>obj { #(#write_match_arms)* }
             };
 
-            <span class="ident">write_impl</span>
+            write_impl
         }
-        <span class="prelude-val">None</span> =&gt; <span class="macro">quote!</span> { <span class="macro">::std::unimplemented!</span>() },
+        <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ <span class="macro">::std::unimplemented!</span>() },
     };
 
-    <span class="macro">quote!</span> {
-        <span class="attribute">#[<span class="ident">automatically_derived</span>]</span>
-        <span class="kw">impl</span> <span class="ident">::uniffi::RustBufferFfiConverter</span> <span class="kw">for</span> #<span class="ident">ident</span> {
-            <span class="kw">type</span> <span class="ident">RustType</span> <span class="op">=</span> <span class="self">Self</span>;
+    <span class="macro">quote! </span>{
+        <span class="attribute">#[automatically_derived]
+        </span><span class="kw">impl </span>::uniffi::RustBufferFfiConverter <span class="kw">for </span>#ident {
+            <span class="kw">type </span>RustType = <span class="self">Self</span>;
 
-            <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">obj</span>: <span class="self">Self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">::std::vec::Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
-                #<span class="ident">write_impl</span>
+            <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
+                #write_impl
             }
 
-            <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="kw-2">&amp;</span>[<span class="ident">::std::primitive::u8</span>]) -&gt; <span class="ident">::uniffi::deps::anyhow::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+            <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[::std::primitive::u8]) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
                 <span class="macro">::std::panic!</span>(<span class="string">&quot;try_read not supported for flat errors&quot;</span>);
             }
         }
     }
 }
 
-<span class="kw">fn</span> <span class="ident">error_metadata</span>(
-    <span class="ident">ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>,
-    <span class="ident">variants</span>: <span class="kw-2">&amp;</span><span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">Variant</span>, <span class="macro">Token!</span>[,]<span class="op">&gt;</span>,
-    <span class="ident">module_path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="ident">attr</span>: <span class="kw-2">&amp;</span><span class="ident">ErrorAttr</span>,
-) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">ErrorMetadata</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">ident</span>.<span class="ident">to_string</span>();
-    <span class="kw">let</span> <span class="ident">flat</span> <span class="op">=</span> <span class="ident">attr</span>.<span class="ident">flat</span>.<span class="ident">is_some</span>();
-    <span class="kw">let</span> <span class="ident">variants</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">flat</span> {
-        <span class="ident">variants</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">VariantMetadata</span> {
-                <span class="ident">name</span>: <span class="ident">v</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>(),
-                <span class="ident">fields</span>: <span class="macro">vec!</span>[],
+<span class="kw">fn </span>error_metadata(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    variants: <span class="kw-2">&amp;</span>Punctuated&lt;Variant, <span class="macro">Token!</span>[,]&gt;,
+    module_path: Vec&lt;String&gt;,
+    attr: <span class="kw-2">&amp;</span>ErrorAttr,
+) -&gt; syn::Result&lt;ErrorMetadata&gt; {
+    <span class="kw">let </span>name = ident.to_string();
+    <span class="kw">let </span>flat = attr.flat.is_some();
+    <span class="kw">let </span>variants = <span class="kw">if </span>flat {
+        variants
+            .iter()
+            .map(|v| VariantMetadata {
+                name: v.ident.to_string(),
+                fields: <span class="macro">vec!</span>[],
             })
-            .<span class="ident">collect</span>()
-    } <span class="kw">else</span> {
-        <span class="ident">variants</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="ident">variant_metadata</span>)
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">syn::Result</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>
-    };
+            .collect()
+    } <span class="kw">else </span>{
+        variants
+            .iter()
+            .map(variant_metadata)
+            .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?
+    </span>};
 
-    <span class="prelude-val">Ok</span>(<span class="ident">ErrorMetadata</span> {
-        <span class="ident">module_path</span>,
-        <span class="ident">name</span>,
-        <span class="ident">variants</span>,
-        <span class="ident">flat</span>,
+    <span class="prelude-val">Ok</span>(ErrorMetadata {
+        module_path,
+        name,
+        variants,
+        flat,
     })
 }
 
-<span class="kw">mod</span> <span class="ident">kw</span> {
-    <span class="macro">syn::custom_keyword!</span>(<span class="ident">flat_error</span>);
+<span class="kw">mod </span>kw {
+    <span class="macro">syn::custom_keyword!</span>(flat_error);
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">struct</span> <span class="ident">ErrorAttr</span> {
-    <span class="ident">flat</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">kw::flat_error</span><span class="op">&gt;</span>,
+<span class="attribute">#[derive(Default)]
+</span><span class="kw">struct </span>ErrorAttr {
+    flat: <span class="prelude-ty">Option</span>&lt;kw::flat_error&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">ErrorAttr</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">flat</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">ErrorAttr</span> { <span class="ident">flat</span> })
+<span class="kw">impl </span>Parse <span class="kw">for </span>ErrorAttr {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>flat = input.parse()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(ErrorAttr { flat })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">UniffiAttribute</span> <span class="kw">for</span> <span class="ident">ErrorAttr</span> {
-    <span class="kw">fn</span> <span class="ident">merge</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="self">Self</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
-            <span class="ident">flat</span>: <span class="ident">either_attribute_arg</span>(<span class="self">self</span>.<span class="ident">flat</span>, <span class="ident">other</span>.<span class="ident">flat</span>)<span class="question-mark">?</span>,
+<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>ErrorAttr {
+    <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            flat: either_attribute_arg(<span class="self">self</span>.flat, other.flat)<span class="question-mark">?</span>,
         })
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

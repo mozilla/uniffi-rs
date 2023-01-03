@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/namespace.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>namespace.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/namespace.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>namespace.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -138,136 +132,135 @@
 <span id="132">132</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Namespace definition for a `ComponentInterface`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module converts a namespace definition from UDL into structures that</span>
-<span class="doccomment">//! can be added to a `ComponentInterface`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! In WebIDL proper, each `namespace` declares a set of functions and attributes that</span>
-<span class="doccomment">//! are exposed as a global object of that name, and there can be any number of such</span>
-<span class="doccomment">//! namespace definitions.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For our purposes with UDL, we expect just a single `namespace` declaration, which</span>
-<span class="doccomment">//! defines properties of the component as a whole (currently just the name). It also</span>
-<span class="doccomment">//! contains the functions that will be exposed as individual plain functions exported by</span>
-<span class="doccomment">//! the component, if any. So something like this:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! namespace example {</span>
-<span class="doccomment">//!   string hello();</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Declares a component named &quot;example&quot; with a single exported function named &quot;hello&quot;:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! # namespace example {</span>
-<span class="doccomment">//! #   string hello();</span>
-<span class="doccomment">//! # };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! assert_eq!(ci.namespace(), &quot;example&quot;);</span>
-<span class="doccomment">//! assert_eq!(ci.get_function_definition(&quot;hello&quot;).unwrap().name(), &quot;hello&quot;);</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! While this awkward-looking syntax:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! namespace example {};</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Declares a component named &quot;example&quot; with no exported functions:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! # namespace example {};</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! assert_eq!(ci.namespace(), &quot;example&quot;);</span>
-<span class="doccomment">//! assert_eq!(ci.function_definitions().len(), 0);</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Yeah, it&#39;s a bit of an awkward fit syntactically, but it&#39;s enough</span>
-<span class="doccomment">//! to get us up and running for a first version of this tool.</span>
+</span><span class="doccomment">//! # Namespace definition for a `ComponentInterface`.
+//!
+//! This module converts a namespace definition from UDL into structures that
+//! can be added to a `ComponentInterface`.
+//!
+//! In WebIDL proper, each `namespace` declares a set of functions and attributes that
+//! are exposed as a global object of that name, and there can be any number of such
+//! namespace definitions.
+//!
+//! For our purposes with UDL, we expect just a single `namespace` declaration, which
+//! defines properties of the component as a whole (currently just the name). It also
+//! contains the functions that will be exposed as individual plain functions exported by
+//! the component, if any. So something like this:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! namespace example {
+//!   string hello();
+//! };
+//! # &quot;##)?;
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+//!
+//! Declares a component named &quot;example&quot; with a single exported function named &quot;hello&quot;:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # namespace example {
+//! #   string hello();
+//! # };
+//! # &quot;##)?;
+//! assert_eq!(ci.namespace(), &quot;example&quot;);
+//! assert_eq!(ci.get_function_definition(&quot;hello&quot;).unwrap().name(), &quot;hello&quot;);
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+//!
+//! While this awkward-looking syntax:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! namespace example {};
+//! # &quot;##)?;
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+//!
+//! Declares a component named &quot;example&quot; with no exported functions:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # namespace example {};
+//! # &quot;##)?;
+//! assert_eq!(ci.namespace(), &quot;example&quot;);
+//! assert_eq!(ci.function_definitions().len(), 0);
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+//!
+//! Yeah, it&#39;s a bit of an awkward fit syntactically, but it&#39;s enough
+//! to get us up and running for a first version of this tool.
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIBuilder</span>, <span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
+<span class="kw">use super</span>::{APIBuilder, APIConverter, ComponentInterface};
 
-<span class="doccomment">/// A namespace is currently just a name, but might hold more metadata about</span>
-<span class="doccomment">/// the component in future.</span>
-<span class="doccomment">///</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Namespace</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
+<span class="doccomment">/// A namespace is currently just a name, but might hold more metadata about
+/// the component in future.
+///
+</span><span class="attribute">#[derive(Debug, Clone, Hash)]
+</span><span class="kw">pub struct </span>Namespace {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
 }
 
-<span class="kw">impl</span> <span class="ident">APIBuilder</span> <span class="kw">for</span> <span class="ident">weedle::NamespaceDefinition</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">process</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">is_some</span>() {
+<span class="kw">impl </span>APIBuilder <span class="kw">for </span>weedle::NamespaceDefinition&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>process(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.attributes.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;namespace attributes are not supported yet&quot;</span>);
         }
-        <span class="ident">ci</span>.<span class="ident">add_namespace_definition</span>(<span class="ident">Namespace</span> {
-            <span class="ident">name</span>: <span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
+        ci.add_namespace_definition(Namespace {
+            name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
         })<span class="question-mark">?</span>;
-        <span class="kw">for</span> <span class="ident">func</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">members</span>.<span class="ident">body</span>.<span class="ident">convert</span>(<span class="ident">ci</span>)<span class="question-mark">?</span> {
-            <span class="ident">ci</span>.<span class="ident">add_function_definition</span>(<span class="ident">func</span>)<span class="question-mark">?</span>;
+        <span class="kw">for </span>func <span class="kw">in </span><span class="self">self</span>.members.body.convert(ci)<span class="question-mark">? </span>{
+            ci.add_function_definition(func)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_empty_namespace</span>() {
-        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_empty_namespace() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
             namespace foobar{};
         &quot;#</span>;
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">namespace</span>(), <span class="string">&quot;foobar&quot;</span>);
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="macro">assert_eq!</span>(ci.namespace(), <span class="string">&quot;foobar&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_namespace_with_functions</span>() {
-        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_namespace_with_functions() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
             namespace foobar{
                 boolean hello();
                 void world();
             };
         &quot;#</span>;
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">namespace</span>(), <span class="string">&quot;foobar&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">function_definitions</span>().<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;hello&quot;</span>).<span class="ident">is_some</span>());
-        <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;world&quot;</span>).<span class="ident">is_some</span>());
-        <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;potato&quot;</span>).<span class="ident">is_none</span>());
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="macro">assert_eq!</span>(ci.namespace(), <span class="string">&quot;foobar&quot;</span>);
+        <span class="macro">assert_eq!</span>(ci.function_definitions().len(), <span class="number">2</span>);
+        <span class="macro">assert!</span>(ci.get_function_definition(<span class="string">&quot;hello&quot;</span>).is_some());
+        <span class="macro">assert!</span>(ci.get_function_definition(<span class="string">&quot;world&quot;</span>).is_some());
+        <span class="macro">assert!</span>(ci.get_function_definition(<span class="string">&quot;potato&quot;</span>).is_none());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_rejects_duplicate_namespaces</span>() {
-        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_rejects_duplicate_namespaces() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
             namespace foobar{
                 boolean hello();
                 void world();
             };
             namespace something_else{};
         &quot;#</span>;
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;duplicate namespace definition&quot;</span>);
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;duplicate namespace definition&quot;</span>);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

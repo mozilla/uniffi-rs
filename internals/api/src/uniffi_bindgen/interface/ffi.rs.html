@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/ffi.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ffi.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/ffi.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ffi.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -106,104 +100,103 @@
 <span id="100">100</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Low-level typesystem for the FFI layer of a component interface.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module provides the &quot;FFI-level&quot; typesystem of a UniFFI Rust Component, that is,</span>
-<span class="doccomment">//! the C-style functions and structs and primitive datatypes that are used to interface</span>
-<span class="doccomment">//! between the Rust component code and the foreign-language bindings.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! These types are purely an implementation detail of UniFFI, so consumers shouldn&#39;t</span>
-<span class="doccomment">//! need to know about them. But as a developer working on UniFFI itself, you&#39;re likely</span>
-<span class="doccomment">//! to spend a lot of time thinking about how these low-level types are used to represent</span>
-<span class="doccomment">//! the higher-level &quot;interface types&quot; from the [`super::types::Type`] enum.</span>
-<span class="doccomment">/// Represents the restricted set of low-level types that can be used to construct</span>
-<span class="doccomment">/// the C-style FFI layer between a rust component and its foreign language bindings.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For the types that involve memory allocation, we make a distinction between</span>
-<span class="doccomment">/// &quot;owned&quot; types (the recipient must free it, or pass it to someone else) and</span>
-<span class="doccomment">/// &quot;borrowed&quot; types (the sender must keep it alive for the duration of the call).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">FfiType</span> {
-    <span class="comment">// N.B. there are no booleans at this layer, since they cause problems for JNA.</span>
-    <span class="ident">UInt8</span>,
-    <span class="ident">Int8</span>,
-    <span class="ident">UInt16</span>,
-    <span class="ident">Int16</span>,
-    <span class="ident">UInt32</span>,
-    <span class="ident">Int32</span>,
-    <span class="ident">UInt64</span>,
-    <span class="ident">Int64</span>,
-    <span class="ident">Float32</span>,
-    <span class="ident">Float64</span>,
-    <span class="doccomment">/// A `*const c_void` pointer to a rust-owned `Arc&lt;T&gt;`.</span>
-    <span class="doccomment">/// If you&#39;ve got one of these, you must call the appropriate rust function to free it.</span>
-    <span class="doccomment">/// The templates will generate a unique `free` function for each T.</span>
-    <span class="doccomment">/// The inner string references the name of the `T` type.</span>
-    <span class="ident">RustArcPtr</span>(<span class="ident">String</span>),
-    <span class="doccomment">/// A byte buffer allocated by rust, and owned by whoever currently holds it.</span>
-    <span class="doccomment">/// If you&#39;ve got one of these, you must either call the appropriate rust function to free it</span>
-    <span class="doccomment">/// or pass it to someone that will.</span>
-    <span class="ident">RustBuffer</span>,
-    <span class="doccomment">/// A borrowed reference to some raw bytes owned by foreign language code.</span>
-    <span class="doccomment">/// The provider of this reference must keep it alive for the duration of the receiving call.</span>
-    <span class="ident">ForeignBytes</span>,
-    <span class="doccomment">/// A pointer to a single function in to the foreign language.</span>
-    <span class="doccomment">/// This function contains all the machinery to make callbacks work on the foreign language side.</span>
-    <span class="ident">ForeignCallback</span>,
-    <span class="comment">// TODO: you can imagine a richer structural typesystem here, e.g. `Ref&lt;String&gt;` or something.</span>
-    <span class="comment">// We don&#39;t need that yet and it&#39;s possible we never will, so it isn&#39;t here for now.</span>
+</span><span class="doccomment">//! # Low-level typesystem for the FFI layer of a component interface.
+//!
+//! This module provides the &quot;FFI-level&quot; typesystem of a UniFFI Rust Component, that is,
+//! the C-style functions and structs and primitive datatypes that are used to interface
+//! between the Rust component code and the foreign-language bindings.
+//!
+//! These types are purely an implementation detail of UniFFI, so consumers shouldn&#39;t
+//! need to know about them. But as a developer working on UniFFI itself, you&#39;re likely
+//! to spend a lot of time thinking about how these low-level types are used to represent
+//! the higher-level &quot;interface types&quot; from the [`super::types::Type`] enum.
+/// Represents the restricted set of low-level types that can be used to construct
+/// the C-style FFI layer between a rust component and its foreign language bindings.
+///
+/// For the types that involve memory allocation, we make a distinction between
+/// &quot;owned&quot; types (the recipient must free it, or pass it to someone else) and
+/// &quot;borrowed&quot; types (the sender must keep it alive for the duration of the call).
+</span><span class="attribute">#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>FfiType {
+    <span class="comment">// N.B. there are no booleans at this layer, since they cause problems for JNA.
+    </span>UInt8,
+    Int8,
+    UInt16,
+    Int16,
+    UInt32,
+    Int32,
+    UInt64,
+    Int64,
+    Float32,
+    Float64,
+    <span class="doccomment">/// A `*const c_void` pointer to a rust-owned `Arc&lt;T&gt;`.
+    /// If you&#39;ve got one of these, you must call the appropriate rust function to free it.
+    /// The templates will generate a unique `free` function for each T.
+    /// The inner string references the name of the `T` type.
+    </span>RustArcPtr(String),
+    <span class="doccomment">/// A byte buffer allocated by rust, and owned by whoever currently holds it.
+    /// If you&#39;ve got one of these, you must either call the appropriate rust function to free it
+    /// or pass it to someone that will.
+    </span>RustBuffer,
+    <span class="doccomment">/// A borrowed reference to some raw bytes owned by foreign language code.
+    /// The provider of this reference must keep it alive for the duration of the receiving call.
+    </span>ForeignBytes,
+    <span class="doccomment">/// A pointer to a single function in to the foreign language.
+    /// This function contains all the machinery to make callbacks work on the foreign language side.
+    </span>ForeignCallback,
+    <span class="comment">// TODO: you can imagine a richer structural typesystem here, e.g. `Ref&lt;String&gt;` or something.
+    // We don&#39;t need that yet and it&#39;s possible we never will, so it isn&#39;t here for now.
+</span>}
+
+<span class="doccomment">/// Represents an &quot;extern C&quot;-style function that will be part of the FFI.
+///
+/// These can&#39;t be declared explicitly in the UDL, but rather, are derived automatically
+/// from the high-level interface. Each callable thing in the component API will have a
+/// corresponding `FfiFunction` through which it can be invoked, and UniFFI also provides
+/// some built-in `FfiFunction` helpers for use in the foreign language bindings.
+</span><span class="attribute">#[derive(Debug, Default, Clone)]
+</span><span class="kw">pub struct </span>FfiFunction {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;FfiArgument&gt;,
+    <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;,
 }
 
-<span class="doccomment">/// Represents an &quot;extern C&quot;-style function that will be part of the FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// These can&#39;t be declared explicitly in the UDL, but rather, are derived automatically</span>
-<span class="doccomment">/// from the high-level interface. Each callable thing in the component API will have a</span>
-<span class="doccomment">/// corresponding `FfiFunction` through which it can be invoked, and UniFFI also provides</span>
-<span class="doccomment">/// some built-in `FfiFunction` helpers for use in the foreign language bindings.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FfiFunction</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FfiArgument</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">return_type</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FfiType</span><span class="op">&gt;</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">FfiFunction</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
+<span class="kw">impl </span>FfiFunction {
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arguments</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">FfiArgument</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>().<span class="ident">collect</span>()
+    <span class="kw">pub fn </span>arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>FfiArgument&gt; {
+        <span class="self">self</span>.arguments.iter().collect()
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">return_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">FfiType</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">return_type</span>.<span class="ident">as_ref</span>()
-    }
-}
-
-<span class="doccomment">/// Represents an argument to an FFI function.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Each argument has a name and a type.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FfiArgument</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">type_</span>: <span class="ident">FfiType</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">FfiArgument</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
-    }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">FfiType</span> {
-        <span class="self">self</span>.<span class="ident">type_</span>.<span class="ident">clone</span>()
+    <span class="kw">pub fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>FfiType&gt; {
+        <span class="self">self</span>.return_type.as_ref()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="comment">// There&#39;s not really much to test here to be honest,</span>
-    <span class="comment">// it&#39;s mostly type declarations.</span>
+<span class="doccomment">/// Represents an argument to an FFI function.
+///
+/// Each argument has a name and a type.
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>FfiArgument {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) type_: FfiType,
 }
+
+<span class="kw">impl </span>FfiArgument {
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
+    }
+    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiType {
+        <span class="self">self</span>.type_.clone()
+    }
+}
+
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="comment">// There&#39;s not really much to test here to be honest,
+    // it&#39;s mostly type declarations.
+</span>}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

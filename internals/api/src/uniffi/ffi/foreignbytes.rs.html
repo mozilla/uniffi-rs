@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi/src/ffi/foreignbytes.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>foreignbytes.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi/src/ffi/foreignbytes.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>foreignbytes.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -124,122 +118,121 @@
 <span id="118">118</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">/// Support for reading a slice of foreign-language-allocated bytes over the FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Foreign language code can pass a slice of bytes by providing a data pointer</span>
-<span class="doccomment">/// and length, and this struct provides a convenient wrapper for working with</span>
-<span class="doccomment">/// that pair. Naturally, this can be tremendously unsafe! So here are the details:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * The foreign language code must ensure the provided buffer stays alive</span>
-<span class="doccomment">///     and unchanged for the duration of the call to which the `ForeignBytes`</span>
-<span class="doccomment">///     struct was provided.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// To work with the bytes in Rust code, use `as_slice()` to view the data</span>
-<span class="doccomment">/// as a `&amp;[u8]`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Implementation note: all the fields of this struct are private and it has no</span>
-<span class="doccomment">/// constructors, so consuming crates cant create instances of it. If you&#39;ve</span>
-<span class="doccomment">/// got a `ForeignBytes`, then you received it over the FFI and are assuming that</span>
-<span class="doccomment">/// the foreign language code is upholding the above invariants.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This struct is based on `ByteBuffer` from the `ffi-support` crate, but modified</span>
-<span class="doccomment">/// to give a read-only view of externally-provided bytes.</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ForeignBytes</span> {
-    <span class="doccomment">/// The length of the pointed-to data.</span>
-    <span class="doccomment">/// We use an `i32` for compatibility with JNA.</span>
-    <span class="ident">len</span>: <span class="ident">i32</span>,
-    <span class="doccomment">/// The pointer to the foreign-owned bytes.</span>
-    <span class="ident">data</span>: <span class="kw-2">*const</span> <span class="ident">u8</span>,
+</span><span class="doccomment">/// Support for reading a slice of foreign-language-allocated bytes over the FFI.
+///
+/// Foreign language code can pass a slice of bytes by providing a data pointer
+/// and length, and this struct provides a convenient wrapper for working with
+/// that pair. Naturally, this can be tremendously unsafe! So here are the details:
+///
+///   * The foreign language code must ensure the provided buffer stays alive
+///     and unchanged for the duration of the call to which the `ForeignBytes`
+///     struct was provided.
+///
+/// To work with the bytes in Rust code, use `as_slice()` to view the data
+/// as a `&amp;[u8]`.
+///
+/// Implementation note: all the fields of this struct are private and it has no
+/// constructors, so consuming crates cant create instances of it. If you&#39;ve
+/// got a `ForeignBytes`, then you received it over the FFI and are assuming that
+/// the foreign language code is upholding the above invariants.
+///
+/// This struct is based on `ByteBuffer` from the `ffi-support` crate, but modified
+/// to give a read-only view of externally-provided bytes.
+</span><span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>ForeignBytes {
+    <span class="doccomment">/// The length of the pointed-to data.
+    /// We use an `i32` for compatibility with JNA.
+    </span>len: i32,
+    <span class="doccomment">/// The pointer to the foreign-owned bytes.
+    </span>data: <span class="kw-2">*const </span>u8,
 }
 
-<span class="kw">impl</span> <span class="ident">ForeignBytes</span> {
-    <span class="doccomment">/// Creates a `ForeignBytes` from its constituent fields.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is intended mainly as an internal convenience function and should not</span>
-    <span class="doccomment">/// be used outside of this module.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// You must ensure that the raw parts uphold the documented invariants of this class.</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw_parts</span>(<span class="ident">data</span>: <span class="kw-2">*const</span> <span class="ident">u8</span>, <span class="ident">len</span>: <span class="ident">i32</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">len</span>, <span class="ident">data</span> }
+<span class="kw">impl </span>ForeignBytes {
+    <span class="doccomment">/// Creates a `ForeignBytes` from its constituent fields.
+    ///
+    /// This is intended mainly as an internal convenience function and should not
+    /// be used outside of this module.
+    ///
+    /// # Safety
+    ///
+    /// You must ensure that the raw parts uphold the documented invariants of this class.
+    </span><span class="kw">pub unsafe fn </span>from_raw_parts(data: <span class="kw-2">*const </span>u8, len: i32) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ len, data }
     }
 
-    <span class="doccomment">/// View the foreign bytes as a `&amp;[u8]`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if the provided struct has a null pointer but non-zero length.</span>
-    <span class="doccomment">/// Panics if the provided length is negative.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">is_null</span>() {
-            <span class="macro">assert!</span>(<span class="self">self</span>.<span class="ident">len</span> <span class="op">==</span> <span class="number">0</span>, <span class="string">&quot;null ForeignBytes had non-zero length&quot;</span>);
+    <span class="doccomment">/// View the foreign bytes as a `&amp;[u8]`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the provided struct has a null pointer but non-zero length.
+    /// Panics if the provided length is negative.
+    </span><span class="kw">pub fn </span>as_slice(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[u8] {
+        <span class="kw">if </span><span class="self">self</span>.data.is_null() {
+            <span class="macro">assert!</span>(<span class="self">self</span>.len == <span class="number">0</span>, <span class="string">&quot;null ForeignBytes had non-zero length&quot;</span>);
             <span class="kw-2">&amp;</span>[]
-        } <span class="kw">else</span> {
-            <span class="kw">unsafe</span> { <span class="ident">std::slice::from_raw_parts</span>(<span class="self">self</span>.<span class="ident">data</span>, <span class="self">self</span>.<span class="ident">len</span>()) }
+        } <span class="kw">else </span>{
+            <span class="kw">unsafe </span>{ std::slice::from_raw_parts(<span class="self">self</span>.data, <span class="self">self</span>.len()) }
         }
     }
 
-    <span class="doccomment">/// Get the length of this slice of bytes.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if the provided length is negative.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">len</span>
-            .<span class="ident">try_into</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;bytes length negative or overflowed&quot;</span>)
+    <span class="doccomment">/// Get the length of this slice of bytes.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the provided length is negative.
+    </span><span class="kw">pub fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.len
+            .try_into()
+            .expect(<span class="string">&quot;bytes length negative or overflowed&quot;</span>)
     }
 
-    <span class="doccomment">/// Returns true if the length of this slice of bytes is 0.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">len</span> <span class="op">==</span> <span class="number">0</span>
-    }
+    <span class="doccomment">/// Returns true if the length of this slice of bytes is 0.
+    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.len == <span class="number">0
+    </span>}
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_foreignbytes_access</span>() {
-        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">1u8</span>, <span class="number">2</span>, <span class="number">3</span>];
-        <span class="kw">let</span> <span class="ident">fbuf</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ForeignBytes::from_raw_parts</span>(<span class="ident">v</span>.<span class="ident">as_ptr</span>(), <span class="number">3</span>) };
-        <span class="macro">assert_eq!</span>(<span class="ident">fbuf</span>.<span class="ident">len</span>(), <span class="number">3</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">fbuf</span>.<span class="ident">as_slice</span>(), <span class="kw-2">&amp;</span>[<span class="number">1u8</span>, <span class="number">2</span>, <span class="number">3</span>]);
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_foreignbytes_access() {
+        <span class="kw">let </span>v = <span class="macro">vec!</span>[<span class="number">1u8</span>, <span class="number">2</span>, <span class="number">3</span>];
+        <span class="kw">let </span>fbuf = <span class="kw">unsafe </span>{ ForeignBytes::from_raw_parts(v.as_ptr(), <span class="number">3</span>) };
+        <span class="macro">assert_eq!</span>(fbuf.len(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(fbuf.as_slice(), <span class="kw-2">&amp;</span>[<span class="number">1u8</span>, <span class="number">2</span>, <span class="number">3</span>]);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_foreignbytes_empty</span>() {
-        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="ident">::new</span>();
-        <span class="kw">let</span> <span class="ident">fbuf</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ForeignBytes::from_raw_parts</span>(<span class="ident">v</span>.<span class="ident">as_ptr</span>(), <span class="number">0</span>) };
-        <span class="macro">assert_eq!</span>(<span class="ident">fbuf</span>.<span class="ident">len</span>(), <span class="number">0</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">fbuf</span>.<span class="ident">as_slice</span>(), <span class="kw-2">&amp;</span>[<span class="number">0u8</span>; <span class="number">0</span>]);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_foreignbytes_empty() {
+        <span class="kw">let </span>v = Vec::&lt;u8&gt;::new();
+        <span class="kw">let </span>fbuf = <span class="kw">unsafe </span>{ ForeignBytes::from_raw_parts(v.as_ptr(), <span class="number">0</span>) };
+        <span class="macro">assert_eq!</span>(fbuf.len(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(fbuf.as_slice(), <span class="kw-2">&amp;</span>[<span class="number">0u8</span>; <span class="number">0</span>]);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_foreignbytes_null_means_empty</span>() {
-        <span class="kw">let</span> <span class="ident">fbuf</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ForeignBytes::from_raw_parts</span>(<span class="ident">std::ptr::null_mut</span>(), <span class="number">0</span>) };
-        <span class="macro">assert_eq!</span>(<span class="ident">fbuf</span>.<span class="ident">as_slice</span>(), <span class="kw-2">&amp;</span>[<span class="number">0u8</span>; <span class="number">0</span>]);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_foreignbytes_null_means_empty() {
+        <span class="kw">let </span>fbuf = <span class="kw">unsafe </span>{ ForeignBytes::from_raw_parts(std::ptr::null_mut(), <span class="number">0</span>) };
+        <span class="macro">assert_eq!</span>(fbuf.as_slice(), <span class="kw-2">&amp;</span>[<span class="number">0u8</span>; <span class="number">0</span>]);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_foreignbytes_null_must_have_zero_length</span>() {
-        <span class="kw">let</span> <span class="ident">fbuf</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ForeignBytes::from_raw_parts</span>(<span class="ident">std::ptr::null_mut</span>(), <span class="number">12</span>) };
-        <span class="ident">fbuf</span>.<span class="ident">as_slice</span>();
+    <span class="attribute">#[test]
+    #[should_panic]
+    </span><span class="kw">fn </span>test_foreignbytes_null_must_have_zero_length() {
+        <span class="kw">let </span>fbuf = <span class="kw">unsafe </span>{ ForeignBytes::from_raw_parts(std::ptr::null_mut(), <span class="number">12</span>) };
+        fbuf.as_slice();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_foreignbytes_provided_len_must_be_non_negative</span>() {
-        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0u8</span>, <span class="number">1</span>, <span class="number">2</span>];
-        <span class="kw">let</span> <span class="ident">fbuf</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ForeignBytes::from_raw_parts</span>(<span class="ident">v</span>.<span class="ident">as_ptr</span>(), <span class="op">-</span><span class="number">1</span>) };
-        <span class="ident">fbuf</span>.<span class="ident">as_slice</span>();
+    <span class="attribute">#[test]
+    #[should_panic]
+    </span><span class="kw">fn </span>test_foreignbytes_provided_len_must_be_non_negative() {
+        <span class="kw">let </span>v = <span class="macro">vec!</span>[<span class="number">0u8</span>, <span class="number">1</span>, <span class="number">2</span>];
+        <span class="kw">let </span>fbuf = <span class="kw">unsafe </span>{ ForeignBytes::from_raw_parts(v.as_ptr(), -<span class="number">1</span>) };
+        fbuf.as_slice();
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

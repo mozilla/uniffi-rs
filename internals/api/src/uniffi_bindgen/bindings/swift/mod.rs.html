@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/swift/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/swift/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -105,97 +99,97 @@
 <span id="99">99</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Swift bindings backend for UniFFI</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module generates Swift bindings from a [`ComponentInterface`] definition,</span>
-<span class="doccomment">//! using Swift&#39;s builtin support for loading C header files.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Conceptually, the generated bindings are split into two Swift modules, one for the low-level</span>
-<span class="doccomment">//! C FFI layer and one for the higher-level Swift bindings. For a UniFFI component named &quot;example&quot;</span>
-<span class="doccomment">//! we generate:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!   * A C header file `exampleFFI.h` declaring the low-level structs and functions for calling</span>
-<span class="doccomment">//!    into Rust, along with a corresponding `exampleFFI.modulemap` to expose them to Swift.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!   * A Swift source file `example.swift` that imports the `exampleFFI` module and wraps it</span>
-<span class="doccomment">//!    to provide the higher-level Swift API.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Most of the concepts in a [`ComponentInterface`] have an obvious counterpart in Swift,</span>
-<span class="doccomment">//! with the details documented in inline comments where appropriate.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! To handle lifting/lowering/serializing types across the FFI boundary, the Swift code</span>
-<span class="doccomment">//! defines a `protocol ViaFfi` that is analogous to the `uniffi::ViaFfi` Rust trait.</span>
-<span class="doccomment">//! Each type that can traverse the FFI conforms to the `ViaFfi` protocol, which specifies:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!  * The corresponding low-level type.</span>
-<span class="doccomment">//!  * How to lift from and lower into into that type.</span>
-<span class="doccomment">//!  * How to read from and write into a byte buffer.</span>
-<span class="doccomment">//!</span>
+</span><span class="doccomment">//! # Swift bindings backend for UniFFI
+//!
+//! This module generates Swift bindings from a [`ComponentInterface`] definition,
+//! using Swift&#39;s builtin support for loading C header files.
+//!
+//! Conceptually, the generated bindings are split into two Swift modules, one for the low-level
+//! C FFI layer and one for the higher-level Swift bindings. For a UniFFI component named &quot;example&quot;
+//! we generate:
+//!
+//!   * A C header file `exampleFFI.h` declaring the low-level structs and functions for calling
+//!    into Rust, along with a corresponding `exampleFFI.modulemap` to expose them to Swift.
+//!
+//!   * A Swift source file `example.swift` that imports the `exampleFFI` module and wraps it
+//!    to provide the higher-level Swift API.
+//!
+//! Most of the concepts in a [`ComponentInterface`] have an obvious counterpart in Swift,
+//! with the details documented in inline comments where appropriate.
+//!
+//! To handle lifting/lowering/serializing types across the FFI boundary, the Swift code
+//! defines a `protocol ViaFfi` that is analogous to the `uniffi::ViaFfi` Rust trait.
+//! Each type that can traverse the FFI conforms to the `ViaFfi` protocol, which specifies:
+//!
+//!  * The corresponding low-level type.
+//!  * How to lift from and lower into into that type.
+//!  * How to read from and write into a byte buffer.
+//!
 
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">io::Write</span>, <span class="ident">process::Command</span>};
+</span><span class="kw">use </span>std::{io::Write, process::Command};
 
-<span class="kw">use</span> <span class="ident">anyhow::Result</span>;
-<span class="kw">use</span> <span class="ident">camino::Utf8Path</span>;
-<span class="kw">use</span> <span class="ident">fs_err::File</span>;
+<span class="kw">use </span>anyhow::Result;
+<span class="kw">use </span>camino::Utf8Path;
+<span class="kw">use </span>fs_err::File;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">gen_swift</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gen_swift</span>::{<span class="ident">generate_bindings</span>, <span class="ident">Config</span>};
-<span class="kw">mod</span> <span class="ident">test</span>;
+<span class="kw">pub mod </span>gen_swift;
+<span class="kw">pub use </span>gen_swift::{generate_bindings, Config};
+<span class="kw">mod </span>test;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span>::interface::ComponentInterface</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">test::run_test</span>;
+<span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::interface::ComponentInterface;
+<span class="kw">pub use </span>test::run_test;
 
-<span class="doccomment">/// The Swift bindings generated from a [`ComponentInterface`].</span>
-<span class="doccomment">///</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bindings</span> {
-    <span class="doccomment">/// The contents of the generated `.swift` file, as a string.</span>
-    <span class="ident">library</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The contents of the generated `.h` file, as a string.</span>
-    <span class="ident">header</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The contents of the generated `.modulemap` file, as a string.</span>
-    <span class="ident">modulemap</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+<span class="doccomment">/// The Swift bindings generated from a [`ComponentInterface`].
+///
+</span><span class="kw">pub struct </span>Bindings {
+    <span class="doccomment">/// The contents of the generated `.swift` file, as a string.
+    </span>library: String,
+    <span class="doccomment">/// The contents of the generated `.h` file, as a string.
+    </span>header: String,
+    <span class="doccomment">/// The contents of the generated `.modulemap` file, as a string.
+    </span>modulemap: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
-<span class="doccomment">/// Write UniFFI component bindings for Swift as files on disk.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Unlike other target languages, binding to Rust code from Swift involves more than just</span>
-<span class="doccomment">/// generating a `.swift` file. We also need to produce a `.h` file with the C-level API</span>
-<span class="doccomment">/// declarations, and a `.modulemap` file to tell Swift how to use it.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_bindings</span>(
-    <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
-    <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
-    <span class="ident">try_format_code</span>: <span class="ident">bool</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">Bindings</span> {
-        <span class="ident">header</span>,
-        <span class="ident">library</span>,
-        <span class="ident">modulemap</span>,
-    } <span class="op">=</span> <span class="ident">generate_bindings</span>(<span class="ident">config</span>, <span class="ident">ci</span>)<span class="question-mark">?</span>;
+<span class="doccomment">/// Write UniFFI component bindings for Swift as files on disk.
+///
+/// Unlike other target languages, binding to Rust code from Swift involves more than just
+/// generating a `.swift` file. We also need to produce a `.h` file with the C-level API
+/// declarations, and a `.modulemap` file to tell Swift how to use it.
+</span><span class="kw">pub fn </span>write_bindings(
+    config: <span class="kw-2">&amp;</span>Config,
+    ci: <span class="kw-2">&amp;</span>ComponentInterface,
+    out_dir: <span class="kw-2">&amp;</span>Utf8Path,
+    try_format_code: bool,
+) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let </span>Bindings {
+        header,
+        library,
+        modulemap,
+    } = generate_bindings(config, ci)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">source_file</span> <span class="op">=</span> <span class="ident">out_dir</span>.<span class="ident">join</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.swift&quot;</span>, <span class="ident">config</span>.<span class="ident">module_name</span>()));
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">l</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">source_file</span>)<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(<span class="ident">l</span>, <span class="string">&quot;{library}&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>source_file = out_dir.join(<span class="macro">format!</span>(<span class="string">&quot;{}.swift&quot;</span>, config.module_name()));
+    <span class="kw">let </span><span class="kw-2">mut </span>l = File::create(<span class="kw-2">&amp;</span>source_file)<span class="question-mark">?</span>;
+    <span class="macro">write!</span>(l, <span class="string">&quot;{library}&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="ident">out_dir</span>.<span class="ident">join</span>(<span class="ident">config</span>.<span class="ident">header_filename</span>()))<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(<span class="ident">h</span>, <span class="string">&quot;{header}&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>h = File::create(out_dir.join(config.header_filename()))<span class="question-mark">?</span>;
+    <span class="macro">write!</span>(h, <span class="string">&quot;{header}&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">modulemap</span>) <span class="op">=</span> <span class="ident">modulemap</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="ident">out_dir</span>.<span class="ident">join</span>(<span class="ident">config</span>.<span class="ident">modulemap_filename</span>()))<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(<span class="ident">m</span>, <span class="string">&quot;{modulemap}&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(modulemap) = modulemap {
+        <span class="kw">let </span><span class="kw-2">mut </span>m = File::create(out_dir.join(config.modulemap_filename()))<span class="question-mark">?</span>;
+        <span class="macro">write!</span>(m, <span class="string">&quot;{modulemap}&quot;</span>)<span class="question-mark">?</span>;
     }
 
-    <span class="kw">if</span> <span class="ident">try_format_code</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;swiftformat&quot;</span>)
-            .<span class="ident">arg</span>(<span class="ident">source_file</span>.<span class="ident">as_str</span>())
-            .<span class="ident">output</span>()
+    <span class="kw">if </span>try_format_code {
+        <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = Command::new(<span class="string">&quot;swiftformat&quot;</span>)
+            .arg(source_file.as_str())
+            .output()
         {
             <span class="macro">println!</span>(
                 <span class="string">&quot;Warning: Unable to auto-format {} using swiftformat: {:?}&quot;</span>,
-                <span class="ident">source_file</span>.<span class="ident">file_name</span>().<span class="ident">unwrap</span>(),
-                <span class="ident">e</span>
+                source_file.file_name().unwrap(),
+                e
             )
         }
     }
@@ -203,5 +197,4 @@
     <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/util.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>util.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/util.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>util.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -229,227 +223,226 @@
 <span id="223">223</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">Span</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>, <span class="ident">quote_spanned</span>, <span class="ident">ToTokens</span>};
-<span class="kw">use</span> <span class="ident">syn</span>::{
-    <span class="ident">parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseStream</span>},
-    <span class="ident">punctuated::Punctuated</span>,
-    <span class="ident">spanned::Spanned</span>,
-    <span class="ident">visit_mut::VisitMut</span>,
-    <span class="ident">Attribute</span>, <span class="ident">Item</span>, <span class="ident">Token</span>, <span class="ident">Type</span>,
+</span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
+<span class="kw">use </span>quote::{format_ident, quote, quote_spanned, ToTokens};
+<span class="kw">use </span>syn::{
+    parse::{Parse, ParseStream},
+    punctuated::Punctuated,
+    spanned::Spanned,
+    visit_mut::VisitMut,
+    Attribute, Item, Token, Type,
 };
-<span class="kw">use</span> <span class="ident">uniffi_meta::Metadata</span>;
+<span class="kw">use </span>uniffi_meta::Metadata;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mod_path</span>() -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="comment">// Without the nightly feature and TokenStream::expand_expr, just return the crate name</span>
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+</span><span class="kw">pub fn </span>mod_path() -&gt; syn::Result&lt;Vec&lt;String&gt;&gt; {
+    <span class="comment">// Without the nightly feature and TokenStream::expand_expr, just return the crate name
 
-    <span class="kw">use</span> <span class="ident">std::path::Path</span>;
+    </span><span class="kw">use </span>std::path::Path;
 
-    <span class="kw">use</span> <span class="ident">fs_err</span> <span class="kw">as</span> <span class="ident">fs</span>;
-    <span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
-    <span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
+    <span class="kw">use </span>fs_err <span class="kw">as </span>fs;
+    <span class="kw">use </span>once_cell::sync::Lazy;
+    <span class="kw">use </span>serde::Deserialize;
 
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
-    <span class="kw">struct</span> <span class="ident">CargoToml</span> {
-        <span class="ident">package</span>: <span class="ident">Package</span>,
-        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-        <span class="ident">lib</span>: <span class="ident">Lib</span>,
+    <span class="attribute">#[derive(Deserialize)]
+    </span><span class="kw">struct </span>CargoToml {
+        package: Package,
+        <span class="attribute">#[serde(default)]
+        </span>lib: Lib,
     }
 
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
-    <span class="kw">struct</span> <span class="ident">Package</span> {
-        <span class="ident">name</span>: <span class="ident">String</span>,
+    <span class="attribute">#[derive(Deserialize)]
+    </span><span class="kw">struct </span>Package {
+        name: String,
     }
 
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Deserialize</span>)]</span>
-    <span class="kw">struct</span> <span class="ident">Lib</span> {
-        <span class="ident">name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="attribute">#[derive(Default, Deserialize)]
+    </span><span class="kw">struct </span>Lib {
+        name: <span class="prelude-ty">Option</span>&lt;String&gt;,
     }
 
-    <span class="kw">static</span> <span class="ident">LIB_CRATE_MOD_PATH</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">manifest_dir</span> <span class="op">=</span>
-            <span class="ident">std::env::var_os</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).<span class="ident">ok_or</span>(<span class="string">&quot;`CARGO_MANIFEST_DIR` is not set&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">static </span>LIB_CRATE_MOD_PATH: Lazy&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;, String&gt;&gt; = Lazy::new(|| {
+        <span class="kw">let </span>manifest_dir =
+            std::env::var_os(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).ok_or(<span class="string">&quot;`CARGO_MANIFEST_DIR` is not set&quot;</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">cargo_toml_bytes</span> <span class="op">=</span>
-            <span class="ident">fs::read</span>(<span class="ident">Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">manifest_dir</span>).<span class="ident">join</span>(<span class="string">&quot;Cargo.toml&quot;</span>)).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">cargo_toml</span> <span class="op">=</span> <span class="ident">toml::from_slice</span>::<span class="op">&lt;</span><span class="ident">CargoToml</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">cargo_toml_bytes</span>)
-            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to parse `Cargo.toml`: {e}&quot;</span>))<span class="question-mark">?</span>;
+        <span class="kw">let </span>cargo_toml_bytes =
+            fs::read(Path::new(<span class="kw-2">&amp;</span>manifest_dir).join(<span class="string">&quot;Cargo.toml&quot;</span>)).map_err(|e| e.to_string())<span class="question-mark">?</span>;
+        <span class="kw">let </span>cargo_toml = toml::from_slice::&lt;CargoToml&gt;(<span class="kw-2">&amp;</span>cargo_toml_bytes)
+            .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to parse `Cargo.toml`: {e}&quot;</span>))<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">lib_crate_name</span> <span class="op">=</span> <span class="ident">cargo_toml</span>
-            .<span class="ident">lib</span>
-            .<span class="ident">name</span>
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">cargo_toml</span>.<span class="ident">package</span>.<span class="ident">name</span>.<span class="ident">replace</span>(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>));
+        <span class="kw">let </span>lib_crate_name = cargo_toml
+            .lib
+            .name
+            .unwrap_or_else(|| cargo_toml.package.name.replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>));
 
-        <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[<span class="ident">lib_crate_name</span>])
+        <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[lib_crate_name])
     });
 
-    <span class="ident">LIB_CRATE_MOD_PATH</span>
-        .<span class="ident">clone</span>()
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">syn::Error::new</span>(<span class="ident">Span::call_site</span>(), <span class="ident">e</span>))
+    LIB_CRATE_MOD_PATH
+        .clone()
+        .map_err(|e| syn::Error::new(Span::call_site(), e))
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mod_path</span>() -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+</span><span class="kw">pub fn </span>mod_path() -&gt; syn::Result&lt;Vec&lt;String&gt;&gt; {
+    <span class="kw">use </span>proc_macro::TokenStream;
 
-    <span class="kw">let</span> <span class="ident">module_path_invoc</span> <span class="op">=</span> <span class="ident">TokenStream::from</span>(<span class="macro">quote!</span> { <span class="macro">::core::module_path!</span>() });
-    <span class="comment">// We ask the compiler what `module_path!()` expands to here.</span>
-    <span class="comment">// This is a nightly feature, tracked at https://github.com/rust-lang/rust/issues/90765</span>
-    <span class="kw">let</span> <span class="ident">expanded_module_path</span> <span class="op">=</span> <span class="ident">TokenStream::expand_expr</span>(<span class="kw-2">&amp;</span><span class="ident">module_path_invoc</span>)
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">syn::Error::new</span>(<span class="ident">Span::call_site</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">syn::parse</span>::<span class="op">&lt;</span><span class="ident">syn::LitStr</span><span class="op">&gt;</span>(<span class="ident">expanded_module_path</span>)<span class="question-mark">?</span>
-        .<span class="ident">value</span>()
-        .<span class="ident">split</span>(<span class="string">&quot;::&quot;</span>)
-        .<span class="ident">collect</span>())
+    <span class="kw">let </span>module_path_invoc = TokenStream::from(<span class="macro">quote! </span>{ <span class="macro">::core::module_path!</span>() });
+    <span class="comment">// We ask the compiler what `module_path!()` expands to here.
+    // This is a nightly feature, tracked at https://github.com/rust-lang/rust/issues/90765
+    </span><span class="kw">let </span>expanded_module_path = TokenStream::expand_expr(<span class="kw-2">&amp;</span>module_path_invoc)
+        .map_err(|e| syn::Error::new(Span::call_site(), e))<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(syn::parse::&lt;syn::LitStr&gt;(expanded_module_path)<span class="question-mark">?
+        </span>.value()
+        .split(<span class="string">&quot;::&quot;</span>)
+        .collect())
 }
 
-<span class="doccomment">/// Rewrite Self type alias usage in an impl block to the type itself.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For example,</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// impl some::module::Foo {</span>
-<span class="doccomment">///     fn method(</span>
-<span class="doccomment">///         self: Arc&lt;Self&gt;,</span>
-<span class="doccomment">///         arg: Option&lt;Bar&lt;(), Self&gt;&gt;,</span>
-<span class="doccomment">///     ) -&gt; Result&lt;Self, Error&gt; {</span>
-<span class="doccomment">///         todo!()</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// will be rewritten to</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///  ```ignore</span>
-<span class="doccomment">/// impl some::module::Foo {</span>
-<span class="doccomment">///     fn method(</span>
-<span class="doccomment">///         self: Arc&lt;some::module::Foo&gt;,</span>
-<span class="doccomment">///         arg: Option&lt;Bar&lt;(), some::module::Foo&gt;&gt;,</span>
-<span class="doccomment">///     ) -&gt; Result&lt;some::module::Foo, Error&gt; {</span>
-<span class="doccomment">///         todo!()</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rewrite_self_type</span>(<span class="ident">item</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Item</span>) {
-    <span class="kw">let</span> <span class="ident">item</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">item</span> {
-        <span class="ident">Item::Impl</span>(<span class="ident">i</span>) =&gt; <span class="ident">i</span>,
-        <span class="kw">_</span> =&gt; <span class="kw">return</span>,
+<span class="doccomment">/// Rewrite Self type alias usage in an impl block to the type itself.
+///
+/// For example,
+///
+/// ```ignore
+/// impl some::module::Foo {
+///     fn method(
+///         self: Arc&lt;Self&gt;,
+///         arg: Option&lt;Bar&lt;(), Self&gt;&gt;,
+///     ) -&gt; Result&lt;Self, Error&gt; {
+///         todo!()
+///     }
+/// }
+/// ```
+///
+/// will be rewritten to
+///
+///  ```ignore
+/// impl some::module::Foo {
+///     fn method(
+///         self: Arc&lt;some::module::Foo&gt;,
+///         arg: Option&lt;Bar&lt;(), some::module::Foo&gt;&gt;,
+///     ) -&gt; Result&lt;some::module::Foo, Error&gt; {
+///         todo!()
+///     }
+/// }
+/// ```
+</span><span class="kw">pub fn </span>rewrite_self_type(item: <span class="kw-2">&amp;mut </span>Item) {
+    <span class="kw">let </span>item = <span class="kw">match </span>item {
+        Item::Impl(i) =&gt; i,
+        <span class="kw">_ </span>=&gt; <span class="kw">return</span>,
     };
 
-    <span class="kw">struct</span> <span class="ident">RewriteSelfVisitor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Type</span>);
+    <span class="kw">struct </span>RewriteSelfVisitor&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type);
 
-    <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">VisitMut</span> <span class="kw">for</span> <span class="ident">RewriteSelfVisitor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-        <span class="kw">fn</span> <span class="ident">visit_type_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">i</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Type</span>) {
-            <span class="kw">match</span> <span class="ident">i</span> {
-                <span class="ident">Type::Path</span>(<span class="ident">p</span>) <span class="kw">if</span> <span class="ident">p</span>.<span class="ident">qself</span>.<span class="ident">is_none</span>() <span class="op">&amp;&amp;</span> <span class="ident">p</span>.<span class="ident">path</span>.<span class="ident">is_ident</span>(<span class="string">&quot;Self&quot;</span>) =&gt; {
-                    <span class="kw-2">*</span><span class="ident">i</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">clone</span>();
+    <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; VisitMut <span class="kw">for </span>RewriteSelfVisitor&lt;<span class="lifetime">&#39;a</span>&gt; {
+        <span class="kw">fn </span>visit_type_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>, i: <span class="kw-2">&amp;mut </span>Type) {
+            <span class="kw">match </span>i {
+                Type::Path(p) <span class="kw">if </span>p.qself.is_none() &amp;&amp; p.path.is_ident(<span class="string">&quot;Self&quot;</span>) =&gt; {
+                    <span class="kw-2">*</span>i = <span class="self">self</span>.<span class="number">0</span>.clone();
                 }
-                <span class="kw">_</span> =&gt; <span class="ident">syn::visit_mut::visit_type_mut</span>(<span class="self">self</span>, <span class="ident">i</span>),
+                <span class="kw">_ </span>=&gt; syn::visit_mut::visit_type_mut(<span class="self">self</span>, i),
             }
         }
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visitor</span> <span class="op">=</span> <span class="ident">RewriteSelfVisitor</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">self_ty</span>);
-    <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="kw-2">&amp;mut</span> <span class="ident">item</span>.<span class="ident">items</span> {
-        <span class="ident">visitor</span>.<span class="ident">visit_impl_item_mut</span>(<span class="ident">item</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>visitor = RewriteSelfVisitor(<span class="kw-2">&amp;</span>item.self_ty);
+    <span class="kw">for </span>item <span class="kw">in </span><span class="kw-2">&amp;mut </span>item.items {
+        visitor.visit_impl_item_mut(item);
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_read_field</span>(<span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Field</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">ty</span>;
+<span class="kw">pub fn </span>try_read_field(f: <span class="kw-2">&amp;</span>syn::Field) -&gt; TokenStream {
+    <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>f.ident;
+    <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
 
-    <span class="macro">quote!</span> {
-        #<span class="ident">ident</span>: <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>,
+    <span class="macro">quote! </span>{
+        #ident: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&gt;::try_read(buf)<span class="question-mark">?</span>,
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_metadata_static_var</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>, <span class="ident">val</span>: <span class="ident">Metadata</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">bincode::serialize</span>(<span class="kw-2">&amp;</span><span class="ident">val</span>).<span class="ident">expect</span>(<span class="string">&quot;Error serializing metadata item&quot;</span>);
-    <span class="kw">let</span> <span class="ident">count</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">len</span>();
-    <span class="kw">let</span> <span class="ident">var_name</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_{}&quot;</span>, <span class="ident">name</span>);
+<span class="kw">pub fn </span>create_metadata_static_var(name: <span class="kw-2">&amp;</span>Ident, val: Metadata) -&gt; TokenStream {
+    <span class="kw">let </span>data: Vec&lt;u8&gt; = bincode::serialize(<span class="kw-2">&amp;</span>val).expect(<span class="string">&quot;Error serializing metadata item&quot;</span>);
+    <span class="kw">let </span>count = data.len();
+    <span class="kw">let </span>var_name = <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_{}&quot;</span>, name);
 
-    <span class="macro">quote!</span> {
-        <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-        <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-        <span class="kw">pub</span> <span class="kw">static</span> #<span class="ident">var_name</span>: [<span class="ident">u8</span>; #<span class="ident">count</span>] <span class="op">=</span> [#(#<span class="ident">data</span>),<span class="kw-2">*</span>];
+    <span class="macro">quote! </span>{
+        <span class="attribute">#[no_mangle]
+        #[doc(hidden)]
+        </span><span class="kw">pub static </span>#var_name: [u8; #count] = [#(#data),<span class="kw-2">*</span>];
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_type_eq</span>(<span class="ident">a</span>: <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="op">+</span> <span class="ident">Spanned</span>, <span class="ident">b</span>: <span class="kw">impl</span> <span class="ident">ToTokens</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="macro">quote_spanned!</span> {<span class="ident">a</span>.<span class="ident">span</span>()=&gt;
-        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_qualifications</span>)]</span>
-        <span class="kw">const</span> <span class="kw">_</span>: () <span class="op">=</span> {
-            <span class="macro">::uniffi::deps::static_assertions::assert_type_eq_all!</span>(#<span class="ident">a</span>, #<span class="ident">b</span>);
+<span class="kw">pub fn </span>assert_type_eq(a: <span class="kw">impl </span>ToTokens + Spanned, b: <span class="kw">impl </span>ToTokens) -&gt; TokenStream {
+    <span class="macro">quote_spanned! </span>{a.span()=&gt;
+        <span class="attribute">#[allow(unused_qualifications)]
+        </span><span class="kw">const _</span>: () = {
+            <span class="macro">::uniffi::deps::static_assertions::assert_type_eq_all!</span>(#a, #b);
         };
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">chain</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(
-    <span class="ident">a</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">b</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
-) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">a</span>.<span class="ident">into_iter</span>().<span class="ident">chain</span>(<span class="ident">b</span>)
+<span class="kw">pub fn </span>chain&lt;T&gt;(
+    a: <span class="kw">impl </span>IntoIterator&lt;Item = T&gt;,
+    b: <span class="kw">impl </span>IntoIterator&lt;Item = T&gt;,
+) -&gt; <span class="kw">impl </span>Iterator&lt;Item = T&gt; {
+    a.into_iter().chain(b)
 }
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">UniffiAttribute</span>: <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Parse</span> {
-    <span class="kw">fn</span> <span class="ident">merge</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="self">Self</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
+<span class="kw">pub trait </span>UniffiAttribute: Default + Parse {
+    <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt;;
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">struct</span> <span class="ident">AttributeNotAllowedHere</span>;
+<span class="attribute">#[derive(Default)]
+</span><span class="kw">struct </span>AttributeNotAllowedHere;
 
-<span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">AttributeNotAllowedHere</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new</span>(
-            <span class="ident">input</span>.<span class="ident">span</span>(),
+<span class="kw">impl </span>Parse <span class="kw">for </span>AttributeNotAllowedHere {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Err</span>(syn::Error::new(
+            input.span(),
             <span class="string">&quot;UniFFI attributes are not currently recognized in this position&quot;</span>,
         ))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">UniffiAttribute</span> <span class="kw">for</span> <span class="ident">AttributeNotAllowedHere</span> {
-    <span class="kw">fn</span> <span class="ident">merge</span>(<span class="self">self</span>, <span class="ident">_other</span>: <span class="self">Self</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>AttributeNotAllowedHere {
+    <span class="kw">fn </span>merge(<span class="self">self</span>, _other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AttributeSliceExt</span> {
-    <span class="kw">fn</span> <span class="ident">parse_uniffi_attributes</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">UniffiAttribute</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">attributes_not_allowed_here</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">syn::Error</span><span class="op">&gt;</span>;
+<span class="kw">pub trait </span>AttributeSliceExt {
+    <span class="kw">fn </span>parse_uniffi_attributes&lt;T: UniffiAttribute&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;T&gt;;
+    <span class="kw">fn </span>attributes_not_allowed_here(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;syn::Error&gt;;
 }
 
-<span class="kw">impl</span> <span class="ident">AttributeSliceExt</span> <span class="kw">for</span> [<span class="ident">Attribute</span>] {
-    <span class="kw">fn</span> <span class="ident">parse_uniffi_attributes</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">UniffiAttribute</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">iter</span>()
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="ident">attr</span>.<span class="ident">path</span>.<span class="ident">is_ident</span>(<span class="string">&quot;uniffi&quot;</span>))
-            .<span class="ident">try_fold</span>(<span class="ident">T::default</span>(), <span class="op">|</span><span class="ident">res</span>, <span class="ident">attr</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">list</span>: <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro">Token!</span>[,]<span class="op">&gt;</span> <span class="op">=</span>
-                    <span class="ident">attr</span>.<span class="ident">parse_args_with</span>(<span class="ident">Punctuated::parse_terminated</span>)<span class="question-mark">?</span>;
-                <span class="ident">list</span>.<span class="ident">into_iter</span>().<span class="ident">try_fold</span>(<span class="ident">res</span>, <span class="ident">T::merge</span>)
+<span class="kw">impl </span>AttributeSliceExt <span class="kw">for </span>[Attribute] {
+    <span class="kw">fn </span>parse_uniffi_attributes&lt;T: UniffiAttribute&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;T&gt; {
+        <span class="self">self</span>.iter()
+            .filter(|attr| attr.path.is_ident(<span class="string">&quot;uniffi&quot;</span>))
+            .try_fold(T::default(), |res, attr| {
+                <span class="kw">let </span>list: Punctuated&lt;T, <span class="macro">Token!</span>[,]&gt; =
+                    attr.parse_args_with(Punctuated::parse_terminated)<span class="question-mark">?</span>;
+                list.into_iter().try_fold(res, T::merge)
             })
     }
 
-    <span class="kw">fn</span> <span class="ident">attributes_not_allowed_here</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">syn::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">parse_uniffi_attributes</span>::<span class="op">&lt;</span><span class="ident">AttributeNotAllowedHere</span><span class="op">&gt;</span>()
-            .<span class="ident">err</span>()
+    <span class="kw">fn </span>attributes_not_allowed_here(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;syn::Error&gt; {
+        <span class="self">self</span>.parse_uniffi_attributes::&lt;AttributeNotAllowedHere&gt;()
+            .err()
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">either_attribute_arg</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToTokens</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">b</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> (<span class="ident">a</span>, <span class="ident">b</span>) {
+<span class="kw">pub fn </span>either_attribute_arg&lt;T: ToTokens&gt;(a: <span class="prelude-ty">Option</span>&lt;T&gt;, b: <span class="prelude-ty">Option</span>&lt;T&gt;) -&gt; syn::Result&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt; {
+    <span class="kw">match </span>(a, b) {
         (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-        (<span class="prelude-val">Some</span>(<span class="ident">val</span>), <span class="prelude-val">None</span>) <span class="op">|</span> (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">val</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">val</span>)),
-        (<span class="prelude-val">Some</span>(<span class="ident">a</span>), <span class="prelude-val">Some</span>(<span class="ident">b</span>)) =&gt; {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">syn::Error::new_spanned</span>(<span class="ident">a</span>, <span class="string">&quot;redundant attribute argument&quot;</span>);
-            <span class="ident">error</span>.<span class="ident">combine</span>(<span class="ident">syn::Error::new_spanned</span>(<span class="ident">b</span>, <span class="string">&quot;note: first one here&quot;</span>));
-            <span class="prelude-val">Err</span>(<span class="ident">error</span>)
+        (<span class="prelude-val">Some</span>(val), <span class="prelude-val">None</span>) | (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(val)) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(val)),
+        (<span class="prelude-val">Some</span>(a), <span class="prelude-val">Some</span>(b)) =&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>error = syn::Error::new_spanned(a, <span class="string">&quot;redundant attribute argument&quot;</span>);
+            error.combine(syn::Error::new_spanned(b, <span class="string">&quot;note: first one here&quot;</span>));
+            <span class="prelude-val">Err</span>(error)
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

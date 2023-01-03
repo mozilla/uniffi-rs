@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/export/scaffolding.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>scaffolding.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_macros/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/export/scaffolding.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>scaffolding.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_macros/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -205,203 +199,202 @@
 <span id="199">199</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">Span</span>, <span class="ident">TokenStream</span>};
-<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>, <span class="ident">ToTokens</span>};
-<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">parse_quote</span>, <span class="ident">FnArg</span>, <span class="ident">Pat</span>};
+</span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
+<span class="kw">use </span>quote::{format_ident, quote, ToTokens};
+<span class="kw">use </span>syn::{parse_quote, FnArg, Pat};
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">FunctionReturn</span>, <span class="ident">Signature</span>};
+<span class="kw">use super</span>::{FunctionReturn, Signature};
 
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">gen_fn_scaffolding</span>(
-    <span class="ident">sig</span>: <span class="kw-2">&amp;</span><span class="ident">Signature</span>,
-    <span class="ident">mod_path</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>],
-    <span class="ident">checksum</span>: <span class="ident">u16</span>,
-) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">sig</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> <span class="ident">name_s</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">to_string</span>();
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_scaffolding(
+    sig: <span class="kw-2">&amp;</span>Signature,
+    mod_path: <span class="kw-2">&amp;</span>[String],
+    checksum: u16,
+) -&gt; TokenStream {
+    <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.ident;
+    <span class="kw">let </span>name_s = name.to_string();
 
-    <span class="kw">let</span> <span class="ident">ffi_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(
-        <span class="kw-2">&amp;</span><span class="ident">uniffi_meta::fn_ffi_symbol_name</span>(<span class="ident">mod_path</span>, <span class="kw-2">&amp;</span><span class="ident">name_s</span>, <span class="ident">checksum</span>),
-        <span class="ident">Span::call_site</span>(),
+    <span class="kw">let </span>ffi_ident = Ident::new(
+        <span class="kw-2">&amp;</span>uniffi_meta::fn_ffi_symbol_name(mod_path, <span class="kw-2">&amp;</span>name_s, checksum),
+        Span::call_site(),
     );
 
-    <span class="kw">const</span> <span class="ident">ERROR_MSG</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span>
+    <span class="kw">const </span>ERROR_MSG: <span class="kw-2">&amp;</span>str =
         <span class="string">&quot;uniffi::export must be used on the impl block, not its containing fn&#39;s&quot;</span>;
-    <span class="kw">let</span> (<span class="ident">params</span>, <span class="ident">args</span>): (<span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>) <span class="op">=</span> <span class="ident">collect_params</span>(<span class="kw-2">&amp;</span><span class="ident">sig</span>.<span class="ident">inputs</span>, <span class="ident">ERROR_MSG</span>).<span class="ident">unzip</span>();
+    <span class="kw">let </span>(params, args): (Vec&lt;<span class="kw">_</span>&gt;, Vec&lt;<span class="kw">_</span>&gt;) = collect_params(<span class="kw-2">&amp;</span>sig.inputs, ERROR_MSG).unzip();
 
-    <span class="kw">let</span> <span class="ident">fn_call</span> <span class="op">=</span> <span class="macro">quote!</span> {
-        #<span class="ident">name</span>(#(#<span class="ident">args</span>),<span class="kw-2">*</span>)
+    <span class="kw">let </span>fn_call = <span class="macro">quote! </span>{
+        #name(#(#args),<span class="kw-2">*</span>)
     };
 
-    <span class="ident">gen_ffi_function</span>(<span class="ident">sig</span>, <span class="ident">ffi_ident</span>, <span class="kw-2">&amp;</span><span class="ident">params</span>, <span class="ident">fn_call</span>)
+    gen_ffi_function(sig, ffi_ident, <span class="kw-2">&amp;</span>params, fn_call)
 }
 
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">gen_method_scaffolding</span>(
-    <span class="ident">sig</span>: <span class="kw-2">&amp;</span><span class="ident">Signature</span>,
-    <span class="ident">mod_path</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>],
-    <span class="ident">checksum</span>: <span class="ident">u16</span>,
-    <span class="ident">self_ident</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>,
-) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">sig</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> <span class="ident">name_s</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">to_string</span>();
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_method_scaffolding(
+    sig: <span class="kw-2">&amp;</span>Signature,
+    mod_path: <span class="kw-2">&amp;</span>[String],
+    checksum: u16,
+    self_ident: <span class="kw-2">&amp;</span>Ident,
+) -&gt; TokenStream {
+    <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.ident;
+    <span class="kw">let </span>name_s = name.to_string();
 
-    <span class="kw">let</span> <span class="ident">ffi_name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;impl_{self_ident}_{name_s}&quot;</span>);
-    <span class="kw">let</span> <span class="ident">ffi_ident</span> <span class="op">=</span> <span class="ident">Ident::new</span>(
-        <span class="kw-2">&amp;</span><span class="ident">uniffi_meta::fn_ffi_symbol_name</span>(<span class="ident">mod_path</span>, <span class="kw-2">&amp;</span><span class="ident">ffi_name</span>, <span class="ident">checksum</span>),
-        <span class="ident">Span::call_site</span>(),
+    <span class="kw">let </span>ffi_name = <span class="macro">format!</span>(<span class="string">&quot;impl_{self_ident}_{name_s}&quot;</span>);
+    <span class="kw">let </span>ffi_ident = Ident::new(
+        <span class="kw-2">&amp;</span>uniffi_meta::fn_ffi_symbol_name(mod_path, <span class="kw-2">&amp;</span>ffi_name, checksum),
+        Span::call_site(),
     );
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params_args</span> <span class="op">=</span> (<span class="ident">Vec::new</span>(), <span class="ident">Vec::new</span>());
+    <span class="kw">let </span><span class="kw-2">mut </span>params_args = (Vec::new(), Vec::new());
 
-    <span class="kw">const</span> <span class="ident">RECEIVER_ERROR</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;unreachable: only first parameter can be method receiver&quot;</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">assoc_fn_error</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-    <span class="kw">let</span> <span class="ident">fn_call_prefix</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">sig</span>.<span class="ident">inputs</span>.<span class="ident">first</span>() {
-        <span class="prelude-val">Some</span>(<span class="ident">arg</span>) <span class="kw">if</span> <span class="ident">is_receiver</span>(<span class="ident">arg</span>) =&gt; {
-            <span class="kw">let</span> <span class="ident">ffi_converter</span> <span class="op">=</span> <span class="macro">quote!</span> {
-                <span class="op">&lt;</span><span class="ident">::std::sync::Arc</span><span class="op">&lt;</span>#<span class="ident">self_ident</span><span class="op">&gt;</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span>
+    <span class="kw">const </span>RECEIVER_ERROR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;unreachable: only first parameter can be method receiver&quot;</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>assoc_fn_error = <span class="prelude-val">None</span>;
+    <span class="kw">let </span>fn_call_prefix = <span class="kw">match </span>sig.inputs.first() {
+        <span class="prelude-val">Some</span>(arg) <span class="kw">if </span>is_receiver(arg) =&gt; {
+            <span class="kw">let </span>ffi_converter = <span class="macro">quote! </span>{
+                &lt;::std::sync::Arc&lt;#self_ident&gt; <span class="kw">as </span>::uniffi::FfiConverter&gt;
             };
 
-            <span class="ident">params_args</span>.<span class="number">0</span>.<span class="ident">push</span>(<span class="macro">quote!</span> { <span class="ident">this</span>: #<span class="ident">ffi_converter::FfiType</span> });
+            params_args.<span class="number">0</span>.push(<span class="macro">quote! </span>{ this: #ffi_converter::FfiType });
 
-            <span class="kw">let</span> <span class="ident">remaining_args</span> <span class="op">=</span> <span class="ident">sig</span>.<span class="ident">inputs</span>.<span class="ident">iter</span>().<span class="ident">skip</span>(<span class="number">1</span>);
-            <span class="ident">params_args</span>.<span class="ident">extend</span>(<span class="ident">collect_params</span>(<span class="ident">remaining_args</span>, <span class="ident">RECEIVER_ERROR</span>));
+            <span class="kw">let </span>remaining_args = sig.inputs.iter().skip(<span class="number">1</span>);
+            params_args.extend(collect_params(remaining_args, RECEIVER_ERROR));
 
-            <span class="macro">quote!</span> {
-                #<span class="ident">ffi_converter::try_lift</span>(<span class="ident">this</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
-                    <span class="macro">::std::panic!</span>(<span class="string">&quot;Failed to convert arg &#39;self&#39;: {}&quot;</span>, <span class="ident">err</span>)
+            <span class="macro">quote! </span>{
+                #ffi_converter::try_lift(this).unwrap_or_else(|err| {
+                    <span class="macro">::std::panic!</span>(<span class="string">&quot;Failed to convert arg &#39;self&#39;: {}&quot;</span>, err)
                 }).
             }
         }
-        <span class="kw">_</span> =&gt; {
-            <span class="ident">assoc_fn_error</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
-                <span class="ident">syn::Error::new_spanned</span>(
-                    <span class="kw-2">&amp;</span><span class="ident">sig</span>.<span class="ident">ident</span>,
+        <span class="kw">_ </span>=&gt; {
+            assoc_fn_error = <span class="prelude-val">Some</span>(
+                syn::Error::new_spanned(
+                    <span class="kw-2">&amp;</span>sig.ident,
                     <span class="string">&quot;associated functions are not currently supported&quot;</span>,
                 )
-                .<span class="ident">into_compile_error</span>(),
+                .into_compile_error(),
             );
-            <span class="ident">params_args</span>.<span class="ident">extend</span>(<span class="ident">collect_params</span>(<span class="kw-2">&amp;</span><span class="ident">sig</span>.<span class="ident">inputs</span>, <span class="ident">RECEIVER_ERROR</span>));
-            <span class="macro">quote!</span> { #<span class="ident">self_ident</span>:: }
+            params_args.extend(collect_params(<span class="kw-2">&amp;</span>sig.inputs, RECEIVER_ERROR));
+            <span class="macro">quote! </span>{ #self_ident:: }
         }
     };
 
-    <span class="kw">let</span> (<span class="ident">params</span>, <span class="ident">args</span>) <span class="op">=</span> <span class="ident">params_args</span>;
+    <span class="kw">let </span>(params, args) = params_args;
 
-    <span class="kw">let</span> <span class="ident">fn_call</span> <span class="op">=</span> <span class="macro">quote!</span> {
-        #<span class="ident">assoc_fn_error</span>
-        #<span class="ident">fn_call_prefix</span> #<span class="ident">name</span>(#(#<span class="ident">args</span>),<span class="kw-2">*</span>)
+    <span class="kw">let </span>fn_call = <span class="macro">quote! </span>{
+        #assoc_fn_error
+        #fn_call_prefix #name(#(#args),<span class="kw-2">*</span>)
     };
 
-    <span class="ident">gen_ffi_function</span>(<span class="ident">sig</span>, <span class="ident">ffi_ident</span>, <span class="kw-2">&amp;</span><span class="ident">params</span>, <span class="ident">fn_call</span>)
+    gen_ffi_function(sig, ffi_ident, <span class="kw-2">&amp;</span>params, fn_call)
 }
 
-<span class="kw">fn</span> <span class="ident">is_receiver</span>(<span class="ident">fn_arg</span>: <span class="kw-2">&amp;</span><span class="ident">FnArg</span>) -&gt; <span class="ident">bool</span> {
-    <span class="kw">match</span> <span class="ident">fn_arg</span> {
-        <span class="ident">FnArg::Receiver</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
-        <span class="ident">FnArg::Typed</span>(<span class="ident">pat_ty</span>) =&gt; <span class="macro">matches!</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">pat_ty</span>.<span class="ident">pat</span>, <span class="ident">Pat::Ident</span>(<span class="ident">i</span>) <span class="kw">if</span> <span class="ident">i</span>.<span class="ident">ident</span> <span class="op">==</span> <span class="string">&quot;self&quot;</span>),
+<span class="kw">fn </span>is_receiver(fn_arg: <span class="kw-2">&amp;</span>FnArg) -&gt; bool {
+    <span class="kw">match </span>fn_arg {
+        FnArg::Receiver(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
+        FnArg::Typed(pat_ty) =&gt; <span class="macro">matches!</span>(<span class="kw-2">&amp;*</span>pat_ty.pat, Pat::Ident(i) <span class="kw">if </span>i.ident == <span class="string">&quot;self&quot;</span>),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">collect_params</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">inputs</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">FnArg</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>,
-    <span class="ident">receiver_error_msg</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
-) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">TokenStream</span>, <span class="ident">TokenStream</span>)<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span> {
-    <span class="kw">fn</span> <span class="ident">receiver_error</span>(
-        <span class="ident">receiver</span>: <span class="kw">impl</span> <span class="ident">ToTokens</span>,
-        <span class="ident">receiver_error_msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    ) -&gt; (<span class="ident">TokenStream</span>, <span class="ident">TokenStream</span>) {
-        <span class="kw">let</span> <span class="ident">param</span> <span class="op">=</span> <span class="macro">quote!</span> { <span class="kw-2">&amp;</span><span class="self">self</span> };
-        <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="ident">syn::Error::new_spanned</span>(<span class="ident">receiver</span>, <span class="ident">receiver_error_msg</span>).<span class="ident">into_compile_error</span>();
-        (<span class="ident">param</span>, <span class="ident">arg</span>)
+<span class="kw">fn </span>collect_params&lt;<span class="lifetime">&#39;a</span>&gt;(
+    inputs: <span class="kw">impl </span>IntoIterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>FnArg&gt; + <span class="lifetime">&#39;a</span>,
+    receiver_error_msg: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (TokenStream, TokenStream)&gt; + <span class="lifetime">&#39;a </span>{
+    <span class="kw">fn </span>receiver_error(
+        receiver: <span class="kw">impl </span>ToTokens,
+        receiver_error_msg: <span class="kw-2">&amp;</span>str,
+    ) -&gt; (TokenStream, TokenStream) {
+        <span class="kw">let </span>param = <span class="macro">quote! </span>{ <span class="kw-2">&amp;</span><span class="self">self </span>};
+        <span class="kw">let </span>arg = syn::Error::new_spanned(receiver, receiver_error_msg).into_compile_error();
+        (param, arg)
     }
 
-    <span class="ident">inputs</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">arg</span>)<span class="op">|</span> {
-        <span class="kw">let</span> (<span class="ident">ty</span>, <span class="ident">name</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">arg</span> {
-            <span class="ident">FnArg::Receiver</span>(<span class="ident">r</span>) =&gt; {
-                <span class="kw">return</span> <span class="ident">receiver_error</span>(<span class="ident">r</span>, <span class="ident">receiver_error_msg</span>);
+    inputs.into_iter().enumerate().map(|(i, arg)| {
+        <span class="kw">let </span>(ty, name) = <span class="kw">match </span>arg {
+            FnArg::Receiver(r) =&gt; {
+                <span class="kw">return </span>receiver_error(r, receiver_error_msg);
             }
-            <span class="ident">FnArg::Typed</span>(<span class="ident">pat_ty</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">pat_ty</span>.<span class="ident">pat</span> {
-                    <span class="ident">Pat::Ident</span>(<span class="ident">i</span>) <span class="kw">if</span> <span class="ident">i</span>.<span class="ident">ident</span> <span class="op">==</span> <span class="string">&quot;self&quot;</span> =&gt; {
-                        <span class="kw">return</span> <span class="ident">receiver_error</span>(<span class="ident">i</span>, <span class="ident">receiver_error_msg</span>);
+            FnArg::Typed(pat_ty) =&gt; {
+                <span class="kw">let </span>name = <span class="kw">match </span><span class="kw-2">&amp;*</span>pat_ty.pat {
+                    Pat::Ident(i) <span class="kw">if </span>i.ident == <span class="string">&quot;self&quot; </span>=&gt; {
+                        <span class="kw">return </span>receiver_error(i, receiver_error_msg);
                     }
-                    <span class="ident">Pat::Ident</span>(<span class="ident">i</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">i</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>()),
-                    <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+                    Pat::Ident(i) =&gt; <span class="prelude-val">Some</span>(i.ident.to_string()),
+                    <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                 };
 
-                (<span class="kw-2">&amp;</span><span class="ident">pat_ty</span>.<span class="ident">ty</span>, <span class="ident">name</span>)
+                (<span class="kw-2">&amp;</span>pat_ty.ty, name)
             }
         };
 
-        <span class="kw">let</span> <span class="ident">arg_n</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;arg{i}&quot;</span>);
-        <span class="kw">let</span> <span class="ident">param</span> <span class="op">=</span> <span class="macro">quote!</span> { #<span class="ident">arg_n</span>: <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::FfiType</span> };
+        <span class="kw">let </span>arg_n = <span class="macro">format_ident!</span>(<span class="string">&quot;arg{i}&quot;</span>);
+        <span class="kw">let </span>param = <span class="macro">quote! </span>{ #arg_n: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&gt;::FfiType };
 
-        <span class="comment">// FIXME: With UDL, fallible functions use uniffi::lower_anyhow_error_or_panic instead of</span>
-        <span class="comment">// panicking unconditionally. This seems cleaner though.</span>
-        <span class="kw">let</span> <span class="ident">panic_fmt</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">name</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg &#39;{name}&#39;: {{}}&quot;</span>),
-            <span class="prelude-val">None</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg #{i}: {{}}&quot;</span>),
+        <span class="comment">// FIXME: With UDL, fallible functions use uniffi::lower_anyhow_error_or_panic instead of
+        // panicking unconditionally. This seems cleaner though.
+        </span><span class="kw">let </span>panic_fmt = <span class="kw">match </span>name {
+            <span class="prelude-val">Some</span>(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg &#39;{name}&#39;: {{}}&quot;</span>),
+            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg #{i}: {{}}&quot;</span>),
         };
-        <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="macro">quote!</span> {
-            <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::try_lift</span>(#<span class="ident">arg_n</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
-                <span class="macro">::std::panic!</span>(#<span class="ident">panic_fmt</span>, <span class="ident">err</span>)
+        <span class="kw">let </span>arg = <span class="macro">quote! </span>{
+            &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&gt;::try_lift(#arg_n).unwrap_or_else(|err| {
+                <span class="macro">::std::panic!</span>(#panic_fmt, err)
             })
         };
 
-        (<span class="ident">param</span>, <span class="ident">arg</span>)
+        (param, arg)
     })
 }
 
-<span class="kw">fn</span> <span class="ident">gen_ffi_function</span>(
-    <span class="ident">sig</span>: <span class="kw-2">&amp;</span><span class="ident">Signature</span>,
-    <span class="ident">ffi_ident</span>: <span class="ident">Ident</span>,
-    <span class="ident">params</span>: <span class="kw-2">&amp;</span>[<span class="ident">TokenStream</span>],
-    <span class="ident">rust_fn_call</span>: <span class="ident">TokenStream</span>,
-) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">sig</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> <span class="ident">name_s</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">to_string</span>();
+<span class="kw">fn </span>gen_ffi_function(
+    sig: <span class="kw-2">&amp;</span>Signature,
+    ffi_ident: Ident,
+    params: <span class="kw-2">&amp;</span>[TokenStream],
+    rust_fn_call: TokenStream,
+) -&gt; TokenStream {
+    <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.ident;
+    <span class="kw">let </span>name_s = name.to_string();
 
-    <span class="kw">let</span> <span class="ident">unit_slot</span>;
-    <span class="kw">let</span> (<span class="ident">ty</span>, <span class="ident">throws</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">sig</span>.<span class="ident">output</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">FunctionReturn</span> { <span class="ident">ty</span>, <span class="ident">throws</span> }) =&gt; (<span class="ident">ty</span>, <span class="ident">throws</span>),
-        <span class="prelude-val">None</span> =&gt; {
-            <span class="ident">unit_slot</span> <span class="op">=</span> <span class="macro">parse_quote!</span> { () };
-            (<span class="kw-2">&amp;</span><span class="ident">unit_slot</span>, <span class="kw-2">&amp;</span><span class="prelude-val">None</span>)
+    <span class="kw">let </span>unit_slot;
+    <span class="kw">let </span>(ty, throws) = <span class="kw">match </span><span class="kw-2">&amp;</span>sig.output {
+        <span class="prelude-val">Some</span>(FunctionReturn { ty, throws }) =&gt; (ty, throws),
+        <span class="prelude-val">None </span>=&gt; {
+            unit_slot = <span class="macro">parse_quote! </span>{ () };
+            (<span class="kw-2">&amp;</span>unit_slot, <span class="kw-2">&amp;</span><span class="prelude-val">None</span>)
         }
     };
 
-    <span class="kw">let</span> <span class="ident">return_expr</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">error_ident</span>) <span class="op">=</span> <span class="ident">throws</span> {
-        <span class="macro">quote!</span> {
-            <span class="ident">::uniffi::call_with_result</span>(<span class="ident">call_status</span>, <span class="op">|</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> #<span class="ident">rust_fn_call</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-                    <span class="op">&lt;</span>#<span class="ident">error_ident</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiConverter</span><span class="op">&gt;</span><span class="ident">::lower</span>(
-                        <span class="ident">::std::convert::Into::into</span>(<span class="ident">e</span>),
+    <span class="kw">let </span>return_expr = <span class="kw">if let </span><span class="prelude-val">Some</span>(error_ident) = throws {
+        <span class="macro">quote! </span>{
+            ::uniffi::call_with_result(call_status, || {
+                <span class="kw">let </span>val = #rust_fn_call.map_err(|e| {
+                    &lt;#error_ident <span class="kw">as </span>::uniffi::FfiConverter&gt;::lower(
+                        ::std::convert::Into::into(e),
                     )
                 })<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(<span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiReturn</span><span class="op">&gt;</span><span class="ident">::lower</span>(<span class="ident">val</span>))
+                <span class="prelude-val">Ok</span>(&lt;#ty <span class="kw">as </span>::uniffi::FfiReturn&gt;::lower(val))
             })
         }
-    } <span class="kw">else</span> {
-        <span class="macro">quote!</span> {
-            <span class="ident">::uniffi::call_with_output</span>(<span class="ident">call_status</span>, <span class="op">|</span><span class="op">|</span> {
-                <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiReturn</span><span class="op">&gt;</span><span class="ident">::lower</span>(#<span class="ident">rust_fn_call</span>)
+    } <span class="kw">else </span>{
+        <span class="macro">quote! </span>{
+            ::uniffi::call_with_output(call_status, || {
+                &lt;#ty <span class="kw">as </span>::uniffi::FfiReturn&gt;::lower(#rust_fn_call)
             })
         }
     };
 
-    <span class="macro">quote!</span> {
-        <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-        <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-        <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> #<span class="ident">ffi_ident</span>(
-            #(#<span class="ident">params</span>,)<span class="op">*</span>
-            <span class="ident">call_status</span>: <span class="kw-2">&amp;mut</span> <span class="ident">::uniffi::RustCallStatus</span>,
-        ) -&gt; <span class="op">&lt;</span>#<span class="ident">ty</span> <span class="kw">as</span> <span class="ident">::uniffi::FfiReturn</span><span class="op">&gt;</span><span class="ident">::FfiType</span> {
-            <span class="macro">::uniffi::deps::log::debug!</span>(#<span class="ident">name_s</span>);
-            #<span class="ident">return_expr</span>
+    <span class="macro">quote! </span>{
+        <span class="attribute">#[doc(hidden)]
+        #[no_mangle]
+        </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
+            #(#params,)*
+            call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
+        ) -&gt; &lt;#ty <span class="kw">as </span>::uniffi::FfiReturn&gt;::FfiType {
+            <span class="macro">::uniffi::deps::log::debug!</span>(#name_s);
+            #return_expr
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

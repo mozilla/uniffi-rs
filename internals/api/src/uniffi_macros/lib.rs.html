@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../uniffi_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -185,183 +179,182 @@
 <span id="179">179</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>, <span class="ident">feature</span>(<span class="ident">proc_macro_expand</span>))]</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+</span><span class="attribute">#![cfg_attr(feature = <span class="string">&quot;nightly&quot;</span>, feature(proc_macro_expand))]
 
-<span class="doccomment">//! Macros for `uniffi`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Currently this is just for easily generating integration tests, but maybe</span>
-<span class="doccomment">//! we&#39;ll put some other code-annotation helper macros in here at some point.</span>
+</span><span class="doccomment">//! Macros for `uniffi`.
+//!
+//! Currently this is just for easily generating integration tests, but maybe
+//! we&#39;ll put some other code-annotation helper macros in here at some point.
 
-<span class="kw">use</span> <span class="ident">camino::Utf8Path</span>;
-<span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
-<span class="kw">use</span> <span class="ident">quote::quote</span>;
-<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">parse_macro_input</span>, <span class="ident">LitStr</span>};
-<span class="kw">use</span> <span class="ident">util::rewrite_self_type</span>;
+</span><span class="kw">use </span>camino::Utf8Path;
+<span class="kw">use </span>proc_macro::TokenStream;
+<span class="kw">use </span>quote::quote;
+<span class="kw">use </span>syn::{parse_macro_input, LitStr};
+<span class="kw">use </span>util::rewrite_self_type;
 
-<span class="kw">mod</span> <span class="ident">enum_</span>;
-<span class="kw">mod</span> <span class="ident">error</span>;
-<span class="kw">mod</span> <span class="ident">export</span>;
-<span class="kw">mod</span> <span class="ident">object</span>;
-<span class="kw">mod</span> <span class="ident">record</span>;
-<span class="kw">mod</span> <span class="ident">test</span>;
-<span class="kw">mod</span> <span class="ident">util</span>;
+<span class="kw">mod </span>enum_;
+<span class="kw">mod </span>error;
+<span class="kw">mod </span>export;
+<span class="kw">mod </span>object;
+<span class="kw">mod </span>record;
+<span class="kw">mod </span>test;
+<span class="kw">mod </span>util;
 
-<span class="kw">use</span> <span class="self">self</span>::{
-    <span class="ident">enum_::expand_enum</span>, <span class="ident">error::expand_error</span>, <span class="ident">export::expand_export</span>, <span class="ident">object::expand_object</span>,
-    <span class="ident">record::expand_record</span>,
+<span class="kw">use </span><span class="self">self</span>::{
+    enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
+    record::expand_record,
 };
 
-<span class="doccomment">/// A macro to build testcases for a component&#39;s generated bindings.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This macro provides some plumbing to write automated tests for the generated</span>
-<span class="doccomment">/// foreign language bindings of a component. As a component author, you can write</span>
-<span class="doccomment">/// script files in the target foreign language(s) that exercise you component API,</span>
-<span class="doccomment">/// and then call this macro to produce a `cargo test` testcase from each one.</span>
-<span class="doccomment">/// The generated code will execute your script file with appropriate configuration and</span>
-<span class="doccomment">/// environment to let it load the component bindings, and will pass iff the script</span>
-<span class="doccomment">/// exits successfully.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// To use it, invoke the macro with the name of a fixture/example crate as the first argument,</span>
-<span class="doccomment">/// then one or more file paths relative to the crate root directory. It will produce one `#[test]`</span>
-<span class="doccomment">/// function per file, in a manner designed to play nicely with `cargo test` and its test filtering</span>
-<span class="doccomment">/// options.</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build_foreign_language_testcases</span>(<span class="ident">tokens</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="ident">test::build_foreign_language_testcases</span>(<span class="ident">tokens</span>)
+<span class="doccomment">/// A macro to build testcases for a component&#39;s generated bindings.
+///
+/// This macro provides some plumbing to write automated tests for the generated
+/// foreign language bindings of a component. As a component author, you can write
+/// script files in the target foreign language(s) that exercise you component API,
+/// and then call this macro to produce a `cargo test` testcase from each one.
+/// The generated code will execute your script file with appropriate configuration and
+/// environment to let it load the component bindings, and will pass iff the script
+/// exits successfully.
+///
+/// To use it, invoke the macro with the name of a fixture/example crate as the first argument,
+/// then one or more file paths relative to the crate root directory. It will produce one `#[test]`
+/// function per file, in a manner designed to play nicely with `cargo test` and its test filtering
+/// options.
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>build_foreign_language_testcases(tokens: TokenStream) -&gt; TokenStream {
+    test::build_foreign_language_testcases(tokens)
 }
 
-<span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">export</span>(<span class="ident">_attr</span>: <span class="ident">TokenStream</span>, <span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">input2</span> <span class="op">=</span> <span class="ident">proc_macro2::TokenStream::from</span>(<span class="ident">input</span>.<span class="ident">clone</span>());
+<span class="attribute">#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>export(_attr: TokenStream, input: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>input2 = proc_macro2::TokenStream::from(input.clone());
 
-    <span class="kw">let</span> <span class="ident">gen_output</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="ident">util::mod_path</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">item</span> <span class="op">=</span> <span class="ident">syn::parse</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>gen_output = || {
+        <span class="kw">let </span>mod_path = util::mod_path()<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>item = syn::parse(input)<span class="question-mark">?</span>;
 
-        <span class="comment">// If the input is an `impl` block, rewrite any uses of the `Self` type</span>
-        <span class="comment">// alias to the actual type, so we don&#39;t have to special-case it in the</span>
-        <span class="comment">// metadata collection or scaffolding code generation (which generates</span>
-        <span class="comment">// new functions outside of the `impl`).</span>
-        <span class="ident">rewrite_self_type</span>(<span class="kw-2">&amp;mut</span> <span class="ident">item</span>);
+        <span class="comment">// If the input is an `impl` block, rewrite any uses of the `Self` type
+        // alias to the actual type, so we don&#39;t have to special-case it in the
+        // metadata collection or scaffolding code generation (which generates
+        // new functions outside of the `impl`).
+        </span>rewrite_self_type(<span class="kw-2">&amp;mut </span>item);
 
-        <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">export::gen_metadata</span>(<span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="ident">mod_path</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">expand_export</span>(<span class="ident">metadata</span>, <span class="kw-2">&amp;</span><span class="ident">mod_path</span>))
+        <span class="kw">let </span>metadata = export::gen_metadata(item, <span class="kw-2">&amp;</span>mod_path)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(expand_export(metadata, <span class="kw-2">&amp;</span>mod_path))
     };
-    <span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">gen_output</span>().<span class="ident">unwrap_or_else</span>(<span class="ident">syn::Error::into_compile_error</span>);
+    <span class="kw">let </span>output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 
-    <span class="macro">quote!</span> {
-        #<span class="ident">input2</span>
-        #<span class="ident">output</span>
+    <span class="macro">quote! </span>{
+        #input2
+        #output
     }
-    .<span class="ident">into</span>()
+    .into()
 }
 
-<span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Record</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">derive_record</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">util::mod_path</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">p</span>) =&gt; <span class="ident">p</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>.<span class="ident">into_compile_error</span>().<span class="ident">into</span>(),
+<span class="attribute">#[proc_macro_derive(Record)]
+</span><span class="kw">pub fn </span>derive_record(input: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
+        <span class="prelude-val">Ok</span>(p) =&gt; p,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error().into(),
     };
-    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">input</span>);
+    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
-    <span class="ident">expand_record</span>(<span class="ident">input</span>, <span class="ident">mod_path</span>).<span class="ident">into</span>()
+    expand_record(input, mod_path).into()
 }
 
-<span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Enum</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">derive_enum</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">util::mod_path</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">p</span>) =&gt; <span class="ident">p</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>.<span class="ident">into_compile_error</span>().<span class="ident">into</span>(),
+<span class="attribute">#[proc_macro_derive(Enum)]
+</span><span class="kw">pub fn </span>derive_enum(input: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
+        <span class="prelude-val">Ok</span>(p) =&gt; p,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error().into(),
     };
-    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">input</span>);
+    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
-    <span class="ident">expand_enum</span>(<span class="ident">input</span>, <span class="ident">mod_path</span>).<span class="ident">into</span>()
+    expand_enum(input, mod_path).into()
 }
 
-<span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Object</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">derive_object</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">util::mod_path</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">p</span>) =&gt; <span class="ident">p</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>.<span class="ident">into_compile_error</span>().<span class="ident">into</span>(),
+<span class="attribute">#[proc_macro_derive(Object)]
+</span><span class="kw">pub fn </span>derive_object(input: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
+        <span class="prelude-val">Ok</span>(p) =&gt; p,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error().into(),
     };
-    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">input</span>);
+    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
-    <span class="ident">expand_object</span>(<span class="ident">input</span>, <span class="ident">mod_path</span>).<span class="ident">into</span>()
+    expand_object(input, mod_path).into()
 }
 
-<span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Error</span>, <span class="ident">attributes</span>(<span class="ident">uniffi</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">derive_error</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">util::mod_path</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">p</span>) =&gt; <span class="ident">p</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>.<span class="ident">into_compile_error</span>().<span class="ident">into</span>(),
+<span class="attribute">#[proc_macro_derive(Error, attributes(uniffi))]
+</span><span class="kw">pub fn </span>derive_error(input: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
+        <span class="prelude-val">Ok</span>(p) =&gt; p,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error().into(),
     };
-    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">input</span>);
+    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
-    <span class="ident">expand_error</span>(<span class="ident">input</span>, <span class="ident">mod_path</span>).<span class="ident">into</span>()
+    expand_error(input, mod_path).into()
 }
 
-<span class="doccomment">/// A helper macro to include generated component scaffolding.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is a simple convenience macro to include the UniFFI component</span>
-<span class="doccomment">/// scaffolding as built by `uniffi_build::generate_scaffolding`.</span>
-<span class="doccomment">/// Use it like so:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rs</span>
-<span class="doccomment">/// uniffi_macros::include_scaffolding!(&quot;my_component_name&quot;);</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This will expand to the appropriate `include!` invocation to include</span>
-<span class="doccomment">/// the generated `my_component_name.uniffi.rs` (which it assumes has</span>
-<span class="doccomment">/// been successfully built by your crate&#39;s `build.rs` script).</span>
-<span class="doccomment">///</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_scaffolding</span>(<span class="ident">component_name</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">component_name</span> <span class="kw">as</span> <span class="ident">syn::LitStr</span>);
-    <span class="kw">if</span> <span class="ident">std::env::var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">is_err</span>() {
-        <span class="macro">quote!</span> {
+<span class="doccomment">/// A helper macro to include generated component scaffolding.
+///
+/// This is a simple convenience macro to include the UniFFI component
+/// scaffolding as built by `uniffi_build::generate_scaffolding`.
+/// Use it like so:
+///
+/// ```rs
+/// uniffi_macros::include_scaffolding!(&quot;my_component_name&quot;);
+/// ```
+///
+/// This will expand to the appropriate `include!` invocation to include
+/// the generated `my_component_name.uniffi.rs` (which it assumes has
+/// been successfully built by your crate&#39;s `build.rs` script).
+///
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>include_scaffolding(component_name: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>name = <span class="macro">syn::parse_macro_input!</span>(component_name <span class="kw">as </span>syn::LitStr);
+    <span class="kw">if </span>std::env::var(<span class="string">&quot;OUT_DIR&quot;</span>).is_err() {
+        <span class="macro">quote! </span>{
             <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
         }
-    } <span class="kw">else</span> {
-        <span class="macro">quote!</span> {
-            <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/&quot;</span>, #<span class="ident">name</span>, <span class="string">&quot;.uniffi.rs&quot;</span>));
+    } <span class="kw">else </span>{
+        <span class="macro">quote! </span>{
+            <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/&quot;</span>, #name, <span class="string">&quot;.uniffi.rs&quot;</span>));
         }
-    }.<span class="ident">into</span>()
+    }.into()
 }
 
-<span class="doccomment">/// A helper macro to generate and include component scaffolding.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is a convenience macro designed for writing `trybuild`-style tests and</span>
-<span class="doccomment">/// probably shouldn&#39;t be used for production code. Given the path to a `.udl` file,</span>
-<span class="doccomment">/// if will run `uniffi-bindgen` to produce the corresponding Rust scaffolding and then</span>
-<span class="doccomment">/// include it directly into the calling file. Like so:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rs</span>
-<span class="doccomment">/// uniffi_macros::generate_and_include_scaffolding!(&quot;path/to/my/interface.udl&quot;);</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_and_include_scaffolding</span>(<span class="ident">udl_file</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">udl_file</span> <span class="kw">as</span> <span class="ident">syn::LitStr</span>);
-    <span class="kw">let</span> <span class="ident">udl_file_string</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">value</span>();
-    <span class="kw">let</span> <span class="ident">udl_file_path</span> <span class="op">=</span> <span class="ident">Utf8Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">udl_file_string</span>);
-    <span class="kw">if</span> <span class="ident">std::env::var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">is_err</span>() {
-        <span class="macro">quote!</span> {
+<span class="doccomment">/// A helper macro to generate and include component scaffolding.
+///
+/// This is a convenience macro designed for writing `trybuild`-style tests and
+/// probably shouldn&#39;t be used for production code. Given the path to a `.udl` file,
+/// if will run `uniffi-bindgen` to produce the corresponding Rust scaffolding and then
+/// include it directly into the calling file. Like so:
+///
+/// ```rs
+/// uniffi_macros::generate_and_include_scaffolding!(&quot;path/to/my/interface.udl&quot;);
+/// ```
+///
+</span><span class="attribute">#[proc_macro]
+</span><span class="kw">pub fn </span>generate_and_include_scaffolding(udl_file: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>udl_file = <span class="macro">syn::parse_macro_input!</span>(udl_file <span class="kw">as </span>syn::LitStr);
+    <span class="kw">let </span>udl_file_string = udl_file.value();
+    <span class="kw">let </span>udl_file_path = Utf8Path::new(<span class="kw-2">&amp;</span>udl_file_string);
+    <span class="kw">if </span>std::env::var(<span class="string">&quot;OUT_DIR&quot;</span>).is_err() {
+        <span class="macro">quote! </span>{
             <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
         }
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">uniffi_build::generate_scaffolding</span>(<span class="ident">udl_file_path</span>).<span class="ident">is_err</span>() {
-        <span class="macro">quote!</span> {
-            <span class="macro">compile_error!</span>(<span class="macro">concat!</span>(<span class="string">&quot;Failed to generate scaffolding from UDL file at &quot;</span>, #<span class="ident">udl_file</span>));
+    } <span class="kw">else if </span>uniffi_build::generate_scaffolding(udl_file_path).is_err() {
+        <span class="macro">quote! </span>{
+            <span class="macro">compile_error!</span>(<span class="macro">concat!</span>(<span class="string">&quot;Failed to generate scaffolding from UDL file at &quot;</span>, #udl_file));
         }
-    } <span class="kw">else</span> {
-        <span class="comment">// We know the filename is good because `generate_scaffolding` succeeded,</span>
-        <span class="comment">// so this `unwrap` will never fail.</span>
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">LitStr::new</span>(<span class="ident">udl_file_path</span>.<span class="ident">file_stem</span>().<span class="ident">unwrap</span>(), <span class="ident">udl_file</span>.<span class="ident">span</span>());
-        <span class="macro">quote!</span> {
-            <span class="macro">uniffi_macros::include_scaffolding!</span>(#<span class="ident">name</span>);
+    } <span class="kw">else </span>{
+        <span class="comment">// We know the filename is good because `generate_scaffolding` succeeded,
+        // so this `unwrap` will never fail.
+        </span><span class="kw">let </span>name = LitStr::new(udl_file_path.file_stem().unwrap(), udl_file.span());
+        <span class="macro">quote! </span>{
+            <span class="macro">uniffi_macros::include_scaffolding!</span>(#name);
         }
-    }.<span class="ident">into</span>()
+    }.into()
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

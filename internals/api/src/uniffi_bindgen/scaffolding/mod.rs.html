@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/scaffolding/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/scaffolding/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -158,156 +152,155 @@
 <span id="152">152</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="kw">use</span> <span class="ident">anyhow::Result</span>;
-<span class="kw">use</span> <span class="ident">askama::Template</span>;
-<span class="kw">use</span> <span class="ident">std::borrow::Borrow</span>;
+</span><span class="kw">use </span>anyhow::Result;
+<span class="kw">use </span>askama::Template;
+<span class="kw">use </span>std::borrow::Borrow;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::interface</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">heck::ToSnakeCase</span>;
+<span class="kw">use </span><span class="kw">super</span>::interface::<span class="kw-2">*</span>;
+<span class="kw">use </span>heck::ToSnakeCase;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Template</span>)]</span>
-<span class="attribute">#[<span class="ident">template</span>(<span class="ident">syntax</span> <span class="op">=</span> <span class="string">&quot;rs&quot;</span>, <span class="ident">escape</span> <span class="op">=</span> <span class="string">&quot;none&quot;</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;scaffolding_template.rs&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RustScaffolding</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>,
-    <span class="ident">uniffi_version</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
+<span class="attribute">#[derive(Template)]
+#[template(syntax = <span class="string">&quot;rs&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;scaffolding_template.rs&quot;</span>)]
+</span><span class="kw">pub struct </span>RustScaffolding&lt;<span class="lifetime">&#39;a</span>&gt; {
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+    uniffi_version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
 }
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">RustScaffolding</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">ci</span>,
-            <span class="ident">uniffi_version</span>: <span class="ident"><span class="kw">crate</span>::BINDGEN_VERSION</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; RustScaffolding&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">pub fn </span>new(ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            ci,
+            uniffi_version: <span class="kw">crate</span>::BINDGEN_VERSION,
         }
     }
 }
-<span class="kw">mod</span> <span class="ident">filters</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="kw">mod </span>filters {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_rs</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">Type::Int8</span> =&gt; <span class="string">&quot;i8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt8</span> =&gt; <span class="string">&quot;u8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Int16</span> =&gt; <span class="string">&quot;i16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt16</span> =&gt; <span class="string">&quot;u16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Int32</span> =&gt; <span class="string">&quot;i32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt32</span> =&gt; <span class="string">&quot;u32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Int64</span> =&gt; <span class="string">&quot;i64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt64</span> =&gt; <span class="string">&quot;u64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Float32</span> =&gt; <span class="string">&quot;f32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Float64</span> =&gt; <span class="string">&quot;f64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Boolean</span> =&gt; <span class="string">&quot;bool&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::String</span> =&gt; <span class="string">&quot;String&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Timestamp</span> =&gt; <span class="string">&quot;std::time::SystemTime&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Duration</span> =&gt; <span class="string">&quot;std::time::Duration&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Enum</span>(<span class="ident">name</span>) <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="ident">name</span>) <span class="op">|</span> <span class="ident">Type::Error</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>),
-            <span class="ident">Type::Object</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;r#{name}&gt;&quot;</span>),
-            <span class="ident">Type::CallbackInterface</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Box&lt;dyn r#{name}&gt;&quot;</span>),
-            <span class="ident">Type::Optional</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type::Sequence</span>(<span class="ident">t</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">type_rs</span>(<span class="ident">t</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
+    <span class="kw">pub fn </span>type_rs(type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
+            Type::Int8 =&gt; <span class="string">&quot;i8&quot;</span>.into(),
+            Type::UInt8 =&gt; <span class="string">&quot;u8&quot;</span>.into(),
+            Type::Int16 =&gt; <span class="string">&quot;i16&quot;</span>.into(),
+            Type::UInt16 =&gt; <span class="string">&quot;u16&quot;</span>.into(),
+            Type::Int32 =&gt; <span class="string">&quot;i32&quot;</span>.into(),
+            Type::UInt32 =&gt; <span class="string">&quot;u32&quot;</span>.into(),
+            Type::Int64 =&gt; <span class="string">&quot;i64&quot;</span>.into(),
+            Type::UInt64 =&gt; <span class="string">&quot;u64&quot;</span>.into(),
+            Type::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
+            Type::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
+            Type::Boolean =&gt; <span class="string">&quot;bool&quot;</span>.into(),
+            Type::String =&gt; <span class="string">&quot;String&quot;</span>.into(),
+            Type::Timestamp =&gt; <span class="string">&quot;std::time::SystemTime&quot;</span>.into(),
+            Type::Duration =&gt; <span class="string">&quot;std::time::Duration&quot;</span>.into(),
+            Type::Enum(name) | Type::Record(name) | Type::Error(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>),
+            Type::Object(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;r#{name}&gt;&quot;</span>),
+            Type::CallbackInterface(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Box&lt;dyn r#{name}&gt;&quot;</span>),
+            Type::Optional(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, type_rs(t)<span class="question-mark">?</span>),
+            Type::Sequence(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, type_rs(t)<span class="question-mark">?</span>),
+            Type::Map(k, v) =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;std::collections::HashMap&lt;{}, {}&gt;&quot;</span>,
-                <span class="ident">type_rs</span>(<span class="ident">k</span>)<span class="question-mark">?</span>,
-                <span class="ident">type_rs</span>(<span class="ident">v</span>)<span class="question-mark">?</span>
-            ),
-            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>),
-            <span class="ident">Type::External</span> { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;External types coming to a uniffi near you soon!&quot;</span>),
-            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+                type_rs(k)<span class="question-mark">?</span>,
+                type_rs(v)<span class="question-mark">?
+            </span>),
+            Type::Custom { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>),
+            Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;External types coming to a uniffi near you soon!&quot;</span>),
+            Type::Unresolved { .. } =&gt; {
                 <span class="macro">unreachable!</span>(<span class="string">&quot;UDL scaffolding code never contains unresolved types&quot;</span>)
             }
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_ffi</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">FfiType</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="ident">FfiType::Int8</span> =&gt; <span class="string">&quot;i8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::UInt8</span> =&gt; <span class="string">&quot;u8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::Int16</span> =&gt; <span class="string">&quot;i16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::UInt16</span> =&gt; <span class="string">&quot;u16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::Int32</span> =&gt; <span class="string">&quot;i32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::UInt32</span> =&gt; <span class="string">&quot;u32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::Int64</span> =&gt; <span class="string">&quot;i64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::UInt64</span> =&gt; <span class="string">&quot;u64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::Float32</span> =&gt; <span class="string">&quot;f32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::Float64</span> =&gt; <span class="string">&quot;f64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::RustArcPtr</span>(<span class="kw">_</span>) =&gt; <span class="string">&quot;*const std::os::raw::c_void&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::RustBuffer</span> =&gt; <span class="string">&quot;uniffi::RustBuffer&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::ForeignBytes</span> =&gt; <span class="string">&quot;uniffi::ForeignBytes&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">FfiType::ForeignCallback</span> =&gt; <span class="string">&quot;uniffi::ForeignCallback&quot;</span>.<span class="ident">into</span>(),
+    <span class="kw">pub fn </span>type_ffi(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
+            FfiType::Int8 =&gt; <span class="string">&quot;i8&quot;</span>.into(),
+            FfiType::UInt8 =&gt; <span class="string">&quot;u8&quot;</span>.into(),
+            FfiType::Int16 =&gt; <span class="string">&quot;i16&quot;</span>.into(),
+            FfiType::UInt16 =&gt; <span class="string">&quot;u16&quot;</span>.into(),
+            FfiType::Int32 =&gt; <span class="string">&quot;i32&quot;</span>.into(),
+            FfiType::UInt32 =&gt; <span class="string">&quot;u32&quot;</span>.into(),
+            FfiType::Int64 =&gt; <span class="string">&quot;i64&quot;</span>.into(),
+            FfiType::UInt64 =&gt; <span class="string">&quot;u64&quot;</span>.into(),
+            FfiType::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
+            FfiType::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;*const std::os::raw::c_void&quot;</span>.into(),
+            FfiType::RustBuffer =&gt; <span class="string">&quot;uniffi::RustBuffer&quot;</span>.into(),
+            FfiType::ForeignBytes =&gt; <span class="string">&quot;uniffi::ForeignBytes&quot;</span>.into(),
+            FfiType::ForeignCallback =&gt; <span class="string">&quot;uniffi::ForeignCallback&quot;</span>.into(),
         })
     }
 
-    <span class="doccomment">/// Get the name of the FfiConverter implementation for this type</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - For primitives / standard types this is the type itself.</span>
-    <span class="doccomment">/// - For user-defined types, this is a unique generated name.  We then generate a unit-struct</span>
-    <span class="doccomment">///   in the scaffolding code that implements FfiConverter.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_converter_name</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="ident">askama::Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">type_</span> {
-            <span class="comment">// Timestamp/Duraration are handled by standard types</span>
-            <span class="ident">Type::Timestamp</span> =&gt; <span class="string">&quot;std::time::SystemTime&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Duration</span> =&gt; <span class="string">&quot;std::time::Duration&quot;</span>.<span class="ident">into</span>(),
-            <span class="comment">// Object is handled by Arc&lt;T&gt;</span>
-            <span class="ident">Type::Object</span>(<span class="ident">name</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;r#{name}&gt;&quot;</span>),
-            <span class="comment">// Other user-defined types are handled by a unit-struct that we generate.  The</span>
-            <span class="comment">// FfiConverter implementation for this can be found in one of the scaffolding template code.</span>
-            <span class="comment">//</span>
-            <span class="comment">// We generate a unit-struct to sidestep Rust&#39;s orphan rules (ADR-0006).</span>
-            <span class="comment">//</span>
-            <span class="comment">// CallbackInterface is handled by special case code on both the scaffolding and</span>
-            <span class="comment">// bindings side.  It&#39;s not a unit-struct, but the same name generation code works.</span>
-            <span class="ident">Type::Enum</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Record</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::Error</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Type::CallbackInterface</span>(<span class="kw">_</span>) =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="ident">type_</span>.<span class="ident">canonical_name</span>())
+    <span class="doccomment">/// Get the name of the FfiConverter implementation for this type
+    ///
+    /// - For primitives / standard types this is the type itself.
+    /// - For user-defined types, this is a unique generated name.  We then generate a unit-struct
+    ///   in the scaffolding code that implements FfiConverter.
+    </span><span class="kw">pub fn </span>ffi_converter_name(type_: <span class="kw-2">&amp;</span>Type) -&gt; askama::Result&lt;String&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
+            <span class="comment">// Timestamp/Duraration are handled by standard types
+            </span>Type::Timestamp =&gt; <span class="string">&quot;std::time::SystemTime&quot;</span>.into(),
+            Type::Duration =&gt; <span class="string">&quot;std::time::Duration&quot;</span>.into(),
+            <span class="comment">// Object is handled by Arc&lt;T&gt;
+            </span>Type::Object(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;r#{name}&gt;&quot;</span>),
+            <span class="comment">// Other user-defined types are handled by a unit-struct that we generate.  The
+            // FfiConverter implementation for this can be found in one of the scaffolding template code.
+            //
+            // We generate a unit-struct to sidestep Rust&#39;s orphan rules (ADR-0006).
+            //
+            // CallbackInterface is handled by special case code on both the scaffolding and
+            // bindings side.  It&#39;s not a unit-struct, but the same name generation code works.
+            </span>Type::Enum(<span class="kw">_</span>) | Type::Record(<span class="kw">_</span>) | Type::Error(<span class="kw">_</span>) | Type::CallbackInterface(<span class="kw">_</span>) =&gt; {
+                <span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, type_.canonical_name())
             }
-            <span class="comment">// Wrapper types are implemented by generics that wrap the FfiConverter implementation of the</span>
-            <span class="comment">// inner type.</span>
-            <span class="ident">Type::Optional</span>(<span class="ident">inner</span>) =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>)
+            <span class="comment">// Wrapper types are implemented by generics that wrap the FfiConverter implementation of the
+            // inner type.
+            </span>Type::Optional(inner) =&gt; {
+                <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, ffi_converter_name(inner)<span class="question-mark">?</span>)
             }
-            <span class="ident">Type::Sequence</span>(<span class="ident">inner</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, <span class="ident">ffi_converter_name</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>),
-            <span class="ident">Type::Map</span>(<span class="ident">k</span>, <span class="ident">v</span>) =&gt; <span class="macro">format!</span>(
+            Type::Sequence(inner) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, ffi_converter_name(inner)<span class="question-mark">?</span>),
+            Type::Map(k, v) =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;std::collections::HashMap&lt;{}, {}&gt;&quot;</span>,
-                <span class="ident">ffi_converter_name</span>(<span class="ident">k</span>)<span class="question-mark">?</span>,
-                <span class="ident">ffi_converter_name</span>(<span class="ident">v</span>)<span class="question-mark">?</span>
-            ),
-            <span class="comment">// External and Wrapped bytes have FfiConverters with a predictable name based on the type name.</span>
-            <span class="ident">Type::Custom</span> { <span class="ident">name</span>, .. } <span class="op">|</span> <span class="ident">Type::External</span> { <span class="ident">name</span>, .. } =&gt; {
+                ffi_converter_name(k)<span class="question-mark">?</span>,
+                ffi_converter_name(v)<span class="question-mark">?
+            </span>),
+            <span class="comment">// External and Wrapped bytes have FfiConverters with a predictable name based on the type name.
+            </span>Type::Custom { name, .. } | Type::External { name, .. } =&gt; {
                 <span class="macro">format!</span>(<span class="string">&quot;FfiConverterType{name}&quot;</span>)
             }
-            <span class="comment">// Primitive types / strings are implemented by their rust type</span>
-            <span class="ident">Type::Int8</span> =&gt; <span class="string">&quot;i8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt8</span> =&gt; <span class="string">&quot;u8&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Int16</span> =&gt; <span class="string">&quot;i16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt16</span> =&gt; <span class="string">&quot;u16&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Int32</span> =&gt; <span class="string">&quot;i32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt32</span> =&gt; <span class="string">&quot;u32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Int64</span> =&gt; <span class="string">&quot;i64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::UInt64</span> =&gt; <span class="string">&quot;u64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Float32</span> =&gt; <span class="string">&quot;f32&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Float64</span> =&gt; <span class="string">&quot;f64&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::String</span> =&gt; <span class="string">&quot;String&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Boolean</span> =&gt; <span class="string">&quot;bool&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Type::Unresolved</span> { .. } =&gt; {
+            <span class="comment">// Primitive types / strings are implemented by their rust type
+            </span>Type::Int8 =&gt; <span class="string">&quot;i8&quot;</span>.into(),
+            Type::UInt8 =&gt; <span class="string">&quot;u8&quot;</span>.into(),
+            Type::Int16 =&gt; <span class="string">&quot;i16&quot;</span>.into(),
+            Type::UInt16 =&gt; <span class="string">&quot;u16&quot;</span>.into(),
+            Type::Int32 =&gt; <span class="string">&quot;i32&quot;</span>.into(),
+            Type::UInt32 =&gt; <span class="string">&quot;u32&quot;</span>.into(),
+            Type::Int64 =&gt; <span class="string">&quot;i64&quot;</span>.into(),
+            Type::UInt64 =&gt; <span class="string">&quot;u64&quot;</span>.into(),
+            Type::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
+            Type::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
+            Type::String =&gt; <span class="string">&quot;String&quot;</span>.into(),
+            Type::Boolean =&gt; <span class="string">&quot;bool&quot;</span>.into(),
+            Type::Unresolved { .. } =&gt; {
                 <span class="macro">unreachable!</span>(<span class="string">&quot;UDL scaffolding code never contains unresolved types&quot;</span>)
             }
         })
     }
 
-    <span class="comment">// Map a type to Rust code that specifies the FfiConverter implementation.</span>
-    <span class="comment">//</span>
-    <span class="comment">// This outputs something like `&lt;TheFfiConverterStruct as FfiConverter&gt;`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_converter</span>(<span class="ident">type_</span>: <span class="kw-2">&amp;</span><span class="ident">Type</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
+    <span class="comment">// Map a type to Rust code that specifies the FfiConverter implementation.
+    //
+    // This outputs something like `&lt;TheFfiConverterStruct as FfiConverter&gt;`
+    </span><span class="kw">pub fn </span>ffi_converter(type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
             <span class="string">&quot;&lt;{} as uniffi::FfiConverter&gt;&quot;</span>,
-            <span class="ident">ffi_converter_name</span>(<span class="ident">type_</span>)<span class="question-mark">?</span>
-        ))
+            ffi_converter_name(type_)<span class="question-mark">?
+        </span>))
     }
 
-    <span class="comment">// Turns a `crate-name` into the `crate_name` the .rs code needs to specify.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">crate_name_rs</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">askama::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">nm</span>.<span class="ident">to_string</span>().<span class="ident">to_snake_case</span>())
+    <span class="comment">// Turns a `crate-name` into the `crate_name` the .rs code needs to specify.
+    </span><span class="kw">pub fn </span>crate_name_rs(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(nm.to_string().to_snake_case())
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

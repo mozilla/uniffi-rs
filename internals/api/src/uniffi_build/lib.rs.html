@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_build/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uniffi_build/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../uniffi_build/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uniffi_build/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_build/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../uniffi_build/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -68,66 +62,65 @@
 <span id="62">62</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">camino::Utf8Path</span>;
-<span class="kw">use</span> <span class="ident">std::env</span>;
+</span><span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>camino::Utf8Path;
+<span class="kw">use </span>std::env;
 
-<span class="doccomment">/// Generate the rust &quot;scaffolding&quot; required to build a uniffi component.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Given the path to an UDL file, this function will call the `uniffi-bindgen`</span>
-<span class="doccomment">/// command-line tool to generate the `pub extern &quot;C&quot;` functions and other supporting</span>
-<span class="doccomment">/// code required to expose the defined interface from Rust. The expectation is that</span>
-<span class="doccomment">/// this will be called from a crate&#39;s build script, and the resulting file will</span>
-<span class="doccomment">/// be `include!()`ed into the build.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Given an UDL file named `example.udl`, the generated scaffolding will be written</span>
-<span class="doccomment">/// into a file named `example.uniffi.rs` in the `$OUT_DIR` directory.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If the &quot;builtin-bindgen&quot; feature is enabled then this will take a dependency on</span>
-<span class="doccomment">/// the `uniffi_bindgen` crate and call its methods directly, rather than using the</span>
-<span class="doccomment">/// command-line tool. This is mostly useful for developers who are working on uniffi</span>
-<span class="doccomment">/// itself and need to test out their changes to the bindings generator.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_scaffolding</span>(<span class="ident">udl_file</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">udl_file</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">as_ref</span>();
+<span class="doccomment">/// Generate the rust &quot;scaffolding&quot; required to build a uniffi component.
+///
+/// Given the path to an UDL file, this function will call the `uniffi-bindgen`
+/// command-line tool to generate the `pub extern &quot;C&quot;` functions and other supporting
+/// code required to expose the defined interface from Rust. The expectation is that
+/// this will be called from a crate&#39;s build script, and the resulting file will
+/// be `include!()`ed into the build.
+///
+/// Given an UDL file named `example.udl`, the generated scaffolding will be written
+/// into a file named `example.uniffi.rs` in the `$OUT_DIR` directory.
+///
+/// If the &quot;builtin-bindgen&quot; feature is enabled then this will take a dependency on
+/// the `uniffi_bindgen` crate and call its methods directly, rather than using the
+/// command-line tool. This is mostly useful for developers who are working on uniffi
+/// itself and need to test out their changes to the bindings generator.
+</span><span class="kw">pub fn </span>generate_scaffolding(udl_file: <span class="kw">impl </span>AsRef&lt;Utf8Path&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let </span>udl_file = udl_file.as_ref();
 
     <span class="macro">println!</span>(<span class="string">&quot;cargo:rerun-if-changed={udl_file}&quot;</span>);
-    <span class="comment">// The UNIFFI_TESTS_DISABLE_EXTENSIONS variable disables some bindings, but it is evaluated</span>
-    <span class="comment">// at *build* time, so we need to rebuild when it changes.</span>
-    <span class="macro">println!</span>(<span class="string">&quot;cargo:rerun-if-env-changed=UNIFFI_TESTS_DISABLE_EXTENSIONS&quot;</span>);
-    <span class="comment">// Why don&#39;t we just depend on uniffi-bindgen and call the public functions?</span>
-    <span class="comment">// Calling the command line helps making sure that the generated swift/Kotlin/whatever</span>
-    <span class="comment">// bindings were generated with the same version of uniffi as the Rust scaffolding code.</span>
-    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">env::var</span>(<span class="string">&quot;OUT_DIR&quot;</span>).<span class="ident">context</span>(<span class="string">&quot;$OUT_DIR missing?!&quot;</span>)<span class="question-mark">?</span>;
-    <span class="ident">run_uniffi_bindgen_scaffolding</span>(<span class="ident">out_dir</span>.<span class="ident">as_ref</span>(), <span class="ident">udl_file</span>)
+    <span class="comment">// The UNIFFI_TESTS_DISABLE_EXTENSIONS variable disables some bindings, but it is evaluated
+    // at *build* time, so we need to rebuild when it changes.
+    </span><span class="macro">println!</span>(<span class="string">&quot;cargo:rerun-if-env-changed=UNIFFI_TESTS_DISABLE_EXTENSIONS&quot;</span>);
+    <span class="comment">// Why don&#39;t we just depend on uniffi-bindgen and call the public functions?
+    // Calling the command line helps making sure that the generated swift/Kotlin/whatever
+    // bindings were generated with the same version of uniffi as the Rust scaffolding code.
+    </span><span class="kw">let </span>out_dir = env::var(<span class="string">&quot;OUT_DIR&quot;</span>).context(<span class="string">&quot;$OUT_DIR missing?!&quot;</span>)<span class="question-mark">?</span>;
+    run_uniffi_bindgen_scaffolding(out_dir.as_ref(), udl_file)
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;builtin-bindgen&quot;</span>))]</span>
-<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_scaffolding</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>, <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">use</span> <span class="ident">anyhow::bail</span>;
-    <span class="kw">use</span> <span class="ident">std::process::Command</span>;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;builtin-bindgen&quot;</span>))]
+</span><span class="kw">fn </span>run_uniffi_bindgen_scaffolding(out_dir: <span class="kw-2">&amp;</span>Utf8Path, udl_file: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">use </span>anyhow::bail;
+    <span class="kw">use </span>std::process::Command;
 
-    <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;uniffi-bindgen&quot;</span>)
-        .<span class="ident">arg</span>(<span class="string">&quot;scaffolding&quot;</span>)
-        .<span class="ident">arg</span>(<span class="string">&quot;--out-dir&quot;</span>)
-        .<span class="ident">arg</span>(<span class="ident">out_dir</span>)
-        .<span class="ident">arg</span>(<span class="ident">udl_file</span>)
-        .<span class="ident">status</span>()
-        .<span class="ident">context</span>(
+    <span class="kw">let </span>status = Command::new(<span class="string">&quot;uniffi-bindgen&quot;</span>)
+        .arg(<span class="string">&quot;scaffolding&quot;</span>)
+        .arg(<span class="string">&quot;--out-dir&quot;</span>)
+        .arg(out_dir)
+        .arg(udl_file)
+        .status()
+        .context(
             <span class="string">&quot;failed to run `uniffi-bindgen` - \
              have you installed it via `cargo install uniffi_bindgen`?&quot;</span>,
         )<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">status</span>.<span class="ident">success</span>() {
+    <span class="kw">if </span>!status.success() {
         <span class="macro">bail!</span>(<span class="string">&quot;Error while generating scaffolding code&quot;</span>);
     }
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;builtin-bindgen&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">run_uniffi_bindgen_scaffolding</span>(<span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>, <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">uniffi_bindgen::generate_component_scaffolding</span>(<span class="ident">udl_file</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">out_dir</span>), <span class="bool-val">false</span>)
+<span class="attribute">#[cfg(feature = <span class="string">&quot;builtin-bindgen&quot;</span>)]
+</span><span class="kw">fn </span>run_uniffi_bindgen_scaffolding(out_dir: <span class="kw-2">&amp;</span>Utf8Path, udl_file: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    uniffi_bindgen::generate_component_scaffolding(udl_file, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(out_dir), <span class="bool-val">false</span>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_build" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_build" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

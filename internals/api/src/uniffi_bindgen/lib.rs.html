@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -593,591 +587,590 @@
 <span id="587">587</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Uniffi: easily build cross-platform software components in Rust</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This is a highly-experimental crate for building cross-language software components</span>
-<span class="doccomment">//! in Rust, based on things we&#39;ve learned and patterns we&#39;ve developed in the</span>
-<span class="doccomment">//! [mozilla/application-services](https://github.com/mozilla/application-services) project.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The idea is to let you write your code once, in Rust, and then re-use it from many</span>
-<span class="doccomment">//! other programming languages via Rust&#39;s C-compatible FFI layer and some automagically</span>
-<span class="doccomment">//! generated binding code. If you think of it as a kind of [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)</span>
-<span class="doccomment">//! wannabe, with a clunkier developer experience but support for more target languages,</span>
-<span class="doccomment">//! you&#39;ll be pretty close to the mark.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Currently supported target languages include Kotlin, Swift and Python.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Usage</span>
-<span class="comment">//</span>
-<span class="doccomment">//! To build a cross-language component using `uniffi`, follow these steps.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### 1) Specify your Component Interface</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Start by thinking about the interface you want to expose for use</span>
-<span class="doccomment">//! from other languages. Use the Interface Definition Language to specify your interface</span>
-<span class="doccomment">//! in a `.udl` file, where it can be processed by the tools from this crate.</span>
-<span class="doccomment">//! For example you might define an interface like this:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```text</span>
-<span class="doccomment">//! namespace example {</span>
-<span class="doccomment">//!   u32 foo(u32 bar);</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! dictionary MyData {</span>
-<span class="doccomment">//!   u32 num_foos;</span>
-<span class="doccomment">//!   bool has_a_bar;</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### 2) Implement the Component Interface as a Rust crate</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! With the interface, defined, provide a corresponding implementation of that interface</span>
-<span class="doccomment">//! as a standard-looking Rust crate, using functions and structs and so-on. For example</span>
-<span class="doccomment">//! an implementation of the above Component Interface might look like this:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```text</span>
-<span class="doccomment">//! fn foo(bar: u32) -&gt; u32 {</span>
-<span class="doccomment">//!     // TODO: a better example!</span>
-<span class="doccomment">//!     bar + 42</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! struct MyData {</span>
-<span class="doccomment">//!   num_foos: u32,</span>
-<span class="doccomment">//!   has_a_bar: bool</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### 3) Generate and include component scaffolding from the UDL file</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! First you will need to install `uniffi-bindgen` on your system using `cargo install uniffi_bindgen`.</span>
-<span class="doccomment">//! Then add to your crate `uniffi_build` under `[build-dependencies]`.</span>
-<span class="doccomment">//! Finally, add a `build.rs` script to your crate and have it call `uniffi_build::generate_scaffolding`</span>
-<span class="doccomment">//! to process your `.udl` file. This will generate some Rust code to be included in the top-level source</span>
-<span class="doccomment">//! code of your crate. If your UDL file is named `example.udl`, then your build script would call:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```text</span>
-<span class="doccomment">//! uniffi_build::generate_scaffolding(&quot;./src/example.udl&quot;)</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This would output a rust file named `example.uniffi.rs`, ready to be</span>
-<span class="doccomment">//! included into the code of your rust crate like this:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```text</span>
-<span class="doccomment">//! include!(concat!(env!(&quot;OUT_DIR&quot;), &quot;/example.uniffi.rs&quot;));</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### 4) Generate foreign language bindings for the library</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The `uniffi-bindgen` utility provides a command-line tool that can produce code to</span>
-<span class="doccomment">//! consume the Rust library in any of several supported languages.</span>
-<span class="doccomment">//! It is done by calling (in kotlin for example):</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```text</span>
-<span class="doccomment">//! uniffi-bindgen --language kotlin ./src/example.udl</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This will produce a file `example.kt` in the same directory as the .udl file, containing kotlin bindings</span>
-<span class="doccomment">//! to load and use the compiled rust code via its C-compatible FFI.</span>
-<span class="doccomment">//!</span>
+</span><span class="doccomment">//! # Uniffi: easily build cross-platform software components in Rust
+//!
+//! This is a highly-experimental crate for building cross-language software components
+//! in Rust, based on things we&#39;ve learned and patterns we&#39;ve developed in the
+//! [mozilla/application-services](https://github.com/mozilla/application-services) project.
+//!
+//! The idea is to let you write your code once, in Rust, and then re-use it from many
+//! other programming languages via Rust&#39;s C-compatible FFI layer and some automagically
+//! generated binding code. If you think of it as a kind of [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)
+//! wannabe, with a clunkier developer experience but support for more target languages,
+//! you&#39;ll be pretty close to the mark.
+//!
+//! Currently supported target languages include Kotlin, Swift and Python.
+//!
+//! ## Usage
+</span><span class="comment">//
+</span><span class="doccomment">//! To build a cross-language component using `uniffi`, follow these steps.
+//!
+//! ### 1) Specify your Component Interface
+//!
+//! Start by thinking about the interface you want to expose for use
+//! from other languages. Use the Interface Definition Language to specify your interface
+//! in a `.udl` file, where it can be processed by the tools from this crate.
+//! For example you might define an interface like this:
+//!
+//! ```text
+//! namespace example {
+//!   u32 foo(u32 bar);
+//! }
+//!
+//! dictionary MyData {
+//!   u32 num_foos;
+//!   bool has_a_bar;
+//! }
+//! ```
+//!
+//! ### 2) Implement the Component Interface as a Rust crate
+//!
+//! With the interface, defined, provide a corresponding implementation of that interface
+//! as a standard-looking Rust crate, using functions and structs and so-on. For example
+//! an implementation of the above Component Interface might look like this:
+//!
+//! ```text
+//! fn foo(bar: u32) -&gt; u32 {
+//!     // TODO: a better example!
+//!     bar + 42
+//! }
+//!
+//! struct MyData {
+//!   num_foos: u32,
+//!   has_a_bar: bool
+//! }
+//! ```
+//!
+//! ### 3) Generate and include component scaffolding from the UDL file
+//!
+//! First you will need to install `uniffi-bindgen` on your system using `cargo install uniffi_bindgen`.
+//! Then add to your crate `uniffi_build` under `[build-dependencies]`.
+//! Finally, add a `build.rs` script to your crate and have it call `uniffi_build::generate_scaffolding`
+//! to process your `.udl` file. This will generate some Rust code to be included in the top-level source
+//! code of your crate. If your UDL file is named `example.udl`, then your build script would call:
+//!
+//! ```text
+//! uniffi_build::generate_scaffolding(&quot;./src/example.udl&quot;)
+//! ```
+//!
+//! This would output a rust file named `example.uniffi.rs`, ready to be
+//! included into the code of your rust crate like this:
+//!
+//! ```text
+//! include!(concat!(env!(&quot;OUT_DIR&quot;), &quot;/example.uniffi.rs&quot;));
+//! ```
+//!
+//! ### 4) Generate foreign language bindings for the library
+//!
+//! The `uniffi-bindgen` utility provides a command-line tool that can produce code to
+//! consume the Rust library in any of several supported languages.
+//! It is done by calling (in kotlin for example):
+//!
+//! ```text
+//! uniffi-bindgen --language kotlin ./src/example.udl
+//! ```
+//!
+//! This will produce a file `example.kt` in the same directory as the .udl file, containing kotlin bindings
+//! to load and use the compiled rust code via its C-compatible FFI.
+//!
 
-<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">rust_2018_idioms</span>, <span class="ident">unused_qualifications</span>)]</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unknown_lints</span>)]</span>
+</span><span class="attribute">#![warn(rust_2018_idioms, unused_qualifications)]
+#![allow(unknown_lints)]
 
-<span class="kw">const</span> <span class="ident">BINDGEN_VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
+</span><span class="kw">const </span>BINDGEN_VERSION: <span class="kw-2">&amp;</span>str = <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">anyhow</span>, <span class="ident">bail</span>, <span class="ident">Context</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">camino</span>::{<span class="ident">Utf8Path</span>, <span class="ident">Utf8PathBuf</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clap&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Parser</span>, <span class="ident">Subcommand</span>};
-<span class="kw">use</span> <span class="ident">fs_err</span>::{<span class="self">self</span> <span class="kw">as</span> <span class="ident">fs</span>, <span class="ident">File</span>};
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
-<span class="kw">use</span> <span class="ident">std::io::prelude</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">std::io::ErrorKind</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashMap</span>, <span class="ident">env</span>, <span class="ident">process::Command</span>, <span class="ident">str::FromStr</span>};
+<span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;clap&quot;</span>)]
+</span><span class="kw">use </span>clap::{Parser, Subcommand};
+<span class="kw">use </span>fs_err::{<span class="self">self </span><span class="kw">as </span>fs, File};
+<span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::io::ErrorKind;
+<span class="kw">use </span>std::{collections::HashMap, env, process::Command, str::FromStr};
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">backend</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bindings</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">interface</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">macro_metadata</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">scaffolding</span>;
+<span class="kw">pub mod </span>backend;
+<span class="kw">pub mod </span>bindings;
+<span class="kw">pub mod </span>interface;
+<span class="kw">pub mod </span>macro_metadata;
+<span class="kw">pub mod </span>scaffolding;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">interface::ComponentInterface</span>;
-<span class="kw">use</span> <span class="ident">scaffolding::RustScaffolding</span>;
+<span class="kw">pub use </span>interface::ComponentInterface;
+<span class="kw">use </span>scaffolding::RustScaffolding;
 
-<span class="doccomment">/// A trait representing a Binding Generator Configuration</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// External crates that implement binding generators need to implement this trait and set it as</span>
-<span class="doccomment">/// the `BindingGenerator.config` associated type.  `generate_external_bindings()` then uses it to</span>
-<span class="doccomment">/// generate the config that&#39;s passed to `BindingGenerator.write_bindings()`</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">BindingGeneratorConfig</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Get the entry for this config from the `bindings` table.</span>
-    <span class="kw">fn</span> <span class="ident">get_entry_from_bindings_table</span>(<span class="ident">bindings</span>: <span class="kw-2">&amp;</span><span class="ident">toml::Value</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">toml::Value</span><span class="op">&gt;</span>;
+<span class="doccomment">/// A trait representing a Binding Generator Configuration
+///
+/// External crates that implement binding generators need to implement this trait and set it as
+/// the `BindingGenerator.config` associated type.  `generate_external_bindings()` then uses it to
+/// generate the config that&#39;s passed to `BindingGenerator.write_bindings()`
+</span><span class="kw">pub trait </span>BindingGeneratorConfig: <span class="kw">for</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; {
+    <span class="doccomment">/// Get the entry for this config from the `bindings` table.
+    </span><span class="kw">fn </span>get_entry_from_bindings_table(bindings: <span class="kw-2">&amp;</span>toml::Value) -&gt; <span class="prelude-ty">Option</span>&lt;toml::Value&gt;;
 
-    <span class="doccomment">/// Get default config values from the `ComponentInterface`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// These will replace missing entries in the bindings-specific config</span>
-    <span class="kw">fn</span> <span class="ident">get_config_defaults</span>(<span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">toml::Value</span>)<span class="op">&gt;</span>;
+    <span class="doccomment">/// Get default config values from the `ComponentInterface`
+    ///
+    /// These will replace missing entries in the bindings-specific config
+    </span><span class="kw">fn </span>get_config_defaults(ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; Vec&lt;(String, toml::Value)&gt;;
 }
 
-<span class="kw">fn</span> <span class="ident">load_bindings_config</span><span class="op">&lt;</span><span class="ident">BC</span>: <span class="ident">BindingGeneratorConfig</span><span class="op">&gt;</span>(
-    <span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BC</span><span class="op">&gt;</span> {
-    <span class="comment">// Load the config from the TOML value, falling back to an empty map if it doesn&#39;t exist</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">config_map</span>: <span class="ident">toml::value::Table</span> <span class="op">=</span>
-        <span class="kw">match</span> <span class="ident">load_bindings_config_toml</span>::<span class="op">&lt;</span><span class="ident">BC</span><span class="op">&gt;</span>(<span class="ident">crate_root</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">value</span>) =&gt; <span class="ident">value</span>
-                .<span class="ident">try_into</span>()
-                .<span class="ident">context</span>(<span class="string">&quot;Bindings config must be a TOML table&quot;</span>)<span class="question-mark">?</span>,
-            <span class="prelude-val">None</span> =&gt; <span class="ident">toml::map::Map::new</span>(),
+<span class="kw">fn </span>load_bindings_config&lt;BC: BindingGeneratorConfig&gt;(
+    ci: <span class="kw-2">&amp;</span>ComponentInterface,
+    crate_root: <span class="kw-2">&amp;</span>Utf8Path,
+    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;BC&gt; {
+    <span class="comment">// Load the config from the TOML value, falling back to an empty map if it doesn&#39;t exist
+    </span><span class="kw">let </span><span class="kw-2">mut </span>config_map: toml::value::Table =
+        <span class="kw">match </span>load_bindings_config_toml::&lt;BC&gt;(crate_root, config_file_override)<span class="question-mark">? </span>{
+            <span class="prelude-val">Some</span>(value) =&gt; value
+                .try_into()
+                .context(<span class="string">&quot;Bindings config must be a TOML table&quot;</span>)<span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; toml::map::Map::new(),
         };
 
-    <span class="comment">// Update it with the defaults from the component interface</span>
-    <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">BC::get_config_defaults</span>(<span class="ident">ci</span>) {
-        <span class="ident">config_map</span>.<span class="ident">entry</span>(<span class="ident">key</span>).<span class="ident">or_insert</span>(<span class="ident">value</span>);
+    <span class="comment">// Update it with the defaults from the component interface
+    </span><span class="kw">for </span>(key, value) <span class="kw">in </span>BC::get_config_defaults(ci) {
+        config_map.entry(key).or_insert(value);
     }
 
-    <span class="comment">// Leverage serde to convert toml::Value into the config type</span>
-    <span class="ident">toml::Value::from</span>(<span class="ident">config_map</span>)
-        .<span class="ident">try_into</span>()
-        .<span class="ident">context</span>(<span class="string">&quot;Generating bindings config from toml::Value&quot;</span>)
+    <span class="comment">// Leverage serde to convert toml::Value into the config type
+    </span>toml::Value::from(config_map)
+        .try_into()
+        .context(<span class="string">&quot;Generating bindings config from toml::Value&quot;</span>)
 }
 
-<span class="doccomment">/// Binding generator config with no members</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EmptyBindingGeneratorConfig</span>;
+<span class="doccomment">/// Binding generator config with no members
+</span><span class="attribute">#[derive(Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq)]
+</span><span class="kw">pub struct </span>EmptyBindingGeneratorConfig;
 
-<span class="kw">impl</span> <span class="ident">BindingGeneratorConfig</span> <span class="kw">for</span> <span class="ident">EmptyBindingGeneratorConfig</span> {
-    <span class="kw">fn</span> <span class="ident">get_entry_from_bindings_table</span>(<span class="ident">_bindings</span>: <span class="kw-2">&amp;</span><span class="ident">toml::Value</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">toml::Value</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
+<span class="kw">impl </span>BindingGeneratorConfig <span class="kw">for </span>EmptyBindingGeneratorConfig {
+    <span class="kw">fn </span>get_entry_from_bindings_table(_bindings: <span class="kw-2">&amp;</span>toml::Value) -&gt; <span class="prelude-ty">Option</span>&lt;toml::Value&gt; {
+        <span class="prelude-val">None
+    </span>}
 
-    <span class="kw">fn</span> <span class="ident">get_config_defaults</span>(<span class="ident">_ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">toml::Value</span>)<span class="op">&gt;</span> {
-        <span class="ident">Vec::new</span>()
+    <span class="kw">fn </span>get_config_defaults(_ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; Vec&lt;(String, toml::Value)&gt; {
+        Vec::new()
     }
 }
 
-<span class="comment">// EmptyBindingGeneratorConfig is a unit struct, so the `derive(Deserialize)` implementation</span>
-<span class="comment">// expects a null value rather than the empty map that we pass it.  So we need to implement</span>
-<span class="comment">// `Deserialize` ourselves.</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EmptyBindingGeneratorConfig</span> {
-    <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">_deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">serde::Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+<span class="comment">// EmptyBindingGeneratorConfig is a unit struct, so the `derive(Deserialize)` implementation
+// expects a null value rather than the empty map that we pass it.  So we need to implement
+// `Deserialize` ourselves.
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>EmptyBindingGeneratorConfig {
+    <span class="kw">fn </span>deserialize&lt;D&gt;(_deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
+    <span class="kw">where
+        </span>D: serde::Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
-        <span class="prelude-val">Ok</span>(<span class="ident">EmptyBindingGeneratorConfig</span>)
+        <span class="prelude-val">Ok</span>(EmptyBindingGeneratorConfig)
     }
 }
 
-<span class="comment">// Load the binding-specific config</span>
-<span class="comment">//</span>
-<span class="comment">// This function calculates the location of the config TOML file, parses it, and returns the result</span>
-<span class="comment">// as a toml::Value</span>
-<span class="comment">//</span>
-<span class="comment">// If there is an error parsing the file then Err will be returned. If the file is missing or the</span>
-<span class="comment">// entry for the bindings is missing, then Ok(None) will be returned.</span>
-<span class="kw">fn</span> <span class="ident">load_bindings_config_toml</span><span class="op">&lt;</span><span class="ident">BC</span>: <span class="ident">BindingGeneratorConfig</span><span class="op">&gt;</span>(
-    <span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">toml::Value</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">config_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">config_file_override</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">cfg</span>) =&gt; <span class="ident">cfg</span>.<span class="ident">to_owned</span>(),
-        <span class="prelude-val">None</span> =&gt; <span class="ident">crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;uniffi.toml&quot;</span>),
+<span class="comment">// Load the binding-specific config
+//
+// This function calculates the location of the config TOML file, parses it, and returns the result
+// as a toml::Value
+//
+// If there is an error parsing the file then Err will be returned. If the file is missing or the
+// entry for the bindings is missing, then Ok(None) will be returned.
+</span><span class="kw">fn </span>load_bindings_config_toml&lt;BC: BindingGeneratorConfig&gt;(
+    crate_root: <span class="kw-2">&amp;</span>Utf8Path,
+    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;toml::Value&gt;&gt; {
+    <span class="kw">let </span>config_path = <span class="kw">match </span>config_file_override {
+        <span class="prelude-val">Some</span>(cfg) =&gt; cfg.to_owned(),
+        <span class="prelude-val">None </span>=&gt; crate_root.join(<span class="string">&quot;uniffi.toml&quot;</span>),
     };
 
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">config_path</span>.<span class="ident">exists</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+    <span class="kw">if </span>!config_path.exists() {
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
     }
 
-    <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="kw-2">&amp;</span><span class="ident">config_path</span>)
-        .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {config_path}&quot;</span>))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">full_config</span> <span class="op">=</span> <span class="ident">toml::Value::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>)
-        .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to parse config file {config_path}&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">let </span>contents = fs::read_to_string(<span class="kw-2">&amp;</span>config_path)
+        .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {config_path}&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">let </span>full_config = toml::Value::from_str(<span class="kw-2">&amp;</span>contents)
+        .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to parse config file {config_path}&quot;</span>))<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(<span class="ident">full_config</span>
-        .<span class="ident">get</span>(<span class="string">&quot;bindings&quot;</span>)
-        .<span class="ident">and_then</span>(<span class="ident">BC::get_entry_from_bindings_table</span>))
+    <span class="prelude-val">Ok</span>(full_config
+        .get(<span class="string">&quot;bindings&quot;</span>)
+        .and_then(BC::get_entry_from_bindings_table))
 }
 
-<span class="doccomment">/// A trait representing a UniFFI Binding Generator</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// External crates that implement binding generators, should implement this type</span>
-<span class="doccomment">/// and call the [`generate_external_bindings`] using a type that implements this trait.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">BindingGenerator</span>: <span class="ident">Sized</span> {
-    <span class="doccomment">/// Associated type representing a the bindings-specifig configuration parsed from the</span>
-    <span class="doccomment">/// uniffi.toml</span>
-    <span class="kw">type</span> <span class="ident">Config</span>: <span class="ident">BindingGeneratorConfig</span>;
+<span class="doccomment">/// A trait representing a UniFFI Binding Generator
+///
+/// External crates that implement binding generators, should implement this type
+/// and call the [`generate_external_bindings`] using a type that implements this trait.
+</span><span class="kw">pub trait </span>BindingGenerator: Sized {
+    <span class="doccomment">/// Associated type representing a the bindings-specifig configuration parsed from the
+    /// uniffi.toml
+    </span><span class="kw">type </span>Config: BindingGeneratorConfig;
 
-    <span class="doccomment">/// Writes the bindings to the output directory</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Arguments</span>
-    <span class="doccomment">/// - `ci`: A [`ComponentInterface`] representing the interface</span>
-    <span class="doccomment">/// - `config`: A instance of the BindingGeneratorConfig associated with this type</span>
-    <span class="doccomment">/// - `out_dir`: The path to where the binding generator should write the output bindings</span>
-    <span class="kw">fn</span> <span class="ident">write_bindings</span>(
+    <span class="doccomment">/// Writes the bindings to the output directory
+    ///
+    /// # Arguments
+    /// - `ci`: A [`ComponentInterface`] representing the interface
+    /// - `config`: A instance of the BindingGeneratorConfig associated with this type
+    /// - `out_dir`: The path to where the binding generator should write the output bindings
+    </span><span class="kw">fn </span>write_bindings(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">ci</span>: <span class="ident">ComponentInterface</span>,
-        <span class="ident">config</span>: <span class="ident"><span class="self">Self</span>::Config</span>,
-        <span class="ident">out_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+        ci: ComponentInterface,
+        config: <span class="self">Self</span>::Config,
+        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
 }
 
-<span class="doccomment">/// Generate bindings for an external binding generator</span>
-<span class="doccomment">/// Ideally, this should replace the [`generate_bindings`] function below</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Implements an entry point for external binding generators.</span>
-<span class="doccomment">/// The function does the following:</span>
-<span class="doccomment">/// - It parses the `udl` in a [`ComponentInterface`]</span>
-<span class="doccomment">/// - Parses the `uniffi.toml` and loads it into the type that implements [`BindingGeneratorConfig`]</span>
-<span class="doccomment">/// - Creates an instance of [`BindingGenerator`], based on type argument `B`, and run [`BindingGenerator::write_bindings`] on it</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `binding_generator`: Type that implements BindingGenerator</span>
-<span class="doccomment">/// - `udl_file`: The path to the UDL file</span>
-<span class="doccomment">/// - `config_file_override`: The path to the configuration toml file, most likely called `uniffi.toml`. If [`None`], the function will try to guess based on the crate&#39;s root.</span>
-<span class="doccomment">/// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_external_bindings</span>(
-    <span class="ident">binding_generator</span>: <span class="kw">impl</span> <span class="ident">BindingGenerator</span>,
-    <span class="ident">udl_file</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">out_dir_override</span> <span class="op">=</span> <span class="ident">out_dir_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
-    <span class="kw">let</span> <span class="ident">config_file_override</span> <span class="op">=</span> <span class="ident">config_file_override</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>());
+<span class="doccomment">/// Generate bindings for an external binding generator
+/// Ideally, this should replace the [`generate_bindings`] function below
+///
+/// Implements an entry point for external binding generators.
+/// The function does the following:
+/// - It parses the `udl` in a [`ComponentInterface`]
+/// - Parses the `uniffi.toml` and loads it into the type that implements [`BindingGeneratorConfig`]
+/// - Creates an instance of [`BindingGenerator`], based on type argument `B`, and run [`BindingGenerator::write_bindings`] on it
+///
+/// # Arguments
+/// - `binding_generator`: Type that implements BindingGenerator
+/// - `udl_file`: The path to the UDL file
+/// - `config_file_override`: The path to the configuration toml file, most likely called `uniffi.toml`. If [`None`], the function will try to guess based on the crate&#39;s root.
+/// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`
+</span><span class="kw">pub fn </span>generate_external_bindings(
+    binding_generator: <span class="kw">impl </span>BindingGenerator,
+    udl_file: <span class="kw">impl </span>AsRef&lt;Utf8Path&gt;,
+    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>AsRef&lt;Utf8Path&gt;&gt;,
+    out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>AsRef&lt;Utf8Path&gt;&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let </span>out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
+    <span class="kw">let </span>config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
-    <span class="kw">let</span> <span class="ident">crate_root</span> <span class="op">=</span> <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>(), <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>.<span class="ident">as_ref</span>()).<span class="ident">context</span>(<span class="string">&quot;Error parsing UDL&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">bindings_config</span> <span class="op">=</span> <span class="ident">load_bindings_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">crate_root</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
-    <span class="ident">binding_generator</span>.<span class="ident">write_bindings</span>(<span class="ident">component</span>, <span class="ident">bindings_config</span>, <span class="kw-2">&amp;</span><span class="ident">out_dir</span>)
+    <span class="kw">let </span>crate_root = guess_crate_root(udl_file.as_ref())<span class="question-mark">?</span>;
+    <span class="kw">let </span>out_dir = get_out_dir(udl_file.as_ref(), out_dir_override)<span class="question-mark">?</span>;
+    <span class="kw">let </span>component = parse_udl(udl_file.as_ref()).context(<span class="string">&quot;Error parsing UDL&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>bindings_config = load_bindings_config(<span class="kw-2">&amp;</span>component, crate_root, config_file_override)<span class="question-mark">?</span>;
+    binding_generator.write_bindings(component, bindings_config, <span class="kw-2">&amp;</span>out_dir)
 }
 
-<span class="comment">// Generate the infrastructural Rust code for implementing the UDL interface,</span>
-<span class="comment">// such as the `extern &quot;C&quot;` function definitions and record data types.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_component_scaffolding</span>(
-    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
-    <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
-    <span class="ident">format_code</span>: <span class="ident">bool</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">_config</span> <span class="op">=</span> <span class="ident">get_config</span>(
-        <span class="kw-2">&amp;</span><span class="ident">component</span>,
-        <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>,
-        <span class="ident">config_file_override</span>,
+<span class="comment">// Generate the infrastructural Rust code for implementing the UDL interface,
+// such as the `extern &quot;C&quot;` function definitions and record data types.
+</span><span class="kw">pub fn </span>generate_component_scaffolding(
+    udl_file: <span class="kw-2">&amp;</span>Utf8Path,
+    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
+    out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
+    format_code: bool,
+) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let </span>component = parse_udl(udl_file)<span class="question-mark">?</span>;
+    <span class="kw">let </span>_config = get_config(
+        <span class="kw-2">&amp;</span>component,
+        guess_crate_root(udl_file)<span class="question-mark">?</span>,
+        config_file_override,
     );
-    <span class="kw">let</span> <span class="ident">file_stem</span> <span class="op">=</span> <span class="ident">udl_file</span>.<span class="ident">file_stem</span>().<span class="ident">context</span>(<span class="string">&quot;not a file&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{file_stem}.uniffi.rs&quot;</span>);
-    <span class="kw">let</span> <span class="ident">out_path</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>.<span class="ident">join</span>(<span class="ident">filename</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="kw-2">&amp;</span><span class="ident">out_path</span>)<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">RustScaffolding::new</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>)).<span class="ident">context</span>(<span class="string">&quot;Failed to write output file&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="ident">format_code</span> {
-        <span class="ident">format_code_with_rustfmt</span>(<span class="kw-2">&amp;</span><span class="ident">out_path</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>file_stem = udl_file.file_stem().context(<span class="string">&quot;not a file&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>filename = <span class="macro">format!</span>(<span class="string">&quot;{file_stem}.uniffi.rs&quot;</span>);
+    <span class="kw">let </span>out_path = get_out_dir(udl_file, out_dir_override)<span class="question-mark">?</span>.join(filename);
+    <span class="kw">let </span><span class="kw-2">mut </span>f = File::create(<span class="kw-2">&amp;</span>out_path)<span class="question-mark">?</span>;
+    <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, RustScaffolding::new(<span class="kw-2">&amp;</span>component)).context(<span class="string">&quot;Failed to write output file&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">if </span>format_code {
+        format_code_with_rustfmt(<span class="kw-2">&amp;</span>out_path)<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="comment">// Generate the bindings in the target languages that call the scaffolding</span>
-<span class="comment">// Rust code.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_bindings</span>(
-    <span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
-    <span class="ident">target_languages</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
-    <span class="ident">library_file</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
-    <span class="ident">try_format_code</span>: <span class="ident">bool</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">library_file</span>) <span class="op">=</span> <span class="ident">library_file</span> {
-        <span class="ident">macro_metadata::add_to_ci_from_library</span>(<span class="kw-2">&amp;mut</span> <span class="ident">component</span>, <span class="ident">library_file</span>)<span class="question-mark">?</span>;
+<span class="comment">// Generate the bindings in the target languages that call the scaffolding
+// Rust code.
+</span><span class="kw">pub fn </span>generate_bindings(
+    udl_file: <span class="kw-2">&amp;</span>Utf8Path,
+    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
+    target_languages: Vec&lt;<span class="kw-2">&amp;</span>str&gt;,
+    out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
+    library_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
+    try_format_code: bool,
+) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>component = parse_udl(udl_file)<span class="question-mark">?</span>;
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(library_file) = library_file {
+        macro_metadata::add_to_ci_from_library(<span class="kw-2">&amp;mut </span>component, library_file)<span class="question-mark">?</span>;
     }
-    <span class="kw">let</span> <span class="ident">crate_root</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>crate_root = <span class="kw-2">&amp;</span>guess_crate_root(udl_file)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">get_config</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="ident">crate_root</span>, <span class="ident">config_file_override</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">out_dir</span> <span class="op">=</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>, <span class="ident">out_dir_override</span>)<span class="question-mark">?</span>;
-    <span class="kw">for</span> <span class="ident">language</span> <span class="kw">in</span> <span class="ident">target_languages</span> {
-        <span class="ident">bindings::write_bindings</span>(
-            <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">bindings</span>,
-            <span class="kw-2">&amp;</span><span class="ident">component</span>,
-            <span class="kw-2">&amp;</span><span class="ident">out_dir</span>,
-            <span class="ident">language</span>.<span class="ident">try_into</span>()<span class="question-mark">?</span>,
-            <span class="ident">try_format_code</span>,
+    <span class="kw">let </span>config = get_config(<span class="kw-2">&amp;</span>component, crate_root, config_file_override)<span class="question-mark">?</span>;
+    <span class="kw">let </span>out_dir = get_out_dir(udl_file, out_dir_override)<span class="question-mark">?</span>;
+    <span class="kw">for </span>language <span class="kw">in </span>target_languages {
+        bindings::write_bindings(
+            <span class="kw-2">&amp;</span>config.bindings,
+            <span class="kw-2">&amp;</span>component,
+            <span class="kw-2">&amp;</span>out_dir,
+            language.try_into()<span class="question-mark">?</span>,
+            try_format_code,
         )<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dump_json</span>(<span class="ident">library_path</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">metadata</span> <span class="op">=</span> <span class="ident">macro_metadata::extract_from_library</span>(<span class="ident">library_path</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">serde_json::to_string_pretty</span>(<span class="kw-2">&amp;</span><span class="ident">metadata</span>)<span class="question-mark">?</span>)
+<span class="kw">pub fn </span>dump_json(library_path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
+    <span class="kw">let </span>metadata = macro_metadata::extract_from_library(library_path)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(serde_json::to_string_pretty(<span class="kw-2">&amp;</span>metadata)<span class="question-mark">?</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">print_json</span>(<span class="ident">library_path</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">dump_json</span>(<span class="ident">library_path</span>)<span class="question-mark">?</span>);
+<span class="kw">pub fn </span>print_json(library_path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, dump_json(library_path)<span class="question-mark">?</span>);
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Guess the root directory of the crate from the path of its UDL file.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For now, we assume that the UDL file is in `./src/something.udl` relative</span>
-<span class="doccomment">/// to the crate root. We might consider something more sophisticated in</span>
-<span class="doccomment">/// future.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">guess_crate_root</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">path_guess</span> <span class="op">=</span> <span class="ident">udl_file</span>
-        .<span class="ident">parent</span>()
-        .<span class="ident">context</span>(<span class="string">&quot;UDL file has no parent folder!&quot;</span>)<span class="question-mark">?</span>
-        .<span class="ident">parent</span>()
-        .<span class="ident">context</span>(<span class="string">&quot;UDL file has no grand-parent folder!&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">path_guess</span>.<span class="ident">join</span>(<span class="string">&quot;Cargo.toml&quot;</span>).<span class="ident">is_file</span>() {
+<span class="doccomment">/// Guess the root directory of the crate from the path of its UDL file.
+///
+/// For now, we assume that the UDL file is in `./src/something.udl` relative
+/// to the crate root. We might consider something more sophisticated in
+/// future.
+</span><span class="kw">pub fn </span>guess_crate_root(udl_file: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt; {
+    <span class="kw">let </span>path_guess = udl_file
+        .parent()
+        .context(<span class="string">&quot;UDL file has no parent folder!&quot;</span>)<span class="question-mark">?
+        </span>.parent()
+        .context(<span class="string">&quot;UDL file has no grand-parent folder!&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">if </span>!path_guess.join(<span class="string">&quot;Cargo.toml&quot;</span>).is_file() {
         <span class="macro">bail!</span>(<span class="string">&quot;UDL file does not appear to be inside a crate&quot;</span>)
     }
-    <span class="prelude-val">Ok</span>(<span class="ident">path_guess</span>)
+    <span class="prelude-val">Ok</span>(path_guess)
 }
 
-<span class="kw">fn</span> <span class="ident">get_config</span>(
-    <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>,
-    <span class="ident">crate_root</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>,
-    <span class="ident">config_file_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Config</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">default_config</span>: <span class="ident">Config</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">into</span>();
+<span class="kw">fn </span>get_config(
+    component: <span class="kw-2">&amp;</span>ComponentInterface,
+    crate_root: <span class="kw-2">&amp;</span>Utf8Path,
+    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Config&gt; {
+    <span class="kw">let </span>default_config: Config = component.into();
 
-    <span class="kw">let</span> <span class="ident">config_file</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">config_file_override</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">cfg</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">cfg</span>.<span class="ident">to_owned</span>()),
-        <span class="prelude-val">None</span> =&gt; <span class="ident">crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;uniffi.toml&quot;</span>).<span class="ident">canonicalize_utf8</span>().<span class="ident">ok</span>(),
+    <span class="kw">let </span>config_file = <span class="kw">match </span>config_file_override {
+        <span class="prelude-val">Some</span>(cfg) =&gt; <span class="prelude-val">Some</span>(cfg.to_owned()),
+        <span class="prelude-val">None </span>=&gt; crate_root.join(<span class="string">&quot;uniffi.toml&quot;</span>).canonicalize_utf8().ok(),
     };
 
-    <span class="kw">match</span> <span class="ident">config_file</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">path</span>) =&gt; {
-            <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
-                .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {path}&quot;</span>))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">loaded_config</span>: <span class="ident">Config</span> <span class="op">=</span> <span class="ident">toml::de::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>)
-                .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to generate config from file {path}&quot;</span>))<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="ident">loaded_config</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">default_config</span>))
+    <span class="kw">match </span>config_file {
+        <span class="prelude-val">Some</span>(path) =&gt; {
+            <span class="kw">let </span>contents = fs::read_to_string(<span class="kw-2">&amp;</span>path)
+                .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {path}&quot;</span>))<span class="question-mark">?</span>;
+            <span class="kw">let </span>loaded_config: Config = toml::de::from_str(<span class="kw-2">&amp;</span>contents)
+                .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to generate config from file {path}&quot;</span>))<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(loaded_config.merge_with(<span class="kw-2">&amp;</span>default_config))
         }
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">default_config</span>),
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(default_config),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">get_out_dir</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>, <span class="ident">out_dir_override</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Utf8Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span> {
-    <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">out_dir_override</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; {
-            <span class="comment">// Create the directory if it doesn&#39;t exist yet.</span>
-            <span class="ident">fs::create_dir_all</span>(<span class="ident">s</span>)<span class="question-mark">?</span>;
-            <span class="ident">s</span>.<span class="ident">canonicalize_utf8</span>().<span class="ident">context</span>(<span class="string">&quot;Unable to find out-dir&quot;</span>)<span class="question-mark">?</span>
-        }
-        <span class="prelude-val">None</span> =&gt; <span class="ident">udl_file</span>
-            .<span class="ident">parent</span>()
-            .<span class="ident">context</span>(<span class="string">&quot;File has no parent directory&quot;</span>)<span class="question-mark">?</span>
-            .<span class="ident">to_owned</span>(),
+<span class="kw">fn </span>get_out_dir(udl_file: <span class="kw-2">&amp;</span>Utf8Path, out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Utf8PathBuf&gt; {
+    <span class="prelude-val">Ok</span>(<span class="kw">match </span>out_dir_override {
+        <span class="prelude-val">Some</span>(s) =&gt; {
+            <span class="comment">// Create the directory if it doesn&#39;t exist yet.
+            </span>fs::create_dir_all(s)<span class="question-mark">?</span>;
+            s.canonicalize_utf8().context(<span class="string">&quot;Unable to find out-dir&quot;</span>)<span class="question-mark">?
+        </span>}
+        <span class="prelude-val">None </span>=&gt; udl_file
+            .parent()
+            .context(<span class="string">&quot;File has no parent directory&quot;</span>)<span class="question-mark">?
+            </span>.to_owned(),
     })
 }
 
-<span class="kw">fn</span> <span class="ident">parse_udl</span>(<span class="ident">udl_file</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">udl</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">udl_file</span>)
-        .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read UDL from {udl_file}&quot;</span>))<span class="question-mark">?</span>;
-    <span class="ident">ComponentInterface::from_webidl</span>(<span class="kw-2">&amp;</span><span class="ident">udl</span>).<span class="ident">context</span>(<span class="string">&quot;Failed to parse UDL&quot;</span>)
+<span class="kw">fn </span>parse_udl(udl_file: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;ComponentInterface&gt; {
+    <span class="kw">let </span>udl = fs::read_to_string(udl_file)
+        .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to read UDL from {udl_file}&quot;</span>))<span class="question-mark">?</span>;
+    ComponentInterface::from_webidl(<span class="kw-2">&amp;</span>udl).context(<span class="string">&quot;Failed to parse UDL&quot;</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">format_code_with_rustfmt</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Utf8Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;rustfmt&quot;</span>).<span class="ident">arg</span>(<span class="ident">path</span>).<span class="ident">status</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">e</span>.<span class="ident">kind</span>() {
-            <span class="ident">ErrorKind::NotFound</span> =&gt; <span class="string">&quot;formatting was requested, but rustfmt was not found&quot;</span>,
-            <span class="kw">_</span> =&gt; <span class="string">&quot;unknown error when calling rustfmt&quot;</span>,
+<span class="kw">fn </span>format_code_with_rustfmt(path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let </span>status = Command::new(<span class="string">&quot;rustfmt&quot;</span>).arg(path).status().map_err(|e| {
+        <span class="kw">let </span>ctx = <span class="kw">match </span>e.kind() {
+            ErrorKind::NotFound =&gt; <span class="string">&quot;formatting was requested, but rustfmt was not found&quot;</span>,
+            <span class="kw">_ </span>=&gt; <span class="string">&quot;unknown error when calling rustfmt&quot;</span>,
         };
-        <span class="macro">anyhow!</span>(<span class="ident">e</span>).<span class="ident">context</span>(<span class="ident">ctx</span>)
+        <span class="macro">anyhow!</span>(e).context(ctx)
     })<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">status</span>.<span class="ident">success</span>() {
+    <span class="kw">if </span>!status.success() {
         <span class="macro">bail!</span>(<span class="string">&quot;rustmt failed when formatting scaffolding. Note: --no-format can be used to skip formatting&quot;</span>);
     }
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="kw">struct</span> <span class="ident">Config</span> {
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="ident">bindings</span>: <span class="ident">bindings::Config</span>,
+<span class="attribute">#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+</span><span class="kw">struct </span>Config {
+    <span class="attribute">#[serde(default)]
+    </span>bindings: bindings::Config,
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Config</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">ci</span>: <span class="kw-2">&amp;</span><span class="ident">ComponentInterface</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Config</span> {
-            <span class="ident">bindings</span>: <span class="ident">ci</span>.<span class="ident">into</span>(),
+<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>ComponentInterface&gt; <span class="kw">for </span>Config {
+    <span class="kw">fn </span>from(ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="self">Self </span>{
+        Config {
+            bindings: ci.into(),
         }
     }
 }
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">MergeWith</span> {
-    <span class="kw">fn</span> <span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self</span>;
+<span class="kw">pub trait </span>MergeWith {
+    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self</span>;
 }
 
-<span class="kw">impl</span> <span class="ident">MergeWith</span> <span class="kw">for</span> <span class="ident">Config</span> {
-    <span class="kw">fn</span> <span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Config</span> {
-            <span class="ident">bindings</span>: <span class="self">self</span>.<span class="ident">bindings</span>.<span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">bindings</span>),
+<span class="kw">impl </span>MergeWith <span class="kw">for </span>Config {
+    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        Config {
+            bindings: <span class="self">self</span>.bindings.merge_with(<span class="kw-2">&amp;</span>other.bindings),
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">MergeWith</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">match</span> (<span class="self">self</span>, <span class="ident">other</span>) {
-            (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="kw">_</span>) =&gt; <span class="self">self</span>.<span class="ident">clone</span>(),
-            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) =&gt; <span class="ident">other</span>.<span class="ident">clone</span>(),
+<span class="kw">impl</span>&lt;T: Clone&gt; MergeWith <span class="kw">for </span><span class="prelude-ty">Option</span>&lt;T&gt; {
+    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>(<span class="self">self</span>, other) {
+            (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="kw">_</span>) =&gt; <span class="self">self</span>.clone(),
+            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) =&gt; other.clone(),
             (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">None</span>,
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">V</span>: <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">MergeWith</span> <span class="kw">for</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">V</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">merge_with</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">merged</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
-        <span class="comment">// Iterate through other first so our keys override theirs</span>
-        <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">other</span>.<span class="ident">iter</span>().<span class="ident">chain</span>(<span class="self">self</span>) {
-            <span class="ident">merged</span>.<span class="ident">insert</span>(<span class="ident">key</span>.<span class="ident">clone</span>(), <span class="ident">value</span>.<span class="ident">clone</span>());
+<span class="kw">impl</span>&lt;V: Clone&gt; MergeWith <span class="kw">for </span>HashMap&lt;String, V&gt; {
+    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>merged = HashMap::new();
+        <span class="comment">// Iterate through other first so our keys override theirs
+        </span><span class="kw">for </span>(key, value) <span class="kw">in </span>other.iter().chain(<span class="self">self</span>) {
+            merged.insert(key.clone(), value.clone());
         }
-        <span class="ident">merged</span>
+        merged
     }
 }
 
-<span class="comment">// structs to help our cmdline parsing. Note that docstrings below form part</span>
-<span class="comment">// of the &quot;help&quot; output.</span>
-<span class="doccomment">/// Scaffolding and bindings generator for Rust</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clap&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Parser</span>)]</span>
-<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;uniffi-bindgen&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">version</span> <span class="op">=</span> <span class="macro">clap::crate_version!</span>())]</span>
-<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">propagate_version</span> <span class="op">=</span> <span class="bool-val">true</span>)]</span>
-<span class="kw">struct</span> <span class="ident">Cli</span> {
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">subcommand</span>)]</span>
-    <span class="ident">command</span>: <span class="ident">Commands</span>,
+<span class="comment">// structs to help our cmdline parsing. Note that docstrings below form part
+// of the &quot;help&quot; output.
+</span><span class="doccomment">/// Scaffolding and bindings generator for Rust
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;clap&quot;</span>)]
+#[derive(Parser)]
+#[clap(name = <span class="string">&quot;uniffi-bindgen&quot;</span>)]
+#[clap(version = <span class="macro">clap::crate_version!</span>())]
+#[clap(propagate_version = <span class="bool-val">true</span>)]
+</span><span class="kw">struct </span>Cli {
+    <span class="attribute">#[clap(subcommand)]
+    </span>command: Commands,
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clap&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Subcommand</span>)]</span>
-<span class="kw">enum</span> <span class="ident">Commands</span> {
-    <span class="doccomment">/// Generate foreign language bindings</span>
-    <span class="ident">Generate</span> {
-        <span class="doccomment">/// Foreign language(s) for which to build bindings.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>, <span class="ident">possible_values</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;kotlin&quot;</span>, <span class="string">&quot;python&quot;</span>, <span class="string">&quot;swift&quot;</span>, <span class="string">&quot;ruby&quot;</span>]</span>)]
-        <span class="ident">language</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;clap&quot;</span>)]
+#[derive(Subcommand)]
+</span><span class="kw">enum </span>Commands {
+    <span class="doccomment">/// Generate foreign language bindings
+    </span>Generate {
+        <span class="doccomment">/// Foreign language(s) for which to build bindings.
+        </span><span class="attribute">#[clap(long, short, possible_values = <span class="kw-2">&amp;</span>[<span class="string">&quot;kotlin&quot;</span>, <span class="string">&quot;python&quot;</span>, <span class="string">&quot;swift&quot;</span>, <span class="string">&quot;ruby&quot;</span>]</span>)]
+        language: Vec&lt;String&gt;,
 
-        <span class="doccomment">/// Directory in which to write generated files. Default is same folder as .udl file.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
-        <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
+        <span class="doccomment">/// Directory in which to write generated files. Default is same folder as .udl file.
+        </span><span class="attribute">#[clap(long, short)]
+        </span>out_dir: <span class="prelude-ty">Option</span>&lt;Utf8PathBuf&gt;,
 
-        <span class="doccomment">/// Do not try to format the generated bindings.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
-        <span class="ident">no_format</span>: <span class="ident">bool</span>,
+        <span class="doccomment">/// Do not try to format the generated bindings.
+        </span><span class="attribute">#[clap(long, short)]
+        </span>no_format: bool,
 
-        <span class="doccomment">/// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
-        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
+        <span class="doccomment">/// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.
+        </span><span class="attribute">#[clap(long, short)]
+        </span>config: <span class="prelude-ty">Option</span>&lt;Utf8PathBuf&gt;,
 
-        <span class="doccomment">/// Extract proc-macro metadata from a native lib (cdylib or staticlib) for this crate.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>)]</span>
-        <span class="ident">lib_file</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
+        <span class="doccomment">/// Extract proc-macro metadata from a native lib (cdylib or staticlib) for this crate.
+        </span><span class="attribute">#[clap(long)]
+        </span>lib_file: <span class="prelude-ty">Option</span>&lt;Utf8PathBuf&gt;,
 
-        <span class="doccomment">/// Path to the UDL file.</span>
-        <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
+        <span class="doccomment">/// Path to the UDL file.
+        </span>udl_file: Utf8PathBuf,
     },
 
-    <span class="doccomment">/// Generate Rust scaffolding code</span>
-    <span class="ident">Scaffolding</span> {
-        <span class="doccomment">/// Directory in which to write generated files. Default is same folder as .udl file.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
-        <span class="ident">out_dir</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Generate Rust scaffolding code
+    </span>Scaffolding {
+        <span class="doccomment">/// Directory in which to write generated files. Default is same folder as .udl file.
+        </span><span class="attribute">#[clap(long, short)]
+        </span>out_dir: <span class="prelude-ty">Option</span>&lt;Utf8PathBuf&gt;,
 
-        <span class="doccomment">/// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
-        <span class="ident">config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Utf8PathBuf</span><span class="op">&gt;</span>,
+        <span class="doccomment">/// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL&#39;s file location.
+        </span><span class="attribute">#[clap(long, short)]
+        </span>config: <span class="prelude-ty">Option</span>&lt;Utf8PathBuf&gt;,
 
-        <span class="doccomment">/// Do not try to format the generated bindings.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">short</span>)]</span>
-        <span class="ident">no_format</span>: <span class="ident">bool</span>,
+        <span class="doccomment">/// Do not try to format the generated bindings.
+        </span><span class="attribute">#[clap(long, short)]
+        </span>no_format: bool,
 
-        <span class="doccomment">/// Path to the UDL file.</span>
-        <span class="ident">udl_file</span>: <span class="ident">Utf8PathBuf</span>,
+        <span class="doccomment">/// Path to the UDL file.
+        </span>udl_file: Utf8PathBuf,
     },
 
-    <span class="doccomment">/// Print the JSON representation of the interface from a dynamic library</span>
-    <span class="ident">PrintJson</span> {
-        <span class="doccomment">/// Path to the library file (.so, .dll, .dylib, or .a)</span>
-        <span class="ident">path</span>: <span class="ident">Utf8PathBuf</span>,
+    <span class="doccomment">/// Print the JSON representation of the interface from a dynamic library
+    </span>PrintJson {
+        <span class="doccomment">/// Path to the library file (.so, .dll, .dylib, or .a)
+        </span>path: Utf8PathBuf,
     },
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clap&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_main</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">cli</span> <span class="op">=</span> <span class="ident">Cli::parse</span>();
-    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">cli</span>.<span class="ident">command</span> {
-        <span class="ident">Commands::Generate</span> {
-            <span class="ident">language</span>,
-            <span class="ident">out_dir</span>,
-            <span class="ident">no_format</span>,
-            <span class="ident">config</span>,
-            <span class="ident">lib_file</span>,
-            <span class="ident">udl_file</span>,
-        } =&gt; <span class="ident">generate_bindings</span>(
-            <span class="ident">udl_file</span>,
-            <span class="ident">config</span>.<span class="ident">as_deref</span>(),
-            <span class="ident">language</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">String::as_str</span>).<span class="ident">collect</span>(),
-            <span class="ident">out_dir</span>.<span class="ident">as_deref</span>(),
-            <span class="ident">lib_file</span>.<span class="ident">as_deref</span>(),
-            <span class="op">!</span><span class="ident">no_format</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;clap&quot;</span>)]
+</span><span class="kw">pub fn </span>run_main() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let </span>cli = Cli::parse();
+    <span class="kw">match </span><span class="kw-2">&amp;</span>cli.command {
+        Commands::Generate {
+            language,
+            out_dir,
+            no_format,
+            config,
+            lib_file,
+            udl_file,
+        } =&gt; generate_bindings(
+            udl_file,
+            config.as_deref(),
+            language.iter().map(String::as_str).collect(),
+            out_dir.as_deref(),
+            lib_file.as_deref(),
+            !no_format,
         ),
-        <span class="ident">Commands::Scaffolding</span> {
-            <span class="ident">out_dir</span>,
-            <span class="ident">config</span>,
-            <span class="ident">no_format</span>,
-            <span class="ident">udl_file</span>,
-        } =&gt; <span class="ident">generate_component_scaffolding</span>(
-            <span class="ident">udl_file</span>,
-            <span class="ident">config</span>.<span class="ident">as_deref</span>(),
-            <span class="ident">out_dir</span>.<span class="ident">as_deref</span>(),
-            <span class="op">!</span><span class="ident">no_format</span>,
+        Commands::Scaffolding {
+            out_dir,
+            config,
+            no_format,
+            udl_file,
+        } =&gt; generate_component_scaffolding(
+            udl_file,
+            config.as_deref(),
+            out_dir.as_deref(),
+            !no_format,
         ),
-        <span class="ident">Commands::PrintJson</span> { <span class="ident">path</span> } =&gt; <span class="ident">print_json</span>(<span class="ident">path</span>),
+        Commands::PrintJson { path } =&gt; print_json(path),
     }<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="comment">// FIXME(HACK):</span>
-<span class="comment">// Include the askama config file into the build.</span>
-<span class="comment">// That way cargo tracks the file and other tools relying on file tracking see it as well.</span>
-<span class="comment">// See https://bugzilla.mozilla.org/show_bug.cgi?id=1774585</span>
-<span class="comment">// In the future askama should handle that itself by using the `track_path::path` API,</span>
-<span class="comment">// see https://github.com/rust-lang/rust/pull/84029</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-<span class="kw">mod</span> <span class="ident">__unused</span> {
-    <span class="kw">const</span> <span class="kw">_</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="macro">include_bytes!</span>(<span class="string">&quot;../askama.toml&quot;</span>);
+<span class="comment">// FIXME(HACK):
+// Include the askama config file into the build.
+// That way cargo tracks the file and other tools relying on file tracking see it as well.
+// See https://bugzilla.mozilla.org/show_bug.cgi?id=1774585
+// In the future askama should handle that itself by using the `track_path::path` API,
+// see https://github.com/rust-lang/rust/pull/84029
+</span><span class="attribute">#[allow(dead_code)]
+</span><span class="kw">mod </span>__unused {
+    <span class="kw">const _</span>: <span class="kw-2">&amp;</span>[u8] = <span class="macro">include_bytes!</span>(<span class="string">&quot;../askama.toml&quot;</span>);
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_guessing_of_crate_root_directory_from_udl_file</span>() {
-        <span class="comment">// When running this test, this will be the ./uniffi_bindgen directory.</span>
-        <span class="kw">let</span> <span class="ident">this_crate_root</span> <span class="op">=</span> <span class="ident">Utf8PathBuf::from</span>(<span class="ident">std::env::var</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).<span class="ident">unwrap</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_guessing_of_crate_root_directory_from_udl_file() {
+        <span class="comment">// When running this test, this will be the ./uniffi_bindgen directory.
+        </span><span class="kw">let </span>this_crate_root = Utf8PathBuf::from(std::env::var(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).unwrap());
 
-        <span class="kw">let</span> <span class="ident">example_crate_root</span> <span class="op">=</span> <span class="ident">this_crate_root</span>
-            .<span class="ident">parent</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;should have a parent directory&quot;</span>)
-            .<span class="ident">join</span>(<span class="string">&quot;./examples/arithmetic&quot;</span>);
+        <span class="kw">let </span>example_crate_root = this_crate_root
+            .parent()
+            .expect(<span class="string">&quot;should have a parent directory&quot;</span>)
+            .join(<span class="string">&quot;./examples/arithmetic&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">guess_crate_root</span>(<span class="kw-2">&amp;</span><span class="ident">example_crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;./src/arthmetic.udl&quot;</span>)).<span class="ident">unwrap</span>(),
-            <span class="ident">example_crate_root</span>
+            guess_crate_root(<span class="kw-2">&amp;</span>example_crate_root.join(<span class="string">&quot;./src/arthmetic.udl&quot;</span>)).unwrap(),
+            example_crate_root
         );
 
-        <span class="kw">let</span> <span class="ident">not_a_crate_root</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">this_crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;./src/templates&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">guess_crate_root</span>(<span class="kw-2">&amp;</span><span class="ident">not_a_crate_root</span>.<span class="ident">join</span>(<span class="string">&quot;./src/example.udl&quot;</span>)).<span class="ident">is_err</span>());
+        <span class="kw">let </span>not_a_crate_root = <span class="kw-2">&amp;</span>this_crate_root.join(<span class="string">&quot;./src/templates&quot;</span>);
+        <span class="macro">assert!</span>(guess_crate_root(<span class="kw-2">&amp;</span>not_a_crate_root.join(<span class="string">&quot;./src/example.udl&quot;</span>)).is_err());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

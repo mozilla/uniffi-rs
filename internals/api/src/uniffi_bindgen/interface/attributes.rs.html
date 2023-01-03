@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/attributes.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>attributes.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/attributes.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>attributes.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -765,763 +759,762 @@
 <span id="759">759</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Attribute definitions for a `ComponentInterface`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module provides some conveniences for working with attribute definitions</span>
-<span class="doccomment">//! from WebIDL. When encountering a weedle `ExtendedAttribute` node, use `TryFrom`</span>
-<span class="doccomment">//! to convert it into an [`Attribute`] representing one of the attributes that we</span>
-<span class="doccomment">//! support. You can also use the [`parse_attributes`] function to parse an</span>
-<span class="doccomment">//! `ExtendedAttributeList` into a vec of same.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! We only support a small number of attributes, so it&#39;s manageable to have them</span>
-<span class="doccomment">//! all handled by a single abstraction. This might need to be refactored in future</span>
-<span class="doccomment">//! if we grow significantly more complicated attribute handling.</span>
+</span><span class="doccomment">//! # Attribute definitions for a `ComponentInterface`.
+//!
+//! This module provides some conveniences for working with attribute definitions
+//! from WebIDL. When encountering a weedle `ExtendedAttribute` node, use `TryFrom`
+//! to convert it into an [`Attribute`] representing one of the attributes that we
+//! support. You can also use the [`parse_attributes`] function to parse an
+//! `ExtendedAttributeList` into a vec of same.
+//!
+//! We only support a small number of attributes, so it&#39;s manageable to have them
+//! all handled by a single abstraction. This might need to be refactored in future
+//! if we grow significantly more complicated attribute handling.
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
+</span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>uniffi_meta::Checksum;
 
-<span class="doccomment">/// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is a convenience enum for parsing UDL attributes and erroring out if we encounter</span>
-<span class="doccomment">/// any unsupported ones. These don&#39;t convert directly into parts of a `ComponentInterface`, but</span>
-<span class="doccomment">/// may influence the properties of things like functions and arguments.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum</span> <span class="ident">Attribute</span> {
-    <span class="ident">ByRef</span>,
-    <span class="ident">Enum</span>,
-    <span class="ident">Error</span>,
-    <span class="ident">Name</span>(<span class="ident">String</span>),
-    <span class="ident">SelfType</span>(<span class="ident">SelfType</span>),
-    <span class="ident">Threadsafe</span>, <span class="comment">// N.B. the `[Threadsafe]` attribute is deprecated and will be removed</span>
-    <span class="ident">Throws</span>(<span class="ident">String</span>),
-    <span class="comment">// `[External=&quot;crate_name&quot;]` - We can `use crate_name::...` for the type.</span>
-    <span class="ident">External</span>(<span class="ident">String</span>),
-    <span class="comment">// Custom type on the scaffolding side</span>
-    <span class="ident">Custom</span>,
+<span class="doccomment">/// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.
+///
+/// This is a convenience enum for parsing UDL attributes and erroring out if we encounter
+/// any unsupported ones. These don&#39;t convert directly into parts of a `ComponentInterface`, but
+/// may influence the properties of things like functions and arguments.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum </span>Attribute {
+    ByRef,
+    Enum,
+    Error,
+    Name(String),
+    SelfType(SelfType),
+    Threadsafe, <span class="comment">// N.B. the `[Threadsafe]` attribute is deprecated and will be removed
+    </span>Throws(String),
+    <span class="comment">// `[External=&quot;crate_name&quot;]` - We can `use crate_name::...` for the type.
+    </span>External(String),
+    <span class="comment">// Custom type on the scaffolding side
+    </span>Custom,
 }
 
-<span class="kw">impl</span> <span class="ident">Attribute</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_error</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="macro">matches!</span>(<span class="self">self</span>, <span class="ident">Attribute::Error</span>)
+<span class="kw">impl </span>Attribute {
+    <span class="kw">pub fn </span>is_error(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="macro">matches!</span>(<span class="self">self</span>, Attribute::Error)
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_enum</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="macro">matches!</span>(<span class="self">self</span>, <span class="ident">Attribute::Enum</span>)
+    <span class="kw">pub fn </span>is_enum(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="macro">matches!</span>(<span class="self">self</span>, Attribute::Enum)
     }
 }
 
-<span class="doccomment">/// Convert a weedle `ExtendedAttribute` into an `Attribute` for a `ComponentInterface` member,</span>
-<span class="doccomment">/// or error out if the attribute is not supported.</span>
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttribute</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Attribute</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(
-        <span class="ident">weedle_attribute</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttribute</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">anyhow::Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">weedle_attribute</span> {
-            <span class="comment">// Matches plain named attributes like &quot;[ByRef&quot;].</span>
-            <span class="ident">weedle::attribute::ExtendedAttribute::NoArgs</span>(<span class="ident">attr</span>) =&gt; <span class="kw">match</span> (<span class="ident">attr</span>.<span class="number">0</span>).<span class="number">0</span> {
-                <span class="string">&quot;ByRef&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Attribute::ByRef</span>),
-                <span class="string">&quot;Enum&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Attribute::Enum</span>),
-                <span class="string">&quot;Error&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Attribute::Error</span>),
-                <span class="string">&quot;Threadsafe&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Attribute::Threadsafe</span>),
-                <span class="string">&quot;Custom&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Attribute::Custom</span>),
-                <span class="kw">_</span> =&gt; <span class="macro">anyhow::bail!</span>(<span class="string">&quot;ExtendedAttributeNoArgs not supported: {:?}&quot;</span>, (<span class="ident">attr</span>.<span class="number">0</span>).<span class="number">0</span>),
+<span class="doccomment">/// Convert a weedle `ExtendedAttribute` into an `Attribute` for a `ComponentInterface` member,
+/// or error out if the attribute is not supported.
+</span><span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttribute&lt;<span class="lifetime">&#39;_</span>&gt;&gt; <span class="kw">for </span>Attribute {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(
+        weedle_attribute: <span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttribute&lt;<span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, anyhow::Error&gt; {
+        <span class="kw">match </span>weedle_attribute {
+            <span class="comment">// Matches plain named attributes like &quot;[ByRef&quot;].
+            </span>weedle::attribute::ExtendedAttribute::NoArgs(attr) =&gt; <span class="kw">match </span>(attr.<span class="number">0</span>).<span class="number">0 </span>{
+                <span class="string">&quot;ByRef&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::ByRef),
+                <span class="string">&quot;Enum&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Enum),
+                <span class="string">&quot;Error&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Error),
+                <span class="string">&quot;Threadsafe&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Threadsafe),
+                <span class="string">&quot;Custom&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Custom),
+                <span class="kw">_ </span>=&gt; <span class="macro">anyhow::bail!</span>(<span class="string">&quot;ExtendedAttributeNoArgs not supported: {:?}&quot;</span>, (attr.<span class="number">0</span>).<span class="number">0</span>),
             },
-            <span class="comment">// Matches assignment-style attributes like [&quot;Throws=Error&quot;]</span>
-            <span class="ident">weedle::attribute::ExtendedAttribute::Ident</span>(<span class="ident">identity</span>) =&gt; {
-                <span class="kw">match</span> <span class="ident">identity</span>.<span class="ident">lhs_identifier</span>.<span class="number">0</span> {
-                    <span class="string">&quot;Name&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Attribute::Name</span>(<span class="ident">name_from_id_or_string</span>(<span class="kw-2">&amp;</span><span class="ident">identity</span>.<span class="ident">rhs</span>))),
-                    <span class="string">&quot;Throws&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Attribute::Throws</span>(<span class="ident">name_from_id_or_string</span>(<span class="kw-2">&amp;</span><span class="ident">identity</span>.<span class="ident">rhs</span>))),
-                    <span class="string">&quot;Self&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Attribute::SelfType</span>(<span class="ident">SelfType::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">identity</span>.<span class="ident">rhs</span>)<span class="question-mark">?</span>)),
-                    <span class="string">&quot;External&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Attribute::External</span>(<span class="ident">name_from_id_or_string</span>(<span class="kw-2">&amp;</span><span class="ident">identity</span>.<span class="ident">rhs</span>))),
-                    <span class="kw">_</span> =&gt; <span class="macro">anyhow::bail!</span>(
+            <span class="comment">// Matches assignment-style attributes like [&quot;Throws=Error&quot;]
+            </span>weedle::attribute::ExtendedAttribute::Ident(identity) =&gt; {
+                <span class="kw">match </span>identity.lhs_identifier.<span class="number">0 </span>{
+                    <span class="string">&quot;Name&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Name(name_from_id_or_string(<span class="kw-2">&amp;</span>identity.rhs))),
+                    <span class="string">&quot;Throws&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Throws(name_from_id_or_string(<span class="kw-2">&amp;</span>identity.rhs))),
+                    <span class="string">&quot;Self&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::SelfType(SelfType::try_from(<span class="kw-2">&amp;</span>identity.rhs)<span class="question-mark">?</span>)),
+                    <span class="string">&quot;External&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::External(name_from_id_or_string(<span class="kw-2">&amp;</span>identity.rhs))),
+                    <span class="kw">_ </span>=&gt; <span class="macro">anyhow::bail!</span>(
                         <span class="string">&quot;Attribute identity Identifier not supported: {:?}&quot;</span>,
-                        <span class="ident">identity</span>.<span class="ident">lhs_identifier</span>.<span class="number">0</span>
-                    ),
+                        identity.lhs_identifier.<span class="number">0
+                    </span>),
                 }
             }
-            <span class="kw">_</span> =&gt; <span class="macro">anyhow::bail!</span>(<span class="string">&quot;Attribute not supported: {:?}&quot;</span>, <span class="ident">weedle_attribute</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">anyhow::bail!</span>(<span class="string">&quot;Attribute not supported: {:?}&quot;</span>, weedle_attribute),
         }
     }
 }
 
-<span class="kw">fn</span> <span class="ident">name_from_id_or_string</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::IdentifierOrString</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">String</span> {
-    <span class="kw">match</span> <span class="ident">nm</span> {
-        <span class="ident">weedle::attribute::IdentifierOrString::Identifier</span>(<span class="ident">identifier</span>) =&gt; <span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
-        <span class="ident">weedle::attribute::IdentifierOrString::String</span>(<span class="ident">str_lit</span>) =&gt; <span class="ident">str_lit</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
+<span class="kw">fn </span>name_from_id_or_string(nm: <span class="kw-2">&amp;</span>weedle::attribute::IdentifierOrString&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; String {
+    <span class="kw">match </span>nm {
+        weedle::attribute::IdentifierOrString::Identifier(identifier) =&gt; identifier.<span class="number">0</span>.to_string(),
+        weedle::attribute::IdentifierOrString::String(str_lit) =&gt; str_lit.<span class="number">0</span>.to_string(),
     }
 }
 
-<span class="doccomment">/// Parse a weedle `ExtendedAttributeList` into a list of `Attribute`s,</span>
-<span class="doccomment">/// erroring out on duplicates.</span>
-<span class="kw">fn</span> <span class="ident">parse_attributes</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(
-    <span class="ident">weedle_attributes</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    <span class="ident">validator</span>: <span class="ident">F</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Attribute</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
+<span class="doccomment">/// Parse a weedle `ExtendedAttributeList` into a list of `Attribute`s,
+/// erroring out on duplicates.
+</span><span class="kw">fn </span>parse_attributes&lt;F&gt;(
+    weedle_attributes: <span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;,
+    validator: F,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Attribute&gt;&gt;
+<span class="kw">where
+    </span>F: Fn(<span class="kw-2">&amp;</span>Attribute) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;,
 {
-    <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">weedle_attributes</span>.<span class="ident">body</span>.<span class="ident">list</span>;
+    <span class="kw">let </span>attrs = <span class="kw-2">&amp;</span>weedle_attributes.body.list;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hash_set</span> <span class="op">=</span> <span class="ident">std::collections::HashSet::new</span>();
-    <span class="kw">for</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="ident">attrs</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">hash_set</span>.<span class="ident">insert</span>(<span class="ident">attr</span>) {
-            <span class="macro">anyhow::bail!</span>(<span class="string">&quot;Duplicated ExtendedAttribute: {:?}&quot;</span>, <span class="ident">attr</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>hash_set = std::collections::HashSet::new();
+    <span class="kw">for </span>attr <span class="kw">in </span>attrs {
+        <span class="kw">if </span>!hash_set.insert(attr) {
+            <span class="macro">anyhow::bail!</span>(<span class="string">&quot;Duplicated ExtendedAttribute: {:?}&quot;</span>, attr);
         }
     }
 
-    <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">attrs</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">map</span>(<span class="ident">Attribute::try_from</span>)
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+    <span class="kw">let </span>attrs = attrs
+        .iter()
+        .map(Attribute::try_from)
+        .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
-    <span class="kw">for</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">attrs</span> {
-        <span class="ident">validator</span>(<span class="ident">attr</span>)<span class="question-mark">?</span>;
+    <span class="kw">for </span>attr <span class="kw">in </span><span class="kw-2">&amp;</span>attrs {
+        validator(attr)<span class="question-mark">?</span>;
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">attrs</span>)
+    <span class="prelude-val">Ok</span>(attrs)
 }
 
-<span class="doccomment">/// Attributes that can be attached to an `enum` definition in the UDL.</span>
-<span class="doccomment">/// There&#39;s only one case here: using `[Error]` to mark an enum as an error class.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">EnumAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
+<span class="doccomment">/// Attributes that can be attached to an `enum` definition in the UDL.
+/// There&#39;s only one case here: using `[Error]` to mark an enum as an error class.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum, Default)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>EnumAttributes(Vec&lt;Attribute&gt;);
 
-<span class="kw">impl</span> <span class="ident">EnumAttributes</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_error_attr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="ident">attr</span>.<span class="ident">is_error</span>())
+<span class="kw">impl </span>EnumAttributes {
+    <span class="kw">pub fn </span>contains_error_attr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.<span class="number">0</span>.iter().any(|attr| attr.is_error())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EnumAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(
-        <span class="ident">weedle_attributes</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="ident">Attribute::Error</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for enums&quot;</span>)),
+<span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;&gt; <span class="kw">for </span>EnumAttributes {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(
+        weedle_attributes: <span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span>attrs = parse_attributes(weedle_attributes, |attr| <span class="kw">match </span>attr {
+            Attribute::Error =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for enums&quot;</span>)),
         })<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(attrs))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TryInto</span><span class="op">&lt;</span><span class="ident">EnumAttributes</span>, <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EnumAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Default::default</span>()),
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="ident">try_into</span>(),
+<span class="kw">impl</span>&lt;T: TryInto&lt;EnumAttributes, Error = anyhow::Error&gt;&gt; TryFrom&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt; <span class="kw">for </span>EnumAttributes {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(value: <span class="prelude-ty">Option</span>&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">match </span>value {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(Default::default()),
+            <span class="prelude-val">Some</span>(v) =&gt; v.try_into(),
         }
     }
 }
 
-<span class="doccomment">/// Represents UDL attributes that might appear on a function.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This supports the `[Throws=ErrorName]` attribute for functions that</span>
-<span class="doccomment">/// can produce an error.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">FunctionAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
+<span class="doccomment">/// Represents UDL attributes that might appear on a function.
+///
+/// This supports the `[Throws=ErrorName]` attribute for functions that
+/// can produce an error.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum, Default)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>FunctionAttributes(Vec&lt;Attribute&gt;);
 
-<span class="kw">impl</span> <span class="ident">FunctionAttributes</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">get_throws_err</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">find_map</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="comment">// This will hopefully return a helpful compilation error</span>
-            <span class="comment">// if the error is not defined.</span>
-            <span class="ident">Attribute::Throws</span>(<span class="ident">inner</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">inner</span>.<span class="ident">as_ref</span>()),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+<span class="kw">impl </span>FunctionAttributes {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>get_throws_err(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.iter().find_map(|attr| <span class="kw">match </span>attr {
+            <span class="comment">// This will hopefully return a helpful compilation error
+            // if the error is not defined.
+            </span>Attribute::Throws(inner) =&gt; <span class="prelude-val">Some</span>(inner.as_ref()),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">FromIterator</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">FunctionAttributes</span> {
-    <span class="kw">fn</span> <span class="ident">from_iter</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Attribute</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">iter</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">Vec::from_iter</span>(<span class="ident">iter</span>))
+<span class="kw">impl </span>FromIterator&lt;Attribute&gt; <span class="kw">for </span>FunctionAttributes {
+    <span class="kw">fn </span>from_iter&lt;T: IntoIterator&lt;Item = Attribute&gt;&gt;(iter: T) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>(Vec::from_iter(iter))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">FunctionAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(
-        <span class="ident">weedle_attributes</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="ident">Attribute::Throws</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for functions&quot;</span>)),
+<span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;&gt; <span class="kw">for </span>FunctionAttributes {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(
+        weedle_attributes: <span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span>attrs = parse_attributes(weedle_attributes, |attr| <span class="kw">match </span>attr {
+            Attribute::Throws(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for functions&quot;</span>)),
         })<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(attrs))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TryInto</span><span class="op">&lt;</span><span class="ident">FunctionAttributes</span>, <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>
-    <span class="kw">for</span> <span class="ident">FunctionAttributes</span>
+<span class="kw">impl</span>&lt;T: TryInto&lt;FunctionAttributes, Error = anyhow::Error&gt;&gt; TryFrom&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt;
+    <span class="kw">for </span>FunctionAttributes
 {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Default::default</span>()),
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="ident">try_into</span>(),
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(value: <span class="prelude-ty">Option</span>&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">match </span>value {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(Default::default()),
+            <span class="prelude-val">Some</span>(v) =&gt; v.try_into(),
         }
     }
 }
 
-<span class="doccomment">/// Represents UDL attributes that might appear on a function argument.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This supports the `[ByRef]` attribute for arguments that should be passed</span>
-<span class="doccomment">/// by reference in the generated Rust scaffolding.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">ArgumentAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
+<span class="doccomment">/// Represents UDL attributes that might appear on a function argument.
+///
+/// This supports the `[ByRef]` attribute for arguments that should be passed
+/// by reference in the generated Rust scaffolding.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum, Default)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>ArgumentAttributes(Vec&lt;Attribute&gt;);
 
-<span class="kw">impl</span> <span class="ident">ArgumentAttributes</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">by_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::ByRef</span>))
+<span class="kw">impl </span>ArgumentAttributes {
+    <span class="kw">pub fn </span>by_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.<span class="number">0</span>.iter().any(|attr| <span class="macro">matches!</span>(attr, Attribute::ByRef))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArgumentAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(
-        <span class="ident">weedle_attributes</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="ident">Attribute::ByRef</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for arguments&quot;</span>)),
+<span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;&gt; <span class="kw">for </span>ArgumentAttributes {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(
+        weedle_attributes: <span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span>attrs = parse_attributes(weedle_attributes, |attr| <span class="kw">match </span>attr {
+            Attribute::ByRef =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for arguments&quot;</span>)),
         })<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(attrs))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TryInto</span><span class="op">&lt;</span><span class="ident">ArgumentAttributes</span>, <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>
-    <span class="kw">for</span> <span class="ident">ArgumentAttributes</span>
+<span class="kw">impl</span>&lt;T: TryInto&lt;ArgumentAttributes, Error = anyhow::Error&gt;&gt; TryFrom&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt;
+    <span class="kw">for </span>ArgumentAttributes
 {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Default::default</span>()),
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="ident">try_into</span>(),
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(value: <span class="prelude-ty">Option</span>&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">match </span>value {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(Default::default()),
+            <span class="prelude-val">Some</span>(v) =&gt; v.try_into(),
         }
     }
 }
 
-<span class="doccomment">/// Represents UDL attributes that might appear on an `interface` definition.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">InterfaceAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
+<span class="doccomment">/// Represents UDL attributes that might appear on an `interface` definition.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum, Default)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>InterfaceAttributes(Vec&lt;Attribute&gt;);
 
-<span class="kw">impl</span> <span class="ident">InterfaceAttributes</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_enum_attr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="ident">attr</span>.<span class="ident">is_enum</span>())
+<span class="kw">impl </span>InterfaceAttributes {
+    <span class="kw">pub fn </span>contains_enum_attr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.<span class="number">0</span>.iter().any(|attr| attr.is_enum())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_error_attr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="ident">attr</span>.<span class="ident">is_error</span>())
+    <span class="kw">pub fn </span>contains_error_attr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.<span class="number">0</span>.iter().any(|attr| attr.is_error())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">threadsafe</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::Threadsafe</span>))
+    <span class="kw">pub fn </span>threadsafe(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.<span class="number">0
+            </span>.iter()
+            .any(|attr| <span class="macro">matches!</span>(attr, Attribute::Threadsafe))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">InterfaceAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(
-        <span class="ident">weedle_attributes</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="ident">Attribute::Enum</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="ident">Attribute::Error</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="ident">Attribute::Threadsafe</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for interface definition&quot;</span>)),
+<span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;&gt; <span class="kw">for </span>InterfaceAttributes {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(
+        weedle_attributes: <span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span>attrs = parse_attributes(weedle_attributes, |attr| <span class="kw">match </span>attr {
+            Attribute::Enum =&gt; <span class="prelude-val">Ok</span>(()),
+            Attribute::Error =&gt; <span class="prelude-val">Ok</span>(()),
+            Attribute::Threadsafe =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for interface definition&quot;</span>)),
         })<span class="question-mark">?</span>;
-        <span class="comment">// Can&#39;t be both `[Threadsafe]` and an `[Enum]`.</span>
-        <span class="kw">if</span> <span class="ident">attrs</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
+        <span class="comment">// Can&#39;t be both `[Threadsafe]` and an `[Enum]`.
+        </span><span class="kw">if </span>attrs.len() &gt; <span class="number">1 </span>{
             <span class="macro">bail!</span>(<span class="string">&quot;conflicting attributes on interface definition&quot;</span>);
         }
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(attrs))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TryInto</span><span class="op">&lt;</span><span class="ident">InterfaceAttributes</span>, <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>
-    <span class="kw">for</span> <span class="ident">InterfaceAttributes</span>
+<span class="kw">impl</span>&lt;T: TryInto&lt;InterfaceAttributes, Error = anyhow::Error&gt;&gt; TryFrom&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt;
+    <span class="kw">for </span>InterfaceAttributes
 {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Default::default</span>()),
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="ident">try_into</span>(),
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(value: <span class="prelude-ty">Option</span>&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">match </span>value {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(Default::default()),
+            <span class="prelude-val">Some</span>(v) =&gt; v.try_into(),
         }
     }
 }
 
-<span class="doccomment">/// Represents UDL attributes that might appear on a constructor.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This supports the `[Throws=ErrorName]` attribute for constructors that can produce</span>
-<span class="doccomment">/// an error, and the `[Name=MethodName]` for non-default constructors.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">ConstructorAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
+<span class="doccomment">/// Represents UDL attributes that might appear on a constructor.
+///
+/// This supports the `[Throws=ErrorName]` attribute for constructors that can produce
+/// an error, and the `[Name=MethodName]` for non-default constructors.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum, Default)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>ConstructorAttributes(Vec&lt;Attribute&gt;);
 
-<span class="kw">impl</span> <span class="ident">ConstructorAttributes</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">get_throws_err</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">find_map</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="comment">// This will hopefully return a helpful compilation error</span>
-            <span class="comment">// if the error is not defined.</span>
-            <span class="ident">Attribute::Throws</span>(<span class="ident">inner</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">inner</span>.<span class="ident">as_ref</span>()),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+<span class="kw">impl </span>ConstructorAttributes {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>get_throws_err(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.iter().find_map(|attr| <span class="kw">match </span>attr {
+            <span class="comment">// This will hopefully return a helpful compilation error
+            // if the error is not defined.
+            </span>Attribute::Throws(inner) =&gt; <span class="prelude-val">Some</span>(inner.as_ref()),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         })
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">get_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">find_map</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="ident">Attribute::Name</span>(<span class="ident">inner</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">inner</span>.<span class="ident">as_ref</span>()),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>get_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.iter().find_map(|attr| <span class="kw">match </span>attr {
+            Attribute::Name(inner) =&gt; <span class="prelude-val">Some</span>(inner.as_ref()),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ConstructorAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(
-        <span class="ident">weedle_attributes</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="ident">Attribute::Throws</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="ident">Attribute::Name</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for constructors&quot;</span>)),
+<span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;&gt; <span class="kw">for </span>ConstructorAttributes {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(
+        weedle_attributes: <span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span>attrs = parse_attributes(weedle_attributes, |attr| <span class="kw">match </span>attr {
+            Attribute::Throws(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+            Attribute::Name(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for constructors&quot;</span>)),
         })<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(attrs))
     }
 }
 
-<span class="doccomment">/// Represents UDL attributes that might appear on a method.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This supports the `[Throws=ErrorName]` attribute for methods that can produce</span>
-<span class="doccomment">/// an error, and the `[Self=ByArc]` attribute for methods that take `Arc&lt;Self&gt;` as receiver.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">MethodAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
+<span class="doccomment">/// Represents UDL attributes that might appear on a method.
+///
+/// This supports the `[Throws=ErrorName]` attribute for methods that can produce
+/// an error, and the `[Self=ByArc]` attribute for methods that take `Arc&lt;Self&gt;` as receiver.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum, Default)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>MethodAttributes(Vec&lt;Attribute&gt;);
 
-<span class="kw">impl</span> <span class="ident">MethodAttributes</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">get_throws_err</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">find_map</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="comment">// This will hopefully return a helpful compilation error</span>
-            <span class="comment">// if the error is not defined.</span>
-            <span class="ident">Attribute::Throws</span>(<span class="ident">inner</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">inner</span>.<span class="ident">as_ref</span>()),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+<span class="kw">impl </span>MethodAttributes {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>get_throws_err(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.iter().find_map(|attr| <span class="kw">match </span>attr {
+            <span class="comment">// This will hopefully return a helpful compilation error
+            // if the error is not defined.
+            </span>Attribute::Throws(inner) =&gt; <span class="prelude-val">Some</span>(inner.as_ref()),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         })
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">get_self_by_arc</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::SelfType</span>(<span class="ident">SelfType::ByArc</span>)))
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>get_self_by_arc(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.<span class="number">0
+            </span>.iter()
+            .any(|attr| <span class="macro">matches!</span>(attr, Attribute::SelfType(SelfType::ByArc)))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">FromIterator</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MethodAttributes</span> {
-    <span class="kw">fn</span> <span class="ident">from_iter</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Attribute</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">iter</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">Vec::from_iter</span>(<span class="ident">iter</span>))
+<span class="kw">impl </span>FromIterator&lt;Attribute&gt; <span class="kw">for </span>MethodAttributes {
+    <span class="kw">fn </span>from_iter&lt;T: IntoIterator&lt;Item = Attribute&gt;&gt;(iter: T) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>(Vec::from_iter(iter))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MethodAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(
-        <span class="ident">weedle_attributes</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="ident">Attribute::SelfType</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="ident">Attribute::Throws</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for methods&quot;</span>)),
+<span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;&gt; <span class="kw">for </span>MethodAttributes {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(
+        weedle_attributes: <span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span>attrs = parse_attributes(weedle_attributes, |attr| <span class="kw">match </span>attr {
+            Attribute::SelfType(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+            Attribute::Throws(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for methods&quot;</span>)),
         })<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(attrs))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TryInto</span><span class="op">&lt;</span><span class="ident">MethodAttributes</span>, <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MethodAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Default::default</span>()),
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="ident">try_into</span>(),
+<span class="kw">impl</span>&lt;T: TryInto&lt;MethodAttributes, Error = anyhow::Error&gt;&gt; TryFrom&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt; <span class="kw">for </span>MethodAttributes {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(value: <span class="prelude-ty">Option</span>&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">match </span>value {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(Default::default()),
+            <span class="prelude-val">Some</span>(v) =&gt; v.try_into(),
         }
     }
 }
 
-<span class="doccomment">/// Represents the different possible types of method call receiver.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Actually we only support one of these right now, `[Self=ByArc]`.</span>
-<span class="doccomment">/// We might add more in future, e.g. a `[Self=ByRef]` if there are cases</span>
-<span class="doccomment">/// where we need to force the receiver to be taken by reference.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum</span> <span class="ident">SelfType</span> {
-    <span class="ident">ByArc</span>, <span class="comment">// Method receiver is `Arc&lt;Self&gt;`.</span>
-}
+<span class="doccomment">/// Represents the different possible types of method call receiver.
+///
+/// Actually we only support one of these right now, `[Self=ByArc]`.
+/// We might add more in future, e.g. a `[Self=ByRef]` if there are cases
+/// where we need to force the receiver to be taken by reference.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum </span>SelfType {
+    ByArc, <span class="comment">// Method receiver is `Arc&lt;Self&gt;`.
+</span>}
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">weedle::attribute::IdentifierOrString</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SelfType</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">nm</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::IdentifierOrString</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">nm</span> {
-            <span class="ident">weedle::attribute::IdentifierOrString::Identifier</span>(<span class="ident">identifier</span>) =&gt; <span class="kw">match</span> <span class="ident">identifier</span>.<span class="number">0</span> {
-                <span class="string">&quot;ByArc&quot;</span> =&gt; <span class="ident">SelfType::ByArc</span>,
-                <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;Unsupported Self Type: {:?}&quot;</span>, <span class="ident">identifier</span>.<span class="number">0</span>),
+<span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>weedle::attribute::IdentifierOrString&lt;<span class="lifetime">&#39;_</span>&gt;&gt; <span class="kw">for </span>SelfType {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(nm: <span class="kw-2">&amp;</span>weedle::attribute::IdentifierOrString&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>nm {
+            weedle::attribute::IdentifierOrString::Identifier(identifier) =&gt; <span class="kw">match </span>identifier.<span class="number">0 </span>{
+                <span class="string">&quot;ByArc&quot; </span>=&gt; SelfType::ByArc,
+                <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;Unsupported Self Type: {:?}&quot;</span>, identifier.<span class="number">0</span>),
             },
-            <span class="ident">weedle::attribute::IdentifierOrString::String</span>(<span class="kw">_</span>) =&gt; {
-                <span class="macro">bail!</span>(<span class="string">&quot;Unsupported Self Type: {:?}&quot;</span>, <span class="ident">nm</span>)
+            weedle::attribute::IdentifierOrString::String(<span class="kw">_</span>) =&gt; {
+                <span class="macro">bail!</span>(<span class="string">&quot;Unsupported Self Type: {:?}&quot;</span>, nm)
             }
         })
     }
 }
 
-<span class="doccomment">/// Represents UDL attributes that might appear on a typedef</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This supports the `[External=&quot;crate_name&quot;]` and `[Custom]` attributes for types.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">TypedefAttributes</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>);
+<span class="doccomment">/// Represents UDL attributes that might appear on a typedef
+///
+/// This supports the `[External=&quot;crate_name&quot;]` and `[Custom]` attributes for types.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum, Default)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>TypedefAttributes(Vec&lt;Attribute&gt;);
 
-<span class="kw">impl</span> <span class="ident">TypedefAttributes</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">get_crate_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="number">0</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">find_map</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-                <span class="ident">Attribute::External</span>(<span class="ident">crate_name</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">crate_name</span>.<span class="ident">clone</span>()),
-                <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+<span class="kw">impl </span>TypedefAttributes {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>get_crate_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.<span class="number">0
+            </span>.iter()
+            .find_map(|attr| <span class="kw">match </span>attr {
+                Attribute::External(crate_name) =&gt; <span class="prelude-val">Some</span>(crate_name.clone()),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
             })
-            .<span class="ident">expect</span>(<span class="string">&quot;must have a crate name&quot;</span>)
+            .expect(<span class="string">&quot;must have a crate name&quot;</span>)
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">is_custom</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::Custom</span> { .. }))
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>is_custom(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.<span class="number">0
+            </span>.iter()
+            .any(|attr| <span class="macro">matches!</span>(attr, Attribute::Custom { .. }))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">TypedefAttributes</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(
-        <span class="ident">weedle_attributes</span>: <span class="kw-2">&amp;</span><span class="ident">weedle::attribute::ExtendedAttributeList</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">weedle_attributes</span>, <span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">attr</span> {
-            <span class="ident">Attribute::External</span> { .. } <span class="op">|</span> <span class="ident">Attribute::Custom</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for typedefs&quot;</span>)),
+<span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;&gt; <span class="kw">for </span>TypedefAttributes {
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(
+        weedle_attributes: <span class="kw-2">&amp;</span>weedle::attribute::ExtendedAttributeList&lt;<span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span>attrs = parse_attributes(weedle_attributes, |attr| <span class="kw">match </span>attr {
+            Attribute::External { .. } | Attribute::Custom =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for typedefs&quot;</span>)),
         })<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">attrs</span>))
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(attrs))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TryInto</span><span class="op">&lt;</span><span class="ident">TypedefAttributes</span>, <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>
-    <span class="kw">for</span> <span class="ident">TypedefAttributes</span>
+<span class="kw">impl</span>&lt;T: TryInto&lt;TypedefAttributes, Error = anyhow::Error&gt;&gt; TryFrom&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt;
+    <span class="kw">for </span>TypedefAttributes
 {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">anyhow::Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Default::default</span>()),
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="ident">try_into</span>(),
+    <span class="kw">type </span>Error = anyhow::Error;
+    <span class="kw">fn </span>try_from(value: <span class="prelude-ty">Option</span>&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">match </span>value {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(Default::default()),
+            <span class="prelude-val">Some</span>(v) =&gt; v.try_into(),
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">weedle::Parse</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>weedle::Parse;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_byref</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;ByRef&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::ByRef</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_byref() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;ByRef&quot;</span>).unwrap();
+        <span class="kw">let </span>attr = Attribute::try_from(<span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attr, Attribute::ByRef));
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_enum</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Enum&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::Enum</span>));
-        <span class="macro">assert!</span>(<span class="ident">attr</span>.<span class="ident">is_enum</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_enum() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Enum&quot;</span>).unwrap();
+        <span class="kw">let </span>attr = Attribute::try_from(<span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attr, Attribute::Enum));
+        <span class="macro">assert!</span>(attr.is_enum());
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_error</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Error&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::Error</span>));
-        <span class="macro">assert!</span>(<span class="ident">attr</span>.<span class="ident">is_error</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_error() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Error&quot;</span>).unwrap();
+        <span class="kw">let </span>attr = Attribute::try_from(<span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attr, Attribute::Error));
+        <span class="macro">assert!</span>(attr.is_error());
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_name</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Name=Value&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::Name</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">==</span> <span class="string">&quot;Value&quot;</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_name() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Name=Value&quot;</span>).unwrap();
+        <span class="kw">let </span>attr = Attribute::try_from(<span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attr, Attribute::Name(nm) <span class="kw">if </span>nm == <span class="string">&quot;Value&quot;</span>));
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Name&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Name&quot;</span>).unwrap();
+        <span class="kw">let </span>err = Attribute::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;ExtendedAttributeNoArgs not supported: \&quot;Name\&quot;&quot;</span>
-        );
-
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_selftype</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Self=ByArc&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::SelfType</span>(<span class="ident">SelfType::ByArc</span>)));
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Self=ByMistake&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;Unsupported Self Type: \&quot;ByMistake\&quot;&quot;</span>);
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_threadsafe</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Threadsafe&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::Threadsafe</span>));
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_throws</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Throws=Name&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attr</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attr</span>, <span class="ident">Attribute::Throws</span>(<span class="ident">nm</span>) <span class="kw">if</span> <span class="ident">nm</span> <span class="op">==</span> <span class="string">&quot;Name&quot;</span>));
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Throws&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;ExtendedAttributeNoArgs not supported: \&quot;Throws\&quot;&quot;</span>
-        );
+            err.to_string(),
+            <span class="string">&quot;ExtendedAttributeNoArgs not supported: \&quot;Name\&quot;&quot;
+        </span>);
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_unsupported</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;UnsupportedAttribute&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_selftype() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Self=ByArc&quot;</span>).unwrap();
+        <span class="kw">let </span>attr = Attribute::try_from(<span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attr, Attribute::SelfType(SelfType::ByArc)));
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Self=ByMistake&quot;</span>).unwrap();
+        <span class="kw">let </span>err = Attribute::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;Unsupported Self Type: \&quot;ByMistake\&quot;&quot;</span>);
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_threadsafe() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Threadsafe&quot;</span>).unwrap();
+        <span class="kw">let </span>attr = Attribute::try_from(<span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attr, Attribute::Threadsafe));
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_throws() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Throws=Name&quot;</span>).unwrap();
+        <span class="kw">let </span>attr = Attribute::try_from(<span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attr, Attribute::Throws(nm) <span class="kw">if </span>nm == <span class="string">&quot;Name&quot;</span>));
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Throws&quot;</span>).unwrap();
+        <span class="kw">let </span>err = Attribute::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;ExtendedAttributeNoArgs not supported: \&quot;UnsupportedAttribute\&quot;&quot;</span>
-        );
+            err.to_string(),
+            <span class="string">&quot;ExtendedAttributeNoArgs not supported: \&quot;Throws\&quot;&quot;
+        </span>);
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttribute::parse</span>(<span class="string">&quot;Unsupported=Attribute&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">Attribute::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_unsupported() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;UnsupportedAttribute&quot;</span>).unwrap();
+        <span class="kw">let </span>err = Attribute::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;Attribute identity Identifier not supported: \&quot;Unsupported\&quot;&quot;</span>
-        );
-    }
+            err.to_string(),
+            <span class="string">&quot;ExtendedAttributeNoArgs not supported: \&quot;UnsupportedAttribute\&quot;&quot;
+        </span>);
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_other_attributes_not_supported_for_enums</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Error, ByRef]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">EnumAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;ByRef not supported for enums&quot;</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_throws_attribute</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Throws=Error]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">FunctionAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">get_throws_err</span>(), <span class="prelude-val">Some</span>(<span class="string">&quot;Error&quot;</span>)));
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">FunctionAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">get_throws_err</span>(), <span class="prelude-val">None</span>));
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_other_attributes_not_supported_for_functions</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Throws=Error, ByRef]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">FunctionAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;ByRef not supported for functions&quot;</span>);
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Throws=Error, Self=ByArc]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">FunctionAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Unsupported=Attribute&quot;</span>).unwrap();
+        <span class="kw">let </span>err = Attribute::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;SelfType(ByArc) not supported for functions&quot;</span>
-        );
+            err.to_string(),
+            <span class="string">&quot;Attribute identity Identifier not supported: \&quot;Unsupported\&quot;&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_method_attributes</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Throws=Error]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">MethodAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">attrs</span>.<span class="ident">get_self_by_arc</span>());
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">get_throws_err</span>(), <span class="prelude-val">Some</span>(<span class="string">&quot;Error&quot;</span>)));
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">MethodAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">attrs</span>.<span class="ident">get_self_by_arc</span>());
-        <span class="macro">assert!</span>(<span class="ident">attrs</span>.<span class="ident">get_throws_err</span>().<span class="ident">is_none</span>());
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Self=ByArc, Throws=Error]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">MethodAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">attrs</span>.<span class="ident">get_self_by_arc</span>());
-        <span class="macro">assert!</span>(<span class="ident">attrs</span>.<span class="ident">get_throws_err</span>().<span class="ident">is_some</span>());
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Self=ByArc]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">MethodAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">attrs</span>.<span class="ident">get_self_by_arc</span>());
-        <span class="macro">assert!</span>(<span class="ident">attrs</span>.<span class="ident">get_throws_err</span>().<span class="ident">is_none</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_other_attributes_not_supported_for_enums() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Error, ByRef]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = EnumAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;ByRef not supported for enums&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_constructor_attributes</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Throws=Error]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">ConstructorAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">get_throws_err</span>(), <span class="prelude-val">Some</span>(<span class="string">&quot;Error&quot;</span>)));
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">get_name</span>(), <span class="prelude-val">None</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_throws_attribute() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Throws=Error]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = FunctionAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.get_throws_err(), <span class="prelude-val">Some</span>(<span class="string">&quot;Error&quot;</span>)));
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Name=MyFactory]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">ConstructorAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">get_throws_err</span>(), <span class="prelude-val">None</span>));
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">get_name</span>(), <span class="prelude-val">Some</span>(<span class="string">&quot;MyFactory&quot;</span>)));
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Throws=Error, Name=MyFactory]&quot;</span>)
-                .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">ConstructorAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">get_throws_err</span>(), <span class="prelude-val">Some</span>(<span class="string">&quot;Error&quot;</span>)));
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">get_name</span>(), <span class="prelude-val">Some</span>(<span class="string">&quot;MyFactory&quot;</span>)));
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = FunctionAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.get_throws_err(), <span class="prelude-val">None</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_other_attributes_not_supported_for_constructors</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Throws=Error, ByRef]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">ConstructorAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;ByRef not supported for constructors&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_other_attributes_not_supported_for_functions() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Throws=Error, ByRef]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = FunctionAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;ByRef not supported for functions&quot;</span>);
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Throws=Error, Self=ByArc]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">ConstructorAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Throws=Error, Self=ByArc]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = FunctionAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;SelfType(ByArc) not supported for constructors&quot;</span>
-        );
+            err.to_string(),
+            <span class="string">&quot;SelfType(ByArc) not supported for functions&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_byref_attribute</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[ByRef]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">ArgumentAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">by_ref</span>(), <span class="bool-val">true</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_method_attributes() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Throws=Error]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = MethodAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(!attrs.get_self_by_arc());
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.get_throws_err(), <span class="prelude-val">Some</span>(<span class="string">&quot;Error&quot;</span>)));
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">ArgumentAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">by_ref</span>(), <span class="bool-val">false</span>));
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = MethodAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(!attrs.get_self_by_arc());
+        <span class="macro">assert!</span>(attrs.get_throws_err().is_none());
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Self=ByArc, Throws=Error]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = MethodAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(attrs.get_self_by_arc());
+        <span class="macro">assert!</span>(attrs.get_throws_err().is_some());
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Self=ByArc]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = MethodAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(attrs.get_self_by_arc());
+        <span class="macro">assert!</span>(attrs.get_throws_err().is_none());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_other_attributes_not_supported_for_arguments</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Throws=Error, ByRef]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">ArgumentAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_constructor_attributes() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Throws=Error]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = ConstructorAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.get_throws_err(), <span class="prelude-val">Some</span>(<span class="string">&quot;Error&quot;</span>)));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.get_name(), <span class="prelude-val">None</span>));
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Name=MyFactory]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = ConstructorAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.get_throws_err(), <span class="prelude-val">None</span>));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.get_name(), <span class="prelude-val">Some</span>(<span class="string">&quot;MyFactory&quot;</span>)));
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Throws=Error, Name=MyFactory]&quot;</span>)
+                .unwrap();
+        <span class="kw">let </span>attrs = ConstructorAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.get_throws_err(), <span class="prelude-val">Some</span>(<span class="string">&quot;Error&quot;</span>)));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.get_name(), <span class="prelude-val">Some</span>(<span class="string">&quot;MyFactory&quot;</span>)));
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_other_attributes_not_supported_for_constructors() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Throws=Error, ByRef]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = ConstructorAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;ByRef not supported for constructors&quot;</span>);
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Throws=Error, Self=ByArc]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = ConstructorAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;Throws(\&quot;Error\&quot;) not supported for arguments&quot;</span>
-        );
+            err.to_string(),
+            <span class="string">&quot;SelfType(ByArc) not supported for constructors&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_threadsafe_attribute</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Threadsafe]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">InterfaceAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">threadsafe</span>(), <span class="bool-val">true</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_byref_attribute() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[ByRef]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = ArgumentAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.by_ref(), <span class="bool-val">true</span>));
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">InterfaceAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">threadsafe</span>(), <span class="bool-val">false</span>));
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = ArgumentAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.by_ref(), <span class="bool-val">false</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_enum_attribute</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Enum]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">InterfaceAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">contains_enum_attr</span>(), <span class="bool-val">true</span>));
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">InterfaceAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">contains_enum_attr</span>(), <span class="bool-val">false</span>));
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Threadsafe]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">InterfaceAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">attrs</span>.<span class="ident">contains_enum_attr</span>(), <span class="bool-val">false</span>));
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Threadsafe, Enum]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">InterfaceAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_other_attributes_not_supported_for_arguments() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Throws=Error, ByRef]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = ArgumentAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;conflicting attributes on interface definition&quot;</span>
-        );
+            err.to_string(),
+            <span class="string">&quot;Throws(\&quot;Error\&quot;) not supported for arguments&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_other_attributes_not_supported_for_interfaces</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Threadsafe, ByRef]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">InterfaceAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_threadsafe_attribute() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Threadsafe]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.threadsafe(), <span class="bool-val">true</span>));
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.threadsafe(), <span class="bool-val">false</span>));
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_enum_attribute() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Enum]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.contains_enum_attr(), <span class="bool-val">true</span>));
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.contains_enum_attr(), <span class="bool-val">false</span>));
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Threadsafe]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.contains_enum_attr(), <span class="bool-val">false</span>));
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Threadsafe, Enum]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;ByRef not supported for interface definition&quot;</span>
-        );
+            err.to_string(),
+            <span class="string">&quot;conflicting attributes on interface definition&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_typedef_attribute</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Custom]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">TypedefAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">attrs</span>.<span class="ident">is_custom</span>());
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span>
-            <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[External=crate_name]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">TypedefAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">attrs</span>.<span class="ident">is_custom</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">attrs</span>.<span class="ident">get_crate_name</span>(), <span class="string">&quot;crate_name&quot;</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_typedef_attributes_malformed</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[Custom=foo]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">TypedefAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_other_attributes_not_supported_for_interfaces() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Threadsafe, ByRef]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;Attribute identity Identifier not supported: \&quot;Custom\&quot;&quot;</span>
-        );
-
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[External]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">TypedefAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;ExtendedAttributeNoArgs not supported: \&quot;External\&quot;&quot;</span>
-        );
+            err.to_string(),
+            <span class="string">&quot;ByRef not supported for interface definition&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_other_attributes_not_supported_for_typedef</span>() {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">node</span>) <span class="op">=</span> <span class="ident">weedle::attribute::ExtendedAttributeList::parse</span>(<span class="string">&quot;[ByRef]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">TypedefAttributes::try_from</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>).<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;ByRef not supported for typedefs&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_typedef_attribute() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Custom]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = TypedefAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(attrs.is_custom());
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[External=crate_name]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = TypedefAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(!attrs.is_custom());
+        <span class="macro">assert_eq!</span>(attrs.get_crate_name(), <span class="string">&quot;crate_name&quot;</span>);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_typedef_attributes_malformed() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Custom=foo]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = TypedefAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
+        <span class="macro">assert_eq!</span>(
+            err.to_string(),
+            <span class="string">&quot;Attribute identity Identifier not supported: \&quot;Custom\&quot;&quot;
+        </span>);
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[External]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = TypedefAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
+        <span class="macro">assert_eq!</span>(
+            err.to_string(),
+            <span class="string">&quot;ExtendedAttributeNoArgs not supported: \&quot;External\&quot;&quot;
+        </span>);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_other_attributes_not_supported_for_typedef() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[ByRef]&quot;</span>).unwrap();
+        <span class="kw">let </span>err = TypedefAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;ByRef not supported for typedefs&quot;</span>);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/record.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>record.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/record.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>record.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -249,177 +243,177 @@
 <span id="243">243</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Record definitions for a `ComponentInterface`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module converts &quot;dictionary&quot; definitions from UDL into [`Record`] structures</span>
-<span class="doccomment">//! that can be added to a `ComponentInterface`, which are the main way we define structured</span>
-<span class="doccomment">//! data types for a UniFFI Rust Component. A [`Record`] has a fixed set of named fields,</span>
-<span class="doccomment">//! each of a specific type.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! (The terminology mismatch between &quot;dictionary&quot; and &quot;record&quot; is a historical artifact</span>
-<span class="doccomment">//! due to this tool being loosely inspired by WebAssembly Interface Types, which used</span>
-<span class="doccomment">//! the term &quot;record&quot; for this sort of data).</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! A declaration in the UDL like this:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! # namespace example {};</span>
-<span class="doccomment">//! dictionary Example {</span>
-<span class="doccomment">//!   string name;</span>
-<span class="doccomment">//!   u32 value;</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Will result in a [`Record`] member with two [`Field`]s being added to the resulting</span>
-<span class="doccomment">//! [`ComponentInterface`]:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! # namespace example {};</span>
-<span class="doccomment">//! # dictionary Example {</span>
-<span class="doccomment">//! #   string name;</span>
-<span class="doccomment">//! #   u32 value;</span>
-<span class="doccomment">//! # };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! let record = ci.get_record_definition(&quot;Example&quot;).unwrap();</span>
-<span class="doccomment">//! assert_eq!(record.name(), &quot;Example&quot;);</span>
-<span class="doccomment">//! assert_eq!(record.fields()[0].name(), &quot;name&quot;);</span>
-<span class="doccomment">//! assert_eq!(record.fields()[1].name(), &quot;value&quot;);</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
+</span><span class="doccomment">//! # Record definitions for a `ComponentInterface`.
+//!
+//! This module converts &quot;dictionary&quot; definitions from UDL into [`Record`] structures
+//! that can be added to a `ComponentInterface`, which are the main way we define structured
+//! data types for a UniFFI Rust Component. A [`Record`] has a fixed set of named fields,
+//! each of a specific type.
+//!
+//! (The terminology mismatch between &quot;dictionary&quot; and &quot;record&quot; is a historical artifact
+//! due to this tool being loosely inspired by WebAssembly Interface Types, which used
+//! the term &quot;record&quot; for this sort of data).
+//!
+//! A declaration in the UDL like this:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # namespace example {};
+//! dictionary Example {
+//!   string name;
+//!   u32 value;
+//! };
+//! # &quot;##)?;
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+//!
+//! Will result in a [`Record`] member with two [`Field`]s being added to the resulting
+//! [`ComponentInterface`]:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # namespace example {};
+//! # dictionary Example {
+//! #   string name;
+//! #   u32 value;
+//! # };
+//! # &quot;##)?;
+//! let record = ci.get_record_definition(&quot;Example&quot;).unwrap();
+//! assert_eq!(record.name(), &quot;Example&quot;);
+//! assert_eq!(record.fields()[0].name(), &quot;name&quot;);
+//! assert_eq!(record.fields()[1].name(), &quot;value&quot;);
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
+</span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>uniffi_meta::Checksum;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
-<span class="kw">use</span> <span class="kw">super</span>::{
-    <span class="ident">convert_type</span>,
-    <span class="ident">literal</span>::{<span class="ident">convert_default_value</span>, <span class="ident">Literal</span>},
+<span class="kw">use </span><span class="kw">super</span>::types::{Type, TypeIterator};
+<span class="kw">use super</span>::{
+    convert_type,
+    literal::{convert_default_value, Literal},
 };
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
+<span class="kw">use super</span>::{APIConverter, ComponentInterface};
 
-<span class="doccomment">/// Represents a &quot;data class&quot; style object, for passing around complex values.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// In the FFI these are represented as a byte buffer, which one side explicitly</span>
-<span class="doccomment">/// serializes the data into and the other serializes it out of. So I guess they&#39;re</span>
-<span class="doccomment">/// kind of like &quot;pass by clone&quot; values.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Record</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Represents a &quot;data class&quot; style object, for passing around complex values.
+///
+/// In the FFI these are represented as a byte buffer, which one side explicitly
+/// serializes the data into and the other serializes it out of. So I guess they&#39;re
+/// kind of like &quot;pass by clone&quot; values.
+</span><span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
+</span><span class="kw">pub struct </span>Record {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) fields: Vec&lt;Field&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Record</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
+<span class="kw">impl </span>Record {
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Type</span> {
-        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterface</span>
-        <span class="comment">// and its contained types could use a bit of a cleanup.</span>
-        <span class="ident">Type::Record</span>(<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>())
+    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
+        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterface
+        // and its contained types could use a bit of a cleanup.
+        </span>Type::Record(<span class="self">self</span>.name.clone())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">Field</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fields</span>
+    <span class="kw">pub fn </span>fields(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[Field] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.fields
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="ident">Box::new</span>(<span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">Field::iter_types</span>))
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+        Box::new(<span class="self">self</span>.fields.iter().flat_map(Field::iter_types))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">uniffi_meta::RecordMetadata</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Record</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">meta</span>: <span class="ident">uniffi_meta::RecordMetadata</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">name</span>: <span class="ident">meta</span>.<span class="ident">name</span>,
-            <span class="ident">fields</span>: <span class="ident">meta</span>.<span class="ident">fields</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">Into::into</span>).<span class="ident">collect</span>(),
+<span class="kw">impl </span>From&lt;uniffi_meta::RecordMetadata&gt; <span class="kw">for </span>Record {
+    <span class="kw">fn </span>from(meta: uniffi_meta::RecordMetadata) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name: meta.name,
+            fields: meta.fields.into_iter().map(Into::into).collect(),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Record</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::DictionaryDefinition</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Record</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">is_some</span>() {
+<span class="kw">impl </span>APIConverter&lt;Record&gt; <span class="kw">for </span>weedle::DictionaryDefinition&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Record&gt; {
+        <span class="kw">if </span><span class="self">self</span>.attributes.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;dictionary attributes are not supported yet&quot;</span>);
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inheritance</span>.<span class="ident">is_some</span>() {
+        <span class="kw">if </span><span class="self">self</span>.inheritance.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;dictionary inheritance is not supported&quot;</span>);
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">Record</span> {
-            <span class="ident">name</span>: <span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
-            <span class="ident">fields</span>: <span class="self">self</span>.<span class="ident">members</span>.<span class="ident">body</span>.<span class="ident">convert</span>(<span class="ident">ci</span>)<span class="question-mark">?</span>,
+        <span class="prelude-val">Ok</span>(Record {
+            name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
+            fields: <span class="self">self</span>.members.body.convert(ci)<span class="question-mark">?</span>,
         })
     }
 }
 
-<span class="comment">// Represents an individual field on a Record.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Field</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">type_</span>: <span class="ident">Type</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">default</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span>,
+<span class="comment">// Represents an individual field on a Record.
+</span><span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Checksum)]
+</span><span class="kw">pub struct </span>Field {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) type_: Type,
+    <span class="kw">pub</span>(<span class="kw">super</span>) default: <span class="prelude-ty">Option</span>&lt;Literal&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Field</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
+<span class="kw">impl </span>Field {
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Type</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>
+    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Type {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.type_
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">default</span>.<span class="ident">as_ref</span>()
+    <span class="kw">pub fn </span>default_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Literal&gt; {
+        <span class="self">self</span>.default.as_ref()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">type_</span>.<span class="ident">iter_types</span>()
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+        <span class="self">self</span>.type_.iter_types()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">uniffi_meta::FieldMetadata</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Field</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">meta</span>: <span class="ident">uniffi_meta::FieldMetadata</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">name</span>: <span class="ident">meta</span>.<span class="ident">name</span>,
-            <span class="ident">type_</span>: <span class="ident">convert_type</span>(<span class="kw-2">&amp;</span><span class="ident">meta</span>.<span class="ident">ty</span>),
-            <span class="ident">default</span>: <span class="prelude-val">None</span>,
+<span class="kw">impl </span>From&lt;uniffi_meta::FieldMetadata&gt; <span class="kw">for </span>Field {
+    <span class="kw">fn </span>from(meta: uniffi_meta::FieldMetadata) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name: meta.name,
+            type_: convert_type(<span class="kw-2">&amp;</span>meta.ty),
+            default: <span class="prelude-val">None</span>,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::dictionary::DictionaryMember</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">is_some</span>() {
+<span class="kw">impl </span>APIConverter&lt;Field&gt; <span class="kw">for </span>weedle::dictionary::DictionaryMember&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Field&gt; {
+        <span class="kw">if </span><span class="self">self</span>.attributes.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;dictionary member attributes are not supported yet&quot;</span>);
         }
-        <span class="kw">let</span> <span class="ident">type_</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">default</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">default</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">convert_default_value</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>.<span class="ident">value</span>, <span class="kw-2">&amp;</span><span class="ident">type_</span>)<span class="question-mark">?</span>),
+        <span class="kw">let </span>type_ = ci.resolve_type_expression(<span class="kw-2">&amp;</span><span class="self">self</span>.type_)<span class="question-mark">?</span>;
+        <span class="kw">let </span>default = <span class="kw">match </span><span class="self">self</span>.default {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+            <span class="prelude-val">Some</span>(v) =&gt; <span class="prelude-val">Some</span>(convert_default_value(<span class="kw-2">&amp;</span>v.value, <span class="kw-2">&amp;</span>type_)<span class="question-mark">?</span>),
         };
-        <span class="prelude-val">Ok</span>(<span class="ident">Field</span> {
-            <span class="ident">name</span>: <span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
-            <span class="ident">type_</span>,
-            <span class="ident">default</span>,
+        <span class="prelude-val">Ok</span>(Field {
+            name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
+            type_,
+            default,
         })
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span>::literal::Radix</span>;
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::literal::Radix;
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_multiple_record_types</span>() {
-        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_multiple_record_types() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
             namespace test{};
             dictionary Empty {};
             dictionary Simple {
@@ -431,65 +425,64 @@
                 required boolean spin;
             };
         &quot;#</span>;
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">record_definitions</span>().<span class="ident">count</span>(), <span class="number">3</span>);
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="macro">assert_eq!</span>(ci.record_definitions().count(), <span class="number">3</span>);
 
-        <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_record_definition</span>(<span class="string">&quot;Empty&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">name</span>(), <span class="string">&quot;Empty&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">0</span>);
+        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Empty&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(record.name(), <span class="string">&quot;Empty&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">0</span>);
 
-        <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_record_definition</span>(<span class="string">&quot;Simple&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">name</span>(), <span class="string">&quot;Simple&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;field&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;u32&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
+        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Simple&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(record.name(), <span class="string">&quot;Simple&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">&quot;field&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].type_().canonical_name(), <span class="string">&quot;u32&quot;</span>);
+        <span class="macro">assert!</span>(record.fields()[<span class="number">0</span>].default_value().is_none());
 
-        <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_record_definition</span>(<span class="string">&quot;Complex&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">name</span>(), <span class="string">&quot;Complex&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">3</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;key&quot;</span>);
+        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Complex&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(record.name(), <span class="string">&quot;Complex&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">&quot;key&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(),
-            <span class="string">&quot;Optionalstring&quot;</span>
-        );
-        <span class="macro">assert!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">name</span>(), <span class="string">&quot;value&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;u32&quot;</span>);
+            record.fields()[<span class="number">0</span>].type_().canonical_name(),
+            <span class="string">&quot;Optionalstring&quot;
+        </span>);
+        <span class="macro">assert!</span>(record.fields()[<span class="number">0</span>].default_value().is_none());
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].name(), <span class="string">&quot;value&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].type_().canonical_name(), <span class="string">&quot;u32&quot;</span>);
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            <span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">default_value</span>(),
-            <span class="prelude-val">Some</span>(<span class="ident">Literal::UInt</span>(<span class="number">0</span>, <span class="ident">Radix::Decimal</span>, <span class="ident">Type::UInt32</span>))
+            record.fields()[<span class="number">1</span>].default_value(),
+            <span class="prelude-val">Some</span>(Literal::UInt(<span class="number">0</span>, Radix::Decimal, Type::UInt32))
         ));
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">name</span>(), <span class="string">&quot;spin&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;bool&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">2</span>].<span class="ident">default_value</span>().<span class="ident">is_none</span>());
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">2</span>].name(), <span class="string">&quot;spin&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">2</span>].type_().canonical_name(), <span class="string">&quot;bool&quot;</span>);
+        <span class="macro">assert!</span>(record.fields()[<span class="number">2</span>].default_value().is_none());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_that_all_field_types_become_known</span>() {
-        <span class="kw">const</span> <span class="ident">UDL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_that_all_field_types_become_known() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
             namespace test{};
             dictionary Testing {
                 string? maybe_name;
                 u32 value;
             };
         &quot;#</span>;
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(<span class="ident">UDL</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">record_definitions</span>().<span class="ident">count</span>(), <span class="number">1</span>);
-        <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_record_definition</span>(<span class="string">&quot;Testing&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>().<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;maybe_name&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">record</span>.<span class="ident">fields</span>()[<span class="number">1</span>].<span class="ident">name</span>(), <span class="string">&quot;value&quot;</span>);
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="macro">assert_eq!</span>(ci.record_definitions().count(), <span class="number">1</span>);
+        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">&quot;maybe_name&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].name(), <span class="string">&quot;value&quot;</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">ci</span>.<span class="ident">iter_types</span>().<span class="ident">count</span>(), <span class="number">4</span>);
-        <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">iter_types</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">==</span> <span class="string">&quot;u32&quot;</span>));
-        <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">iter_types</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">==</span> <span class="string">&quot;string&quot;</span>));
-        <span class="macro">assert!</span>(<span class="ident">ci</span>
-            .<span class="ident">iter_types</span>()
-            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">==</span> <span class="string">&quot;Optionalstring&quot;</span>));
-        <span class="macro">assert!</span>(<span class="ident">ci</span>.<span class="ident">iter_types</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">canonical_name</span>() <span class="op">==</span> <span class="string">&quot;TypeTesting&quot;</span>));
+        <span class="macro">assert_eq!</span>(ci.iter_types().count(), <span class="number">4</span>);
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;u32&quot;</span>));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;string&quot;</span>));
+        <span class="macro">assert!</span>(ci
+            .iter_types()
+            .any(|t| t.canonical_name() == <span class="string">&quot;Optionalstring&quot;</span>));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;TypeTesting&quot;</span>));
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

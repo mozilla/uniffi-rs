@@ -1,3 +1,0 @@
-(function() {var implementors = {};
-implementors["uniffi"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.63.0/std/error/trait.Error.html\" title=\"trait std::error::Error\">Error</a> for <a class=\"struct\" href=\"uniffi/ffi/foreigncallbacks/struct.UnexpectedUniFFICallbackError.html\" title=\"struct uniffi::ffi::foreigncallbacks::UnexpectedUniFFICallbackError\">UnexpectedUniFFICallbackError</a>","synthetic":false,"types":["uniffi::ffi::foreigncallbacks::UnexpectedUniFFICallbackError"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

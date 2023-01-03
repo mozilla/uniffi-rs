@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/function.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>function.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi_bindgen/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/function.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>function.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -294,254 +288,254 @@
 <span id="288">288</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */</span>
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-<span class="doccomment">//! # Function definitions for a `ComponentInterface`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module converts function definitions from UDL into structures that</span>
-<span class="doccomment">//! can be added to a `ComponentInterface`. A declaration in the UDL like this:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! namespace example {</span>
-<span class="doccomment">//!     string hello();</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Will result in a [`Function`] member being added to the resulting [`ComponentInterface`]:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use uniffi_bindgen::interface::Type;</span>
-<span class="doccomment">//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;</span>
-<span class="doccomment">//! # namespace example {</span>
-<span class="doccomment">//! #     string hello();</span>
-<span class="doccomment">//! # };</span>
-<span class="doccomment">//! # &quot;##)?;</span>
-<span class="doccomment">//! let func = ci.get_function_definition(&quot;hello&quot;).unwrap();</span>
-<span class="doccomment">//! assert_eq!(func.name(), &quot;hello&quot;);</span>
-<span class="doccomment">//! assert!(matches!(func.return_type(), Some(Type::String)));</span>
-<span class="doccomment">//! assert_eq!(func.arguments().len(), 0);</span>
-<span class="doccomment">//! # Ok::&lt;(), anyhow::Error&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
+</span><span class="doccomment">//! # Function definitions for a `ComponentInterface`.
+//!
+//! This module converts function definitions from UDL into structures that
+//! can be added to a `ComponentInterface`. A declaration in the UDL like this:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! namespace example {
+//!     string hello();
+//! };
+//! # &quot;##)?;
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+//!
+//! Will result in a [`Function`] member being added to the resulting [`ComponentInterface`]:
+//!
+//! ```
+//! # use uniffi_bindgen::interface::Type;
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # namespace example {
+//! #     string hello();
+//! # };
+//! # &quot;##)?;
+//! let func = ci.get_function_definition(&quot;hello&quot;).unwrap();
+//! assert_eq!(func.name(), &quot;hello&quot;);
+//! assert!(matches!(func.return_type(), Some(Type::String)));
+//! assert_eq!(func.arguments().len(), 0);
+//! # Ok::&lt;(), anyhow::Error&gt;(())
+//! ```
+</span><span class="kw">use </span>std::convert::TryFrom;
 
-<span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">uniffi_meta::Checksum</span>;
+<span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>uniffi_meta::Checksum;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::attributes</span>::{<span class="ident">ArgumentAttributes</span>, <span class="ident">Attribute</span>, <span class="ident">FunctionAttributes</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ffi</span>::{<span class="ident">FfiArgument</span>, <span class="ident">FfiFunction</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::literal</span>::{<span class="ident">convert_default_value</span>, <span class="ident">Literal</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">Type</span>, <span class="ident">TypeIterator</span>};
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">convert_type</span>, <span class="ident">APIConverter</span>, <span class="ident">ComponentInterface</span>};
+<span class="kw">use </span><span class="kw">super</span>::attributes::{ArgumentAttributes, Attribute, FunctionAttributes};
+<span class="kw">use </span><span class="kw">super</span>::ffi::{FfiArgument, FfiFunction};
+<span class="kw">use </span><span class="kw">super</span>::literal::{convert_default_value, Literal};
+<span class="kw">use </span><span class="kw">super</span>::types::{Type, TypeIterator};
+<span class="kw">use super</span>::{convert_type, APIConverter, ComponentInterface};
 
-<span class="doccomment">/// Represents a standalone function.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Each `Function` corresponds to a standalone function in the rust module,</span>
-<span class="doccomment">/// and has a corresponding standalone function in the foreign language bindings.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// In the FFI, this will be a standalone function with appropriately lowered types.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Function</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Argument</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">return_type</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>,
-    <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:</span>
-    <span class="comment">//  - it is entirely determined by the other fields,</span>
-    <span class="comment">//    so excluding it is safe.</span>
-    <span class="comment">//  - its `name` property includes a checksum derived from  the very</span>
-    <span class="comment">//    hash value we&#39;re trying to calculate here, so excluding it</span>
-    <span class="comment">//    avoids a weird circular dependency in the calculation.</span>
-    <span class="attribute">#[<span class="ident">checksum_ignore</span>]</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">ffi_func</span>: <span class="ident">FfiFunction</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">attributes</span>: <span class="ident">FunctionAttributes</span>,
+<span class="doccomment">/// Represents a standalone function.
+///
+/// Each `Function` corresponds to a standalone function in the rust module,
+/// and has a corresponding standalone function in the foreign language bindings.
+///
+/// In the FFI, this will be a standalone function with appropriately lowered types.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum)]
+</span><span class="kw">pub struct </span>Function {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;Argument&gt;,
+    <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;Type&gt;,
+    <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
+    //  - it is entirely determined by the other fields,
+    //    so excluding it is safe.
+    //  - its `name` property includes a checksum derived from  the very
+    //    hash value we&#39;re trying to calculate here, so excluding it
+    //    avoids a weird circular dependency in the calculation.
+    </span><span class="attribute">#[checksum_ignore]
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func: FfiFunction,
+    <span class="kw">pub</span>(<span class="kw">super</span>) attributes: FunctionAttributes,
 }
 
-<span class="kw">impl</span> <span class="ident">Function</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
+<span class="kw">impl </span>Function {
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arguments</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Argument</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>().<span class="ident">collect</span>()
+    <span class="kw">pub fn </span>arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Argument&gt; {
+        <span class="self">self</span>.arguments.iter().collect()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">full_arguments</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Argument</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">arguments</span>.<span class="ident">to_vec</span>()
+    <span class="kw">pub fn </span>full_arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;Argument&gt; {
+        <span class="self">self</span>.arguments.to_vec()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">return_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">return_type</span>.<span class="ident">as_ref</span>()
+    <span class="kw">pub fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Type&gt; {
+        <span class="self">self</span>.return_type.as_ref()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ffi_func</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">FfiFunction</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ffi_func</span>
+    <span class="kw">pub fn </span>ffi_func(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>FfiFunction {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">throws</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">get_throws_err</span>().<span class="ident">is_some</span>()
+    <span class="kw">pub fn </span>throws(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.attributes.get_throws_err().is_some()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">throws_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">get_throws_err</span>()
+    <span class="kw">pub fn </span>throws_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.attributes.get_throws_err()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">throws_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">attributes</span>
-            .<span class="ident">get_throws_err</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">Type::Error</span>(<span class="ident">name</span>.<span class="ident">to_owned</span>()))
+    <span class="kw">pub fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
+        <span class="self">self</span>.attributes
+            .get_throws_err()
+            .map(|name| Type::Error(name.to_owned()))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">derive_ffi_func</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ci_prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="comment">// The name is already set if the function is defined through a proc-macro invocation</span>
-        <span class="comment">// rather than in UDL. Don&#39;t overwrite it in that case.</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ffi_func</span>.<span class="ident">name</span>.<span class="ident">is_empty</span>() {
-            <span class="self">self</span>.<span class="ident">ffi_func</span>.<span class="ident">name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{ci_prefix}_{}&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>);
+    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_prefix: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="comment">// The name is already set if the function is defined through a proc-macro invocation
+        // rather than in UDL. Don&#39;t overwrite it in that case.
+        </span><span class="kw">if </span><span class="self">self</span>.ffi_func.name.is_empty() {
+            <span class="self">self</span>.ffi_func.name = <span class="macro">format!</span>(<span class="string">&quot;{ci_prefix}_{}&quot;</span>, <span class="self">self</span>.name);
         }
 
-        <span class="self">self</span>.<span class="ident">ffi_func</span>.<span class="ident">arguments</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">arg</span><span class="op">|</span> <span class="ident">arg</span>.<span class="ident">into</span>()).<span class="ident">collect</span>();
-        <span class="self">self</span>.<span class="ident">ffi_func</span>.<span class="ident">return_type</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">return_type</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">rt</span><span class="op">|</span> <span class="ident">rt</span>.<span class="ident">into</span>());
+        <span class="self">self</span>.ffi_func.arguments = <span class="self">self</span>.arguments.iter().map(|arg| arg.into()).collect();
+        <span class="self">self</span>.ffi_func.return_type = <span class="self">self</span>.return_type.as_ref().map(|rt| rt.into());
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">uniffi_meta::FnParamMetadata</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Argument</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">meta</span>: <span class="ident">uniffi_meta::FnParamMetadata</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Argument</span> {
-            <span class="ident">name</span>: <span class="ident">meta</span>.<span class="ident">name</span>,
-            <span class="ident">type_</span>: <span class="ident">convert_type</span>(<span class="kw-2">&amp;</span><span class="ident">meta</span>.<span class="ident">ty</span>),
-            <span class="ident">by_ref</span>: <span class="bool-val">false</span>,
-            <span class="ident">optional</span>: <span class="bool-val">false</span>,
-            <span class="ident">default</span>: <span class="prelude-val">None</span>,
+<span class="kw">impl </span>From&lt;uniffi_meta::FnParamMetadata&gt; <span class="kw">for </span>Argument {
+    <span class="kw">fn </span>from(meta: uniffi_meta::FnParamMetadata) -&gt; <span class="self">Self </span>{
+        Argument {
+            name: meta.name,
+            type_: convert_type(<span class="kw-2">&amp;</span>meta.ty),
+            by_ref: <span class="bool-val">false</span>,
+            optional: <span class="bool-val">false</span>,
+            default: <span class="prelude-val">None</span>,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">uniffi_meta::FnMetadata</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Function</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">meta</span>: <span class="ident">uniffi_meta::FnMetadata</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">ffi_name</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">ffi_symbol_name</span>();
+<span class="kw">impl </span>From&lt;uniffi_meta::FnMetadata&gt; <span class="kw">for </span>Function {
+    <span class="kw">fn </span>from(meta: uniffi_meta::FnMetadata) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>ffi_name = meta.ffi_symbol_name();
 
-        <span class="kw">let</span> <span class="ident">return_type</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">return_type</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">out</span><span class="op">|</span> <span class="ident">convert_type</span>(<span class="kw-2">&amp;</span><span class="ident">out</span>));
-        <span class="kw">let</span> <span class="ident">arguments</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">inputs</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">Into::into</span>).<span class="ident">collect</span>();
+        <span class="kw">let </span>return_type = meta.return_type.map(|out| convert_type(<span class="kw-2">&amp;</span>out));
+        <span class="kw">let </span>arguments = meta.inputs.into_iter().map(Into::into).collect();
 
-        <span class="kw">let</span> <span class="ident">ffi_func</span> <span class="op">=</span> <span class="ident">FfiFunction</span> {
-            <span class="ident">name</span>: <span class="ident">ffi_name</span>,
-            ..<span class="ident">FfiFunction::default</span>()
+        <span class="kw">let </span>ffi_func = FfiFunction {
+            name: ffi_name,
+            ..FfiFunction::default()
         };
 
-        <span class="self">Self</span> {
-            <span class="ident">name</span>: <span class="ident">meta</span>.<span class="ident">name</span>,
-            <span class="ident">arguments</span>,
-            <span class="ident">return_type</span>,
-            <span class="ident">ffi_func</span>,
-            <span class="ident">attributes</span>: <span class="ident">meta</span>.<span class="ident">throws</span>.<span class="ident">map</span>(<span class="ident">Attribute::Throws</span>).<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
+        <span class="self">Self </span>{
+            name: meta.name,
+            arguments,
+            return_type,
+            ffi_func,
+            attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Function</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::namespace::NamespaceMember</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Function</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">weedle::namespace::NamespaceMember::Operation</span>(<span class="ident">f</span>) =&gt; <span class="ident">f</span>.<span class="ident">convert</span>(<span class="ident">ci</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;no support for namespace member type {:?} yet&quot;</span>, <span class="self">self</span>),
+<span class="kw">impl </span>APIConverter&lt;Function&gt; <span class="kw">for </span>weedle::namespace::NamespaceMember&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Function&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            weedle::namespace::NamespaceMember::Operation(f) =&gt; f.convert(ci),
+            <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;no support for namespace member type {:?} yet&quot;</span>, <span class="self">self</span>),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Function</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::namespace::OperationNamespaceMember</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Function</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">return_type</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">resolve_return_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">return_type</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">Function</span> {
-            <span class="ident">name</span>: <span class="kw">match</span> <span class="self">self</span>.<span class="ident">identifier</span> {
-                <span class="prelude-val">None</span> =&gt; <span class="macro">bail!</span>(<span class="string">&quot;anonymous functions are not supported {:?}&quot;</span>, <span class="self">self</span>),
-                <span class="prelude-val">Some</span>(<span class="ident">id</span>) =&gt; <span class="ident">id</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
+<span class="kw">impl </span>APIConverter&lt;Function&gt; <span class="kw">for </span>weedle::namespace::OperationNamespaceMember&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Function&gt; {
+        <span class="kw">let </span>return_type = ci.resolve_return_type_expression(<span class="kw-2">&amp;</span><span class="self">self</span>.return_type)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(Function {
+            name: <span class="kw">match </span><span class="self">self</span>.identifier {
+                <span class="prelude-val">None </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;anonymous functions are not supported {:?}&quot;</span>, <span class="self">self</span>),
+                <span class="prelude-val">Some</span>(id) =&gt; id.<span class="number">0</span>.to_string(),
             },
-            <span class="ident">return_type</span>,
-            <span class="ident">arguments</span>: <span class="self">self</span>.<span class="ident">args</span>.<span class="ident">body</span>.<span class="ident">list</span>.<span class="ident">convert</span>(<span class="ident">ci</span>)<span class="question-mark">?</span>,
-            <span class="ident">ffi_func</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">attributes</span>: <span class="ident">FunctionAttributes::try_from</span>(<span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>,
+            return_type,
+            arguments: <span class="self">self</span>.args.body.list.convert(ci)<span class="question-mark">?</span>,
+            ffi_func: Default::default(),
+            attributes: FunctionAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>,
         })
     }
 }
 
-<span class="doccomment">/// Represents an argument to a function/constructor/method call.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Each argument has a name and a type, along with some optional metadata.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Checksum</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Argument</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">type_</span>: <span class="ident">Type</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">by_ref</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">optional</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">default</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Represents an argument to a function/constructor/method call.
+///
+/// Each argument has a name and a type, along with some optional metadata.
+</span><span class="attribute">#[derive(Debug, Clone, Checksum)]
+</span><span class="kw">pub struct </span>Argument {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) type_: Type,
+    <span class="kw">pub</span>(<span class="kw">super</span>) by_ref: bool,
+    <span class="kw">pub</span>(<span class="kw">super</span>) optional: bool,
+    <span class="kw">pub</span>(<span class="kw">super</span>) default: <span class="prelude-ty">Option</span>&lt;Literal&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Argument</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
+<span class="kw">impl </span>Argument {
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Type</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>
+    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Type {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.type_
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">by_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">by_ref</span>
+    <span class="kw">pub fn </span>by_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.by_ref
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Literal</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">default</span>.<span class="ident">as_ref</span>()
+    <span class="kw">pub fn </span>default_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Literal&gt; {
+        <span class="self">self</span>.default.as_ref()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_types</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">TypeIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">type_</span>.<span class="ident">iter_types</span>()
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+        <span class="self">self</span>.type_.iter_types()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Argument</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">FfiArgument</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Argument</span>) -&gt; <span class="ident">FfiArgument</span> {
-        <span class="ident">FfiArgument</span> {
-            <span class="ident">name</span>: <span class="ident">a</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
-            <span class="ident">type_</span>: (<span class="kw-2">&amp;</span><span class="ident">a</span>.<span class="ident">type_</span>).<span class="ident">into</span>(),
+<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>Argument&gt; <span class="kw">for </span>FfiArgument {
+    <span class="kw">fn </span>from(a: <span class="kw-2">&amp;</span>Argument) -&gt; FfiArgument {
+        FfiArgument {
+            name: a.name.clone(),
+            type_: (<span class="kw-2">&amp;</span>a.type_).into(),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Argument</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::argument::Argument</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Argument</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">weedle::argument::Argument::Single</span>(<span class="ident">t</span>) =&gt; <span class="ident">t</span>.<span class="ident">convert</span>(<span class="ident">ci</span>),
-            <span class="ident">weedle::argument::Argument::Variadic</span>(<span class="kw">_</span>) =&gt; <span class="macro">bail!</span>(<span class="string">&quot;variadic arguments not supported&quot;</span>),
+<span class="kw">impl </span>APIConverter&lt;Argument&gt; <span class="kw">for </span>weedle::argument::Argument&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Argument&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            weedle::argument::Argument::Single(t) =&gt; t.convert(ci),
+            weedle::argument::Argument::Variadic(<span class="kw">_</span>) =&gt; <span class="macro">bail!</span>(<span class="string">&quot;variadic arguments not supported&quot;</span>),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">APIConverter</span><span class="op">&lt;</span><span class="ident">Argument</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">weedle::argument::SingleArgument</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ci</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ComponentInterface</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Argument</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">type_</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">resolve_type_expression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">type_</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">default</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">default</span> {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">convert_default_value</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>.<span class="ident">value</span>, <span class="kw-2">&amp;</span><span class="ident">type_</span>)<span class="question-mark">?</span>),
+<span class="kw">impl </span>APIConverter&lt;Argument&gt; <span class="kw">for </span>weedle::argument::SingleArgument&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Argument&gt; {
+        <span class="kw">let </span>type_ = ci.resolve_type_expression(<span class="kw-2">&amp;</span><span class="self">self</span>.type_)<span class="question-mark">?</span>;
+        <span class="kw">let </span>default = <span class="kw">match </span><span class="self">self</span>.default {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+            <span class="prelude-val">Some</span>(v) =&gt; <span class="prelude-val">Some</span>(convert_default_value(<span class="kw-2">&amp;</span>v.value, <span class="kw-2">&amp;</span>type_)<span class="question-mark">?</span>),
         };
-        <span class="kw">let</span> <span class="ident">by_ref</span> <span class="op">=</span> <span class="ident">ArgumentAttributes::try_from</span>(<span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>.<span class="ident">by_ref</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">Argument</span> {
-            <span class="ident">name</span>: <span class="self">self</span>.<span class="ident">identifier</span>.<span class="number">0</span>.<span class="ident">to_string</span>(),
-            <span class="ident">type_</span>,
-            <span class="ident">by_ref</span>,
-            <span class="ident">optional</span>: <span class="self">self</span>.<span class="ident">optional</span>.<span class="ident">is_some</span>(),
-            <span class="ident">default</span>,
+        <span class="kw">let </span>by_ref = ArgumentAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>.by_ref();
+        <span class="prelude-val">Ok</span>(Argument {
+            name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
+            type_,
+            by_ref,
+            optional: <span class="self">self</span>.optional.is_some(),
+            default,
         })
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_minimal_and_rich_function</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">ci</span> <span class="op">=</span> <span class="ident">ComponentInterface::from_webidl</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_minimal_and_rich_function() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(
             <span class="string">r##&quot;
             namespace test {
                 void minimal();
@@ -556,30 +550,29 @@
         &quot;##</span>,
         )<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">func1</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;minimal&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">func1</span>.<span class="ident">name</span>(), <span class="string">&quot;minimal&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">func1</span>.<span class="ident">return_type</span>().<span class="ident">is_none</span>());
-        <span class="macro">assert!</span>(<span class="ident">func1</span>.<span class="ident">throws_type</span>().<span class="ident">is_none</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">func1</span>.<span class="ident">arguments</span>().<span class="ident">len</span>(), <span class="number">0</span>);
+        <span class="kw">let </span>func1 = ci.get_function_definition(<span class="string">&quot;minimal&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(func1.name(), <span class="string">&quot;minimal&quot;</span>);
+        <span class="macro">assert!</span>(func1.return_type().is_none());
+        <span class="macro">assert!</span>(func1.throws_type().is_none());
+        <span class="macro">assert_eq!</span>(func1.arguments().len(), <span class="number">0</span>);
 
-        <span class="kw">let</span> <span class="ident">func2</span> <span class="op">=</span> <span class="ident">ci</span>.<span class="ident">get_function_definition</span>(<span class="string">&quot;rich&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">func2</span>.<span class="ident">name</span>(), <span class="string">&quot;rich&quot;</span>);
+        <span class="kw">let </span>func2 = ci.get_function_definition(<span class="string">&quot;rich&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(func2.name(), <span class="string">&quot;rich&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">func2</span>.<span class="ident">return_type</span>().<span class="ident">unwrap</span>().<span class="ident">canonical_name</span>(),
-            <span class="string">&quot;SequenceOptionalstring&quot;</span>
-        );
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">func2</span>.<span class="ident">throws_type</span>(), <span class="prelude-val">Some</span>(<span class="ident">Type::Error</span>(<span class="ident">s</span>)) <span class="kw">if</span> <span class="ident">s</span> <span class="op">==</span> <span class="string">&quot;TestError&quot;</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">func2</span>.<span class="ident">arguments</span>().<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">func2</span>.<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">name</span>(), <span class="string">&quot;arg1&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">func2</span>.<span class="ident">arguments</span>()[<span class="number">0</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(), <span class="string">&quot;u32&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">func2</span>.<span class="ident">arguments</span>()[<span class="number">1</span>].<span class="ident">name</span>(), <span class="string">&quot;arg2&quot;</span>);
+            func2.return_type().unwrap().canonical_name(),
+            <span class="string">&quot;SequenceOptionalstring&quot;
+        </span>);
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(func2.throws_type(), <span class="prelude-val">Some</span>(Type::Error(s)) <span class="kw">if </span>s == <span class="string">&quot;TestError&quot;</span>));
+        <span class="macro">assert_eq!</span>(func2.arguments().len(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">0</span>].name(), <span class="string">&quot;arg1&quot;</span>);
+        <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">0</span>].type_().canonical_name(), <span class="string">&quot;u32&quot;</span>);
+        <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">1</span>].name(), <span class="string">&quot;arg2&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">func2</span>.<span class="ident">arguments</span>()[<span class="number">1</span>].<span class="ident">type_</span>().<span class="ident">canonical_name</span>(),
-            <span class="string">&quot;TypeTestDict&quot;</span>
-        );
+            func2.arguments()[<span class="number">1</span>].type_().canonical_name(),
+            <span class="string">&quot;TypeTestDict&quot;
+        </span>);
         <span class="prelude-val">Ok</span>(())
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
