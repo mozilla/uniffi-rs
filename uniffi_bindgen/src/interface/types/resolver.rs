@@ -23,8 +23,8 @@ use super::{Type, TypeUniverse};
 /// known type definitions in a [`TypeUniverse`] to resolve names to types.
 ///
 /// As a side-effect, resolving a type expression will grow the type universe with
-/// references to the types seem during traversal. For example resolving the type
-/// expression "sequence<TestRecord>?" will:
+/// references to the types seen during traversal. For example resolving the type
+/// expression `sequence<<TestRecord>?` will:
 ///
 ///   * add `Optional<Sequence<TestRecord>` and `Sequence<TestRecord>` to the
 ///     known types in the universe.
