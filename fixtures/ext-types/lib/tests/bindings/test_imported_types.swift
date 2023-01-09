@@ -12,3 +12,6 @@ assert(ct.url ==  URL(string: "http://example.com/"))
 
 let ct2 = getCombinedType(value: ct)
 assert(ct == ct2)
+
+let url = URL(string: "http://example.com/")!;
+assert(getUrl(url: url) ==  url)

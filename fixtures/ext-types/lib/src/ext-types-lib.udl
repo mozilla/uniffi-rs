@@ -1,5 +1,6 @@
 namespace imported_types_lib {
     CombinedType get_combined_type(optional CombinedType? value);
+    Url get_url(Url url);
 };
 
 // A type defined in a .udl file in the `uniffi-one` crate (ie, in

@@ -50,4 +50,8 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
     })
 }
 
+fn get_url(url: Url) -> Url {
+    url
+}
+
 include!(concat!(env!("OUT_DIR"), "/ext-types-lib.uniffi.rs"));
