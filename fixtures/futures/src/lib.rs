@@ -63,22 +63,22 @@ impl TimerFuture {
 
 /// Sync function.
 #[uniffi::export]
-fn greet(who: String) -> String {
+pub fn greet(who: String) -> String {
     format!("Hello, {who}")
 }
 
 /// Async function that is immediatly ready.
 #[uniffi::export]
-async fn always_ready() -> bool {
+pub async fn always_ready() -> bool {
     true
 }
 
 #[uniffi::export]
-async fn void() {}
+pub async fn void() {}
 
 /// Async function that says something after 2s.
 #[uniffi::export]
-async fn say() -> String {
+pub async fn say() -> String {
     TimerFuture::new(Duration::from_secs(2)).await;
 
     "Hello, Future!".to_string()
@@ -86,7 +86,7 @@ async fn say() -> String {
 
 /// Async function that says something after a certain time.
 #[uniffi::export]
-async fn say_after(secs: u8, who: String) -> String {
+pub async fn say_after(secs: u8, who: String) -> String {
     TimerFuture::new(Duration::from_secs(secs.into())).await;
 
     format!("Hello, {who}!")
@@ -104,7 +104,7 @@ pub async fn sleep(secs: u8) -> bool {
 ///
 /// It builds a `Megaphone` which has async methods on it.
 #[uniffi::export]
-fn new_megaphone() -> Arc<Megaphone> {
+pub fn new_megaphone() -> Arc<Megaphone> {
     Arc::new(Megaphone)
 }
 
@@ -118,6 +118,13 @@ impl Megaphone {
     async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
         say_after(secs, who).await.to_uppercase()
     }
+}
+
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn say_after_with_tokio(secs: u8, who: String) -> String {
+    tokio::time::sleep(Duration::from_secs(secs.into())).await;
+
+    format!("Hello, {who} (with Tokio)!")
 }
 
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));

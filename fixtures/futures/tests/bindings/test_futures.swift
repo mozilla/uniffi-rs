@@ -100,4 +100,19 @@ Task {
 	counter.leave()
 }
 
+// Test with the Tokio runtime.
+counter.enter()
+
+Task {
+	let t0 = Date()
+	let result_alice = await sayAfterWithTokio(secs: 2, who: "Alice")
+	let t1 = Date()
+
+	let tDelta = DateInterval(start: t0, end: t1)
+	assert(tDelta.duration > 2 && tDelta.duration < 2.1)
+	assert(result_alice == "Hello, Alice (with Tokio)!")
+
+	counter.leave()
+}
+
 counter.wait()

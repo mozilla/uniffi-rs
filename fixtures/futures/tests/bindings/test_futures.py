@@ -1,4 +1,4 @@
-from uniffi_futures import always_ready, void, sleep, say_after, new_megaphone
+from uniffi_futures import always_ready, void, sleep, say_after, new_megaphone, say_after_with_tokio
 import unittest
 from datetime import datetime
 import asyncio
@@ -83,6 +83,18 @@ class TestFutures(unittest.TestCase):
             t_delta = (t1 - t0).total_seconds()
             self.assertTrue(t_delta > 2 and t_delta < 2.1)
             self.assertEqual(result_alice, 'HELLO, ALICE!')
+
+        asyncio.run(test())
+
+    def test_with_tokio_runtime(self):
+        async def test():
+            t0 = now()
+            result_alice = await say_after_with_tokio(2, 'Alice')
+            t1 = now()
+
+            t_delta = (t1 - t0).total_seconds()
+            self.assertTrue(t_delta > 2 and t_delta < 2.1)
+            self.assertEqual(result_alice, 'Hello, Alice (with Tokio)!')
 
         asyncio.run(test())
 

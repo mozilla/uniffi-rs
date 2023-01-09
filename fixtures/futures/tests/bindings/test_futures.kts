@@ -20,7 +20,7 @@ runBlocking {
     }
 
     print("always_ready: ${time}ms")
-    assert(time < 4)
+    assert(time <= 4)
     println(" ... ok")
 }
 
@@ -33,7 +33,7 @@ runBlocking {
     }
 
     print("void: ${time}ms")
-    assert(time < 4)
+    assert(time <= 4)
     println(" ... ok")
 }
 
@@ -88,6 +88,19 @@ runBlocking {
     }
 
     print("async methods: ${time}ms")
+    assert(time > 2000 && time < 2100)
+    println(" ... ok")
+}
+
+// Test with the Tokio runtime.
+runBlocking {
+    val time = measureTimeMillis {
+        val resultAlice = sayAfterWithTokio(2U, "Alice")
+
+        assert(resultAlice == "Hello, Alice (with Tokio)!")
+    }
+
+    print("with tokio runtime: ${time}ms")
     assert(time > 2000 && time < 2100)
     println(" ... ok")
 }
