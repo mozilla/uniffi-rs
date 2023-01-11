@@ -13,6 +13,7 @@
 use super::FfiDefault;
 use crate::{FfiConverter, RustBuffer, RustBufferFfiConverter};
 use anyhow::Result;
+use std::convert::Infallible;
 use std::mem::MaybeUninit;
 use std::panic;
 
@@ -84,6 +85,20 @@ const CALL_PANIC: i8 = 2;
 //
 // This gets implemented in uniffi_bindgen/src/scaffolding/templates/ErrorTemplate.rs
 pub trait FfiError: RustBufferFfiConverter {}
+
+impl RustBufferFfiConverter for Infallible {
+    type RustType = Infallible;
+
+    fn write(_: Self::RustType, _: &mut Vec<u8>) {
+        unreachable!();
+    }
+
+    fn try_read(_: &mut &[u8]) -> Result<Self::RustType> {
+        unreachable!();
+    }
+}
+
+impl FfiError for Infallible {}
 
 // Generalized rust call handling function
 fn make_call<F, R>(out_status: &mut RustCallStatus, callback: F) -> R

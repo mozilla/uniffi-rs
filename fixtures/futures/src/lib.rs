@@ -62,7 +62,7 @@ impl TimerFuture {
 }
 
 /// Sync function.
-#[uniffi::export]
+// #[uniffi::export]
 pub fn greet(who: String) -> String {
     format!("Hello, {who}")
 }
@@ -77,7 +77,7 @@ pub async fn always_ready() -> bool {
 pub async fn void() {}
 
 /// Async function that says something after 2s.
-#[uniffi::export]
+// #[uniffi::export]
 pub async fn say() -> String {
     TimerFuture::new(Duration::from_secs(2)).await;
 
@@ -127,8 +127,25 @@ pub async fn say_after_with_tokio(secs: u8, who: String) -> String {
     format!("Hello, {who} (with Tokio)!")
 }
 
+#[derive(uniffi::Error, Debug)]
+pub enum MyError {
+    Foo,
+}
+
+#[uniffi::export]
+pub async fn fallible_me(do_fail: bool) -> Result<u8, MyError> {
+    if do_fail {
+        dbg!("Err(MyError::Foo)");
+        Err(MyError::Foo)
+    } else {
+        dbg!("Ok(42)");
+        Ok(42)
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
 
 mod uniffi_types {
     pub(crate) use super::Megaphone;
+    pub(crate) use super::MyError;
 }
