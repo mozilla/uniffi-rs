@@ -100,6 +100,22 @@ pub async fn sleep(secs: u8) -> bool {
     true
 }
 
+// Our error.
+#[derive(uniffi::Error, Debug)]
+pub enum MyError {
+    Foo,
+}
+
+// An async function that can throw.
+#[uniffi::export]
+pub async fn fallible_me(do_fail: bool) -> Result<u8, MyError> {
+    if do_fail {
+        Err(MyError::Foo)
+    } else {
+        Ok(42)
+    }
+}
+
 /// Sync function that generates a new `Megaphone`.
 ///
 /// It builds a `Megaphone` which has async methods on it.
@@ -114,33 +130,28 @@ pub struct Megaphone;
 
 #[uniffi::export]
 impl Megaphone {
-    /// An async function that yells something after a certain time.
-    async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
+    /// An async method that yells something after a certain time.
+    pub async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
         say_after(secs, who).await.to_uppercase()
+    }
+
+    // An async method that can throw.
+    pub async fn fallible_me(self: Arc<Self>, do_fail: bool) -> Result<u8, MyError> {
+        if do_fail {
+            Err(MyError::Foo)
+        } else {
+            Ok(42)
+        }
     }
 }
 
+// Say something after a certain amount of time, by using `tokio::time::sleep`
+// instead of our own `TimerFuture`.
 #[uniffi::export(async_runtime = "tokio")]
 pub async fn say_after_with_tokio(secs: u8, who: String) -> String {
     tokio::time::sleep(Duration::from_secs(secs.into())).await;
 
     format!("Hello, {who} (with Tokio)!")
-}
-
-#[derive(uniffi::Error, Debug)]
-pub enum MyError {
-    Foo,
-}
-
-#[uniffi::export]
-pub async fn fallible_me(do_fail: bool) -> Result<u8, MyError> {
-    if do_fail {
-        dbg!("Err(MyError::Foo)");
-        Err(MyError::Foo)
-    } else {
-        dbg!("Ok(42)");
-        Ok(42)
-    }
 }
 
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));

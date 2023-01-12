@@ -44,13 +44,18 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     public func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) -%}) async {% call swift::throws(meth) %}{% match meth.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
         let future = {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
 
-        return await withCheckedContinuation { continuation in
+        return {% if meth.throws() -%}
+            try await withCheckedThrowingContinuation
+        {%- else -%}
+            await withCheckedContinuation
+        {%- endif -%}
+        { continuation in
             let env = Unmanaged.passRetained(_UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_Env(rustyFuture: future, continuation: continuation))
             _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_waker(raw_env: env.toOpaque())
         }
     }
 
-    {%- else -%}
+    {% else -%}
 
     {%- match meth.return_type() -%}
 
@@ -75,9 +80,9 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
 
 fileprivate class _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_Env {
     var rustFuture: OpaquePointer
-    var continuation: CheckedContinuation<{% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, Never>
+    var continuation: CheckedContinuation<{% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, {% if meth.throws() %}Error{% else %}Never{% endif %}>
 
-    init(rustyFuture: OpaquePointer, continuation: CheckedContinuation<{% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, Never>) {
+    init(rustyFuture: OpaquePointer, continuation: CheckedContinuation<{% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, {% if meth.throws() %}Error{% else %}Never{% endif %}>) {
         self.rustFuture = rustyFuture
         self.continuation = continuation
     }
@@ -99,7 +104,15 @@ fileprivate func _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_waker(raw
         {%- when None -%}
             UnsafeMutableRawPointer.allocate(byteCount: 0, alignment: 0)
         {%- endmatch %}
-        let isReady = try! rustCall() {
+        {% if meth.throws() -%}do {
+        {%- endif %}
+
+        let isReady = {% match meth.throws_type() -%}
+        {%- when Some with (error) -%}
+            try rustCallWithError({{ error|ffi_converter_name }}.self) {
+        {%- when None -%}
+            try! rustCall() {
+        {%- endmatch %}
             {{ meth.ffi_func().name() }}_poll(
                 env_ref.rustFuture,
                 _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_waker,
@@ -120,11 +133,18 @@ fileprivate func _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_waker(raw
             polledResult.deallocate()
             env.release()
         }
+        {%- if meth.throws() %}
+        } catch {
+            env_ref.continuation.resume(throwing: error)
+            polledResult.deallocate()
+            env.release()
+        }
+        {%- endif %}
     }
 }
 
-{%- endif -%}
-{% endfor %}
+{% endif -%}
+{%- endfor %}
 
 public struct {{ ffi_converter_name }}: FfiConverter {
     typealias FfiType = UnsafeMutableRawPointer

@@ -115,13 +115,29 @@ Task {
 	counter.leave()
 }
 
-// Test fallible function.
+// Test fallible function/method…
 // … which doesn't throw.
 counter.enter()
 
 Task {
 	let t0 = Date()
 	let result = try await fallibleMe(doFail: false)
+	let t1 = Date()
+
+	let tDelta = DateInterval(start: t0, end: t1)
+	assert(tDelta.duration > 0 && tDelta.duration < 0.1)
+	assert(result == 42)
+
+	counter.leave()
+}
+
+counter.enter()
+
+Task {
+	let megaphone = newMegaphone()
+
+	let t0 = Date()
+	let result = try await megaphone.fallibleMe(doFail: false)
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -139,6 +155,29 @@ Task {
 
 	do {
 		let _ = try await fallibleMe(doFail: true)
+	} catch MyError.Foo {
+		assert(true)
+	} catch {
+		assert(false) // should never be reached
+	}
+
+	let t1 = Date()
+
+	let tDelta = DateInterval(start: t0, end: t1)
+	assert(tDelta.duration > 0 && tDelta.duration < 0.1)
+
+	counter.leave()
+}
+
+counter.enter()
+
+Task {
+	let megaphone = newMegaphone()
+
+	let t0 = Date()
+
+	do {
+		let _ = try await megaphone.fallibleMe(doFail: true)
 	} catch MyError.Foo {
 		assert(true)
 	} catch {
