@@ -104,3 +104,60 @@ runBlocking {
     assert(time > 2000 && time < 2100)
     println(" ... ok")
 }
+
+// Test fallible function/method.
+runBlocking {
+    val time1 = measureTimeMillis {
+        try {
+            val result = fallibleMe(false)
+            assert(true)
+        } catch (exception: Exception) {
+            assert(false) // should never be reached
+        }
+    }
+
+    print("fallible function (with result): ${time1}ms")
+    assert(time1 < 10)
+    println(" ... ok")
+
+    val time2 = measureTimeMillis {
+        try {
+            val result = fallibleMe(true)
+            assert(false) // should never be reached
+        } catch (exception: Exception) {
+            assert(true)
+        }
+    }
+
+    print("fallible function (with exception): ${time2}ms")
+    assert(time2 < 60)
+    println(" ... ok")
+
+    val megaphone = newMegaphone()
+
+    val time3 = measureTimeMillis {
+        try {
+            val result = megaphone.fallibleMe(false)
+            assert(true)
+        } catch (exception: Exception) {
+            assert(false) // should never be reached
+        }
+    }
+
+    print("fallible method (with result): ${time3}ms")
+    assert(time3 < 10)
+    println(" ... ok")
+
+    val time4 = measureTimeMillis {
+        try {
+            val result = megaphone.fallibleMe(true)
+            assert(false) // should never be reached
+        } catch (exception: Exception) {
+            assert(true)
+        }
+    }
+
+    print("fallible method (with exception): ${time4}ms")
+    assert(time4 < 60)
+    println(" ... ok")
+}

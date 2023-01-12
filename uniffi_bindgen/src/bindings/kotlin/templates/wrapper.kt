@@ -28,6 +28,7 @@ import java.nio.ByteOrder
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.CoroutineScope
