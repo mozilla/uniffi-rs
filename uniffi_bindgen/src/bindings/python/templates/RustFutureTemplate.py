@@ -18,6 +18,8 @@ class Future:
         self._loop = asyncio.get_event_loop()
         self._state = FuturePoll.PENDING
         self._result = None
+        self._exception = None
+        self._exception_traceback = None
         self._waker = None
         self._ffi_waker = None
         self._callbacks = []
@@ -25,10 +27,13 @@ class Future:
         # The foreign waker, which will be called by Rust.
         def waker(_env: ctypes.c_void_p):
             def scheduled_waker():
-                state, result = (future_trampoline)()
+                try:
+                    state, result = (future_trampoline)()
 
-                if state == FuturePoll.DONE:
-                    self.set_result(result)
+                    if state == FuturePoll.DONE:
+                        self.set_result(result)
+                except BaseException as exception:
+                    self.set_exception(exception)
 
             # Ask the executor to schedule to poll the future.
             self._loop.call_soon_threadsafe(scheduled_waker)
@@ -55,6 +60,9 @@ class Future:
         if self._state != FuturePoll.DONE:
             raise RuntimeError('Result is not ready')
 
+        if self._exception is not None:
+            raise self._exception.with_traceback(self._exception_traceback)
+
         return self._result
 
     def set_result(self, result: any):
@@ -62,6 +70,12 @@ class Future:
             raise RuntimeError('This future has already been resolved')
 
         self._result = result
+        self._state = FuturePoll.DONE
+        self.__schedule_callbacks()
+
+    def set_exception(self, exception: any):
+        self._exception = exception
+        self._exception_traceback = exception.__traceback__
         self._state = FuturePoll.DONE
         self.__schedule_callbacks()
 
