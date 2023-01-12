@@ -5,13 +5,13 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-{% call try(func) %}
-    {% match func.throws_type() %}
-    {% when Some with (e) %}
-    rustCallWithError({{ e|ffi_converter_name }}.self) {
-    {% else %}
-    rustCall() {
-    {% endmatch %}
+    {%- call try(func) -%}
+    {%- match func.throws_type() -%}
+    {%- when Some with (e) -%}
+        rustCallWithError({{ e|ffi_converter_name }}.self) {
+    {%- else -%}
+        rustCall() {
+    {%- endmatch %}
     {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}$0)
 }
 {%- endmacro -%}
@@ -97,5 +97,5 @@
 {%- endmacro -%}
 
 {%- macro try(func) %}
-{%- if func.throws() %}try{% else %}try!{% endif %}
+{%- if func.throws() %}try {% else %}try! {% endif %}
 {%- endmacro -%}

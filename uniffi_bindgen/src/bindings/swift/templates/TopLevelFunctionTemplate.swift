@@ -2,9 +2,9 @@
 
 fileprivate class _UniFFI_{{ func.name()|class_name }}_Env {
     var rustFuture: OpaquePointer
-    var continuation: CheckedContinuation<{% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, Never>
+    var continuation: CheckedContinuation<{% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, {% if func.throws() %}Error{% else %}Never{% endif %}>
 
-    init(rustyFuture: OpaquePointer, continuation: CheckedContinuation<{% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, Never>) {
+    init(rustyFuture: OpaquePointer, continuation: CheckedContinuation<{% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, {% if func.throws() %}Error{% else %}Never{% endif %}>) {
         self.rustFuture = rustyFuture
         self.continuation = continuation
     }
@@ -26,7 +26,15 @@ fileprivate func _UniFFI_{{ func.name()|class_name }}_waker(raw_env: UnsafeMutab
         {%- when None -%}
             UnsafeMutableRawPointer.allocate(byteCount: 0, alignment: 0)
         {%- endmatch %}
-        let isReady = try! rustCall() {
+        {% if func.throws() -%}do {
+        {%- endif %}
+
+        let isReady = {% match func.throws_type() -%}
+        {%- when Some with (error) -%}
+            try rustCallWithError({{ error|ffi_converter_name }}.self) {
+        {%- when None -%}
+            try! rustCall() {
+        {%- endmatch %}
             {{ func.ffi_func().name() }}_poll(
                 env_ref.rustFuture,
                 _UniFFI_{{ func.name()|class_name }}_waker,
@@ -47,13 +55,25 @@ fileprivate func _UniFFI_{{ func.name()|class_name }}_waker(raw_env: UnsafeMutab
             polledResult.deallocate()
             env.release()
         }
+        {%- if func.throws() %}
+        } catch {
+            env_ref.continuation.resume(throwing: error)
+            polledResult.deallocate()
+            env.release()
+        }
+        {%- endif %}
     }
 }
 
 public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) async {% call swift::throws(func) %}{% match func.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
     let future = {% call swift::to_ffi_call(func) %}
 
-    return await withCheckedContinuation { continuation in
+    return {% if func.throws() -%}
+        try await withCheckedThrowingContinuation
+    {%- else -%}
+        await withCheckedContinuation
+    {%- endif -%}
+    { continuation in
         let env = Unmanaged.passRetained(_UniFFI_{{ func.name()|class_name }}_Env(rustyFuture: future, continuation: continuation))
         _UniFFI_{{ func.name()|class_name }}_waker(raw_env: env.toOpaque())
     }
