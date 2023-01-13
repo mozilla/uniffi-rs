@@ -162,89 +162,27 @@
                         <h1><a class="header" href="#rust-scaffolding" id="rust-scaffolding">Rust scaffolding</a></h1>
 <h2><a class="header" href="#rust-scaffolding-code" id="rust-scaffolding-code">Rust scaffolding code</a></h2>
 <p>Now we generate some Rust helper code to make the <code>add</code> method available to foreign-language bindings.</p>
-<p>First, add <code>uniffi</code> to your crate dependencies; this is the runtime support code that powers UniFFI's serialization of data types across languages:</p>
+<p>First, add <code>uniffi</code> to your crate as both a dependency and build-dependency.  This adds the runtime support code that powers UniFFI and build-time support for generating the Rust scaffolding code.</p>
 <pre><code class="language-toml">[dependencies]
-uniffi = &quot;0.8&quot;
+uniffi = &quot;1.0.0&quot;
+
+[build-dependencies]
+uniffi = &quot;1.0.0&quot;
 </code></pre>
-<p>Important note: the <code>uniffi</code> version must be the same as the <code>uniffi-bindgen</code> command-line tool installed on your system.</p>
-<p>Then let's add <code>uniffi_build</code> to your build dependencies: it generates the Rust scaffolding code that exposes our Rust functions as a C-compatible FFI layer.</p>
-<pre><code class="language-toml">[build-dependencies]
-uniffi_build = &quot;0.8&quot;
-</code></pre>
-<p>Then create a <code>build.rs</code> file next to <code>Cargo.toml</code> that will use <code>uniffi_build</code>:</p>
+<p>Then create a <code>build.rs</code> file next to <code>Cargo.toml</code> that uses <code>uniffi</code> to generate the Rust scaffolding code.</p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
-    uniffi_build::generate_scaffolding(&quot;./src/math.udl&quot;).unwrap();
+    uniffi::generate_scaffolding(&quot;./src/math.udl&quot;).unwrap();
 }
 </code></pre></pre>
-<p><strong>Note:</strong> This is the equivalent of calling (and does it under the hood) <code>uniffi-bindgen scaffolding src/math.udl --out-dir &lt;OUT_DIR&gt;</code>.</p>
-<p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code>. If you've used the default build
-settings then this can be done using a handy macro:</p>
+<p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code> using this handy macro:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>uniffi_macros::include_scaffolding!(&quot;math&quot;);
-<span class="boring">}
-</span></code></pre></pre>
-<p>If you have generated the scaffolding in a custom location, use the standard <code>include!</code> macro
-to include the generated file by name, like this:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>include!(concat!(env!(&quot;OUT_DIR&quot;), &quot;/math.uniffi.rs&quot;));
+</span>uniffi::include_scaffolding!(&quot;math&quot;);
 <span class="boring">}
 </span></code></pre></pre>
 <p><strong>Note:</strong> The file name is always <code>&lt;namespace&gt;.uniffi.rs</code>.</p>
 <p>Great! <code>add</code> is ready to see the outside world!</p>
-<h3><a class="header" href="#avoiding-version-mismatches-between-uniffi-core-and-uniffi-bindgen" id="avoiding-version-mismatches-between-uniffi-core-and-uniffi-bindgen">Avoiding version mismatches between <code>uniffi</code> core and <code>uniffi-bindgen</code></a></h3>
-<p>The process above has one significant problem - things start to fall apart if
-the version of the <code>uniffi</code> core (ie, the version specified in <code>[dependencies]</code>)
-and the version of <code>uniffi-bindgen</code> (ie, the version installed by
-<code>cargo install</code>) get out of date - and often these problems are not detected
-until runtime when the generated rust code actually runs.</p>
-<p>The <code>uniffi_build</code> crate supports an alternative workflow via the
-<code>builtin-bindgen</code> feature. If this feature is enabled, then the <code>uniffi_build</code>
-crate takes a runtime dependency on the <code>uniffi_bindgen</code> crate - effectively
-building and running the <code>uniffi-bindgen</code> tool as your crate is being compiled.
-The <code>uniffi-bindgen</code> tool doesn't need to be installed if this feature is
-enabled.</p>
-<p>The downside of this is that it drives up the build time for your crate (as
-<code>uniffi-bindgen</code> needs to be built as well), so it's not the default.</p>
-<p>To enable this, the <code>[build-dependencies]</code> of your Cargo.toml might look like:</p>
-<pre><code class="language-toml">[build-dependencies]
-uniffi_build = {version = &quot;0.8&quot;, features = [ &quot;builtin-bindgen&quot; ]}
-</code></pre>
-<p>Your <code>build.rs</code> script and everything else should remain the same, but now
-whatever version of <code>uniffi</code> is specified will be used to perform the (now
-slightly slower) build.</p>
-<h3><a class="header" href="#rust-scaffolding-code-from-a-local-uniffi" id="rust-scaffolding-code-from-a-local-uniffi">Rust scaffolding code from a local <code>uniffi</code></a></h3>
-<p><strong>Note:</strong> This section is only for people who want to make changes to <code>uniffi</code>
-itself. If you just want to use <code>uniffi</code> as released you should ignore this
-section.</p>
-<p>The techniques above don't work very well when you are making changes to
-<code>uniffi</code> itself and want to see how those changes impact your project - there's
-no released version of <code>uniffi</code> you can reference.</p>
-<p>To support this use-case, you can leverage Cargo's support for local
-dependencies and the <code>builtin-bindgen</code> feature described above. You should:</p>
-<ul>
-<li>
-<p>Change the <code>[dependencies]</code> section of your Cargo.toml to point to a local
-checkout of <code>uniffi</code> core.</p>
-</li>
-<li>
-<p>Change the <code>[build-dependencies]</code> section of your Cargo.toml to point to a
-local checkout of <code>uniffi_build</code> <em>and</em> enable the <code>builtin-bindgen</code> feature.</p>
-</li>
-</ul>
-<p>For example, you will probably end up with Cargo.toml looking something like:</p>
-<pre><code class="language-toml">[dependencies]
-uniffi = { path = &quot;path/to/uniffi-rs/uniffi&quot; }
-...
-[build-dependencies]
-uniffi_build = { path = &quot;path/to/uniffi-rs/uniffi_build&quot;, features=[&quot;builtin-bindgen&quot;] }
-</code></pre>
-<p>Note that <code>path/to/uniffi-rs</code> should be the path to the root of the <code>uniffi</code>
-source tree - ie, the 2 path specs above point to different sub-directories
-under the <code>uniffi</code> root.</p>
 <h3><a class="header" href="#libraries-that-depend-on-uniffi-components" id="libraries-that-depend-on-uniffi-components">Libraries that depend on UniFFI components</a></h3>
 <p>Suppose you want to create a shared library that includes one or more
 components using UniFFI. The typical way to achieve this is to create a new

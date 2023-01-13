@@ -29,37 +29,6 @@
 <span id="29">29</span>
 <span id="30">30</span>
 <span id="31">31</span>
-<span id="32">32</span>
-<span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
-<span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -78,11 +47,6 @@
 ///
 /// Given an UDL file named `example.udl`, the generated scaffolding will be written
 /// into a file named `example.uniffi.rs` in the `$OUT_DIR` directory.
-///
-/// If the &quot;builtin-bindgen&quot; feature is enabled then this will take a dependency on
-/// the `uniffi_bindgen` crate and call its methods directly, rather than using the
-/// command-line tool. This is mostly useful for developers who are working on uniffi
-/// itself and need to test out their changes to the bindings generator.
 </span><span class="kw">pub fn </span>generate_scaffolding(udl_file: <span class="kw">impl </span>AsRef&lt;Utf8Path&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>udl_file = udl_file.as_ref();
 
@@ -94,33 +58,7 @@
     // Calling the command line helps making sure that the generated swift/Kotlin/whatever
     // bindings were generated with the same version of uniffi as the Rust scaffolding code.
     </span><span class="kw">let </span>out_dir = env::var(<span class="string">&quot;OUT_DIR&quot;</span>).context(<span class="string">&quot;$OUT_DIR missing?!&quot;</span>)<span class="question-mark">?</span>;
-    run_uniffi_bindgen_scaffolding(out_dir.as_ref(), udl_file)
-}
-
-<span class="attribute">#[cfg(not(feature = <span class="string">&quot;builtin-bindgen&quot;</span>))]
-</span><span class="kw">fn </span>run_uniffi_bindgen_scaffolding(out_dir: <span class="kw-2">&amp;</span>Utf8Path, udl_file: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">use </span>anyhow::bail;
-    <span class="kw">use </span>std::process::Command;
-
-    <span class="kw">let </span>status = Command::new(<span class="string">&quot;uniffi-bindgen&quot;</span>)
-        .arg(<span class="string">&quot;scaffolding&quot;</span>)
-        .arg(<span class="string">&quot;--out-dir&quot;</span>)
-        .arg(out_dir)
-        .arg(udl_file)
-        .status()
-        .context(
-            <span class="string">&quot;failed to run `uniffi-bindgen` - \
-             have you installed it via `cargo install uniffi_bindgen`?&quot;</span>,
-        )<span class="question-mark">?</span>;
-    <span class="kw">if </span>!status.success() {
-        <span class="macro">bail!</span>(<span class="string">&quot;Error while generating scaffolding code&quot;</span>);
-    }
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="attribute">#[cfg(feature = <span class="string">&quot;builtin-bindgen&quot;</span>)]
-</span><span class="kw">fn </span>run_uniffi_bindgen_scaffolding(out_dir: <span class="kw-2">&amp;</span>Utf8Path, udl_file: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    uniffi_bindgen::generate_component_scaffolding(udl_file, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(out_dir), <span class="bool-val">false</span>)
+    uniffi_bindgen::generate_component_scaffolding(udl_file, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(out_dir.as_ref()), <span class="bool-val">false</span>)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_build" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

@@ -161,16 +161,36 @@
                     <main>
                         <h1><a class="header" href="#foreign-language-bindings" id="foreign-language-bindings">Foreign-language bindings</a></h1>
 <p>As stated in the <a href="../Overview.html">Overview</a>, this library and tutorial does not cover <em>how</em> to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.</p>
-<p>First, make sure you have installed all the <a href="./Prerequisites.html">prerequisites</a> - particularly,
-installing <code>uniffi-bindgen</code> (or alternatively, understanding how to run it from the source tree)</p>
-<h2><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h2>
+<h2><a class="header" href="#creating-the-bindgen-binary" id="creating-the-bindgen-binary">Creating the bindgen binary</a></h2>
+<p>First, make sure you have installed all the <a href="./Prerequisites.html">prerequisites</a>.</p>
+<p>Ideally you would then run the <code>uniffi-bindgen</code> binary from the <code>uniffi</code> crate to generate your bindings.  However, this
+is only available with <a href="https://doc.rust-lang.org/cargo/reference/unstable.html#artifact-dependencies">Cargo nightly</a>.
+To work around this, you need to create a binary in your project that does the same thing.</p>
+<p>Add the following to your <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[[bin]]
+name = &quot;run-uniffi-bindgen&quot;
+path = &quot;run-uniffi-bindgen.rs&quot;
+</code></pre>
+<p>Create <code>run-uniffi-bindgen.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust">fn main() {
+    uniffi::run_uniffi_bindgen().unwrap()
+}
+</code></pre></pre>
+<p>You can now run <code>uniffi-bindgen</code> from your project using <code>cargo run --bin run-uniffi-bindgen</code></p>
+<h3><a class="header" href="#multi-crate-workspaces" id="multi-crate-workspaces">Multi-crate workspaces</a></h3>
+<p>If your project consists of multiple crates in a Cargo workspace, then the process outlined above would require you
+creating a binary for each crate that uses UniFFI.  You can avoid this by creating a single crate named
+<code>run-uniffi-bindgen</code> that depends on <code>uniffi</code> and has the <code>run-uniffi-bindgen.rs</code> binary.  Then your can run
+<code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p run-uniffi-bindgen</code></p>
+<h2><a class="header" href="#running-uniffi-bindgen" id="running-uniffi-bindgen">Running uniffi-bindgen</a></h2>
+<h3><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h3>
 <p>Run</p>
-<pre><code>uniffi-bindgen generate src/math.udl --language kotlin
+<pre><code>cargo run --bin run-uniffi-bindgen generate src/math.udl --language kotlin
 </code></pre>
 <p>then have a look at <code>src/uniffi/math/math.kt</code></p>
-<h2><a class="header" href="#swift" id="swift">Swift</a></h2>
+<h3><a class="header" href="#swift" id="swift">Swift</a></h3>
 <p>Run</p>
-<pre><code>uniffi-bindgen generate src/math.udl --language swift
+<pre><code>cargo run --bin run-uniffi-bindgen generate src/math.udl --language swift
 </code></pre>
 <p>then check out <code>src/math.swift</code></p>
 <p>Note that these commands could be integrated as part of your gradle/Xcode build process.</p>

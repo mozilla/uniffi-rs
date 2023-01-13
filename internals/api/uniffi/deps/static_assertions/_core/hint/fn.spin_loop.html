@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Emits a machine instruction to signal the processor that it is running in a busy-wait spin-loop (“spin lock”)."><meta name="keywords" content="rust, rustlang, rust-lang, spin_loop"><title>spin_loop in uniffi::deps::static_assertions::_core::hint - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../normalize.css"><link rel="stylesheet" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div></a><div class="sidebar-elems"><h2><a href="index.html">In uniffi::deps::static_assertions::_core::hint</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Function <a href="../../../../index.html">uniffi</a>::<wbr><a href="../../../index.html">deps</a>::<wbr><a href="../../index.html">static_assertions</a>::<wbr><a href="../index.html">_core</a>::<wbr><a href="index.html">hint</a>::<wbr><a class="fn" href="#">spin_loop</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><span class="since" title="Stable since Rust version 1.49.0">1.49.0</span> · <a class="srclink" href="https://doc.rust-lang.org/1.66.0/src/core/hint.rs.html#165">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><div class="item-decl"><pre class="rust fn"><code>pub fn spin_loop()</code></pre></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Emits a machine instruction to signal the processor that it is running in
+a busy-wait spin-loop (“spin lock”).</p>
+<p>Upon receiving the spin-loop signal the processor can optimize its behavior by,
+for example, saving power or switching hyper-threads.</p>
+<p>This function is different from <a href="../../std/thread/fn.yield_now.html"><code>thread::yield_now</code></a> which directly
+yields to the system’s scheduler, whereas <code>spin_loop</code> does not interact
+with the operating system.</p>
+<p>A common use case for <code>spin_loop</code> is implementing bounded optimistic
+spinning in a CAS loop in synchronization primitives. To avoid problems
+like priority inversion, it is strongly recommended that the spin loop is
+terminated after a finite amount of iterations and an appropriate blocking
+syscall is made.</p>
+<p><strong>Note</strong>: On platforms that do not support receiving spin-loop hints this
+function does not do anything at all.</p>
+<h2 id="examples"><a href="#examples">Examples</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::sync::atomic::{AtomicBool, Ordering};
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>std::{hint, thread};
+
+<span class="comment">// A shared atomic value that threads will use to coordinate
+</span><span class="kw">let </span>live = Arc::new(AtomicBool::new(<span class="bool-val">false</span>));
+
+<span class="comment">// In a background thread we&#39;ll eventually set the value
+</span><span class="kw">let </span>bg_work = {
+    <span class="kw">let </span>live = live.clone();
+    thread::spawn(<span class="kw">move </span>|| {
+        <span class="comment">// Do some work, then make the value live
+        </span>do_some_work();
+        live.store(<span class="bool-val">true</span>, Ordering::Release);
+    })
+};
+
+<span class="comment">// Back on our current thread, we wait for the value to be set
+</span><span class="kw">while </span>!live.load(Ordering::Acquire) {
+    <span class="comment">// The spin loop is a hint to the CPU that we&#39;re waiting, but probably
+    // not for very long
+    </span>hint::spin_loop();
+}
+
+<span class="comment">// The value is now set
+</span>do_some_work();
+bg_work.join()<span class="question-mark">?</span>;</code></pre></div>
+</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

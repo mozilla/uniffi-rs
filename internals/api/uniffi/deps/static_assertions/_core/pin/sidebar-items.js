@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":[["pin","Constructs a [Pin]<[&mut] T>, by pinning a `value: T` locally."]],"struct":[["Pin","A pinned pointer."]]};

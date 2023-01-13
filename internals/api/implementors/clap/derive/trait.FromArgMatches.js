@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"uniffi_bindgen":[["impl FromArgMatches for <a class=\"struct\" href=\"uniffi_bindgen/struct.Cli.html\" title=\"struct uniffi_bindgen::Cli\">Cli</a>"],["impl FromArgMatches for <a class=\"enum\" href=\"uniffi_bindgen/enum.Commands.html\" title=\"enum uniffi_bindgen::Commands\">Commands</a>"]]
+"uniffi":[["impl FromArgMatches for <a class=\"struct\" href=\"uniffi/cli/struct.Cli.html\" title=\"struct uniffi::cli::Cli\">Cli</a>"],["impl FromArgMatches for <a class=\"enum\" href=\"uniffi/cli/enum.Commands.html\" title=\"enum uniffi::cli::Commands\">Commands</a>"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

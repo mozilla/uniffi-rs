@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["ensure_setup","Initialize our panic handling hook to optionally log panics"]]};

@@ -1210,6 +1210,12 @@
 <span id="1210">1210</span>
 <span id="1211">1211</span>
 <span id="1212">1212</span>
+<span id="1213">1213</span>
+<span id="1214">1214</span>
+<span id="1215">1215</span>
+<span id="1216">1216</span>
+<span id="1217">1217</span>
+<span id="1218">1218</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1290,15 +1296,21 @@
 <span class="kw">pub use </span>ffi::{FfiArgument, FfiFunction, FfiType};
 <span class="kw">use </span>uniffi_meta::{Checksum, FnMetadata, MethodMetadata, ObjectMetadata};
 
+<span class="doccomment">/// This needs to match the major/minor version of the `uniffi` crate.  See
+/// `docs/uniffi-versioning.md` for details.
+///
+/// Once we get to 1.0, then we should reformat this to only include the major version number.
+</span><span class="kw">const </span>UNIFFI_CONTRACT_VERSION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;0.22&quot;</span>;
+
 <span class="doccomment">/// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
 ///
 </span><span class="attribute">#[derive(Debug, Default, Checksum)]
 </span><span class="kw">pub struct </span>ComponentInterface {
-    <span class="doccomment">/// Every ComponentInterface gets tagged with the version of uniffi used to create it.
-    /// This helps us avoid using a lib compiled with one version together with bindings created
-    /// using a different version, which might introduce unsafety.
-    </span>uniffi_version: String,
+    <span class="doccomment">/// This always points to `UNIFFI_CONTRACT_VERSION`.  By including it in the checksum, we
+    /// prevent consumers from combining scaffolding and bindings that were created with different
+    /// `uniffi` versions.
+    </span>uniffi_version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
     <span class="doccomment">/// All of the types used in the interface.
     </span><span class="comment">// We can&#39;t checksum `self.types`, but its contents are implied by the other fields
     // anyway, so it&#39;s safe to ignore it.
@@ -1322,7 +1334,7 @@
     <span class="doccomment">/// Parse a `ComponentInterface` from a string containing a WebIDL definition.
     </span><span class="kw">pub fn </span>from_webidl(idl: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>ci = <span class="self">Self </span>{
-            uniffi_version: <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>).to_string(),
+            uniffi_version: UNIFFI_CONTRACT_VERSION,
             ..Default::default()
         };
         <span class="comment">// There&#39;s some lifetime thing with the errors returned from weedle::Definitions::parse
@@ -2260,7 +2272,7 @@
         </span><span class="kw">for </span>udl <span class="kw">in </span><span class="kw-2">&amp;</span>[UDL1, UDL2] {
             <span class="kw">let </span>ci1 = ComponentInterface::from_webidl(udl).unwrap();
             <span class="kw">let </span><span class="kw-2">mut </span>ci2 = ComponentInterface::from_webidl(udl).unwrap();
-            ci2.uniffi_version = String::from(<span class="string">&quot;fake-version&quot;</span>);
+            ci2.uniffi_version = <span class="string">&quot;99.99&quot;</span>;
             <span class="macro">assert_ne!</span>(ci1.checksum(), ci2.checksum());
         }
     }

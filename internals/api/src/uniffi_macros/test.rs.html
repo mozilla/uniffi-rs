@@ -120,16 +120,16 @@
             );
             <span class="kw">let </span>run_test = <span class="kw">match </span>test_file_pathbuf.extension() {
                 <span class="prelude-val">Some</span>(<span class="string">&quot;kts&quot;</span>) =&gt; <span class="macro">quote! </span>{
-                    uniffi_bindgen::bindings::kotlin::run_test
+                    uniffi::kotlin_run_test
                 },
                 <span class="prelude-val">Some</span>(<span class="string">&quot;swift&quot;</span>) =&gt; <span class="macro">quote! </span>{
-                    uniffi_bindgen::bindings::swift::run_test
+                    uniffi::swift_run_test
                 },
                 <span class="prelude-val">Some</span>(<span class="string">&quot;py&quot;</span>) =&gt; <span class="macro">quote! </span>{
-                    uniffi_bindgen::bindings::python::run_test
+                    uniffi::python_run_test
                 },
                 <span class="prelude-val">Some</span>(<span class="string">&quot;rb&quot;</span>) =&gt; <span class="macro">quote! </span>{
-                    uniffi_bindgen::bindings::ruby::run_test
+                    uniffi::ruby_run_test
                 },
                 <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected extension for test script: {test_file_name}&quot;</span>),
             };

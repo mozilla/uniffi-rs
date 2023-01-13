@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Panics the current thread."><meta name="keywords" content="rust, rustlang, rust-lang, panic"><title>panic in uniffi::deps::static_assertions::_core - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc macro"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><div class="sidebar-elems"><h2><a href="index.html">In uniffi::deps::static_assertions::_core</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Macro <a href="../../../index.html">uniffi</a>::<wbr><a href="../../index.html">deps</a>::<wbr><a href="../index.html">static_assertions</a>::<wbr><a href="index.html">_core</a>::<wbr><a class="macro" href="#">panic</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><span class="since" title="Stable since Rust version 1.6.0">1.6.0</span> · <a class="srclink" href="https://doc.rust-lang.org/1.66.0/src/core/macros/mod.rs.html#7">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><div class="item-decl"><div class="example-wrap"><pre class="rust macro"><code><span class="macro">macro_rules! </span>panic {
+    ($(<span class="macro-nonterminal">$arg</span>:tt)<span class="kw-2">*</span>) =&gt; { ... };
+}</code></pre></div>
+</div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Panics the current thread.</p>
+<p>This allows a program to terminate immediately and provide feedback
+to the caller of the program.</p>
+<p>This macro is the perfect way to assert conditions in example code and in
+tests. <code>panic!</code> is closely tied with the <code>unwrap</code> method of both
+<a href="option/enum.Option.html#method.unwrap"><code>Option</code></a> and <a href="result/enum.Result.html#method.unwrap"><code>Result</code></a> enums. Both implementations call
+<code>panic!</code> when they are set to <a href="option/enum.Option.html#variant.None" title="None"><code>None</code></a> or <a href="result/enum.Result.html#variant.Err" title="Err"><code>Err</code></a> variants.</p>
+<p>When using <code>panic!()</code> you can specify a string payload, that is built using
+the <a href="../std/macro.format.html"><code>format!</code></a> syntax. That payload is used when injecting the panic into
+the calling Rust thread, causing the thread to panic entirely.</p>
+<p>The behavior of the default <code>std</code> hook, i.e. the code that runs directly
+after the panic is invoked, is to print the message payload to
+<code>stderr</code> along with the file/line/column information of the <code>panic!()</code>
+call. You can override the panic hook using <a href="../std/panic/fn.set_hook.html"><code>std::panic::set_hook()</code></a>.
+Inside the hook a panic can be accessed as a <code>&amp;dyn Any + Send</code>,
+which contains either a <code>&amp;str</code> or <code>String</code> for regular <code>panic!()</code> invocations.
+To panic with a value of another other type, <a href="../std/panic/fn.panic_any.html"><code>panic_any</code></a> can be used.</p>
+<p>See also the macro <a href="macro.compile_error.html" title="compile_error!"><code>compile_error!</code></a>, for raising errors during compilation.</p>
+<h2 id="when-to-use-panic-vs-result"><a href="#when-to-use-panic-vs-result">When to use <code>panic!</code> vs <code>Result</code></a></h2>
+<p>The Rust language provides two complementary systems for constructing /
+representing, reporting, propagating, reacting to, and discarding errors. These
+responsibilities are collectively known as “error handling.” <code>panic!</code> and
+<code>Result</code> are similar in that they are each the primary interface of their
+respective error handling systems; however, the meaning these interfaces attach
+to their errors and the responsibilities they fulfill within their respective
+error handling systems differ.</p>
+<p>The <code>panic!</code> macro is used to construct errors that represent a bug that has
+been detected in your program. With <code>panic!</code> you provide a message that
+describes the bug and the language then constructs an error with that message,
+reports it, and propagates it for you.</p>
+<p><code>Result</code> on the other hand is used to wrap other types that represent either
+the successful result of some computation, <code>Ok(T)</code>, or error types that
+represent an anticipated runtime failure mode of that computation, <code>Err(E)</code>.
+<code>Result</code> is used alongside user defined types which represent the various
+anticipated runtime failure modes that the associated computation could
+encounter. <code>Result</code> must be propagated manually, often with the the help of the
+<code>?</code> operator and <code>Try</code> trait, and they must be reported manually, often with
+the help of the <code>Error</code> trait.</p>
+<p>For more detailed information about error handling check out the <a href="../book/ch09-00-error-handling.html">book</a> or the
+<a href="../std/result/index.html"><code>std::result</code></a> module docs.</p>
+<h2 id="current-implementation"><a href="#current-implementation">Current implementation</a></h2>
+<p>If the main thread panics it will terminate all your threads and end your
+program with code <code>101</code>.</p>
+<h2 id="examples"><a href="#examples">Examples</a></h2>
+<div class="example-wrap should_panic"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code><span class="macro">panic!</span>();
+<span class="macro">panic!</span>(<span class="string">&quot;this is a terrible mistake!&quot;</span>);
+<span class="macro">panic!</span>(<span class="string">&quot;this is a {} {message}&quot;</span>, <span class="string">&quot;fancy&quot;</span>, message = <span class="string">&quot;message&quot;</span>);
+std::panic::panic_any(<span class="number">4</span>); <span class="comment">// panic with the value of 4 to be collected elsewhere</span></code></pre></div>
+</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

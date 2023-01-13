@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Indicates unfinished code."><meta name="keywords" content="rust, rustlang, rust-lang, todo"><title>todo in uniffi::deps::static_assertions::_core - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc macro"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><div class="sidebar-elems"><h2><a href="index.html">In uniffi::deps::static_assertions::_core</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Macro <a href="../../../index.html">uniffi</a>::<wbr><a href="../../index.html">deps</a>::<wbr><a href="../index.html">static_assertions</a>::<wbr><a href="index.html">_core</a>::<wbr><a class="macro" href="#">todo</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><span class="since" title="Stable since Rust version 1.40.0">1.40.0</span> · <a class="srclink" href="https://doc.rust-lang.org/1.66.0/src/core/macros/mod.rs.html#771">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><div class="item-decl"><div class="example-wrap"><pre class="rust macro"><code><span class="macro">macro_rules! </span>todo {
+    () =&gt; { ... };
+    ($(<span class="macro-nonterminal">$arg</span>:tt)+) =&gt; { ... };
+}</code></pre></div>
+</div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Indicates unfinished code.</p>
+<p>This can be useful if you are prototyping and are just looking to have your
+code typecheck.</p>
+<p>The difference between <a href="macro.unimplemented.html" title="unimplemented!"><code>unimplemented!</code></a> and <code>todo!</code> is that while <code>todo!</code> conveys
+an intent of implementing the functionality later and the message is “not yet
+implemented”, <code>unimplemented!</code> makes no such claims. Its message is “not implemented”.
+Also some IDEs will mark <code>todo!</code>s.</p>
+<h2 id="panics"><a href="#panics">Panics</a></h2>
+<p>This will always <a href="https://doc.rust-lang.org/1.66.0/std/macro.panic.html" title="panic!"><code>panic!</code></a>.</p>
+<h2 id="examples"><a href="#examples">Examples</a></h2>
+<p>Here’s an example of some in-progress code. We have a trait <code>Foo</code>:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">trait </span>Foo {
+    <span class="kw">fn </span>bar(<span class="kw-2">&amp;</span><span class="self">self</span>);
+    <span class="kw">fn </span>baz(<span class="kw-2">&amp;</span><span class="self">self</span>);
+}</code></pre></div>
+<p>We want to implement <code>Foo</code> on one of our types, but we also want to work on
+just <code>bar()</code> first. In order for our code to compile, we need to implement
+<code>baz()</code>, so we can use <code>todo!</code>:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">struct </span>MyStruct;
+
+<span class="kw">impl </span>Foo <span class="kw">for </span>MyStruct {
+    <span class="kw">fn </span>bar(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="comment">// implementation goes here
+    </span>}
+
+    <span class="kw">fn </span>baz(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="comment">// let&#39;s not worry about implementing baz() for now
+        </span><span class="macro">todo!</span>();
+    }
+}
+
+<span class="kw">fn </span>main() {
+    <span class="kw">let </span>s = MyStruct;
+    s.bar();
+
+    <span class="comment">// we aren&#39;t even using baz(), so this is fine.
+</span>}</code></pre></div>
+</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

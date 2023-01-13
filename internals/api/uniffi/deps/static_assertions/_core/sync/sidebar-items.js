@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["atomic","Atomic types"]],"struct":[["Exclusive","`Exclusive` provides only mutable access, also referred to as exclusive access to the underlying value. It provides no immutable, or shared access to the underlying value."]]};

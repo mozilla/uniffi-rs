@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["UNICODE_VERSION","The version of Unicode that the Unicode parts of `char` and `str` methods are based on."]],"fn":[["Case_Ignorable",""],["Cased",""]],"mod":[["conversions",""]]};
