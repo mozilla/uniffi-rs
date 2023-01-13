@@ -25,11 +25,6 @@ clap = { version = "3.1", features = ["cargo", "std", "derive"], optional = true
 [dev-dependencies]
 trybuild = "1"
 
-[[bin]]
-name = "run-uniffi-bindgen"
-path = "run-uniffi-bindgen.rs"
-required-features = ["cli"]
-
 [features]
 default = []
 # Support for features needed by the `build.rs` script. Enable this in your

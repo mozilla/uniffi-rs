@@ -1,30 +1,18 @@
 # Prerequisites
 
-## The uniffi-bindgen cli tool
+## Add `uniffi` as a dependency and build-depedency
 
-Install the `uniffi-bindgen` binary on your system using:
+In your crate's `Cargo.toml` add:
 
-```
-cargo install uniffi_bindgen
-```
+```toml
+[dependencies]
+uniffi = { version = "[latest-version]" }
 
-You can see what it can do with `uniffi-bindgen --help`, but let's leave it aside for now.
-
-### Running from a source checkout
-
-It's also possible to run `uniffi-bindgen` from a source checkout of uniffi - this might
-be useful if you are experimenting with changes to uniffi and want to test them out.
-
-In this case, just use `cargo run` in the `uniffi_bindgen` crate directory.
-For example, from the root of the `uniffi-rs` repo, execute:
-
-```shell
-% cd uniffi_bindgen
-% cargo run -- --help
+[build-dependencies]
+uniffi = { version = "[latest-version]", features = [ "build" ] }
 ```
 
-and you will see the help output from running `uniffi-bindgen` locally. Refer to
-the docs for `cargo run` for more information and options.
+UniFFI has not reached version `1.0` yet.  Versions are typically specified as "0.[minor-version]".
 
 ## Build your crate as a cdylib
 
