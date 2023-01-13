@@ -11,7 +11,7 @@
 //    - a `Drop` `impl`, which tells the foreign language to forget about the real callback object.
 #}
 {% let trait_name = cbi.name() -%}
-{% let trait_impl = cbi.type_().borrow()|ffi_converter_name -%}
+{% let trait_impl = format!("UniFFICallbackHandler{}", trait_name) %}
 {% let foreign_callback_internals = format!("foreign_callback_{}_internals", trait_name)|upper -%}
 
 // Register a foreign callback for getting across the FFI.
@@ -163,9 +163,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
     {%- endfor %}
 }
 
-unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
-    // This RustType allows for rust code that inputs this type as a Box<dyn CallbackInterfaceTrait> param
-    type RustType = Box<dyn r#{{ trait_name }}>;
+unsafe impl ::uniffi::FfiConverter<crate::UniFfiTag> for Box<dyn r#{{ trait_name }}> {
     type FfiType = u64;
 
     // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
@@ -177,21 +175,21 @@ unsafe impl uniffi::FfiConverter for {{ trait_impl }} {
     // language.
     //
     // Until we have some certainty, and use cases, we shouldn't use them.
-    fn lower(_obj: Self::RustType) -> Self::FfiType {
+    fn lower(_obj: Box<dyn r#{{ trait_name }}>) -> Self::FfiType {
         panic!("Lowering CallbackInterface not supported")
     }
 
-    fn write(_obj: Self::RustType, _buf: &mut std::vec::Vec<u8>) {
+    fn write(_obj: Box<dyn r#{{ trait_name }}>, _buf: &mut std::vec::Vec<u8>) {
         panic!("Writing CallbackInterface not supported")
     }
 
-    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self::RustType> {
-        Ok(Box::new(Self { handle: v }))
+    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Box<dyn r#{{ trait_name }}>> {
+        Ok(Box::new({{ trait_impl }} { handle: v }))
     }
 
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self::RustType> {
+    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Box<dyn r#{{ trait_name }}>> {
         use uniffi::deps::bytes::Buf;
         uniffi::check_remaining(buf, 8)?;
-        <Self as uniffi::FfiConverter>::try_lift(buf.get_u64())
+        Self::try_lift(buf.get_u64())
     }
 }

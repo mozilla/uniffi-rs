@@ -134,7 +134,7 @@ pub fn try_read_field(f: &syn::Field) -> TokenStream {
     let ty = &f.ty;
 
     quote! {
-        #ident: <#ty as ::uniffi::FfiConverter>::try_read(buf)?,
+        #ident: <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_read(buf)?,
     }
 }
 

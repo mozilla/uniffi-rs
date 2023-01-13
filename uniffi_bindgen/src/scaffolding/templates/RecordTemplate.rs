@@ -9,11 +9,8 @@
 #}
 
 #[doc(hidden)]
-pub struct {{ rec.type_().borrow()|ffi_converter_name }};
-
-#[doc(hidden)]
-impl uniffi::RustBufferFfiConverter for {{ rec.type_().borrow()|ffi_converter_name }} {
-    type RustType = r#{{ rec.name() }};
+unsafe impl ::uniffi::FfiConverter<crate::UniFfiTag> for r#{{ rec.name() }} {
+    ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
 
     fn write(obj: r#{{ rec.name() }}, buf: &mut std::vec::Vec<u8>) {
         // If the provided struct doesn't match the fields declared in the UDL, then

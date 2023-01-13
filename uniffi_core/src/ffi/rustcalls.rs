@@ -11,7 +11,7 @@
 //!    - Adapting `Result<>` types into either a return value or an error
 
 use super::FfiDefault;
-use crate::{FfiConverter, RustBuffer, RustBufferFfiConverter};
+use crate::{FfiConverter, RustBuffer, UniFfiTag};
 use anyhow::Result;
 use std::mem::MaybeUninit;
 use std::panic;
@@ -80,11 +80,6 @@ const CALL_SUCCESS: i8 = 0; // CALL_SUCCESS is set by the calling code
 const CALL_ERROR: i8 = 1;
 const CALL_PANIC: i8 = 2;
 
-// A trait for errors that can be thrown to the FFI code
-//
-// This gets implemented in uniffi_bindgen/src/scaffolding/templates/ErrorTemplate.rs
-pub trait FfiError: RustBufferFfiConverter {}
-
 // Generalized rust call handling function
 fn make_call<F, R>(out_status: &mut RustCallStatus, callback: F) -> R
 where
@@ -124,7 +119,7 @@ where
                     "Unknown panic!".to_string()
                 };
                 log::error!("Caught a panic calling rust code: {:?}", message);
-                String::lower(message)
+                <String as FfiConverter<UniFfiTag>>::lower(message)
             }));
             if let Ok(buf) = message_result {
                 unsafe {
@@ -185,7 +180,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{FfiConverter, RustBufferFfiConverter};
+    use crate::{ffi_converter_rust_buffer_lift_and_lower, FfiConverter, UniFfiTag};
 
     fn function(a: u8) -> i8 {
         match a {
@@ -212,7 +207,8 @@ mod test {
         assert_eq!(status.code, CALL_PANIC);
         unsafe {
             assert_eq!(
-                String::try_lift(status.error_buf.assume_init()).unwrap(),
+                <String as FfiConverter<UniFfiTag>>::try_lift(status.error_buf.assume_init())
+                    .unwrap(),
                 "Unexpected value: 1"
             );
         }
@@ -221,20 +217,18 @@ mod test {
     #[derive(Debug, PartialEq)]
     struct TestError(String);
 
-    // Use RustBufferFfiConverter to simplify lifting TestError out of RustBuffer to check it
-    impl RustBufferFfiConverter for TestError {
-        type RustType = Self;
+    // Use FfiConverter to simplify lifting TestError out of RustBuffer to check it
+    unsafe impl FfiConverter<UniFfiTag> for TestError {
+        ffi_converter_rust_buffer_lift_and_lower!(UniFfiTag);
 
-        fn write(obj: Self::RustType, buf: &mut Vec<u8>) {
-            <String as FfiConverter>::write(obj.0, buf);
+        fn write(obj: TestError, buf: &mut Vec<u8>) {
+            <String as FfiConverter<UniFfiTag>>::write(obj.0, buf);
         }
 
-        fn try_read(buf: &mut &[u8]) -> Result<Self> {
-            String::try_read(buf).map(TestError)
+        fn try_read(buf: &mut &[u8]) -> Result<TestError> {
+            <String as FfiConverter<UniFfiTag>>::try_read(buf).map(TestError)
         }
     }
-
-    impl FfiError for TestError {}
 
     fn function_with_result(a: u8) -> Result<i8, TestError> {
         match a {
@@ -259,7 +253,8 @@ mod test {
         assert_eq!(status.code, CALL_ERROR);
         unsafe {
             assert_eq!(
-                TestError::try_lift(status.error_buf.assume_init()).unwrap(),
+                <TestError as FfiConverter<UniFfiTag>>::try_lift(status.error_buf.assume_init())
+                    .unwrap(),
                 TestError("Error".to_owned())
             );
         }
@@ -271,7 +266,8 @@ mod test {
         assert_eq!(status.code, CALL_PANIC);
         unsafe {
             assert_eq!(
-                String::try_lift(status.error_buf.assume_init()).unwrap(),
+                <String as FfiConverter<UniFfiTag>>::try_lift(status.error_buf.assume_init())
+                    .unwrap(),
                 "Unexpected value: 2"
             );
         }

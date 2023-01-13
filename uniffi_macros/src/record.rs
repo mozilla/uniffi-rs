@@ -44,8 +44,8 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
 
     quote! {
         #[automatically_derived]
-        impl ::uniffi::RustBufferFfiConverter for #ident {
-            type RustType = Self;
+        unsafe impl<T> ::uniffi::FfiConverter<T> for #ident {
+            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(T);
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl
@@ -103,6 +103,6 @@ fn write_field(f: &Field) -> TokenStream {
     let ty = &f.ty;
 
     quote! {
-        <#ty as ::uniffi::FfiConverter>::write(obj.#ident, buf);
+        <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(obj.#ident, buf);
     }
 }

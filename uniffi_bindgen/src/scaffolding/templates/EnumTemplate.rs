@@ -7,14 +7,12 @@
 // public so other crates can refer to it via an `[External='crate'] typedef`
 #}
 
-#[doc(hidden)]
-pub struct {{ e.type_().borrow()|ffi_converter_name }};
 
 #[doc(hidden)]
-impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name }} {
-    type RustType = r#{{ e.name() }};
+unsafe impl ::uniffi::FfiConverter<crate::UniFfiTag> for r#{{ e.name() }} {
+    ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
 
-    fn write(obj: Self::RustType, buf: &mut std::vec::Vec<u8>) {
+    fn write(obj: r#{{ e.name() }}, buf: &mut std::vec::Vec<u8>) {
         use uniffi::deps::bytes::BufMut;
         match obj {
             {%- for variant in e.variants() %}

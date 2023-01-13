@@ -60,10 +60,6 @@ pub fn expand_error(input: DeriveInput, module_path: Vec<String>) -> TokenStream
 
     quote! {
         #ffi_converter_impl
-
-        #[automatically_derived]
-        impl ::uniffi::FfiError for #ident {}
-
         #meta_static_var
         #type_assertion
         #variant_errors
@@ -84,7 +80,7 @@ pub(crate) fn flat_error_ffi_converter_impl(
                 quote! {
                     Self::#v_ident { .. } => {
                         ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                        <::std::string::String as ::uniffi::FfiConverter>::write(error_msg, buf);
+                        <::std::string::String as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(error_msg, buf);
                     }
                 }
             });
@@ -100,8 +96,8 @@ pub(crate) fn flat_error_ffi_converter_impl(
 
     quote! {
         #[automatically_derived]
-        impl ::uniffi::RustBufferFfiConverter for #ident {
-            type RustType = Self;
+        unsafe impl<T> ::uniffi::FfiConverter<T> for #ident {
+            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(T);
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl

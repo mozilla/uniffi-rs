@@ -8,11 +8,8 @@
 #}
 
 #[doc(hidden)]
-pub struct {{ e.type_().borrow()|ffi_converter_name }};
-
-#[doc(hidden)]
-impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name }} {
-    type RustType = r#{{ e.name() }};
+unsafe impl ::uniffi::FfiConverter<crate::UniFfiTag> for r#{{ e.name() }} {
+    uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
 
     {% if e.is_flat() %}
 
@@ -27,7 +24,7 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name
             {%- for variant in e.variants() %}
             r#{{ e.name() }}::r#{{ variant.name() }}{..} => {
                 buf.put_i32({{ loop.index }});
-                <String as uniffi::FfiConverter>::write(msg, buf);
+                {{ Type::String.borrow()|ffi_converter }}::write(msg, buf);
             },
             {%- endfor %}
         };
@@ -91,5 +88,3 @@ impl uniffi::RustBufferFfiConverter for {{ e.type_().borrow()|ffi_converter_name
     }
     {% endif %}
 }
-
-impl uniffi::FfiError for {{ e.type_().borrow()|ffi_converter_name }} { }

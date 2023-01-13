@@ -2,6 +2,16 @@
 // Trust me, you don't want to mess with it!
 {% import "macros.rs" as rs %}
 
+// Unit struct to parameterize the FfiConverter trait.
+//
+// We use FfiConverter<UniFfiTag> to handle lowering/lifting/serializing types for this crate.  See
+// https://mozilla.github.io/uniffi-rs/internals/lifting_and_lowering.html#code-generation-and-the-fficonverter-trait
+// for details.
+//
+// This is pub, since we need to access it to support external types
+#[doc(hidden)]
+pub struct UniFfiTag;
+
 // Check for compatibility between `uniffi` and `uniffi_bindgen` versions.
 // Note that we have an error message on the same line as the assertion.
 // This is important, because if the assertion fails, the compiler only
