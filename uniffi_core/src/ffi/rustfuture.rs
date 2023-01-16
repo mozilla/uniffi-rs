@@ -1,17 +1,19 @@
 //! [`RustFuture`] represents a [`Future`] that can be sent over FFI safely-ish.
 //!
-//! The [`RustFuture`] is parameterized by `T` which implements
-//! [`FfiReturn`], which has a blanket-implementation for [`FfiConverter`][crate::FfiConverter].
-//! Thus, the inner `Future` outputs a value of kind
-//! `FfiReturn`. The `poll` method maps this value to `FfiResult::FfiType` when
-//! the inner `Future` is ready.
+//! The [`RustFuture`] type holds an inner `Future<Output = Result<E, T>>`, and
+//! thus is parameterized by `T` and `E`. On the `RustFuture` type itself, there
+//! is no constraint over those generic types (constraints are present in the
+//! [`uniffi_rustfuture_poll`] function, where `T: FfiReturn`, see later
+//! to learn more). Every function or method that returns a `Future` must
+//! transform the result into a `Result`.
 //!
 //! This type may not be instantiated directly, but _via_ the procedural macros,
 //! such as `#[uniffi::export]`. A `RustFuture` is created, boxed, and then
-//! manipulated by (hidden) helper functions, resp. `uniffi_rustfuture_poll`
-//! and `uniffi_rustfuture_drop`. Because the `RustFuture` type contains a
-//! generic parameter `T`, the procedural macros will do a monomorphisation
-//! phase so that all the API has all their types statically known.
+//! manipulated by (hidden) helper functions, resp. [`uniffi_rustfuture_poll`]
+//! and [`uniffi_rustfuture_drop`]. Because the `RustFuture` type contains a
+//! generic parameters `T` and `E`, the procedural macros will do a
+//! monomorphisation phase so that all the API has all their types statically
+//! known.
 //!
 //! # The big picture
 //!
@@ -45,10 +47,10 @@
 //! #[no_mangle]
 //! pub extern "C" fn _uniffi_hello(
 //!     call_status: &mut ::uniffi::RustCallStatus
-//! ) -> Option<Box<::uniffi::RustFuture<bool>>> {
+//! ) -> Option<Box<::uniffi::RustFuture<bool, ::std::convert::Infallible>>> {
 //!     ::uniffi::call_with_output(call_status, || {
 //!         Some(Box::new(::uniffi::RustFuture::new(async move {
-//!             hello().await
+//!             Ok(hello().await)
 //!         })))
 //!     })
 //! }
@@ -60,7 +62,7 @@
 //! /// The function to poll the `RustFuture` returned by `_uniffi_hello`.
 //! #[no_mangle]
 //! pub extern "C" fn _uniffi_hello_poll(
-//!     future: Option<&mut ::uniffi::RustFuture<bool>>,
+//!     future: Option<&mut ::uniffi::RustFuture<bool, ::std::convert::Infallible>>,
 //!     waker: Option<NonNull<::uniffi::RustFutureForeignWakerFunction>>,
 //!     waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
 //!     polled_result: &mut <bool as ::uniffi::FfiReturn>::FfiType,
@@ -73,7 +75,7 @@
 //! Let's analyse this function because it's an important one:
 //!
 //! * First off, this _poll FFI function_ forwards everything to
-//!   `uniffi_rustfuture_poll`. The latter is generic, while the former has been
+//!   [`uniffi_rustfuture_poll`]. The latter is generic, while the former has been
 //!   monomorphised by the procedural macro.
 //!
 //! * Second, it receives the `RustFuture` as an `Option<&mut RustFuture<_>>`. It
@@ -86,7 +88,7 @@
 //!   to it in a second.
 //!
 //! * Fourth, it receives an in-out `polled_result` argument, that is filled with the
-//!   polled result if the future is ready (this part is subject to change).
+//!   polled result if the future is ready.
 //!
 //! * Finally, the classical `call_status`, which is part of the calling API of `uniffi`.
 //!
@@ -99,7 +101,7 @@
 //! ```rust,ignore
 //! #[no_mangle]
 //! pub extern "C" fn _uniffi_hello_drop(
-//!     future: Option<Box<::uniffi::RustFuture<bool>>>,
+//!     future: Option<Box<::uniffi::RustFuture<bool, ::std::convert::Infallible>>>,
 //!     call_status: &mut ::uniffi::RustCallStatus
 //! ) {
 //!     ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
@@ -111,7 +113,7 @@
 //! i.e. it takes ownership of the `RustFuture` _via_ `Box`!
 //!
 //! Similarly to the _poll function_, it forwards everything to
-//! `uniffi_rustfuture_drop`, which is the generic version of the monomorphised _drop
+//! [`uniffi_rustfuture_drop`], which is the generic version of the monomorphised _drop
 //! function_.
 //!
 //! ## How does `Future` work exactly?
@@ -268,19 +270,12 @@ use std::{
 
 /// `RustFuture` represents a [`Future`] that can be sent over FFI safely-ish.
 ///
-/// The [`RustFuture`] is parameterized by `T` which implements
-/// [`FfiReturn`], which has a blanket-implementation for [`FfiConverter`][crate::FfiConverter].
-/// Thus, the inner `Future` outputs a value of kind
-/// `FfiReturn`. The `poll` method maps this value to `FfiResult::FfiType` when
-/// the inner `Future` is ready.
-///
 /// See the module documentation to learn more.
 #[repr(transparent)]
 pub struct RustFuture<T, E>(Pin<Box<dyn Future<Output = Result<T, E>> + 'static>>);
 
 impl<T, E> RustFuture<T, E> {
-    /// Create a new `RustFuture` from a regular `Future` that outputs a value
-    /// of kind `FfiConverter::RustType`.
+    /// Create a new `RustFuture` from a regular `Future`.
     pub fn new<F>(future: F) -> Self
     where
         F: Future<Output = Result<T, E>> + 'static,
@@ -288,6 +283,9 @@ impl<T, E> RustFuture<T, E> {
         Self(Box::pin(future))
     }
 
+    /// Create a new `RustFuture` from a Tokio `Future`. It needs an
+    /// intermediate compatibility layer to be handlded as a regular Rust
+    /// `Future`.
     #[cfg(feature = "tokio")]
     pub fn new_tokio<F>(future: F) -> Self
     where
@@ -296,9 +294,7 @@ impl<T, E> RustFuture<T, E> {
         Self(Box::pin(async_compat::Compat::new(future)))
     }
 
-    /// Poll the future. It basically maps
-    /// `<T as FfiConverter>::RustType` to `<T as FfiConverter>::FfiType` when
-    /// the inner future is ready.
+    /// Poll the future.
     ///
     /// There is one subtlety compared to `Future::poll` though: the
     /// `foreign_waker` and `foreign_waker_environment` variables replace the
@@ -306,6 +302,8 @@ impl<T, E> RustFuture<T, E> {
     /// foreign language's executor**. Hence the possibility for the foreign
     /// language to provide its own waker function: Rust can signal something
     /// has happened within the future and should be polled again.
+    ///
+    /// `Poll` is mapped to [`RustFuturePoll`].
     ///
     /// [`Context`]: https://doc.rust-lang.org/std/task/struct.Context.html
     fn poll(
@@ -332,10 +330,24 @@ impl<T, E> FfiDefault for Option<Box<RustFuture<T, E>>> {
     }
 }
 
+/// `RustFuturePoll` is the equivalent of [`Poll`], except that it has one
+/// more variant: `Throwing`, which is the ”FFI default” variant.
+///
+/// Why? The [`FfiDefault`] trait is used to compute a default value when an
+/// error must be returned. It must be reflected inside the `RustFuturePoll`
+/// type to know in which state the `RustFuture` is.
+///
+/// [`Poll`]: https://doc.rust-lang.org/std/task/enum.Poll.html
 #[derive(Debug)]
 pub enum RustFuturePoll<T> {
+    /// A value `T` is ready!
     Ready(T),
+
+    /// Naah, please try later, maybe a value will be ready?
     Pending,
+
+    /// The default state for `FfiDefault`, indicating that the `RustFuture` is
+    /// throwing an error.
     Throwing,
 }
 
@@ -349,6 +361,8 @@ impl<T> From<Poll<T>> for RustFuturePoll<T> {
 }
 
 impl<T, E> RustFuturePoll<Result<T, E>> {
+    /// Transpose a `RustFuturePoll<Result<T, E>>` to a
+    /// `Result<RustFuturePoll<T>, E>`.
     fn transpose(self) -> Result<RustFuturePoll<T>, E> {
         match self {
             Self::Ready(ready) => match ready {
@@ -478,7 +492,7 @@ mod tests_raw_waker_vtable {
 
     // This entire `RustFuture` stuff assumes the waker lives in the foreign
     // language, but for the sake of testing, we will fake it.
-    extern "C" fn waker(env: *const c_void) {
+    extern "C" fn my_waker(env: *const c_void) {
         let env = ManuallyDrop::new(unsafe { Box::from_raw(env as *mut RefCell<bool>) });
         env.replace(true);
 
@@ -488,7 +502,7 @@ mod tests_raw_waker_vtable {
     #[test]
     fn test_rust_future_foreign_waker_basic_manipulations() {
         let foreign_waker_ptr =
-            RustFutureForeignWaker::new(waker as _, ptr::null()).into_unit_ptr();
+            RustFutureForeignWaker::new(my_waker as _, ptr::null()).into_unit_ptr();
         let foreign_waker: Arc<RustFutureForeignWaker> =
             unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
 
@@ -498,7 +512,7 @@ mod tests_raw_waker_vtable {
     #[test]
     fn test_clone_and_drop_waker() {
         let foreign_waker_ptr =
-            RustFutureForeignWaker::new(waker as _, ptr::null()).into_unit_ptr();
+            RustFutureForeignWaker::new(my_waker as _, ptr::null()).into_unit_ptr();
         let foreign_waker = unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
 
         let _ = unsafe { RustFutureForeignRawWaker::clone_waker(foreign_waker_ptr) };
@@ -512,7 +526,7 @@ mod tests_raw_waker_vtable {
     fn test_wake() {
         let foreign_waker_environment_ptr = Box::into_raw(Box::new(RefCell::new(false)));
         let foreign_waker_ptr =
-            RustFutureForeignWaker::new(waker as _, foreign_waker_environment_ptr as *const _)
+            RustFutureForeignWaker::new(my_waker as _, foreign_waker_environment_ptr as *const _)
                 .into_unit_ptr();
         let foreign_waker = unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
 
@@ -535,7 +549,7 @@ mod tests_raw_waker_vtable {
     fn test_wake_by_ref() {
         let foreign_waker_environment_ptr = Box::into_raw(Box::new(RefCell::new(false)));
         let foreign_waker_ptr =
-            RustFutureForeignWaker::new(waker as _, foreign_waker_environment_ptr as *const _)
+            RustFutureForeignWaker::new(my_waker as _, foreign_waker_environment_ptr as *const _)
                 .into_unit_ptr();
         let foreign_waker = unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
 
@@ -562,15 +576,24 @@ const READY: bool = true;
 const PENDING: bool = false;
 
 /// Poll a [`RustFuture`]. If the `RustFuture` is ready, the function returns
-/// `true` and puts the result inside `polled_result`, otherwise it returns `false`
-/// and _doesn't change_ the value inside `polled_result`.
+/// `true` and puts the result inside `polled_result`, otherwise it returns
+/// `false` and _doesn't modify_ the value inside `polled_result`. A third
+/// case exists: if the `RustFuture` is throwing an error, the function returns
+/// `true` but doesn't modify `polled_result` either, however the value
+/// of  `call_status` is changed appropriately. It is summarized inside the
+/// following table:
+///
+/// | `RustFuture`'s state | `polled_result`         | `call_status.code` | returned value |
+/// |----------------------|-------------------------|--------------------|----------------|
+/// | `Ready(Ok(T))`       | is mapped to `T::lower` | `CALL_SUCCESS`     | `true`         |
+/// | `Ready(Err(E))`      | is not modified         | `CALL_ERROR`       | `true`         |
+/// | `Pending`            | is not modified         | `CALL_SUCCESS`     | `false`        |
 ///
 /// Please see the module documentation to learn more.
 ///
 /// # Panics
 ///
 /// The function panics if `future` or `waker` is a NULL pointer.
-#[doc(hidden)]
 pub fn uniffi_rustfuture_poll<T, E>(
     future: Option<&mut RustFuture<T, E>>,
     waker: Option<RustFutureForeignWakerFunction>,
@@ -612,7 +635,6 @@ where
 /// scope.
 ///
 /// Please see the module documentation to learn more.
-#[doc(hidden)]
 pub fn uniffi_rustfuture_drop<T, E>(
     _future: Option<Box<RustFuture<T, E>>>,
     _call_status: &mut RustCallStatus,
