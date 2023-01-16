@@ -77,7 +77,7 @@ pub async fn always_ready() -> bool {
 pub async fn void() {}
 
 /// Async function that says something after 2s.
-// #[uniffi::export]
+#[uniffi::export]
 pub async fn say() -> String {
     TimerFuture::new(Duration::from_secs(2)).await;
 

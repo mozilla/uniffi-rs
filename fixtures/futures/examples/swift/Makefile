@@ -1,6 +1,6 @@
 build:
 	cargo build --release
-	../../../../target/release/uniffi-bindgen generate --lib-file ../../../../target/release/libuniffi_futures.dylib ../../src/uniffi_futures.udl --language swift --out-dir ../../../../target/release/
+	../../../../target/release/run-uniffi-bindgen generate --lib-file ../../../../target/release/libuniffi_futures.dylib ../../src/uniffi_futures.udl --language swift --out-dir ../../../../target/release/
 	swiftc \
 		-module-name uniffi_futures \
 		-emit-library -o ../../../../target/release/libuniffi_futures.dylib \
