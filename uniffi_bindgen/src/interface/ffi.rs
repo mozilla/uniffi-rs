@@ -39,7 +39,9 @@ pub enum FfiType {
     /// A byte buffer allocated by rust, and owned by whoever currently holds it.
     /// If you've got one of these, you must either call the appropriate rust function to free it
     /// or pass it to someone that will.
-    RustBuffer,
+    /// If the inner option is Some, it is the name of the external type. The bindings may need
+    /// to use this name to import the correct RustBuffer for that type.
+    RustBuffer(Option<String>),
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,

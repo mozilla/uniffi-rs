@@ -376,7 +376,7 @@ impl CodeOracle for SwiftCodeOracle {
             FfiType::Float32 => "float".into(),
             FfiType::Float64 => "double".into(),
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
-            FfiType::RustBuffer => "RustBuffer".into(),
+            FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
         }
@@ -448,7 +448,7 @@ pub mod filters {
             FfiType::Float32 => "float".into(),
             FfiType::Float64 => "double".into(),
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
-            FfiType::RustBuffer => "RustBuffer".into(),
+            FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
         })

@@ -165,7 +165,7 @@ impl From<&Type> for FfiType {
             Type::Boolean => FfiType::Int8,
             // Strings are always owned rust values.
             // We might add a separate type for borrowed strings in future.
-            Type::String => FfiType::RustBuffer,
+            Type::String => FfiType::RustBuffer(None),
             // Objects are pointers to an Arc<>
             Type::Object(name) => FfiType::RustArcPtr(name.to_owned()),
             // Callback interfaces are passed as opaque integer handles.
@@ -178,8 +178,8 @@ impl From<&Type> for FfiType {
             | Type::Sequence(_)
             | Type::Map(_, _)
             | Type::Timestamp
-            | Type::Duration
-            | Type::External { .. } => FfiType::RustBuffer,
+            | Type::Duration => FfiType::RustBuffer(None),
+            Type::External { name, .. } => FfiType::RustBuffer(Some(name.clone())),
             Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
             Type::Unresolved { name } => {
                 unreachable!("Type `{name}` must be resolved before lowering to FfiType")

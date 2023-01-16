@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import unittest
+import urllib
 from imported_types_lib import *
 
 class TestIt(unittest.TestCase):
@@ -16,6 +17,10 @@ class TestIt(unittest.TestCase):
 
         ct2 = get_combined_type(ct)
         self.assertEqual(ct, ct2)
+
+    def test_get_url(self):
+        url = urllib.parse.urlparse("http://example.com/")
+        self.assertEqual(get_url(url), url)
 
 
 if __name__=='__main__':

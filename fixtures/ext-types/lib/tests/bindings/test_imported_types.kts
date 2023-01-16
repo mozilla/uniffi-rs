@@ -11,3 +11,5 @@ assert(ct.url ==  java.net.URL("http://example.com/"))
 
 val ct2 = getCombinedType(ct)
 assert(ct == ct2)
+
+assert(getUrl(java.net.URL("http://example.com/")) ==  java.net.URL("http://example.com/"))
