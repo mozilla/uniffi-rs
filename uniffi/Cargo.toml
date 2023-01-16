@@ -1,9 +1,12 @@
 [package]
 name = "uniffi"
-description = "a multi-language bindings generator for rust (runtime support code)"
+description = "a multi-language bindings generator for rust"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
 repository = "https://github.com/mozilla/uniffi-rs"
+# Incrementing the minor version here means a breaking change to consumers.
+#   * See `docs/uniffi-versioning.md` for guidance on when to increment this
+#   * Make sure to also update `uniffi_bindgen::UNIFFI_CONTRACT_VERSION"
 version = "0.22.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
@@ -11,27 +14,21 @@ edition = "2021"
 keywords = ["ffi", "bindgen"]
 
 [dependencies]
-# Re-exported dependencies used in generated Rust scaffolding files.
-anyhow = "1"
-async-compat = { version = "0.2.1", optional = true }
-bytes = "1.0"
-camino = "1.0.8"
-log = "0.4"
-once_cell = "1.12"
-# Regular dependencies
-paste = "1.0"
-uniffi_bindgen = { path = "../uniffi_bindgen", default-features = false, optional = true, version = "=0.22.0" }
+uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.22.0" }
+uniffi_build = { path = "../uniffi_build", version = "=0.22.0" }
+uniffi_core = { path = "../uniffi_core", version = "=0.22.0" }
 uniffi_macros = { path = "../uniffi_macros", version = "=0.22.0" }
-static_assertions = "1.1.0"
-
-[features]
-default = []
-# Use the `uniffi_bindgen` from this workspace instead of the one installed on your system.
-# You probably only want to enable this feature if you're working on uniffi itself.
-builtin-bindgen = ["uniffi_bindgen"]
-# Enable support for Tokio's futures.
-# This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
-tokio = ["dep:async-compat"]
+anyhow = "1"
+camino = "1.0.8"
+clap = { version = "3.1", features = ["cargo", "std", "derive"], optional = true }
 
 [dev-dependencies]
 trybuild = "1"
+
+[[bin]]
+name = "run-uniffi-bindgen"
+path = "run-uniffi-bindgen.rs"
+required-features = ["clap"]
+
+[features]
+default = ["clap"]

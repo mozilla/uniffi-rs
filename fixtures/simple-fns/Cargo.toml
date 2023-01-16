@@ -11,11 +11,7 @@ name = "uniffi_simple_fns"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-uniffi = { path = "../../uniffi", features = ["builtin-bindgen"] }
+uniffi = { path = "../../uniffi" }
 
 [build-dependencies]
-uniffi_build = { path = "../../uniffi_build", features = ["builtin-bindgen"] }
-
-[dev-dependencies]
-uniffi_bindgen = {path = "../../uniffi_bindgen"}
-uniffi_macros = {path = "../../uniffi_macros"}
+uniffi = { path = "../../uniffi" }

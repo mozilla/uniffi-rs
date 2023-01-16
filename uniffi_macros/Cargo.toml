@@ -28,9 +28,6 @@ uniffi_meta = { path = "../uniffi_meta", version = "=0.22.0" }
 
 [features]
 default = []
-# Use the `uniffi_bindgen` from this workspace instead of the one installed on your system.
-# You probably only want to enable this feature if you're working on uniffi itself.
-builtin-bindgen = ["uniffi_build/builtin-bindgen"]
 # Enable extra features that require a nightly compiler:
 # * Add the full module path of exported items to FFI metadata instead of just the crate name.
 #   This may be used by language backends to generate nested module structures in the future.

@@ -2,6 +2,7 @@
 members = [
   "uniffi_bindgen",
   "uniffi_build",
+  "uniffi_core",
   "uniffi_macros",
   "uniffi_meta",
   "uniffi_testing",
@@ -38,6 +39,7 @@ members = [
   "fixtures/regressions/kotlin-experimental-unsigned-types",
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",
+  "fixtures/regressions/logging-callback-interface",
   "fixtures/regressions/missing-newline",
   "fixtures/regressions/swift-callbacks-omit-labels",
   "fixtures/regressions/swift-dictionary-nesting",

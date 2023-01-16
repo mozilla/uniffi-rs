@@ -11,11 +11,7 @@ name = "uniffi_keywords_swift"
 
 [dependencies]
 thiserror = "1.0"
-uniffi = {path = "../../../uniffi", features=["builtin-bindgen"]}
+uniffi = {path = "../../../uniffi"}
 
 [build-dependencies]
-uniffi_build = {path = "../../../uniffi_build", features=["builtin-bindgen"]}
-
-[dev-dependencies]
-uniffi_bindgen = {path = "../../../uniffi_bindgen"}
-uniffi_macros = {path = "../../../uniffi_macros"}
+uniffi = {path = "../../../uniffi"}

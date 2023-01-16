@@ -78,14 +78,20 @@ pub mod ffi;
 pub use ffi::{FfiArgument, FfiFunction, FfiType};
 use uniffi_meta::{Checksum, FnMetadata, MethodMetadata, ObjectMetadata};
 
+/// This needs to match the major/minor version of the `uniffi` crate.  See
+/// `docs/uniffi-versioning.md` for details.
+///
+/// Once we get to 1.0, then we should reformat this to only include the major version number.
+const UNIFFI_CONTRACT_VERSION: &str = "0.22";
+
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
 #[derive(Debug, Default, Checksum)]
 pub struct ComponentInterface {
-    /// Every ComponentInterface gets tagged with the version of uniffi used to create it.
-    /// This helps us avoid using a lib compiled with one version together with bindings created
-    /// using a different version, which might introduce unsafety.
-    uniffi_version: String,
+    /// This always points to `UNIFFI_CONTRACT_VERSION`.  By including it in the checksum, we
+    /// prevent consumers from combining scaffolding and bindings that were created with different
+    /// `uniffi` versions.
+    uniffi_version: &'static str,
     /// All of the types used in the interface.
     // We can't checksum `self.types`, but its contents are implied by the other fields
     // anyway, so it's safe to ignore it.
@@ -109,7 +115,7 @@ impl ComponentInterface {
     /// Parse a `ComponentInterface` from a string containing a WebIDL definition.
     pub fn from_webidl(idl: &str) -> Result<Self> {
         let mut ci = Self {
-            uniffi_version: env!("CARGO_PKG_VERSION").to_string(),
+            uniffi_version: UNIFFI_CONTRACT_VERSION,
             ..Default::default()
         };
         // There's some lifetime thing with the errors returned from weedle::Definitions::parse
@@ -1050,7 +1056,7 @@ mod test {
         for udl in &[UDL1, UDL2] {
             let ci1 = ComponentInterface::from_webidl(udl).unwrap();
             let mut ci2 = ComponentInterface::from_webidl(udl).unwrap();
-            ci2.uniffi_version = String::from("fake-version");
+            ci2.uniffi_version = "99.99";
             assert_ne!(ci1.checksum(), ci2.checksum());
         }
     }

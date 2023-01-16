@@ -89,6 +89,12 @@ impl Checksum for String {
     }
 }
 
+impl Checksum for &str {
+    fn checksum<H: Hasher>(&self, state: &mut H) {
+        (**self).checksum(state)
+    }
+}
+
 #[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
 pub struct FnMetadata {
     pub module_path: Vec<String>,

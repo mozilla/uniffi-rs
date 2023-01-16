@@ -10,8 +10,8 @@ publish = false
 name = "uniffi_uitests"
 
 [dependencies]
-uniffi = {path = "../../uniffi", features=["builtin-bindgen"]}
-uniffi_macros = {path = "../../uniffi_macros", features=["builtin-bindgen"]}
+uniffi = {path = "../../uniffi"}
+uniffi_macros = {path = "../../uniffi_macros"}
 
 [dev-dependencies]
 trybuild = "1.0.53"
