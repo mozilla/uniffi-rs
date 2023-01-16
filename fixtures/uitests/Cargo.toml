@@ -14,4 +14,4 @@ uniffi = {path = "../../uniffi"}
 uniffi_macros = {path = "../../uniffi_macros"}
 
 [dev-dependencies]
-trybuild = "1.0.53"
+trybuild = "1.0.76"
