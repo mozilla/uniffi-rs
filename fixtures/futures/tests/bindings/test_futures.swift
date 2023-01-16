@@ -18,6 +18,18 @@ Task {
 	counter.leave()
 }
 
+// Test record.
+counter.enter()
+
+Task {
+	let result = await newMyRecord(a: "foo", b: 42)
+
+	assert(result.a == "foo")
+	assert(result.b == 42)
+
+	counter.leave()
+}
+
 // Test `void`
 counter.enter()
 

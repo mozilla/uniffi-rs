@@ -161,3 +161,18 @@ runBlocking {
     assert(time4 < 60)
     println(" ... ok")
 }
+
+// Test record.
+runBlocking {
+    val time = measureTimeMillis {
+        val result = newMyRecord("foo", 42U)
+
+        assert(result is MyRecord)
+        assert(result.a == "foo")
+        assert(result.b == 42U)
+    }
+
+    print("record: ${time}ms")
+    assert(time < 10)
+    println(" ... ok")
+}

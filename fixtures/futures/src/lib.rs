@@ -154,9 +154,21 @@ pub async fn say_after_with_tokio(secs: u8, who: String) -> String {
     format!("Hello, {who} (with Tokio)!")
 }
 
+#[derive(uniffi::Record)]
+pub struct MyRecord {
+    pub a: String,
+    pub b: u32,
+}
+
+#[uniffi::export]
+pub async fn new_my_record(a: String, b: u32) -> MyRecord {
+    MyRecord { a, b }
+}
+
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
 
 mod uniffi_types {
     pub(crate) use super::Megaphone;
     pub(crate) use super::MyError;
+    pub(crate) use super::MyRecord;
 }

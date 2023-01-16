@@ -1,4 +1,4 @@
-from uniffi_futures import always_ready, void, sleep, say_after, new_megaphone, say_after_with_tokio, fallible_me, MyError
+from uniffi_futures import always_ready, void, sleep, say_after, new_megaphone, say_after_with_tokio, fallible_me, MyError, MyRecord, new_my_record
 import unittest
 from datetime import datetime
 import asyncio
@@ -129,6 +129,15 @@ class TestFutures(unittest.TestCase):
                 self.assertTrue(False) # should never be reached
             except MyError as exception:
                 self.assertTrue(True)
+
+        asyncio.run(test())
+
+    def test_record(self):
+        async def test():
+            result = await new_my_record("foo", 42)
+            self.assertEqual(result.__class__, MyRecord)
+            self.assertEqual(result.a, "foo")
+            self.assertEqual(result.b, 42)
 
         asyncio.run(test())
 
