@@ -32,3 +32,7 @@ required-features = ["clap"]
 
 [features]
 default = ["clap"]
+
+# Enable support for Tokio's futures.
+# This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
+tokio = ["uniffi_core/tokio"]
