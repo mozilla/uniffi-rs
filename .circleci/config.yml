@@ -98,19 +98,15 @@ jobs:
       - run:
           name: "Print the Rust version, to help with debugging"
           command: rustc --version
-      # Note "-j" here and below - we saw OOM errors which this tries to workaround and is
-      # hopefully a cheaper workaround than an "resource_class: xlarge".
-      # Probably https://github.com/rust-lang/rust/issues/97549 which is a 1.61 issue.
-      # We should revert this once we move past 1.61
       - run:
           name: Build all code
           command: |
             # Ensures that all examples are built and avaiable
-            cargo build -j 2
+            cargo build
       # some tests fail on earlier rust versions and we want to ignore them:
       # * trybuild_ui_tests - 1.61 vs 1.62 hits https://github.com/dtolnay/trybuild/issues/186
       #   (which was WONTFIXd, so this is the best we can do)
-      - run: cargo test -j 2 -- --skip trybuild_ui_tests
+      - run: cargo test -- --skip trybuild_ui_tests
   Deploy website:
     docker:
       - image: rfkelly/uniffi-ci:latest
