@@ -1,0 +1,13 @@
+# Note that this `release.toml` exists to capture things that must only be
+# done once for `cargo release-uniffi`.
+#
+# [../uniffi_core/release.toml](../uniffi_core/release.toml) captures things that must only be done for `cargo release-backend-crates`
+#
+# All other config exists in [../release.toml](../release.toml).
+
+tag = true
+
+# This is how we manage the sections in CHANGELOG.md
+pre-release-replacements = [
+  {file="../CHANGELOG.md", search="\\[\\[UnreleasedUniFFIVersion\\]\\]", replace="v{{version}}", exactly=2},
+]

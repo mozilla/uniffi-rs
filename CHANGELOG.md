@@ -1,10 +1,16 @@
+### Migrating to UniFFI 0.23
+
+- Update your `Cargo.toml` file to only depend on the `uniffi` crate.  Follow the directions from the [Prerequisites section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/Prerequisites.html)
+- Create a `uniffi-bindgen` binary for your project.  Follow the directions from the [Foreign language bindings section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/foreign_language_bindings.html).
+- Uninstall the system-wide `uniffi_bindgen`: `cargo uninstall uniffi_bindgen`.  (Not strictly necessary, but you won't be using it anymore).
+
 <!-- The sections in this file are managed automatically by `cargo release` -->
 <!-- See our [internal release process docs](docs/release-process.md) and for more general -->
 <!-- guidance, see https://github.com/sunng87/cargo-release/blob/master/docs/faq.md#maintaining-changelog -->
 
 <!-- next-header -->
 
-## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]] - (_[[ReleaseDate]]_)
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...HEAD).
 
@@ -19,12 +25,6 @@
   - Projects that use UniFFI for binding/scaffolding generation now only need to depend on the `uniffi` crate and no longer need to depend on `uniffi_bindgen`, `uniffi_build`, etc.
   - The version numbers for each crate will no longer by kept in sync after this release.  In particular `uniffi` will have breaking changes less often than `uniffi_bindgen` and other crates.  This means that UniFFI consumers that specify their versions like `uniffi = "0.23"` will not need to bump their `uniffi` version as often as before.
 - Callback interface method calls are no longer logged (#1439)
-
-### Migrating to UniFFI 0.23
-
-- Update your `Cargo.toml` file to only depend on the `uniffi` crate.  Follow the directions from the [Prerequisites section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/Prerequisites.html)
-- Create a `uniffi-bindgen` binary for your project.  Follow the directions from the [Foreign language bindings section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/foreign_language_bindings.html).
-- Uninstall the system-wide `uniffi_bindgen`: `cargo uninstall uniffi_bindgen`.  (Not strictly necessary, but you won't be using it anymore).
 
 ## v0.22.0 - (_2022-12-16_)
 

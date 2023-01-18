@@ -14,6 +14,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [[bin]]
+# This can be whatever name makes sense for your project, but the rest of this tutorial assumes uniffi-bindgen.
 name = "uniffi-bindgen"
 path = "uniffi-bindgen.rs"
 ```
@@ -33,7 +34,7 @@ If your project consists of multiple crates in a Cargo workspace, then the proce
 creating a binary for each crate that uses UniFFI.  You can avoid this by creating a separate crate for running `uniffi-bindgen`:
   - Name the crate `uniffi-bindgen`
   - Add this dependency to `Cargo.toml`: `uniffi = {version = "0.XX.0", features = ["cli"] }`
-  - Follow the steps from the previous seciton to add the `uniffi-bindgen` binary target
+  - Follow the steps from the previous section to add the `uniffi-bindgen` binary target
 
 Then your can run `uniffi-bindgen` from any create in your project using `cargo run -p uniffi-bindgen [args]`
 
