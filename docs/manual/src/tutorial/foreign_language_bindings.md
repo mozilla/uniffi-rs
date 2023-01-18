@@ -22,19 +22,21 @@ path = "run-uniffi-bindgen.rs"
 Create `run-uniffi-bindgen.rs`:
 ```rust
 fn main() {
-    uniffi::run_uniffi_bindgen().unwrap()
+    uniffi::uniffi_bindgen_main()
 }
 ```
 
-You can now run `uniffi-bindgen` from your project using `cargo run --bin run-uniffi-bindgen`
+You can now run `uniffi-bindgen` from your project using `cargo run --features=uniffi/cli --bin run-uniffi-bindgen`
 
 ### Multi-crate workspaces
 
 If your project consists of multiple crates in a Cargo workspace, then the process outlined above would require you
-creating a binary for each crate that uses UniFFI.  You can avoid this by creating a single crate named
-`run-uniffi-bindgen` that depends on `uniffi` and has the `run-uniffi-bindgen.rs` binary.  Then your can run
-`uniffi-bindgen` from any create in your project using `cargo run -p run-uniffi-bindgen`
+creating a binary for each crate that uses UniFFI.  You can avoid this by creating a separate crate for running `uniffi-bindgen`:
+  - Name the crate `run-uniffi-bindgen`
+  - Add this dependency to `Cargo.toml`: `uniffi = {version = "0.XX.0", features = ["cli"] }`
+  - Follow the steps from the previous seciton to add the `run-uniffi-bindgen` binary target
 
+Then your can run `uniffi-bindgen` from any create in your project using `cargo run -p run-uniffi-bindgen`
 
 ## Running uniffi-bindgen
 

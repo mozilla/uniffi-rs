@@ -16,4 +16,7 @@ thiserror = "1.0"
 lazy_static = "1.4"
 
 [build-dependencies]
-uniffi = { path = "../../uniffi" }
+uniffi = {path = "../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }

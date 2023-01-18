@@ -15,4 +15,7 @@ uniffi = {path = "../../../../uniffi"}
 uniffi-fixture-regression-cdylib-dependency = {path = "../cdylib-dependency"}
 
 [build-dependencies]
-uniffi = {path = "../../../../uniffi"}
+uniffi = {path = "../../../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../../../uniffi", features = ["bindgen-tests"] }
