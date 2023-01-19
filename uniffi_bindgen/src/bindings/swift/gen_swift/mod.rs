@@ -405,7 +405,7 @@ pub mod filters {
     }
 
     pub fn lower_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lower", codetype.ffi_converter_name(oracle())))
+        Ok(codetype.lower(oracle(), "????"))
     }
 
     pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
@@ -413,7 +413,7 @@ pub mod filters {
     }
 
     pub fn lift_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lift", codetype.ffi_converter_name(oracle())))
+        Ok(codetype.lift(oracle(), "????"))
     }
 
     pub fn read_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
