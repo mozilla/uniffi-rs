@@ -23,7 +23,7 @@ impl CodeType for ExternalCodeType {
         format!("Type{}", self.name)
     }
 
-    fn coerce(&self, _oracle: &dyn CodeOracle, _nm: &str) -> String {
-        _nm.into()
+    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
+        nm.into()
     }
 }
