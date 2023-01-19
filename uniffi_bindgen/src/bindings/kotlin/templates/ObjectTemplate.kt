@@ -58,8 +58,16 @@ class {{ type_name }}(
     override suspend fun {{ meth.name()|fn_name }}({%- call kt::arg_list_protocol(meth) -%}){% match meth.return_type() %}{% when Some with (return_type) %}: {{ return_type|type_name }}{% when None %}{% endmatch %} {
         class Waker: RustFutureWaker {
             override fun callback(envCStructure: RustFutureWakerEnvironmentCStructure?) {
-                val hash = envCStructure!!.hash
-                val env = _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.get(hash)!!
+                if (envCStructure == null) {
+                    return;
+                }
+
+                val hash = envCStructure.hash
+                val env = _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.remove(hash)
+
+                if (env == null) {
+                    return;
+                }
 
                 env.coroutineScope.launch {
                     @Suppress("UNCHECKED_CAST")
@@ -103,15 +111,15 @@ class {{ type_name }}(
                             {%- endmatch %}
                             )
 
-                            _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.remove(hash)
                             rustCall() { _status ->
                                 _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}_drop(env.rustFuture, _status)
                             }
+                        } else {
+                            _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.put(hash, env)
                         }
                     } catch (exception: Exception) {
                         continuation.resumeWithException(exception)
 
-                        _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.remove(hash)
                         rustCall() { _status ->
                             _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}_drop(env.rustFuture, _status)
                         }

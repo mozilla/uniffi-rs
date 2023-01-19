@@ -57,12 +57,12 @@ impl TimerFuture {
             }
         });
 
-        TimerFuture { shared_state }
+        Self { shared_state }
     }
 }
 
 /// Sync function.
-// #[uniffi::export]
+#[uniffi::export]
 pub fn greet(who: String) -> String {
     format!("Hello, {who}")
 }
@@ -163,6 +163,74 @@ pub struct MyRecord {
 #[uniffi::export]
 pub async fn new_my_record(a: String, b: u32) -> MyRecord {
     MyRecord { a, b }
+}
+
+/// Non-blocking timer future.
+pub struct BrokenTimerFuture {
+    shared_state: Arc<Mutex<SharedState>>,
+}
+
+impl Future for BrokenTimerFuture {
+    type Output = ();
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let mut shared_state = self.shared_state.lock().unwrap();
+
+        if shared_state.completed {
+            Poll::Ready(())
+        } else {
+            shared_state.waker = Some(cx.waker().clone());
+            Poll::Pending
+        }
+    }
+}
+
+impl BrokenTimerFuture {
+    pub fn new(duration: Duration, fail_after: Duration) -> Self {
+        let shared_state = Arc::new(Mutex::new(SharedState {
+            completed: false,
+            waker: None,
+        }));
+
+        let thread_shared_state = shared_state.clone();
+
+        // Let's mimic an event coming from somewhere else, like the system.
+        thread::spawn(move || {
+            thread::sleep(duration);
+
+            let mut shared_state: MutexGuard<_> = thread_shared_state.lock().unwrap();
+            shared_state.completed = true;
+
+            if let Some(waker) = shared_state.waker.take() {
+                // Do not consume `waker`.
+                waker.wake_by_ref();
+
+                // And this is the important part. We are going to call
+                // `wake()` a second time. That's incorrect, but that's on
+                // purpose, to see how foreign languages will react.
+                if fail_after.is_zero() {
+                    waker.wake();
+                } else {
+                    thread::spawn(move || {
+                        thread::sleep(fail_after);
+                        waker.wake();
+                    });
+                }
+            }
+        });
+
+        Self { shared_state }
+    }
+}
+
+/// Async function that sleeps!
+#[uniffi::export]
+pub async fn broken_sleep(secs: u8, fail_after: u8) {
+    BrokenTimerFuture::new(
+        Duration::from_secs(secs.into()),
+        Duration::from_secs(fail_after.into()),
+    )
+    .await;
 }
 
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));

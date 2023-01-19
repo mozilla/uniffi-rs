@@ -176,3 +176,18 @@ runBlocking {
     assert(time < 10)
     println(" ... ok")
 }
+
+// Test a broken sleep.
+runBlocking {
+    val time = measureTimeMillis {
+        brokenSleep(1U, 0U) // calls the waker twice immediately
+        sleep(1U) // wait for possible failure
+
+        brokenSleep(1U, 1U) // calls the waker a second time after 1s
+        sleep(2U) // wait for possible failure
+    }
+
+    print("broken sleep: ${time}ms")
+    assert(time > 5000 && time < 5100)
+    println(" ... ok")
+}
