@@ -852,7 +852,7 @@
             FfiType::Float32 =&gt; <span class="string">&quot;float&quot;</span>.into(),
             FfiType::Float64 =&gt; <span class="string">&quot;double&quot;</span>.into(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.into(),
-            FfiType::RustBuffer =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.to_string(),
         }
@@ -881,19 +881,19 @@
     }
 
     <span class="kw">pub fn </span>lower_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, codetype.ffi_converter_name(oracle())))
+        <span class="prelude-val">Ok</span>(codetype.lower(oracle()))
     }
 
     <span class="kw">pub fn </span>write_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, codetype.ffi_converter_name(oracle())))
+        <span class="prelude-val">Ok</span>(codetype.write(oracle()))
     }
 
     <span class="kw">pub fn </span>lift_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, codetype.ffi_converter_name(oracle())))
+        <span class="prelude-val">Ok</span>(codetype.lift(oracle()))
     }
 
     <span class="kw">pub fn </span>read_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, codetype.ffi_converter_name(oracle())))
+        <span class="prelude-val">Ok</span>(codetype.read(oracle()))
     }
 
     <span class="kw">pub fn </span>literal_swift(
@@ -924,7 +924,7 @@
             FfiType::Float32 =&gt; <span class="string">&quot;float&quot;</span>.into(),
             FfiType::Float64 =&gt; <span class="string">&quot;double&quot;</span>.into(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.into(),
-            FfiType::RustBuffer =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.to_string(),
         })

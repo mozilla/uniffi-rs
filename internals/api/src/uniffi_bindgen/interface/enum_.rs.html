@@ -433,6 +433,12 @@
 <span id="433">433</span>
 <span id="434">434</span>
 <span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -841,12 +847,15 @@
         // difficult atop the current factoring of `ComponentInterface` and friends).
         </span><span class="kw">let </span>farg = ci.get_function_definition(<span class="string">&quot;takes_an_enum&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(<span class="kw-2">*</span>farg.arguments()[<span class="number">0</span>].type_(), Type::Enum(<span class="string">&quot;TestEnum&quot;</span>.into()));
-        <span class="macro">assert_eq!</span>(farg.ffi_func().arguments()[<span class="number">0</span>].type_(), FfiType::RustBuffer);
+        <span class="macro">assert_eq!</span>(
+            farg.ffi_func().arguments()[<span class="number">0</span>].type_(),
+            FfiType::RustBuffer(<span class="prelude-val">None</span>)
+        );
         <span class="kw">let </span>fret = ci.get_function_definition(<span class="string">&quot;returns_an_enum&quot;</span>).unwrap();
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(fret.return_type(), <span class="prelude-val">Some</span>(Type::Enum(nm)) <span class="kw">if </span>nm == <span class="string">&quot;TestEnum&quot;</span>));
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             fret.ffi_func().return_type(),
-            <span class="prelude-val">Some</span>(FfiType::RustBuffer)
+            <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>))
         ));
 
         <span class="comment">// Enums with associated data pass over the FFI as bytebuffers.
@@ -857,14 +866,17 @@
             <span class="kw-2">*</span>farg.arguments()[<span class="number">0</span>].type_(),
             Type::Enum(<span class="string">&quot;TestEnumWithData&quot;</span>.into())
         );
-        <span class="macro">assert_eq!</span>(farg.ffi_func().arguments()[<span class="number">0</span>].type_(), FfiType::RustBuffer);
+        <span class="macro">assert_eq!</span>(
+            farg.ffi_func().arguments()[<span class="number">0</span>].type_(),
+            FfiType::RustBuffer(<span class="prelude-val">None</span>)
+        );
         <span class="kw">let </span>fret = ci
             .get_function_definition(<span class="string">&quot;returns_an_enum_with_data&quot;</span>)
             .unwrap();
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(fret.return_type(), <span class="prelude-val">Some</span>(Type::Enum(nm)) <span class="kw">if </span>nm == <span class="string">&quot;TestEnumWithData&quot;</span>));
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             fret.ffi_func().return_type(),
-            <span class="prelude-val">Some</span>(FfiType::RustBuffer)
+            <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>))
         ));
     }
 }

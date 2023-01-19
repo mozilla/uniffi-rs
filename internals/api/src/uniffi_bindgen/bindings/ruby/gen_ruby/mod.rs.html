@@ -366,7 +366,7 @@
             FfiType::Float32 =&gt; <span class="string">&quot;:float&quot;</span>.to_string(),
             FfiType::Float64 =&gt; <span class="string">&quot;:double&quot;</span>.to_string(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;:pointer&quot;</span>.to_string(),
-            FfiType::RustBuffer =&gt; <span class="string">&quot;RustBuffer.by_value&quot;</span>.to_string(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer.by_value&quot;</span>.to_string(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.to_string(),
             FfiType::ForeignCallback =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
         })

@@ -1578,7 +1578,7 @@
                 name: <span class="string">&quot;size&quot;</span>.to_string(),
                 type_: FfiType::Int32,
             }],
-            return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer),
+            return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
         }
     }
 
@@ -1592,7 +1592,7 @@
                 name: <span class="string">&quot;bytes&quot;</span>.to_string(),
                 type_: FfiType::ForeignBytes,
             }],
-            return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer),
+            return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
         }
     }
 
@@ -1604,7 +1604,7 @@
             name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_rustbuffer_free&quot;</span>, <span class="self">self</span>.ffi_namespace()),
             arguments: <span class="macro">vec!</span>[FfiArgument {
                 name: <span class="string">&quot;buf&quot;</span>.to_string(),
-                type_: FfiType::RustBuffer,
+                type_: FfiType::RustBuffer(<span class="prelude-val">None</span>),
             }],
             return_type: <span class="prelude-val">None</span>,
         }
@@ -1619,14 +1619,14 @@
             arguments: <span class="macro">vec!</span>[
                 FfiArgument {
                     name: <span class="string">&quot;buf&quot;</span>.to_string(),
-                    type_: FfiType::RustBuffer,
+                    type_: FfiType::RustBuffer(<span class="prelude-val">None</span>),
                 },
                 FfiArgument {
                     name: <span class="string">&quot;additional&quot;</span>.to_string(),
                     type_: FfiType::Int32,
                 },
             ],
-            return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer),
+            return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
         }
     }
 

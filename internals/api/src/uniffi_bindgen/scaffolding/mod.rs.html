@@ -225,7 +225,7 @@
             FfiType::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
             FfiType::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;*const std::os::raw::c_void&quot;</span>.into(),
-            FfiType::RustBuffer =&gt; <span class="string">&quot;uniffi::RustBuffer&quot;</span>.into(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;uniffi::RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;uniffi::ForeignBytes&quot;</span>.into(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;uniffi::ForeignCallback&quot;</span>.into(),
         })

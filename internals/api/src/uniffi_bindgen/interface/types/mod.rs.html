@@ -507,7 +507,7 @@
             </span>Type::Boolean =&gt; FfiType::Int8,
             <span class="comment">// Strings are always owned rust values.
             // We might add a separate type for borrowed strings in future.
-            </span>Type::String =&gt; FfiType::RustBuffer,
+            </span>Type::String =&gt; FfiType::RustBuffer(<span class="prelude-val">None</span>),
             <span class="comment">// Objects are pointers to an Arc&lt;&gt;
             </span>Type::Object(name) =&gt; FfiType::RustArcPtr(name.to_owned()),
             <span class="comment">// Callback interfaces are passed as opaque integer handles.
@@ -520,8 +520,8 @@
             | Type::Sequence(<span class="kw">_</span>)
             | Type::Map(<span class="kw">_</span>, <span class="kw">_</span>)
             | Type::Timestamp
-            | Type::Duration
-            | Type::External { .. } =&gt; FfiType::RustBuffer,
+            | Type::Duration =&gt; FfiType::RustBuffer(<span class="prelude-val">None</span>),
+            Type::External { name, .. } =&gt; FfiType::RustBuffer(<span class="prelude-val">Some</span>(name.clone())),
             Type::Custom { builtin, .. } =&gt; FfiType::from(builtin.as_ref()),
             Type::Unresolved { name } =&gt; {
                 <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before lowering to FfiType&quot;</span>)

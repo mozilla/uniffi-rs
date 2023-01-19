@@ -23,6 +23,16 @@
 <span id="23">23</span>
 <span id="24">24</span>
 <span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -46,6 +56,16 @@
 
     <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
         <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="self">self</span>.name)
+    }
+
+    <span class="comment">// lower and lift need to call public function which were generated for
+    // the original types.
+    </span><span class="kw">fn </span>lower(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;{}_lower&quot;</span>, <span class="self">self</span>.ffi_converter_name(oracle))
+    }
+
+    <span class="kw">fn </span>lift(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;{}_lift&quot;</span>, <span class="self">self</span>.ffi_converter_name(oracle))
     }
 }
 </code></pre></div>
