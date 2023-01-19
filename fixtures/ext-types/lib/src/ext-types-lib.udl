@@ -1,11 +1,29 @@
 namespace imported_types_lib {
     CombinedType get_combined_type(optional CombinedType? value);
+
+    Url get_url(Url url);
+    sequence<Url> get_urls(sequence<Url> urls);
+    Url? get_maybe_url(Url? url);
+    sequence<Url?> get_maybe_urls(sequence<Url?> urls);
+
+    UniffiOneType get_uniffi_one_type(UniffiOneType t);
+    sequence<UniffiOneType> get_uniffi_one_types(sequence<UniffiOneType> ts);
+    UniffiOneType? get_maybe_uniffi_one_type(UniffiOneType? t);
+    sequence<UniffiOneType?> get_maybe_uniffi_one_types(sequence<UniffiOneType?> ts);
+
+    UniffiOneEnum get_uniffi_one_enum(UniffiOneEnum e);
+    sequence<UniffiOneEnum> get_uniffi_one_enums(sequence<UniffiOneEnum> es);
+    UniffiOneEnum? get_maybe_uniffi_one_enum(UniffiOneEnum? e);
+    sequence<UniffiOneEnum?> get_maybe_uniffi_one_enums(sequence<UniffiOneEnum?> es);
 };
 
 // A type defined in a .udl file in the `uniffi-one` crate (ie, in
 // `../../uniffi-one/src/uniffi-one.udl`)
 [External="uniffi-one"]
 typedef extern UniffiOneType;
+// An enum in the same crate
+[External="uniffi-one"]
+typedef extern UniffiOneEnum;
 
 // A "wrapped" type defined in the guid crate (ie, defined in `../../guid/src/lib.rs` and
 // "declared" in `../../guid/src/guid.udl`). But it's still "external" from our POV,
@@ -22,6 +40,7 @@ typedef extern Handle;
 
 // And a new type here to tie them all together.
 dictionary CombinedType {
+    UniffiOneEnum uoe;
     UniffiOneType uot;
     sequence<UniffiOneType> uots;
     UniffiOneType? maybe_uot;

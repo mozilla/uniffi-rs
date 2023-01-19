@@ -121,6 +121,42 @@ pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Res
         .context("failed to render python bindings")
 }
 
+/// A struct to record a Python import statement.
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum ImportRequirement {
+    /// A simple module import.
+    Module { mod_name: String },
+    /// A single symbol from a module.
+    Symbol {
+        mod_name: String,
+        symbol_name: String,
+    },
+    /// A single symbol from a module with the specified local name.
+    SymbolAs {
+        mod_name: String,
+        symbol_name: String,
+        as_name: String,
+    },
+}
+
+impl ImportRequirement {
+    /// Render the Python import statement.
+    fn render(&self) -> String {
+        match &self {
+            ImportRequirement::Module { mod_name } => format!("import {mod_name}"),
+            ImportRequirement::Symbol {
+                mod_name,
+                symbol_name,
+            } => format!("from {mod_name} import {symbol_name}"),
+            ImportRequirement::SymbolAs {
+                mod_name,
+                symbol_name,
+                as_name,
+            } => format!("from {mod_name} import {symbol_name} as {as_name}"),
+        }
+    }
+}
+
 /// Renders Python helper code for all types
 ///
 /// This template is a bit different than others in that it stores internal state from the render
@@ -133,7 +169,7 @@ pub struct TypeRenderer<'a> {
     // Track included modules for the `include_once()` macro
     include_once_names: RefCell<HashSet<String>>,
     // Track imports added with the `add_import()` macro
-    imports: RefCell<BTreeSet<String>>,
+    imports: RefCell<BTreeSet<ImportRequirement>>,
 }
 
 impl<'a> TypeRenderer<'a> {
@@ -165,7 +201,30 @@ impl<'a> TypeRenderer<'a> {
     //
     // Returns an empty string so that it can be used inside an askama `{{ }}` block.
     fn add_import(&self, name: &str) -> &str {
-        self.imports.borrow_mut().insert(name.to_owned());
+        self.imports.borrow_mut().insert(ImportRequirement::Module {
+            mod_name: name.to_owned(),
+        });
+        ""
+    }
+
+    // Like add_import, but arranges for `from module import name`.
+    fn add_import_of(&self, mod_name: &str, name: &str) -> &str {
+        self.imports.borrow_mut().insert(ImportRequirement::Symbol {
+            mod_name: mod_name.to_owned(),
+            symbol_name: name.to_owned(),
+        });
+        ""
+    }
+
+    // Like add_import, but arranges for `from module import name as other`.
+    fn add_import_of_as(&self, mod_name: &str, symbol_name: &str, as_name: &str) -> &str {
+        self.imports
+            .borrow_mut()
+            .insert(ImportRequirement::SymbolAs {
+                mod_name: mod_name.to_owned(),
+                symbol_name: symbol_name.to_owned(),
+                as_name: as_name.to_owned(),
+            });
         ""
     }
 }
@@ -176,7 +235,7 @@ pub struct PythonWrapper<'a> {
     ci: &'a ComponentInterface,
     config: Config,
     type_helper_code: String,
-    type_imports: BTreeSet<String>,
+    type_imports: BTreeSet<ImportRequirement>,
 }
 impl<'a> PythonWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
@@ -191,7 +250,7 @@ impl<'a> PythonWrapper<'a> {
         }
     }
 
-    pub fn imports(&self) -> Vec<String> {
+    pub fn imports(&self) -> Vec<ImportRequirement> {
         self.type_imports.iter().cloned().collect()
     }
 }
@@ -301,7 +360,10 @@ impl CodeOracle for PythonCodeOracle {
             FfiType::Float32 => "ctypes.c_float".to_string(),
             FfiType::Float64 => "ctypes.c_double".to_string(),
             FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
-            FfiType::RustBuffer => "RustBuffer".to_string(),
+            FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
+                Some(suffix) => format!("RustBuffer{}", suffix),
+                None => "RustBuffer".to_string(),
+            },
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
             FfiType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
         }

@@ -360,7 +360,7 @@ impl ComponentInterface {
                 name: "size".to_string(),
                 type_: FfiType::Int32,
             }],
-            return_type: Some(FfiType::RustBuffer),
+            return_type: Some(FfiType::RustBuffer(None)),
         }
     }
 
@@ -374,7 +374,7 @@ impl ComponentInterface {
                 name: "bytes".to_string(),
                 type_: FfiType::ForeignBytes,
             }],
-            return_type: Some(FfiType::RustBuffer),
+            return_type: Some(FfiType::RustBuffer(None)),
         }
     }
 
@@ -386,7 +386,7 @@ impl ComponentInterface {
             name: format!("ffi_{}_rustbuffer_free", self.ffi_namespace()),
             arguments: vec![FfiArgument {
                 name: "buf".to_string(),
-                type_: FfiType::RustBuffer,
+                type_: FfiType::RustBuffer(None),
             }],
             return_type: None,
         }
@@ -401,14 +401,14 @@ impl ComponentInterface {
             arguments: vec![
                 FfiArgument {
                     name: "buf".to_string(),
-                    type_: FfiType::RustBuffer,
+                    type_: FfiType::RustBuffer(None),
                 },
                 FfiArgument {
                     name: "additional".to_string(),
                     type_: FfiType::Int32,
                 },
             ],
-            return_type: Some(FfiType::RustBuffer),
+            return_type: Some(FfiType::RustBuffer(None)),
         }
     }
 

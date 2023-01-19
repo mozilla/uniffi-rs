@@ -3,3 +3,8 @@ namespace uniffi_one {};
 dictionary UniffiOneType {
     string sval;
 };
+
+enum UniffiOneEnum {
+    "One",
+    "Two",
+};

@@ -48,3 +48,15 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         {%- endfor %}
     }
 }
+
+{#
+We always write these public functions just incase the struct is used as
+an external type by another crate.
+#}
+public func {{ ffi_converter_name }}_lift(_ buf: RustBuffer) throws -> {{ type_name }} {
+    return try {{ ffi_converter_name }}.lift(buf)
+}
+
+public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuffer {
+    return {{ ffi_converter_name }}.lower(value)
+}
