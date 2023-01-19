@@ -43,6 +43,10 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     }
 }
 
+{#
+We always write these public functions just incase the enum is used as
+an external type by another crate.
+#}
 public func {{ ffi_converter_name }}_lift(_ buf: RustBuffer) throws -> {{ type_name }} {
     return try {{ ffi_converter_name }}.lift(buf)
 }

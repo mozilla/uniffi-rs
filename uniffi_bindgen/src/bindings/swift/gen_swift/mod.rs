@@ -405,19 +405,19 @@ pub mod filters {
     }
 
     pub fn lower_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.lower(oracle(), "????"))
+        Ok(codetype.lower(oracle()))
     }
 
     pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.write", codetype.ffi_converter_name(oracle())))
+        Ok(codetype.write(oracle()))
     }
 
     pub fn lift_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.lift(oracle(), "????"))
+        Ok(codetype.lift(oracle()))
     }
 
     pub fn read_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.read", codetype.ffi_converter_name(oracle())))
+        Ok(codetype.read(oracle()))
     }
 
     pub fn literal_swift(

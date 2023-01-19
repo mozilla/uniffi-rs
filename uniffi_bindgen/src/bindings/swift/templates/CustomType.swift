@@ -70,6 +70,10 @@ public struct FfiConverterType{{ name }}: FfiConverter {
     }
 }
 
+{#
+We always write these public functions just incase the type is used as
+an external type by another crate.
+#}
 public func FfiConverterType{{ name }}_lift(_ buf: RustBuffer) throws -> {{ name }} {
     return try FfiConverterType{{ name }}.lift(buf)
 }
