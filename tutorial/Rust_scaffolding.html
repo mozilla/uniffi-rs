@@ -162,12 +162,12 @@
                         <h1><a class="header" href="#rust-scaffolding" id="rust-scaffolding">Rust scaffolding</a></h1>
 <h2><a class="header" href="#rust-scaffolding-code" id="rust-scaffolding-code">Rust scaffolding code</a></h2>
 <p>Now we generate some Rust helper code to make the <code>add</code> method available to foreign-language bindings.</p>
-<p>First, add <code>uniffi</code> to your crate as both a dependency and build-dependency.  This adds the runtime support code that powers UniFFI and build-time support for generating the Rust scaffolding code.</p>
+<p>First, add <code>uniffi</code> to your crate as both a dependency and build-dependency.  Enable the <code>build</code> feature for the build-dependencies.  This adds the runtime support code that powers UniFFI and build-time support for generating the Rust scaffolding code.</p>
 <pre><code class="language-toml">[dependencies]
-uniffi = &quot;1.0.0&quot;
+uniffi = &quot;0.XX.0&quot;
 
 [build-dependencies]
-uniffi = &quot;1.0.0&quot;
+uniffi = { version = &quot;0.XX.0&quot;, features = [&quot;build&quot;] }
 </code></pre>
 <p>Then create a <code>build.rs</code> file next to <code>Cargo.toml</code> that uses <code>uniffi</code> to generate the Rust scaffolding code.</p>
 <pre><pre class="playground"><code class="language-rust">fn main() {

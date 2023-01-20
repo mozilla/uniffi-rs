@@ -284,12 +284,12 @@ Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code
 <h1><a class="header" href="#rust-scaffolding" id="rust-scaffolding">Rust scaffolding</a></h1>
 <h2><a class="header" href="#rust-scaffolding-code" id="rust-scaffolding-code">Rust scaffolding code</a></h2>
 <p>Now we generate some Rust helper code to make the <code>add</code> method available to foreign-language bindings.</p>
-<p>First, add <code>uniffi</code> to your crate as both a dependency and build-dependency.  This adds the runtime support code that powers UniFFI and build-time support for generating the Rust scaffolding code.</p>
+<p>First, add <code>uniffi</code> to your crate as both a dependency and build-dependency.  Enable the <code>build</code> feature for the build-dependencies.  This adds the runtime support code that powers UniFFI and build-time support for generating the Rust scaffolding code.</p>
 <pre><code class="language-toml">[dependencies]
-uniffi = &quot;1.0.0&quot;
+uniffi = &quot;0.XX.0&quot;
 
 [build-dependencies]
-uniffi = &quot;1.0.0&quot;
+uniffi = { version = &quot;0.XX.0&quot;, features = [&quot;build&quot;] }
 </code></pre>
 <p>Then create a <code>build.rs</code> file next to <code>Cargo.toml</code> that uses <code>uniffi</code> to generate the Rust scaffolding code.</p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
@@ -333,15 +333,19 @@ path = &quot;run-uniffi-bindgen.rs&quot;
 </code></pre>
 <p>Create <code>run-uniffi-bindgen.rs</code>:</p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
-    uniffi::run_uniffi_bindgen().unwrap()
+    uniffi::uniffi_bindgen_main()
 }
 </code></pre></pre>
-<p>You can now run <code>uniffi-bindgen</code> from your project using <code>cargo run --bin run-uniffi-bindgen</code></p>
+<p>You can now run <code>uniffi-bindgen</code> from your project using <code>cargo run --features=uniffi/cli --bin run-uniffi-bindgen</code></p>
 <h3><a class="header" href="#multi-crate-workspaces" id="multi-crate-workspaces">Multi-crate workspaces</a></h3>
 <p>If your project consists of multiple crates in a Cargo workspace, then the process outlined above would require you
-creating a binary for each crate that uses UniFFI.  You can avoid this by creating a single crate named
-<code>run-uniffi-bindgen</code> that depends on <code>uniffi</code> and has the <code>run-uniffi-bindgen.rs</code> binary.  Then your can run
-<code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p run-uniffi-bindgen</code></p>
+creating a binary for each crate that uses UniFFI.  You can avoid this by creating a separate crate for running <code>uniffi-bindgen</code>:</p>
+<ul>
+<li>Name the crate <code>run-uniffi-bindgen</code></li>
+<li>Add this dependency to <code>Cargo.toml</code>: <code>uniffi = {version = &quot;0.XX.0&quot;, features = [&quot;cli&quot;] }</code></li>
+<li>Follow the steps from the previous seciton to add the <code>run-uniffi-bindgen</code> binary target</li>
+</ul>
+<p>Then your can run <code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p run-uniffi-bindgen</code></p>
 <h2><a class="header" href="#running-uniffi-bindgen" id="running-uniffi-bindgen">Running uniffi-bindgen</a></h2>
 <h3><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h3>
 <p>Run</p>

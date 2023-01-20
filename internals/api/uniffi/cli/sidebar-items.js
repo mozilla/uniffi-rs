@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Commands",""]],"fn":[["run_main",""]],"struct":[["Cli","Scaffolding and bindings generator for Rust"]]};

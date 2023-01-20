@@ -29,23 +29,35 @@
 <span id="29">29</span>
 <span id="30">30</span>
 <span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;clap&quot;</span>)]
+</span><span class="doccomment">/// Reexport items from other uniffi creates
+</span><span class="kw">pub use </span>uniffi_core::<span class="kw-2">*</span>;
+<span class="kw">pub use </span>uniffi_macros::{export, include_scaffolding, Enum, Error, Object, Record};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
 </span><span class="kw">mod </span>cli;
-<span class="doccomment">/// Reexport items from other uniffi creates
+<span class="attribute">#[cfg(feature = <span class="string">&quot;bindgen-tests&quot;</span>)]
 </span><span class="kw">pub use </span>uniffi_bindgen::bindings::kotlin::run_test <span class="kw">as </span>kotlin_run_test;
-<span class="kw">pub use </span>uniffi_bindgen::bindings::python::run_test <span class="kw">as </span>python_run_test;
-<span class="kw">pub use </span>uniffi_bindgen::bindings::ruby::run_test <span class="kw">as </span>ruby_run_test;
-<span class="kw">pub use </span>uniffi_bindgen::bindings::swift::run_test <span class="kw">as </span>swift_run_test;
-<span class="kw">pub use </span>uniffi_bindgen::{generate_bindings, generate_component_scaffolding, print_json};
-<span class="kw">pub use </span>uniffi_build::generate_scaffolding;
-<span class="kw">pub use </span>uniffi_core::<span class="kw-2">*</span>;
-<span class="kw">pub use </span>uniffi_macros::{
-    build_foreign_language_testcases, export, include_scaffolding, Enum, Error, Object, Record,
-};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;bindgen-tests&quot;</span>)]
+</span><span class="kw">pub use </span>uniffi_bindgen::bindings::python::run_test <span class="kw">as </span>python_run_test;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;bindgen-tests&quot;</span>)]
+</span><span class="kw">pub use </span>uniffi_bindgen::bindings::ruby::run_test <span class="kw">as </span>ruby_run_test;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;bindgen-tests&quot;</span>)]
+</span><span class="kw">pub use </span>uniffi_bindgen::bindings::swift::run_test <span class="kw">as </span>swift_run_test;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+</span><span class="kw">pub use </span>uniffi_bindgen::{generate_bindings, generate_component_scaffolding, print_json};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;build&quot;</span>)]
+</span><span class="kw">pub use </span>uniffi_build::generate_scaffolding;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;bindgen-tests&quot;</span>)]
+</span><span class="kw">pub use </span>uniffi_macros::build_foreign_language_testcases;
 
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">mod </span>test {
@@ -56,7 +68,7 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;clap&quot;</span>)]
+<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
 </span><span class="kw">pub fn </span>uniffi_bindgen_main() {
     cli::run_main().unwrap();
 }
