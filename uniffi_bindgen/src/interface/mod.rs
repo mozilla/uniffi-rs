@@ -53,7 +53,7 @@ use std::{
 use anyhow::{bail, ensure, Result};
 
 pub mod types;
-pub use types::Type;
+pub use types::{ExternalKind, Type};
 use types::{TypeIterator, TypeUniverse};
 
 mod attributes;
@@ -245,9 +245,13 @@ impl ComponentInterface {
     }
 
     /// Get details about all `Type::External` types
-    pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, &String)> {
+    pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, &String, ExternalKind)> {
         self.types.iter_known_types().filter_map(|t| match t {
-            Type::External { name, crate_name } => Some((name, crate_name)),
+            Type::External {
+                name,
+                crate_name,
+                kind,
+            } => Some((name, crate_name, *kind)),
             _ => None,
         })
     }

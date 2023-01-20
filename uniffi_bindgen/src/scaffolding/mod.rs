@@ -79,12 +79,23 @@ mod filters {
         })
     }
 
-    // Map types to their fully-qualified `FfiConverter` impl.
+    // Map a type to Rust code that specifies the FfiConverter implementation.
+    //
+    // This outputs something like `<TheFfiConverterStruct as FfiConverter>`
     pub fn ffi_converter(type_: &Type) -> Result<String, askama::Error> {
-        Ok(format!(
-            "<{} as uniffi::FfiConverter<crate::UniFfiTag>>",
-            type_rs(type_)?
-        ))
+        Ok(match type_ {
+            Type::External {
+                name,
+                kind: ExternalKind::Interface,
+                ..
+            } => {
+                format!("<::std::sync::Arc<r#{name}> as uniffi::FfiConverter<crate::UniFfiTag>>")
+            }
+            _ => format!(
+                "<{} as uniffi::FfiConverter<crate::UniFfiTag>>",
+                type_rs(type_)?
+            ),
+        })
     }
 
     // Turns a `crate-name` into the `crate_name` the .rs code needs to specify.

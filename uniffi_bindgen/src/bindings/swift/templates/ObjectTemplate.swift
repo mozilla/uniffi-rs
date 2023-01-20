@@ -86,3 +86,15 @@ public struct {{ ffi_converter_name }}: FfiConverter {
         return value.pointer
     }
 }
+
+{#
+We always write these public functions just in case the enum is used as
+an external type by another crate.
+#}
+public func {{ ffi_converter_name }}_lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {
+    return try {{ ffi_converter_name }}.lift(pointer)
+}
+
+public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
+    return {{ ffi_converter_name }}.lower(value)
+}

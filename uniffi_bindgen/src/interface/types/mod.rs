@@ -65,12 +65,28 @@ pub enum Type {
     Sequence(Box<Type>),
     Map(Box<Type>, Box<Type>),
     // An FfiConverter we `use` from an external crate
-    External { name: String, crate_name: String },
+    External {
+        name: String,
+        crate_name: String,
+        kind: ExternalKind,
+    },
     // Custom type on the scaffolding side
-    Custom { name: String, builtin: Box<Type> },
+    Custom {
+        name: String,
+        builtin: Box<Type>,
+    },
     // An unresolved user-defined type inside a proc-macro exported function
     // signature. Must be replaced by another type before bindings generation.
-    Unresolved { name: String },
+    Unresolved {
+        name: String,
+    },
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Checksum, Ord, PartialOrd)]
+pub enum ExternalKind {
+    Interface,
+    // Either a record or enum
+    DataClass,
 }
 
 impl Type {
@@ -179,7 +195,16 @@ impl From<&Type> for FfiType {
             | Type::Map(_, _)
             | Type::Timestamp
             | Type::Duration => FfiType::RustBuffer(None),
-            Type::External { name, .. } => FfiType::RustBuffer(Some(name.clone())),
+            Type::External {
+                name,
+                kind: ExternalKind::Interface,
+                ..
+            } => FfiType::RustArcPtr(name.clone()),
+            Type::External {
+                name,
+                kind: ExternalKind::DataClass,
+                ..
+            } => FfiType::RustBuffer(Some(name.clone())),
             Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
             Type::Unresolved { name } => {
                 unreachable!("Type `{name}` must be resolved before lowering to FfiType")

@@ -1,6 +1,7 @@
 use custom_types::Handle;
 use ext_types_guid::Guid;
-use uniffi_one::{UniffiOneEnum, UniffiOneType};
+use std::sync::Arc;
+use uniffi_one::{UniffiOneEnum, UniffiOneInterface, UniffiOneType};
 use url::Url;
 
 pub struct CombinedType {
@@ -101,6 +102,10 @@ fn get_maybe_uniffi_one_enum(e: Option<UniffiOneEnum>) -> Option<UniffiOneEnum> 
 
 fn get_maybe_uniffi_one_enums(es: Vec<Option<UniffiOneEnum>>) -> Vec<Option<UniffiOneEnum>> {
     es
+}
+
+fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
+    Arc::new(UniffiOneInterface::new())
 }
 
 include!(concat!(env!("OUT_DIR"), "/ext-types-lib.uniffi.rs"));

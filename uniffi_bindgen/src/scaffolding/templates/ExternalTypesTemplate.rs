@@ -1,9 +1,15 @@
 // Support for external types.
 
 // Types with an external `FfiConverter`...
-{% for (name, crate_name) in ci.iter_external_types() %}
+{% for (name, crate_name, kind) in ci.iter_external_types() %}
+{# For non-interface types, we need to import the FfiConverter for them.  Interface types use the generic `Arc<T>` impl. #}
+{%- match kind %}
+{%- when ExternalKind::DataClass %}
+// `{{ name }}` is defined in `{{ crate_name }}`
 ::uniffi::ffi_converter_forward!(r#{{ name }}, ::{{ crate_name|crate_name_rs }}::UniFfiTag, crate::UniFfiTag);
-{% endfor %}
+{%- else %}
+{%- endmatch %}
+{%- endfor %}
 
 // For custom scaffolding types we need to generate an FfiConverter impl based on the
 // UniffiCustomTypeConverter implementation that the library supplies

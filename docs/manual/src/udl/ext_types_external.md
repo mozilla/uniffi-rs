@@ -50,6 +50,15 @@ Your `Cargo.toml` must reference the external crate as normal.
 
 The `External` attribute can be specified on dictionaries, enums and errors.
 
+## External interface types
+
+If the external type is an [Interface](./interfaces.md), then use the `[ExternalInterface]` attribute instead of `[External]`:
+
+```idl
+[ExternalInterface="demo-crate"]
+typedef extern DemoInterface;
+```
+
 ## Foreign bindings
 
 The foreign bindings will also need to know how to access the external type,
