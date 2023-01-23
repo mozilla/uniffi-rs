@@ -24,6 +24,7 @@
 # Kotlin
 
 - [Integrating with Gradle](./kotlin/gradle.md)
+- [Kotlin Lifetimes](./kotlin/lifetimes.md)
 
 # Swift
 
