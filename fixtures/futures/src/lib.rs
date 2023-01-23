@@ -86,16 +86,16 @@ pub async fn say() -> String {
 
 /// Async function that says something after a certain time.
 #[uniffi::export]
-pub async fn say_after(secs: u8, who: String) -> String {
-    TimerFuture::new(Duration::from_secs(secs.into())).await;
+pub async fn say_after(ms: u16, who: String) -> String {
+    TimerFuture::new(Duration::from_millis(ms.into())).await;
 
     format!("Hello, {who}!")
 }
 
 /// Async function that sleeps!
 #[uniffi::export]
-pub async fn sleep(secs: u8) -> bool {
-    TimerFuture::new(Duration::from_secs(secs.into())).await;
+pub async fn sleep(ms: u16) -> bool {
+    TimerFuture::new(Duration::from_millis(ms.into())).await;
 
     true
 }
@@ -131,8 +131,8 @@ pub struct Megaphone;
 #[uniffi::export]
 impl Megaphone {
     /// An async method that yells something after a certain time.
-    pub async fn say_after(self: Arc<Self>, secs: u8, who: String) -> String {
-        say_after(secs, who).await.to_uppercase()
+    pub async fn say_after(self: Arc<Self>, ms: u16, who: String) -> String {
+        say_after(ms, who).await.to_uppercase()
     }
 
     // An async method that can throw.
@@ -148,8 +148,8 @@ impl Megaphone {
 // Say something after a certain amount of time, by using `tokio::time::sleep`
 // instead of our own `TimerFuture`.
 #[uniffi::export(async_runtime = "tokio")]
-pub async fn say_after_with_tokio(secs: u8, who: String) -> String {
-    tokio::time::sleep(Duration::from_secs(secs.into())).await;
+pub async fn say_after_with_tokio(ms: u16, who: String) -> String {
+    tokio::time::sleep(Duration::from_millis(ms.into())).await;
 
     format!("Hello, {who} (with Tokio)!")
 }
@@ -225,10 +225,10 @@ impl BrokenTimerFuture {
 
 /// Async function that sleeps!
 #[uniffi::export]
-pub async fn broken_sleep(secs: u8, fail_after: u8) {
+pub async fn broken_sleep(ms: u16, fail_after: u16) {
     BrokenTimerFuture::new(
-        Duration::from_secs(secs.into()),
-        Duration::from_secs(fail_after.into()),
+        Duration::from_millis(ms.into()),
+        Duration::from_millis(fail_after.into()),
     )
     .await;
 }

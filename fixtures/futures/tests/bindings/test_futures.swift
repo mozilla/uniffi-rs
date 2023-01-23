@@ -49,7 +49,7 @@ counter.enter()
 
 Task {
 	let t0 = Date()
-	let result = await sleep(secs: 2)
+	let result = await sleep(ms: 2000)
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -64,8 +64,8 @@ counter.enter()
 
 Task {
 	let t0 = Date()
-	let result_alice = await sayAfter(secs: 1, who: "Alice")
-	let result_bob = await sayAfter(secs: 2, who: "Bob")
+	let result_alice = await sayAfter(ms: 1000, who: "Alice")
+	let result_bob = await sayAfter(ms: 2000, who: "Bob")
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -80,8 +80,8 @@ Task {
 counter.enter()
 
 Task {
-	async let alice = sayAfter(secs: 1, who: "Alice")
-	async let bob = sayAfter(secs: 2, who: "Bob")
+	async let alice = sayAfter(ms: 1000, who: "Alice")
+	async let bob = sayAfter(ms: 2000, who: "Bob")
 
 	let t0 = Date()
 	let (result_alice, result_bob) = await (alice, bob)
@@ -102,7 +102,7 @@ Task {
 	let megaphone = newMegaphone()
 
 	let t0 = Date()
-	let result_alice = await megaphone.sayAfter(secs: 2, who: "Alice")
+	let result_alice = await megaphone.sayAfter(ms: 2000, who: "Alice")
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -117,7 +117,7 @@ counter.enter()
 
 Task {
 	let t0 = Date()
-	let result_alice = await sayAfterWithTokio(secs: 2, who: "Alice")
+	let result_alice = await sayAfterWithTokio(ms: 2000, who: "Alice")
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)

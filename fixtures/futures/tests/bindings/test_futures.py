@@ -34,7 +34,7 @@ class TestFutures(unittest.TestCase):
     def test_sleep(self):
         async def test():
             t0 = now()
-            await sleep(2)
+            await sleep(2000)
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
@@ -45,8 +45,8 @@ class TestFutures(unittest.TestCase):
     def test_sequential_futures(self):
         async def test():
             t0 = now()
-            result_alice = await say_after(1, 'Alice')
-            result_bob = await say_after(2, 'Bob')
+            result_alice = await say_after(1000, 'Alice')
+            result_bob = await say_after(2000, 'Bob')
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
@@ -58,8 +58,8 @@ class TestFutures(unittest.TestCase):
 
     def test_concurrent_tasks(self):
         async def test():
-            alice = asyncio.create_task(say_after(1, 'Alice'))
-            bob = asyncio.create_task(say_after(2, 'Bob'))
+            alice = asyncio.create_task(say_after(1000, 'Alice'))
+            bob = asyncio.create_task(say_after(2000, 'Bob'))
 
             t0 = now()
             result_alice = await alice
@@ -77,7 +77,7 @@ class TestFutures(unittest.TestCase):
         async def test():
             megaphone = new_megaphone()
             t0 = now()
-            result_alice = await megaphone.say_after(2, 'Alice')
+            result_alice = await megaphone.say_after(2000, 'Alice')
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
@@ -89,7 +89,7 @@ class TestFutures(unittest.TestCase):
     def test_with_tokio_runtime(self):
         async def test():
             t0 = now()
-            result_alice = await say_after_with_tokio(2, 'Alice')
+            result_alice = await say_after_with_tokio(2000, 'Alice')
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()

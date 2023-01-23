@@ -40,7 +40,7 @@ runBlocking {
 // Test `sleep`.
 runBlocking {
     val time = measureTimeMillis {
-        sleep(2U)
+        sleep(2000U)
     }
 
     print("sleep: ${time}ms")
@@ -51,8 +51,8 @@ runBlocking {
 // Test sequential futures.
 runBlocking {
     val time = measureTimeMillis {
-        val resultAlice = sayAfter(1U, "Alice")
-        val resultBob = sayAfter(2U, "Bob")
+        val resultAlice = sayAfter(1000U, "Alice")
+        val resultBob = sayAfter(2000U, "Bob")
 
         assert(resultAlice == "Hello, Alice!")
         assert(resultBob == "Hello, Bob!")
@@ -66,8 +66,8 @@ runBlocking {
 // Test concurrent futures.
 runBlocking {
     val time = measureTimeMillis {
-        val resultAlice = async { sayAfter(1U, "Alice") }
-        val resultBob = async { sayAfter(2U, "Bob") }
+        val resultAlice = async { sayAfter(1000U, "Alice") }
+        val resultBob = async { sayAfter(2000U, "Bob") }
 
         assert(resultAlice.await() == "Hello, Alice!")
         assert(resultBob.await() == "Hello, Bob!")
@@ -82,7 +82,7 @@ runBlocking {
 runBlocking {
     val megaphone = newMegaphone()
     val time = measureTimeMillis {
-        val resultAlice = megaphone.sayAfter(2U, "Alice")
+        val resultAlice = megaphone.sayAfter(2000U, "Alice")
 
         assert(resultAlice == "HELLO, ALICE!")
     }
@@ -95,7 +95,7 @@ runBlocking {
 // Test with the Tokio runtime.
 runBlocking {
     val time = measureTimeMillis {
-        val resultAlice = sayAfterWithTokio(2U, "Alice")
+        val resultAlice = sayAfterWithTokio(2000U, "Alice")
 
         assert(resultAlice == "Hello, Alice (with Tokio)!")
     }
@@ -180,11 +180,11 @@ runBlocking {
 // Test a broken sleep.
 runBlocking {
     val time = measureTimeMillis {
-        brokenSleep(1U, 0U) // calls the waker twice immediately
-        sleep(1U) // wait for possible failure
+        brokenSleep(1000U, 0U) // calls the waker twice immediately
+        sleep(1000U) // wait for possible failure
 
-        brokenSleep(1U, 1U) // calls the waker a second time after 1s
-        sleep(2U) // wait for possible failure
+        brokenSleep(1000U, 1000U) // calls the waker a second time after 1s
+        sleep(2000U) // wait for possible failure
     }
 
     print("broken sleep: ${time}ms")
