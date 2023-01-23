@@ -5,7 +5,10 @@
 //! is no constraint over those generic types (constraints are present in the
 //! [`uniffi_rustfuture_poll`] function, where `T: FfiReturn`, see later
 //! to learn more). Every function or method that returns a `Future` must
-//! transform the result into a `Result`.
+//! transform the result into a `Result`. This is done by the procedural
+//! macros automatically: `Future<Output = T>` is transformed into `RustFuture<T,
+//! Infallible>`, and `Future<Output = Result<T, E>>` is transformed into
+//! `RustFuture<T, E>`.
 //!
 //! This type may not be instantiated directly, but _via_ the procedural macros,
 //! such as `#[uniffi::export]`. A `RustFuture` is created, boxed, and then
@@ -56,6 +59,18 @@
 //! }
 //! ```
 //!
+//! This function returns an `Option<Box<RustFuture<T, E>>`:
+//!
+//! * Why an `Option`? Because in case of an error, it must return a default
+//!   value, in this case `None`, otherwise `Some`. If we were returning `Box`
+//!   directly, it would leak a pointer.
+//!
+//! * Why `Box`? Because Rust doesn't own the future, it's passed to the
+//!   foreign language, and the foreign language is responsible to manage it.
+//!
+//!  * Finally, this function calls the real Rust `hello` function. It
+//!    transforms its result into a `Result` if it's needed.
+//!
 //! The second generated function is the _poll function_:
 //!
 //! ```rust,ignore
@@ -78,9 +93,11 @@
 //!   [`uniffi_rustfuture_poll`]. The latter is generic, while the former has been
 //!   monomorphised by the procedural macro.
 //!
-//! * Second, it receives the `RustFuture` as an `Option<&mut RustFuture<_>>`. It
-//!   doesn't take ownership of the `RustFuture`! It borrows it (mutably). It's
-//!   wrapped inside an `Option` to check whether it's a null pointer or not.
+//! * Second, it receives the `RustFuture` from `_uniffi_hello` as an
+//!   `Option<&mut RustFuture<_>>`. It doesn't take ownership of the `RustFuture`!
+//!   It borrows it (mutably). It's wrapped inside an `Option` to check whether
+//!   it's a null pointer or not; it's defensive programming here, `null` will
+//!   make the Rust code to panic gracefully.
 //!
 //! * Third, it receives a _waker_ as a pair of a _function pointer_ plus its
 //!   _environment_, if any; a null pointer is purposely allowed for the environment.
@@ -90,7 +107,13 @@
 //! * Fourth, it receives an in-out `polled_result` argument, that is filled with the
 //!   polled result if the future is ready.
 //!
-//! * Finally, the classical `call_status`, which is part of the calling API of `uniffi`.
+//! * Firth, the classical `call_status`, which is part of the calling API of `uniffi`.
+//!
+//! * Finally, the function returns `true` if the future is ready, `false` if pending.
+//!
+//! Please don't forget to read [`uniffi_rustfuture_poll`] to learn how
+//! `polled_result` + `call_status` + the returned bool type are used to indicate
+//! in which state the future is.
 //!
 //! So, everytime this function is called, it polls the `RustFuture` after
 //! having reconstituted a valid [`Waker`] for it. As said earlier, we will come
@@ -163,12 +186,22 @@
 //! by the foreign language itself (e.g. `Task` in Swift) or by some common
 //! libraries (e.g. `asyncio` in Python), to ask to poll the future again.
 //!
+//! We expect the waker to be the same per future. This property is not
+//! checked, but the current foreign language implementations provided by UniFFI
+//! guarantee that the waker is the same per future everytime. Changing the
+//! waker for the same future leads to undefined behaviours, and may panic at some
+//! point or leak data.
+//!
+//! The waker must live longer than the `RustFuture`, so its lifetime's range
+//! must include `_uniffi_hello()` to `_uniffi_hello_drop()`, otherwise it leads to
+//! undefined behaviours.
+//!
 //! ## The workflow
 //!
 //! 1. The foreign language starts by calling the regular FFI function
 //!    `_uniffi_hello`. It gets an `Option<Box<RustFuture<_>>>`.
 //!
-//! 2. The foreign language polls the future by using the `_uniffi_hello_poll`
+//! 2. The foreign language immediately polls the future by using the `_uniffi_hello_poll`
 //!    function. It passes a function pointer to the waker function, implemented
 //!    inside the foreign language, along with its environment if any.
 //!
