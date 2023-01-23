@@ -1,126 +1,28 @@
 {%- if func.is_async() %}
-{%- match func.throws_type() -%}
-{%- when Some with (throwable) %}
-@Throws({{ throwable|type_name }}::class)
-{%- else -%}
-{%- endmatch %}
-suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% match func.return_type() %}{% when Some with (return_type) %}: {{ return_type|type_name }}{% when None %}{% endmatch %} {
-    class Waker: RustFutureWaker {
-        private val lock = Semaphore(1)
+    {%- match func.throws_type() -%}
+    {%- when Some with (throwable) %}
+        @Throws({{ throwable|type_name }}::class)
+    {%- else -%}
+    {%- endmatch %}
 
-        override fun callback(envCStructure: RustFutureWakerEnvironmentCStructure?) {
-            if (envCStructure == null) {
-                return;
-            }
-
-            val hash = envCStructure.hash
-            val env = _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.get(hash)
-
-            if (env == null) {
-                {# The future has been resolved already -#}
-                return
-            }
-
-            env.coroutineScope.launch {
-                lock.withPermit {
-                    if (!_UniFFILib.FUTURE_WAKER_ENVIRONMENTS.containsKey(hash)) {
-                        {# The future has been resolved by a previous call -#}
-                        return@withPermit
-                    }
-
-                    @Suppress("UNCHECKED_CAST")
-                    val continuation = {% match func.return_type() -%}
-                    {%- when Some with (return_type) -%}
-                        env.continuation as Continuation<{{ return_type|type_name }}>
-                    {%- when None -%}
-                        env.continuation as Continuation<Unit>
-                    {%- endmatch %}
-                    val polledResult = {% match func.ffi_func().return_type() -%}
-                    {%- when Some with (return_type) -%}
-                        {{ return_type|type_ffi_lowered }}
-                    {%- when None -%}
-                        Pointer
-                    {%- endmatch %}ByReference()
-
-                    try {
-                        val isReady = {% match func.throws_type() -%}
-                        {%- when Some with (error) -%}
-                            rustCallWithError({{ error|type_name }})
-                        {%- when None -%}
-                            rustCall()
-                        {%- endmatch %}
-                        { _status ->
-                            _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}_poll(
-                                env.rustFuture,
-                                env.waker,
-                                env.selfAsCStructure,
-                                polledResult,
-                                _status
-                            )
-                        }
-
-                        if (isReady) {
-                            continuation.resume(
-                            {% match func.return_type() -%}
-                            {%- when Some with (return_type) -%}
-                                {{ return_type|lift_fn}}(polledResult.getValue())
-                            {%- when None -%}
-                                Unit
-                            {%- endmatch %}
-                            )
-
-                            _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.remove(hash)
-                            rustCall() { _status ->
-                                _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}_drop(env.rustFuture, _status)
-                            }
-                        }
-                    } catch (exception: Exception) {
-                        continuation.resumeWithException(exception)
-
-                        _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.remove(hash)
-                        rustCall() { _status ->
-                            _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}_drop(env.rustFuture, _status)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    val result: {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}Unit{% endmatch %}
-
-    coroutineScope {
-        result = suspendCoroutine<{% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}Unit{% endmatch %}> { continuation ->
-            val rustFuture = {% call kt::to_ffi_call(func) %}
-
-            val env = RustFutureWakerEnvironment(rustFuture, continuation, Waker(), RustFutureWakerEnvironmentCStructure(), this)
-            val envHash = env.hashCode()
-            env.selfAsCStructure.hash = envHash
-
-            _UniFFILib.FUTURE_WAKER_ENVIRONMENTS.put(envHash, env)
-
-            env.waker.callback(env.selfAsCStructure)
-        }
-    }
-
-    return result
-}
-
+    {%- call kt::async_func(func) -%}
 {%- else %}
-{%- match func.throws_type() -%}
-{%- when Some with (throwable) %}
-@Throws({{ throwable|type_name }}::class)
-{%- else -%}
-{%- endmatch -%}
-{%- match func.return_type() -%}
-{%- when Some with (return_type) %}
-fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {{ return_type|type_name }} {
-    return {{ return_type|lift_fn }}({% call kt::to_ffi_call(func) %})
-}
+    {%- match func.throws_type() -%}
+    {%- when Some with (throwable) %}
+        @Throws({{ throwable|type_name }}::class)
+    {%- else -%}
+    {%- endmatch -%}
 
-{% when None %}
+    {%- match func.return_type() -%}
+    {%- when Some with (return_type) %}
 
-fun {{ func.name()|fn_name }}({% call kt::arg_list_decl(func) %}) =
-    {% call kt::to_ffi_call(func) %}
-{% endmatch %}
+        fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}): {{ return_type|type_name }} {
+            return {{ return_type|lift_fn }}({% call kt::to_ffi_call(func) %})
+        }
+    {% when None %}
+
+        fun {{ func.name()|fn_name }}({% call kt::arg_list_decl(func) %}) =
+            {% call kt::to_ffi_call(func) %}
+
+    {% endmatch %}
 {%- endif %}

@@ -56,5 +56,4 @@ import {{ imported_class }}
 {%- include "TopLevelFunctionTemplate.kt" %}
 {%- endfor %}
 
-
 {% import "macros.kt" as kt %}
