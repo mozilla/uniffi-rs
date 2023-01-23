@@ -342,7 +342,7 @@ impl<T, E> RustFuture<T, E> {
     fn poll(
         &mut self,
         foreign_waker: RustFutureForeignWakerFunction,
-        foreign_waker_environment: *const RustFutureForeignWakerEnvironment,
+        foreign_waker_environment: *const c_void,
     ) -> RustFuturePoll<Result<T, E>> {
         let waker = unsafe {
             Waker::from_raw(RawWaker::new(
@@ -429,25 +429,16 @@ mod tests_rust_future {
 /// language's waker which is called by the [`RustFuture`] to signal the
 /// foreign language that something has happened. See the module documentation
 /// to learn more.
-pub type RustFutureForeignWakerFunction =
-    unsafe extern "C" fn(*const RustFutureForeignWakerEnvironment);
-
-/// Type alias for the environment of a [`RustFutureForeignWakerFunction`].
-/// It's an alias to C `void`, which basically means here that the environment
-/// can be anything. See the module documentation to learn more.
-pub type RustFutureForeignWakerEnvironment = c_void;
+pub type RustFutureForeignWakerFunction = unsafe extern "C" fn(env: *const c_void);
 
 #[derive(Debug)]
 struct RustFutureForeignWaker {
     waker: RustFutureForeignWakerFunction,
-    waker_environment: *const RustFutureForeignWakerEnvironment,
+    waker_environment: *const c_void,
 }
 
 impl RustFutureForeignWaker {
-    fn new(
-        waker: RustFutureForeignWakerFunction,
-        waker_environment: *const RustFutureForeignWakerEnvironment,
-    ) -> Self {
+    fn new(waker: RustFutureForeignWakerFunction, waker_environment: *const c_void) -> Self {
         Self {
             waker,
             waker_environment,
@@ -624,7 +615,7 @@ const PENDING: bool = false;
 pub fn uniffi_rustfuture_poll<T, E>(
     future: Option<&mut RustFuture<T, E>>,
     waker: Option<RustFutureForeignWakerFunction>,
-    waker_environment: *const RustFutureForeignWakerEnvironment,
+    waker_environment: *const c_void,
     polled_result: &mut T::FfiType,
     call_status: &mut RustCallStatus,
 ) -> bool

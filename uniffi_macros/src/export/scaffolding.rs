@@ -270,7 +270,7 @@ fn gen_ffi_function(
             pub extern "C" fn #ffi_poll_ident(
                 future: ::std::option::Option<&mut ::uniffi::RustFuture<#return_ty, #throw_ty>>,
                 waker: ::std::option::Option<::uniffi::RustFutureForeignWakerFunction>,
-                waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
+                waker_environment: *const ::std::ffi::c_void,
                 polled_result: &mut <#return_ty as ::uniffi::FfiReturn>::FfiType,
                 call_status: &mut ::uniffi::RustCallStatus,
             ) -> bool {
