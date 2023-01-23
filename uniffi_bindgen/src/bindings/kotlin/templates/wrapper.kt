@@ -33,6 +33,8 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 {%- for imported_class in self.imports() %}
 import {{ imported_class }}
