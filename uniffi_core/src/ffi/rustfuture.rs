@@ -357,12 +357,6 @@ impl<T, E> RustFuture<T, E> {
     }
 }
 
-impl<T, E> FfiDefault for Option<Box<RustFuture<T, E>>> {
-    fn ffi_default() -> Self {
-        None
-    }
-}
-
 /// `RustFuturePoll` is the equivalent of [`Poll`], except that it has one
 /// more variant: `Throwing`, which is the ”FFI default” variant.
 ///
