@@ -36,6 +36,7 @@ module {{ ci.namespace()|class_name_rb }}
   {% endfor %}
 
   {% for func in ci.function_definitions() %}
+  {% include "TopLevelFuncDocsTemplate.rb" %}
   {% include "TopLevelFunctionTemplate.rb" %}
   {% endfor %}
 
