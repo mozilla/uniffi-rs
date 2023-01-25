@@ -168,33 +168,34 @@ is only available with <a href="https://doc.rust-lang.org/cargo/reference/unstab
 To work around this, you need to create a binary in your project that does the same thing.</p>
 <p>Add the following to your <code>Cargo.toml</code>:</p>
 <pre><code class="language-toml">[[bin]]
-name = &quot;run-uniffi-bindgen&quot;
-path = &quot;run-uniffi-bindgen.rs&quot;
+# This can be whatever name makes sense for your project, but the rest of this tutorial assumes uniffi-bindgen.
+name = &quot;uniffi-bindgen&quot;
+path = &quot;uniffi-bindgen.rs&quot;
 </code></pre>
-<p>Create <code>run-uniffi-bindgen.rs</code>:</p>
+<p>Create <code>uniffi-bindgen.rs</code>:</p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
     uniffi::uniffi_bindgen_main()
 }
 </code></pre></pre>
-<p>You can now run <code>uniffi-bindgen</code> from your project using <code>cargo run --features=uniffi/cli --bin run-uniffi-bindgen</code></p>
+<p>You can now run <code>uniffi-bindgen</code> from your project using <code>cargo run --features=uniffi/cli --bin uniffi-bindgen [args]</code></p>
 <h3><a class="header" href="#multi-crate-workspaces" id="multi-crate-workspaces">Multi-crate workspaces</a></h3>
 <p>If your project consists of multiple crates in a Cargo workspace, then the process outlined above would require you
 creating a binary for each crate that uses UniFFI.  You can avoid this by creating a separate crate for running <code>uniffi-bindgen</code>:</p>
 <ul>
-<li>Name the crate <code>run-uniffi-bindgen</code></li>
+<li>Name the crate <code>uniffi-bindgen</code></li>
 <li>Add this dependency to <code>Cargo.toml</code>: <code>uniffi = {version = &quot;0.XX.0&quot;, features = [&quot;cli&quot;] }</code></li>
-<li>Follow the steps from the previous seciton to add the <code>run-uniffi-bindgen</code> binary target</li>
+<li>Follow the steps from the previous section to add the <code>uniffi-bindgen</code> binary target</li>
 </ul>
-<p>Then your can run <code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p run-uniffi-bindgen</code></p>
+<p>Then your can run <code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
 <h2><a class="header" href="#running-uniffi-bindgen" id="running-uniffi-bindgen">Running uniffi-bindgen</a></h2>
 <h3><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h3>
 <p>Run</p>
-<pre><code>cargo run --bin run-uniffi-bindgen generate src/math.udl --language kotlin
+<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language kotlin
 </code></pre>
 <p>then have a look at <code>src/uniffi/math/math.kt</code></p>
 <h3><a class="header" href="#swift" id="swift">Swift</a></h3>
 <p>Run</p>
-<pre><code>cargo run --bin run-uniffi-bindgen generate src/math.udl --language swift
+<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language swift
 </code></pre>
 <p>then check out <code>src/math.swift</code></p>
 <p>Note that these commands could be integrated as part of your gradle/Xcode build process.</p>

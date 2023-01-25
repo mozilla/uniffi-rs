@@ -160,21 +160,15 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#prerequisites" id="prerequisites">Prerequisites</a></h1>
-<h2><a class="header" href="#the-uniffi-bindgen-cli-tool" id="the-uniffi-bindgen-cli-tool">The uniffi-bindgen cli tool</a></h2>
-<p>Install the <code>uniffi-bindgen</code> binary on your system using:</p>
-<pre><code>cargo install uniffi_bindgen
+<h2><a class="header" href="#add-uniffi-as-a-dependency-and-build-depedency" id="add-uniffi-as-a-dependency-and-build-depedency">Add <code>uniffi</code> as a dependency and build-depedency</a></h2>
+<p>In your crate's <code>Cargo.toml</code> add:</p>
+<pre><code class="language-toml">[dependencies]
+uniffi = { version = &quot;[latest-version]&quot; }
+
+[build-dependencies]
+uniffi = { version = &quot;[latest-version]&quot;, features = [ &quot;build&quot; ] }
 </code></pre>
-<p>You can see what it can do with <code>uniffi-bindgen --help</code>, but let's leave it aside for now.</p>
-<h3><a class="header" href="#running-from-a-source-checkout" id="running-from-a-source-checkout">Running from a source checkout</a></h3>
-<p>It's also possible to run <code>uniffi-bindgen</code> from a source checkout of uniffi - this might
-be useful if you are experimenting with changes to uniffi and want to test them out.</p>
-<p>In this case, just use <code>cargo run</code> in the <code>uniffi_bindgen</code> crate directory.
-For example, from the root of the <code>uniffi-rs</code> repo, execute:</p>
-<pre><code class="language-shell">% cd uniffi_bindgen
-% cargo run -- --help
-</code></pre>
-<p>and you will see the help output from running <code>uniffi-bindgen</code> locally. Refer to
-the docs for <code>cargo run</code> for more information and options.</p>
+<p>UniFFI has not reached version <code>1.0</code> yet.  Versions are typically specified as &quot;0.[minor-version]&quot;.</p>
 <h2><a class="header" href="#build-your-crate-as-a-cdylib" id="build-your-crate-as-a-cdylib">Build your crate as a cdylib</a></h2>
 <p>Ensure your crate builds as a <code>cdylib</code> by adding</p>
 <pre><code class="language-toml">[lib]
