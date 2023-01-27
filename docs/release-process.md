@@ -49,26 +49,29 @@ Steps:
       * `git merge --ff-only origin/release-v{MAJOR}.{MINOR}.x` # to pull in the latest on the branch
       * `git merge origin/main` # to pull in the changes you want to release
 
-1. Test the release using a dry-run:
-   * `cargo release-backend-crates {MAJOR}.{MINOR}.{PATCH}` to test the `uniffi_*` crates
-   * `cargo release-uniffi {MAJOR}.{MINOR}.{PATCH}` to test the `uniffi` crates
-   * Note: The MAJOR/MINOR/PATCH numbers will be different for the two runs
-   * Note: some of the output here isn't actually helpful - the `cargo` output will reflect the old
-     previous version because it will be building without having touched the version numbers in the
-     `Cargo.toml`, and it doesn't actually propose that it's going to do anything! But it's probably
-     worthwhile anyway!.
+1. Release the backend crates
+   * The first step is to release all crates other than `uniffi`
+   * Test using a dry run: `cargo release-backend-crates {MAJOR}.{MINOR}.{PATCH}`
+       * Note: some of the output here isn't actually helpful - the `cargo` output will reflect the old
+         previous version because it will be building without having touched the version numbers in the
+         `Cargo.toml`, and it doesn't actually propose that it's going to do anything! But it's probably
+         worthwhile anyway!.
+   * Release the crates: `cargo release-backend-crates -x {MAJOR}.{MINOR}.{PATCH}`.
+       * **This will publish the new releases on crates.io**
+   This will create a local git tag, but does not push it to github.
 
-1. Perform a real run to pump the version numbers, *publish the release to crates.io* and *create
-   the git tag*.
-   * Take care because this will publish the new releases on crates.io.
-   * This will create a local git tag, but does not push it to github.
-   * `cargo release-backend-crates -x {MAJOR}.{MINOR}.{PATCH}` to release the `uniffi_*` crates.
-   * `cargo release-uniffi -x {MAJOR}.{MINOR}.{PATCH}` to release the `uniffi` crates.
-     - *Do not execute this before `cargo release-backend-crates`*.  That command publishes the
-       backend crates on crates.io and updates the version numbers in `uniffi/Cargo.toml`.  Things
-       will likely break if you don't do this before releasing the new `uniffi` version.
+1. Release `uniffi`
+   * **Do not execute this before the previous step.**  It depends on the published crates from that step
+   * Test using a dry-run: `cargo release-uniffi {MAJOR}.{MINOR}.{PATCH}` to test the `uniffi` crates.
+       * Note: some of the output here isn't actually helpful - the `cargo` output will reflect the old
+         previous version because it will be building without having touched the version numbers in the
+         `Cargo.toml`, and it doesn't actually propose that it's going to do anything! But it's probably
+         worthwhile anyway!.
+   * Release the crates: `cargo release-uniffi -x {MAJOR}.{MINOR}.{PATCH}`.
+       * **This will publish the new releases on crates.io**
+       * **This will create a new local git tag for the version**
 
-1. Push your branch: `git push origin --tags`
+1. Push your branch and tags: `git push origin --tags`
 1. Make a PR to request it be merged to the main branch.
 
 ## Why avoid breaking changes for the uniffi crate?
