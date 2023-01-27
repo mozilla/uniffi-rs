@@ -242,6 +242,22 @@ The details of this format are internal only and may change between versions of 
 despite the fact that they will always be non-negative. This is to help
 ease compatibility with JVM-based languages since the JVM uses signed 32-bit
 integers for its size fields internally.</p>
+<h2><a class="header" href="#code-generation-and-the-fficonverter-trait" id="code-generation-and-the-fficonverter-trait">Code Generation and the FfiConverter trait</a></h2>
+<p>UniFFI needs to generate Rust code to lift/lower types.  To help with this, we define the <code>FfiConverter</code> trait which contains the code to lift/lower/serialize a particular type.</p>
+<p>The most straightforward approach would be to define <code>FfiConverter</code> on the type being lifted/lowered/serialized.  However, this wouldn't work for remote types defined in 3rd-party crates because of the Rust orphan rules.  For example, our crates can't implement <code>FfiConverter</code> on <code>serde_json::Value</code> because both the trait and the type are remote.</p>
+<p>To work around this we do several things:</p>
+<ul>
+<li><code>FfiConverter</code> gets a generic type parameter.  This type is basically arbitrary and doesn't affect the lowering/lifting/serialization process.</li>
+<li>We generate a unit struct named <code>UniFfiTag</code> in the root of each UniFFIed crate.</li>
+<li>Each crate uses the <code>FfiConverter&lt;crate::UniFfiTag&gt;</code> trait to lower/lift/serialize values for its scaffolding functions.</li>
+</ul>
+<p>This allows us to work around the orphan rules when defining <code>FfiConverter</code> implementations.</p>
+<ul>
+<li>UniFFI consumer crates can implement lifting/lowering/serializing types for their own scaffolding functions, for example <code>impl FfiConverter&lt;crate::UniFfiTag&gt; for serde_json::Value</code>.  This is allowed since <code>UniFfiTag</code> is a local type.</li>
+<li>The <code>uniffi</code> crate can implement lifting/lowering/serializing types for all scaffolding functions using a generic impl, for example <code>impl&lt;UT&gt; FfiConverter&lt;UT&gt; for u8</code>.  &quot;UT&quot; is short for &quot;UniFFI Tag&quot;</li>
+<li>We don't currently use this, but crates can also implement lifting/lowering/serializing their local types for all scaffolding functions using a similar generic impl (<code>impl&lt;UT&gt; FfiConverter&lt;UT&gt; for MyLocalType</code>).</li>
+</ul>
+<p>For more details on the specifics of the &quot;orphan rule&quot; and why these are legal implementations, see the <a href="https://rust-lang.github.io/chalk/book/clauses/coherence.html#the-orphan-rules-in-rustc">Rust Chalk Book</a></p>
 
                     </main>
 

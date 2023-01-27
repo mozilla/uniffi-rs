@@ -357,7 +357,7 @@
     <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
 
     <span class="macro">quote! </span>{
-        #ident: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&gt;::try_read(buf)<span class="question-mark">?</span>,
+        #ident: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
     }
 }
 

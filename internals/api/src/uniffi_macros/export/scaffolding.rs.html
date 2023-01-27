@@ -253,7 +253,7 @@
     <span class="kw">let </span>fn_call_prefix = <span class="kw">match </span>sig.inputs.first() {
         <span class="prelude-val">Some</span>(arg) <span class="kw">if </span>is_receiver(arg) =&gt; {
             <span class="kw">let </span>ffi_converter = <span class="macro">quote! </span>{
-                &lt;::std::sync::Arc&lt;#self_ident&gt; <span class="kw">as </span>::uniffi::FfiConverter&gt;
+                &lt;::std::sync::Arc&lt;#self_ident&gt; <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
             };
 
             params_args.<span class="number">0</span>.push(<span class="macro">quote! </span>{ this: #ffi_converter::FfiType });
@@ -329,7 +329,7 @@
         };
 
         <span class="kw">let </span>arg_n = <span class="macro">format_ident!</span>(<span class="string">&quot;arg{i}&quot;</span>);
-        <span class="kw">let </span>param = <span class="macro">quote! </span>{ #arg_n: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&gt;::FfiType };
+        <span class="kw">let </span>param = <span class="macro">quote! </span>{ #arg_n: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType };
 
         <span class="comment">// FIXME: With UDL, fallible functions use uniffi::lower_anyhow_error_or_panic instead of
         // panicking unconditionally. This seems cleaner though.
@@ -338,7 +338,7 @@
             <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg #{i}: {{}}&quot;</span>),
         };
         <span class="kw">let </span>arg = <span class="macro">quote! </span>{
-            &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&gt;::try_lift(#arg_n).unwrap_or_else(|err| {
+            &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(#arg_n).unwrap_or_else(|err| {
                 <span class="macro">::std::panic!</span>(#panic_fmt, err)
             })
         };
@@ -369,17 +369,17 @@
         <span class="macro">quote! </span>{
             ::uniffi::call_with_result(call_status, || {
                 <span class="kw">let </span>val = #rust_fn_call.map_err(|e| {
-                    &lt;#error_ident <span class="kw">as </span>::uniffi::FfiConverter&gt;::lower(
+                    &lt;#error_ident <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(
                         ::std::convert::Into::into(e),
                     )
                 })<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(&lt;#ty <span class="kw">as </span>::uniffi::FfiReturn&gt;::lower(val))
+                <span class="prelude-val">Ok</span>(&lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(val))
             })
         }
     } <span class="kw">else </span>{
         <span class="macro">quote! </span>{
             ::uniffi::call_with_output(call_status, || {
-                &lt;#ty <span class="kw">as </span>::uniffi::FfiReturn&gt;::lower(#rust_fn_call)
+                &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(#rust_fn_call)
             })
         }
     };
@@ -390,7 +390,7 @@
         </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
             #(#params,)*
             call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
-        ) -&gt; &lt;#ty <span class="kw">as </span>::uniffi::FfiReturn&gt;::FfiType {
+        ) -&gt; &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType {
             <span class="macro">::uniffi::deps::log::debug!</span>(#name_s);
             #return_expr
         }

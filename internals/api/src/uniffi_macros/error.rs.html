@@ -164,10 +164,6 @@
 <span id="164">164</span>
 <span id="165">165</span>
 <span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -230,10 +226,6 @@
 
     <span class="macro">quote! </span>{
         #ffi_converter_impl
-
-        <span class="attribute">#[automatically_derived]
-        </span><span class="kw">impl </span>::uniffi::FfiError <span class="kw">for </span>#ident {}
-
         #meta_static_var
         #type_assertion
         #variant_errors
@@ -254,7 +246,7 @@
                 <span class="macro">quote! </span>{
                     <span class="self">Self</span>::#v_ident { .. } =&gt; {
                         ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                        &lt;::std::string::String <span class="kw">as </span>::uniffi::FfiConverter&gt;::write(error_msg, buf);
+                        &lt;::std::string::String <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(error_msg, buf);
                     }
                 }
             });
@@ -270,8 +262,8 @@
 
     <span class="macro">quote! </span>{
         <span class="attribute">#[automatically_derived]
-        </span><span class="kw">impl </span>::uniffi::RustBufferFfiConverter <span class="kw">for </span>#ident {
-            <span class="kw">type </span>RustType = <span class="self">Self</span>;
+        </span><span class="kw">unsafe impl</span>&lt;T&gt; ::uniffi::FfiConverter&lt;T&gt; <span class="kw">for </span>#ident {
+            <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(T);
 
             <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
                 #write_impl
