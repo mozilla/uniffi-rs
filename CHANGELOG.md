@@ -16,7 +16,7 @@
 
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
 
-[All changes in v0.23.0](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...{{tag_name}}).
+[All changes in v0.23.0](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...v0.23.0).
 
 ### ⚠️ Breaking Changes ⚠️
 
