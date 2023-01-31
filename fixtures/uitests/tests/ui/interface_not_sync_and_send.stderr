@@ -1,8 +1,8 @@
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
   |
-  | uniffi::deps::static_assertions::assert_impl_all!(r#Counter: Sync, Send);
-  |                                                   ^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
+  | #[::uniffi::ffi_converter_interface(crate::UniFfiTag)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
   |
   = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
 note: required because it appears within the type `Counter`
@@ -10,39 +10,9 @@ note: required because it appears within the type `Counter`
   |
 9 | pub struct Counter {
   |            ^^^^^^^
-note: required by a bound in `assert_impl_all`
- --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
+note: required by a bound in `Interface`
+ --> $WORKSPACE/uniffi_core/src/lib.rs
   |
-  | uniffi::deps::static_assertions::assert_impl_all!(r#Counter: Sync, Send);
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
-  = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: `Cell<u32>` cannot be shared between threads safely
- --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-  |
-  |         <std::sync::Arc<r#Counter> as uniffi::FfiConverter<crate::UniFfiTag>>::lower(_arc)
-  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
-  |
-  = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
-  = help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
-note: required because it appears within the type `Counter`
- --> tests/ui/interface_not_sync_and_send.rs:9:12
-  |
-9 | pub struct Counter {
-  |            ^^^^^^^
-  = note: required for `Arc<Counter>` to implement `FfiConverter<UniFfiTag>`
-
-error[E0277]: `Cell<u32>` cannot be shared between threads safely
- --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-  |
-  |         match<std::sync::Arc<r#Counter> as uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#ptr) {
-  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
-  |
-  = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
-  = help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
-note: required because it appears within the type `Counter`
- --> tests/ui/interface_not_sync_and_send.rs:9:12
-  |
-9 | pub struct Counter {
-  |            ^^^^^^^
-  = note: required for `Arc<Counter>` to implement `FfiConverter<UniFfiTag>`
+  | pub trait Interface<UT>: Send + Sync + Sized {}
+  |                                 ^^^^ required by this bound in `Interface`
+  = note: this error originates in the attribute macro `::uniffi::ffi_converter_interface` (in Nightly builds, run with -Z macro-backtrace for more info)

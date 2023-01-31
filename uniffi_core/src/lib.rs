@@ -198,6 +198,12 @@ pub unsafe trait FfiConverter<UT>: Sized {
     fn try_read(buf: &mut &[u8]) -> Result<Self>;
 }
 
+/// Implemented for exported interface types
+///
+/// Like, FfiConverter this has a generic parameter, that's filled in with a type local to the
+/// UniFFI consumer crate.
+pub trait Interface<UT>: Send + Sync + Sized {}
+
 /// Struct to use when we want to lift/lower/serialize types inside the `uniffi` crate.
 struct UniFfiTag;
 

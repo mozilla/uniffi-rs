@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::{
-    check_remaining, ffi_converter_rust_buffer_lift_and_lower, FfiConverter, Result, RustBuffer,
+    check_remaining, ffi_converter_rust_buffer_lift_and_lower, FfiConverter, Interface, Result,
+    RustBuffer,
 };
 /// This module contains builtin `FFIConverter` implementations.  These cover:
 ///   - Simple privitive types: u8, i32, String, Arc<T>, etc
@@ -349,7 +350,7 @@ where
 /// To avoid dealing with complex lifetime semantics over the FFI, any data passed
 /// by reference must be encapsulated in an `Arc`, and must be safe to share
 /// across threads.
-unsafe impl<UT, T: Sync + Send> FfiConverter<UT> for std::sync::Arc<T> {
+unsafe impl<UT, T: Interface<UT>> FfiConverter<UT> for std::sync::Arc<T> {
     // Don't use a pointer to <T> as that requires a `pub <T>`
     type FfiType = *const std::os::raw::c_void;
 
