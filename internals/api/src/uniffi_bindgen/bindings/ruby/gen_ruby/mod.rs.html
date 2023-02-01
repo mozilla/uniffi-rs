@@ -270,7 +270,6 @@
 <span id="270">270</span>
 <span id="271">271</span>
 <span id="272">272</span>
-<span id="273">273</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -457,9 +456,8 @@
                     nm.to_string()
                 } <span class="kw">else </span>{
                     <span class="macro">format!</span>(
-                        <span class="string">&quot;{}.each.with_object({{}}) {{ |(k, v), res| res[{}] = {} }}&quot;</span>,
-                        nm, k_coerce_code, v_coerce_code,
-                    )
+                        <span class="string">&quot;{nm}.each.with_object({{}}) {{ |(k, v), res| res[{k_coerce_code}] = {v_coerce_code} }}&quot;
+                    </span>)
                 }
             }
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for external types, yet&quot;</span>),

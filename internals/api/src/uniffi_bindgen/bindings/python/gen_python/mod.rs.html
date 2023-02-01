@@ -809,7 +809,7 @@
             FfiType::Float64 =&gt; <span class="string">&quot;ctypes.c_double&quot;</span>.to_string(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
             FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
-                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{}&quot;</span>, suffix),
+                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{suffix}&quot;</span>),
                 <span class="prelude-val">None </span>=&gt; <span class="string">&quot;RustBuffer&quot;</span>.to_string(),
             },
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.to_string(),

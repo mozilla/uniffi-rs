@@ -734,7 +734,7 @@
             FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.to_string(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer&quot;</span>.to_string(),
             FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
-                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{}.ByValue&quot;</span>, suffix),
+                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{suffix}.ByValue&quot;</span>),
                 <span class="prelude-val">None </span>=&gt; <span class="string">&quot;RustBuffer.ByValue&quot;</span>.to_string(),
             },
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.to_string(),

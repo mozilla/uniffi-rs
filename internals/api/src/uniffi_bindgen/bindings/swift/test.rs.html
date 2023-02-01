@@ -219,10 +219,6 @@
 <span id="219">219</span>
 <span id="220">220</span>
 <span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -307,7 +303,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
         .arg(output_filename)
         .arg(<span class="string">&quot;-emit-library&quot;</span>)
         .arg(<span class="string">&quot;-Xcc&quot;</span>)
-        .arg(<span class="macro">format!</span>(<span class="string">&quot;-fmodule-map-file={}&quot;</span>, module_map))
+        .arg(<span class="macro">format!</span>(<span class="string">&quot;-fmodule-map-file={module_map}&quot;</span>))
         .arg(<span class="string">&quot;-I&quot;</span>)
         .arg(out_dir)
         .arg(<span class="string">&quot;-L&quot;</span>)
@@ -428,11 +424,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 }
 
 <span class="kw">fn </span>calc_library_args(out_dir: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;&gt; {
-    <span class="kw">let </span>results = glob::glob(
-        out_dir
-            .join(<span class="macro">format!</span>(<span class="string">&quot;{}*{}&quot;</span>, DLL_PREFIX, DLL_SUFFIX))
-            .as_str(),
-    )<span class="question-mark">?</span>;
+    <span class="kw">let </span>results = glob::glob(out_dir.join(<span class="macro">format!</span>(<span class="string">&quot;{DLL_PREFIX}*{DLL_SUFFIX}&quot;</span>)).as_str())<span class="question-mark">?</span>;
     results
         .map(|globresult| {
             <span class="kw">let </span>path = Utf8PathBuf::try_from(globresult.unwrap())<span class="question-mark">?</span>;
