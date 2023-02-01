@@ -201,6 +201,11 @@ include!(concat!(env!(&quot;OUT_DIR&quot;), &quot;/consuming_crate.uniffi.rs&quo
 </span></code></pre></pre>
 <p>Your <code>Cargo.toml</code> must reference the external crate as normal.</p>
 <p>The <code>External</code> attribute can be specified on dictionaries, enums and errors.</p>
+<h2><a class="header" href="#external-interface-types" id="external-interface-types">External interface types</a></h2>
+<p>If the external type is an <a href="./interfaces.html">Interface</a>, then use the <code>[ExternalInterface]</code> attribute instead of <code>[External]</code>:</p>
+<pre><code class="language-idl">[ExternalInterface=&quot;demo-crate&quot;]
+typedef extern DemoInterface;
+</code></pre>
 <h2><a class="header" href="#foreign-bindings" id="foreign-bindings">Foreign bindings</a></h2>
 <p>The foreign bindings will also need to know how to access the external type,
 which varies slightly for each language:</p>

@@ -242,6 +242,16 @@
 <span id="242">242</span>
 <span id="243">243</span>
 <span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -352,6 +362,7 @@
                 },
             )
         } <span class="kw">else </span>{
+            <span class="kw">let </span>kind = attrs.external_kind().expect(<span class="string">&quot;ExternalKind missing&quot;</span>);
             <span class="comment">// A crate which can supply an `FfiConverter`.
             // We don&#39;t reference `self._type`, so ideally we could insist on it being
             // the literal &#39;extern&#39; but that&#39;s tricky
@@ -360,6 +371,7 @@
                 Type::External {
                     name: name.to_string(),
                     crate_name: attrs.get_crate_name(),
+                    kind,
                 },
             )
         }
@@ -379,6 +391,7 @@
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::interface::ExternalKind;
 
     <span class="comment">// A helper to take valid UDL and a closure to check what&#39;s in it.
     </span><span class="kw">fn </span>test_a_finding&lt;F&gt;(udl: <span class="kw-2">&amp;</span>str, tester: F)
@@ -454,13 +467,20 @@
             [External=&quot;crate-name&quot;]
             typedef extern ExternalType;
 
+            [ExternalInterface=&quot;crate-name&quot;]
+            typedef extern ExternalInterfaceType;
+
             [Custom]
             typedef string CustomType;
         &quot;#</span>,
             |types| {
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;ExternalType&quot;</span>).unwrap(), Type::External { name, crate_name }
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;ExternalType&quot;</span>).unwrap(), Type::External { name, crate_name, kind: ExternalKind::DataClass }
                                                                                  <span class="kw">if </span>name == <span class="string">&quot;ExternalType&quot; </span>&amp;&amp; crate_name == <span class="string">&quot;crate-name&quot;</span>)
+                );
+                <span class="macro">assert!</span>(
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;ExternalInterfaceType&quot;</span>).unwrap(), Type::External { name, crate_name, kind: ExternalKind::Interface }
+                                                                                 <span class="kw">if </span>name == <span class="string">&quot;ExternalInterfaceType&quot; </span>&amp;&amp; crate_name == <span class="string">&quot;crate-name&quot;</span>)
                 );
                 <span class="macro">assert!</span>(
                     <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;CustomType&quot;</span>).unwrap(), Type::Custom { name, builtin }

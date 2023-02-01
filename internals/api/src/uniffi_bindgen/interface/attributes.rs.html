@@ -757,6 +757,31 @@
 <span id="757">757</span>
 <span id="758">758</span>
 <span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -773,7 +798,8 @@
 //! all handled by a single abstraction. This might need to be refactored in future
 //! if we grow significantly more complicated attribute handling.
 
-</span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span><span class="kw">crate</span>::interface::types::ExternalKind;
+<span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>uniffi_meta::Checksum;
 
 <span class="doccomment">/// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.
@@ -791,7 +817,10 @@
     Threadsafe, <span class="comment">// N.B. the `[Threadsafe]` attribute is deprecated and will be removed
     </span>Throws(String),
     <span class="comment">// `[External=&quot;crate_name&quot;]` - We can `use crate_name::...` for the type.
-    </span>External(String),
+    </span>External {
+        crate_name: String,
+        kind: ExternalKind,
+    },
     <span class="comment">// Custom type on the scaffolding side
     </span>Custom,
 }
@@ -828,7 +857,14 @@
                     <span class="string">&quot;Name&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Name(name_from_id_or_string(<span class="kw-2">&amp;</span>identity.rhs))),
                     <span class="string">&quot;Throws&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Throws(name_from_id_or_string(<span class="kw-2">&amp;</span>identity.rhs))),
                     <span class="string">&quot;Self&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::SelfType(SelfType::try_from(<span class="kw-2">&amp;</span>identity.rhs)<span class="question-mark">?</span>)),
-                    <span class="string">&quot;External&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::External(name_from_id_or_string(<span class="kw-2">&amp;</span>identity.rhs))),
+                    <span class="string">&quot;External&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::External {
+                        crate_name: name_from_id_or_string(<span class="kw-2">&amp;</span>identity.rhs),
+                        kind: ExternalKind::DataClass,
+                    }),
+                    <span class="string">&quot;ExternalInterface&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::External {
+                        crate_name: name_from_id_or_string(<span class="kw-2">&amp;</span>identity.rhs),
+                        kind: ExternalKind::Interface,
+                    }),
                     <span class="kw">_ </span>=&gt; <span class="macro">anyhow::bail!</span>(
                         <span class="string">&quot;Attribute identity Identifier not supported: {:?}&quot;</span>,
                         identity.lhs_identifier.<span class="number">0
@@ -1178,7 +1214,7 @@
         <span class="self">self</span>.<span class="number">0
             </span>.iter()
             .find_map(|attr| <span class="kw">match </span>attr {
-                Attribute::External(crate_name) =&gt; <span class="prelude-val">Some</span>(crate_name.clone()),
+                Attribute::External { crate_name, .. } =&gt; <span class="prelude-val">Some</span>(crate_name.clone()),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
             })
             .expect(<span class="string">&quot;must have a crate name&quot;</span>)
@@ -1188,6 +1224,13 @@
         <span class="self">self</span>.<span class="number">0
             </span>.iter()
             .any(|attr| <span class="macro">matches!</span>(attr, Attribute::Custom { .. }))
+    }
+
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>external_kind(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;ExternalKind&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.iter().find_map(|attr| <span class="kw">match </span>attr {
+            Attribute::External { kind, .. } =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>kind),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+        })
     }
 }
 
@@ -1487,6 +1530,13 @@
 
         <span class="kw">let </span>(<span class="kw">_</span>, node) =
             weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[External=crate_name]&quot;</span>).unwrap();
+        <span class="kw">let </span>attrs = TypedefAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
+        <span class="macro">assert!</span>(!attrs.is_custom());
+        <span class="macro">assert_eq!</span>(attrs.get_crate_name(), <span class="string">&quot;crate_name&quot;</span>);
+
+        <span class="kw">let </span>(<span class="kw">_</span>, node) =
+            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[ExternalInterface=crate_name ]&quot;</span>)
+                .unwrap();
         <span class="kw">let </span>attrs = TypedefAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
         <span class="macro">assert!</span>(!attrs.is_custom());
         <span class="macro">assert_eq!</span>(attrs.get_crate_name(), <span class="string">&quot;crate_name&quot;</span>);
