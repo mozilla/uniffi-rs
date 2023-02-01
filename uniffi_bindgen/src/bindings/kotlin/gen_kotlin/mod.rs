@@ -317,7 +317,7 @@ impl CodeOracle for KotlinCodeOracle {
             FfiType::Float64 => "Double".to_string(),
             FfiType::RustArcPtr(_) => "Pointer".to_string(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                Some(suffix) => format!("RustBuffer{}.ByValue", suffix),
+                Some(suffix) => format!("RustBuffer{suffix}.ByValue"),
                 None => "RustBuffer.ByValue".to_string(),
             },
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),

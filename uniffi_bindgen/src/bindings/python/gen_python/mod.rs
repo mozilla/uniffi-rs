@@ -361,7 +361,7 @@ impl CodeOracle for PythonCodeOracle {
             FfiType::Float64 => "ctypes.c_double".to_string(),
             FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                Some(suffix) => format!("RustBuffer{}", suffix),
+                Some(suffix) => format!("RustBuffer{suffix}"),
                 None => "RustBuffer".to_string(),
             },
             FfiType::ForeignBytes => "ForeignBytes".to_string(),

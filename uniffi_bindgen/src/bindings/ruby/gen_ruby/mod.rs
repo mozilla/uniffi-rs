@@ -184,8 +184,7 @@ mod filters {
                     nm.to_string()
                 } else {
                     format!(
-                        "{}.each.with_object({{}}) {{ |(k, v), res| res[{}] = {} }}",
-                        nm, k_coerce_code, v_coerce_code,
+                        "{nm}.each.with_object({{}}) {{ |(k, v), res| res[{k_coerce_code}] = {v_coerce_code} }}"
                     )
                 }
             }

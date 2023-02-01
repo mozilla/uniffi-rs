@@ -67,7 +67,7 @@ fn generate_sources(
 /// command-line tools to compile them into a .jar file.
 fn build_jar(fixture_name: &str, out_dir: &Utf8Path) -> Result<Utf8PathBuf> {
     let mut jar_file = Utf8PathBuf::from(out_dir);
-    jar_file.push(format!("{}.jar", fixture_name));
+    jar_file.push(format!("{fixture_name}.jar"));
     let sources = glob::glob(out_dir.join("**/*.kt").as_str())?
         .flatten()
         .map(|p| String::from(p.to_string_lossy()))
@@ -75,7 +75,7 @@ fn build_jar(fixture_name: &str, out_dir: &Utf8Path) -> Result<Utf8PathBuf> {
     if sources.is_empty() {
         bail!("No kotlin sources found in {out_dir}")
     }
-    println!("building jar from: {:?}", sources);
+    println!("building jar from: {sources:?}");
 
     let status = Command::new("kotlinc")
         // Our generated bindings should not produce any warnings; fail tests if they do.
