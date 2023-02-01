@@ -149,7 +149,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
                                 String::from("[Error reading reason]")
                             }
                         };
-                        panic!("callback failed. Reason: {}", reason);
+                        panic!("callback failed. Reason: {reason}");
                     } else {
                         panic!("Callback failed")
                     }
