@@ -25,14 +25,14 @@ pub fn write_bindings(
 ) -> Result<()> {
     let rb_file = out_dir.join(format!("{}.rb", ci.namespace()));
     let mut f = File::create(&rb_file)?;
-    write!(f, "{}", generate_ruby_bindings(config, ci)?)?;
+    write!(f, "{}", generate_ruby_bindings(config, ci)?)
+        .context("Failed to write generated Ruby bindings")?;
 
     if try_format_code {
         if let Err(e) = Command::new("rubocop").arg("-A").arg(&rb_file).output() {
             println!(
-                "Warning: Unable to auto-format {} using rubocop: {:?}",
+                "Warning: Unable to auto-format {} using rubocop: {e:?}",
                 rb_file.file_name().unwrap(),
-                e
             )
         }
     }
