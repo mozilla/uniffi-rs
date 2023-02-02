@@ -148,7 +148,13 @@ impl From<uniffi_meta::FnMetadata> for Function {
             arguments,
             return_type,
             ffi_func,
-            attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
+            attributes: match meta.throws {
+                None => FunctionAttributes::from_iter(vec![]),
+                Some(uniffi_meta::Type::Error { name }) => {
+                    FunctionAttributes::from_iter(vec![Attribute::Throws(name)])
+                }
+                Some(ty) => panic!("Invalid throws type: {ty:?}"),
+            },
         }
     }
 }

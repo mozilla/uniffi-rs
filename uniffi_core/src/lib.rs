@@ -38,7 +38,10 @@ pub use anyhow::Result;
 
 pub mod ffi;
 mod ffi_converter_impls;
+pub mod metadata;
+
 pub use ffi::*;
+pub use metadata::*;
 
 // Re-export the libs that we use in the generated code,
 // so the consumer doesn't have to depend on them directly.
@@ -195,13 +198,18 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// because we want to be able to advance the start of the slice after reading an item
     /// from it (but will not mutate the actual contents of the slice).
     fn try_read(buf: &mut &[u8]) -> Result<Self>;
+
+    /// Type ID metadata, serialized into a [MetadataBuffer]
+    const TYPE_ID_META: MetadataBuffer;
 }
 
 /// Implemented for exported interface types
 ///
 /// Like, FfiConverter this has a generic parameter, that's filled in with a type local to the
 /// UniFFI consumer crate.
-pub trait Interface<UT>: Send + Sync + Sized {}
+pub trait Interface<UT>: Send + Sync + Sized {
+    const NAME: &'static str;
+}
 
 /// Struct to use when we want to lift/lower/serialize types inside the `uniffi` crate.
 struct UniFfiTag;
@@ -289,6 +297,9 @@ macro_rules! ffi_converter_forward {
             fn try_read(buf: &mut &[u8]) -> $crate::Result<$T> {
                 <$T as $crate::FfiConverter<$existing_impl_tag>>::try_read(buf)
             }
+
+            const TYPE_ID_META: ::uniffi::MetadataBuffer =
+                <$T as $crate::FfiConverter<$existing_impl_tag>>::TYPE_ID_META;
         }
     };
 }

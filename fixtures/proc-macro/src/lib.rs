@@ -113,9 +113,3 @@ impl Object {
 }
 
 include!(concat!(env!("OUT_DIR"), "/proc-macro.uniffi.rs"));
-
-mod uniffi_types {
-    pub use crate::{
-        BasicError, FlatError, MaybeBool, NestedRecord, Object, One, Three, Two, Zero,
-    };
-}

@@ -7,7 +7,7 @@ use askama::Template;
 use std::borrow::Borrow;
 
 use super::interface::*;
-use heck::ToSnakeCase;
+use heck::{ToShoutySnakeCase, ToSnakeCase};
 
 #[derive(Template)]
 #[template(syntax = "rs", escape = "none", path = "scaffolding_template.rs")]
@@ -54,9 +54,6 @@ mod filters {
             ),
             Type::Custom { name, .. } => format!("r#{name}"),
             Type::External { name, .. } => format!("r#{name}"),
-            Type::Unresolved { .. } => {
-                unreachable!("UDL scaffolding code never contains unresolved types")
-            }
         })
     }
 

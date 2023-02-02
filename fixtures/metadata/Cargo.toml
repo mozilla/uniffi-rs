@@ -1,0 +1,15 @@
+[package]
+name = "uniffi_fixture_metadata"
+version = "0.1.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "uniffi_fixture_metadata"
+
+[dependencies]
+uniffi = { path = "../../uniffi" }
+uniffi_meta = { path = "../../uniffi_meta" }
+uniffi_core = { path = "../../uniffi_core" }

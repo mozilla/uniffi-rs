@@ -75,11 +75,6 @@ pub enum Type {
         name: String,
         builtin: Box<Type>,
     },
-    // An unresolved user-defined type inside a proc-macro exported function
-    // signature. Must be replaced by another type before bindings generation.
-    Unresolved {
-        name: String,
-    },
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Checksum, Ord, PartialOrd)]
@@ -138,9 +133,6 @@ impl Type {
             ),
             // A type that exists externally.
             Type::External { name, .. } | Type::Custom { name, .. } => format!("Type{name}"),
-            Type::Unresolved { name } => {
-                unreachable!("Type `{name}` must be resolved before calling canonical_name")
-            }
         }
     }
 
@@ -206,9 +198,6 @@ impl From<&Type> for FfiType {
                 ..
             } => FfiType::RustBuffer(Some(name.clone())),
             Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
-            Type::Unresolved { name } => {
-                unreachable!("Type `{name}` must be resolved before lowering to FfiType")
-            }
         }
     }
 }
@@ -250,11 +239,6 @@ impl TypeUniverse {
     ///
     /// This will fail if you try to add a name for which an existing type definition exists.
     pub fn add_type_definition(&mut self, name: &str, type_: Type) -> Result<()> {
-        if let Type::Unresolved { name: name_ } = &type_ {
-            assert_eq!(name, name_);
-            bail!("attempted to add type definition of Unresolved for `{name}`");
-        }
-
         if resolve_builtin_type(name).is_some() {
             bail!(
                 "please don't shadow builtin types ({name}, {})",
@@ -302,11 +286,6 @@ impl TypeUniverse {
 
     /// Add a [Type] to the set of all types seen in the component interface.
     pub fn add_known_type(&mut self, type_: &Type) -> Result<()> {
-        // Adding potentially-unresolved types is a footgun, make sure we don't do that.
-        if matches!(type_, Type::Unresolved { .. }) {
-            bail!("Unresolved types must be resolved before being added to known types");
-        }
-
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
         if !self.all_known_types.contains(type_) {
             self.all_known_types.insert(type_.to_owned());

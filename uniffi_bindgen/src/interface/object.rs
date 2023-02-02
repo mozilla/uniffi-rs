@@ -443,7 +443,13 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             arguments,
             return_type,
             ffi_func,
-            attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
+            attributes: match meta.throws {
+                None => MethodAttributes::from_iter(vec![]),
+                Some(uniffi_meta::Type::Error { name }) => {
+                    MethodAttributes::from_iter(vec![Attribute::Throws(name)])
+                }
+                Some(ty) => panic!("Invalid throws type: {ty:?}"),
+            },
         }
     }
 }

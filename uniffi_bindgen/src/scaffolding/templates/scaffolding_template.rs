@@ -12,6 +12,8 @@
 #[doc(hidden)]
 pub struct UniFfiTag;
 
+{%- include "namespace_metadata.rs" %}
+
 // Check for compatibility between `uniffi` and `uniffi_bindgen` versions.
 // Note that we have an error message on the same line as the assertion.
 // This is important, because if the assertion fails, the compiler only

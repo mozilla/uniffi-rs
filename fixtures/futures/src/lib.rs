@@ -234,9 +234,3 @@ pub async fn broken_sleep(ms: u16, fail_after: u16) {
 }
 
 include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
-
-mod uniffi_types {
-    pub(crate) use super::Megaphone;
-    pub(crate) use super::MyError;
-    pub(crate) use super::MyRecord;
-}

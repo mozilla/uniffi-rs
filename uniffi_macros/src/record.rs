@@ -1,17 +1,13 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{Data, DataStruct, DeriveInput, Field, Fields, Path};
-use uniffi_meta::{FieldMetadata, RecordMetadata};
+use syn::{Data, DataStruct, DeriveInput, Field, Path};
 
-use crate::{
-    export::metadata::convert::convert_type,
-    util::{
-        assert_type_eq, create_metadata_static_var, tagged_impl_header, try_read_field,
-        AttributeSliceExt, CommonAttr,
-    },
+use crate::util::{
+    create_metadata_static_var, tagged_impl_header, try_metadata_value_from_usize, try_read_field,
+    type_name, AttributeSliceExt, CommonAttr,
 };
 
-pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> syn::Result<TokenStream> {
+pub fn expand_record(input: DeriveInput) -> syn::Result<TokenStream> {
     let record = match input.data {
         Data::Struct(s) => s,
         _ => {
@@ -25,16 +21,11 @@ pub fn expand_record(input: DeriveInput, module_path: Vec<String>) -> syn::Resul
     let ident = &input.ident;
     let attr = input.attrs.parse_uniffi_attributes::<CommonAttr>()?;
     let ffi_converter = record_ffi_converter_impl(ident, &record, attr.tag.as_ref());
-    let meta_static_var = match record_metadata(ident, record.fields, module_path) {
-        Ok(metadata) => create_metadata_static_var(ident, metadata.into()),
-        Err(e) => e.into_compile_error(),
-    };
-    let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
+    let meta_static_var = record_meta_static_var(ident, &record)?;
 
     Ok(quote! {
         #ffi_converter
         #meta_static_var
-        #type_assertion
     })
 }
 
@@ -55,6 +46,7 @@ pub(crate) fn record_ffi_converter_impl(
     tag: Option<&Path>,
 ) -> TokenStream {
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
+    let name = type_name(ident);
     let write_impl: TokenStream = record.fields.iter().map(write_field).collect();
     let try_read_fields: TokenStream = record.fields.iter().map(try_read_field).collect();
 
@@ -70,45 +62,11 @@ pub(crate) fn record_ffi_converter_impl(
             fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
                 Ok(Self { #try_read_fields })
             }
+
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_RECORD)
+                .concat_str(#name);
         }
     }
-}
-
-fn record_metadata(
-    ident: &Ident,
-    fields: Fields,
-    module_path: Vec<String>,
-) -> syn::Result<RecordMetadata> {
-    let name = ident.to_string();
-    let fields = match fields {
-        Fields::Named(fields) => fields.named,
-        _ => {
-            return Err(syn::Error::new(
-                Span::call_site(),
-                "UniFFI only supports structs with named fields",
-            ));
-        }
-    };
-
-    let fields = fields
-        .iter()
-        .map(field_metadata)
-        .collect::<syn::Result<_>>()?;
-
-    Ok(RecordMetadata {
-        module_path,
-        name,
-        fields,
-    })
-}
-
-fn field_metadata(f: &Field) -> syn::Result<FieldMetadata> {
-    let name = f.ident.as_ref().unwrap().to_string();
-
-    Ok(FieldMetadata {
-        name,
-        ty: convert_type(&f.ty)?,
-    })
 }
 
 fn write_field(f: &Field) -> TokenStream {
@@ -118,4 +76,32 @@ fn write_field(f: &Field) -> TokenStream {
     quote! {
         <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(obj.#ident, buf);
     }
+}
+
+pub(crate) fn record_meta_static_var(
+    ident: &Ident,
+    record: &DataStruct,
+) -> syn::Result<TokenStream> {
+    let name = type_name(ident);
+    let fields_len =
+        try_metadata_value_from_usize(record.fields.len(), "UniFFI limits structs to 256 fields")?;
+    let field_names = record
+        .fields
+        .iter()
+        .map(|f| f.ident.as_ref().unwrap().to_string());
+    let field_types = record.fields.iter().map(|f| &f.ty);
+    Ok(create_metadata_static_var(
+        "RECORD",
+        &name,
+        quote! {
+                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
+                    .concat_str(module_path!())
+                    .concat_str(#name)
+                    .concat_value(#fields_len)
+                    #(
+                        .concat_str(#field_names)
+                        .concat(<#field_types as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+                    )*
+        },
+    ))
 }

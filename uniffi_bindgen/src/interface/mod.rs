@@ -637,9 +637,6 @@ impl ComponentInterface {
             f: impl Fn(&str) -> Result<Type> + Clone,
         ) -> Result<()> {
             match ty {
-                Type::Unresolved { name } => {
-                    *ty = f(name)?;
-                }
                 Type::Optional(inner) => {
                     handle_unresolved_in(inner, f)?;
                 }
@@ -689,13 +686,7 @@ impl ComponentInterface {
         for ty in possibly_unresolved_types {
             handle_unresolved_in(ty, |unresolved_ty_name| {
                 match self.types.get_type_definition(unresolved_ty_name) {
-                    Some(def) => {
-                        assert!(
-                            !matches!(&def, Type::Unresolved { .. }),
-                            "unresolved types must not be part of TypeUniverse"
-                        );
-                        Ok(def)
-                    }
+                    Some(def) => Ok(def),
                     None => bail!("Failed to resolve type `{unresolved_ty_name}`"),
                 }
             })?;
@@ -750,9 +741,6 @@ impl ComponentInterface {
                         self.enums.contains_key(name),
                         "Enum `{name}` has no definition",
                     );
-                }
-                Type::Unresolved { name } => {
-                    bail!("Type `{name}` should be resolved at this point");
                 }
                 _ => {}
             }
@@ -1001,6 +989,17 @@ fn convert_type(s: &uniffi_meta::Type) -> Type {
         Ty::F64 => Type::Float64,
         Ty::Bool => Type::Boolean,
         Ty::String => Type::String,
+        Ty::SystemTime => Type::Timestamp,
+        Ty::Duration => Type::Duration,
+        Ty::Record { name } => Type::Record(name.clone()),
+        Ty::Enum { name } => Type::Enum(name.clone()),
+        Ty::ArcObject { object_name } => Type::Object(object_name.clone()),
+        Ty::Error { name } => Type::Error(name.clone()),
+        Ty::CallbackInterface { name } => Type::CallbackInterface(name.clone()),
+        Ty::Custom { name, builtin } => Type::Custom {
+            name: name.clone(),
+            builtin: convert_type(builtin).into(),
+        },
         Ty::Option { inner_type } => Type::Optional(convert_type(inner_type).into()),
         Ty::Vec { inner_type } => Type::Sequence(convert_type(inner_type).into()),
         Ty::HashMap {
@@ -1010,8 +1009,6 @@ fn convert_type(s: &uniffi_meta::Type) -> Type {
             convert_type(key_type).into(),
             convert_type(value_type).into(),
         ),
-        Ty::ArcObject { object_name } => Type::Object(object_name.clone()),
-        Ty::Unresolved { name } => Type::Unresolved { name: name.clone() },
     }
 }
 

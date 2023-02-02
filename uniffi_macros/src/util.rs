@@ -3,17 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::{format_ident, quote, quote_spanned, ToTokens};
+use quote::{format_ident, quote};
 use syn::{
+    ext::IdentExt,
     parse::{Parse, ParseStream},
     spanned::Spanned,
     visit_mut::VisitMut,
     Attribute, Item, Path, Token, Type,
 };
-use uniffi_meta::Metadata;
 
 #[cfg(not(feature = "nightly"))]
-pub fn mod_path() -> syn::Result<Vec<String>> {
+pub fn mod_path() -> syn::Result<String> {
     // Without the nightly feature and TokenStream::expand_expr, just return the crate name
 
     use std::path::Path;
@@ -39,7 +39,7 @@ pub fn mod_path() -> syn::Result<Vec<String>> {
         name: Option<String>,
     }
 
-    static LIB_CRATE_MOD_PATH: Lazy<Result<Vec<String>, String>> = Lazy::new(|| {
+    static LIB_CRATE_MOD_PATH: Lazy<Result<String, String>> = Lazy::new(|| {
         let manifest_dir =
             std::env::var_os("CARGO_MANIFEST_DIR").ok_or("`CARGO_MANIFEST_DIR` is not set")?;
 
@@ -53,7 +53,7 @@ pub fn mod_path() -> syn::Result<Vec<String>> {
             .name
             .unwrap_or_else(|| cargo_toml.package.name.replace('-', "_"));
 
-        Ok(vec![lib_crate_name])
+        Ok(lib_crate_name)
     });
 
     LIB_CRATE_MOD_PATH
@@ -62,7 +62,7 @@ pub fn mod_path() -> syn::Result<Vec<String>> {
 }
 
 #[cfg(feature = "nightly")]
-pub fn mod_path() -> syn::Result<Vec<String>> {
+pub fn mod_path() -> syn::Result<String> {
     use proc_macro::TokenStream;
 
     let module_path_invoc = TokenStream::from(quote! { ::core::module_path!() });
@@ -70,10 +70,7 @@ pub fn mod_path() -> syn::Result<Vec<String>> {
     // This is a nightly feature, tracked at https://github.com/rust-lang/rust/issues/90765
     let expanded_module_path = TokenStream::expand_expr(&module_path_invoc)
         .map_err(|e| syn::Error::new(Span::call_site(), e))?;
-    Ok(syn::parse::<syn::LitStr>(expanded_module_path)?
-        .value()
-        .split("::")
-        .collect())
+    Ok(syn::parse::<syn::LitStr>(expanded_module_path)?.value())
 }
 
 /// Rewrite Self type alias usage in an impl block to the type itself.
@@ -137,25 +134,36 @@ pub fn try_read_field(f: &syn::Field) -> TokenStream {
     }
 }
 
-pub fn create_metadata_static_var(name: &Ident, val: Metadata) -> TokenStream {
-    let data: Vec<u8> = bincode::serialize(&val).expect("Error serializing metadata item");
-    let count = data.len();
-    let var_name = format_ident!("UNIFFI_META_{}", name);
+pub fn type_name(type_ident: &Ident) -> String {
+    type_ident.unraw().to_string()
+}
+
+pub fn crate_name() -> String {
+    std::env::var("CARGO_CRATE_NAME").unwrap().replace('-', "_")
+}
+
+pub fn create_metadata_static_var(
+    kind: &str,
+    name: &str,
+    metadata_expr: TokenStream,
+) -> TokenStream {
+    let crate_name = crate_name().to_uppercase();
+    let name = name.to_uppercase();
+    let const_ident = format_ident!("UNIFFI_META_CONST_{crate_name}_{kind}_{name}");
+    let static_ident = format_ident!("UNIFFI_META_{crate_name}_{kind}_{name}");
 
     quote! {
+        const #const_ident: ::uniffi::MetadataBuffer = #metadata_expr;
         #[no_mangle]
         #[doc(hidden)]
-        pub static #var_name: [u8; #count] = [#(#data),*];
+        pub static #static_ident: [u8; #const_ident.size] = #const_ident.into_array();
     }
 }
 
-pub fn assert_type_eq(a: impl ToTokens + Spanned, b: impl ToTokens) -> TokenStream {
-    quote_spanned! {a.span()=>
-        #[allow(unused_qualifications)]
-        const _: () = {
-            ::uniffi::deps::static_assertions::assert_type_eq_all!(#a, #b);
-        };
-    }
+pub fn try_metadata_value_from_usize(value: usize, error_message: &str) -> syn::Result<u8> {
+    value
+        .try_into()
+        .map_err(|_| syn::Error::new(Span::call_site(), error_message))
 }
 
 pub fn chain<T>(

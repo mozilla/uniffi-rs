@@ -115,4 +115,7 @@ unsafe impl ::uniffi::FfiConverter<crate::UniFfiTag> for Box<dyn r#{{ trait_name
         uniffi::check_remaining(buf, 8)?;
         Self::try_lift(buf.get_u64())
     }
+
+    const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE)
+        .concat_str("{{ cbi.name() }}");
 }

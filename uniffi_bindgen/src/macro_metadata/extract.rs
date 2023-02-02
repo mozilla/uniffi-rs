@@ -172,13 +172,10 @@ impl ExtractedItems {
         // always know the end position, because goblin reports the symbol size as 0 for PE and
         // MachO files.
         //
-        // This works fine, because bincode knows when the serialized data is terminated and will
-        // just ignore the trailing data.
+        // This works fine, because `MetadataReader` knows when the serialized data is terminated
+        // and will just ignore the trailing data.
         let data = &file_data[offset..];
-        self.items
-            .push(bincode::deserialize::<Metadata>(data).with_context(|| {
-                format!("Failed to deserialize bincode data at offset {offset:#x}")
-            })?);
+        self.items.push(Metadata::read(data)?);
         self.names.insert(name.to_string());
         Ok(())
     }

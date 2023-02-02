@@ -2,20 +2,19 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
-    punctuated::Punctuated,
-    Data, DataEnum, DeriveInput, Index, Path, Token, Variant,
+    Data, DataEnum, DeriveInput, Index, Path, Token,
 };
-use uniffi_meta::{ErrorMetadata, VariantMetadata};
 
 use crate::{
-    enum_::{enum_ffi_converter_impl, variant_metadata},
+    enum_::{rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        assert_type_eq, chain, create_metadata_static_var, either_attribute_arg,
-        parse_comma_separated, tagged_impl_header, AttributeSliceExt, UniffiAttribute,
+        chain, create_metadata_static_var, either_attribute_arg, parse_comma_separated,
+        tagged_impl_header, try_metadata_value_from_usize, type_name, AttributeSliceExt,
+        UniffiAttribute,
     },
 };
 
-pub fn expand_error(input: DeriveInput, module_path: Vec<String>) -> syn::Result<TokenStream> {
+pub fn expand_error(input: DeriveInput) -> syn::Result<TokenStream> {
     let enum_ = match input.data {
         Data::Enum(e) => e,
         _ => {
@@ -29,13 +28,8 @@ pub fn expand_error(input: DeriveInput, module_path: Vec<String>) -> syn::Result
     let ident = &input.ident;
     let attr = input.attrs.parse_uniffi_attributes::<ErrorAttr>()?;
     let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr);
+    let meta_static_var = error_meta_static_var(ident, &enum_, attr.flat.is_some())?;
 
-    let meta_static_var = match error_metadata(ident, &enum_.variants, module_path, &attr) {
-        Ok(metadata) => create_metadata_static_var(ident, metadata.into()),
-        Err(e) => e.into_compile_error(),
-    };
-
-    let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
     let variant_errors: TokenStream = enum_
         .variants
         .iter()
@@ -54,24 +48,21 @@ pub fn expand_error(input: DeriveInput, module_path: Vec<String>) -> syn::Result
     Ok(quote! {
         #ffi_converter_impl
         #meta_static_var
-        #type_assertion
         #variant_errors
     })
 }
 
 pub(crate) fn expand_ffi_converter_error(attr: ErrorAttr, input: DeriveInput) -> TokenStream {
-    let enum_ = match input.data {
-        Data::Enum(e) => e,
+    match input.data {
+        Data::Enum(e) => error_ffi_converter_impl(&input.ident, &e, &attr),
         _ => {
-            return syn::Error::new(
+            syn::Error::new(
                 proc_macro2::Span::call_site(),
                 "This attribute must only be used on enums",
             )
-            .into_compile_error();
+            .into_compile_error()
         }
-    };
-
-    error_ffi_converter_impl(&input.ident, &enum_, &attr)
+    }
 }
 
 fn error_ffi_converter_impl(ident: &Ident, enum_: &DataEnum, attr: &ErrorAttr) -> TokenStream {
@@ -83,16 +74,20 @@ fn error_ffi_converter_impl(ident: &Ident, enum_: &DataEnum, attr: &ErrorAttr) -
             attr.with_try_read.is_some(),
         )
     } else {
-        enum_ffi_converter_impl(ident, enum_, attr.tag.as_ref())
+        rich_error_ffi_converter_impl(ident, enum_, attr.tag.as_ref())
     }
 }
 
+// FfiConverters for "flat errors"
+//
+// These are errors where we only expose the variants, not the data.
 fn flat_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     tag: Option<&Path>,
     implement_try_read: bool,
 ) -> TokenStream {
+    let name = ident.to_string();
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
 
     let write_impl = {
@@ -103,7 +98,7 @@ fn flat_error_ffi_converter_impl(
             quote! {
                 Self::#v_ident { .. } => {
                     ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                    <::std::string::String as ::uniffi::FfiConverter<()>>::write(error_msg, buf);
+                    <::std::string::String as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(error_msg, buf);
                 }
             }
         });
@@ -145,39 +140,43 @@ fn flat_error_ffi_converter_impl(
             fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
                 #try_read_impl
             }
+
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ERROR)
+                .concat_str(#name);
         }
     }
 }
 
-fn error_metadata(
+pub(crate) fn error_meta_static_var(
     ident: &Ident,
-    variants: &Punctuated<Variant, Token![,]>,
-    module_path: Vec<String>,
-    attr: &ErrorAttr,
-) -> syn::Result<ErrorMetadata> {
+    enum_: &DataEnum,
+    flat: bool,
+) -> syn::Result<TokenStream> {
     let name = ident.to_string();
-    let flat = attr.flat.is_some();
-    let variants = if flat {
-        variants
-            .iter()
-            .map(|v| VariantMetadata {
-                name: v.ident.to_string(),
-                fields: vec![],
-            })
-            .collect()
-    } else {
-        variants
-            .iter()
-            .map(variant_metadata)
-            .collect::<syn::Result<_>>()?
+    let flat_code = if flat { 1u8 } else { 0u8 };
+    let mut metadata_expr = quote! {
+            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
+                .concat_str(module_path!())
+                .concat_str(#name)
+                .concat_value(#flat_code)
     };
+    if flat {
+        metadata_expr.extend(flat_error_variant_metadata(enum_)?);
+    } else {
+        metadata_expr.extend(variant_metadata(enum_)?);
+    }
+    Ok(create_metadata_static_var("ERROR", &name, metadata_expr))
+}
 
-    Ok(ErrorMetadata {
-        module_path,
-        name,
-        variants,
-        flat,
-    })
+pub fn flat_error_variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
+    let variants_len =
+        try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
+    Ok(std::iter::once(quote! { .concat_value(#variants_len) })
+        .chain(enum_.variants.iter().map(|v| {
+            let name = type_name(&v.ident);
+            quote! { .concat_str(#name) }
+        }))
+        .collect())
 }
 
 mod kw {

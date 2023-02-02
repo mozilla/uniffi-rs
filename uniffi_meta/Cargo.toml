@@ -9,6 +9,8 @@ license = "MPL-2.0"
 keywords = ["ffi", "bindgen"]
 
 [dependencies]
+anyhow = "1"
+bytes = "1.0"
 serde = { version = "1.0.136", features = ["derive"] }
 siphasher = "0.3"
 uniffi_checksum_derive = { version = "0.23.0", path = "../uniffi_checksum_derive" }

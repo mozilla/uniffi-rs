@@ -180,7 +180,9 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{ffi_converter_rust_buffer_lift_and_lower, FfiConverter, UniFfiTag};
+    use crate::{
+        ffi_converter_rust_buffer_lift_and_lower, FfiConverter, MetadataBuffer, UniFfiTag,
+    };
 
     fn function(a: u8) -> i8 {
         match a {
@@ -228,6 +230,9 @@ mod test {
         fn try_read(buf: &mut &[u8]) -> Result<TestError> {
             <String as FfiConverter<UniFfiTag>>::try_read(buf).map(TestError)
         }
+
+        // Use a dummy value here since we don't actually need TYPE_ID_META
+        const TYPE_ID_META: MetadataBuffer = MetadataBuffer::new();
     }
 
     fn function_with_result(a: u8) -> Result<i8, TestError> {

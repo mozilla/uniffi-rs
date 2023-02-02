@@ -7,6 +7,9 @@ pub use uniffi_checksum_derive::Checksum;
 
 use serde::{Deserialize, Serialize};
 
+mod reader;
+pub use reader::MetadataReader;
+
 /// Similar to std::hash::Hash.
 ///
 /// Implementations of this trait are expected to update the hasher state in
@@ -95,41 +98,50 @@ impl Checksum for &str {
     }
 }
 
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+// The namespace of a Component interface
+//
+// This is used to match up the macro metadata with the UDL items
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
+pub struct NamespaceMetadata {
+    pub crate_name: String,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct FnMetadata {
-    pub module_path: Vec<String>,
+    pub module_path: String,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
-    pub throws: Option<String>,
+    pub throws: Option<Type>,
 }
 
 impl FnMetadata {
     pub fn ffi_symbol_name(&self) -> String {
-        fn_ffi_symbol_name(&self.module_path, &self.name, checksum(self))
+        fn_ffi_symbol_name(&self.module_path, &self.name)
     }
 }
 
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct MethodMetadata {
-    pub module_path: Vec<String>,
+    pub module_path: String,
     pub self_name: String,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
-    pub throws: Option<String>,
+    pub throws: Option<Type>,
 }
 
 impl MethodMetadata {
     pub fn ffi_symbol_name(&self) -> String {
         let full_name = format!("impl_{}_{}", self.self_name, self.name);
-        fn_ffi_symbol_name(&self.module_path, &full_name, checksum(self))
+        fn_ffi_symbol_name(&self.module_path, &full_name)
     }
 }
 
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct FnParamMetadata {
     pub name: String,
     #[serde(rename = "type")]
@@ -150,6 +162,27 @@ pub enum Type {
     F64,
     Bool,
     String,
+    Duration,
+    SystemTime,
+    Enum {
+        name: String,
+    },
+    Record {
+        name: String,
+    },
+    ArcObject {
+        object_name: String,
+    },
+    Error {
+        name: String,
+    },
+    CallbackInterface {
+        name: String,
+    },
+    Custom {
+        name: String,
+        builtin: Box<Type>,
+    },
     Option {
         inner_type: Box<Type>,
     },
@@ -160,44 +193,38 @@ pub enum Type {
         key_type: Box<Type>,
         value_type: Box<Type>,
     },
-    ArcObject {
-        object_name: String,
-    },
-    Unresolved {
-        name: String,
-    },
 }
 
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct RecordMetadata {
-    pub module_path: Vec<String>,
+    pub module_path: String,
     pub name: String,
     pub fields: Vec<FieldMetadata>,
 }
 
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct FieldMetadata {
     pub name: String,
     #[serde(rename = "type")]
     pub ty: Type,
 }
 
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct EnumMetadata {
-    pub module_path: Vec<String>,
+    pub module_path: String,
     pub name: String,
     pub variants: Vec<VariantMetadata>,
 }
 
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct VariantMetadata {
     pub name: String,
     pub fields: Vec<FieldMetadata>,
 }
 
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct ObjectMetadata {
-    pub module_path: Vec<String>,
+    pub module_path: String,
     pub name: String,
 }
 
@@ -207,13 +234,13 @@ impl ObjectMetadata {
     /// This function is used to free the memory used by this object.
     pub fn free_ffi_symbol_name(&self) -> String {
         let free_name = format!("object_free_{}", self.name);
-        fn_ffi_symbol_name(&self.module_path, &free_name, checksum(self))
+        fn_ffi_symbol_name(&self.module_path, &free_name)
     }
 }
 
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct ErrorMetadata {
-    pub module_path: Vec<String>,
+    pub module_path: String,
     pub name: String,
     pub variants: Vec<VariantMetadata>,
     pub flat: bool,
@@ -229,20 +256,34 @@ pub fn checksum<T: Checksum>(val: &T) -> u16 {
     (hasher.finish() & 0x000000000000FFFF) as u16
 }
 
-pub fn fn_ffi_symbol_name(mod_path: &[String], name: &str, checksum: u16) -> String {
-    let mod_path = mod_path.join("__");
-    format!("_uniffi_{mod_path}_{name}_{checksum:x}")
+pub fn fn_ffi_symbol_name(mod_path: &str, name: &str) -> String {
+    let mod_path = mod_path.replace("::", "__");
+    format!("_uniffi_{mod_path}_{name}")
 }
 
 /// Enum covering all the possible metadata types
-#[derive(Clone, Debug, Checksum, Deserialize, Serialize)]
+#[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub enum Metadata {
+    Namespace(NamespaceMetadata),
     Func(FnMetadata),
     Method(MethodMetadata),
     Record(RecordMetadata),
     Enum(EnumMetadata),
     Object(ObjectMetadata),
     Error(ErrorMetadata),
+}
+
+impl Metadata {
+    pub fn read(data: &[u8]) -> anyhow::Result<Self> {
+        let reader = &mut &*data;
+        reader.read_metadata()
+    }
+}
+
+impl From<NamespaceMetadata> for Metadata {
+    fn from(value: NamespaceMetadata) -> Metadata {
+        Self::Namespace(value)
+    }
 }
 
 impl From<FnMetadata> for Metadata {
