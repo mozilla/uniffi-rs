@@ -31,7 +31,7 @@
 
 use std::{io::Write, process::Command};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use camino::Utf8Path;
 use fs_err::File;
 
@@ -72,14 +72,14 @@ pub fn write_bindings(
 
     let source_file = out_dir.join(format!("{}.swift", config.module_name()));
     let mut l = File::create(&source_file)?;
-    write!(l, "{library}")?;
+    write!(l, "{library}").context("Failed to write generated library code")?;
 
     let mut h = File::create(out_dir.join(config.header_filename()))?;
-    write!(h, "{header}")?;
+    write!(h, "{header}").context("Failed to write generated header file")?;
 
     if let Some(modulemap) = modulemap {
         let mut m = File::create(out_dir.join(config.modulemap_filename()))?;
-        write!(m, "{modulemap}")?;
+        write!(m, "{modulemap}").context("Failed to write generated modulemap")?;
     }
 
     if try_format_code {
@@ -88,10 +88,9 @@ pub fn write_bindings(
             .output()
         {
             println!(
-                "Warning: Unable to auto-format {} using swiftformat: {:?}",
+                "Warning: Unable to auto-format {} using swiftformat: {e:?}",
                 source_file.file_name().unwrap(),
-                e
-            )
+            );
         }
     }
 

@@ -4,7 +4,7 @@
 
 use std::{io::Write, process::Command};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use camino::Utf8Path;
 use fs_err::File;
 
@@ -24,14 +24,14 @@ pub fn write_bindings(
 ) -> Result<()> {
     let py_file = out_dir.join(format!("{}.py", ci.namespace()));
     let mut f = File::create(&py_file)?;
-    write!(f, "{}", generate_python_bindings(config, ci)?)?;
+    write!(f, "{}", generate_python_bindings(config, ci)?)
+        .context("Failed to write generated Python bindings")?;
 
     if try_format_code {
         if let Err(e) = Command::new("yapf").arg(&py_file).output() {
             println!(
-                "Warning: Unable to auto-format {} using yapf: {:?}",
+                "Warning: Unable to auto-format {} using yapf: {e:?}",
                 py_file.file_name().unwrap(),
-                e
             )
         }
     }

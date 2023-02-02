@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err::{self as fs, File};
 use std::{io::Write, process::Command};
@@ -24,14 +24,14 @@ pub fn write_bindings(
     fs::create_dir_all(&kt_file)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
     let mut f = File::create(&kt_file)?;
-    write!(f, "{}", generate_bindings(config, ci)?)?;
+    write!(f, "{}", generate_bindings(config, ci)?)
+        .context("Failed to write generated bindings")?;
     if try_format_code {
         if let Err(e) = Command::new("ktlint").arg("-F").arg(&kt_file).output() {
             println!(
-                "Warning: Unable to auto-format {} using ktlint: {:?}",
+                "Warning: Unable to auto-format {} using ktlint: {e:?}",
                 kt_file.file_name().unwrap(),
-                e
-            )
+            );
         }
     }
     Ok(())
