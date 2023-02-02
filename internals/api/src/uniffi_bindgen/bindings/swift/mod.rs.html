@@ -96,7 +96,6 @@
 <span id="96">96</span>
 <span id="97">97</span>
 <span id="98">98</span>
-<span id="99">99</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -130,7 +129,7 @@
 
 </span><span class="kw">use </span>std::{io::Write, process::Command};
 
-<span class="kw">use </span>anyhow::Result;
+<span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>fs_err::File;
 
@@ -171,14 +170,14 @@
 
     <span class="kw">let </span>source_file = out_dir.join(<span class="macro">format!</span>(<span class="string">&quot;{}.swift&quot;</span>, config.module_name()));
     <span class="kw">let </span><span class="kw-2">mut </span>l = File::create(<span class="kw-2">&amp;</span>source_file)<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(l, <span class="string">&quot;{library}&quot;</span>)<span class="question-mark">?</span>;
+    <span class="macro">write!</span>(l, <span class="string">&quot;{library}&quot;</span>).context(<span class="string">&quot;Failed to write generated library code&quot;</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>h = File::create(out_dir.join(config.header_filename()))<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(h, <span class="string">&quot;{header}&quot;</span>)<span class="question-mark">?</span>;
+    <span class="macro">write!</span>(h, <span class="string">&quot;{header}&quot;</span>).context(<span class="string">&quot;Failed to write generated header file&quot;</span>)<span class="question-mark">?</span>;
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(modulemap) = modulemap {
         <span class="kw">let </span><span class="kw-2">mut </span>m = File::create(out_dir.join(config.modulemap_filename()))<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(m, <span class="string">&quot;{modulemap}&quot;</span>)<span class="question-mark">?</span>;
+        <span class="macro">write!</span>(m, <span class="string">&quot;{modulemap}&quot;</span>).context(<span class="string">&quot;Failed to write generated modulemap&quot;</span>)<span class="question-mark">?</span>;
     }
 
     <span class="kw">if </span>try_format_code {
@@ -187,10 +186,9 @@
             .output()
         {
             <span class="macro">println!</span>(
-                <span class="string">&quot;Warning: Unable to auto-format {} using swiftformat: {:?}&quot;</span>,
+                <span class="string">&quot;Warning: Unable to auto-format {} using swiftformat: {e:?}&quot;</span>,
                 source_file.file_name().unwrap(),
-                e
-            )
+            );
         }
     }
 

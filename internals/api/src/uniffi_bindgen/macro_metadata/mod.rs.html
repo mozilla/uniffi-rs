@@ -17,11 +17,17 @@
 <span id="17">17</span>
 <span id="18">18</span>
 <span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">super</span>::ComponentInterface;
+<span class="kw">use </span>anyhow::Context;
 <span class="kw">use </span>camino::Utf8Path;
 
 <span class="kw">mod </span>ci;
@@ -34,7 +40,11 @@
     iface: <span class="kw-2">&amp;mut </span>ComponentInterface,
     library_path: <span class="kw-2">&amp;</span>Utf8Path,
 ) -&gt; anyhow::Result&lt;()&gt; {
-    add_to_ci(iface, extract_from_library(library_path)<span class="question-mark">?</span>)
+    add_to_ci(
+        iface,
+        extract_from_library(library_path).context(<span class="string">&quot;Failed to extract proc-macro metadata&quot;</span>)<span class="question-mark">?</span>,
+    )
+    .context(<span class="string">&quot;Failed to add proc-macro metadata to ComponentInterface&quot;</span>)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

@@ -98,12 +98,16 @@
 <span id="98">98</span>
 <span id="99">99</span>
 <span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">crate</span>::interface::{ComponentInterface, Enum, Error, Record, Type};
-<span class="kw">use </span>anyhow::anyhow;
+<span class="kw">use </span>anyhow::{anyhow, Context};
 <span class="kw">use </span>uniffi_meta::Metadata;
 
 <span class="doccomment">/// Add Metadata items to the ComponentInterface
@@ -192,9 +196,13 @@
         }
     }
 
-    iface.resolve_types()<span class="question-mark">?</span>;
-    iface.derive_ffi_funcs()<span class="question-mark">?</span>;
-    iface.check_consistency()<span class="question-mark">?</span>;
+    iface.resolve_types().context(<span class="string">&quot;Failed to resolve types&quot;</span>)<span class="question-mark">?</span>;
+    iface
+        .derive_ffi_funcs()
+        .context(<span class="string">&quot;Failed to derive FFI functions&quot;</span>)<span class="question-mark">?</span>;
+    iface
+        .check_consistency()
+        .context(<span class="string">&quot;ComponentInterface consistency error&quot;</span>)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(())
 }

@@ -480,7 +480,6 @@
 <span id="480">480</span>
 <span id="481">481</span>
 <span id="482">482</span>
-<span id="483">483</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -782,7 +781,7 @@
     <span class="kw">if let </span><span class="prelude-val">Some</span>(library_file) = library_file {
         macro_metadata::add_to_ci_from_library(<span class="kw-2">&amp;mut </span>component, library_file)<span class="question-mark">?</span>;
     }
-    <span class="kw">let </span>crate_root = <span class="kw-2">&amp;</span>guess_crate_root(udl_file)<span class="question-mark">?</span>;
+    <span class="kw">let </span>crate_root = <span class="kw-2">&amp;</span>guess_crate_root(udl_file).context(<span class="string">&quot;Failed to guess crate root&quot;</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>config = get_config(<span class="kw-2">&amp;</span>component, crate_root, config_file_override)<span class="question-mark">?</span>;
     <span class="kw">let </span>out_dir = get_out_dir(udl_file, out_dir_override)<span class="question-mark">?</span>;
@@ -840,8 +839,7 @@
 
     <span class="kw">match </span>config_file {
         <span class="prelude-val">Some</span>(path) =&gt; {
-            <span class="kw">let </span>contents = fs::read_to_string(<span class="kw-2">&amp;</span>path)
-                .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {path}&quot;</span>))<span class="question-mark">?</span>;
+            <span class="kw">let </span>contents = fs::read_to_string(<span class="kw-2">&amp;</span>path).context(<span class="string">&quot;Failed to read config file&quot;</span>)<span class="question-mark">?</span>;
             <span class="kw">let </span>loaded_config: Config = toml::de::from_str(<span class="kw-2">&amp;</span>contents)
                 .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to generate config from file {path}&quot;</span>))<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(loaded_config.merge_with(<span class="kw-2">&amp;</span>default_config))
