@@ -134,9 +134,16 @@ pub fn extract_from_archive(
 
     let mut items = vec![];
     for member_name in members_to_check {
-        items.append(&mut extract_from_bytes(
-            archive.extract(member_name, file_data)?,
-        )?);
+        items.append(
+            &mut extract_from_bytes(
+                archive
+                    .extract(member_name, file_data)
+                    .with_context(|| format!("Failed to extract archive member `{member_name}`"))?,
+            )
+            .with_context(|| {
+                format!("Failed to extract data from archive member `{member_name}`")
+            })?,
+        );
     }
     Ok(items)
 }
@@ -168,7 +175,10 @@ impl ExtractedItems {
         // This works fine, because bincode knows when the serialized data is terminated and will
         // just ignore the trailing data.
         let data = &file_data[offset..];
-        self.items.push(bincode::deserialize::<Metadata>(data)?);
+        self.items
+            .push(bincode::deserialize::<Metadata>(data).with_context(|| {
+                format!("Failed to deserialize bincode data at offset {offset:#x}")
+            })?);
         self.names.insert(name.to_string());
         Ok(())
     }
