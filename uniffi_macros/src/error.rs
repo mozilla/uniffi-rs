@@ -55,13 +55,11 @@ pub fn expand_error(input: DeriveInput) -> syn::Result<TokenStream> {
 pub(crate) fn expand_ffi_converter_error(attr: ErrorAttr, input: DeriveInput) -> TokenStream {
     match input.data {
         Data::Enum(e) => error_ffi_converter_impl(&input.ident, &e, &attr),
-        _ => {
-            syn::Error::new(
-                proc_macro2::Span::call_site(),
-                "This attribute must only be used on enums",
-            )
-            .into_compile_error()
-        }
+        _ => syn::Error::new(
+            proc_macro2::Span::call_site(),
+            "This attribute must only be used on enums",
+        )
+        .into_compile_error(),
     }
 }
 
@@ -132,6 +130,7 @@ fn flat_error_ffi_converter_impl(
         #[automatically_derived]
         unsafe #impl_spec {
             ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
+            ::uniffi::ffi_converter_default_return!(crate::UniFfiTag);
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl
@@ -153,7 +152,7 @@ pub(crate) fn error_meta_static_var(
     flat: bool,
 ) -> syn::Result<TokenStream> {
     let name = ident.to_string();
-    let flat_code = if flat { 1u8 } else { 0u8 };
+    let flat_code = u8::from(flat);
     let mut metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
                 .concat_str(module_path!())

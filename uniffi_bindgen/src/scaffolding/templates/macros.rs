@@ -50,70 +50,9 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
     {%- endif %}
 {%- endmacro -%}
 
-{% macro return_signature(func) %}{% match func.ffi_func().return_type() %}{% when Some with (return_type) %} -> {% call return_type_func(func) %}{%- else -%}{%- endmatch -%}{%- endmacro -%}
-
-{% macro return_type_func(func) %}{% match func.ffi_func().return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi }}{%- else -%}(){%- endmatch -%}{%- endmacro -%}
-
-{% macro ret(func) %}{% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|ffi_converter }}::lower(_retval){% else %}_retval{% endmatch %}{% endmacro %}
-
-{% macro construct(obj, cons) %}
-    r#{{- obj.name() }}::{% call to_rs_call(cons) -%}
-{% endmacro %}
-
-{% macro to_rs_constructor_call(obj, cons) %}
-{% match cons.throws_type() %}
-{% when Some with (e) %}
-    uniffi::call_with_result(call_status, || {
-        let _new = {% call construct(obj, cons) %}.map_err(Into::into).map_err({{ e|ffi_converter }}::lower)?;
-        let _arc = std::sync::Arc::new(_new);
-        Ok({{ obj.type_().borrow()|ffi_converter }}::lower(_arc))
-    })
-{% else %}
-    uniffi::call_with_output(call_status, || {
-        let _new = {% call construct(obj, cons) %};
-        let _arc = std::sync::Arc::new(_new);
-        {{ obj.type_().borrow()|ffi_converter }}::lower(_arc)
-    })
-{% endmatch %}
-{% endmacro %}
-
-{% macro to_rs_method_call(obj, meth) -%}
-{% match meth.throws_type() -%}
-{% when Some with (e) -%}
-uniffi::call_with_result(call_status, || {
-    let _retval =  r#{{ obj.name() }}::{% call to_rs_call(meth) %}.map_err(Into::into).map_err({{ e|ffi_converter }}::lower)?;
-    Ok({% call ret(meth) %})
-})
-{% else %}
-uniffi::call_with_output(call_status, || {
-    {% match meth.return_type() -%}
-    {% when Some with (return_type) -%}
-    let retval = r#{{ obj.name() }}::{% call to_rs_call(meth) %};
-    {{ return_type|ffi_converter }}::lower(retval)
-    {% else -%}
-    r#{{ obj.name() }}::{% call to_rs_call(meth) %}
-    {% endmatch -%}
-})
-{% endmatch -%}
-{% endmacro -%}
-
-{% macro to_rs_function_call(func) %}
-{% match func.throws_type() %}
-{% when Some with (e) %}
-uniffi::call_with_result(call_status, || {
-    let _retval = {% call to_rs_call(func) %}.map_err(Into::into).map_err({{ e|ffi_converter }}::lower)?;
-    Ok({% call ret(func) %})
-})
-{% else %}
-uniffi::call_with_output(call_status, || {
-    {% match func.return_type() -%}
-    {% when Some with (return_type) -%}
-    {{ return_type|ffi_converter }}::lower({% call to_rs_call(func) %})
-    {% else -%}
-    {% if func.full_arguments().is_empty() %}#[allow(clippy::redundant_closure)]{% endif %}
-    {% call to_rs_call(func) %}
-    {%- if func.return_type().is_none() %};{% endif %}
-    {% endmatch -%}
-}){%- if func.return_type().is_none() -%};{% endif %}
-{% endmatch %}
-{% endmacro %}
+{% macro return_signature(func) %}
+{%- match func.return_type() %}
+{%- when Some with (return_type) %} -> {{ return_type|ffi_converter }}::ReturnType
+{%- else -%}
+{%- endmatch -%}
+{%- endmacro -%}

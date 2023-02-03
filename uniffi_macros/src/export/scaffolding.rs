@@ -6,7 +6,7 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use syn::{ext::IdentExt, spanned::Spanned, FnArg, Pat};
 
-use super::{AsyncRuntime, ExportAttributeArguments, FunctionReturn, Signature};
+use super::{AsyncRuntime, ExportAttributeArguments, Signature};
 use crate::util::{create_metadata_static_var, try_metadata_value_from_usize, type_name};
 
 pub(super) fn gen_fn_scaffolding(
@@ -213,6 +213,7 @@ impl ScaffoldingBits {
 
     fn gen_function_meta_static_var(&self, sig: &Signature) -> syn::Result<TokenStream> {
         let name = type_name(&sig.ident);
+        let return_ty = &sig.output;
         let is_async = sig.is_async;
         let args_len = try_metadata_value_from_usize(
             // Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
@@ -221,7 +222,6 @@ impl ScaffoldingBits {
             "UniFFI limits functions to 256 arguments",
         )?;
         let arg_metadata_calls = &self.arg_metadata_calls;
-        let result_metadata_calls = self.result_metadata_calls(sig);
         Ok(create_metadata_static_var(
             "FUNC",
             &name,
@@ -232,7 +232,7 @@ impl ScaffoldingBits {
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        #result_metadata_calls
+                        .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
             },
         ))
     }
@@ -244,6 +244,7 @@ impl ScaffoldingBits {
     ) -> syn::Result<TokenStream> {
         let object_name = type_name(self_ident);
         let name = type_name(&sig.ident);
+        let return_ty = &sig.output;
         let is_async = sig.is_async;
         let args_len = try_metadata_value_from_usize(
             // Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
@@ -252,7 +253,6 @@ impl ScaffoldingBits {
             "UniFFI limits functions to 256 arguments",
         )?;
         let arg_metadata_calls = &self.arg_metadata_calls;
-        let result_metadata_calls = self.result_metadata_calls(sig);
         Ok(create_metadata_static_var(
             "METHOD",
             &format!("{}_{}", object_name, name),
@@ -264,29 +264,9 @@ impl ScaffoldingBits {
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        #result_metadata_calls
+                        .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
             },
         ))
-    }
-
-    fn result_metadata_calls(&self, sig: &Signature) -> TokenStream {
-        match &sig.output {
-            Some(FunctionReturn {
-                ty,
-                throws: Some(throws),
-            }) => quote! {
-                .concat(<#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
-                .concat(<#throws as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
-            },
-            Some(FunctionReturn { ty, throws: None }) => quote! {
-                .concat(<#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
-                .concat_value(::uniffi::metadata::codes::TYPE_UNIT)
-            },
-            None => quote! {
-                .concat_value(::uniffi::metadata::codes::TYPE_UNIT)
-                .concat_value(::uniffi::metadata::codes::TYPE_UNIT)
-            },
-        }
     }
 }
 
@@ -297,165 +277,75 @@ fn gen_ffi_function(
     arguments: &ExportAttributeArguments,
 ) -> TokenStream {
     let name = sig.ident.to_string();
-    let mut extra_functions = Vec::new();
-    let is_async = sig.is_async;
     let rust_fn_call = bits.rust_fn_call();
     let fn_params = &bits.params;
+    let return_ty = &sig.output;
 
-    let (return_ty, throw_ty, return_expr, throws) = match &sig.output {
-        Some(FunctionReturn { ty, throws: None }) if is_async => {
-            let return_ty = quote! { #ty };
-            let throw_ty = Some(quote! { ::std::convert::Infallible });
-
-            (
-                return_ty.clone(),
-                throw_ty.clone(),
-                quote! { Option<Box<::uniffi::RustFuture<#return_ty, #throw_ty>>> },
-                &None,
+    if !sig.is_async {
+        if let Some(async_runtime) = &arguments.async_runtime {
+            return syn::Error::new(
+                async_runtime.span(),
+                "this attribute is only allowed on async functions",
             )
+            .into_compile_error();
         }
 
-        Some(FunctionReturn { ty, throws }) if is_async => {
-            let return_ty = quote! { #ty };
-            let throw_ty = Some(quote! { #throws });
-
-            (
-                return_ty.clone(),
-                throw_ty.clone(),
-                quote! { Option<Box<::uniffi::RustFuture<#return_ty, #throw_ty>>> },
-                throws,
-            )
+        quote! {
+            #[doc(hidden)]
+            #[no_mangle]
+            pub extern "C" fn #ffi_ident(
+                #(#fn_params,)*
+                call_status: &mut ::uniffi::RustCallStatus,
+            ) -> <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {
+                ::uniffi::deps::log::debug!(#name);
+                ::uniffi::rust_call(call_status, || {
+                    <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower_return(#rust_fn_call)
+                })
+            }
         }
-
-        None if is_async => {
-            let return_ty = quote! { () };
-            let throw_ty = Some(quote! { ::std::convert::Infallible });
-
-            (
-                return_ty.clone(),
-                throw_ty.clone(),
-                quote! { Option<Box<::uniffi::RustFuture<#return_ty, #throw_ty>>> },
-                &None,
-            )
-        }
-
-        Some(FunctionReturn { ty, throws }) => (
-            quote! { #ty },
-            None,
-            quote! { <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::FfiType },
-            throws,
-        ),
-
-        None => (
-            quote! { () },
-            None,
-            quote! { <() as ::uniffi::FfiConverter<crate::UniFfiTag>>::FfiType },
-            &None,
-        ),
-    };
-
-    let body_expr = if is_async {
+    } else {
         let rust_future_ctor = match &arguments.async_runtime {
             Some(AsyncRuntime::Tokio(_)) => quote! { new_tokio },
             None => quote! { new },
         };
-
-        let body = match throws {
-            Some(_) => quote! { #rust_fn_call.await },
-            None => quote! { Ok(#rust_fn_call.await) },
-        };
-
-        quote! {
-            ::uniffi::call_with_output(call_status, || {
-                Some(Box::new(::uniffi::RustFuture::#rust_future_ctor(
-                    async move {
-                        #body
-                    }
-                )))
-            })
-        }
-    } else {
-        match throws {
-            Some(error_ident) => {
-                quote! {
-                    ::uniffi::call_with_result(call_status, || {
-                        let val = #rust_fn_call.map_err(|e| {
-                            <#error_ident as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower(
-                                ::std::convert::Into::into(e),
-                            )
-                        })?;
-
-                        Ok(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower(val))
-                    })
-                }
-            }
-
-            None => {
-                quote! {
-                    ::uniffi::call_with_output(call_status, || {
-                        <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower(#rust_fn_call)
-                    })
-                }
-            }
-        }
-    };
-
-    if is_async {
         let ffi_poll_ident = format_ident!("{}_poll", ffi_ident);
         let ffi_drop_ident = format_ident!("{}_drop", ffi_ident);
 
-        // Monomorphised poll function.
-        extra_functions.push(quote! {
+        quote! {
+            #[doc(hidden)]
+            #[no_mangle]
+            pub extern "C" fn #ffi_ident(
+                #(#fn_params,)*
+                call_status: &mut ::uniffi::RustCallStatus,
+            ) -> Box<::uniffi::RustFuture<#return_ty>> {
+                ::uniffi::deps::log::debug!(#name);
+                Box::new(::uniffi::RustFuture::#rust_future_ctor(
+                    async move { #rust_fn_call.await }
+                ))
+            }
+
+            // Monomorphised poll function.
             #[doc(hidden)]
             #[no_mangle]
             pub extern "C" fn #ffi_poll_ident(
-                future: ::std::option::Option<&mut ::uniffi::RustFuture<#return_ty, #throw_ty>>,
+                future: ::std::option::Option<&mut ::uniffi::RustFuture<#return_ty>>,
                 waker: ::std::option::Option<::uniffi::RustFutureForeignWakerFunction>,
                 waker_environment: *const ::std::ffi::c_void,
-                polled_result: &mut <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::FfiType,
+                polled_result: &mut ::std::mem::MaybeUninit<<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType>,
                 call_status: &mut ::uniffi::RustCallStatus,
             ) -> bool {
-                ::uniffi::ffi::uniffi_rustfuture_poll::<_, _, crate::UniFfiTag>(future, waker, waker_environment, polled_result, call_status)
+                ::uniffi::ffi::uniffi_rustfuture_poll::<_, crate::UniFfiTag>(future, waker, waker_environment, polled_result, call_status)
             }
-        });
 
-        // Monomorphised drop function.
-        extra_functions.push(quote! {
+            // Monomorphised drop function.
             #[doc(hidden)]
             #[no_mangle]
             pub extern "C" fn #ffi_drop_ident(
-                future: ::std::option::Option<::std::boxed::Box<::uniffi::RustFuture<#return_ty, #throw_ty>>>,
+                future: ::std::option::Option<::std::boxed::Box<::uniffi::RustFuture<#return_ty>>>,
                 call_status: &mut ::uniffi::RustCallStatus,
             ) {
                 ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
             }
-        });
-    }
-
-    let argument_error = match &arguments.async_runtime {
-        Some(async_runtime) if !is_async => Some(
-            syn::Error::new(
-                async_runtime.span(),
-                "this attribute is only allowed on async functions",
-            )
-            .into_compile_error(),
-        ),
-        _ => None,
-    };
-
-    quote! {
-        #[doc(hidden)]
-        #[no_mangle]
-        pub extern "C" fn #ffi_ident(
-            #(#fn_params,)*
-            call_status: &mut ::uniffi::RustCallStatus,
-        ) -> #return_expr {
-            ::uniffi::deps::log::debug!(#name);
-            #body_expr
         }
-
-        #( #extra_functions )*
-
-        #argument_error
     }
 }

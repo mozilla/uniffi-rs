@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::{
-    check_remaining, ffi_converter_rust_buffer_lift_and_lower, metadata, FfiConverter, Interface,
-    MetadataBuffer, Result, RustBuffer,
+    check_remaining, ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower,
+    metadata, FfiConverter, Interface, MetadataBuffer, Result, RustBuffer,
 };
 /// This module contains builtin `FFIConverter` implementations.  These cover:
 ///   - Simple privitive types: u8, i32, String, Arc<T>, etc
@@ -42,6 +42,8 @@ macro_rules! impl_ffi_converter_for_num_primitive {
     ($T:ty, $type_code:expr) => {
         paste! {
             unsafe impl<UT> FfiConverter<UT> for $T {
+                ffi_converter_default_return!(UT);
+
                 type FfiType = $T;
 
                 fn lower(obj: $T) -> Self::FfiType {
@@ -83,6 +85,8 @@ impl_ffi_converter_for_num_primitive!(f64, metadata::codes::TYPE_F64);
 /// Booleans are passed as an `i8` in order to avoid problems with handling
 /// C-compatible boolean values on JVM-based languages.
 unsafe impl<UT> FfiConverter<UT> for bool {
+    ffi_converter_default_return!(UT);
+
     type FfiType = i8;
 
     fn lower(obj: bool) -> Self::FfiType {
@@ -111,6 +115,8 @@ unsafe impl<UT> FfiConverter<UT> for bool {
 
 /// Support for passing the unit type via the FFI.  This is currently only used for void returns
 unsafe impl<UT> FfiConverter<UT> for () {
+    ffi_converter_default_return!(UT);
+
     type FfiType = ();
 
     fn try_lift(_: Self::FfiType) -> Result<()> {
@@ -129,6 +135,8 @@ unsafe impl<UT> FfiConverter<UT> for () {
 }
 
 unsafe impl<UT> FfiConverter<UT> for Infallible {
+    ffi_converter_default_return!(UT);
+
     type FfiType = RustBuffer;
 
     fn try_lift(_: Self::FfiType) -> Result<Infallible> {
@@ -162,6 +170,8 @@ unsafe impl<UT> FfiConverter<UT> for Infallible {
 /// followed by utf8-encoded bytes. (It's a signed integer because unsigned types are
 /// currently experimental in Kotlin).
 unsafe impl<UT> FfiConverter<UT> for String {
+    ffi_converter_default_return!(UT);
+
     type FfiType = RustBuffer;
 
     // This returns a struct with a raw pointer to the underlying bytes, so it's very
@@ -223,6 +233,7 @@ unsafe impl<UT> FfiConverter<UT> for String {
 /// if the total offset should be added to or subtracted from the unix epoch.
 unsafe impl<UT> FfiConverter<UT> for SystemTime {
     ffi_converter_rust_buffer_lift_and_lower!(UT);
+    ffi_converter_default_return!(UT);
 
     fn write(obj: SystemTime, buf: &mut Vec<u8>) {
         let mut sign = 1;
@@ -268,6 +279,7 @@ unsafe impl<UT> FfiConverter<UT> for SystemTime {
 /// and 999,999,999.
 unsafe impl<UT> FfiConverter<UT> for Duration {
     ffi_converter_rust_buffer_lift_and_lower!(UT);
+    ffi_converter_default_return!(UT);
 
     fn write(obj: Duration, buf: &mut Vec<u8>) {
         buf.put_u64(obj.as_secs());
@@ -293,6 +305,7 @@ unsafe impl<UT> FfiConverter<UT> for Duration {
 /// but that seems more fiddly and less safe in the short term, so it can wait.
 unsafe impl<UT, T: FfiConverter<UT>> FfiConverter<UT> for Option<T> {
     ffi_converter_rust_buffer_lift_and_lower!(UT);
+    ffi_converter_default_return!(UT);
 
     fn write(obj: Option<T>, buf: &mut Vec<u8>) {
         match obj {
@@ -328,6 +341,7 @@ unsafe impl<UT, T: FfiConverter<UT>> FfiConverter<UT> for Option<T> {
 /// similar struct. But that's for future work.
 unsafe impl<UT, T: FfiConverter<UT>> FfiConverter<UT> for Vec<T> {
     ffi_converter_rust_buffer_lift_and_lower!(UT);
+    ffi_converter_default_return!(UT);
 
     fn write(obj: Vec<T>, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
@@ -366,6 +380,7 @@ where
     V: FfiConverter<UT>,
 {
     ffi_converter_rust_buffer_lift_and_lower!(UT);
+    ffi_converter_default_return!(UT);
 
     fn write(obj: HashMap<K, V>, buf: &mut Vec<u8>) {
         // TODO: would be nice not to panic here :-/
@@ -453,6 +468,48 @@ unsafe impl<UT, T: Interface<UT>> FfiConverter<UT> for std::sync::Arc<T> {
         <Self as FfiConverter<UT>>::try_lift(buf.get_u64() as Self::FfiType)
     }
 
+    ffi_converter_default_return!(UT);
+
     const TYPE_ID_META: MetadataBuffer =
         MetadataBuffer::from_code(metadata::codes::TYPE_INTERFACE).concat_str(T::NAME);
+}
+
+/// Support `Result<>` via the FFI.
+///
+/// This is currently supported for function returns. Lifting/lowering Result<> arguments is not
+/// implemented.
+unsafe impl<UT, R, E> FfiConverter<UT> for Result<R, E>
+where
+    R: FfiConverter<UT>,
+    E: FfiConverter<UT, FfiType = RustBuffer>,
+{
+    type FfiType = (); // Placeholder while lower/lift/serializing is unimplemented
+    type ReturnType = R::ReturnType;
+
+    fn try_lift(_: Self::FfiType) -> Result<Self> {
+        unimplemented!();
+    }
+
+    fn lower(_: Self) -> Self::FfiType {
+        unimplemented!();
+    }
+
+    fn write(_: Self, _: &mut Vec<u8>) {
+        unimplemented!();
+    }
+
+    fn try_read(_: &mut &[u8]) -> Result<Self> {
+        unimplemented!();
+    }
+
+    fn lower_return(v: Self) -> Result<Self::ReturnType, RustBuffer> {
+        match v {
+            Ok(r) => R::lower_return(r),
+            Err(e) => Err(E::lower(e)),
+        }
+    }
+
+    const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_RESULT)
+        .concat(R::TYPE_ID_META)
+        .concat(E::TYPE_ID_META);
 }

@@ -60,6 +60,8 @@ pub mod codes {
     pub const TYPE_DURATION: u8 = 20;
     pub const TYPE_CALLBACK_INTERFACE: u8 = 21;
     pub const TYPE_CUSTOM: u8 = 22;
+    pub const TYPE_RESULT: u8 = 23;
+    pub const TYPE_FUTURE: u8 = 24;
     pub const TYPE_UNIT: u8 = 255;
 }
 

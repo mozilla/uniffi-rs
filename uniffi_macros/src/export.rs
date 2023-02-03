@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::quote_spanned;
+use quote::{quote, quote_spanned};
 use syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
@@ -14,10 +14,7 @@ pub(crate) mod metadata;
 mod scaffolding;
 
 pub use self::metadata::gen_metadata;
-use self::{
-    metadata::convert::try_split_result,
-    scaffolding::{gen_fn_scaffolding, gen_method_scaffolding},
-};
+use self::scaffolding::{gen_fn_scaffolding, gen_method_scaffolding};
 use crate::util::{either_attribute_arg, parse_comma_separated, UniffiAttribute};
 
 // TODO(jplatte): Ensure no generics, …
@@ -41,14 +38,14 @@ pub struct Signature {
     ident: Ident,
     is_async: bool,
     inputs: Vec<syn::FnArg>,
-    output: Option<FunctionReturn>,
+    output: TokenStream,
 }
 
 impl Signature {
     fn new(item: syn::Signature) -> syn::Result<Self> {
         let output = match item.output {
-            syn::ReturnType::Default => None,
-            syn::ReturnType::Type(_, ty) => Some(FunctionReturn::new(ty)?),
+            syn::ReturnType::Default => quote! { () },
+            syn::ReturnType::Type(_, ty) => quote! { #ty },
         };
 
         Ok(Self {
@@ -56,23 +53,6 @@ impl Signature {
             is_async: item.asyncness.is_some(),
             inputs: item.inputs.into_iter().collect(),
             output,
-        })
-    }
-}
-
-pub struct FunctionReturn {
-    ty: Box<syn::Type>,
-    throws: Option<Ident>,
-}
-
-impl FunctionReturn {
-    fn new(ty: Box<syn::Type>) -> syn::Result<Self> {
-        Ok(match try_split_result(&ty)? {
-            Some((ok_type, throws)) => FunctionReturn {
-                ty: Box::new(ok_type.to_owned()),
-                throws: Some(throws),
-            },
-            None => FunctionReturn { ty, throws: None },
         })
     }
 }

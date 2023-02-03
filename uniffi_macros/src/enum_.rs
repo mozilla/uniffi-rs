@@ -116,6 +116,7 @@ fn enum_or_error_ffi_converter_impl(
         #[automatically_derived]
         unsafe #impl_spec {
             ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
+            ::uniffi::ffi_converter_default_return!(crate::UniFfiTag);
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl

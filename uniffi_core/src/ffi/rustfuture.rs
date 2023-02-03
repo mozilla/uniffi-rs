@@ -290,11 +290,11 @@
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
 
 use super::FfiDefault;
-use crate::{call_with_result, FfiConverter, RustBuffer, RustCallStatus};
+use crate::{rust_call, FfiConverter, RustCallStatus};
 use std::{
     ffi::c_void,
     future::Future,
-    mem::ManuallyDrop,
+    mem::{ManuallyDrop, MaybeUninit},
     panic,
     pin::Pin,
     sync::Arc,
@@ -305,13 +305,13 @@ use std::{
 ///
 /// See the module documentation to learn more.
 #[repr(transparent)]
-pub struct RustFuture<T, E>(Pin<Box<dyn Future<Output = Result<T, E>> + 'static>>);
+pub struct RustFuture<T>(Pin<Box<dyn Future<Output = T> + 'static>>);
 
-impl<T, E> RustFuture<T, E> {
+impl<T> RustFuture<T> {
     /// Create a new `RustFuture` from a regular `Future`.
     pub fn new<F>(future: F) -> Self
     where
-        F: Future<Output = Result<T, E>> + 'static,
+        F: Future<Output = T> + 'static,
     {
         Self(Box::pin(future))
     }
@@ -322,7 +322,7 @@ impl<T, E> RustFuture<T, E> {
     #[cfg(feature = "tokio")]
     pub fn new_tokio<F>(future: F) -> Self
     where
-        F: Future<Output = Result<T, E>> + 'static,
+        F: Future<Output = T> + 'static,
     {
         Self(Box::pin(async_compat::Compat::new(future)))
     }
@@ -343,7 +343,7 @@ impl<T, E> RustFuture<T, E> {
         &mut self,
         foreign_waker: RustFutureForeignWakerFunction,
         foreign_waker_environment: *const c_void,
-    ) -> RustFuturePoll<Result<T, E>> {
+    ) -> Poll<T> {
         let waker = unsafe {
             Waker::from_raw(RawWaker::new(
                 RustFutureForeignWaker::new(foreign_waker, foreign_waker_environment)
@@ -353,7 +353,7 @@ impl<T, E> RustFuture<T, E> {
         };
         let mut context = Context::from_waker(&waker);
 
-        self.0.as_mut().poll(&mut context).into()
+        self.0.as_mut().poll(&mut context)
     }
 }
 
@@ -378,32 +378,6 @@ pub enum RustFuturePoll<T> {
     Throwing,
 }
 
-impl<T> From<Poll<T>> for RustFuturePoll<T> {
-    fn from(value: Poll<T>) -> Self {
-        match value {
-            Poll::Ready(ready) => Self::Ready(ready),
-            Poll::Pending => Self::Pending,
-        }
-    }
-}
-
-impl<T, E> RustFuturePoll<Result<T, E>> {
-    /// Transpose a `RustFuturePoll<Result<T, E>>` to a
-    /// `Result<RustFuturePoll<T>, E>`.
-    fn transpose(self) -> Result<RustFuturePoll<T>, E> {
-        match self {
-            Self::Ready(ready) => match ready {
-                Ok(ok) => Ok(RustFuturePoll::Ready(ok)),
-                Err(error) => Err(error),
-            },
-
-            Self::Pending => Ok(RustFuturePoll::Pending),
-
-            Self::Throwing => Ok(RustFuturePoll::Throwing),
-        }
-    }
-}
-
 impl<T> FfiDefault for RustFuturePoll<T> {
     fn ffi_default() -> Self {
         Self::Throwing
@@ -420,8 +394,8 @@ mod tests_rust_future {
         let pointer_size = mem::size_of::<*const u8>();
         let rust_future_size = pointer_size * 2;
 
-        assert_eq!(mem::size_of::<RustFuture::<bool, ()>>(), rust_future_size);
-        assert_eq!(mem::size_of::<RustFuture::<u64, ()>>(), rust_future_size);
+        assert_eq!(mem::size_of::<RustFuture::<bool>>(), rust_future_size);
+        assert_eq!(mem::size_of::<RustFuture::<u64>>(), rust_future_size);
     }
 }
 
@@ -612,36 +586,38 @@ const PENDING: bool = false;
 /// # Panics
 ///
 /// The function panics if `future` or `waker` is a NULL pointer.
-pub fn uniffi_rustfuture_poll<T, E, UT>(
-    future: Option<&mut RustFuture<T, E>>,
+pub fn uniffi_rustfuture_poll<T, UT>(
+    future: Option<&mut RustFuture<T>>,
     waker: Option<RustFutureForeignWakerFunction>,
     waker_environment: *const c_void,
-    polled_result: &mut T::FfiType,
+    polled_result: &mut MaybeUninit<T::ReturnType>,
     call_status: &mut RustCallStatus,
 ) -> bool
 where
     T: FfiConverter<UT>,
-    E: FfiConverter<UT, FfiType = RustBuffer>,
 {
     // If polling the future panics, an error will be recorded in call_status and the future will
     // be dropped, so there is no potential for observing any inconsistent state in it.
     let mut future = panic::AssertUnwindSafe(future.expect("`future` is a null pointer"));
     let waker = waker.expect("`waker` is a null pointer");
 
-    match call_with_result(call_status, move || {
-        future
-            .poll(waker, waker_environment)
-            .transpose()
-            .map_err(E::lower)
-    }) {
-        RustFuturePoll::Ready(ready) => {
-            *polled_result = T::lower(ready);
-
+    let rust_call_result = rust_call(call_status, move || {
+        // Poll the future and convert the value into a Result<RustFuturePoll>
+        match future.poll(waker, waker_environment) {
+            Poll::Ready(v) => T::lower_return(v).map(RustFuturePoll::Ready),
+            Poll::Pending => Ok(RustFuturePoll::Pending),
+        }
+    });
+    match rust_call_result {
+        // Sucessfull return
+        RustFuturePoll::Ready(v) => {
+            polled_result.write(v);
             READY
         }
-
+        // Future still pending
         RustFuturePoll::Pending => PENDING,
-
+        // Error return or panic.  `rust_call()` has update `call_status` with the error status and
+        // set `error_buf`.
         RustFuturePoll::Throwing => READY,
     }
 }
@@ -653,8 +629,8 @@ where
 /// scope.
 ///
 /// Please see the module documentation to learn more.
-pub fn uniffi_rustfuture_drop<T, E>(
-    _future: Option<Box<RustFuture<T, E>>>,
+pub fn uniffi_rustfuture_drop<T>(
+    _future: Option<Box<RustFuture<T>>>,
     _call_status: &mut RustCallStatus,
 ) {
 }

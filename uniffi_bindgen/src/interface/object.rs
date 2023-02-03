@@ -65,7 +65,7 @@ use uniffi_meta::Checksum;
 
 use super::attributes::{Attribute, ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
-use super::function::Argument;
+use super::function::{Argument, Callable};
 use super::types::{Type, TypeIterator};
 use super::{convert_type, APIConverter, ComponentInterface};
 
@@ -211,10 +211,11 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Constructor(t) => {
-                    let cons: Constructor = t.convert(ci)?;
+                    let mut cons: Constructor = t.convert(ci)?;
                     if !member_names.insert(cons.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", cons.name())
                     }
+                    cons.object_name = object.name.clone();
                     object.constructors.push(cons);
                 }
                 weedle::interface::InterfaceMember::Operation(t) => {
@@ -239,6 +240,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 #[derive(Debug, Clone, Checksum)]
 pub struct Constructor {
     pub(super) name: String,
+    pub(super) object_name: String,
     pub(super) arguments: Vec<Argument>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -301,6 +303,8 @@ impl Default for Constructor {
     fn default() -> Self {
         Constructor {
             name: String::from("new"),
+            // We don't know the name of the containing `Object` at this point, fill it in later.
+            object_name: Default::default(),
             arguments: Vec::new(),
             ffi_func: Default::default(),
             attributes: Default::default(),
@@ -316,6 +320,8 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
         };
         Ok(Constructor {
             name: String::from(attributes.get_name().unwrap_or("new")),
+            // We don't know the name of the containing `Object` at this point, fill it in later.
+            object_name: Default::default(),
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
             attributes,
@@ -482,6 +488,34 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             ffi_func: Default::default(),
             attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
         })
+    }
+}
+
+impl Callable for Constructor {
+    fn arguments(&self) -> Vec<&Argument> {
+        self.arguments()
+    }
+
+    fn return_type(&self) -> Option<Type> {
+        Some(Type::Object(self.object_name.clone()))
+    }
+
+    fn throws_type(&self) -> Option<Type> {
+        self.throws_type()
+    }
+}
+
+impl Callable for Method {
+    fn arguments(&self) -> Vec<&Argument> {
+        self.arguments()
+    }
+
+    fn return_type(&self) -> Option<Type> {
+        self.return_type().cloned()
+    }
+
+    fn throws_type(&self) -> Option<Type> {
+        self.throws_type()
     }
 }
 

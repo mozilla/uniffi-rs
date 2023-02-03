@@ -23,12 +23,13 @@ pub fn expand_object(input: DeriveInput, module_path: String) -> syn::Result<Tok
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
-            uniffi::call_with_output(call_status, || {
+            uniffi::rust_call(call_status, || {
                 assert!(!ptr.is_null());
                 let ptr = ptr.cast::<#ident>();
                 unsafe {
                     ::std::sync::Arc::decrement_strong_count(ptr);
                 }
+                Ok(())
             });
         }
 

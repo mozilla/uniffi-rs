@@ -255,6 +255,42 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
     }
 }
 
+/// Implemented by function-like types (Function, Method, Constructor)
+pub trait Callable {
+    fn arguments(&self) -> Vec<&Argument>;
+    fn return_type(&self) -> Option<Type>;
+    fn throws_type(&self) -> Option<Type>;
+}
+
+impl Callable for Function {
+    fn arguments(&self) -> Vec<&Argument> {
+        self.arguments()
+    }
+
+    fn return_type(&self) -> Option<Type> {
+        self.return_type().cloned()
+    }
+
+    fn throws_type(&self) -> Option<Type> {
+        self.throws_type()
+    }
+}
+
+// Needed because Askama likes to add extra refs to variables
+impl<T: Callable> Callable for &T {
+    fn arguments(&self) -> Vec<&Argument> {
+        (*self).arguments()
+    }
+
+    fn return_type(&self) -> Option<Type> {
+        (*self).return_type()
+    }
+
+    fn throws_type(&self) -> Option<Type> {
+        (*self).throws_type()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

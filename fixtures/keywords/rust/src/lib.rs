@@ -24,7 +24,7 @@ impl r#break {
 }
 
 #[allow(non_camel_case_types)]
-trait r#continue {
+pub trait r#continue {
     fn r#return(&self, v: r#return) -> r#return;
     fn r#continue(&self, v: Vec<Box<dyn r#continue>>) -> Option<Box<dyn r#continue>>;
     fn r#break(&self, _v: Option<Arc<r#break>>) -> HashMap<u8, Arc<r#break>>;

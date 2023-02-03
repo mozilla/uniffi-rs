@@ -4,7 +4,7 @@
 
 /// This entire crate is just a set of tests for metadata handling.  We use a separate crate
 /// for testing because the metadata handling is split up between several crates, and no crate
-/// on all the functionality.
+/// owns all the functionality.
 use crate::UniFfiTag;
 use uniffi_meta::*;
 
@@ -341,7 +341,6 @@ mod test_function_metadata {
     pub async fn test_async_func_that_throws() -> Result<State, FlatError> {
         unimplemented!()
     }
-
 
     #[uniffi::export]
     impl Calculator {

@@ -11,7 +11,7 @@ pub mod rustbuffer;
 pub mod rustcalls;
 pub mod rustfuture;
 
-use ffidefault::FfiDefault;
+pub use ffidefault::FfiDefault;
 pub use foreignbytes::*;
 pub use foreigncallbacks::*;
 pub use rustbuffer::*;

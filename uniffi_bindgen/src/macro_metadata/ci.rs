@@ -48,7 +48,7 @@ pub fn add_to_ci(
             Some(ns) => ns,
             None => bail!("Unknown namespace for {item_desc} ({crate_name})"),
         };
-        if item_ns != &iface_ns {
+        if item_ns != iface_ns {
             return Err(anyhow!("Found {item_desc} from crate `{crate_name}`.")
                 .context(format!(
                     "Main crate is expected to be named `{iface_ns}` based on the UDL namespace."
