@@ -164,12 +164,81 @@
 <span id="164">164</span>
 <span id="165">165</span>
 <span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
-    Data, DeriveInput, Index, Token, Variant,
+    AttributeArgs, Data, DataEnum, DeriveInput, Index, Token, Variant,
 };
 <span class="kw">use </span>uniffi_meta::{ErrorMetadata, VariantMetadata};
 
@@ -177,51 +246,59 @@
     enum_::{enum_ffi_converter_impl, variant_metadata},
     util::{
         assert_type_eq, chain, create_metadata_static_var, either_attribute_arg, AttributeSliceExt,
-        UniffiAttribute,
+        FfiConverterTagHandler, UniffiAttribute,
     },
 };
 
 <span class="kw">pub fn </span>expand_error(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; TokenStream {
-    <span class="kw">let </span>variants = <span class="kw">match </span>input.data {
-        Data::Enum(e) =&gt; <span class="prelude-val">Ok</span>(e.variants),
-        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new(
-            Span::call_site(),
-            <span class="string">&quot;This derive currently only supports enums&quot;</span>,
-        )),
+    <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
+        Data::Enum(e) =&gt; e,
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span>syn::Error::new(
+                Span::call_site(),
+                <span class="string">&quot;This derive currently only supports enums&quot;</span>,
+            )
+            .into_compile_error()
+        }
     };
 
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
     <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;ErrorAttr&gt;();
     <span class="kw">let </span>ffi_converter_impl = <span class="kw">match </span><span class="kw-2">&amp;</span>attr {
-        <span class="prelude-val">Ok</span>(a) <span class="kw">if </span>a.flat.is_some() =&gt; flat_error_ffi_converter_impl(variants.as_ref().ok(), ident),
-        <span class="kw">_ </span>=&gt; enum_ffi_converter_impl(variants.as_ref().ok(), ident),
+        <span class="prelude-val">Ok</span>(a) <span class="kw">if </span>a.flat.is_some() =&gt; flat_error_ffi_converter_impl(
+            ident,
+            <span class="kw-2">&amp;</span>enum_,
+            FfiConverterTagHandler::generic_impl(),
+            a.with_try_read.is_some(),
+        ),
+        <span class="kw">_ </span>=&gt; enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, FfiConverterTagHandler::generic_impl()),
     };
 
-    <span class="kw">let </span>meta_static_var = <span class="kw">match </span>(<span class="kw-2">&amp;</span>variants, <span class="kw-2">&amp;</span>attr) {
-        (<span class="prelude-val">Ok</span>(vs), <span class="prelude-val">Ok</span>(a)) =&gt; <span class="prelude-val">Some</span>(<span class="kw">match </span>error_metadata(ident, vs, module_path, a) {
-            <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
-            <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
-        }),
+    <span class="kw">let </span>meta_static_var = <span class="kw">match </span><span class="kw-2">&amp;</span>attr {
+        <span class="prelude-val">Ok</span>(a) =&gt; <span class="prelude-val">Some</span>(
+            <span class="kw">match </span>error_metadata(ident, <span class="kw-2">&amp;</span>enum_.variants, module_path, a) {
+                <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
+                <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
+            },
+        ),
         <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     };
 
     <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
-    <span class="kw">let </span>variant_errors: TokenStream = <span class="kw">match </span>variants {
-        <span class="prelude-val">Ok</span>(vs) =&gt; vs
-            .iter()
-            .flat_map(|variant| {
-                chain(
-                    variant.attrs.attributes_not_allowed_here(),
-                    variant
-                        .fields
-                        .iter()
-                        .flat_map(|field| field.attrs.attributes_not_allowed_here()),
-                )
-            })
-            .map(syn::Error::into_compile_error)
-            .collect(),
-        <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
-    };
+    <span class="kw">let </span>variant_errors: TokenStream = enum_
+        .variants
+        .iter()
+        .flat_map(|variant| {
+            chain(
+                variant.attrs.attributes_not_allowed_here(),
+                variant
+                    .fields
+                    .iter()
+                    .flat_map(|field| field.attrs.attributes_not_allowed_here()),
+            )
+        })
+        .map(syn::Error::into_compile_error)
+        .collect();
     <span class="kw">let </span>attr_error = attr.err().map(syn::Error::into_compile_error);
 
     <span class="macro">quote! </span>{
@@ -233,44 +310,90 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>flat_error_ffi_converter_impl(
-    variants: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Punctuated&lt;Variant, <span class="macro">Token!</span>[,]&gt;&gt;,
-    ident: <span class="kw-2">&amp;</span>Ident,
-) -&gt; TokenStream {
-    <span class="kw">let </span>write_impl = <span class="kw">match </span>variants {
-        <span class="prelude-val">Some</span>(variants) =&gt; {
-            <span class="kw">let </span>write_match_arms = variants.iter().enumerate().map(|(i, v)| {
-                <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
-                <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
-
-                <span class="macro">quote! </span>{
-                    <span class="self">Self</span>::#v_ident { .. } =&gt; {
-                        ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                        &lt;::std::string::String <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(error_msg, buf);
-                    }
-                }
-            });
-            <span class="kw">let </span>write_impl = <span class="macro">quote! </span>{
-                <span class="kw">let </span>error_msg = ::std::string::ToString::to_string(<span class="kw-2">&amp;</span>obj);
-                <span class="kw">match </span>obj { #(#write_match_arms)* }
-            };
-
-            write_impl
+<span class="kw">pub fn </span>expand_ffi_converter_error(attrs: AttributeArgs, input: DeriveInput) -&gt; TokenStream {
+    <span class="kw">let </span>tag_handler = <span class="kw">match </span>FfiConverterTagHandler::try_from(attrs) {
+        <span class="prelude-val">Ok</span>(tag_handler) =&gt; tag_handler,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
+    };
+    <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
+        Data::Enum(e) =&gt; e,
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span>syn::Error::new(
+                proc_macro2::Span::call_site(),
+                <span class="string">&quot;This attribute must only be used on enums&quot;</span>,
+            )
+            .into_compile_error()
         }
-        <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ <span class="macro">::std::unimplemented!</span>() },
+    };
+
+    <span class="kw">match </span>input.attrs.parse_uniffi_attributes::&lt;ErrorAttr&gt;() {
+        <span class="prelude-val">Ok</span>(a) <span class="kw">if </span>a.flat.is_some() =&gt; flat_error_ffi_converter_impl(
+            <span class="kw-2">&amp;</span>input.ident,
+            <span class="kw-2">&amp;</span>enum_,
+            tag_handler,
+            a.with_try_read.is_some(),
+        ),
+        <span class="kw">_ </span>=&gt; enum_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>enum_, tag_handler),
+    }
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>flat_error_ffi_converter_impl(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    enum_: <span class="kw-2">&amp;</span>DataEnum,
+    tag_handler: FfiConverterTagHandler,
+    implement_try_read: bool,
+) -&gt; TokenStream {
+    <span class="kw">let </span>(impl_spec, tag) = tag_handler.into_impl_and_tag_path(<span class="string">&quot;FfiConverter&quot;</span>, ident);
+
+    <span class="kw">let </span>write_impl = {
+        <span class="kw">let </span>match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
+            <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
+            <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
+
+            <span class="macro">quote! </span>{
+                <span class="self">Self</span>::#v_ident { .. } =&gt; {
+                    ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
+                    &lt;::std::string::String <span class="kw">as </span>::uniffi::FfiConverter&lt;#tag&gt;&gt;::write(error_msg, buf);
+                }
+            }
+        });
+
+        <span class="macro">quote! </span>{
+            <span class="kw">let </span>error_msg = ::std::string::ToString::to_string(<span class="kw-2">&amp;</span>obj);
+            <span class="kw">match </span>obj { #(#match_arms)* }
+        }
+    };
+
+    <span class="kw">let </span>try_read_impl = <span class="kw">if </span>implement_try_read {
+        <span class="kw">let </span>match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
+            <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
+            <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
+
+            <span class="macro">quote! </span>{
+                #idx =&gt; <span class="self">Self</span>::#v_ident,
+            }
+        });
+        <span class="macro">quote! </span>{
+            <span class="prelude-val">Ok</span>(<span class="kw">match </span>::uniffi::deps::bytes::Buf::get_i32(buf) {
+                #(#match_arms)*
+                v =&gt; <span class="macro">::uniffi::deps::anyhow::bail!</span>(<span class="string">&quot;Invalid #ident enum value: {}&quot;</span>, v),
+            })
+        }
+    } <span class="kw">else </span>{
+        <span class="macro">quote! </span>{ <span class="macro">::std::panic!</span>(<span class="string">&quot;try_read not supported for flat errors&quot;</span>) }
     };
 
     <span class="macro">quote! </span>{
         <span class="attribute">#[automatically_derived]
-        </span><span class="kw">unsafe impl</span>&lt;T&gt; ::uniffi::FfiConverter&lt;T&gt; <span class="kw">for </span>#ident {
-            <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(T);
+        </span><span class="kw">unsafe </span>#impl_spec {
+            <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(#tag);
 
             <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
                 #write_impl
             }
 
             <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[::std::primitive::u8]) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
-                <span class="macro">::std::panic!</span>(<span class="string">&quot;try_read not supported for flat errors&quot;</span>);
+                #try_read_impl
             }
         }
     }
@@ -309,17 +432,31 @@
 
 <span class="kw">mod </span>kw {
     <span class="macro">syn::custom_keyword!</span>(flat_error);
+    <span class="macro">syn::custom_keyword!</span>(with_try_read);
 }
 
 <span class="attribute">#[derive(Default)]
 </span><span class="kw">struct </span>ErrorAttr {
     flat: <span class="prelude-ty">Option</span>&lt;kw::flat_error&gt;,
+    with_try_read: <span class="prelude-ty">Option</span>&lt;kw::with_try_read&gt;,
 }
 
 <span class="kw">impl </span>Parse <span class="kw">for </span>ErrorAttr {
     <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>flat = input.parse()<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(ErrorAttr { flat })
+        <span class="kw">let </span>lookahead = input.lookahead1();
+        <span class="kw">if </span>lookahead.peek(kw::flat_error) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                flat: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else if </span>lookahead.peek(kw::with_try_read) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                with_try_read: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(lookahead.error())
+        }
     }
 }
 
@@ -327,6 +464,7 @@
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             flat: either_attribute_arg(<span class="self">self</span>.flat, other.flat)<span class="question-mark">?</span>,
+            with_try_read: either_attribute_arg(<span class="self">self</span>.with_try_read, other.with_try_read)<span class="question-mark">?</span>,
         })
     }
 }

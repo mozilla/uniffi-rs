@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["error_metadata",""],["expand_error",""],["flat_error_ffi_converter_impl",""]],"mod":[["kw",""]],"struct":[["ErrorAttr",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["error_metadata",""],["expand_error",""],["expand_ffi_converter_error",""],["flat_error_ffi_converter_impl",""]],"mod":[["kw",""]],"struct":[["ErrorAttr",""]]};

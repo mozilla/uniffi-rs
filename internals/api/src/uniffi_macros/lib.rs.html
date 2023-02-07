@@ -177,6 +177,62 @@
 <span id="177">177</span>
 <span id="178">178</span>
 <span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -293,6 +349,62 @@
     <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
     expand_error(input, mod_path).into()
+}
+
+<span class="doccomment">/// Generate the FfiConverter implementation for a Record
+///
+/// This is used by the Askama scaffolding code.  It this inputs a struct definition, but only
+/// outputs the `FfiConverter` implementation, not the struct.
+</span><span class="attribute">#[doc(hidden)]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>ffi_converter_record(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    record::expand_record_ffi_converter(
+        <span class="macro">syn::parse_macro_input!</span>(attrs),
+        <span class="macro">syn::parse_macro_input!</span>(input),
+    )
+    .into()
+}
+
+<span class="doccomment">/// Generate the FfiConverter implementation for an Enum
+///
+/// This is used by the Askama scaffolding code.  It this inputs an enum definition, but only
+/// outputs the `FfiConverter` implementation, not the enum.
+</span><span class="attribute">#[doc(hidden)]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>ffi_converter_enum(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    enum_::expand_enum_ffi_converter(
+        <span class="macro">syn::parse_macro_input!</span>(attrs),
+        <span class="macro">syn::parse_macro_input!</span>(input),
+    )
+    .into()
+}
+
+<span class="doccomment">/// Generate the FfiConverter implementation for an Error enum
+///
+/// This is used by the Askama scaffolding code.  It this inputs an enum definition, but only
+/// outputs the `FfiConverter` implementation, not the enum.
+</span><span class="attribute">#[doc(hidden)]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>ffi_converter_error(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    error::expand_ffi_converter_error(
+        <span class="macro">syn::parse_macro_input!</span>(attrs),
+        <span class="macro">syn::parse_macro_input!</span>(input),
+    )
+    .into()
+}
+
+<span class="doccomment">/// Generate the FfiConverter implementation for an Interface
+///
+/// This is used by the Askama scaffolding code.  It this inputs an struct/enum definition, but
+/// only outputs the `FfiConverter` implementation, not the item.
+</span><span class="attribute">#[doc(hidden)]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>ffi_converter_interface(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    object::expand_ffi_converter_interface(
+        <span class="macro">syn::parse_macro_input!</span>(attrs),
+        <span class="macro">syn::parse_macro_input!</span>(input),
+    )
+    .into()
 }
 
 <span class="doccomment">/// A helper macro to include generated component scaffolding.

@@ -106,54 +106,95 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
-<span class="kw">use </span>syn::{Data, DeriveInput, Field, Fields};
+<span class="kw">use </span>syn::{AttributeArgs, Data, DataStruct, DeriveInput, Field, Fields, Path};
 <span class="kw">use </span>uniffi_meta::{FieldMetadata, RecordMetadata};
 
 <span class="kw">use crate</span>::{
     export::metadata::convert::convert_type,
-    util::{assert_type_eq, create_metadata_static_var, try_read_field},
+    util::{assert_type_eq, create_metadata_static_var, try_read_field, FfiConverterTagHandler},
 };
 
 <span class="kw">pub fn </span>expand_record(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; TokenStream {
-    <span class="kw">let </span>fields = <span class="kw">match </span>input.data {
-        Data::Struct(s) =&gt; <span class="prelude-val">Some</span>(s.fields),
-        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+    <span class="kw">let </span>record = <span class="kw">match </span>input.data {
+        Data::Struct(s) =&gt; s,
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span>syn::Error::new(
+                Span::call_site(),
+                <span class="string">&quot;This derive must only be used on structs&quot;</span>,
+            )
+            .into_compile_error()
+        }
     };
 
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-
-    <span class="kw">let </span>(write_impl, try_read_fields) = <span class="kw">match </span><span class="kw-2">&amp;</span>fields {
-        <span class="prelude-val">Some</span>(fields) =&gt; (
-            fields.iter().map(write_field).collect(),
-            fields.iter().map(try_read_field).collect(),
-        ),
-        <span class="prelude-val">None </span>=&gt; {
-            <span class="kw">let </span>unimplemented = <span class="macro">quote! </span>{ <span class="macro">::std::unimplemented!</span>() };
-            (unimplemented.clone(), unimplemented)
-        }
+    <span class="kw">let </span>ffi_converter =
+        record_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>record, FfiConverterTagHandler::generic_impl());
+    <span class="kw">let </span>meta_static_var = <span class="kw">match </span>record_metadata(ident, record.fields, module_path) {
+        <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
+        <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
     };
-
-    <span class="kw">let </span>meta_static_var = <span class="kw">if let </span><span class="prelude-val">Some</span>(fields) = fields {
-        <span class="kw">match </span>record_metadata(ident, fields, module_path) {
-            <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
-            <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
-        }
-    } <span class="kw">else </span>{
-        syn::Error::new(
-            Span::call_site(),
-            <span class="string">&quot;This derive must only be used on structs&quot;</span>,
-        )
-        .into_compile_error()
-    };
-
     <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
 
     <span class="macro">quote! </span>{
+        #ffi_converter
+        #meta_static_var
+        #type_assertion
+    }
+}
+
+<span class="kw">pub fn </span>expand_record_ffi_converter(attrs: AttributeArgs, input: DeriveInput) -&gt; TokenStream {
+    <span class="kw">let </span>tag_handler = <span class="kw">match </span>FfiConverterTagHandler::try_from(attrs) {
+        <span class="prelude-val">Ok</span>(tag_handler) =&gt; tag_handler,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
+    };
+    <span class="kw">match </span>input.data {
+        Data::Struct(s) =&gt; record_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>s, tag_handler),
+        <span class="kw">_ </span>=&gt; syn::Error::new(
+            proc_macro2::Span::call_site(),
+            <span class="string">&quot;This attribute must only be used on structs&quot;</span>,
+        )
+        .into_compile_error(),
+    }
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>record_ffi_converter_impl(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    record: <span class="kw-2">&amp;</span>DataStruct,
+    tag_handler: FfiConverterTagHandler,
+) -&gt; TokenStream {
+    <span class="kw">let </span>(impl_spec, tag) = tag_handler.into_impl_and_tag_path(<span class="string">&quot;FfiConverter&quot;</span>, ident);
+    <span class="kw">let </span>write_impl: TokenStream = record.fields.iter().map(|f| write_field(f, <span class="kw-2">&amp;</span>tag)).collect();
+    <span class="kw">let </span>try_read_fields: TokenStream = record
+        .fields
+        .iter()
+        .map(|f| try_read_field(f, <span class="kw-2">&amp;</span>tag))
+        .collect();
+
+    <span class="macro">quote! </span>{
         <span class="attribute">#[automatically_derived]
-        </span><span class="kw">unsafe impl</span>&lt;T&gt; ::uniffi::FfiConverter&lt;T&gt; <span class="kw">for </span>#ident {
-            <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(T);
+        </span><span class="kw">unsafe </span>#impl_spec {
+            <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(#tag);
 
             <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
                 #write_impl
@@ -163,9 +204,6 @@
                 <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ #try_read_fields })
             }
         }
-
-        #meta_static_var
-        #type_assertion
     }
 }
 
@@ -206,12 +244,12 @@
     })
 }
 
-<span class="kw">fn </span>write_field(f: <span class="kw-2">&amp;</span>Field) -&gt; TokenStream {
+<span class="kw">fn </span>write_field(f: <span class="kw-2">&amp;</span>Field, tag: <span class="kw-2">&amp;</span>Path) -&gt; TokenStream {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>f.ident;
     <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
 
     <span class="macro">quote! </span>{
-        &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(obj.#ident, buf);
+        &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;#tag&gt;&gt;::write(obj.#ident, buf);
     }
 }
 </code></pre></div>

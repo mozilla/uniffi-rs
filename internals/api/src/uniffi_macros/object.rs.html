@@ -33,12 +33,31 @@
 <span id="33">33</span>
 <span id="34">34</span>
 <span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
-<span class="kw">use </span>syn::DeriveInput;
+<span class="kw">use </span>syn::{AttributeArgs, DeriveInput};
 <span class="kw">use </span>uniffi_meta::ObjectMetadata;
 
-<span class="kw">use </span><span class="kw">crate</span>::util::{assert_type_eq, create_metadata_static_var};
+<span class="kw">use </span><span class="kw">crate</span>::util::{assert_type_eq, create_metadata_static_var, FfiConverterTagHandler};
 
 <span class="kw">pub fn </span>expand_object(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; TokenStream {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
@@ -47,6 +66,7 @@
     <span class="kw">let </span>free_fn_ident = Ident::new(<span class="kw-2">&amp;</span>metadata.free_ffi_symbol_name(), Span::call_site());
     <span class="kw">let </span>meta_static_var = create_metadata_static_var(ident, metadata.into());
     <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
+    <span class="kw">let </span>interface_impl = interface_impl(ident, FfiConverterTagHandler::generic_impl());
 
     <span class="macro">quote! </span>{
         <span class="attribute">#[doc(hidden)]
@@ -64,8 +84,26 @@
             });
         }
 
+        #interface_impl
         #meta_static_var
         #type_assertion
+    }
+}
+
+<span class="kw">pub fn </span>expand_ffi_converter_interface(attrs: AttributeArgs, input: DeriveInput) -&gt; TokenStream {
+    <span class="kw">let </span>tag_handler = <span class="kw">match </span>FfiConverterTagHandler::try_from(attrs) {
+        <span class="prelude-val">Ok</span>(tag_handler) =&gt; tag_handler,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
+    };
+    interface_impl(<span class="kw-2">&amp;</span>input.ident, tag_handler)
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>interface_impl(ident: <span class="kw-2">&amp;</span>Ident, tag_handler: FfiConverterTagHandler) -&gt; TokenStream {
+    <span class="kw">let </span>(impl_spec, <span class="kw">_</span>) = tag_handler.into_impl_and_tag_path(<span class="string">&quot;Interface&quot;</span>, ident);
+    <span class="macro">quote! </span>{
+        <span class="attribute">#[doc(hidden)]
+        #[automatically_derived]
+        </span>#impl_spec { }
     }
 }
 </code></pre></div>
