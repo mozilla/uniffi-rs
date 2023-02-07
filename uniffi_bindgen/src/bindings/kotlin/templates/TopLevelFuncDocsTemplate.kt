@@ -1,9 +1,20 @@
 
+{% match func.documentation() -%}
+  {% when Some with (docs) %}
 /**
- * fun name: {{func.name()}}
- * Some fun description text. This is supposed to be run with KDoc or Dokka.
-{% for arg in func.arguments() -%}
- * @param[{{ arg.name() }}] description.
-{% endfor %} 
- * @return something something.
- */
+* {{ docs.description }}
+
+    {%- if docs.arguments_descriptions.len() > 0 %}
+*
+    {% for arg in func.arguments() -%}
+* @param[{{ arg.name() }}] description.
+    {% endfor -%} 
+    {% endif -%}
+
+    {%- if docs.return_description.is_some() %}
+*
+* @return something something.
+    {% endif %}
+*/
+  {%- when None %}
+{%- endmatch %}

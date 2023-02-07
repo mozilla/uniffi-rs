@@ -1,11 +1,21 @@
+{% match func.documentation() -%}
+  {% when Some with (docs) %}
+    """
+    {{ docs.description }}
 
-"""
-fun name: {{func.name()}}
-Some fun description text. This is supposed to be run with Sphinx
-https://docutils.sourceforge.io/rst.html documentation
-Some examples https://docutils.sourceforge.io/docutils/statemachine.py
-{% for arg in func.arguments() -%}
-:Parameter {{ arg.name() }}: arg type
-{% endfor %} 
-:Return:  something something.
-"""
+    {%- if docs.arguments_descriptions.len() > 0 %}
+    
+    Parameters:
+
+    {% for arg in func.arguments() -%}
+    - `{{ arg.name() }}`: description
+    {% endfor %} 
+    {% endif -%}
+
+    {%- if docs.return_description.is_some() %}
+
+    Returns: description
+    {% endif %}
+    """
+  {% when None %}
+{%- endmatch %}

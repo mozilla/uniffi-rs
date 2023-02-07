@@ -21,7 +21,7 @@ import {{ config.ffi_module_name() }}
 
 {%- for func in ci.function_definitions() %}
 {%- include "TopLevelFuncDocsTemplate.swift" %}
-{%- include "TopLevelFunctionTemplate.swift" %}
+{% include "TopLevelFunctionTemplate.swift" %}
 {%- endfor %}
 
 private enum InitializationResult {
