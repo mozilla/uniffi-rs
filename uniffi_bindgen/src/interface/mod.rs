@@ -778,6 +778,23 @@ impl ComponentInterface {
         }
         Ok(())
     }
+
+    /// Attach documentation to structs/"objects"/enums/functions.
+    ///
+    /// Documentation comments in the resulting bindings are based on this information.
+    pub fn attach_documentation(&mut self, mut documentation: uniffi_docs::Documentation) {
+        for (_, record) in self.records.iter_mut() {
+            if let Some(doc) = documentation.structures.remove(record.name()) {
+                record.documentation = Some(doc);
+            }
+        }
+
+        for function in self.functions.iter_mut() {
+            if let Some(doc) = documentation.functions.remove(function.name()) {
+                function.documentation = Some(doc);
+            }
+        }
+    }
 }
 
 fn get_or_insert_object<'a>(objects: &'a mut Vec<Object>, name: &str) -> &'a mut Object {

@@ -66,6 +66,8 @@ impl TryFrom<String> for TargetLanguage {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
+    pub doc_comments: Option<bool>,
+    #[serde(default)]
     kotlin: kotlin::Config,
     #[serde(default)]
     swift: swift::Config,
@@ -78,6 +80,7 @@ pub struct Config {
 impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
+            doc_comments: None,
             kotlin: ci.into(),
             swift: ci.into(),
             python: ci.into(),
@@ -89,6 +92,7 @@ impl From<&ComponentInterface> for Config {
 impl MergeWith for Config {
     fn merge_with(&self, other: &Self) -> Self {
         Config {
+            doc_comments: self.doc_comments.merge_with(&other.doc_comments),
             kotlin: self.kotlin.merge_with(&other.kotlin),
             swift: self.swift.merge_with(&other.swift),
             python: self.python.merge_with(&other.python),

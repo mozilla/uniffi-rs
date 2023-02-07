@@ -302,6 +302,12 @@ pub fn generate_bindings(
     let crate_root = &guess_crate_root(udl_file).context("Failed to guess crate root")?;
 
     let config = get_config(&component, crate_root, config_file_override)?;
+    if config.bindings.doc_comments.unwrap_or_default() {
+        let path = udl_file.with_file_name("lib.rs");
+        let documentation = uniffi_docs::extract_documentation(&path)?;
+        component.attach_documentation(documentation);
+    }
+
     let out_dir = get_out_dir(udl_file, out_dir_override)?;
     for language in target_languages {
         bindings::write_bindings(

@@ -59,15 +59,29 @@ use super::{APIConverter, ComponentInterface};
 /// In the FFI these are represented as a byte buffer, which one side explicitly
 /// serializes the data into and the other serializes it out of. So I guess they're
 /// kind of like "pass by clone" values.
-#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Record {
     pub(super) name: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Structure>,
     pub(super) fields: Vec<Field>,
 }
+
+impl PartialEq for Record {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.fields == other.fields
+    }
+}
+
+impl Eq for Record {}
 
 impl Record {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Structure> {
+        self.documentation.as_ref()
     }
 
     pub fn type_(&self) -> Type {
@@ -89,6 +103,7 @@ impl From<uniffi_meta::RecordMetadata> for Record {
     fn from(meta: uniffi_meta::RecordMetadata) -> Self {
         Self {
             name: meta.name,
+            documentation: None,
             fields: meta.fields.into_iter().map(Into::into).collect(),
         }
     }
@@ -104,6 +119,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
         }
         Ok(Record {
             name: self.identifier.0.to_string(),
+            documentation: None,
             fields: self.members.body.convert(ci)?,
         })
     }

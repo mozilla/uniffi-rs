@@ -52,6 +52,8 @@ use super::{convert_type, APIConverter, ComponentInterface};
 pub struct Function {
     pub(super) name: String,
     pub(super) is_async: bool,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Function>,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
@@ -72,6 +74,10 @@ impl Function {
 
     pub fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Function> {
+        self.documentation.as_ref()
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -145,6 +151,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
         Self {
             name: meta.name,
             is_async,
+            documentation: None,
             arguments,
             return_type,
             ffi_func,
@@ -171,6 +178,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
                 Some(id) => id.0.to_string(),
             },
             is_async: false,
+            documentation: None,
             return_type,
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
