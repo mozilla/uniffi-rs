@@ -55,12 +55,22 @@ use super::{AsType, Type, TypeIterator};
 /// In the FFI these are represented as a byte buffer, which one side explicitly
 /// serializes the data into and the other serializes it out of. So I guess they're
 /// kind of like "pass by clone" values.
-#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Record {
     pub(super) name: String,
     pub(super) module_path: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Structure>,
     pub(super) fields: Vec<Field>,
 }
+
+impl PartialEq for Record {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.fields == other.fields
+    }
+}
+
+impl Eq for Record {}
 
 impl Record {
     pub fn name(&self) -> &str {
@@ -73,6 +83,16 @@ impl Record {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Structure> {
+        self.documentation.as_ref()
+    }
+
+    pub fn type_(&self) -> Type {
+        // *sigh* at the clone here, the relationship between a ComponentInterface
+        // and its contained types could use a bit of a cleanup.
+        Type::Record(self.name.clone())
     }
 }
 
@@ -91,12 +111,29 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
     fn try_from(meta: uniffi_meta::RecordMetadata) -> Result<Self> {
         Ok(Self {
             name: meta.name,
+            documentation: None,
             module_path: meta.module_path,
             fields: meta
                 .fields
                 .into_iter()
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
+        })
+    }
+}
+
+impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Record> {
+        if self.attributes.is_some() {
+            bail!("dictionary attributes are not supported yet");
+        }
+        if self.inheritance.is_some() {
+            bail!("dictionary inheritance is not supported");
+        }
+        Ok(Record {
+            name: self.identifier.0.to_string(),
+            documentation: None,
+            fields: self.members.body.convert(ci)?,
         })
     }
 }

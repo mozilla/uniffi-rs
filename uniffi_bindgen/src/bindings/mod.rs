@@ -89,8 +89,10 @@ impl TryFrom<String> for TargetLanguage {
     }
 }
 
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
+    pub doc_comments: Option<bool>,
     #[serde(default)]
     pub(crate) kotlin: kotlin::Config,
     #[serde(default)]
@@ -99,6 +101,30 @@ pub struct Config {
     pub(crate) python: python::Config,
     #[serde(default)]
     pub(crate) ruby: ruby::Config,
+}
+
+impl From<&ComponentInterface> for Config {
+    fn from(ci: &ComponentInterface) -> Self {
+        Config {
+            doc_comments: None,
+            kotlin: ci.into(),
+            swift: ci.into(),
+            python: ci.into(),
+            ruby: ci.into(),
+        }
+    }
+}
+
+impl MergeWith for Config {
+    fn merge_with(&self, other: &Self) -> Self {
+        Config {
+            doc_comments: self.doc_comments.merge_with(&other.doc_comments),
+            kotlin: self.kotlin.merge_with(&other.kotlin),
+            swift: self.swift.merge_with(&other.swift),
+            python: self.python.merge_with(&other.python),
+            ruby: self.ruby.merge_with(&other.ruby),
+        }
+    }
 }
 
 /// Generate foreign language bindings from a compiled `uniffi` library.
