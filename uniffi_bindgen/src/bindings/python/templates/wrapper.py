@@ -51,7 +51,6 @@ DEFAULT = object()
 {{ type_helper_code }}
 
 {%- for func in ci.function_definitions() %}
-{%- include "TopLevelFuncDocsTemplate.py" %}
 {%- include "TopLevelFunctionTemplate.py" %}
 {%- endfor %}
 
