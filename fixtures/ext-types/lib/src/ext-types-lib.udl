@@ -17,6 +17,7 @@ namespace imported_types_lib {
     sequence<UniffiOneEnum?> get_maybe_uniffi_one_enums(sequence<UniffiOneEnum?> es);
 
     UniffiOneInterface get_uniffi_one_interface();
+    void use_uniffi_one_callback_interface(UniffiOneCallbackInterface iface);
 };
 
 // A type defined in a .udl file in the `uniffi-one` crate (ie, in
@@ -29,6 +30,9 @@ typedef extern UniffiOneEnum;
 // An interface in the same crate
 [ExternalInterface="uniffi-one"]
 typedef extern UniffiOneInterface;
+
+[ExternalInterface="uniffi-one"]
+typedef extern UniffiOneCallbackInterface;
 
 // A "wrapped" type defined in the guid crate (ie, defined in `../../guid/src/lib.rs` and
 // "declared" in `../../guid/src/guid.udl`). But it's still "external" from our POV,

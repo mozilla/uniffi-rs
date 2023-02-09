@@ -14,3 +14,8 @@ interface UniffiOneInterface {
 
     i32 increment();
 };
+
+
+callback interface UniffiOneCallbackInterface {
+    void on_done();
+};

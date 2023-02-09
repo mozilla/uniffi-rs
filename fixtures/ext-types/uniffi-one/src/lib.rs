@@ -24,4 +24,8 @@ impl UniffiOneInterface {
     }
 }
 
+pub trait UniffiOneCallbackInterface: Send + Sync {
+    fn on_done(&self);
+}
+
 include!(concat!(env!("OUT_DIR"), "/uniffi-one.uniffi.rs"));
