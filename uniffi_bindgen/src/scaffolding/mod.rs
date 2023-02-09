@@ -91,6 +91,13 @@ mod filters {
             } => {
                 format!("<::std::sync::Arc<r#{name}> as uniffi::FfiConverter<crate::UniFfiTag>>")
             }
+            Type::External {
+                name,
+                kind: ExternalKind::CallbackInterface,
+                ..
+            } => {
+                format!("<Box<dyn r#{name}> as uniffi::FfiConverter<crate::UniFfiTag>>")
+            }
             _ => format!(
                 "<{} as uniffi::FfiConverter<crate::UniFfiTag>>",
                 type_rs(type_)?

@@ -216,6 +216,9 @@ mod test {
             [ExternalInterface="crate-name"]
             typedef extern ExternalInterfaceType;
 
+            [ExternalCallbackInterface="crate-name"]
+            typedef extern ExternalCallbackInterfaceType;
+
             [Custom]
             typedef string CustomType;
         "#,
@@ -227,6 +230,10 @@ mod test {
                 assert!(
                     matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::External { name, crate_name, kind: ExternalKind::Interface }
                                                                                  if name == "ExternalInterfaceType" && crate_name == "crate-name")
+                );
+                assert!(
+                    matches!(types.get_type_definition("ExternalCallbackInterfaceType").unwrap(), Type::External { name, crate_name, kind: ExternalKind::CallbackInterface }
+                                                                                 if name == "ExternalCallbackInterfaceType" && crate_name == "crate-name")
                 );
                 assert!(
                     matches!(types.get_type_definition("CustomType").unwrap(), Type::Custom { name, builtin }

@@ -85,6 +85,7 @@ pub enum Type {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Checksum, Ord, PartialOrd)]
 pub enum ExternalKind {
     Interface,
+    CallbackInterface,
     // Either a record or enum
     DataClass,
 }
@@ -200,6 +201,10 @@ impl From<&Type> for FfiType {
                 kind: ExternalKind::Interface,
                 ..
             } => FfiType::RustArcPtr(name.clone()),
+            Type::External {
+                kind: ExternalKind::CallbackInterface,
+                ..
+            } => FfiType::UInt64,
             Type::External {
                 name,
                 kind: ExternalKind::DataClass,

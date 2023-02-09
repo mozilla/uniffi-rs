@@ -8,6 +8,8 @@
 ::uniffi::ffi_converter_forward!(r#{{ name }}, ::{{ crate_name|crate_name_rs }}::UniFfiTag, crate::UniFfiTag);
 {%- when ExternalKind::Interface %}
 ::uniffi::ffi_converter_forward!(::std::sync::Arc<r#{{ name }}>, ::{{ crate_name|crate_name_rs }}::UniFfiTag, crate::UniFfiTag);
+{%- when ExternalKind::CallbackInterface %}
+::uniffi::ffi_converter_forward!(Box<dyn r#{{ name }}>, ::{{ crate_name|crate_name_rs }}::UniFfiTag, crate::UniFfiTag);
 {%- endmatch %}
 {%- endfor %}
 

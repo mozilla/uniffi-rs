@@ -31,7 +31,7 @@ typedef extern UniffiOneEnum;
 [ExternalInterface="uniffi-one"]
 typedef extern UniffiOneInterface;
 
-[ExternalInterface="uniffi-one"]
+[ExternalCallbackInterface="uniffi-one"]
 typedef extern UniffiOneCallbackInterface;
 
 // A "wrapped" type defined in the guid crate (ie, defined in `../../guid/src/lib.rs` and

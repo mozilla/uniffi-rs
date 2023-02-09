@@ -81,6 +81,10 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                         crate_name: name_from_id_or_string(&identity.rhs),
                         kind: ExternalKind::Interface,
                     }),
+                    "ExternalCallbackInterface" => Ok(Attribute::External {
+                        crate_name: name_from_id_or_string(&identity.rhs),
+                        kind: ExternalKind::CallbackInterface,
+                    }),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
@@ -753,6 +757,14 @@ mod test {
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[ExternalInterface=crate_name ]")
                 .unwrap();
+        let attrs = TypedefAttributes::try_from(&node).unwrap();
+        assert!(!attrs.is_custom());
+        assert_eq!(attrs.get_crate_name(), "crate_name");
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(
+            "[ExternalCallbackInterface=crate_name ]",
+        )
+        .unwrap();
         let attrs = TypedefAttributes::try_from(&node).unwrap();
         assert!(!attrs.is_custom());
         assert_eq!(attrs.get_crate_name(), "crate_name");
