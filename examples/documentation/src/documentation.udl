@@ -1,0 +1,8 @@
+namespace documentation {
+  string hello(Person person);
+  u64 add(u64 a, u64 b);
+};
+
+dictionary Person {
+  string name;
+};

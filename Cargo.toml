@@ -15,6 +15,7 @@ members = [
   "examples/arithmetic",
   "examples/callbacks",
   "examples/custom-types",
+  "examples/documentation",
   "examples/futures",
   "examples/geometry",
   "examples/rondpoint",
