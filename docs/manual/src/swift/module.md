@@ -23,3 +23,7 @@ swiftc
 
 This will produce an `example.swiftmodule` file that can be loaded by
 other Swift code or used from the Swift command-line REPL.
+
+If you are creating an XCFramework with this code, make sure to rename the modulemap file
+to `module.modulemap`, the default value expected by Clang and XCFrameworks for exposing
+the C FFI library to Swift.
