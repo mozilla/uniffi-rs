@@ -18,6 +18,7 @@ members = [
   "examples/todolist",
   "examples/custom-types",
   "examples/app/uniffi-bindgen-cli",
+  "examples/documentation",
 
   "fixtures/coverall",
   "fixtures/callbacks",
