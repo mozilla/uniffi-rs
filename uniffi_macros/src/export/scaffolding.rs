@@ -239,7 +239,7 @@ fn gen_ffi_function(
                 quote! {
                     ::uniffi::call_with_result(call_status, || {
                         let val = #rust_fn_call.map_err(|e| {
-                            <#error_ident as ::uniffi::FfiConverter<crate::UniFFiTag>>::lower(
+                            <#error_ident as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower(
                                 ::std::convert::Into::into(e),
                             )
                         })?;
