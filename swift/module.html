@@ -179,6 +179,9 @@ Swift bindings:</p>
 </code></pre>
 <p>This will produce an <code>example.swiftmodule</code> file that can be loaded by
 other Swift code or used from the Swift command-line REPL.</p>
+<p>If you are creating an XCFramework with this code, make sure to rename the modulemap file
+to <code>module.modulemap</code>, the default value expected by Clang and XCFrameworks for exposing
+the C FFI library to Swift.</p>
 
                     </main>
 

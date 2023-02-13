@@ -1630,6 +1630,9 @@ Swift bindings:</p>
 </code></pre>
 <p>This will produce an <code>example.swiftmodule</code> file that can be loaded by
 other Swift code or used from the Swift command-line REPL.</p>
+<p>If you are creating an XCFramework with this code, make sure to rename the modulemap file
+to <code>module.modulemap</code>, the default value expected by Clang and XCFrameworks for exposing
+the C FFI library to Swift.</p>
 <h1><a class="header" href="#integrating-with-xcode" id="integrating-with-xcode">Integrating with Xcode</a></h1>
 <p>It is possible to generate Swift bindings at compile time for Xcode projects
 and incorporate them alongside hand-written Swift code to form a larger module.
