@@ -380,8 +380,10 @@ pub mod filters {
         Ok(oracle().ffi_type_label(type_))
     }
 
-    /// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see
-    /// #1106 for details
+    /// Get the type that a type is lowered into.  This is subtly different than `type_ffi`.
+    ///
+    /// For example, if we need to pre-allocate a Kotlin value that will store
+    /// an FFI lowered value, this method is your friend.
     pub fn type_ffi_lowered(ffi_type: &FfiType) -> Result<String, askama::Error> {
         Ok(match ffi_type {
             FfiType::Int8 => "Byte".into(),
