@@ -53,7 +53,7 @@ mod filters {
                 type_rs(v)?
             ),
             Type::Custom { name, .. } => format!("r#{name}"),
-            Type::External { .. } => panic!("External types coming to a uniffi near you soon!"),
+            Type::External { name, .. } => format!("r#{name}"),
             Type::Unresolved { .. } => {
                 unreachable!("UDL scaffolding code never contains unresolved types")
             }
@@ -73,65 +73,9 @@ mod filters {
             FfiType::Float32 => "f32".into(),
             FfiType::Float64 => "f64".into(),
             FfiType::RustArcPtr(_) => "*const std::os::raw::c_void".into(),
-            FfiType::RustBuffer => "uniffi::RustBuffer".into(),
+            FfiType::RustBuffer(_) => "uniffi::RustBuffer".into(),
             FfiType::ForeignBytes => "uniffi::ForeignBytes".into(),
             FfiType::ForeignCallback => "uniffi::ForeignCallback".into(),
-        })
-    }
-
-    /// Get the name of the FfiConverter implementation for this type
-    ///
-    /// - For primitives / standard types this is the type itself.
-    /// - For user-defined types, this is a unique generated name.  We then generate a unit-struct
-    ///   in the scaffolding code that implements FfiConverter.
-    pub fn ffi_converter_name(type_: &Type) -> askama::Result<String> {
-        Ok(match type_ {
-            // Timestamp/Duraration are handled by standard types
-            Type::Timestamp => "std::time::SystemTime".into(),
-            Type::Duration => "std::time::Duration".into(),
-            // Object is handled by Arc<T>
-            Type::Object(name) => format!("std::sync::Arc<r#{name}>"),
-            // Other user-defined types are handled by a unit-struct that we generate.  The
-            // FfiConverter implementation for this can be found in one of the scaffolding template code.
-            //
-            // We generate a unit-struct to sidestep Rust's orphan rules (ADR-0006).
-            //
-            // CallbackInterface is handled by special case code on both the scaffolding and
-            // bindings side.  It's not a unit-struct, but the same name generation code works.
-            Type::Enum(_) | Type::Record(_) | Type::Error(_) | Type::CallbackInterface(_) => {
-                format!("FfiConverter{}", type_.canonical_name())
-            }
-            // Wrapper types are implemented by generics that wrap the FfiConverter implementation of the
-            // inner type.
-            Type::Optional(inner) => {
-                format!("std::option::Option<{}>", ffi_converter_name(inner)?)
-            }
-            Type::Sequence(inner) => format!("std::vec::Vec<{}>", ffi_converter_name(inner)?),
-            Type::Map(k, v) => format!(
-                "std::collections::HashMap<{}, {}>",
-                ffi_converter_name(k)?,
-                ffi_converter_name(v)?
-            ),
-            // External and Wrapped bytes have FfiConverters with a predictable name based on the type name.
-            Type::Custom { name, .. } | Type::External { name, .. } => {
-                format!("FfiConverterType{name}")
-            }
-            // Primitive types / strings are implemented by their rust type
-            Type::Int8 => "i8".into(),
-            Type::UInt8 => "u8".into(),
-            Type::Int16 => "i16".into(),
-            Type::UInt16 => "u16".into(),
-            Type::Int32 => "i32".into(),
-            Type::UInt32 => "u32".into(),
-            Type::Int64 => "i64".into(),
-            Type::UInt64 => "u64".into(),
-            Type::Float32 => "f32".into(),
-            Type::Float64 => "f64".into(),
-            Type::String => "String".into(),
-            Type::Boolean => "bool".into(),
-            Type::Unresolved { .. } => {
-                unreachable!("UDL scaffolding code never contains unresolved types")
-            }
         })
     }
 
@@ -139,14 +83,23 @@ mod filters {
     //
     // This outputs something like `<TheFfiConverterStruct as FfiConverter>`
     pub fn ffi_converter(type_: &Type) -> Result<String, askama::Error> {
-        Ok(format!(
-            "<{} as uniffi::FfiConverter>",
-            ffi_converter_name(type_)?
-        ))
+        Ok(match type_ {
+            Type::External {
+                name,
+                kind: ExternalKind::Interface,
+                ..
+            } => {
+                format!("<::std::sync::Arc<r#{name}> as uniffi::FfiConverter<crate::UniFfiTag>>")
+            }
+            _ => format!(
+                "<{} as uniffi::FfiConverter<crate::UniFfiTag>>",
+                type_rs(type_)?
+            ),
+        })
     }
 
     // Turns a `crate-name` into the `crate_name` the .rs code needs to specify.
     pub fn crate_name_rs(nm: &str) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_snake_case())
+        Ok(format!("r#{}", nm.to_string().to_snake_case()))
     }
 }

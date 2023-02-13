@@ -14,4 +14,7 @@ name = "uniffi_rondpoint"
 uniffi = {path = "../../uniffi"}
 
 [build-dependencies]
-uniffi = {path = "../../uniffi"}
+uniffi = {path = "../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }

@@ -205,7 +205,6 @@ impl Spanned for AsyncRuntime {
         }
     }
 }
-
 fn fn_type_assertions(sig: &Signature) -> TokenStream {
     // Convert uniffi_meta::Type back to a Rust type
     fn convert_type_back(ty: &Type) -> TokenStream {

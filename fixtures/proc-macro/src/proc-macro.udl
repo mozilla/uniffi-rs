@@ -1,7 +1,6 @@
-namespace uniffi_proc_macro {};
+namespace uniffi_proc_macro { };
 
-// Test that redundant definition of a dictionary works
-dictionary Two {
-    string a;
-    sequence<boolean>? b;
+// Use this to test that types defined in the UDL can be used in the proc-macros
+dictionary Zero {
+    string inner;
 };

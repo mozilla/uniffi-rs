@@ -1,7 +1,7 @@
 tag-name = "v{{version}}"
 consolidate-commits = true
 
-shared-version=true
+shared-version=false
 
 # Disabling auto pushing for now to avoid accidents (although we can still "accidentally" publish
 # to crates.io, so it's not clear this is saving us anything?)

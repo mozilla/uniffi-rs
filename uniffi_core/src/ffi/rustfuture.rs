@@ -290,7 +290,7 @@
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
 
 use super::FfiDefault;
-use crate::{call_with_result, FfiConverter, FfiError, FfiReturn, RustBuffer, RustCallStatus};
+use crate::{call_with_result, FfiConverter, RustBuffer, RustCallStatus};
 use std::{
     ffi::c_void,
     future::Future,
@@ -612,7 +612,7 @@ const PENDING: bool = false;
 /// # Panics
 ///
 /// The function panics if `future` or `waker` is a NULL pointer.
-pub fn uniffi_rustfuture_poll<T, E>(
+pub fn uniffi_rustfuture_poll<T, E, UT>(
     future: Option<&mut RustFuture<T, E>>,
     waker: Option<RustFutureForeignWakerFunction>,
     waker_environment: *const c_void,
@@ -620,8 +620,8 @@ pub fn uniffi_rustfuture_poll<T, E>(
     call_status: &mut RustCallStatus,
 ) -> bool
 where
-    T: FfiReturn,
-    E: FfiError + FfiConverter<RustType = E, FfiType = RustBuffer>,
+    T: FfiConverter<UT>,
+    E: FfiConverter<UT, FfiType = RustBuffer>,
 {
     // If polling the future panics, an error will be recorded in call_status and the future will
     // be dropped, so there is no potential for observing any inconsistent state in it.

@@ -117,6 +117,62 @@ pub fn derive_error(input: TokenStream) -> TokenStream {
     expand_error(input, mod_path).into()
 }
 
+/// Generate the FfiConverter implementation for a Record
+///
+/// This is used by the Askama scaffolding code.  It this inputs a struct definition, but only
+/// outputs the `FfiConverter` implementation, not the struct.
+#[doc(hidden)]
+#[proc_macro_attribute]
+pub fn ffi_converter_record(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    record::expand_record_ffi_converter(
+        syn::parse_macro_input!(attrs),
+        syn::parse_macro_input!(input),
+    )
+    .into()
+}
+
+/// Generate the FfiConverter implementation for an Enum
+///
+/// This is used by the Askama scaffolding code.  It this inputs an enum definition, but only
+/// outputs the `FfiConverter` implementation, not the enum.
+#[doc(hidden)]
+#[proc_macro_attribute]
+pub fn ffi_converter_enum(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    enum_::expand_enum_ffi_converter(
+        syn::parse_macro_input!(attrs),
+        syn::parse_macro_input!(input),
+    )
+    .into()
+}
+
+/// Generate the FfiConverter implementation for an Error enum
+///
+/// This is used by the Askama scaffolding code.  It this inputs an enum definition, but only
+/// outputs the `FfiConverter` implementation, not the enum.
+#[doc(hidden)]
+#[proc_macro_attribute]
+pub fn ffi_converter_error(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    error::expand_ffi_converter_error(
+        syn::parse_macro_input!(attrs),
+        syn::parse_macro_input!(input),
+    )
+    .into()
+}
+
+/// Generate the FfiConverter implementation for an Interface
+///
+/// This is used by the Askama scaffolding code.  It this inputs an struct/enum definition, but
+/// only outputs the `FfiConverter` implementation, not the item.
+#[doc(hidden)]
+#[proc_macro_attribute]
+pub fn ffi_converter_interface(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    object::expand_ffi_converter_interface(
+        syn::parse_macro_input!(attrs),
+        syn::parse_macro_input!(input),
+    )
+    .into()
+}
+
 /// A helper macro to include generated component scaffolding.
 ///
 /// This is a simple convenience macro to include the UniFFI component

@@ -51,6 +51,18 @@ fn make_object() -> Arc<Object> {
     Arc::new(Object)
 }
 
+// Type that's defined in the UDL and not wrapped with #[uniffi::export]
+pub struct Zero {
+    inner: String,
+}
+
+#[uniffi::export]
+fn make_zero() -> Zero {
+    Zero {
+        inner: String::from("ZERO"),
+    }
+}
+
 #[derive(uniffi::Enum)]
 pub enum MaybeBool {
     True,
@@ -103,5 +115,7 @@ impl Object {
 include!(concat!(env!("OUT_DIR"), "/proc-macro.uniffi.rs"));
 
 mod uniffi_types {
-    pub use crate::{BasicError, FlatError, MaybeBool, NestedRecord, Object, One, Three, Two};
+    pub use crate::{
+        BasicError, FlatError, MaybeBool, NestedRecord, Object, One, Three, Two, Zero,
+    };
 }

@@ -4,14 +4,14 @@
 
 Now we generate some Rust helper code to make the `add` method available to foreign-language bindings.  
 
-First, add `uniffi` to your crate as both a dependency and build-dependency.  This adds the runtime support code that powers UniFFI and build-time support for generating the Rust scaffolding code.
+First, add `uniffi` to your crate as both a dependency and build-dependency.  Enable the `build` feature for the build-dependencies.  This adds the runtime support code that powers UniFFI and build-time support for generating the Rust scaffolding code.
 
 ```toml
 [dependencies]
-uniffi = "1.0.0"
+uniffi = "0.XX.0"
 
 [build-dependencies]
-uniffi = "1.0.0"
+uniffi = { version = "0.XX.0", features = ["build"] }
 ```
 
 Then create a `build.rs` file next to `Cargo.toml` that uses `uniffi` to generate the Rust scaffolding code.

@@ -3,3 +3,14 @@ namespace uniffi_one {};
 dictionary UniffiOneType {
     string sval;
 };
+
+enum UniffiOneEnum {
+    "One",
+    "Two",
+};
+
+interface UniffiOneInterface {
+    constructor();
+
+    i32 increment();
+};

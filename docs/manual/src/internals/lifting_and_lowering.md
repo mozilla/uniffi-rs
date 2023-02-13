@@ -94,3 +94,22 @@ Note that length fields in this format are serialized as *signed* integers
 despite the fact that they will always be non-negative. This is to help
 ease compatibility with JVM-based languages since the JVM uses signed 32-bit
 integers for its size fields internally.
+
+## Code Generation and the FfiConverter trait
+
+UniFFI needs to generate Rust code to lift/lower types.  To help with this, we define the `FfiConverter` trait which contains the code to lift/lower/serialize a particular type.
+
+The most straightforward approach would be to define `FfiConverter` on the type being lifted/lowered/serialized.  However, this wouldn't work for remote types defined in 3rd-party crates because of the Rust orphan rules.  For example, our crates can't implement `FfiConverter` on `serde_json::Value` because both the trait and the type are remote.
+
+To work around this we do several things:
+
+ - `FfiConverter` gets a generic type parameter.  This type is basically arbitrary and doesn't affect the lowering/lifting/serialization process.
+ - We generate a unit struct named `UniFfiTag` in the root of each UniFFIed crate.
+ - Each crate uses the `FfiConverter<crate::UniFfiTag>` trait to lower/lift/serialize values for its scaffolding functions.
+
+This allows us to work around the orphan rules when defining `FfiConverter` implementations.
+ - UniFFI consumer crates can implement lifting/lowering/serializing types for their own scaffolding functions, for example `impl FfiConverter<crate::UniFfiTag> for serde_json::Value`.  This is allowed since `UniFfiTag` is a local type.
+ - The `uniffi` crate can implement lifting/lowering/serializing types for all scaffolding functions using a generic impl, for example `impl<UT> FfiConverter<UT> for u8`.  "UT" is short for "UniFFI Tag"
+ - We don't currently use this, but crates can also implement lifting/lowering/serializing their local types for all scaffolding functions using a similar generic impl (`impl<UT> FfiConverter<UT> for MyLocalType`).
+
+For more details on the specifics of the "orphan rule" and why these are legal implementations, see the [Rust Chalk Book](https://rust-lang.github.io/chalk/book/clauses/coherence.html#the-orphan-rules-in-rustc)

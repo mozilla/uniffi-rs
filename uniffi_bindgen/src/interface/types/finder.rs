@@ -108,6 +108,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 },
             )
         } else {
+            let kind = attrs.external_kind().expect("ExternalKind missing");
             // A crate which can supply an `FfiConverter`.
             // We don't reference `self._type`, so ideally we could insist on it being
             // the literal 'extern' but that's tricky
@@ -116,6 +117,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 Type::External {
                     name: name.to_string(),
                     crate_name: attrs.get_crate_name(),
+                    kind,
                 },
             )
         }
@@ -135,6 +137,7 @@ impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::interface::ExternalKind;
 
     // A helper to take valid UDL and a closure to check what's in it.
     fn test_a_finding<F>(udl: &str, tester: F)
@@ -210,13 +213,20 @@ mod test {
             [External="crate-name"]
             typedef extern ExternalType;
 
+            [ExternalInterface="crate-name"]
+            typedef extern ExternalInterfaceType;
+
             [Custom]
             typedef string CustomType;
         "#,
             |types| {
                 assert!(
-                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::External { name, crate_name }
+                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::External { name, crate_name, kind: ExternalKind::DataClass }
                                                                                  if name == "ExternalType" && crate_name == "crate-name")
+                );
+                assert!(
+                    matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::External { name, crate_name, kind: ExternalKind::Interface }
+                                                                                 if name == "ExternalInterfaceType" && crate_name == "crate-name")
                 );
                 assert!(
                     matches!(types.get_type_definition("CustomType").unwrap(), Type::Custom { name, builtin }

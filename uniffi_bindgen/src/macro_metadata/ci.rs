@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::interface::{ComponentInterface, Enum, Error, Record, Type};
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use uniffi_meta::Metadata;
 
 /// Add Metadata items to the ComponentInterface
@@ -92,9 +92,13 @@ pub fn add_to_ci(
         }
     }
 
-    iface.resolve_types()?;
-    iface.derive_ffi_funcs()?;
-    iface.check_consistency()?;
+    iface.resolve_types().context("Failed to resolve types")?;
+    iface
+        .derive_ffi_funcs()
+        .context("Failed to derive FFI functions")?;
+    iface
+        .check_consistency()
+        .context("ComponentInterface consistency error")?;
 
     Ok(())
 }

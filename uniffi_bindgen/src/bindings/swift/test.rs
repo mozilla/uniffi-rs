@@ -82,7 +82,7 @@ fn compile_swift_module<T: AsRef<OsStr>>(
         .arg(output_filename)
         .arg("-emit-library")
         .arg("-Xcc")
-        .arg(format!("-fmodule-map-file={}", module_map))
+        .arg(format!("-fmodule-map-file={module_map}"))
         .arg("-I")
         .arg(out_dir)
         .arg("-L")
@@ -203,11 +203,7 @@ fn glob(globspec: &Utf8Path) -> Result<Vec<Utf8PathBuf>> {
 }
 
 fn calc_library_args(out_dir: &Utf8Path) -> Result<Vec<String>> {
-    let results = glob::glob(
-        out_dir
-            .join(format!("{}*{}", DLL_PREFIX, DLL_SUFFIX))
-            .as_str(),
-    )?;
+    let results = glob::glob(out_dir.join(format!("{DLL_PREFIX}*{DLL_SUFFIX}")).as_str())?;
     results
         .map(|globresult| {
             let path = Utf8PathBuf::try_from(globresult.unwrap())?;

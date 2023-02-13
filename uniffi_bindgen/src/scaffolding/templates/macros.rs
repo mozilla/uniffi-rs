@@ -21,7 +21,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
         -#}
         {%- match func.throws_type() -%}
         {%- when Some with (e) %}
-            Err(err) => return Err(uniffi::lower_anyhow_error_or_panic::<{{ e|ffi_converter_name }}>(err, "{{ arg.name() }}")),
+            Err(err) => return Err(uniffi::lower_anyhow_error_or_panic::<crate::UniFfiTag, {{ e|type_rs }}>(err, "{{ arg.name() }}")),
         {%- else %}
             Err(err) => panic!("Failed to convert arg '{}': {}", "{{ arg.name() }}", err),
         {%- endmatch %}

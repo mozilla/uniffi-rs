@@ -1,50 +1,18 @@
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
-  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-   |
-   | uniffi::deps::static_assertions::assert_impl_all!(r#Counter: Sync, Send);
-   |                                                   ^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
-   |
-   = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
+ --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
+  |
+  | #[::uniffi::ffi_converter_interface(crate::UniFfiTag)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
+  |
+  = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
 note: required because it appears within the type `Counter`
-  --> tests/ui/interface_not_sync_and_send.rs:9:12
-   |
-9  | pub struct Counter {
-   |            ^^^^^^^
-note: required by a bound in `assert_impl_all`
-  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-   |
-   | uniffi::deps::static_assertions::assert_impl_all!(r#Counter: Sync, Send);
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
-   = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
-  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-   |
-   |         <std::sync::Arc<r#Counter> as uniffi::FfiConverter>::lower(_arc)
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
-   |
-   = help: the trait `FfiConverter` is implemented for `Arc<T>`
-
-error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
-  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-   |
-   |         <std::sync::Arc<r#Counter> as uniffi::FfiConverter>::lower(_arc)
-   |                                                                    ^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
-   |
-   = help: the trait `FfiConverter` is implemented for `Arc<T>`
-
-error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
-   --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-    |
-    |         match<std::sync::Arc<r#Counter> as uniffi::FfiConverter>::try_lift(r#ptr) {
-    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
-    |
-    = help: the trait `FfiConverter` is implemented for `Arc<T>`
-
-error[E0277]: the trait bound `Arc<Counter>: FfiConverter` is not satisfied
-   --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-    |
-    |         match<std::sync::Arc<r#Counter> as uniffi::FfiConverter>::try_lift(r#ptr) {
-    |                                                                            ^^^^^ the trait `FfiConverter` is not implemented for `Arc<Counter>`
-    |
-    = help: the trait `FfiConverter` is implemented for `Arc<T>`
+ --> tests/ui/interface_not_sync_and_send.rs:9:12
+  |
+9 | pub struct Counter {
+  |            ^^^^^^^
+note: required by a bound in `Interface`
+ --> $WORKSPACE/uniffi_core/src/lib.rs
+  |
+  | pub trait Interface<UT>: Send + Sync + Sized {}
+  |                                 ^^^^ required by this bound in `Interface`
+  = note: this error originates in the attribute macro `::uniffi::ffi_converter_interface` (in Nightly builds, run with -Z macro-backtrace for more info)

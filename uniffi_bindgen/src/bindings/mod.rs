@@ -41,7 +41,7 @@ impl TryFrom<&str> for TargetLanguage {
             "swift" => TargetLanguage::Swift,
             "python" | "py" => TargetLanguage::Python,
             "ruby" | "rb" => TargetLanguage::Ruby,
-            _ => bail!("Unknown or unsupported target language: \"{}\"", value),
+            _ => bail!("Unknown or unsupported target language: \"{value}\""),
         })
     }
 }

@@ -1,19 +1,33 @@
+### Migrating to UniFFI 0.23
+
+- Update your `Cargo.toml` file to only depend on the `uniffi` crate.  Follow the directions from the [Prerequisites section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/Prerequisites.html)
+- Create a `uniffi-bindgen` binary for your project.  Follow the directions from the [Foreign language bindings section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/foreign_language_bindings.html).
+- Uninstall the system-wide `uniffi_bindgen`: `cargo uninstall uniffi_bindgen`.  (Not strictly necessary, but you won't be using it anymore).
+
 <!-- The sections in this file are managed automatically by `cargo release` -->
 <!-- See our [internal release process docs](docs/release-process.md) and for more general -->
 <!-- guidance, see https://github.com/sunng87/cargo-release/blob/master/docs/faq.md#maintaining-changelog -->
 
 <!-- next-header -->
 
-## [[UnreleasedVersion]] - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...HEAD).
+[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.23.0...HEAD).
+
+## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
+
+[All changes in v0.23.0](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...v0.23.0).
 
 ### ⚠️ Breaking Changes ⚠️
 
-- `uniffi_bindgen`: Removed the `run_main` function.  It's moved to `uniffi::uniffi_bindgen_main` and now unconditionally succeeds rather than return a `Result<()>`
+- `uniffi_bindgen` no longer provides a standalone binary.  Having a standalone binary resulted in version mismatches when the `uniffi` version specified in `Cargo.toml` didn't match the `uniffi_bindgen` version installed on the system.  Read [The foreign language bindings](https://mozilla.github.io/uniffi-rs/tutorial/foreign_language_bindings.html) section of the manual for how to set up a `uniffi-bindgen` binary that's local to your workspace.
+- `uniffi_bindgen`: Removed the `run_main` function.  It's moved to `uniffi::uniffi_bindgen_main` and now unconditionally succeeds rather than return a `Result<()>`.
 
 ### What's changed
 
+- The UniFFI crate organization has been significantly reworked:
+  - Projects that use UniFFI for binding/scaffolding generation now only need to depend on the `uniffi` crate and no longer need to depend on `uniffi_bindgen`, `uniffi_build`, etc.
+  - The version numbers for each crate will no longer by kept in sync after this release.  In particular `uniffi` will have breaking changes less often than `uniffi_bindgen` and other crates.  This means that UniFFI consumers that specify their versions like `uniffi = "0.23"` will not need to bump their `uniffi` version as often as before.
 - Callback interface method calls are no longer logged (#1439)
 
 ## v0.22.0 - (_2022-12-16_)

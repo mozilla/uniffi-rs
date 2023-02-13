@@ -56,7 +56,7 @@ pub(super) fn gen_method_scaffolding(
     let fn_call_prefix = match sig.inputs.first() {
         Some(arg) if is_receiver(arg) => {
             let ffi_converter = quote! {
-                <::std::sync::Arc<#self_ident> as ::uniffi::FfiConverter>
+                <::std::sync::Arc<#self_ident> as ::uniffi::FfiConverter<crate::UniFfiTag>>
             };
 
             params_args.0.push(quote! { this: #ffi_converter::FfiType });
@@ -132,7 +132,7 @@ fn collect_params<'a>(
         };
 
         let arg_n = format_ident!("arg{i}");
-        let param = quote! { #arg_n: <#ty as ::uniffi::FfiConverter>::FfiType };
+        let param = quote! { #arg_n: <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::FfiType };
 
         // FIXME: With UDL, fallible functions use uniffi::lower_anyhow_error_or_panic instead of
         // panicking unconditionally. This seems cleaner though.
@@ -141,7 +141,7 @@ fn collect_params<'a>(
             None => format!("Failed to convert arg #{i}: {{}}"),
         };
         let arg = quote! {
-            <#ty as ::uniffi::FfiConverter>::try_lift(#arg_n).unwrap_or_else(|err| {
+            <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(#arg_n).unwrap_or_else(|err| {
                 ::std::panic!(#panic_fmt, err)
             })
         };
@@ -201,14 +201,14 @@ fn gen_ffi_function(
         Some(FunctionReturn { ty, throws }) => (
             quote! { #ty },
             None,
-            quote! { <#ty as ::uniffi::FfiReturn>::FfiType },
+            quote! { <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::FfiType },
             throws,
         ),
 
         None => (
             quote! { () },
             None,
-            quote! { <() as ::uniffi::FfiReturn>::FfiType },
+            quote! { <() as ::uniffi::FfiConverter<crate::UniFfiTag>>::FfiType },
             &None,
         ),
     };
@@ -239,12 +239,12 @@ fn gen_ffi_function(
                 quote! {
                     ::uniffi::call_with_result(call_status, || {
                         let val = #rust_fn_call.map_err(|e| {
-                            <#error_ident as ::uniffi::FfiConverter>::lower(
+                            <#error_ident as ::uniffi::FfiConverter<crate::UniFFiTag>>::lower(
                                 ::std::convert::Into::into(e),
                             )
                         })?;
 
-                        Ok(<#return_ty as ::uniffi::FfiReturn>::lower(val))
+                        Ok(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower(val))
                     })
                 }
             }
@@ -252,7 +252,7 @@ fn gen_ffi_function(
             None => {
                 quote! {
                     ::uniffi::call_with_output(call_status, || {
-                        <#return_ty as ::uniffi::FfiReturn>::lower(#rust_fn_call)
+                        <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower(#rust_fn_call)
                     })
                 }
             }
@@ -271,10 +271,10 @@ fn gen_ffi_function(
                 future: ::std::option::Option<&mut ::uniffi::RustFuture<#return_ty, #throw_ty>>,
                 waker: ::std::option::Option<::uniffi::RustFutureForeignWakerFunction>,
                 waker_environment: *const ::std::ffi::c_void,
-                polled_result: &mut <#return_ty as ::uniffi::FfiReturn>::FfiType,
+                polled_result: &mut <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::FfiType,
                 call_status: &mut ::uniffi::RustCallStatus,
             ) -> bool {
-                ::uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
+                ::uniffi::ffi::uniffi_rustfuture_poll::<_, _, crate::UniFfiTag>(future, waker, waker_environment, polled_result, call_status)
             }
         });
 

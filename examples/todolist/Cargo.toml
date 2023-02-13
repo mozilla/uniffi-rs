@@ -16,4 +16,7 @@ once_cell = "1.12"
 thiserror = "1.0"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi"}
+uniffi = {path = "../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }

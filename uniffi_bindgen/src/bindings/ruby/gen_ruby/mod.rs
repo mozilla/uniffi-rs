@@ -93,7 +93,7 @@ mod filters {
             FfiType::Float32 => ":float".to_string(),
             FfiType::Float64 => ":double".to_string(),
             FfiType::RustArcPtr(_) => ":pointer".to_string(),
-            FfiType::RustBuffer => "RustBuffer.by_value".to_string(),
+            FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
             FfiType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
         })
@@ -184,8 +184,7 @@ mod filters {
                     nm.to_string()
                 } else {
                     format!(
-                        "{}.each.with_object({{}}) {{ |(k, v), res| res[{}] = {} }}",
-                        nm, k_coerce_code, v_coerce_code,
+                        "{nm}.each.with_object({{}}) {{ |(k, v), res| res[{k_coerce_code}] = {v_coerce_code} }}"
                     )
                 }
             }

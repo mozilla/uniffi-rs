@@ -86,7 +86,7 @@
 {%- when Type::Custom { name, builtin } %}
 {% include "CustomTypeTemplate.kt" %}
 
-{%- when Type::External { crate_name, name } %}
+{%- when Type::External { crate_name, name, kind } %}
 {% include "ExternalTypeTemplate.kt" %}
 
 {%- else %}

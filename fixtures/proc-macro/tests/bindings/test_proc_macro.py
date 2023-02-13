@@ -18,6 +18,8 @@ assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
 # just make sure this works / doesn't crash
 three = Three(obj)
 
+assert(make_zero().inner == "ZERO")
+
 try:
     always_fails()
 except BasicError.OsError:

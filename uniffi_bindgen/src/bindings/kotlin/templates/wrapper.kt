@@ -36,8 +36,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
-{%- for imported_class in self.imports() %}
-import {{ imported_class }}
+{%- for req in self.imports() %}
+{{ req.render() }}
 {%- endfor %}
 
 {% include "RustBufferTemplate.kt" %}

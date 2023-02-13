@@ -15,4 +15,7 @@ uniffi = {path = "../../uniffi"}
 thiserror = "1.0"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi"}
+uniffi = {path = "../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }

@@ -299,7 +299,7 @@ pub fn generate_bindings(
     if let Some(library_file) = library_file {
         macro_metadata::add_to_ci_from_library(&mut component, library_file)?;
     }
-    let crate_root = &guess_crate_root(udl_file)?;
+    let crate_root = &guess_crate_root(udl_file).context("Failed to guess crate root")?;
 
     let config = get_config(&component, crate_root, config_file_override)?;
     let out_dir = get_out_dir(udl_file, out_dir_override)?;
@@ -357,8 +357,7 @@ fn get_config(
 
     match config_file {
         Some(path) => {
-            let contents = fs::read_to_string(&path)
-                .with_context(|| format!("Failed to read config file from {path}"))?;
+            let contents = fs::read_to_string(&path).context("Failed to read config file")?;
             let loaded_config: Config = toml::de::from_str(&contents)
                 .with_context(|| format!("Failed to generate config from file {path}"))?;
             Ok(loaded_config.merge_with(&default_config))

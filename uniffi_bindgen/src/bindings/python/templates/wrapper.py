@@ -27,8 +27,8 @@ import datetime
 import asyncio
 import contextvars
 import enum
-{%- for module_name in self.imports() %}
-import {{ module_name }}
+{%- for req in self.imports() %}
+{{ req.render() }}
 {%- endfor %}
 
 # Used for default argument values

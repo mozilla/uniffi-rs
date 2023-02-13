@@ -14,6 +14,7 @@
 //! all handled by a single abstraction. This might need to be refactored in future
 //! if we grow significantly more complicated attribute handling.
 
+use crate::interface::types::ExternalKind;
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
@@ -32,7 +33,10 @@ pub(super) enum Attribute {
     Threadsafe, // N.B. the `[Threadsafe]` attribute is deprecated and will be removed
     Throws(String),
     // `[External="crate_name"]` - We can `use crate_name::...` for the type.
-    External(String),
+    External {
+        crate_name: String,
+        kind: ExternalKind,
+    },
     // Custom type on the scaffolding side
     Custom,
 }
@@ -69,7 +73,14 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                     "Name" => Ok(Attribute::Name(name_from_id_or_string(&identity.rhs))),
                     "Throws" => Ok(Attribute::Throws(name_from_id_or_string(&identity.rhs))),
                     "Self" => Ok(Attribute::SelfType(SelfType::try_from(&identity.rhs)?)),
-                    "External" => Ok(Attribute::External(name_from_id_or_string(&identity.rhs))),
+                    "External" => Ok(Attribute::External {
+                        crate_name: name_from_id_or_string(&identity.rhs),
+                        kind: ExternalKind::DataClass,
+                    }),
+                    "ExternalInterface" => Ok(Attribute::External {
+                        crate_name: name_from_id_or_string(&identity.rhs),
+                        kind: ExternalKind::Interface,
+                    }),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
@@ -419,7 +430,7 @@ impl TypedefAttributes {
         self.0
             .iter()
             .find_map(|attr| match attr {
-                Attribute::External(crate_name) => Some(crate_name.clone()),
+                Attribute::External { crate_name, .. } => Some(crate_name.clone()),
                 _ => None,
             })
             .expect("must have a crate name")
@@ -429,6 +440,13 @@ impl TypedefAttributes {
         self.0
             .iter()
             .any(|attr| matches!(attr, Attribute::Custom { .. }))
+    }
+
+    pub(super) fn external_kind(&self) -> Option<ExternalKind> {
+        self.0.iter().find_map(|attr| match attr {
+            Attribute::External { kind, .. } => Some(*kind),
+            _ => None,
+        })
     }
 }
 
@@ -728,6 +746,13 @@ mod test {
 
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[External=crate_name]").unwrap();
+        let attrs = TypedefAttributes::try_from(&node).unwrap();
+        assert!(!attrs.is_custom());
+        assert_eq!(attrs.get_crate_name(), "crate_name");
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[ExternalInterface=crate_name ]")
+                .unwrap();
         let attrs = TypedefAttributes::try_from(&node).unwrap();
         assert!(!attrs.is_custom());
         assert_eq!(attrs.get_crate_name(), "crate_name");

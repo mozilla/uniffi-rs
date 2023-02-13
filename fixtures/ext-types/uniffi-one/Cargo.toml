@@ -16,4 +16,4 @@ bytes = "1.0"
 uniffi = {path = "../../../uniffi"}
 
 [build-dependencies]
-uniffi = {path = "../../../uniffi"}
+uniffi = {path = "../../../uniffi", features = ["build"] }

@@ -18,6 +18,8 @@ assert(enumIdentity(MaybeBool.TRUE) == MaybeBool.TRUE)
 // just make sure this works / doesn't crash
 val three = Three(obj)
 
+assert(makeZero().inner == "ZERO")
+
 try {
     alwaysFails()
     throw RuntimeException("alwaysFails should have thrown")

@@ -376,7 +376,7 @@ impl CodeOracle for SwiftCodeOracle {
             FfiType::Float32 => "float".into(),
             FfiType::Float64 => "double".into(),
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
-            FfiType::RustBuffer => "RustBuffer".into(),
+            FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".to_string(),
         }
@@ -405,19 +405,19 @@ pub mod filters {
     }
 
     pub fn lower_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lower", codetype.ffi_converter_name(oracle())))
+        Ok(codetype.lower(oracle()))
     }
 
     pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.write", codetype.ffi_converter_name(oracle())))
+        Ok(codetype.write(oracle()))
     }
 
     pub fn lift_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lift", codetype.ffi_converter_name(oracle())))
+        Ok(codetype.lift(oracle()))
     }
 
     pub fn read_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.read", codetype.ffi_converter_name(oracle())))
+        Ok(codetype.read(oracle()))
     }
 
     pub fn literal_swift(
@@ -448,7 +448,7 @@ pub mod filters {
             FfiType::Float32 => "float".into(),
             FfiType::Float64 => "double".into(),
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
-            FfiType::RustBuffer => "RustBuffer".into(),
+            FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
         })

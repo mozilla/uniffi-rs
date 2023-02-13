@@ -18,6 +18,8 @@ assert(enumIdentity(value: .true) == .true)
 // just make sure this works / doesn't crash
 let three = Three(obj: obj)
 
+assert(makeZero().inner == "ZERO")
+
 do {
     try alwaysFails()
     fatalError("alwaysFails should have thrown")

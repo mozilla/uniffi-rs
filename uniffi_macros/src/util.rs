@@ -4,8 +4,10 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
+use std::convert::TryFrom;
 use syn::{
-    parse::ParseStream, spanned::Spanned, visit_mut::VisitMut, Attribute, Item, Token, Type,
+    parse::ParseStream, spanned::Spanned, visit_mut::VisitMut, Attribute, AttributeArgs, Item,
+    Meta, NestedMeta, Path, Token, Type,
 };
 use uniffi_meta::Metadata;
 
@@ -125,12 +127,12 @@ pub fn rewrite_self_type(item: &mut Item) {
     }
 }
 
-pub fn try_read_field(f: &syn::Field) -> TokenStream {
+pub fn try_read_field(f: &syn::Field, tag: &Path) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 
     quote! {
-        #ident: <#ty as ::uniffi::FfiConverter>::try_read(buf)?,
+        #ident: <#ty as ::uniffi::FfiConverter<#tag>>::try_read(buf)?,
     }
 }
 
@@ -218,5 +220,74 @@ pub fn either_attribute_arg<T: Spanned>(a: Option<T>, b: Option<T>) -> syn::Resu
             error.combine(syn::Error::new(b.span(), "note: first one here"));
             Err(error)
         }
+    }
+}
+
+pub(crate) struct FfiConverterTagHandler {
+    tag: Option<Path>,
+}
+
+impl FfiConverterTagHandler {
+    pub(crate) fn generic_impl() -> Self {
+        Self { tag: None }
+    }
+
+    pub(crate) fn into_impl_and_tag_path(
+        self,
+        trait_name: &str,
+        ident: &Ident,
+    ) -> (TokenStream, Path) {
+        let trait_name = Ident::new(trait_name, Span::call_site());
+        match self.tag {
+            Some(tag) => (quote! { impl ::uniffi::#trait_name<#tag> for #ident }, tag),
+            None => (
+                quote! { impl<T> ::uniffi::#trait_name<T> for #ident },
+                Ident::new("T", Span::call_site()).into(),
+            ),
+        }
+    }
+}
+
+impl TryFrom<AttributeArgs> for FfiConverterTagHandler {
+    type Error = syn::Error;
+
+    fn try_from(args: AttributeArgs) -> syn::Result<Self> {
+        let mut result = Self { tag: None };
+        for arg in args {
+            match arg {
+                NestedMeta::Meta(meta) => match meta {
+                    Meta::Path(path) => match result.tag {
+                        None => {
+                            result.tag = Some(path);
+                        }
+                        Some(_) => {
+                            return Err(syn::Error::new(
+                                Span::call_site(),
+                                "multiple tags specified",
+                            ));
+                        }
+                    },
+                    Meta::List(_) => {
+                        return Err(syn::Error::new(
+                            Span::call_site(),
+                            "List args not supported",
+                        ));
+                    }
+                    Meta::NameValue(_) => {
+                        return Err(syn::Error::new(
+                            Span::call_site(),
+                            "name/value pairs not supported",
+                        ));
+                    }
+                },
+                NestedMeta::Lit(_) => {
+                    return Err(syn::Error::new(
+                        Span::call_site(),
+                        "Literal args not supported",
+                    ));
+                }
+            }
+        }
+        Ok(result)
     }
 }

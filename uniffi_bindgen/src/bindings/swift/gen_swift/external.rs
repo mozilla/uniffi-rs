@@ -22,4 +22,14 @@ impl CodeType for ExternalCodeType {
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
         format!("Type{}", self.name)
     }
+
+    // lower and lift need to call public function which were generated for
+    // the original types.
+    fn lower(&self, oracle: &dyn CodeOracle) -> String {
+        format!("{}_lower", self.ffi_converter_name(oracle))
+    }
+
+    fn lift(&self, oracle: &dyn CodeOracle) -> String {
+        format!("{}_lift", self.ffi_converter_name(oracle))
+    }
 }

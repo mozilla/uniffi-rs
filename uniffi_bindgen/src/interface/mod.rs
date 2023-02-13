@@ -53,7 +53,7 @@ use std::{
 use anyhow::{bail, ensure, Result};
 
 pub mod types;
-pub use types::Type;
+pub use types::{ExternalKind, Type};
 use types::{TypeIterator, TypeUniverse};
 
 mod attributes;
@@ -244,9 +244,13 @@ impl ComponentInterface {
     }
 
     /// Get details about all `Type::External` types
-    pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, &String)> {
+    pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, &String, ExternalKind)> {
         self.types.iter_known_types().filter_map(|t| match t {
-            Type::External { name, crate_name } => Some((name, crate_name)),
+            Type::External {
+                name,
+                crate_name,
+                kind,
+            } => Some((name, crate_name, *kind)),
             _ => None,
         })
     }
@@ -360,7 +364,7 @@ impl ComponentInterface {
                 name: "size".to_string(),
                 type_: FfiType::Int32,
             }],
-            return_type: Some(FfiType::RustBuffer),
+            return_type: Some(FfiType::RustBuffer(None)),
         }
     }
 
@@ -375,7 +379,7 @@ impl ComponentInterface {
                 name: "bytes".to_string(),
                 type_: FfiType::ForeignBytes,
             }],
-            return_type: Some(FfiType::RustBuffer),
+            return_type: Some(FfiType::RustBuffer(None)),
         }
     }
 
@@ -388,7 +392,7 @@ impl ComponentInterface {
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "buf".to_string(),
-                type_: FfiType::RustBuffer,
+                type_: FfiType::RustBuffer(None),
             }],
             return_type: None,
         }
@@ -404,14 +408,14 @@ impl ComponentInterface {
             arguments: vec![
                 FfiArgument {
                     name: "buf".to_string(),
-                    type_: FfiType::RustBuffer,
+                    type_: FfiType::RustBuffer(None),
                 },
                 FfiArgument {
                     name: "additional".to_string(),
                     type_: FfiType::Int32,
                 },
             ],
-            return_type: Some(FfiType::RustBuffer),
+            return_type: Some(FfiType::RustBuffer(None)),
         }
     }
 

@@ -69,5 +69,18 @@ public struct FfiConverterType{{ name }}: FfiConverter {
         return {{ builtin|lower_fn }}(builtinValue)
     }
 }
+
+{#
+We always write these public functions just incase the type is used as
+an external type by another crate.
+#}
+public func FfiConverterType{{ name }}_lift(_ buf: RustBuffer) throws -> {{ name }} {
+    return try FfiConverterType{{ name }}.lift(buf)
+}
+
+public func FfiConverterType{{ name }}_lower(_ value: {{ name }}) -> RustBuffer {
+    return FfiConverterType{{ name }}.lower(value)
+}
+
 {%- endmatch %}
 
