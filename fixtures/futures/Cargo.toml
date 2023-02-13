@@ -10,8 +10,12 @@ publish = false
 name = "uniffi_futures"
 crate-type = ["lib", "cdylib"]
 
+[[bin]]
+name = "uniffi-fixtures-futures"
+path = "src/bin.rs"
+
 [dependencies]
-uniffi = { path = "../../uniffi", features = ["tokio"] }
+uniffi = { path = "../../uniffi", features = ["tokio", "cli"] }
 tokio = { version = "1.24.1", features = ["time"] }
 
 [build-dependencies]
