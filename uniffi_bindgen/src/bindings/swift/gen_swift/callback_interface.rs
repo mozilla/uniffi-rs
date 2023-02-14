@@ -20,6 +20,6 @@ impl CodeType for CallbackInterfaceCodeType {
     }
 
     fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-        format!("CallbackInterface{}", self.type_label(oracle))
+        format!("Type{}", self.type_label(oracle))
     }
 }

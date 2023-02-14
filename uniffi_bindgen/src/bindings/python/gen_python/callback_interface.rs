@@ -20,7 +20,7 @@ impl CodeType for CallbackInterfaceCodeType {
     }
 
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
-        format!("CallbackInterface{}", self.id)
+        format!("Type{}", self.id)
     }
 
     fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
