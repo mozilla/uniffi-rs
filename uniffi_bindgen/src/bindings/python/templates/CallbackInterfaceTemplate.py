@@ -93,6 +93,9 @@ def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
     # See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
     return -1
 
+# expose the converter type in case this is called externally by another python component
+FfiConverterType{{ type_name }} = {{ type_name }}
+
 # We need to keep this function reference alive:
 # if they get GC'd while in use then UniFFI internals could attempt to call a function
 # that is in freed memory.
