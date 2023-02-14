@@ -5,6 +5,10 @@
 import uniffi.imported_types_lib.*
 import uniffi.uniffi_one.*
 
+class CallbackInterfaceImpl(): UniffiOneCallbackInterface {
+    override fun onDone(doneVal: String): String = doneVal + "-fromkotlin"
+}
+
 val ct = getCombinedType(null)
 assert(ct.uot.sval == "hello")
 assert(ct.guid ==  "a-guid")
@@ -33,3 +37,6 @@ assert(getMaybeUniffiOneEnum(uoe)!! == uoe)
 assert(getMaybeUniffiOneEnum(null) == null)
 assert(getUniffiOneEnums(listOf(uoe)) == listOf(uoe))
 assert(getMaybeUniffiOneEnums(listOf(uoe, null)) == listOf(uoe, null))
+
+val cb = CallbackInterfaceImpl()
+assert(useUniffiOneCallbackInterface(cb) == "fromrust-fromkotlin")

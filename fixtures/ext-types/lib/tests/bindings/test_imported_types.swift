@@ -6,6 +6,11 @@ import imported_types_lib
 //import uniffi_one
 import Foundation
 
+class CallbackInterfaceImpl: UniffiOneCallbackInterface {
+    func onDone(doneVal: String) -> String { doneVal + "-fromswift" }
+}
+
+
 let ct = getCombinedType(value: nil)
 assert(ct.uot.sval == "hello")
 assert(ct.guid ==  "a-guid")
@@ -32,3 +37,6 @@ assert(getMaybeUniffiOneEnum(e: UniffiOneEnum.one)! == UniffiOneEnum.one)
 assert(getMaybeUniffiOneEnum(e: nil) == nil)
 assert(getUniffiOneEnums(es: [UniffiOneEnum.one]) == [UniffiOneEnum.one])
 assert(getMaybeUniffiOneEnums(es: [UniffiOneEnum.one, nil]) == [UniffiOneEnum.one, nil])
+
+let cb = CallbackInterfaceImpl()
+assert(useUniffiOneCallbackInterface(iface: cb) == "fromrust-fromkotlin")

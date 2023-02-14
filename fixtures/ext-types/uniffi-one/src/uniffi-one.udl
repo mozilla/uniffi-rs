@@ -17,5 +17,5 @@ interface UniffiOneInterface {
 
 
 callback interface UniffiOneCallbackInterface {
-    void on_done();
+    string on_done(string done_val);
 };

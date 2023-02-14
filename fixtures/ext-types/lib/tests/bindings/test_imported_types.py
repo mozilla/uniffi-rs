@@ -7,6 +7,10 @@ import urllib
 from imported_types_lib import *
 from uniffi_one import *
 
+class CallbackInterfaceImpl(UniffiOneCallbackInterface):
+    def on_done(self, done_val):
+        return f"{done_val}-frompython"
+
 class TestIt(unittest.TestCase):
     def test_it(self):
         ct = get_combined_type(None)
@@ -42,6 +46,15 @@ class TestIt(unittest.TestCase):
         self.assertEqual(None, get_maybe_uniffi_one_enum(None))
         self.assertEqual([e], get_uniffi_one_enums([e]))
         self.assertEqual([e, None], get_maybe_uniffi_one_enums([e, None]))
+
+    def test_get_uniffi_one_interface(self):
+        assert(isinstance(get_uniffi_one_interface(), UniffiOneInterface))
+
+    def test_use_uniffi_one_callback_interface(self):
+        cb_interface = CallbackInterfaceImpl()
+        self.assertEqual(use_uniffi_one_callback_interface(cb_interface), "fromrust-frompython")
+
+
 
 
 if __name__=='__main__':

@@ -17,7 +17,7 @@ namespace imported_types_lib {
     sequence<UniffiOneEnum?> get_maybe_uniffi_one_enums(sequence<UniffiOneEnum?> es);
 
     UniffiOneInterface get_uniffi_one_interface();
-    void use_uniffi_one_callback_interface(UniffiOneCallbackInterface iface);
+    string use_uniffi_one_callback_interface(UniffiOneCallbackInterface iface);
 };
 
 // A type defined in a .udl file in the `uniffi-one` crate (ie, in

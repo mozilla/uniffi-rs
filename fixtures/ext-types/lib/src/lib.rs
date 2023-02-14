@@ -108,8 +108,8 @@ fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
     Arc::new(UniffiOneInterface::new())
 }
 
-fn use_uniffi_one_callback_interface(iface: Box<dyn UniffiOneCallbackInterface>) {
-    iface.on_done();
+fn use_uniffi_one_callback_interface(iface: Box<dyn UniffiOneCallbackInterface>) -> String {
+    return iface.on_done("fromrust".to_string());
 }
 
 include!(concat!(env!("OUT_DIR"), "/ext-types-lib.uniffi.rs"));
