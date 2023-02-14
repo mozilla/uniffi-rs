@@ -102,13 +102,13 @@ enum ParseStage {
     ReturnDescription,
 }
 
-/// Structure or enum documentation.
+/// Record or enum or object documentation.
 #[derive(Debug, Clone)]
 pub struct Structure {
     pub description: String,
 }
 
-/// Impl documentation.
+/// Object methods documentation.
 #[derive(Debug, Clone)]
 pub struct Impl {
     pub methods: HashMap<String, Function>,
