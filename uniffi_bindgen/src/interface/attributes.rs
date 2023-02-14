@@ -755,14 +755,14 @@ mod test {
         assert_eq!(attrs.get_crate_name(), "crate_name");
 
         let (_, node) =
-            weedle::attribute::ExtendedAttributeList::parse("[ExternalInterface=crate_name ]")
+            weedle::attribute::ExtendedAttributeList::parse("[ExternalInterface=crate_name]")
                 .unwrap();
         let attrs = TypedefAttributes::try_from(&node).unwrap();
         assert!(!attrs.is_custom());
         assert_eq!(attrs.get_crate_name(), "crate_name");
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse(
-            "[ExternalCallbackInterface=crate_name ]",
+            "[ExternalCallbackInterface=crate_name]",
         )
         .unwrap();
         let attrs = TypedefAttributes::try_from(&node).unwrap();
