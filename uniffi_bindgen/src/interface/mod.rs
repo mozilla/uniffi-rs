@@ -789,6 +789,12 @@ impl ComponentInterface {
             }
         }
 
+        for (_, enum_) in self.enums.iter_mut() {
+            if let Some(doc) = documentation.structures.remove(enum_.name()) {
+                enum_.documentation = Some(doc);
+            }
+        }
+
         for function in self.functions.iter_mut() {
             if let Some(doc) = documentation.functions.remove(function.name()) {
                 function.documentation = Some(doc);
