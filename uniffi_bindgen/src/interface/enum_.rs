@@ -166,10 +166,12 @@ use super::{AsType, Type, TypeIterator};
 ///
 /// Enums are passed across the FFI by serializing to a bytebuffer, with a
 /// i32 indicating the variant followed by the serialization of each field.
-#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Enum {
     pub(super) name: String,
     pub(super) module_path: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Structure>,
     pub(super) variants: Vec<Variant>,
     // NOTE: `flat` is a misleading name and to make matters worse, has 2 different
     // meanings depending on the context :(
@@ -191,9 +193,27 @@ pub struct Enum {
     pub(super) flat: bool,
 }
 
+impl PartialEq for Enum {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.variants == other.variants && self.flat == other.flat
+    }
+}
+
+impl Eq for Enum {}
+
 impl Enum {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Structure> {
+        self.documentation.as_ref()
+    }
+
+    pub fn type_(&self) -> Type {
+        // *sigh* at the clone here, the relationship between a ComponentInterface
+        // and its contained types could use a bit of a cleanup.
+        Type::Enum(self.name.clone())
     }
 
     pub fn variants(&self) -> &[Variant] {
@@ -224,6 +244,35 @@ impl Enum {
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
             flat,
+            documentation: None,
+            variants: meta.variants.into_iter().map(Into::into).collect(),
+            flat,
+        }
+    }
+}
+
+// Note that we have two `APIConverter` impls here - one for the `enum` case
+// and one for the `[Enum] interface` case.
+
+impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
+    fn convert(&self, _ci: &mut ComponentInterface) -> Result<Enum> {
+        Ok(Enum {
+            name: self.identifier.0.to_string(),
+            documentation: None,
+            variants: self
+                .values
+                .body
+                .list
+                .iter()
+                .map::<Result<_>, _>(|v| {
+                    Ok(Variant {
+                        name: v.0.to_string(),
+                        ..Default::default()
+                    })
+                })
+                .collect::<Result<Vec<_>>>()?,
+            // Enums declared using the `enum` syntax can never have variants with fields.
+            flat: true,
         })
     }
 }
@@ -232,6 +281,7 @@ impl AsType for Enum {
     fn as_type(&self) -> Type {
         Type::Enum {
             name: self.name.clone(),
+            documentation: None,
             module_path: self.module_path.clone(),
         }
     }
