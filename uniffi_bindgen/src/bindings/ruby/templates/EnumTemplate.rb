@@ -1,5 +1,6 @@
 {% if e.is_flat() %}
 
+{% include "EnumDocsTemplate.rb" -%}
 class {{ e.name()|class_name_rb }}
   {% for variant in e.variants() -%}
   {{ variant.name()|enum_name_rb }} = {{ loop.index }}
@@ -8,6 +9,7 @@ end
 
 {% else %}
 
+{% include "EnumDocsTemplate.rb" -%}
 class {{ e.name()|class_name_rb }}
   def initialize
     raise RuntimeError, '{{ e.name()|class_name_rb }} cannot be instantiated directly'

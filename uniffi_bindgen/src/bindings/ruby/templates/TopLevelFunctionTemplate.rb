@@ -1,6 +1,7 @@
 {%- match func.return_type() -%}
 {%- when Some with (return_type) -%}
 
+{% include "FunctionDocsTemplate.rb" -%}
 def self.{{ func.name()|fn_name_rb }}({%- call rb::arg_list_decl(func) -%})
   {%- call rb::coerce_args(func) %}
   result = {% call rb::to_ffi_call(func) %}
@@ -9,6 +10,7 @@ end
 
 {% when None -%}
 
+{% include "FunctionDocsTemplate.rb" -%}
 def self.{{ func.name()|fn_name_rb }}({%- call rb::arg_list_decl(func) -%})
   {%- call rb::coerce_args(func) %}
   {% call rb::to_ffi_call(func) %}

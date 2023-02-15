@@ -1,9 +1,12 @@
 {%- let obj = ci.get_object_definition(name).unwrap() %}
 
-class {{ type_name }}(object):
+class {{ type_name }}(object): {% let struct = obj %}{% include "StructureDocsTemplate.py" %}
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
     def __init__(self, {% call py::arg_list_decl(cons) -%}):
+        {%- let func = cons -%}
+        {% include "MethodDocsTemplate.py" %}
+
         {%- call py::setup_args_extra_indent(cons) %}
         self._pointer = {% call py::to_ffi_call(cons) %}
     {%- when None %}
@@ -27,6 +30,9 @@ class {{ type_name }}(object):
     {% for cons in obj.alternate_constructors() -%}
     @classmethod
     def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
+        {%- let func = cons -%}
+        {% include "MethodDocsTemplate.py" %}
+
         {%- call py::setup_args_extra_indent(cons) %}
         # Call the (fallible) function before creating any half-baked object instances.
         pointer = {% call py::to_ffi_call(cons) %}
@@ -88,6 +94,9 @@ class {{ type_name }}(object):
 
     {%- when Some with (return_type) -%}
     def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
+        {%- let func = meth -%}
+        {% include "MethodDocsTemplate.py" %}
+
         {%- call py::setup_args_extra_indent(meth) %}
         return {{ return_type|lift_fn }}(
             {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
@@ -95,6 +104,9 @@ class {{ type_name }}(object):
 
     {%- when None -%}
     def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
+        {%- let func = meth -%}
+        {% include "MethodDocsTemplate.py" %}
+
         {%- call py::setup_args_extra_indent(meth) %}
         {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
     {% endmatch %}

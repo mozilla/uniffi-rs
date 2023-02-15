@@ -1,5 +1,5 @@
 # Record type {{ rec.name() }}
-{%- include "RecordDocsTemplate.rb" %}
+{% include "RecordDocsTemplate.rb" -%}
 class {{ rec.name()|class_name_rb }}
   attr_reader {% for field in rec.fields() %}:{{ field.name()|var_name_rb }}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
 
