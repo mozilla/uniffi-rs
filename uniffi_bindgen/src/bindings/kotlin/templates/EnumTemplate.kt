@@ -7,6 +7,7 @@
 
 {%- if e.is_flat() %}
 
+{% let struct = e %}{% include "StructureDocsTemplate.kt" %}
 enum class {{ type_name }} {
     {% for variant in e.variants() -%}
     {{ variant|variant_name }}{% if loop.last %};{% else %},{% endif %}
@@ -29,6 +30,7 @@ public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}
 
 {% else %}
 
+{% let struct = e %}{% include "StructureDocsTemplate.kt" %}
 sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}

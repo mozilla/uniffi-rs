@@ -1,6 +1,8 @@
 {%- let obj = ci|get_object_definition(name) %}
 public protocol {{ obj.name() }}Protocol {
     {% for meth in obj.methods() -%}
+    {%- let func = meth -%}
+    {%- include "FunctionDocsTemplate.swift" %}
     func {{ meth.name()|fn_name }}({% call swift::arg_list_protocol(meth) %}) {% call swift::async(meth) %} {% call swift::throws(meth) -%}
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) %} -> {{ return_type|type_name -}}
@@ -9,6 +11,7 @@ public protocol {{ obj.name() }}Protocol {
     {% endfor %}
 }
 
+{% let struct = obj %}{% include "StructureDocsTemplate.swift" %}
 public class {{ type_name }}: {{ obj.name() }}Protocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
@@ -21,6 +24,8 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
+    {%- let func = cons -%}
+    {%- include "FunctionDocsTemplate.swift" %}
     public convenience init({% call swift::arg_list_decl(cons) -%}) {% call swift::throws(cons) %} {
         self.init(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
     }
@@ -33,6 +38,8 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
 
     {% for cons in obj.alternate_constructors() %}
 
+    {%- let func = cons -%}
+    {%- include "FunctionDocsTemplate.swift" %}
     public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ type_name }} {
         return {{ type_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
     }

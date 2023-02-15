@@ -1,11 +1,14 @@
 {%- let obj = ci|get_object_definition(name) %}
 
-class {{ type_name }}:
+class {{ type_name }}: {% let struct = obj %}{% include "StructureDocsTemplate.py" %}
     _pointer: ctypes.c_void_p
 
 {%- match obj.primary_constructor() %}
 {%-     when Some with (cons) %}
     def __init__(self, {% call py::arg_list_decl(cons) -%}):
+        {%- let func = cons -%}
+        {% include "MethodDocsTemplate.py" %}
+
         {%- call py::setup_args_extra_indent(cons) %}
         self._pointer = {% call py::to_ffi_call(cons) %}
 {%-     when None %}
@@ -27,9 +30,11 @@ class {{ type_name }}:
         return inst
 
 {%- for cons in obj.alternate_constructors() %}
-
     @classmethod
     def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
+        {%- let func = cons -%}
+        {% include "MethodDocsTemplate.py" %}
+
         {%- call py::setup_args_extra_indent(cons) %}
         # Call the (fallible) function before creating any half-baked object instances.
         pointer = {% call py::to_ffi_call(cons) %}

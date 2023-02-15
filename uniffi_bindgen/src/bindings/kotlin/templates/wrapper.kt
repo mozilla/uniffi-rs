@@ -46,7 +46,6 @@ import java.util.concurrent.ConcurrentHashMap
 {{ type_helper_code }}
 
 {%- for func in ci.function_definitions() %}
-{%- include "TopLevelFuncDocsTemplate.kt" %}
 {% include "TopLevelFunctionTemplate.kt" %}
 {%- endfor %}
 

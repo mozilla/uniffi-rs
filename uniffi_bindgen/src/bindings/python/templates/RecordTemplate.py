@@ -1,9 +1,9 @@
+
 {%- let rec = ci|get_record_definition(name) %}
-class {{ type_name }}:
+class {{ type_name }}: {% let struct = rec %}{% include "StructureDocsTemplate.py" %}
     {% for field in rec.fields() %}
         {{- field.name()|var_name }}: "{{- field|type_name }}";
     {%- endfor %}
-    {%- include "RecordDocsTemplate.py" %}
 
     @typing.no_type_check
     def __init__(self, {% for field in rec.fields() %}

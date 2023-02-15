@@ -6,13 +6,13 @@
 #}
 {% if e.is_flat() %}
 
-class {{ type_name }}(enum.Enum):
+class {{ type_name }}(enum.Enum): {% let struct = e %}{% include "StructureDocsTemplate.py" %}
     {% for variant in e.variants() -%}
     {{ variant.name()|enum_variant_py }} = {{ loop.index }}
     {% endfor %}
 {% else %}
 
-class {{ type_name }}:
+class {{ type_name }}: {% let struct = e %}{% include "StructureDocsTemplate.py" %}
     def __init__(self):
         raise RuntimeError("{{ type_name }} cannot be instantiated directly")
 

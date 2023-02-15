@@ -5,6 +5,8 @@
 
 public interface {{ type_name }}Interface {
     {% for meth in obj.methods() -%}
+    {%- let func = meth -%}
+    {%- include "FunctionDocsTemplate.kt" -%}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) -%}
     @Throws({{ throwable|error_type_name }}::class)
@@ -23,12 +25,15 @@ public interface {{ type_name }}Interface {
     {% endfor %}
 }
 
+{% let struct = obj %}{% include "StructureDocsTemplate.kt" %}
 class {{ type_name }}(
     pointer: Pointer
 ) : FFIObject(pointer), {{ type_name }}Interface {
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
+    {%- let func = cons -%}
+    {%- include "FunctionDocsTemplate.kt" %}
     constructor({% call kt::arg_list_decl(cons) -%}) :
         this({% call kt::to_ffi_call(cons) %})
     {%- when None %}
@@ -106,6 +111,8 @@ class {{ type_name }}(
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
         {% for cons in obj.alternate_constructors() -%}
+        {%- let func = cons -%}
+        {%- include "FunctionDocsTemplate.kt" %}
         fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ type_name }} =
             {{ type_name }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}

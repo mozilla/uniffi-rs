@@ -20,7 +20,6 @@ import {{ config.ffi_module_name() }}
 {{ type_helper_code }}
 
 {%- for func in ci.function_definitions() %}
-{%- include "TopLevelFuncDocsTemplate.swift" %}
 {% include "TopLevelFunctionTemplate.swift" %}
 {%- endfor %}
 
