@@ -142,6 +142,7 @@ impl From<uniffi_meta::ErrorMetadata> for Error {
             name: meta.name.clone(),
             enum_: Enum {
                 name: meta.name,
+                documentation: None,
                 variants: meta.variants.into_iter().map(Into::into).collect(),
                 flat: meta.flat,
             },

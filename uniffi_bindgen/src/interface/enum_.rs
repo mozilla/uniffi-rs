@@ -88,17 +88,31 @@ use super::{APIConverter, ComponentInterface};
 ///
 /// Enums are passed across the FFI by serializing to a bytebuffer, with a
 /// i32 indicating the variant followed by the serialization of each field.
-#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Enum {
     pub(super) name: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Structure>,
     pub(super) variants: Vec<Variant>,
     // "Flat" enums do not have variants with associated data.
     pub(super) flat: bool,
 }
 
+impl PartialEq for Enum {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.variants == other.variants && self.flat == other.flat
+    }
+}
+
+impl Eq for Enum {}
+
 impl Enum {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Structure> {
+        self.documentation.as_ref()
     }
 
     pub fn type_(&self) -> Type {
@@ -125,6 +139,7 @@ impl From<uniffi_meta::EnumMetadata> for Enum {
         let flat = meta.variants.iter().all(|v| v.fields.is_empty());
         Self {
             name: meta.name,
+            documentation: None,
             variants: meta.variants.into_iter().map(Into::into).collect(),
             flat,
         }
@@ -138,6 +153,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
     fn convert(&self, _ci: &mut ComponentInterface) -> Result<Enum> {
         Ok(Enum {
             name: self.identifier.0.to_string(),
+            documentation: None,
             variants: self
                 .values
                 .body
@@ -165,6 +181,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
         // to this impl then we already know there was an `[Enum]` attribute.
         Ok(Enum {
             name: self.identifier.0.to_string(),
+            documentation: None,
             variants: self
                 .members
                 .body
