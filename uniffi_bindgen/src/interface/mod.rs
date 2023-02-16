@@ -773,6 +773,26 @@ impl ComponentInterface {
     ///
     /// Documentation comments in the resulting bindings are based on this information.
     pub fn attach_documentation(&mut self, mut documentation: uniffi_docs::Documentation) {
+        for object in self.objects.iter_mut() {
+            if let Some(doc) = documentation.structures.remove(object.name()) {
+                let mut methods = doc.methods.clone();
+
+                object.documentation = Some(doc);
+
+                for constructor in object.constructors.iter_mut() {
+                    if let Some(function) = methods.remove(constructor.name()) {
+                        constructor.documentation = Some(function);
+                    }
+                }
+
+                for method in object.methods.iter_mut() {
+                    if let Some(function) = methods.remove(method.name()) {
+                        method.documentation = Some(function);
+                    }
+                }
+            }
+        }
+
         for (_, record) in self.records.iter_mut() {
             if let Some(doc) = documentation.structures.remove(record.name()) {
                 record.documentation = Some(doc);
