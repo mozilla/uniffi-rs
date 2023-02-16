@@ -86,6 +86,8 @@ use super::{convert_type, APIConverter, ComponentInterface};
 #[derive(Debug, Clone, Checksum)]
 pub struct Object {
     pub(super) name: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Structure>,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     // We don't include the FfiFunc in the hash calculation, because:
@@ -104,6 +106,7 @@ impl Object {
     pub(super) fn new(name: String) -> Object {
         Object {
             name,
+            documentation: None,
             constructors: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
@@ -113,6 +116,10 @@ impl Object {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Structure> {
+        self.documentation.as_ref()
     }
 
     pub fn type_(&self) -> Type {
@@ -239,6 +246,8 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 #[derive(Debug, Clone, Checksum)]
 pub struct Constructor {
     pub(super) name: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Function>,
     pub(super) arguments: Vec<Argument>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -254,6 +263,10 @@ pub struct Constructor {
 impl Constructor {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Function> {
+        self.documentation.as_ref()
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -301,6 +314,7 @@ impl Default for Constructor {
     fn default() -> Self {
         Constructor {
             name: String::from("new"),
+            documentation: None,
             arguments: Vec::new(),
             ffi_func: Default::default(),
             attributes: Default::default(),
@@ -316,6 +330,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
         };
         Ok(Constructor {
             name: String::from(attributes.get_name().unwrap_or("new")),
+            documentation: None,
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
             attributes,
@@ -330,6 +345,8 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 #[derive(Debug, Clone, Checksum)]
 pub struct Method {
     pub(super) name: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Function>,
     pub(super) object_name: String,
     pub(super) is_async: bool,
     pub(super) arguments: Vec<Argument>,
@@ -352,6 +369,10 @@ impl Method {
 
     pub fn is_async(&self) -> bool {
         self.is_async
+    }
+    
+    pub fn documentation(&self) -> Option<&uniffi_docs::Function> {
+        self.documentation.as_ref()
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -438,6 +459,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
 
         Self {
             name: meta.name,
+            documentation: None,
             object_name: meta.self_name,
             is_async,
             arguments,
@@ -468,6 +490,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
                     name
                 }
             },
+            documentation: None,
             // We don't know the name of the containing `Object` at this point, fill it in later.
             object_name: Default::default(),
             is_async: false,
