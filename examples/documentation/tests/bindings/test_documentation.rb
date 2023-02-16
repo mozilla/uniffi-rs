@@ -1,12 +1,10 @@
-require "test/unit"
-require "documentation"
- 
-class TestAdd < Test::Unit::TestCase
-  def test_hello
-    assert_equal(Documentation.hello(Documentation::Person.new("Tom")), "Hello Tom!")
-  end
+# frozen_string_literal: true
 
-  def test_add
-    assert_equal(5, Documentation.add(2, 3))
-  end
-end
+require 'test/unit'
+require 'documentation'
+
+include Test::Unit::Assertions
+
+assert_equal Documentation.hello(Documentation::Pet.new("Tom")), "Hello Tom!"
+assert_equal Documentation::Person.new("Daniel").get_name(), "Daniel"
+assert_equal Documentation.add(2, 4), 6
