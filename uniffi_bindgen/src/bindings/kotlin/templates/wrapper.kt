@@ -26,6 +26,7 @@ import com.sun.jna.ptr.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.ConcurrentHashMap
+{%- if ci.has_async_fns() %}
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -35,13 +36,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+{%- endif %}
 
 {%- for req in self.imports() %}
 {{ req.render() }}
 {%- endfor %}
 
 {% include "RustBufferTemplate.kt" %}
-{% include "RustFutureTemplate.kt" %}
+{% if ci.has_async_fns() %}{% include "RustFutureTemplate.kt" %}{% endif %}
 {% include "FfiConverterTemplate.kt" %}
 {% include "Helpers.kt" %}
 

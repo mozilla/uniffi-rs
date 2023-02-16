@@ -30,9 +30,11 @@ internal interface _UniFFILib : Library {
             {% endif %}
         }
 
+        {%- if ci.has_async_fns() %}
         internal val FUTURE_WAKER_ENVIRONMENTS: ConcurrentHashMap<Int, RustFutureWakerEnvironment<out Any>> by lazy {
             ConcurrentHashMap(8)
         }
+        {%- endif %}
     }
 
     {% for func in ci.iter_ffi_function_definitions() -%}
