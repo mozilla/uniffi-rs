@@ -106,19 +106,21 @@ enum ParseStage {
 #[derive(Debug, Clone)]
 pub struct Structure {
     pub description: String,
+
+    /// Methods documentation - empty for records and enums.
+    pub methods: HashMap<String, Function>,
 }
 
-/// Object methods documentation.
-#[derive(Debug, Clone)]
-pub struct Impl {
-    pub methods: HashMap<String, Function>,
+/// Impl documentation.
+#[derive(Debug)]
+struct Impl {
+    methods: HashMap<String, Function>,
 }
 
 #[derive(Debug)]
 pub struct Documentation {
     pub functions: HashMap<String, Function>,
     pub structures: HashMap<String, Structure>,
-    pub impls: HashMap<String, Impl>,
 }
 
 /// Extract doc comment from attributes.
@@ -163,14 +165,26 @@ pub fn extract_documentation(path: &Utf8Path) -> Result<Documentation> {
                 let name = item.ident.to_string();
                 let description = extract_doc_comment(&item.attrs);
                 if let Some(description) = description {
-                    structures.insert(name, Structure { description });
+                    structures.insert(
+                        name,
+                        Structure {
+                            description,
+                            methods: HashMap::default(),
+                        },
+                    );
                 }
             }
             syn::Item::Struct(item) => {
                 let name = item.ident.to_string();
                 let description = extract_doc_comment(&item.attrs);
                 if let Some(description) = description {
-                    structures.insert(name, Structure { description });
+                    structures.insert(
+                        name,
+                        Structure {
+                            description,
+                            methods: HashMap::default(),
+                        },
+                    );
                 }
             }
             syn::Item::Impl(item) => {
@@ -212,14 +226,19 @@ pub fn extract_documentation(path: &Utf8Path) -> Result<Documentation> {
                     );
                 }
             }
-            _ => (), // other item types are ignored for now,
+            _ => (), // other item types are ignored,
+        }
+    }
+
+    for (name, impl_) in impls {
+        if let Some(structure) = structures.get_mut(&name) {
+            structure.methods = impl_.methods;
         }
     }
 
     Ok(Documentation {
         functions,
         structures,
-        impls,
     })
 }
 #[cfg(test)]
