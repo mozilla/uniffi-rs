@@ -86,6 +86,8 @@ pub struct Object {
     /// How this object is implemented in Rust
     pub(super) imp: ObjectImpl,
     pub(super) module_path: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Structure>,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     // The "trait" methods - they have a (presumably "well known") name, and
@@ -116,6 +118,14 @@ impl Object {
 
     pub fn imp(&self) -> &ObjectImpl {
         &self.imp
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Structure> {
+        self.documentation.as_ref()
+    }
+
+    pub fn type_(&self) -> Type {
+        Type::Object(self.name.clone())
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {
@@ -263,6 +273,7 @@ pub struct Constructor {
     pub(super) name: String,
     pub(super) object_name: String,
     pub(super) object_module_path: String,
+    pub(super) documentation: Option<uniffi_docs::Function>,
     pub(super) arguments: Vec<Argument>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -282,6 +293,10 @@ pub struct Constructor {
 impl Constructor {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Function> {
+        self.documentation.as_ref()
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -331,6 +346,18 @@ impl Constructor {
     }
 }
 
+impl Default for Constructor {
+    fn default() -> Self {
+        Constructor {
+            name: String::from("new"),
+            documentation: None,
+            arguments: Vec::new(),
+            ffi_func: Default::default(),
+            attributes: Default::default(),
+        }
+    }
+}
+
 impl From<uniffi_meta::ConstructorMetadata> for Constructor {
     fn from(meta: uniffi_meta::ConstructorMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
@@ -361,6 +388,8 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
 #[derive(Debug, Clone, Checksum)]
 pub struct Method {
     pub(super) name: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<uniffi_docs::Function>,
     pub(super) object_name: String,
     pub(super) object_module_path: String,
     pub(super) is_async: bool,
@@ -390,6 +419,10 @@ impl Method {
 
     pub fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    pub fn documentation(&self) -> Option<&uniffi_docs::Function> {
+        self.documentation.as_ref()
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -484,6 +517,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
 
         Self {
             name: meta.name,
+            documentation: None,
             object_name: meta.self_name,
             object_module_path: meta.module_path,
             is_async,
@@ -525,6 +559,42 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
         }
     }
 }
+
+impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Method> {
+        if self.special.is_some() {
+            bail!("special operations not supported");
+        }
+
+        if self.modifier.is_some() {
+            bail!("method modifiers are not supported")
+        }
+
+        let return_type = ci.resolve_return_type_expression(&self.return_type)?;
+
+        Ok(Method {
+            name: match self.identifier {
+                None => bail!("anonymous methods are not supported {:?}", self),
+                Some(id) => {
+                    let name = id.0.to_string();
+                    if name == "new" {
+                        bail!("the method name \"new\" is reserved for the default constructor");
+                    }
+                    name
+                }
+            },
+            documentation: None,
+            // We don't know the name of the containing `Object` at this point, fill it in later.
+            object_name: Default::default(),
+            is_async: false,
+            arguments: self.args.body.list.convert(ci)?,
+            return_type,
+            ffi_func: Default::default(),
+            attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
+        })
+    }
+}
+
 
 /// The list of traits we support generating helper methods for.
 #[derive(Clone, Debug, Checksum)]
