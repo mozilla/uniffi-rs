@@ -45,10 +45,10 @@ RUN rm rust-toolchain.toml
 
 RUN mkdir -p /tmp/setup-swift \
     && cd /tmp/setup-swift \
-    && curl -o swift.tar.gz https://swift.org/builds/swift-5.2.4-release/ubuntu1804/swift-5.2.4-RELEASE/swift-5.2.4-RELEASE-ubuntu18.04.tar.gz \
+    && curl -o swift.tar.gz https://download.swift.org/swift-5.5-release/ubuntu1804/swift-5.5-RELEASE/swift-5.5-RELEASE-ubuntu18.04.tar.gz
     # XXX TODO: should check a sha256sum or something here...
     && tar -xzf swift.tar.gz \
-    && sudo mv swift-5.2.4-RELEASE-ubuntu18.04 /opt/swift \
+    && sudo mv swift-5.5-RELEASE-ubuntu18.04 /opt/swift \
     && echo "export PATH=\"\$PATH:/opt/swift/usr/bin\"" >> /home/circleci/.bashrc \
     && echo "export PATH=\"\$PATH:/opt/swift/usr/bin\"" >> /home/circleci/.profile \
     && cd ../ \
