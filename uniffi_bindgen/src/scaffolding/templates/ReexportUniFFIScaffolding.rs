@@ -11,7 +11,7 @@
 // megazord).  The combined library has a cargo dependency for each component and calls
 // uniffi_reexport_scaffolding!() for each one.
 
-#[allow(clippy::missing_docs_in_private_items)]
+#[allow(missing_docs)]
 #[doc(hidden)]
 pub const fn uniffi_reexport_hack() {}
 
