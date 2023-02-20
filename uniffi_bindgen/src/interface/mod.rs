@@ -421,8 +421,7 @@ impl ComponentInterface {
 
     /// Does this interface contain async functions?
     pub fn has_async_fns(&self) -> bool {
-        self.iter_ffi_function_definitions()
-            .any(|f| f.is_async())
+        self.iter_ffi_function_definitions().any(|f| f.is_async())
     }
 
     /// List the definitions of all FFI functions in the interface.

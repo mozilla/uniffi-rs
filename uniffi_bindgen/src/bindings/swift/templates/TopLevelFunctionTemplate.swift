@@ -79,7 +79,7 @@ public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) a
     }
 }
 
-{%- else %}
+{% else %}
 
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
@@ -90,10 +90,11 @@ public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) {
     )
 }
 
-{% when None %}
+{%- when None %}
 
 public func {{ func.name()|fn_name }}({% call swift::arg_list_decl(func) %}) {% call swift::throws(func) %} {
     {% call swift::to_ffi_call(func) %}
 }
+
 {% endmatch %}
 {%- endif %}
