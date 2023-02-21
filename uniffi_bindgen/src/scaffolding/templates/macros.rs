@@ -112,7 +112,8 @@ uniffi::call_with_output(call_status, || {
     {% else -%}
     {% if func.full_arguments().is_empty() %}#[allow(clippy::redundant_closure)]{% endif %}
     {% call to_rs_call(func) %}
+    {%- if func.return_type().is_none() %};{% endif %}
     {% endmatch -%}
-})
+}){%- if func.return_type().is_none() -%};{% endif %}
 {% endmatch %}
 {% endmacro %}
