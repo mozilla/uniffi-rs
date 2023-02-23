@@ -2,10 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{collections::HashMap, fs::read_to_string, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::Result;
-use camino::Utf8Path;
 use pulldown_cmark::{Event, HeadingLevel::H1, Parser, Tag};
 use syn::Attribute;
 
@@ -128,7 +127,7 @@ pub struct Documentation {
 /// Rust doc comments are silently converted (during parsing) to attributes of form:
 /// #[doc = "documentation comment content"]
 fn extract_doc_comment(attrs: &[Attribute]) -> Option<String> {
-    attrs
+    let docs: Vec<String> = attrs
         .iter()
         .filter_map(|attr| {
             attr.parse_meta().ok().and_then(|meta| {
@@ -146,14 +145,18 @@ fn extract_doc_comment(attrs: &[Attribute]) -> Option<String> {
                     None
                 }
             })
-        })
-        .next()
+        }).collect();
+
+    if docs.is_empty() {
+        None
+    } else {
+        Some(docs.join("\n"))
+    }
 }
 
 /// Extract code documentation comments from Rust `lib.rs` file.
-pub fn extract_documentation(path: &Utf8Path) -> Result<Documentation> {
-    let input = read_to_string(path)?;
-    let file = syn::parse_file(&input)?;
+pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
+    let file = syn::parse_file(source_code)?;
 
     let mut functions = HashMap::new();
     let mut structures = HashMap::new();
