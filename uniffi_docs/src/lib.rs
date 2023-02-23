@@ -93,7 +93,7 @@ impl FromStr for Function {
     }
 }
 
-/// Used to keep track of the different 
+/// Used to keep track of the different
 /// function comment parts while parsing it.
 enum ParseStage {
     Description,
@@ -102,7 +102,7 @@ enum ParseStage {
 }
 
 /// Record or enum or object documentation.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Structure {
     pub description: String,
 
@@ -111,12 +111,12 @@ pub struct Structure {
 }
 
 /// Impl documentation.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct Impl {
     methods: HashMap<String, Function>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Documentation {
     pub functions: HashMap<String, Function>,
     pub structures: HashMap<String, Structure>,
@@ -145,7 +145,8 @@ fn extract_doc_comment(attrs: &[Attribute]) -> Option<String> {
                     None
                 }
             })
-        }).collect();
+        })
+        .collect();
 
     if docs.is_empty() {
         None
@@ -219,14 +220,7 @@ pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
                 let name = item.sig.ident.to_string();
                 let description = extract_doc_comment(&item.attrs);
                 if let Some(description) = description {
-                    functions.insert(
-                        name,
-                        Function {
-                            description,
-                            arguments_descriptions: HashMap::new(),
-                            return_description: None,
-                        },
-                    );
+                    functions.insert(name, Function::from_str(&description).unwrap());
                 }
             }
             _ => (), // other item types are ignored,
@@ -248,6 +242,7 @@ pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
 mod tests {
     use super::*;
     use indoc::indoc;
+    use quote::quote;
 
     #[test]
     fn test_doc_function_parses_a_md_description() {
@@ -314,5 +309,121 @@ mod tests {
             },
             result
         );
+    }
+
+    #[test]
+    fn test_extract_documentation() {
+        let source_code = quote! {
+            /// Person with a name.
+            pub struct Person {
+                inner: Mutex<simple::Person>,
+            }
+
+            impl Person {
+                /// Create new person with [name].
+                ///
+                /// Example of multiline comment.
+                pub fn new(name: String) -> Self {
+                    Person {
+                        inner: Mutex::new(simple::Person::new(&name)),
+                    }
+                }
+
+                /// Set person name.
+                pub fn set_name(&self, name: String) {
+                    self.inner.lock().unwrap().set_name(&name);
+                }
+
+                /// Get person's name.
+                ///
+                /// Example of multiline comment.
+                pub fn get_name(&self) -> String {
+                    self.inner.lock().unwrap().get_name().to_string()
+                }
+            }
+
+            /// Create hello message to a pet.
+            ///
+            /// # Arguments
+            ///
+            /// - `pet` - pet to create a message to.
+            ///
+            /// # Returns
+            ///
+            /// Hello message to a pet.
+            pub fn hello(pet: Pet) -> String {
+                simple::hello(pet.into())
+            }
+        }
+        .to_string();
+
+        let documentation = extract_documentation(&source_code).unwrap();
+        let mut structures = HashMap::new();
+
+        let mut methods = HashMap::new();
+        methods.insert(
+            "new".to_string(),
+            Function {
+                description: indoc! {"
+                Create new person with [name].
+                
+                Example of multiline comment.
+            "}
+                .trim()
+                .to_string(),
+                arguments_descriptions: HashMap::new(),
+                return_description: None,
+            },
+        );
+        methods.insert(
+            "set_name".to_string(),
+            Function {
+                description: "Set person name.".to_string(),
+                arguments_descriptions: HashMap::new(),
+                return_description: None,
+            },
+        );
+        methods.insert(
+            "get_name".to_string(),
+            Function {
+                description: indoc! {"
+                Get person's name.
+
+                Example of multiline comment.
+            "}
+                .trim()
+                .to_string(),
+                arguments_descriptions: HashMap::new(),
+                return_description: None,
+            },
+        );
+
+        structures.insert(
+            "Person".to_string(),
+            Structure {
+                description: "Person with a name.".to_string(),
+                methods,
+            },
+        );
+
+        let mut arguments_descriptions = HashMap::new();
+        arguments_descriptions.insert("pet".to_string(), "pet to create a message to.".to_string());
+
+        let mut functions = HashMap::new();
+        functions.insert(
+            "hello".to_string(),
+            Function {
+                description: "Create hello message to a pet.\n".to_string(),
+                arguments_descriptions,
+                return_description: Some("Hello message to a pet.\n".to_string()),
+            },
+        );
+
+        let expected = Documentation {
+            functions,
+            structures,
+        };
+
+        assert_eq!(documentation, expected);
     }
 }
