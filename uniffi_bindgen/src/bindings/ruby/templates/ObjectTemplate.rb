@@ -36,7 +36,7 @@ class {{ obj.name()|class_name_rb }}
   {%- match obj.primary_constructor() %}
   {%- when Some with (cons) %}
   {%- let func = cons -%}
-  {%- include "FunctionDocsTemplate.rb" -%}
+  {%- include "ConstructorDocsTemplate.rb" -%}
   def initialize({% call rb::arg_list_decl(cons) -%})
     {%- call rb::coerce_args_extra_indent(cons) %}
     pointer = {% call rb::to_ffi_call(cons) %}
@@ -48,7 +48,7 @@ class {{ obj.name()|class_name_rb }}
 
   {% for cons in obj.alternate_constructors() -%}
   {%- let func = cons -%}
-  {%- include "FunctionDocsTemplate.rb" -%}
+  {%- include "ConstructorDocsTemplate.rb" -%}
   def self.{{ cons.name()|fn_name_rb }}({% call rb::arg_list_decl(cons) %})
     {%- call rb::coerce_args_extra_indent(cons) %}
     # Call the (fallible) function before creating any half-baked object instances.

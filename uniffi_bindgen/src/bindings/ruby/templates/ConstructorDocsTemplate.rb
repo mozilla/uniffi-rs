@@ -9,9 +9,5 @@
     {% endfor -%} 
     {% endif -%}
 
-    {%- match docs.return_description -%}
-      {% when Some with (desc) %}# @return [{{ func.return_type().unwrap()|type_name }}] {{ desc }}
-      {%- when None %}
-    {%- endmatch %}
   {%- when None %}
 {%- endmatch -%}
