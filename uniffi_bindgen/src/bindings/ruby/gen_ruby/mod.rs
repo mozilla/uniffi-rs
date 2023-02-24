@@ -80,6 +80,35 @@ impl<'a> RubyWrapper<'a> {
 mod filters {
     use super::*;
 
+    pub fn type_name(type_: &Type) -> Result<String, askama::Error> {
+        Ok(match type_ {
+            Type::UInt8
+            | Type::Int8
+            | Type::UInt16
+            | Type::Int16
+            | Type::UInt32
+            | Type::Int32
+            | Type::UInt64
+            | Type::Int64 => "Integer".into(),
+            Type::Float32 | Type::Float64 => "Float".into(),
+            Type::Boolean => "Boolean".into(),
+            Type::String => "String".into(),
+            Type::Timestamp => "Time".into(),
+            Type::Duration => "Duration".into(),
+            Type::Object(name)
+            | Type::Record(name)
+            | Type::Enum(name)
+            | Type::Error(name)
+            | Type::CallbackInterface(name) => name.into(),
+            Type::Optional(inner) => format!("{}, void", type_name(inner).unwrap()),
+            Type::Sequence(inner) => format!("Array<{}>", type_name(inner).unwrap()),
+            Type::Map(_, _) => "Hash".into(),
+            Type::External { name, .. } => name.into(),
+            Type::Custom { name, .. } => name.into(),
+            Type::Unresolved { name } => name.into(),
+        })
+    }
+
     pub fn type_ffi(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(match type_ {
             FfiType::Int8 => ":int8".to_string(),
