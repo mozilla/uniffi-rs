@@ -106,6 +106,9 @@ enum ParseStage {
 pub struct Structure {
     pub description: String,
 
+    /// Members (record fields or enum variants) descriptions.
+    pub members: HashMap<String, String>,
+
     /// Methods documentation - empty for records and enums.
     pub methods: HashMap<String, Function>,
 }
@@ -168,11 +171,22 @@ pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
             syn::Item::Enum(item) => {
                 let name = item.ident.to_string();
                 let description = extract_doc_comment(&item.attrs);
+
+                let members = item
+                    .variants
+                    .iter()
+                    .filter_map(|variant| {
+                        extract_doc_comment(&variant.attrs)
+                            .map(|doc_comment| (variant.ident.to_string(), doc_comment))
+                    })
+                    .collect();
+
                 if let Some(description) = description {
                     structures.insert(
                         name,
                         Structure {
                             description,
+                            members,
                             methods: HashMap::default(),
                         },
                     );
@@ -181,11 +195,26 @@ pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
             syn::Item::Struct(item) => {
                 let name = item.ident.to_string();
                 let description = extract_doc_comment(&item.attrs);
+
+                let members = item
+                    .fields
+                    .iter()
+                    .filter_map(|field| {
+                        if let Some(ident) = &field.ident {
+                            extract_doc_comment(&field.attrs)
+                                .map(|doc_comment| (ident.to_string(), doc_comment))
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
                 if let Some(description) = description {
                     structures.insert(
                         name,
                         Structure {
                             description,
+                            members,
                             methods: HashMap::default(),
                         },
                     );
@@ -354,6 +383,18 @@ mod tests {
             pub fn hello(pet: Pet) -> String {
                 simple::hello(pet.into())
             }
+
+            /// Enum description.
+            pub enum SomeEnum {
+                /// A letter 'A'.
+                A,
+
+                /// A letter 'B'.
+                B,
+
+                /// A letter 'C'.
+                C,
+            }
         }
         .to_string();
 
@@ -402,7 +443,22 @@ mod tests {
             "Person".to_string(),
             Structure {
                 description: "Person with a name.".to_string(),
+                members: HashMap::new(),
                 methods,
+            },
+        );
+
+        let mut members = HashMap::new();
+        members.insert("A".to_string(), "A letter 'A'.".to_string());
+        members.insert("B".to_string(), "A letter 'B'.".to_string());
+        members.insert("C".to_string(), "A letter 'C'.".to_string());
+
+        structures.insert(
+            "SomeEnum".to_string(),
+            Structure {
+                description: "Enum description.".to_string(),
+                members,
+                methods: HashMap::new(),
             },
         );
 
