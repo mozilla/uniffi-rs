@@ -1,0 +1,4 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin AbstractWorker {
+  attribute EventHandler onerror;
+};

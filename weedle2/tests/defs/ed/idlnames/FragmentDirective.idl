@@ -1,0 +1,4 @@
+// Source: Text Fragments (https://wicg.github.io/scroll-to-text-fragment/)
+[Exposed=Window]
+interface FragmentDirective {
+};

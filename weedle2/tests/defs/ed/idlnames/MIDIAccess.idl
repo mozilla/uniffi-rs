@@ -1,0 +1,7 @@
+// Source: Web MIDI API (https://www.w3.org/TR/webmidi/)
+[SecureContext, Exposed=Window] interface MIDIAccess: EventTarget {
+  readonly attribute MIDIInputMap inputs;
+  readonly attribute MIDIOutputMap outputs;
+  attribute EventHandler onstatechange;
+  readonly attribute boolean sysexEnabled;
+};

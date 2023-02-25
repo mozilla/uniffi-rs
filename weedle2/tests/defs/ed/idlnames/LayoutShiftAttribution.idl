@@ -1,0 +1,7 @@
+// Source: Layout Instability API (https://wicg.github.io/layout-instability/)
+[Exposed=Window]
+interface LayoutShiftAttribution {
+  readonly attribute Node? node;
+  readonly attribute DOMRectReadOnly previousRect;
+  readonly attribute DOMRectReadOnly currentRect;
+};

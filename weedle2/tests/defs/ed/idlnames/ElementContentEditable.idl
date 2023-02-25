@@ -1,0 +1,12 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin ElementContentEditable {
+  [CEReactions] attribute DOMString contentEditable;
+  [CEReactions] attribute DOMString enterKeyHint;
+  readonly attribute boolean isContentEditable;
+  [CEReactions] attribute DOMString inputMode;
+};
+
+// Source: VirtualKeyboard API (https://www.w3.org/TR/virtual-keyboard/)
+partial interface mixin ElementContentEditable {
+     [CEReactions] attribute DOMString virtualKeyboardPolicy;
+};

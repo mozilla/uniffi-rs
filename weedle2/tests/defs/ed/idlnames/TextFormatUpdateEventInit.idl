@@ -1,0 +1,4 @@
+// Source: EditContext API (https://www.w3.org/TR/edit-context/)
+dictionary TextFormatUpdateEventInit {
+    sequence<TextFormat> textFormats;
+};

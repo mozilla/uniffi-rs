@@ -1,0 +1,16 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGLengthList {
+
+  readonly attribute unsigned long length;
+  readonly attribute unsigned long numberOfItems;
+
+  undefined clear();
+  SVGLength initialize(SVGLength newItem);
+  getter SVGLength getItem(unsigned long index);
+  SVGLength insertItemBefore(SVGLength newItem, unsigned long index);
+  SVGLength replaceItem(SVGLength newItem, unsigned long index);
+  SVGLength removeItem(unsigned long index);
+  SVGLength appendItem(SVGLength newItem);
+  setter undefined (unsigned long index, SVGLength newItem);
+};

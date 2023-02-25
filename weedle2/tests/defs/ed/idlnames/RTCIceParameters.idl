@@ -1,0 +1,10 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+dictionary RTCIceParameters {
+  DOMString usernameFragment;
+  DOMString password;
+};
+
+// Source: IceTransport Extensions for WebRTC (https://w3c.github.io/webrtc-ice/)
+partial dictionary RTCIceParameters {
+             boolean   iceLite;
+};

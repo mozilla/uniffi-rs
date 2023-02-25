@@ -1,0 +1,10 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=(Window,Worker)]
+interface Path2D {
+  constructor(optional (Path2D or DOMString) path);
+
+  undefined addPath(Path2D path, optional DOMMatrix2DInit transform = {});
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Path2D includes CanvasPath;

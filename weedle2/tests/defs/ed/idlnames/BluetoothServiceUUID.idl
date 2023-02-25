@@ -1,0 +1,2 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+typedef (DOMString or unsigned long) BluetoothServiceUUID;

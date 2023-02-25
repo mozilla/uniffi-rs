@@ -1,0 +1,4 @@
+// Source: WebGL OES_fbo_render_mipmap Extension Specification (https://registry.khronos.org/webgl/extensions/OES_fbo_render_mipmap/)
+[Exposed=(Window,Worker), LegacyNoInterfaceObject]
+interface OES_fbo_render_mipmap {
+};

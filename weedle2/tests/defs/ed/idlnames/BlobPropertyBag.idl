@@ -1,0 +1,5 @@
+// Source: File API (https://www.w3.org/TR/FileAPI/)
+dictionary BlobPropertyBag {
+  DOMString type = "";
+  EndingType endings = "transparent";
+};

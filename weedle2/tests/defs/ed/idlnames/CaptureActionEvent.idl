@@ -1,0 +1,6 @@
+// Source: The Capture-Handle Actions Mechanism (https://w3c.github.io/mediacapture-handle/actions/)
+[Exposed=Window]
+interface CaptureActionEvent : Event {
+  constructor(optional CaptureActionEventInit init = {});
+  readonly attribute CaptureAction action;
+};

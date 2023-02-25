@@ -1,0 +1,13 @@
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+[Exposed=Window]
+interface SVGFESpecularLightingElement : SVGElement {
+  readonly attribute SVGAnimatedString in1;
+  readonly attribute SVGAnimatedNumber surfaceScale;
+  readonly attribute SVGAnimatedNumber specularConstant;
+  readonly attribute SVGAnimatedNumber specularExponent;
+  readonly attribute SVGAnimatedNumber kernelUnitLengthX;
+  readonly attribute SVGAnimatedNumber kernelUnitLengthY;
+};
+
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+SVGFESpecularLightingElement includes SVGFilterPrimitiveStandardAttributes;

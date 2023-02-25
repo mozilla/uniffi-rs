@@ -1,0 +1,4 @@
+// Source: Performance Timeline (https://www.w3.org/TR/performance-timeline/)
+dictionary PerformanceObserverCallbackOptions {
+  unsigned long long droppedEntriesCount;
+};

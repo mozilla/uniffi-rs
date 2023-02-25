@@ -1,0 +1,12 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+// The object representing a speech grammar collection
+[Exposed=Window]
+interface SpeechGrammarList {
+    constructor();
+    readonly attribute unsigned long length;
+    getter SpeechGrammar item(unsigned long index);
+    undefined addFromURI(DOMString src,
+                    optional float weight = 1.0);
+    undefined addFromString(DOMString string,
+                    optional float weight = 1.0);
+};

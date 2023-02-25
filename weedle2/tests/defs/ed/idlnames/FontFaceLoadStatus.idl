@@ -1,0 +1,2 @@
+// Source: CSS Font Loading Module Level 3 (https://www.w3.org/TR/css-font-loading-3/)
+enum FontFaceLoadStatus { "unloaded", "loading", "loaded", "error" };

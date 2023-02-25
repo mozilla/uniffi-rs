@@ -1,0 +1,13 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+dictionary RTCErrorInit {
+  required RTCErrorDetailType errorDetail;
+  long sdpLineNumber;
+  long sctpCauseCode;
+  unsigned long receivedAlert;
+  unsigned long sentAlert;
+};
+
+// Source: Identity for WebRTC 1.0 (https://www.w3.org/TR/webrtc-identity/)
+partial dictionary RTCErrorInit {
+  long httpRequestStatusCode;
+};

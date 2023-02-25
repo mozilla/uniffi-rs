@@ -1,0 +1,10 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGRadialGradientElement : SVGGradientElement {
+  [SameObject] readonly attribute SVGAnimatedLength cx;
+  [SameObject] readonly attribute SVGAnimatedLength cy;
+  [SameObject] readonly attribute SVGAnimatedLength r;
+  [SameObject] readonly attribute SVGAnimatedLength fx;
+  [SameObject] readonly attribute SVGAnimatedLength fy;
+  [SameObject] readonly attribute SVGAnimatedLength fr;
+};

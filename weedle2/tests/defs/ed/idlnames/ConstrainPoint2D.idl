@@ -1,0 +1,2 @@
+// Source: MediaStream Image Capture (https://www.w3.org/TR/image-capture/)
+typedef (sequence<Point2D> or ConstrainPoint2DParameters) ConstrainPoint2D;

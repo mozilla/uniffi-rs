@@ -1,0 +1,4 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+dictionary FormDataEventInit : EventInit {
+  required FormData formData;
+};

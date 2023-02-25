@@ -1,0 +1,7 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+// A collection of responses (used in continuous mode)
+[Exposed=Window]
+interface SpeechRecognitionResultList {
+    readonly attribute unsigned long length;
+    getter SpeechRecognitionResult item(unsigned long index);
+};

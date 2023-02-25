@@ -1,0 +1,4 @@
+// Source: Background Fetch (https://wicg.github.io/background-fetch/)
+dictionary BackgroundFetchOptions : BackgroundFetchUIOptions {
+  unsigned long long downloadTotal = 0;
+};

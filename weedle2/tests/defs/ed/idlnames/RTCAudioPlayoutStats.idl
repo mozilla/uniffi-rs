@@ -1,0 +1,9 @@
+// Source: Identifiers for WebRTC's Statistics API (https://www.w3.org/TR/webrtc-stats/)
+dictionary RTCAudioPlayoutStats : RTCStats {
+             required DOMString kind;
+             double             synthesizedSamplesDuration;
+             unsigned long      synthesizedSamplesEvents;
+             double             totalSamplesDuration;
+             double             totalPlayoutDelay;
+             unsigned long long totalSamplesCount;
+};

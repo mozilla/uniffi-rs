@@ -1,0 +1,8 @@
+// Source: MediaStream Recording (https://www.w3.org/TR/mediastream-recording/)
+dictionary MediaRecorderOptions {
+  DOMString mimeType = "";
+  unsigned long audioBitsPerSecond;
+  unsigned long videoBitsPerSecond;
+  unsigned long bitsPerSecond;
+  BitrateMode audioBitrateMode = "variable";
+};

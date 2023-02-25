@@ -1,0 +1,5 @@
+// Source: CSS Parser API (https://wicg.github.io/css-parser-api/)
+[Exposed=Window]
+interface CSSParserValue {
+  /* Just a superclass. */
+};

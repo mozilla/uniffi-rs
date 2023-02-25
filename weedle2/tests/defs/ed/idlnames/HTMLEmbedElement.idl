@@ -1,0 +1,19 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLEmbedElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute USVString src;
+  [CEReactions] attribute DOMString type;
+  [CEReactions] attribute DOMString width;
+  [CEReactions] attribute DOMString height;
+  Document? getSVGDocument();
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLEmbedElement {
+  [CEReactions] attribute DOMString align;
+  [CEReactions] attribute DOMString name;
+};

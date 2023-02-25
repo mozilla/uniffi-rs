@@ -1,0 +1,9 @@
+// Source: Fullscreen API Standard (https://fullscreen.spec.whatwg.org/)
+dictionary FullscreenOptions {
+  FullscreenNavigationUI navigationUI = "auto";
+};
+
+// Source: Multi-Screen Window Placement (https://www.w3.org/TR/window-placement/)
+partial dictionary FullscreenOptions {
+  ScreenDetailed screen;
+};

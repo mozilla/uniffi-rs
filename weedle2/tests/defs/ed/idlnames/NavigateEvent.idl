@@ -1,0 +1,18 @@
+// Source: Navigation API (https://wicg.github.io/navigation-api/)
+[Exposed=Window]
+interface NavigateEvent : Event {
+  constructor(DOMString type, NavigateEventInit eventInit);
+
+  readonly attribute NavigationType navigationType;
+  readonly attribute NavigationDestination destination;
+  readonly attribute boolean canIntercept;
+  readonly attribute boolean userInitiated;
+  readonly attribute boolean hashChange;
+  readonly attribute AbortSignal signal;
+  readonly attribute FormData? formData;
+  readonly attribute DOMString? downloadRequest;
+  readonly attribute any info;
+
+  undefined intercept(optional NavigationInterceptOptions options = {});
+  undefined scroll();
+};

@@ -1,0 +1,15 @@
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+dictionary KeyboardEventInit : EventModifierInit {
+  DOMString key = "";
+  DOMString code = "";
+  unsigned long location = 0;
+  boolean repeat = false;
+  boolean isComposing = false;
+};
+
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+partial dictionary KeyboardEventInit {
+  // The following support legacy user agents
+  unsigned long charCode = 0;
+  unsigned long keyCode = 0;
+};

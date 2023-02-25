@@ -1,0 +1,128 @@
+// Source: CSS Object Model (CSSOM) (https://www.w3.org/TR/cssom-1/)
+[Exposed=Window]
+namespace CSS {
+  CSSOMString escape(CSSOMString ident);
+};
+
+// Source: CSS Parser API (https://wicg.github.io/css-parser-api/)
+partial namespace CSS {
+  Promise<sequence<CSSParserRule>> parseStylesheet(CSSStringSource css, optional CSSParserOptions options = {});
+  Promise<sequence<CSSParserRule>> parseRuleList(CSSStringSource css, optional CSSParserOptions options = {});
+  Promise<CSSParserRule> parseRule(CSSStringSource css, optional CSSParserOptions options = {});
+  Promise<sequence<CSSParserRule>> parseDeclarationList(CSSStringSource css, optional CSSParserOptions options = {});
+  CSSParserDeclaration parseDeclaration(DOMString css, optional CSSParserOptions options = {});
+  CSSToken parseValue(DOMString css);
+  sequence<CSSToken> parseValueList(DOMString css);
+  sequence<sequence<CSSToken>> parseCommaValueList(DOMString css);
+};
+
+// Source: CSS Animation Worklet API (https://www.w3.org/TR/css-animation-worklet-1/)
+[Exposed=Window]
+partial namespace CSS {
+    [SameObject] readonly attribute Worklet animationWorklet;
+};
+
+// Source: CSS Conditional Rules Module Level 3 (https://www.w3.org/TR/css-conditional-3/)
+partial namespace CSS {
+  boolean supports(CSSOMString property, CSSOMString value);
+  boolean supports(CSSOMString conditionText);
+};
+
+// Source: CSS Custom Highlight API Module Level 1 (https://www.w3.org/TR/css-highlight-api-1/)
+partial namespace CSS {
+  readonly attribute HighlightRegistry highlights;
+};
+
+// Source: CSS Images Module Level 4 (https://www.w3.org/TR/css-images-4/)
+partial namespace CSS {
+  [SameObject] readonly attribute any elementSources;
+};
+
+// Source: CSS Layout API Level 1 (https://www.w3.org/TR/css-layout-api-1/)
+partial namespace CSS {
+    [SameObject] readonly attribute Worklet layoutWorklet;
+};
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+partial namespace CSS {
+    [SameObject] readonly attribute Worklet paintWorklet;
+};
+
+// Source: CSS Properties and Values API Level 1 (https://www.w3.org/TR/css-properties-values-api-1/)
+partial namespace CSS {
+  undefined registerProperty(PropertyDefinition definition);
+};
+
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+partial namespace CSS {
+    CSSUnitValue number(double value);
+    CSSUnitValue percent(double value);
+
+    // <length>
+    CSSUnitValue em(double value);
+    CSSUnitValue ex(double value);
+    CSSUnitValue ch(double value);
+    CSSUnitValue ic(double value);
+    CSSUnitValue rem(double value);
+    CSSUnitValue lh(double value);
+    CSSUnitValue rlh(double value);
+    CSSUnitValue vw(double value);
+    CSSUnitValue vh(double value);
+    CSSUnitValue vi(double value);
+    CSSUnitValue vb(double value);
+    CSSUnitValue vmin(double value);
+    CSSUnitValue vmax(double value);
+    CSSUnitValue svw(double value);
+    CSSUnitValue svh(double value);
+    CSSUnitValue svi(double value);
+    CSSUnitValue svb(double value);
+    CSSUnitValue svmin(double value);
+    CSSUnitValue svmax(double value);
+    CSSUnitValue lvw(double value);
+    CSSUnitValue lvh(double value);
+    CSSUnitValue lvi(double value);
+    CSSUnitValue lvb(double value);
+    CSSUnitValue lvmin(double value);
+    CSSUnitValue lvmax(double value);
+    CSSUnitValue dvw(double value);
+    CSSUnitValue dvh(double value);
+    CSSUnitValue dvi(double value);
+    CSSUnitValue dvb(double value);
+    CSSUnitValue dvmin(double value);
+    CSSUnitValue dvmax(double value);
+    CSSUnitValue cqw(double value);
+    CSSUnitValue cqh(double value);
+    CSSUnitValue cqi(double value);
+    CSSUnitValue cqb(double value);
+    CSSUnitValue cqmin(double value);
+    CSSUnitValue cqmax(double value);
+    CSSUnitValue cm(double value);
+    CSSUnitValue mm(double value);
+    CSSUnitValue Q(double value);
+    CSSUnitValue in(double value);
+    CSSUnitValue pt(double value);
+    CSSUnitValue pc(double value);
+    CSSUnitValue px(double value);
+
+    // <angle>
+    CSSUnitValue deg(double value);
+    CSSUnitValue grad(double value);
+    CSSUnitValue rad(double value);
+    CSSUnitValue turn(double value);
+
+    // <time>
+    CSSUnitValue s(double value);
+    CSSUnitValue ms(double value);
+
+    // <frequency>
+    CSSUnitValue Hz(double value);
+    CSSUnitValue kHz(double value);
+
+    // <resolution>
+    CSSUnitValue dpi(double value);
+    CSSUnitValue dpcm(double value);
+    CSSUnitValue dppx(double value);
+
+    // <flex>
+    CSSUnitValue fr(double value);
+};

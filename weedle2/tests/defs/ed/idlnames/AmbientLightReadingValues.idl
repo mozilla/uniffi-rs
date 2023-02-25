@@ -1,0 +1,4 @@
+// Source: Ambient Light Sensor (https://www.w3.org/TR/ambient-light/)
+dictionary AmbientLightReadingValues {
+  required double? illuminance;
+};

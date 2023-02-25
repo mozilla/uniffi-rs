@@ -1,0 +1,4 @@
+// Source: Media Capabilities (https://www.w3.org/TR/media-capabilities/)
+dictionary MediaCapabilitiesEncodingInfo : MediaCapabilitiesInfo {
+  MediaEncodingConfiguration configuration;
+};

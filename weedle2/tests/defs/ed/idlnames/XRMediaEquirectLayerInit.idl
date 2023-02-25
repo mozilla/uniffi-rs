@@ -1,0 +1,8 @@
+// Source: WebXR Layers API Level 1 (https://www.w3.org/TR/webxrlayers-1/)
+dictionary XRMediaEquirectLayerInit : XRMediaLayerInit {
+  XRRigidTransform? transform;
+  float radius = 0.0;
+  float centralHorizontalAngle = 6.28318;
+  float upperVerticalAngle = 1.570795;
+  float lowerVerticalAngle = -1.570795;
+};

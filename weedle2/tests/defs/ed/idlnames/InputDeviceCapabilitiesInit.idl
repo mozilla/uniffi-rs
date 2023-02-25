@@ -1,0 +1,5 @@
+// Source: Input Device Capabilities (https://wicg.github.io/input-device-capabilities/)
+dictionary InputDeviceCapabilitiesInit {
+  boolean firesTouchEvents = false;
+  boolean pointerMovementScrolls = false;
+};

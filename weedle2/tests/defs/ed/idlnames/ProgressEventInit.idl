@@ -1,0 +1,6 @@
+// Source: XMLHttpRequest Standard (https://xhr.spec.whatwg.org/)
+dictionary ProgressEventInit : EventInit {
+  boolean lengthComputable = false;
+  unsigned long long loaded = 0;
+  unsigned long long total = 0;
+};

@@ -1,0 +1,20 @@
+// Source: Presentation API (https://www.w3.org/TR/presentation-api/)
+[SecureContext, Exposed=Window]
+interface PresentationConnection : EventTarget {
+  readonly attribute USVString id;
+  readonly attribute USVString url;
+  readonly attribute PresentationConnectionState state;
+  undefined close();
+  undefined terminate();
+  attribute EventHandler onconnect;
+  attribute EventHandler onclose;
+  attribute EventHandler onterminate;
+
+  // Communication
+  attribute BinaryType binaryType;
+  attribute EventHandler onmessage;
+  undefined send (DOMString message);
+  undefined send (Blob data);
+  undefined send (ArrayBuffer data);
+  undefined send (ArrayBufferView data);
+};

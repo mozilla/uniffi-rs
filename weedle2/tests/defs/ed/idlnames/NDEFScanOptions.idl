@@ -1,0 +1,4 @@
+// Source: Web NFC (https://w3c.github.io/web-nfc/)
+dictionary NDEFScanOptions {
+  AbortSignal signal;
+};

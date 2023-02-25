@@ -1,0 +1,4 @@
+// Source: WebDriver (https://www.w3.org/TR/webdriver2/)
+interface mixin NavigatorAutomationInformation {
+  readonly attribute boolean webdriver;
+};

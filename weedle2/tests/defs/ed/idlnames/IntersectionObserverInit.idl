@@ -1,0 +1,6 @@
+// Source: Intersection Observer (https://www.w3.org/TR/intersection-observer/)
+dictionary IntersectionObserverInit {
+  (Element or Document)?  root = null;
+  DOMString rootMargin = "0px";
+  (double or sequence<double>) threshold = 0;
+};

@@ -1,0 +1,4 @@
+// Source: Accelerated Shape Detection in Images (https://wicg.github.io/shape-detection-api/)
+dictionary BarcodeDetectorOptions {
+  sequence<BarcodeFormat> formats;
+};

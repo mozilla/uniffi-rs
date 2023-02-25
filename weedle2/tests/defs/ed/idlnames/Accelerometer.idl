@@ -1,0 +1,8 @@
+// Source: Accelerometer (https://www.w3.org/TR/accelerometer/)
+[SecureContext, Exposed=Window]
+interface Accelerometer : Sensor {
+  constructor(optional AccelerometerSensorOptions options = {});
+  readonly attribute double? x;
+  readonly attribute double? y;
+  readonly attribute double? z;
+};

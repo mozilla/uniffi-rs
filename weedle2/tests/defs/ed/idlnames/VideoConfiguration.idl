@@ -1,0 +1,14 @@
+// Source: Media Capabilities (https://www.w3.org/TR/media-capabilities/)
+dictionary VideoConfiguration {
+  required DOMString contentType;
+  required unsigned long width;
+  required unsigned long height;
+  required unsigned long long bitrate;
+  required double framerate;
+  boolean hasAlphaChannel;
+  HdrMetadataType hdrMetadataType;
+  ColorGamut colorGamut;
+  TransferFunction transferFunction;
+  DOMString scalabilityMode;
+  boolean spatialScalability;
+};

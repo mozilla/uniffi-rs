@@ -1,0 +1,6 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface OfflineAudioCompletionEvent : Event {
+    constructor (DOMString type, OfflineAudioCompletionEventInit eventInitDict);
+    readonly attribute AudioBuffer renderedBuffer;
+};

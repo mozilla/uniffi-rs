@@ -1,0 +1,2 @@
+// Source: WebGL EXT_disjoint_timer_query Extension Specification (https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query/)
+typedef unsigned long long GLuint64EXT;

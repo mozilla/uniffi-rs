@@ -1,0 +1,4 @@
+// Source: Payment Request API 1.1 (https://www.w3.org/TR/payment-request-1.1/)
+dictionary PaymentCompleteDetails {
+  object? data = null;
+};

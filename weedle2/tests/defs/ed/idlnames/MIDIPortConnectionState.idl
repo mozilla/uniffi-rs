@@ -1,0 +1,6 @@
+// Source: Web MIDI API (https://www.w3.org/TR/webmidi/)
+enum MIDIPortConnectionState {
+  "open",
+  "closed",
+  "pending",
+};

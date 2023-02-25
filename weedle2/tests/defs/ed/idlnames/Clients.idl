@@ -1,0 +1,9 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+[Exposed=ServiceWorker]
+interface Clients {
+  // The objects returned will be new instances every time
+  [NewObject] Promise<(Client or undefined)> get(DOMString id);
+  [NewObject] Promise<FrozenArray<Client>> matchAll(optional ClientQueryOptions options = {});
+  [NewObject] Promise<WindowClient?> openWindow(USVString url);
+  [NewObject] Promise<undefined> claim();
+};

@@ -1,0 +1,4 @@
+// Source: URLPattern API (https://wicg.github.io/urlpattern/)
+dictionary URLPatternOptions {
+  boolean ignoreCase = false;
+};

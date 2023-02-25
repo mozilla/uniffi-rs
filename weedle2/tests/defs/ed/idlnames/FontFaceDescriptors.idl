@@ -1,0 +1,14 @@
+// Source: CSS Font Loading Module Level 3 (https://www.w3.org/TR/css-font-loading-3/)
+dictionary FontFaceDescriptors {
+  CSSOMString style = "normal";
+  CSSOMString weight = "normal";
+  CSSOMString stretch = "normal";
+  CSSOMString unicodeRange = "U+0-10FFFF";
+  CSSOMString variant = "normal";
+  CSSOMString featureSettings = "normal";
+  CSSOMString variationSettings = "normal";
+  CSSOMString display = "auto";
+  CSSOMString ascentOverride = "normal";
+  CSSOMString descentOverride = "normal";
+  CSSOMString lineGapOverride = "normal";
+};

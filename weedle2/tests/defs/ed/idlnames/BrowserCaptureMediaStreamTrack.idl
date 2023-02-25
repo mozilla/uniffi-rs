@@ -1,0 +1,6 @@
+// Source: Region Capture (https://www.w3.org/TR/mediacapture-region/)
+[Exposed = Window]
+interface BrowserCaptureMediaStreamTrack : MediaStreamTrack {
+  Promise<undefined> cropTo(CropTarget? cropTarget);
+  BrowserCaptureMediaStreamTrack clone();
+};

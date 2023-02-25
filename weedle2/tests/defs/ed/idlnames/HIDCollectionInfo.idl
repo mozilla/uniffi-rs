@@ -1,0 +1,10 @@
+// Source: WebHID API (https://wicg.github.io/webhid/)
+dictionary HIDCollectionInfo {
+    unsigned short usagePage;
+    unsigned short usage;
+    octet type;
+    sequence<HIDCollectionInfo> children;
+    sequence<HIDReportInfo> inputReports;
+    sequence<HIDReportInfo> outputReports;
+    sequence<HIDReportInfo> featureReports;
+};

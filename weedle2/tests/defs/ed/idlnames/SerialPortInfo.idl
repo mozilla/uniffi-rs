@@ -1,0 +1,5 @@
+// Source: Web Serial API (https://wicg.github.io/serial/)
+dictionary SerialPortInfo {
+  unsigned short usbVendorId;
+  unsigned short usbProductId;
+};

@@ -1,0 +1,10 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUTextureDescriptor : GPUObjectDescriptorBase {
+    required GPUExtent3D size;
+    GPUIntegerCoordinate mipLevelCount = 1;
+    GPUSize32 sampleCount = 1;
+    GPUTextureDimension dimension = "2d";
+    required GPUTextureFormat format;
+    required GPUTextureUsageFlags usage;
+    sequence<GPUTextureFormat> viewFormats = [];
+};

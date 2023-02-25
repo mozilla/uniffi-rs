@@ -1,0 +1,8 @@
+// Source: Clipboard API and events (https://www.w3.org/TR/clipboard-apis/)
+[SecureContext, Exposed=Window]
+interface Clipboard : EventTarget {
+  Promise<ClipboardItems> read();
+  Promise<DOMString> readText();
+  Promise<undefined> write(ClipboardItems data);
+  Promise<undefined> writeText(DOMString data);
+};

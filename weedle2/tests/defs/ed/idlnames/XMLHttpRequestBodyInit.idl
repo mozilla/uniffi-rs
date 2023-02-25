@@ -1,0 +1,2 @@
+// Source: Fetch Standard (https://fetch.spec.whatwg.org/)
+typedef (Blob or BufferSource or FormData or URLSearchParams or USVString) XMLHttpRequestBodyInit;

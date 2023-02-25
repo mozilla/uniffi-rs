@@ -1,0 +1,5 @@
+// Source: Gamepad Extensions (https://w3c.github.io/gamepad/extensions.html)
+enum GamepadHapticsResult {
+  "complete",
+  "preempted"
+};

@@ -1,0 +1,5 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+dictionary ConstrainDOMStringParameters {
+  (DOMString or sequence<DOMString>) exact;
+  (DOMString or sequence<DOMString>) ideal;
+};

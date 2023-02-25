@@ -1,0 +1,11 @@
+// Source: Performance Timeline (https://www.w3.org/TR/performance-timeline/)
+dictionary PerformanceObserverInit {
+  sequence<DOMString> entryTypes;
+  DOMString type;
+  boolean buffered;
+};
+
+// Source: Event Timing API (https://www.w3.org/TR/event-timing/)
+partial dictionary PerformanceObserverInit {
+    DOMHighResTimeStamp durationThreshold;
+};

@@ -1,0 +1,10 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGGeometryElement : SVGGraphicsElement {
+  [SameObject] readonly attribute SVGAnimatedNumber pathLength;
+
+  boolean isPointInFill(optional DOMPointInit point = {});
+  boolean isPointInStroke(optional DOMPointInit point = {});
+  float getTotalLength();
+  DOMPoint getPointAtLength(float distance);
+};

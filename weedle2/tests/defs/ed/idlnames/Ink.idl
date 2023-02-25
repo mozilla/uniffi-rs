@@ -1,0 +1,6 @@
+// Source: Ink API (https://wicg.github.io/ink-enhancement/)
+[Exposed=Window]
+interface Ink {
+    Promise<InkPresenter> requestPresenter(
+        optional InkPresenterParam param = {});
+};

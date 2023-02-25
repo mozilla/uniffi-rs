@@ -1,0 +1,5 @@
+// Source: Web Animations (https://www.w3.org/TR/web-animations-1/)
+[Exposed=Window]
+interface DocumentTimeline : AnimationTimeline {
+  constructor(optional DocumentTimelineOptions options = {});
+};

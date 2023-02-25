@@ -1,0 +1,11 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+enum AudioSampleFormat {
+  "u8",
+  "s16",
+  "s32",
+  "f32",
+  "u8-planar",
+  "s16-planar",
+  "s32-planar",
+  "f32-planar",
+};

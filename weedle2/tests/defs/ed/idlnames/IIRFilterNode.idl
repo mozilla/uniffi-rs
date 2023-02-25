@@ -1,0 +1,8 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface IIRFilterNode : AudioNode {
+    constructor (BaseAudioContext context, IIRFilterOptions options);
+    undefined getFrequencyResponse (Float32Array frequencyHz,
+                                    Float32Array magResponse,
+                                    Float32Array phaseResponse);
+};

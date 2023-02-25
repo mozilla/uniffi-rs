@@ -1,0 +1,7 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window]
+interface XRInputSourceEvent : Event {
+  constructor(DOMString type, XRInputSourceEventInit eventInitDict);
+  [SameObject] readonly attribute XRFrame frame;
+  [SameObject] readonly attribute XRInputSource inputSource;
+};

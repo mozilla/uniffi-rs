@@ -1,0 +1,9 @@
+// Source: Geolocation API (https://www.w3.org/TR/geolocation/)
+[Exposed=Window]
+interface GeolocationPositionError {
+  const unsigned short PERMISSION_DENIED = 1;
+  const unsigned short POSITION_UNAVAILABLE = 2;
+  const unsigned short TIMEOUT = 3;
+  readonly attribute unsigned short code;
+  readonly attribute DOMString message;
+};

@@ -1,0 +1,25 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLBodyElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  // also has obsolete members
+};
+
+// Source: Compatibility Standard (https://compat.spec.whatwg.org/)
+partial interface HTMLBodyElement {
+    attribute EventHandler onorientationchange;
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+HTMLBodyElement includes WindowEventHandlers;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLBodyElement {
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString text;
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString link;
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString vLink;
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString aLink;
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString bgColor;
+  [CEReactions] attribute DOMString background;
+};

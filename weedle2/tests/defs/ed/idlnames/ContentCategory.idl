@@ -1,0 +1,8 @@
+// Source: Content Index (https://wicg.github.io/content-index/spec/)
+enum ContentCategory {
+  "",
+  "homepage",
+  "article",
+  "video",
+  "audio",
+};

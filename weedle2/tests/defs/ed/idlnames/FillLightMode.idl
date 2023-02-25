@@ -1,0 +1,6 @@
+// Source: MediaStream Image Capture (https://www.w3.org/TR/image-capture/)
+enum FillLightMode {
+  "auto",
+  "off",
+  "flash"
+};

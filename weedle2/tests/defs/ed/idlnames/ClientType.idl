@@ -1,0 +1,7 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+enum ClientType {
+  "window",
+  "worker",
+  "sharedworker",
+  "all"
+};

@@ -1,0 +1,6 @@
+// Source: Presentation API (https://www.w3.org/TR/presentation-api/)
+[SecureContext, Exposed=Window]
+interface PresentationConnectionAvailableEvent : Event {
+  constructor(DOMString type, PresentationConnectionAvailableEventInit eventInitDict);
+  [SameObject] readonly attribute PresentationConnection connection;
+};

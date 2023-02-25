@@ -1,0 +1,7 @@
+// Source: WebHID API (https://wicg.github.io/webhid/)
+dictionary HIDDeviceFilter {
+    unsigned long vendorId;
+    unsigned short productId;
+    unsigned short usagePage;
+    unsigned short usage;
+};

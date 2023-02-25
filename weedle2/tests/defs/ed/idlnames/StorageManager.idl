@@ -1,0 +1,15 @@
+// Source: Storage Standard (https://storage.spec.whatwg.org/)
+[SecureContext,
+ Exposed=(Window,Worker)]
+interface StorageManager {
+  Promise<boolean> persisted();
+  [Exposed=Window] Promise<boolean> persist();
+
+  Promise<StorageEstimate> estimate();
+};
+
+// Source: File System Standard (https://fs.spec.whatwg.org/)
+[SecureContext]
+partial interface StorageManager {
+  Promise<FileSystemDirectoryHandle> getDirectory();
+};

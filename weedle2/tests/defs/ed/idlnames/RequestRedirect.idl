@@ -1,0 +1,2 @@
+// Source: Fetch Standard (https://fetch.spec.whatwg.org/)
+enum RequestRedirect { "follow", "error", "manual" };

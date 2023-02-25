@@ -1,0 +1,6 @@
+// Source: Background Fetch (https://wicg.github.io/background-fetch/)
+[Exposed=ServiceWorker]
+interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent {
+  constructor(DOMString type, BackgroundFetchEventInit init);
+  Promise<undefined> updateUI(optional BackgroundFetchUIOptions options = {});
+};

@@ -1,0 +1,11 @@
+// Source: WebXR Layers API Level 1 (https://www.w3.org/TR/webxrlayers-1/)
+[Exposed=Window] interface XRQuadLayer : XRCompositionLayer {
+  attribute XRSpace space;
+  attribute XRRigidTransform transform;
+
+  attribute float width;
+  attribute float height;
+
+  // Events
+  attribute EventHandler onredraw;
+};

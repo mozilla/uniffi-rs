@@ -1,0 +1,42 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window] interface XRFrame {
+  [SameObject] readonly attribute XRSession session;
+  readonly attribute DOMHighResTimeStamp predictedDisplayTime;
+
+  XRViewerPose? getViewerPose(XRReferenceSpace referenceSpace);
+  XRPose? getPose(XRSpace space, XRSpace baseSpace);
+};
+
+// Source: WebXR Anchors Module (https://immersive-web.github.io/anchors/)
+partial interface XRFrame {
+  Promise<XRAnchor> createAnchor(XRRigidTransform pose, XRSpace space);
+};
+
+// Source: WebXR Anchors Module (https://immersive-web.github.io/anchors/)
+partial interface XRFrame {
+  [SameObject] readonly attribute XRAnchorSet trackedAnchors;
+};
+
+// Source: WebXR Depth Sensing Module (https://www.w3.org/TR/webxr-depth-sensing-1/)
+partial interface XRFrame {
+  XRCPUDepthInformation? getDepthInformation(XRView view);
+};
+
+// Source: WebXR Hand Input Module - Level 1 (https://www.w3.org/TR/webxr-hand-input-1/)
+partial interface XRFrame {
+    XRJointPose? getJointPose(XRJointSpace joint, XRSpace baseSpace);
+    boolean fillJointRadii(sequence<XRJointSpace> jointSpaces, Float32Array radii);
+
+    boolean fillPoses(sequence<XRSpace> spaces, XRSpace baseSpace, Float32Array transforms);
+};
+
+// Source: WebXR Hit Test Module (https://www.w3.org/TR/webxr-hit-test-1/)
+partial interface XRFrame {
+  FrozenArray<XRHitTestResult> getHitTestResults(XRHitTestSource hitTestSource);
+  FrozenArray<XRTransientInputHitTestResult> getHitTestResultsForTransientInput(XRTransientInputHitTestSource hitTestSource);
+};
+
+// Source: WebXR Lighting Estimation API Level 1 (https://www.w3.org/TR/webxr-lighting-estimation-1/)
+partial interface XRFrame {
+  XRLightEstimate? getLightEstimate(XRLightProbe lightProbe);
+};

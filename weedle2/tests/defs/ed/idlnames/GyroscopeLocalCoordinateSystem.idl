@@ -1,0 +1,2 @@
+// Source: Gyroscope (https://www.w3.org/TR/gyroscope/)
+enum GyroscopeLocalCoordinateSystem { "device", "screen" };

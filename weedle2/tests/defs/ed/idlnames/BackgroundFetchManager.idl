@@ -1,0 +1,7 @@
+// Source: Background Fetch (https://wicg.github.io/background-fetch/)
+[Exposed=(Window,Worker)]
+interface BackgroundFetchManager {
+  Promise<BackgroundFetchRegistration> fetch(DOMString id, (RequestInfo or sequence<RequestInfo>) requests, optional BackgroundFetchOptions options = {});
+  Promise<BackgroundFetchRegistration?> get(DOMString id);
+  Promise<sequence<DOMString>> getIds();
+};

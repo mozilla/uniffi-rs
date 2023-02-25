@@ -1,0 +1,9 @@
+// Source: Screen Orientation (https://www.w3.org/TR/screen-orientation/)
+[Exposed=Window]
+interface ScreenOrientation : EventTarget {
+  Promise<undefined> lock(OrientationLockType orientation);
+  undefined unlock();
+  readonly attribute OrientationType type;
+  readonly attribute unsigned short angle;
+  attribute EventHandler onchange;
+};

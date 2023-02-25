@@ -1,0 +1,14 @@
+// Source: Web Animations Level 2 (https://drafts.csswg.org/web-animations-2/)
+[Exposed=Window]
+interface GroupEffect {
+  constructor(sequence<AnimationEffect>? children,
+              optional (unrestricted double or EffectTiming) timing = {});
+
+  readonly attribute AnimationNodeList  children;
+  readonly attribute AnimationEffect?   firstChild;
+  readonly attribute AnimationEffect?   lastChild;
+  GroupEffect clone ();
+
+  undefined prepend (AnimationEffect... effects);
+  undefined append (AnimationEffect... effects);
+};

@@ -1,0 +1,7 @@
+// Source: Gamepad (https://www.w3.org/TR/gamepad/)
+[Exposed=Window, SecureContext]
+interface GamepadButton {
+  readonly attribute boolean pressed;
+  readonly attribute boolean touched;
+  readonly attribute double value;
+};

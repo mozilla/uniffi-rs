@@ -1,0 +1,5 @@
+// Source: Screen Wake Lock API (https://www.w3.org/TR/screen-wake-lock/)
+[SecureContext, Exposed=(Window)]
+interface WakeLock {
+  Promise<WakeLockSentinel> request(optional WakeLockType type = "screen");
+};

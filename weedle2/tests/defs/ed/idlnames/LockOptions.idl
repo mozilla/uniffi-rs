@@ -1,0 +1,7 @@
+// Source: Web Locks API (https://www.w3.org/TR/web-locks/)
+dictionary LockOptions {
+  LockMode mode = "exclusive";
+  boolean ifAvailable = false;
+  boolean steal = false;
+  AbortSignal signal;
+};

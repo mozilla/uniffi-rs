@@ -1,0 +1,8 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+enum GPUBlendOperation {
+    "add",
+    "subtract",
+    "reverse-subtract",
+    "min",
+    "max"
+};

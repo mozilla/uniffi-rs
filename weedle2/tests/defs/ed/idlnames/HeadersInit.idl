@@ -1,0 +1,2 @@
+// Source: Fetch Standard (https://fetch.spec.whatwg.org/)
+typedef (sequence<sequence<ByteString>> or record<ByteString, ByteString>) HeadersInit;

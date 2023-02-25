@@ -1,0 +1,31 @@
+// Source: WebHID API (https://wicg.github.io/webhid/)
+dictionary HIDReportItem {
+    boolean isAbsolute;
+    boolean isArray;
+    boolean isBufferedBytes;
+    boolean isConstant;
+    boolean isLinear;
+    boolean isRange;
+    boolean isVolatile;
+    boolean hasNull;
+    boolean hasPreferredState;
+    boolean wrap;
+    sequence<unsigned long> usages;
+    unsigned long usageMinimum;
+    unsigned long usageMaximum;
+    unsigned short reportSize;
+    unsigned short reportCount;
+    byte unitExponent;
+    HIDUnitSystem unitSystem;
+    byte unitFactorLengthExponent;
+    byte unitFactorMassExponent;
+    byte unitFactorTimeExponent;
+    byte unitFactorTemperatureExponent;
+    byte unitFactorCurrentExponent;
+    byte unitFactorLuminousIntensityExponent;
+    long logicalMinimum;
+    long logicalMaximum;
+    long physicalMinimum;
+    long physicalMaximum;
+    sequence<DOMString> strings;
+};

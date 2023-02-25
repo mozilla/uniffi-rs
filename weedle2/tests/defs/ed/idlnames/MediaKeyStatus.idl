@@ -1,0 +1,11 @@
+// Source: Encrypted Media Extensions (https://www.w3.org/TR/encrypted-media/)
+enum MediaKeyStatus {
+    "usable",
+    "expired",
+    "released",
+    "output-restricted",
+    "output-downscaled",
+    "usable-in-future",
+    "status-pending",
+    "internal-error"
+};

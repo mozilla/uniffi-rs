@@ -1,0 +1,15 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface AudioBufferSourceNode : AudioScheduledSourceNode {
+    constructor (BaseAudioContext context,
+                 optional AudioBufferSourceOptions options = {});
+    attribute AudioBuffer? buffer;
+    readonly attribute AudioParam playbackRate;
+    readonly attribute AudioParam detune;
+    attribute boolean loop;
+    attribute double loopStart;
+    attribute double loopEnd;
+    undefined start (optional double when = 0,
+                     optional double offset,
+                     optional double duration);
+};

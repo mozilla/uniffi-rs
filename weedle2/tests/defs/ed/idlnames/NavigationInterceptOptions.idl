@@ -1,0 +1,6 @@
+// Source: Navigation API (https://wicg.github.io/navigation-api/)
+dictionary NavigationInterceptOptions {
+  NavigationInterceptHandler handler;
+  NavigationFocusReset focusReset;
+  NavigationScrollBehavior scroll;
+};

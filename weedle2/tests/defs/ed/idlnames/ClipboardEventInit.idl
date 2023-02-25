@@ -1,0 +1,4 @@
+// Source: Clipboard API and events (https://www.w3.org/TR/clipboard-apis/)
+dictionary ClipboardEventInit : EventInit {
+  DataTransfer? clipboardData = null;
+};

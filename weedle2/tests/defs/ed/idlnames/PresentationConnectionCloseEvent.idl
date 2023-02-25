@@ -1,0 +1,7 @@
+// Source: Presentation API (https://www.w3.org/TR/presentation-api/)
+[SecureContext, Exposed=Window]
+interface PresentationConnectionCloseEvent : Event {
+  constructor(DOMString type, PresentationConnectionCloseEventInit eventInitDict);
+  readonly attribute PresentationConnectionCloseReason reason;
+  readonly attribute DOMString message;
+};

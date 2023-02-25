@@ -1,0 +1,9 @@
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+[SecureContext, Exposed=Window]
+interface AuthenticatorAttestationResponse : AuthenticatorResponse {
+    [SameObject] readonly attribute ArrayBuffer      attestationObject;
+    sequence<DOMString>                              getTransports();
+    ArrayBuffer                                      getAuthenticatorData();
+    ArrayBuffer?                                     getPublicKey();
+    COSEAlgorithmIdentifier                          getPublicKeyAlgorithm();
+};

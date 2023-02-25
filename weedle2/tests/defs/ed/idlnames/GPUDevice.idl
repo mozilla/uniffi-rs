@@ -1,0 +1,50 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPUDevice : EventTarget {
+    [SameObject] readonly attribute GPUSupportedFeatures features;
+    [SameObject] readonly attribute GPUSupportedLimits limits;
+
+    [SameObject] readonly attribute GPUQueue queue;
+
+    undefined destroy();
+
+    GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
+    GPUTexture createTexture(GPUTextureDescriptor descriptor);
+    GPUSampler createSampler(optional GPUSamplerDescriptor descriptor = {});
+    GPUExternalTexture importExternalTexture(GPUExternalTextureDescriptor descriptor);
+
+    GPUBindGroupLayout createBindGroupLayout(GPUBindGroupLayoutDescriptor descriptor);
+    GPUPipelineLayout createPipelineLayout(GPUPipelineLayoutDescriptor descriptor);
+    GPUBindGroup createBindGroup(GPUBindGroupDescriptor descriptor);
+
+    GPUShaderModule createShaderModule(GPUShaderModuleDescriptor descriptor);
+    GPUComputePipeline createComputePipeline(GPUComputePipelineDescriptor descriptor);
+    GPURenderPipeline createRenderPipeline(GPURenderPipelineDescriptor descriptor);
+    Promise<GPUComputePipeline> createComputePipelineAsync(GPUComputePipelineDescriptor descriptor);
+    Promise<GPURenderPipeline> createRenderPipelineAsync(GPURenderPipelineDescriptor descriptor);
+
+    GPUCommandEncoder createCommandEncoder(optional GPUCommandEncoderDescriptor descriptor = {});
+    GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);
+
+    GPUQuerySet createQuerySet(GPUQuerySetDescriptor descriptor);
+};
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPUDevice includes GPUObjectBase;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+partial interface GPUDevice {
+    readonly attribute Promise<GPUDeviceLostInfo> lost;
+};
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+partial interface GPUDevice {
+    undefined pushErrorScope(GPUErrorFilter filter);
+    Promise<GPUError?> popErrorScope();
+};
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+partial interface GPUDevice {
+    [Exposed=(Window, DedicatedWorker)]
+    attribute EventHandler onuncapturederror;
+};

@@ -1,0 +1,6 @@
+// Source: WebRTC Encoded Transform (https://www.w3.org/TR/webrtc-encoded-transform/)
+dictionary SFrameTransformErrorEventInit : EventInit {
+    required SFrameTransformErrorEventType errorType;
+    required any frame;
+    CryptoKeyID? keyID;
+};

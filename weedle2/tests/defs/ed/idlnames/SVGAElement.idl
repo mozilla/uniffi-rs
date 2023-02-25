@@ -1,0 +1,33 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGAElement : SVGGraphicsElement {
+  [SameObject] readonly attribute SVGAnimatedString target;
+  attribute DOMString download;
+  attribute USVString ping;
+  attribute DOMString rel;
+  [SameObject, PutForwards=value] readonly attribute DOMTokenList relList;
+  attribute DOMString hreflang;
+  attribute DOMString type;
+
+  attribute DOMString text;
+
+  attribute DOMString referrerPolicy;
+};
+
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+SVGAElement includes SVGURIReference;
+
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+// Inline HTMLHyperlinkElementUtils except href, which conflicts.
+partial interface SVGAElement {
+  readonly attribute USVString origin;
+  [CEReactions] attribute USVString protocol;
+  [CEReactions] attribute USVString username;
+  [CEReactions] attribute USVString password;
+  [CEReactions] attribute USVString host;
+  [CEReactions] attribute USVString hostname;
+  [CEReactions] attribute USVString port;
+  [CEReactions] attribute USVString pathname;
+  [CEReactions] attribute USVString search;
+  [CEReactions] attribute USVString hash;
+};

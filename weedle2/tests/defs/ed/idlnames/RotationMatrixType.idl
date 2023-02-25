@@ -1,0 +1,2 @@
+// Source: Orientation Sensor (https://www.w3.org/TR/orientation-sensor/)
+typedef (Float32Array or Float64Array or DOMMatrix) RotationMatrixType;

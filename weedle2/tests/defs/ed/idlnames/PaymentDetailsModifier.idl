@@ -1,0 +1,7 @@
+// Source: Payment Request API 1.1 (https://www.w3.org/TR/payment-request-1.1/)
+dictionary PaymentDetailsModifier {
+  required DOMString supportedMethods;
+  PaymentItem total;
+  sequence<PaymentItem> additionalDisplayItems;
+  object data;
+};

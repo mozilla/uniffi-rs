@@ -1,0 +1,5 @@
+// Source: File System Standard (https://fs.spec.whatwg.org/)
+enum FileSystemHandleKind {
+  "file",
+  "directory",
+};

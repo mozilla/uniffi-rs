@@ -1,0 +1,2 @@
+// Source: Screen Wake Lock API (https://www.w3.org/TR/screen-wake-lock/)
+enum WakeLockType { "screen" };

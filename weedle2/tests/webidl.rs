@@ -5,7 +5,7 @@ use std::{io::Read, path::Path};
 use fs_err::File;
 use weedle::*;
 
-fn read_file(path: &str) -> String {
+fn read_file<P: AsRef<Path>>(path: P) -> String {
     let mut file = File::open(Path::new(env!("CARGO_MANIFEST_DIR")).join(path)).unwrap();
     let mut file_content = String::new();
     file.read_to_string(&mut file_content).unwrap();
@@ -103,5 +103,24 @@ fn interface_constructor() {
             }
         }
         _ => unreachable!(),
+    }
+}
+
+#[test]
+fn should_parse_all_ed_webidl() {
+    let mut entries = std::fs::read_dir("./tests/defs/ed/idl")
+        .unwrap()
+        .chain(std::fs::read_dir("./tests/defs/ed/idlnames").unwrap())
+        .map(|res| res.map(|e| e.path()))
+        .collect::<Result<Vec<_>, std::io::Error>>()
+        .unwrap();
+
+    // We sort entries to have deterministic test
+    entries.sort();
+
+    for path in &entries {
+        println!("Name: {}", path.display());
+        let content = read_file(path);
+        weedle::parse(&content).unwrap();
     }
 }

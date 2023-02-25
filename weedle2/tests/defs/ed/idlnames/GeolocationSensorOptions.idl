@@ -1,0 +1,4 @@
+// Source: Geolocation Sensor (https://www.w3.org/TR/geolocation-sensor/)
+dictionary GeolocationSensorOptions : SensorOptions {
+  // placeholder for GeolocationSensor-specific options
+};

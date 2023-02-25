@@ -1,0 +1,6 @@
+// Source: Geolocation API (https://www.w3.org/TR/geolocation/)
+[Exposed=Window, SecureContext]
+interface GeolocationPosition {
+  readonly attribute GeolocationCoordinates coords;
+  readonly attribute EpochTimeStamp timestamp;
+};

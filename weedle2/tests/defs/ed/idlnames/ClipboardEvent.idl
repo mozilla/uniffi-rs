@@ -1,0 +1,6 @@
+// Source: Clipboard API and events (https://www.w3.org/TR/clipboard-apis/)
+[Exposed=Window]
+interface ClipboardEvent : Event {
+  constructor(DOMString type, optional ClipboardEventInit eventInitDict = {});
+  readonly attribute DataTransfer? clipboardData;
+};

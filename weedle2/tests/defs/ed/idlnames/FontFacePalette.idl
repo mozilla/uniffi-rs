@@ -1,0 +1,9 @@
+// Source: CSS Font Loading Module Level 3 (https://www.w3.org/TR/css-font-loading-3/)
+[Exposed=(Window,Worker)]
+interface FontFacePalette {
+  iterable<DOMString>;
+  readonly attribute unsigned long length;
+  getter DOMString (unsigned long index);
+  readonly attribute boolean usableWithLightBackground;
+  readonly attribute boolean usableWithDarkBackground;
+};

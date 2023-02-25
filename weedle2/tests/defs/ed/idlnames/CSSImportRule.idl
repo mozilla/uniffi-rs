@@ -1,0 +1,12 @@
+// Source: CSS Object Model (CSSOM) (https://www.w3.org/TR/cssom-1/)
+[Exposed=Window]
+interface CSSImportRule : CSSRule {
+  readonly attribute USVString href;
+  [SameObject, PutForwards=mediaText] readonly attribute MediaList media;
+  [SameObject] readonly attribute CSSStyleSheet styleSheet;
+};
+
+// Source: CSS Cascading and Inheritance Level 5 (https://www.w3.org/TR/css-cascade-5/)
+partial interface CSSImportRule {
+  readonly attribute CSSOMString? layerName;
+};

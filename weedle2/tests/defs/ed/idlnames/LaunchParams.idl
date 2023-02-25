@@ -1,0 +1,5 @@
+// Source: Web App Launch Handler API (https://wicg.github.io/web-app-launch/)
+[Exposed=Window] interface LaunchParams {
+  readonly attribute DOMString? targetURL;
+  readonly attribute FrozenArray<FileSystemHandle> files;
+};

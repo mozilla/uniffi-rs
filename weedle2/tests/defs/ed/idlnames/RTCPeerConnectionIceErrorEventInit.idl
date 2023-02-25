@@ -1,0 +1,8 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+dictionary RTCPeerConnectionIceErrorEventInit : EventInit {
+  DOMString? address;
+  unsigned short? port;
+  DOMString url;
+  required unsigned short errorCode;
+  USVString errorText;
+};

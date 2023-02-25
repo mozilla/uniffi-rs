@@ -1,0 +1,45 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface BaseAudioContext : EventTarget {
+    readonly attribute AudioDestinationNode destination;
+    readonly attribute float sampleRate;
+    readonly attribute double currentTime;
+    readonly attribute AudioListener listener;
+    readonly attribute AudioContextState state;
+    [SameObject, SecureContext]
+    readonly attribute AudioWorklet audioWorklet;
+    attribute EventHandler onstatechange;
+
+    AnalyserNode createAnalyser ();
+    BiquadFilterNode createBiquadFilter ();
+    AudioBuffer createBuffer (unsigned long numberOfChannels,
+                              unsigned long length,
+                              float sampleRate);
+    AudioBufferSourceNode createBufferSource ();
+    ChannelMergerNode createChannelMerger (optional unsigned long numberOfInputs = 6);
+    ChannelSplitterNode createChannelSplitter (
+        optional unsigned long numberOfOutputs = 6);
+    ConstantSourceNode createConstantSource ();
+    ConvolverNode createConvolver ();
+    DelayNode createDelay (optional double maxDelayTime = 1.0);
+    DynamicsCompressorNode createDynamicsCompressor ();
+    GainNode createGain ();
+    IIRFilterNode createIIRFilter (sequence<double> feedforward,
+                                   sequence<double> feedback);
+    OscillatorNode createOscillator ();
+    PannerNode createPanner ();
+    PeriodicWave createPeriodicWave (sequence<float> real,
+                                     sequence<float> imag,
+                                     optional PeriodicWaveConstraints constraints = {});
+    ScriptProcessorNode createScriptProcessor(
+        optional unsigned long bufferSize = 0,
+        optional unsigned long numberOfInputChannels = 2,
+        optional unsigned long numberOfOutputChannels = 2);
+    StereoPannerNode createStereoPanner ();
+    WaveShaperNode createWaveShaper ();
+
+    Promise<AudioBuffer> decodeAudioData (
+        ArrayBuffer audioData,
+        optional DecodeSuccessCallback? successCallback,
+        optional DecodeErrorCallback? errorCallback);
+};

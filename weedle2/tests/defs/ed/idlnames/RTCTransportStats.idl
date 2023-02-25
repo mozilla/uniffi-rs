@@ -1,0 +1,19 @@
+// Source: Identifiers for WebRTC's Statistics API (https://www.w3.org/TR/webrtc-stats/)
+dictionary RTCTransportStats : RTCStats {
+             unsigned long long    packetsSent;
+             unsigned long long    packetsReceived;
+             unsigned long long    bytesSent;
+             unsigned long long    bytesReceived;
+             RTCIceRole            iceRole;
+             DOMString             iceLocalUsernameFragment;
+             required RTCDtlsTransportState dtlsState;
+             RTCIceTransportState  iceState;
+             DOMString             selectedCandidatePairId;
+             DOMString             localCertificateId;
+             DOMString             remoteCertificateId;
+             DOMString             tlsVersion;
+             DOMString             dtlsCipher;
+             RTCDtlsRole           dtlsRole;
+             DOMString             srtpCipher;
+             unsigned long         selectedCandidatePairChanges;
+};

@@ -1,0 +1,14 @@
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+[
+  Exposed=(DedicatedWorker,SharedWorker,Window),
+  SecureContext
+]
+interface USBAlternateInterface {
+  constructor(USBInterface deviceInterface, octet alternateSetting);
+  readonly attribute octet alternateSetting;
+  readonly attribute octet interfaceClass;
+  readonly attribute octet interfaceSubclass;
+  readonly attribute octet interfaceProtocol;
+  readonly attribute DOMString? interfaceName;
+  readonly attribute FrozenArray<USBEndpoint> endpoints;
+};

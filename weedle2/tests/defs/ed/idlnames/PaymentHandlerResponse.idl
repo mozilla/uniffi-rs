@@ -1,0 +1,10 @@
+// Source: Payment Handler API (https://www.w3.org/TR/payment-handler/)
+dictionary PaymentHandlerResponse {
+DOMString methodName;
+object details;
+DOMString? payerName;
+DOMString? payerEmail;
+DOMString? payerPhone;
+AddressInit shippingAddress;
+DOMString? shippingOption;
+};

@@ -1,0 +1,4 @@
+// Source: Permissions (https://www.w3.org/TR/permissions/)
+dictionary PermissionDescriptor {
+  required DOMString name;
+};

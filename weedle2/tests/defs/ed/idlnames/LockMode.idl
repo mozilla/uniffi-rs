@@ -1,0 +1,2 @@
+// Source: Web Locks API (https://www.w3.org/TR/web-locks/)
+enum LockMode { "shared", "exclusive" };

@@ -1,0 +1,5 @@
+// Source: WebXR Hand Input Module - Level 1 (https://www.w3.org/TR/webxr-hand-input-1/)
+[Exposed=Window]
+interface XRJointSpace: XRSpace {
+  readonly attribute XRHandJoint jointName;
+};

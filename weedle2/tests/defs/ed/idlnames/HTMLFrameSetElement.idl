@@ -1,0 +1,11 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLFrameSetElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute DOMString cols;
+  [CEReactions] attribute DOMString rows;
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+HTMLFrameSetElement includes WindowEventHandlers;

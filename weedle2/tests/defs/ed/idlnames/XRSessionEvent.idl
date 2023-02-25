@@ -1,0 +1,6 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window]
+interface XRSessionEvent : Event {
+  constructor(DOMString type, XRSessionEventInit eventInitDict);
+  [SameObject] readonly attribute XRSession session;
+};

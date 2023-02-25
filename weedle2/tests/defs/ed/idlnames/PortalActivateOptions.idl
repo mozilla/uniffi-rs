@@ -1,0 +1,4 @@
+// Source: Portals (https://wicg.github.io/portals/)
+dictionary PortalActivateOptions : StructuredSerializeOptions {
+    any data;
+};

@@ -1,0 +1,6 @@
+// Source: Badging API (https://w3c.github.io/badging/)
+[SecureContext]
+interface mixin NavigatorBadge {
+  Promise<undefined> setAppBadge(optional [EnforceRange] unsigned long long contents);
+  Promise<undefined> clearAppBadge();
+};

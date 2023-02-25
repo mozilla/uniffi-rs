@@ -1,0 +1,6 @@
+// Source: WebHID API (https://wicg.github.io/webhid/)
+[Exposed=Window, SecureContext]
+interface HIDConnectionEvent : Event {
+    constructor(DOMString type, HIDConnectionEventInit eventInitDict);
+    [SameObject] readonly attribute HIDDevice device;
+};

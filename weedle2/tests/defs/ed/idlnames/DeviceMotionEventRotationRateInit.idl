@@ -1,0 +1,6 @@
+// Source: DeviceOrientation Event Specification (https://www.w3.org/TR/orientation-event/)
+dictionary DeviceMotionEventRotationRateInit {
+    double? alpha = null;
+    double? beta = null;
+    double? gamma = null;
+};

@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface TrackEvent : Event {
+  constructor(DOMString type, optional TrackEventInit eventInitDict = {});
+
+  readonly attribute (VideoTrack or AudioTrack or TextTrack)? track;
+};

@@ -1,0 +1,26 @@
+// Source: JSON-LD 1.1 Processing Algorithms and API (https://www.w3.org/TR/json-ld11-api/)
+dictionary JsonLdOptions {
+  USVString?             base = null;
+  boolean                compactArrays = true;
+  boolean                compactToRelative = true;
+  LoadDocumentCallback?  documentLoader = null;
+  (JsonLdRecord? or USVString) expandContext = null;
+  boolean                extractAllScripts = false;
+  boolean                frameExpansion = false;
+  boolean                ordered = false;
+  USVString              processingMode = "json-ld-1.1";
+  boolean                produceGeneralizedRdf = true;
+  USVString?             rdfDirection = null;
+  boolean                useNativeTypes = false;
+  boolean                useRdfType = false;
+};
+
+// Source: JSON-LD 1.1 Framing (https://www.w3.org/TR/json-ld11-framing/)
+partial dictionary JsonLdOptions {
+  (JsonLdEmbed or boolean)  embed         = "@once";
+  boolean                   explicit      = false;
+  boolean                   omitDefault   = false;
+  boolean                   omitGraph;
+  boolean                   requireAll    = false;
+  boolean                   frameDefault  = false;
+};

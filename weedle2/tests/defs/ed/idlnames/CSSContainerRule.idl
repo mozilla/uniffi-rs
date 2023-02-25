@@ -1,0 +1,6 @@
+// Source: CSS Containment Module Level 3 (https://www.w3.org/TR/css-contain-3/)
+[Exposed=Window]
+interface CSSContainerRule : CSSConditionRule {
+    readonly attribute CSSOMString containerName;
+    readonly attribute CSSOMString containerQuery;
+};

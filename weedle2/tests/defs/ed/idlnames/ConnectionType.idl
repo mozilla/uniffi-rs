@@ -1,0 +1,12 @@
+// Source: Network Information API (https://wicg.github.io/netinfo/)
+enum ConnectionType {
+  "bluetooth",
+  "cellular",
+  "ethernet",
+  "mixed",
+  "none",
+  "other",
+  "unknown",
+  "wifi",
+  "wimax"
+};

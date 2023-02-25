@@ -1,0 +1,36 @@
+// GENERATED CONTENT - DO NOT EDIT
+// Content was automatically extracted by Reffy into webref
+// (https://github.com/w3c/webref)
+// Source: JSON-LD 1.1 Framing (https://w3c.github.io/json-ld-framing/)
+
+[Exposed=JsonLd]
+partial interface JsonLdProcessor {
+  static Promise<JsonLdRecord> frame(
+    JsonLdInput input,
+    JsonLdInput frame,
+    optional JsonLdOptions options = {});
+};
+
+dictionary JsonLdFramingError {
+  JsonLdFramingErrorCode code;
+  USVString? message = null;
+};
+enum JsonLdFramingErrorCode {
+  "invalid frame",
+  "invalid @embed value"
+};
+
+partial dictionary JsonLdOptions {
+  (JsonLdEmbed or boolean)  embed         = "@once";
+  boolean                   explicit      = false;
+  boolean                   omitDefault   = false;
+  boolean                   omitGraph;
+  boolean                   requireAll    = false;
+  boolean                   frameDefault  = false;
+};
+
+enum JsonLdEmbed {
+  "@always",
+  "@once",
+  "@never"
+};

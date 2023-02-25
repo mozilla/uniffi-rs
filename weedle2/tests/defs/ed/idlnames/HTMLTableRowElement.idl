@@ -1,0 +1,23 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLTableRowElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  readonly attribute long rowIndex;
+  readonly attribute long sectionRowIndex;
+  [SameObject] readonly attribute HTMLCollection cells;
+  HTMLTableCellElement insertCell(optional long index = -1);
+  [CEReactions] undefined deleteCell(long index);
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLTableRowElement {
+  [CEReactions] attribute DOMString align;
+  [CEReactions] attribute DOMString ch;
+  [CEReactions] attribute DOMString chOff;
+  [CEReactions] attribute DOMString vAlign;
+
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString bgColor;
+};

@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin CanvasImageSmoothing {
+  // image smoothing
+  attribute boolean imageSmoothingEnabled; // (default true)
+  attribute ImageSmoothingQuality imageSmoothingQuality; // (default low)
+
+};

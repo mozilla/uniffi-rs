@@ -1,0 +1,6 @@
+// Source: DeviceOrientation Event Specification (https://www.w3.org/TR/orientation-event/)
+dictionary DeviceMotionEventAccelerationInit {
+    double? x = null;
+    double? y = null;
+    double? z = null;
+};

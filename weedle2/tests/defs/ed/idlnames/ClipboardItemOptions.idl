@@ -1,0 +1,4 @@
+// Source: Clipboard API and events (https://www.w3.org/TR/clipboard-apis/)
+dictionary ClipboardItemOptions {
+  PresentationStyle presentationStyle = "unspecified";
+};

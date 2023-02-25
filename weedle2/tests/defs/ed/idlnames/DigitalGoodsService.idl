@@ -1,0 +1,11 @@
+// Source: Digital Goods API (https://wicg.github.io/digital-goods/)
+[Exposed=Window, SecureContext] interface DigitalGoodsService {
+
+  Promise<sequence<ItemDetails>> getDetails(sequence<DOMString> itemIds);
+
+  Promise<sequence<PurchaseDetails>> listPurchases();
+
+  Promise<sequence<PurchaseDetails>> listPurchaseHistory();
+
+  Promise<undefined> consume(DOMString purchaseToken);
+};

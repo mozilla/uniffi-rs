@@ -1,0 +1,5 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+[Exposed=Window]
+interface StaticRange : AbstractRange {
+  constructor(StaticRangeInit init);
+};

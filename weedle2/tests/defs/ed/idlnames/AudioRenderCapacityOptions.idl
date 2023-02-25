@@ -1,0 +1,4 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+dictionary AudioRenderCapacityOptions {
+        double updateInterval = 1;
+};

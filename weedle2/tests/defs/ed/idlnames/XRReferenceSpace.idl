@@ -1,0 +1,7 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window]
+interface XRReferenceSpace : XRSpace {
+  [NewObject] XRReferenceSpace getOffsetReferenceSpace(XRRigidTransform originOffset);
+
+  attribute EventHandler onreset;
+};

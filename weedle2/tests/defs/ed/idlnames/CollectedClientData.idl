@@ -1,0 +1,7 @@
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+dictionary CollectedClientData {
+    required DOMString           type;
+    required DOMString           challenge;
+    required DOMString           origin;
+    boolean                      crossOrigin;
+};

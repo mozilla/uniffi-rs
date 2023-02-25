@@ -1,0 +1,5 @@
+// Source: AVC (H.264) WebCodecs Registration (https://www.w3.org/TR/webcodecs-avc-codec-registration/)
+enum AvcBitstreamFormat {
+  "annexb",
+  "avc",
+};

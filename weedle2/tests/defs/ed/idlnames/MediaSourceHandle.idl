@@ -1,0 +1,3 @@
+// Source: Media Source Extensions™ (https://www.w3.org/TR/media-source-2/)
+[Transferable, Exposed=(Window,DedicatedWorker)]
+interface MediaSourceHandle {};

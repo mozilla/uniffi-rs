@@ -1,0 +1,13 @@
+// Source: HTML Sanitizer API (https://wicg.github.io/sanitizer-api/)
+[
+  Exposed=(Window),
+  SecureContext
+] interface Sanitizer {
+  constructor(optional SanitizerConfig config = {});
+
+  DocumentFragment sanitize((Document or DocumentFragment) input);
+  Element? sanitizeFor(DOMString element, DOMString input);
+
+  SanitizerConfig getConfiguration();
+  static SanitizerConfig getDefaultConfiguration();
+};

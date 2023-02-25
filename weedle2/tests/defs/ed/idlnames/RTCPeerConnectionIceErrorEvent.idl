@@ -1,0 +1,10 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+[Exposed=Window]
+interface RTCPeerConnectionIceErrorEvent : Event {
+  constructor(DOMString type, RTCPeerConnectionIceErrorEventInit eventInitDict);
+  readonly attribute DOMString? address;
+  readonly attribute unsigned short? port;
+  readonly attribute DOMString url;
+  readonly attribute unsigned short errorCode;
+  readonly attribute USVString errorText;
+};

@@ -1,0 +1,7 @@
+// Source: Geometry Interfaces Module Level 1 (https://www.w3.org/TR/geometry-1/)
+dictionary DOMRectInit {
+    unrestricted double x = 0;
+    unrestricted double y = 0;
+    unrestricted double width = 0;
+    unrestricted double height = 0;
+};

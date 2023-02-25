@@ -1,0 +1,7 @@
+// Source: JSON-LD 1.1 Processing Algorithms and API (https://www.w3.org/TR/json-ld11-api/)
+[Exposed=JsonLd]
+interface RdfGraph {
+  constructor();
+  undefined add(RdfTriple triple);
+  iterable<RdfTriple>;
+};

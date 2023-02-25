@@ -1,0 +1,5 @@
+// Source: Identity for WebRTC 1.0 (https://www.w3.org/TR/webrtc-identity/)
+dictionary RTCIdentityAssertionResult {
+    required RTCIdentityProviderDetails idp;
+    required DOMString                  assertion;
+};

@@ -1,0 +1,11 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLGruOptions {
+  MLOperand bias;
+  MLOperand recurrentBias;
+  MLOperand initialHiddenState;
+  boolean resetAfter = true;
+  boolean returnSequence = false;
+  MLRecurrentNetworkDirection direction = "forward";
+  MLGruWeightLayout layout = "zrn";
+  sequence<MLActivation> activations;
+};

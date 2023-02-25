@@ -1,0 +1,9 @@
+// Source: SVG Animations (https://svgwg.org/specs/animations/)
+[Exposed=Window]
+interface TimeEvent : Event {
+
+  readonly attribute WindowProxy? view;
+  readonly attribute long detail;
+
+  undefined initTimeEvent(DOMString typeArg, Window? viewArg, long detailArg);
+};

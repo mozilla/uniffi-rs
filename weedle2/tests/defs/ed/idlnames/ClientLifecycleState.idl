@@ -1,0 +1,5 @@
+// Source: Page Lifecycle (https://wicg.github.io/page-lifecycle/)
+enum ClientLifecycleState {
+    "active",
+    "frozen"
+};

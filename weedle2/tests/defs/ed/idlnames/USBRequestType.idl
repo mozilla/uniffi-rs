@@ -1,0 +1,6 @@
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+enum USBRequestType {
+  "standard",
+  "class",
+  "vendor"
+};

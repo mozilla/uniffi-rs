@@ -1,0 +1,2 @@
+// Source: Autoplay Policy Detection (https://www.w3.org/TR/autoplay-detection/)
+enum AutoplayPolicyMediaType { "mediaelement", "audiocontext" };

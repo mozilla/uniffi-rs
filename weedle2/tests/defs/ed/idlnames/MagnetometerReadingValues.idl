@@ -1,0 +1,6 @@
+// Source: Magnetometer (https://www.w3.org/TR/magnetometer/)
+dictionary MagnetometerReadingValues {
+  required double? x;
+  required double? y;
+  required double? z;
+};

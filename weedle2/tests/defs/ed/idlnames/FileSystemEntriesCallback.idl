@@ -1,0 +1,2 @@
+// Source: File and Directory Entries API (https://wicg.github.io/entries-api/)
+callback FileSystemEntriesCallback = undefined (sequence<FileSystemEntry> entries);

@@ -1,0 +1,12 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+[Exposed=Window, SecureContext]
+interface BluetoothRemoteGATTServer {
+  [SameObject]
+  readonly attribute BluetoothDevice device;
+  readonly attribute boolean connected;
+  Promise<BluetoothRemoteGATTServer> connect();
+  undefined disconnect();
+  Promise<BluetoothRemoteGATTService> getPrimaryService(BluetoothServiceUUID service);
+  Promise<sequence<BluetoothRemoteGATTService>>
+    getPrimaryServices(optional BluetoothServiceUUID service);
+};

@@ -1,0 +1,5 @@
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+dictionary BoxQuadOptions {
+  CSSBoxType box = "border";
+  GeometryNode relativeTo; // XXX default document (i.e. viewport)
+};

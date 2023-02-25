@@ -1,0 +1,6 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+interface mixin ReadableStreamGenericReader {
+  readonly attribute Promise<undefined> closed;
+
+  Promise<undefined> cancel(optional any reason);
+};

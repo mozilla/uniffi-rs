@@ -1,0 +1,22 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary AudioEncoderConfig {
+  required DOMString codec;
+  [EnforceRange] unsigned long sampleRate;
+  [EnforceRange] unsigned long numberOfChannels;
+  [EnforceRange] unsigned long long bitrate;
+};
+
+// Source: AAC WebCodecs Registration (https://www.w3.org/TR/webcodecs-aac-codec-registration/)
+partial dictionary AudioEncoderConfig {
+  AacEncoderConfig aac;
+};
+
+// Source: FLAC WebCodecs Registration (https://www.w3.org/TR/webcodecs-flac-codec-registration/)
+partial dictionary AudioEncoderConfig {
+  FlacEncoderConfig flac;
+};
+
+// Source: Opus WebCodecs Registration (https://www.w3.org/TR/webcodecs-opus-codec-registration/)
+partial dictionary AudioEncoderConfig {
+  OpusEncoderConfig opus;
+};

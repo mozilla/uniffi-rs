@@ -1,0 +1,8 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGLineElement : SVGGeometryElement {
+  [SameObject] readonly attribute SVGAnimatedLength x1;
+  [SameObject] readonly attribute SVGAnimatedLength y1;
+  [SameObject] readonly attribute SVGAnimatedLength x2;
+  [SameObject] readonly attribute SVGAnimatedLength y2;
+};

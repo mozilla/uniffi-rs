@@ -1,0 +1,15 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface AudioTrack {
+  readonly attribute DOMString id;
+  readonly attribute DOMString kind;
+  readonly attribute DOMString label;
+  readonly attribute DOMString language;
+  attribute boolean enabled;
+};
+
+// Source: Media Source Extensions™ (https://www.w3.org/TR/media-source-2/)
+[Exposed=(Window,DedicatedWorker)]
+partial interface AudioTrack {
+    readonly        attribute SourceBuffer? sourceBuffer;
+};

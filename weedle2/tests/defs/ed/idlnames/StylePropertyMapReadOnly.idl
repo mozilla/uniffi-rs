@@ -1,0 +1,11 @@
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+[Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
+interface StylePropertyMapReadOnly {
+    iterable<USVString, sequence<CSSStyleValue>>;
+    any get(USVString property);
+    /* 'any' means (undefined or CSSStyleValue) here,
+       see https://github.com/heycam/webidl/issues/60 */
+    sequence<CSSStyleValue> getAll(USVString property);
+    boolean has(USVString property);
+    readonly attribute unsigned long size;
+};

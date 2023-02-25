@@ -1,0 +1,11 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=*]
+interface ErrorEvent : Event {
+  constructor(DOMString type, optional ErrorEventInit eventInitDict = {});
+
+  readonly attribute DOMString message;
+  readonly attribute USVString filename;
+  readonly attribute unsigned long lineno;
+  readonly attribute unsigned long colno;
+  readonly attribute any error;
+};

@@ -1,0 +1,8 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+[SecureContext, Exposed=(Window,Worker)]
+interface NavigationPreloadManager {
+  Promise<undefined> enable();
+  Promise<undefined> disable();
+  Promise<undefined> setHeaderValue(ByteString value);
+  Promise<NavigationPreloadState> getState();
+};

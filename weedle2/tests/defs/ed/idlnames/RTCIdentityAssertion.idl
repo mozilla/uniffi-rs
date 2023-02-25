@@ -1,0 +1,7 @@
+// Source: Identity for WebRTC 1.0 (https://www.w3.org/TR/webrtc-identity/)
+[Exposed=Window]
+interface RTCIdentityAssertion {
+    constructor(DOMString idp, DOMString name);
+    attribute DOMString idp;
+    attribute DOMString name;
+};

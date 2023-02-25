@@ -1,0 +1,7 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+dictionary WebTransportOptions {
+  boolean allowPooling = false;
+  boolean requireUnreliable = false;
+  sequence<WebTransportHash> serverCertificateHashes;
+  WebTransportCongestionControl congestionControl = "default";
+};

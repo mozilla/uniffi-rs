@@ -1,0 +1,7 @@
+// Source: Content Index (https://wicg.github.io/content-index/spec/)
+[Exposed=(Window,Worker)]
+interface ContentIndex {
+  Promise<undefined> add(ContentDescription description);
+  Promise<undefined> delete(DOMString id);
+  Promise<sequence<ContentDescription>> getAll();
+};

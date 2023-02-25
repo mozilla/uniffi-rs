@@ -1,0 +1,4 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+dictionary MediaStreamTrackEventInit : EventInit {
+  required MediaStreamTrack track;
+};

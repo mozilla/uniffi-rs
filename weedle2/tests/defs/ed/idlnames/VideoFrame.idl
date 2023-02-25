@@ -1,0 +1,27 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+[Exposed=(Window,DedicatedWorker), Serializable, Transferable]
+interface VideoFrame {
+  constructor(CanvasImageSource image, optional VideoFrameInit init = {});
+  constructor([AllowShared] BufferSource data, VideoFrameBufferInit init);
+
+  readonly attribute VideoPixelFormat? format;
+  readonly attribute unsigned long codedWidth;
+  readonly attribute unsigned long codedHeight;
+  readonly attribute DOMRectReadOnly? codedRect;
+  readonly attribute DOMRectReadOnly? visibleRect;
+  readonly attribute unsigned long displayWidth;
+  readonly attribute unsigned long displayHeight;
+  readonly attribute unsigned long long? duration;  // microseconds
+  readonly attribute long long timestamp;           // microseconds
+  readonly attribute VideoColorSpace colorSpace;
+
+  VideoFrameMetadata metadata();
+
+  unsigned long allocationSize(
+      optional VideoFrameCopyToOptions options = {});
+  Promise<sequence<PlaneLayout>> copyTo(
+      [AllowShared] BufferSource destination,
+      optional VideoFrameCopyToOptions options = {});
+  VideoFrame clone();
+  undefined close();
+};

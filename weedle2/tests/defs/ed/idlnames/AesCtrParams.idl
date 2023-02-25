@@ -1,0 +1,5 @@
+// Source: Web Cryptography API (https://www.w3.org/TR/WebCryptoAPI/)
+dictionary AesCtrParams : Algorithm {
+  required BufferSource counter;
+  required [EnforceRange] octet length;
+};

@@ -1,0 +1,4 @@
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+// The power preference settings are documented in the WebGLContextAttributes
+// section of the specification.
+enum WebGLPowerPreference { "default", "low-power", "high-performance" };

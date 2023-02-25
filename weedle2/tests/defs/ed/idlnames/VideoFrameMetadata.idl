@@ -1,0 +1,4 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary VideoFrameMetadata {
+  // Possible members are recorded in the VideoFrame Metadata Registry.
+};

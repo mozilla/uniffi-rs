@@ -1,0 +1,6 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary EncodedVideoChunkMetadata {
+  VideoDecoderConfig decoderConfig;
+  SvcOutputMetadata svc;
+  BufferSource alphaSideData;
+};

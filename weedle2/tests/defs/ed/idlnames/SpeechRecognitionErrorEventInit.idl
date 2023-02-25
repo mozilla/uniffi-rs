@@ -1,0 +1,5 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+dictionary SpeechRecognitionErrorEventInit : EventInit {
+    required SpeechRecognitionErrorCode error;
+    DOMString message = "";
+};

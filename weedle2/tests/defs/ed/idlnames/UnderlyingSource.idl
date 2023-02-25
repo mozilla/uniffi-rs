@@ -1,0 +1,8 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+dictionary UnderlyingSource {
+  UnderlyingSourceStartCallback start;
+  UnderlyingSourcePullCallback pull;
+  UnderlyingSourceCancelCallback cancel;
+  ReadableStreamType type;
+  [EnforceRange] unsigned long long autoAllocateChunkSize;
+};

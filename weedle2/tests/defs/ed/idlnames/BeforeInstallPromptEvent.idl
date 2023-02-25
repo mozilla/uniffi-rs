@@ -1,0 +1,6 @@
+// Source: Manifest Incubations (https://wicg.github.io/manifest-incubations/)
+[Exposed=Window]
+interface BeforeInstallPromptEvent : Event {
+  constructor(DOMString type, optional EventInit eventInitDict = {});
+  Promise<PromptResponseObject> prompt();
+};

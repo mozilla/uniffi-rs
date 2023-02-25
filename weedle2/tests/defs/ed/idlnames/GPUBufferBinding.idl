@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUBufferBinding {
+    required GPUBuffer buffer;
+    GPUSize64 offset = 0;
+    GPUSize64 size;
+};

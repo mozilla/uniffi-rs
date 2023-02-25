@@ -1,0 +1,4 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+dictionary ReadableStreamIteratorOptions {
+  boolean preventCancel = false;
+};

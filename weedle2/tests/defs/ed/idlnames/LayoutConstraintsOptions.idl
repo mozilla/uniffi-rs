@@ -1,0 +1,16 @@
+// Source: CSS Layout API Level 1 (https://www.w3.org/TR/css-layout-api-1/)
+dictionary LayoutConstraintsOptions {
+    double availableInlineSize;
+    double availableBlockSize;
+
+    double fixedInlineSize;
+    double fixedBlockSize;
+
+    double percentageInlineSize;
+    double percentageBlockSize;
+
+    double blockFragmentationOffset;
+    BlockFragmentationType blockFragmentationType = "none";
+
+    any data;
+};

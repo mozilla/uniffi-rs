@@ -1,0 +1,5 @@
+// Source: WebXR Anchors Module (https://immersive-web.github.io/anchors/)
+[Exposed=Window]
+interface XRAnchorSet {
+  readonly setlike<XRAnchor>;
+};

@@ -1,0 +1,50 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+dictionary MediaTrackSupportedConstraints {
+  boolean width = true;
+  boolean height = true;
+  boolean aspectRatio = true;
+  boolean frameRate = true;
+  boolean facingMode = true;
+  boolean resizeMode = true;
+  boolean sampleRate = true;
+  boolean sampleSize = true;
+  boolean echoCancellation = true;
+  boolean autoGainControl = true;
+  boolean noiseSuppression = true;
+  boolean latency = true;
+  boolean channelCount = true;
+  boolean deviceId = true;
+  boolean groupId = true;
+};
+
+// Source: MediaStream Image Capture (https://www.w3.org/TR/image-capture/)
+partial dictionary MediaTrackSupportedConstraints {
+  boolean whiteBalanceMode = true;
+  boolean exposureMode = true;
+  boolean focusMode = true;
+  boolean pointsOfInterest = true;
+
+  boolean exposureCompensation = true;
+  boolean exposureTime = true;
+  boolean colorTemperature = true;
+  boolean iso = true;
+
+  boolean brightness = true;
+  boolean contrast = true;
+  boolean pan = true;
+  boolean saturation = true;
+  boolean sharpness = true;
+  boolean focusDistance = true;
+  boolean tilt = true;
+  boolean zoom = true;
+  boolean torch = true;
+};
+
+// Source: Screen Capture (https://www.w3.org/TR/screen-capture/)
+partial dictionary MediaTrackSupportedConstraints {
+  boolean displaySurface = true;
+  boolean logicalSurface = true;
+  boolean cursor = true;
+  boolean restrictOwnAudio = true;
+  boolean suppressLocalAudioPlayback = true;
+};

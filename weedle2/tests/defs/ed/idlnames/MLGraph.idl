@@ -1,0 +1,3 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+[SecureContext, Exposed=(Window, DedicatedWorker)]
+interface MLGraph {};

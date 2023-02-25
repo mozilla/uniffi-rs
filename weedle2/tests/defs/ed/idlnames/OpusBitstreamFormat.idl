@@ -1,0 +1,5 @@
+// Source: Opus WebCodecs Registration (https://www.w3.org/TR/webcodecs-opus-codec-registration/)
+enum OpusBitstreamFormat {
+  "opus",
+  "ogg",
+};

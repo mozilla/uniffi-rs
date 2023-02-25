@@ -1,0 +1,4 @@
+// Source: WebGL EXT_float_blend Extension Specification (https://registry.khronos.org/webgl/extensions/EXT_float_blend/)
+[Exposed=(Window,Worker), LegacyNoInterfaceObject]
+interface EXT_float_blend {
+};

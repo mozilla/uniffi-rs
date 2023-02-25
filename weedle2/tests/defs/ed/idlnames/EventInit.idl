@@ -1,0 +1,6 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+dictionary EventInit {
+  boolean bubbles = false;
+  boolean cancelable = false;
+  boolean composed = false;
+};

@@ -1,0 +1,5 @@
+// Source: Cookie Store API (https://wicg.github.io/cookie-store/)
+dictionary CookieChangeEventInit : EventInit {
+  CookieList changed;
+  CookieList deleted;
+};

@@ -1,0 +1,6 @@
+// Source: File and Directory Entries API (https://wicg.github.io/entries-api/)
+[Exposed=Window]
+interface FileSystemDirectoryReader {
+    undefined readEntries(FileSystemEntriesCallback successCallback,
+                     optional ErrorCallback errorCallback);
+};

@@ -1,0 +1,6 @@
+// Source: Navigation API (https://wicg.github.io/navigation-api/)
+enum NavigationHistoryBehavior {
+  "auto",
+  "push",
+  "replace"
+};

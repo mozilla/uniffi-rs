@@ -1,0 +1,11 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+enum SpeechRecognitionErrorCode {
+    "no-speech",
+    "aborted",
+    "audio-capture",
+    "network",
+    "not-allowed",
+    "service-not-allowed",
+    "bad-grammar",
+    "language-not-supported"
+};

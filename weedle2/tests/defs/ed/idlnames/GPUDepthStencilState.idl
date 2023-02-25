@@ -1,0 +1,17 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUDepthStencilState {
+    required GPUTextureFormat format;
+
+    boolean depthWriteEnabled = false;
+    GPUCompareFunction depthCompare = "always";
+
+    GPUStencilFaceState stencilFront = {};
+    GPUStencilFaceState stencilBack = {};
+
+    GPUStencilValue stencilReadMask = 0xFFFFFFFF;
+    GPUStencilValue stencilWriteMask = 0xFFFFFFFF;
+
+    GPUDepthBias depthBias = 0;
+    float depthBiasSlopeScale = 0;
+    float depthBiasClamp = 0;
+};

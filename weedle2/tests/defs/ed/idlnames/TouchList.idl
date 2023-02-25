@@ -1,0 +1,6 @@
+// Source: Touch Events - Level 2 (https://www.w3.org/TR/touch-events/)
+[Exposed=Window]
+interface TouchList {
+    readonly        attribute unsigned long length;
+    getter Touch? item (unsigned long index);
+};

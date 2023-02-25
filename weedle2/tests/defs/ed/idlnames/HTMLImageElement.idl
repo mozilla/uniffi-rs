@@ -1,0 +1,49 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window,
+ LegacyFactoryFunction=Image(optional unsigned long width, optional unsigned long height)]
+interface HTMLImageElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute DOMString alt;
+  [CEReactions] attribute USVString src;
+  [CEReactions] attribute USVString srcset;
+  [CEReactions] attribute DOMString sizes;
+  [CEReactions] attribute DOMString? crossOrigin;
+  [CEReactions] attribute DOMString useMap;
+  [CEReactions] attribute boolean isMap;
+  [CEReactions] attribute unsigned long width;
+  [CEReactions] attribute unsigned long height;
+  readonly attribute unsigned long naturalWidth;
+  readonly attribute unsigned long naturalHeight;
+  readonly attribute boolean complete;
+  readonly attribute USVString currentSrc;
+  [CEReactions] attribute DOMString referrerPolicy;
+  [CEReactions] attribute DOMString decoding;
+  [CEReactions] attribute DOMString loading;
+  [CEReactions] attribute DOMString fetchPriority;
+
+  Promise<undefined> decode();
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLImageElement {
+  [CEReactions] attribute DOMString name;
+  [CEReactions] attribute USVString lowsrc;
+  [CEReactions] attribute DOMString align;
+  [CEReactions] attribute unsigned long hspace;
+  [CEReactions] attribute unsigned long vspace;
+  [CEReactions] attribute USVString longDesc;
+
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString border;
+};
+
+// Source: Attribution Reporting (https://wicg.github.io/attribution-reporting-api/)
+HTMLImageElement includes HTMLAttributionSrcElementUtils;
+
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+partial interface HTMLImageElement {
+  readonly attribute long x;
+  readonly attribute long y;
+};

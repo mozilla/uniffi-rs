@@ -1,0 +1,6 @@
+// Source: CSS Custom Highlight API Module Level 1 (https://www.w3.org/TR/css-highlight-api-1/)
+enum HighlightType {
+  "highlight",
+  "spelling-error",
+  "grammar-error"
+};

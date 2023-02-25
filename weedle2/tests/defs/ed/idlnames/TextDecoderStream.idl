@@ -1,0 +1,11 @@
+// Source: Encoding Standard (https://encoding.spec.whatwg.org/)
+[Exposed=*]
+interface TextDecoderStream {
+  constructor(optional DOMString label = "utf-8", optional TextDecoderOptions options = {});
+};
+
+// Source: Encoding Standard (https://encoding.spec.whatwg.org/)
+TextDecoderStream includes TextDecoderCommon;
+
+// Source: Encoding Standard (https://encoding.spec.whatwg.org/)
+TextDecoderStream includes GenericTransformStream;

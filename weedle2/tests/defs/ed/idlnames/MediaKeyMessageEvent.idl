@@ -1,0 +1,7 @@
+// Source: Encrypted Media Extensions (https://www.w3.org/TR/encrypted-media/)
+[Exposed=Window, SecureContext]
+interface MediaKeyMessageEvent : Event {
+    constructor(DOMString type, MediaKeyMessageEventInit eventInitDict);
+    readonly        attribute MediaKeyMessageType messageType;
+    readonly        attribute ArrayBuffer         message;
+};

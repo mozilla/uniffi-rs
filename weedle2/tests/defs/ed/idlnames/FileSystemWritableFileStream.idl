@@ -1,0 +1,7 @@
+// Source: File System Standard (https://fs.spec.whatwg.org/)
+[Exposed=(Window,Worker), SecureContext]
+interface FileSystemWritableFileStream : WritableStream {
+  Promise<undefined> write(FileSystemWriteChunkType data);
+  Promise<undefined> seek(unsigned long long position);
+  Promise<undefined> truncate(unsigned long long size);
+};

@@ -1,0 +1,6 @@
+// Source: CSS Masking Module Level 1 (https://www.w3.org/TR/css-masking-1/)
+[Exposed=Window]
+interface SVGClipPathElement : SVGElement {
+  readonly attribute SVGAnimatedEnumeration clipPathUnits;
+  readonly attribute SVGAnimatedTransformList transform;
+};

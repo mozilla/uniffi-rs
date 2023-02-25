@@ -1,0 +1,6 @@
+// Source: CSS Parser API (https://wicg.github.io/css-parser-api/)
+dictionary CSSParserOptions {
+  object atRules;
+  /* dict of at-rule name => at-rule type
+     (contains decls or contains qualified rules) */
+};

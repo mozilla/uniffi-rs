@@ -1,0 +1,6 @@
+// Source: File and Directory Entries API (https://wicg.github.io/entries-api/)
+[Exposed=Window]
+interface FileSystemFileEntry : FileSystemEntry {
+    undefined file(FileCallback successCallback,
+              optional ErrorCallback errorCallback);
+};

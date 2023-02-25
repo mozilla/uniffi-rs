@@ -1,0 +1,6 @@
+// Source: Geolocation API (https://www.w3.org/TR/geolocation/)
+dictionary PositionOptions {
+  boolean enableHighAccuracy = false;
+  [Clamp] unsigned long timeout = 0xFFFFFFFF;
+  [Clamp] unsigned long maximumAge = 0;
+};

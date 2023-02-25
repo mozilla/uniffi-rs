@@ -1,0 +1,12 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window] interface XRRenderState {
+  readonly attribute double depthNear;
+  readonly attribute double depthFar;
+  readonly attribute double? inlineVerticalFieldOfView;
+  readonly attribute XRWebGLLayer? baseLayer;
+};
+
+// Source: WebXR Layers API Level 1 (https://www.w3.org/TR/webxrlayers-1/)
+[SecureContext, Exposed=Window] partial interface XRRenderState {
+  readonly attribute FrozenArray<XRLayer> layers;
+};

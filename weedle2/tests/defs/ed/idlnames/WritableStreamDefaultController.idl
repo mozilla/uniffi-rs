@@ -1,0 +1,6 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+[Exposed=*]
+interface WritableStreamDefaultController {
+  readonly attribute AbortSignal signal;
+  undefined error(optional any e);
+};

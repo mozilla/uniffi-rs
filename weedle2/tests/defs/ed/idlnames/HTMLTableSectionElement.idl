@@ -1,0 +1,19 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLTableSectionElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [SameObject] readonly attribute HTMLCollection rows;
+  HTMLTableRowElement insertRow(optional long index = -1);
+  [CEReactions] undefined deleteRow(long index);
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLTableSectionElement {
+  [CEReactions] attribute DOMString align;
+  [CEReactions] attribute DOMString ch;
+  [CEReactions] attribute DOMString chOff;
+  [CEReactions] attribute DOMString vAlign;
+};

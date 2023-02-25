@@ -1,0 +1,8 @@
+// Source: Web Serial API (https://wicg.github.io/serial/)
+[Exposed=(DedicatedWorker, Window), SecureContext]
+interface Serial : EventTarget {
+  attribute EventHandler onconnect;
+  attribute EventHandler ondisconnect;
+  Promise<sequence<SerialPort>> getPorts();
+  [Exposed=Window] Promise<SerialPort> requestPort(optional SerialPortRequestOptions options = {});
+};

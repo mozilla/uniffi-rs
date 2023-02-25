@@ -1,0 +1,5 @@
+// Source: Media Capture Automation (https://w3c.github.io/mediacapture-automation/)
+enum MockCapturePromptResult {
+  "granted",
+  "denied"
+};

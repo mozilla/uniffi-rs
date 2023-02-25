@@ -1,0 +1,18 @@
+// Source: Web Animations (https://www.w3.org/TR/web-animations-1/)
+[Exposed=Window]
+interface KeyframeEffect : AnimationEffect {
+    constructor(Element? target,
+                object? keyframes,
+                optional (unrestricted double or KeyframeEffectOptions) options = {});
+    constructor(KeyframeEffect source);
+    attribute Element?           target;
+    attribute CSSOMString?       pseudoElement;
+    attribute CompositeOperation composite;
+    sequence<object> getKeyframes();
+    undefined        setKeyframes(object? keyframes);
+};
+
+// Source: Web Animations Level 2 (https://drafts.csswg.org/web-animations-2/)
+partial interface KeyframeEffect {
+    attribute IterationCompositeOperation    iterationComposite;
+};

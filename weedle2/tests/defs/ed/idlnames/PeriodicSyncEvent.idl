@@ -1,0 +1,6 @@
+// Source: Web Periodic Background Synchronization (https://wicg.github.io/periodic-background-sync/)
+[Exposed=ServiceWorker]
+interface PeriodicSyncEvent : ExtendableEvent {
+    constructor(DOMString type, PeriodicSyncEventInit init);
+    readonly attribute DOMString tag;
+};

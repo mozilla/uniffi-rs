@@ -1,0 +1,15 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+enum SpeechSynthesisErrorCode {
+    "canceled",
+    "interrupted",
+    "audio-busy",
+    "audio-hardware",
+    "network",
+    "synthesis-unavailable",
+    "synthesis-failed",
+    "language-unavailable",
+    "voice-unavailable",
+    "text-too-long",
+    "invalid-argument",
+    "not-allowed",
+};

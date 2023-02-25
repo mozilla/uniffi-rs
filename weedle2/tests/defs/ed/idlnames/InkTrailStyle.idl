@@ -1,0 +1,5 @@
+// Source: Ink API (https://wicg.github.io/ink-enhancement/)
+dictionary InkTrailStyle {
+    required DOMString color;
+    required unrestricted double diameter;
+};

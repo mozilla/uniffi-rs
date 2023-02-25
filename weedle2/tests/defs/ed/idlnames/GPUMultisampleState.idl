@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUMultisampleState {
+    GPUSize32 count = 1;
+    GPUSampleMask mask = 0xFFFFFFFF;
+    boolean alphaToCoverageEnabled = false;
+};

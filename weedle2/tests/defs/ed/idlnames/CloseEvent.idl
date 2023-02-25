@@ -1,0 +1,9 @@
+// Source: WebSockets Standard (https://websockets.spec.whatwg.org/)
+[Exposed=(Window,Worker)]
+interface CloseEvent : Event {
+  constructor(DOMString type, optional CloseEventInit eventInitDict = {});
+
+  readonly attribute boolean wasClean;
+  readonly attribute unsigned short code;
+  readonly attribute USVString reason;
+};

@@ -1,0 +1,11 @@
+// Source: Close Watcher API (https://wicg.github.io/close-watcher/)
+[Exposed=Window]
+interface CloseWatcher : EventTarget {
+  constructor(optional CloseWatcherOptions options = {});
+
+  undefined destroy();
+  undefined close();
+
+  attribute EventHandler oncancel;
+  attribute EventHandler onclose;
+};

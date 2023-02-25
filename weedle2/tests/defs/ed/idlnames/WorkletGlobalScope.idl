@@ -1,0 +1,3 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Worklet, SecureContext]
+interface WorkletGlobalScope {};

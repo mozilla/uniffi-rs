@@ -1,0 +1,9 @@
+// Source: Payment Handler API (https://www.w3.org/TR/payment-handler/)
+dictionary PaymentRequestDetailsUpdate {
+  DOMString error;
+  PaymentCurrencyAmount total;
+  sequence<PaymentDetailsModifier> modifiers;
+  sequence<PaymentShippingOption> shippingOptions;
+  object paymentMethodErrors;
+  AddressErrors shippingAddressErrors;
+};

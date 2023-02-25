@@ -1,0 +1,4 @@
+// Source: Geolocation API (https://www.w3.org/TR/geolocation/)
+callback PositionErrorCallback = undefined (
+  GeolocationPositionError positionError
+);

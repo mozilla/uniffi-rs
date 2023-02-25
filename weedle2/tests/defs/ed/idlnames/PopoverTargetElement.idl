@@ -1,0 +1,6 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin PopoverTargetElement {
+  [CEReactions] attribute Element? popoverToggleTargetElement;
+  [CEReactions] attribute Element? popoverHideTargetElement;
+  [CEReactions] attribute Element? popoverShowTargetElement;
+};

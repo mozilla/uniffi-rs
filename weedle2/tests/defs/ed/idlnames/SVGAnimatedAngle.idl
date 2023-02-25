@@ -1,0 +1,6 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGAnimatedAngle {
+  [SameObject] readonly attribute SVGAngle baseVal;
+  [SameObject] readonly attribute SVGAngle animVal;
+};

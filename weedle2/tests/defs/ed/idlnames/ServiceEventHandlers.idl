@@ -1,0 +1,7 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+[SecureContext]
+interface mixin ServiceEventHandlers {
+  attribute EventHandler onserviceadded;
+  attribute EventHandler onservicechanged;
+  attribute EventHandler onserviceremoved;
+};

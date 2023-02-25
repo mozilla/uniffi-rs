@@ -1,0 +1,8 @@
+// Source: CSS Color Module Level 5 (https://www.w3.org/TR/css-color-5/)
+[Exposed=Window]
+interface CSSColorProfileRule : CSSRule {
+  readonly attribute CSSOMString name ;
+  readonly attribute CSSOMString src ;
+  readonly attribute CSSOMString renderingIntent ;
+  readonly attribute CSSOMString components ;
+};

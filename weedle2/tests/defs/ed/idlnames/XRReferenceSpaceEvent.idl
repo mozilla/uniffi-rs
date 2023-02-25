@@ -1,0 +1,7 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window]
+interface XRReferenceSpaceEvent : Event {
+  constructor(DOMString type, XRReferenceSpaceEventInit eventInitDict);
+  [SameObject] readonly attribute XRReferenceSpace referenceSpace;
+  [SameObject] readonly attribute XRRigidTransform? transform;
+};

@@ -1,0 +1,13 @@
+// Source: Network Information API (https://wicg.github.io/netinfo/)
+[Exposed=(Window,Worker)]
+interface NetworkInformation : EventTarget {
+  readonly attribute ConnectionType type;
+  readonly attribute EffectiveConnectionType effectiveType;
+  readonly attribute Megabit downlinkMax;
+  readonly attribute Megabit downlink;
+  readonly attribute Millisecond rtt;
+  attribute EventHandler onchange;
+};
+
+// Source: Save Data API (https://wicg.github.io/savedata/)
+NetworkInformation includes NetworkInformationSaveData;

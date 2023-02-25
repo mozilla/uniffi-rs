@@ -1,0 +1,31 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLScriptElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute USVString src;
+  [CEReactions] attribute DOMString type;
+  [CEReactions] attribute boolean noModule;
+  [CEReactions] attribute boolean async;
+  [CEReactions] attribute boolean defer;
+  [CEReactions] attribute DOMString? crossOrigin;
+  [CEReactions] attribute DOMString text;
+  [CEReactions] attribute DOMString integrity;
+  [CEReactions] attribute DOMString referrerPolicy;
+  [SameObject, PutForwards=value] readonly attribute DOMTokenList blocking;
+  [CEReactions] attribute DOMString fetchPriority;
+
+  static boolean supports(DOMString type);
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLScriptElement {
+  [CEReactions] attribute DOMString charset;
+  [CEReactions] attribute DOMString event;
+  [CEReactions] attribute DOMString htmlFor;
+};
+
+// Source: Attribution Reporting (https://wicg.github.io/attribution-reporting-api/)
+HTMLScriptElement includes HTMLAttributionSrcElementUtils;

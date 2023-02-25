@@ -1,0 +1,14 @@
+// Source: Digital Goods API (https://wicg.github.io/digital-goods/)
+dictionary ItemDetails {
+  required DOMString itemId;
+  required DOMString title;
+  required PaymentCurrencyAmount price;
+  ItemType type;
+  DOMString description;
+  sequence<DOMString> iconURLs;
+  DOMString subscriptionPeriod;
+  DOMString freeTrialPeriod;
+  PaymentCurrencyAmount introductoryPrice;
+  DOMString introductoryPricePeriod;
+  [EnforceRange] unsigned long long introductoryPriceCycles;
+};

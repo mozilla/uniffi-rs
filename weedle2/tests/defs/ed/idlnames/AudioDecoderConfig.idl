@@ -1,0 +1,7 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary AudioDecoderConfig {
+  required DOMString codec;
+  [EnforceRange] required unsigned long sampleRate;
+  [EnforceRange] required unsigned long numberOfChannels;
+  BufferSource description;
+};

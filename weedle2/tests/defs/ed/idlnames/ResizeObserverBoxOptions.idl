@@ -1,0 +1,4 @@
+// Source: Resize Observer (https://www.w3.org/TR/resize-observer-1/)
+enum ResizeObserverBoxOptions {
+    "border-box", "content-box", "device-pixel-content-box"
+};

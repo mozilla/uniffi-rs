@@ -1,0 +1,2 @@
+// Source: Reporting API (https://www.w3.org/TR/reporting-1/)
+callback ReportingObserverCallback = undefined (sequence<Report> reports, ReportingObserver observer);

@@ -1,0 +1,5 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[Exposed=Window]
+interface XRPermissionStatus: PermissionStatus {
+  attribute FrozenArray<DOMString> granted;
+};

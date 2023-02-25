@@ -1,0 +1,7 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+dictionary StreamPipeOptions {
+  boolean preventClose = false;
+  boolean preventAbort = false;
+  boolean preventCancel = false;
+  AbortSignal signal;
+};

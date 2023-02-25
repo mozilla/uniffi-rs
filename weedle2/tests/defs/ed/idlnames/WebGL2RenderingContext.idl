@@ -1,0 +1,14 @@
+// Source: WebGL 2.0 Specification (https://registry.khronos.org/webgl/specs/latest/2.0/)
+[Exposed=(Window,Worker)]
+interface WebGL2RenderingContext
+{
+};
+
+// Source: WebGL 2.0 Specification (https://registry.khronos.org/webgl/specs/latest/2.0/)
+WebGL2RenderingContext includes WebGLRenderingContextBase;
+
+// Source: WebGL 2.0 Specification (https://registry.khronos.org/webgl/specs/latest/2.0/)
+WebGL2RenderingContext includes WebGL2RenderingContextBase;
+
+// Source: WebGL 2.0 Specification (https://registry.khronos.org/webgl/specs/latest/2.0/)
+WebGL2RenderingContext includes WebGL2RenderingContextOverloads;

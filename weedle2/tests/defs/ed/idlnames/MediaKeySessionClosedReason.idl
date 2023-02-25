@@ -1,0 +1,8 @@
+// Source: Encrypted Media Extensions (https://www.w3.org/TR/encrypted-media/)
+enum MediaKeySessionClosedReason {
+    "internal-error",
+    "closed-by-application",
+    "release-acknowledged",
+    "hardware-context-reset",
+    "resource-evicted"
+};

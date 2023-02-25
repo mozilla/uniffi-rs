@@ -1,0 +1,4 @@
+// Source: XMLHttpRequest Standard (https://xhr.spec.whatwg.org/)
+[Exposed=(Window,DedicatedWorker,SharedWorker)]
+interface XMLHttpRequestUpload : XMLHttpRequestEventTarget {
+};

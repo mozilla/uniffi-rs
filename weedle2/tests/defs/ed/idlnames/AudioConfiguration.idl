@@ -1,0 +1,8 @@
+// Source: Media Capabilities (https://www.w3.org/TR/media-capabilities/)
+dictionary AudioConfiguration {
+  required DOMString contentType;
+  DOMString channels;
+  unsigned long long bitrate;
+  unsigned long samplerate;
+  boolean spatialRendering;
+};

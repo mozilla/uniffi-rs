@@ -1,0 +1,6 @@
+// Source: WebAssembly JavaScript Interface (https://www.w3.org/TR/wasm-js-api-2/)
+dictionary ModuleExportDescriptor {
+  required USVString name;
+  required ImportExportKind kind;
+  // Note: Other fields such as signature may be added in the future.
+};

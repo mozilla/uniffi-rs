@@ -1,0 +1,19 @@
+// Source: Identifiers for WebRTC's Statistics API (https://www.w3.org/TR/webrtc-stats/)
+enum RTCStatsType {
+"codec",
+"inbound-rtp",
+"outbound-rtp",
+"remote-inbound-rtp",
+"remote-outbound-rtp",
+"media-source",
+"media-playout",
+"peer-connection",
+"data-channel",
+"stream",
+"track",
+"transport",
+"candidate-pair",
+"local-candidate",
+"remote-candidate",
+"certificate"
+};

@@ -1,0 +1,5 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+dictionary FocusOptions {
+  boolean preventScroll = false;
+  boolean focusVisible;
+};

@@ -1,0 +1,8 @@
+// Source: WebHID API (https://wicg.github.io/webhid/)
+[Exposed=Window, SecureContext]
+interface HIDInputReportEvent : Event {
+    constructor(DOMString type, HIDInputReportEventInit eventInitDict);
+    [SameObject] readonly attribute HIDDevice device;
+    readonly attribute octet reportId;
+    readonly attribute DataView data;
+};

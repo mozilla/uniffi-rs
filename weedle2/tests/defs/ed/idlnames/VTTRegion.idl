@@ -1,0 +1,13 @@
+// Source: WebVTT: The Web Video Text Tracks Format (https://www.w3.org/TR/webvtt1/)
+[Exposed=Window]
+interface VTTRegion {
+  constructor();
+  attribute DOMString id;
+  attribute double width;
+  attribute unsigned long lines;
+  attribute double regionAnchorX;
+  attribute double regionAnchorY;
+  attribute double viewportAnchorX;
+  attribute double viewportAnchorY;
+  attribute ScrollSetting scroll;
+};

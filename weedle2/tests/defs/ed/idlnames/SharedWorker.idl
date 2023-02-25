@@ -1,0 +1,10 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface SharedWorker : EventTarget {
+  constructor(USVString scriptURL, optional (DOMString or WorkerOptions) options = {});
+
+  readonly attribute MessagePort port;
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+SharedWorker includes AbstractWorker;

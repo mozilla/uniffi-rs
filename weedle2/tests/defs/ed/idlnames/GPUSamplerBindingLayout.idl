@@ -1,0 +1,4 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUSamplerBindingLayout {
+    GPUSamplerBindingType type = "filtering";
+};

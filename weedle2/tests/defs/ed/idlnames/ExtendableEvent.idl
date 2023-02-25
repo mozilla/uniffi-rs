@@ -1,0 +1,6 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+[Exposed=ServiceWorker]
+interface ExtendableEvent : Event {
+  constructor(DOMString type, optional ExtendableEventInit eventInitDict = {});
+  undefined waitUntil(Promise<any> f);
+};

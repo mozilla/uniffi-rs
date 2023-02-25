@@ -1,0 +1,16 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface AudioBuffer {
+    constructor (AudioBufferOptions options);
+    readonly attribute float sampleRate;
+    readonly attribute unsigned long length;
+    readonly attribute double duration;
+    readonly attribute unsigned long numberOfChannels;
+    Float32Array getChannelData (unsigned long channel);
+    undefined copyFromChannel (Float32Array destination,
+                               unsigned long channelNumber,
+                               optional unsigned long bufferOffset = 0);
+    undefined copyToChannel (Float32Array source,
+                             unsigned long channelNumber,
+                             optional unsigned long bufferOffset = 0);
+};

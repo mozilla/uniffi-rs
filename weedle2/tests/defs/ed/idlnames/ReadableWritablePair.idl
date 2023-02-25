@@ -1,0 +1,5 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+dictionary ReadableWritablePair {
+  required ReadableStream readable;
+  required WritableStream writable;
+};

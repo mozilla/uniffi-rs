@@ -1,0 +1,6 @@
+// Source: WebXR Hit Test Module (https://www.w3.org/TR/webxr-hit-test-1/)
+dictionary XRTransientInputHitTestOptionsInit {
+  required DOMString profile;
+  FrozenArray<XRHitTestTrackableType> entityTypes;
+  XRRay offsetRay;
+};

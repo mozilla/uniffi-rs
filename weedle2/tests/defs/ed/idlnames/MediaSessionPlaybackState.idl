@@ -1,0 +1,6 @@
+// Source: Media Session Standard (https://www.w3.org/TR/mediasession/)
+enum MediaSessionPlaybackState {
+  "none",
+  "paused",
+  "playing"
+};

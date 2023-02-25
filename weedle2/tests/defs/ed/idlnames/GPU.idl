@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPU {
+    Promise<GPUAdapter?> requestAdapter(optional GPURequestAdapterOptions options = {});
+    GPUTextureFormat getPreferredCanvasFormat();
+};

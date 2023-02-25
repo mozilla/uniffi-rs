@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface TextTrackCueList {
+  readonly attribute unsigned long length;
+  getter TextTrackCue (unsigned long index);
+  TextTrackCue? getCueById(DOMString id);
+};

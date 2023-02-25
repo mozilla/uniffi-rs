@@ -1,0 +1,9 @@
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+[
+  Exposed=(DedicatedWorker,SharedWorker,Window),
+  SecureContext
+]
+interface USBConnectionEvent : Event {
+  constructor(DOMString type, USBConnectionEventInit eventInitDict);
+  [SameObject] readonly attribute USBDevice device;
+};

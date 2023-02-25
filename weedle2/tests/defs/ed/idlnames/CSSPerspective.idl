@@ -1,0 +1,9 @@
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+/* Note that skew(x,y) is *not* the same as skewX(x) skewY(y),
+   thus the separate interfaces for all three. */
+
+[Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
+interface CSSPerspective : CSSTransformComponent {
+    constructor(CSSPerspectiveValue length);
+    attribute CSSPerspectiveValue length;
+};

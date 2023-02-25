@@ -1,0 +1,9 @@
+// Source: WebRTC Encoded Transform (https://www.w3.org/TR/webrtc-encoded-transform/)
+[Exposed=(Window,DedicatedWorker)]
+interface SFrameTransformErrorEvent : Event {
+    constructor(DOMString type, SFrameTransformErrorEventInit eventInitDict);
+
+    readonly attribute SFrameTransformErrorEventType errorType;
+    readonly attribute CryptoKeyID? keyID;
+    readonly attribute any frame;
+};

@@ -1,0 +1,6 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+[Exposed=Window]
+interface OverconstrainedError : DOMException {
+  constructor(DOMString constraint, optional DOMString message = "");
+  readonly attribute DOMString constraint;
+};

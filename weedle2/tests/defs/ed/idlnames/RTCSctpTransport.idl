@@ -1,0 +1,9 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+[Exposed=Window]
+interface RTCSctpTransport : EventTarget {
+  readonly attribute RTCDtlsTransport transport;
+  readonly attribute RTCSctpTransportState state;
+  readonly attribute unrestricted double maxMessageSize;
+  readonly attribute unsigned short? maxChannels;
+  attribute EventHandler onstatechange;
+};

@@ -1,0 +1,7 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface AudioRenderCapacity : EventTarget {
+    undefined start(optional AudioRenderCapacityOptions options = {});
+        undefined stop();
+        attribute EventHandler onupdate;
+};

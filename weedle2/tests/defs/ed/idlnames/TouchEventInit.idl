@@ -1,0 +1,6 @@
+// Source: Touch Events - Level 2 (https://www.w3.org/TR/touch-events/)
+dictionary TouchEventInit : EventModifierInit {
+             sequence<Touch> touches = [];
+             sequence<Touch> targetTouches = [];
+             sequence<Touch> changedTouches = [];
+};

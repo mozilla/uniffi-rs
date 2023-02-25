@@ -1,0 +1,6 @@
+// Source: Content Index (https://wicg.github.io/content-index/spec/)
+[Exposed=ServiceWorker]
+interface ContentIndexEvent : ExtendableEvent {
+  constructor(DOMString type, ContentIndexEventInit init);
+  readonly attribute DOMString id;
+};

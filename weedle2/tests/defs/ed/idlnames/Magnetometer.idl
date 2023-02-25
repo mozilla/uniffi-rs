@@ -1,0 +1,9 @@
+// Source: Magnetometer (https://www.w3.org/TR/magnetometer/)
+[SecureContext,
+  Exposed=Window]
+interface Magnetometer : Sensor {
+  constructor(optional MagnetometerSensorOptions sensorOptions = {});
+  readonly attribute double? x;
+  readonly attribute double? y;
+  readonly attribute double? z;
+};

@@ -1,0 +1,6 @@
+// Source: Prioritized Task Scheduling (https://wicg.github.io/scheduling-apis/)
+enum TaskPriority {
+  "user-blocking",
+  "user-visible",
+  "background"
+};

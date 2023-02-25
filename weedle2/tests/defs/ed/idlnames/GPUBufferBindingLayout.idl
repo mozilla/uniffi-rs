@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUBufferBindingLayout {
+    GPUBufferBindingType type = "uniform";
+    boolean hasDynamicOffset = false;
+    GPUSize64 minBindingSize = 0;
+};

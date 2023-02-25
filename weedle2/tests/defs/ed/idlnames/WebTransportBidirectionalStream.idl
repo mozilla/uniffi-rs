@@ -1,0 +1,6 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+[Exposed=(Window,Worker), SecureContext]
+interface WebTransportBidirectionalStream {
+  readonly attribute WebTransportReceiveStream readable;
+  readonly attribute WebTransportSendStream writable;
+};

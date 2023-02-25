@@ -1,0 +1,8 @@
+// Source: Picture-in-Picture (https://www.w3.org/TR/picture-in-picture/)
+[Exposed=Window]
+interface PictureInPictureWindow : EventTarget {
+  readonly attribute long width;
+  readonly attribute long height;
+
+  attribute EventHandler onresize;
+};

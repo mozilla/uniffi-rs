@@ -1,0 +1,17 @@
+// Source: Geolocation API (https://www.w3.org/TR/geolocation/)
+[Exposed=Window]
+interface Geolocation {
+  undefined getCurrentPosition (
+    PositionCallback successCallback,
+    optional PositionErrorCallback? errorCallback = null,
+    optional PositionOptions options = {}
+  );
+
+  long watchPosition (
+    PositionCallback successCallback,
+    optional PositionErrorCallback? errorCallback = null,
+    optional PositionOptions options = {}
+  );
+
+  undefined clearWatch (long watchId);
+};

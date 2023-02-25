@@ -1,0 +1,6 @@
+// Source: Encrypted Media Extensions (https://www.w3.org/TR/encrypted-media/)
+dictionary MediaKeySystemMediaCapability {
+   DOMString contentType = "";
+   DOMString? encryptionScheme = null;
+   DOMString robustness = "";
+};

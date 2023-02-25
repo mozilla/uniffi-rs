@@ -1,0 +1,14 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLLegendElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  readonly attribute HTMLFormElement? form;
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLLegendElement {
+  [CEReactions] attribute DOMString align;
+};

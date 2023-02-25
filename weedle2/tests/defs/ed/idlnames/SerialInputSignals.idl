@@ -1,0 +1,7 @@
+// Source: Web Serial API (https://wicg.github.io/serial/)
+dictionary SerialInputSignals {
+  required boolean dataCarrierDetect;
+  required boolean clearToSend;
+  required boolean ringIndicator;
+  required boolean dataSetReady;
+};

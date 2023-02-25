@@ -1,0 +1,6 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+dictionary WebTransportReceiveStreamStats {
+  DOMHighResTimeStamp timestamp;
+  unsigned long long bytesReceived;
+  unsigned long long bytesRead;
+};

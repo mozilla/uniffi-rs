@@ -1,0 +1,11 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+[Exposed=*]
+interface ReadableStreamBYOBReader {
+  constructor(ReadableStream stream);
+
+  Promise<ReadableStreamReadResult> read(ArrayBufferView view);
+  undefined releaseLock();
+};
+
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+ReadableStreamBYOBReader includes ReadableStreamGenericReader;

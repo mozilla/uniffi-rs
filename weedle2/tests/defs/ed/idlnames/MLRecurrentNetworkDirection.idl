@@ -1,0 +1,6 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+enum MLRecurrentNetworkDirection {
+  "forward",
+  "backward",
+  "both"
+};

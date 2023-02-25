@@ -1,0 +1,8 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+enum VideoColorPrimaries {
+  "bt709",
+  "bt470bg",
+  "smpte170m",
+  "bt2020",
+  "smpte432",
+};

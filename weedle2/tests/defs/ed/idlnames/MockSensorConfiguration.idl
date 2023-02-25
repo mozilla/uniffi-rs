@@ -1,0 +1,7 @@
+// Source: Generic Sensor API (https://www.w3.org/TR/generic-sensor/)
+dictionary MockSensorConfiguration {
+  required MockSensorType mockSensorType;
+  boolean connected = true;
+  double? maxSamplingFrequency;
+  double? minSamplingFrequency;
+};

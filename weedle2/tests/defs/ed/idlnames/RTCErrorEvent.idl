@@ -1,0 +1,6 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+[Exposed=Window]
+interface RTCErrorEvent : Event {
+  constructor(DOMString type, RTCErrorEventInit eventInitDict);
+  [SameObject] readonly attribute RTCError error;
+};

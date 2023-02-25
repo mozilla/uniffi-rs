@@ -1,0 +1,7 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+enum FrameType {
+  "auxiliary",
+  "top-level",
+  "nested",
+  "none"
+};

@@ -1,0 +1,11 @@
+// Source: Presentation API (https://www.w3.org/TR/presentation-api/)
+[SecureContext, Exposed=Window]
+interface PresentationRequest : EventTarget {
+  constructor(USVString url);
+  constructor(sequence<USVString> urls);
+  Promise<PresentationConnection> start();
+  Promise<PresentationConnection> reconnect(USVString presentationId);
+  Promise<PresentationAvailability> getAvailability();
+
+  attribute EventHandler onconnectionavailable;
+};

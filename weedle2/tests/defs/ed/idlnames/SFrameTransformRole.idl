@@ -1,0 +1,5 @@
+// Source: WebRTC Encoded Transform (https://www.w3.org/TR/webrtc-encoded-transform/)
+enum SFrameTransformRole {
+    "encrypt",
+    "decrypt"
+};

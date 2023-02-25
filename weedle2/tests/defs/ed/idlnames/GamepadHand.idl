@@ -1,0 +1,6 @@
+// Source: Gamepad Extensions (https://w3c.github.io/gamepad/extensions.html)
+enum GamepadHand {
+  "",  /* unknown, both hands, or not applicable */
+  "left",
+  "right"
+};

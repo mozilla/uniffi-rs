@@ -1,0 +1,9 @@
+// Source: Screen Capture (https://www.w3.org/TR/screen-capture/)
+dictionary DisplayMediaStreamOptions {
+  (boolean or MediaTrackConstraints) video = true;
+  (boolean or MediaTrackConstraints) audio = false;
+  CaptureController controller;
+  SelfCapturePreferenceEnum selfBrowserSurface;
+  SystemAudioPreferenceEnum systemAudio;
+  SurfaceSwitchingPreferenceEnum surfaceSwitching;
+};

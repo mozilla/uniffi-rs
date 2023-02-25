@@ -1,0 +1,5 @@
+// Source: WebHID API (https://wicg.github.io/webhid/)
+enum HIDUnitSystem {
+    "none", "si-linear", "si-rotation", "english-linear",
+    "english-rotation", "vendor-defined", "reserved"
+};

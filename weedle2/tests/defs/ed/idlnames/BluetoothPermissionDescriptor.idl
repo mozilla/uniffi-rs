@@ -1,0 +1,9 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+dictionary BluetoothPermissionDescriptor : PermissionDescriptor {
+  DOMString deviceId;
+  // These match RequestDeviceOptions.
+  sequence<BluetoothLEScanFilterInit> filters;
+  sequence<BluetoothServiceUUID> optionalServices = [];
+  sequence<unsigned short> optionalManufacturerData = [];
+  boolean acceptAllDevices = false;
+};

@@ -1,0 +1,6 @@
+// Source: Web Serial API (https://wicg.github.io/serial/)
+enum ParityType {
+  "none",
+  "even",
+  "odd"
+};

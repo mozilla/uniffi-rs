@@ -1,0 +1,11 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+[Exposed=Window]
+interface RTCRtpTransceiver {
+  readonly attribute DOMString? mid;
+  [SameObject] readonly attribute RTCRtpSender sender;
+  [SameObject] readonly attribute RTCRtpReceiver receiver;
+  attribute RTCRtpTransceiverDirection direction;
+  readonly attribute RTCRtpTransceiverDirection? currentDirection;
+  undefined stop();
+  undefined setCodecPreferences(sequence<RTCRtpCodecCapability> codecs);
+};

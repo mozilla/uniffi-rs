@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUOrigin3DDict {
+    GPUIntegerCoordinate x = 0;
+    GPUIntegerCoordinate y = 0;
+    GPUIntegerCoordinate z = 0;
+};

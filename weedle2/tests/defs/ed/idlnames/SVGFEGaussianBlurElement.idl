@@ -1,0 +1,20 @@
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+[Exposed=Window]
+interface SVGFEGaussianBlurElement : SVGElement {
+
+  // Edge Mode Values
+  const unsigned short SVG_EDGEMODE_UNKNOWN = 0;
+  const unsigned short SVG_EDGEMODE_DUPLICATE = 1;
+  const unsigned short SVG_EDGEMODE_WRAP = 2;
+  const unsigned short SVG_EDGEMODE_NONE = 3;
+
+  readonly attribute SVGAnimatedString in1;
+  readonly attribute SVGAnimatedNumber stdDeviationX;
+  readonly attribute SVGAnimatedNumber stdDeviationY;
+  readonly attribute SVGAnimatedEnumeration edgeMode;
+
+  undefined setStdDeviation(float stdDeviationX, float stdDeviationY);
+};
+
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+SVGFEGaussianBlurElement includes SVGFilterPrimitiveStandardAttributes;

@@ -1,0 +1,2 @@
+// Source: Navigation API (https://wicg.github.io/navigation-api/)
+callback NavigationInterceptHandler = Promise<undefined> ();

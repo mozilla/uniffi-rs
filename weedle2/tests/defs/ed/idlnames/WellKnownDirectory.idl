@@ -1,0 +1,9 @@
+// Source: File System Access (https://wicg.github.io/file-system-access/)
+enum WellKnownDirectory {
+  "desktop",
+  "documents",
+  "downloads",
+  "music",
+  "pictures",
+  "videos",
+};

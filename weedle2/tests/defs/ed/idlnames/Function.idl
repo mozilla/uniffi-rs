@@ -1,0 +1,2 @@
+// Source: Web IDL Standard (https://webidl.spec.whatwg.org/)
+callback Function = any (any... arguments);

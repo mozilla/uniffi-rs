@@ -1,0 +1,7 @@
+// Source: WebAssembly JavaScript Interface (https://www.w3.org/TR/wasm-js-api-2/)
+[LegacyNamespace=WebAssembly, Exposed=*]
+interface Global {
+  constructor(GlobalDescriptor descriptor, optional any v);
+  any valueOf();
+  attribute any value;
+};

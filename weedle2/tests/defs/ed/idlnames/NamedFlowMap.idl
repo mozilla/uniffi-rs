@@ -1,0 +1,4 @@
+// Source: CSS Regions Module Level 1 (https://www.w3.org/TR/css-regions-1/)
+[Exposed=Window] interface NamedFlowMap {
+  maplike<CSSOMString, NamedFlow>;
+};

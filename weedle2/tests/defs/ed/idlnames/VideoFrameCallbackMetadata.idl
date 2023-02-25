@@ -1,0 +1,16 @@
+// Source: HTMLVideoElement.requestVideoFrameCallback() (https://wicg.github.io/video-rvfc/)
+dictionary VideoFrameCallbackMetadata {
+  required DOMHighResTimeStamp presentationTime;
+  required DOMHighResTimeStamp expectedDisplayTime;
+
+  required unsigned long width;
+  required unsigned long height;
+  required double mediaTime;
+
+  required unsigned long presentedFrames;
+  double processingDuration;
+
+  DOMHighResTimeStamp captureTime;
+  DOMHighResTimeStamp receiveTime;
+  unsigned long rtpTimestamp;
+};

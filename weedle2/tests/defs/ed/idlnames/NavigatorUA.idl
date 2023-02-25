@@ -1,0 +1,4 @@
+// Source: User-Agent Client Hints (https://wicg.github.io/ua-client-hints/)
+interface mixin NavigatorUA {
+  [SecureContext] readonly attribute NavigatorUAData userAgentData;
+};

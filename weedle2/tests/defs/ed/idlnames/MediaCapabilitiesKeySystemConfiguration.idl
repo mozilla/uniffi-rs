@@ -1,0 +1,10 @@
+// Source: Media Capabilities (https://www.w3.org/TR/media-capabilities/)
+dictionary MediaCapabilitiesKeySystemConfiguration {
+  required DOMString keySystem;
+  DOMString initDataType = "";
+  MediaKeysRequirement distinctiveIdentifier = "optional";
+  MediaKeysRequirement persistentState = "optional";
+  sequence<DOMString> sessionTypes;
+  KeySystemTrackConfiguration audio;
+  KeySystemTrackConfiguration video;
+};

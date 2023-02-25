@@ -1,0 +1,21 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+[SecureContext, Exposed=(Window, DedicatedWorker)]
+interface MLContext {};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLContext {
+  [Exposed=(DedicatedWorker)]
+  undefined computeSync(
+      MLGraph graph, MLNamedArrayBufferViews inputs, MLNamedArrayBufferViews outputs);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLContext {
+  Promise<MLComputeResult> compute(
+      MLGraph graph, MLNamedArrayBufferViews inputs, MLNamedArrayBufferViews outputs);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLContext {
+  MLCommandEncoder createCommandEncoder();
+};

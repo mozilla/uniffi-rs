@@ -1,0 +1,5 @@
+// Source: CSS Custom Highlight API Module Level 1 (https://www.w3.org/TR/css-highlight-api-1/)
+[Exposed=Window]
+interface HighlightRegistry {
+  maplike<DOMString, Highlight>;
+};

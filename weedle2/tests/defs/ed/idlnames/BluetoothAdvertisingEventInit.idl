@@ -1,0 +1,11 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+dictionary BluetoothAdvertisingEventInit : EventInit {
+  required BluetoothDevice device;
+  sequence<(DOMString or unsigned long)> uuids;
+  DOMString name;
+  unsigned short appearance;
+  byte txPower;
+  byte rssi;
+  BluetoothManufacturerDataMap manufacturerData;
+  BluetoothServiceDataMap serviceData;
+};

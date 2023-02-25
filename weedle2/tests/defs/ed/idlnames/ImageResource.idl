@@ -1,0 +1,7 @@
+// Source: Image Resource (https://www.w3.org/TR/image-resource/)
+dictionary ImageResource {
+  required USVString src;
+  DOMString sizes;
+  DOMString type;
+  DOMString label;
+};

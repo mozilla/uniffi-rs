@@ -1,0 +1,9 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface OscillatorNode : AudioScheduledSourceNode {
+    constructor (BaseAudioContext context, optional OscillatorOptions options = {});
+    attribute OscillatorType type;
+    readonly attribute AudioParam frequency;
+    readonly attribute AudioParam detune;
+    undefined setPeriodicWave (PeriodicWave periodicWave);
+};

@@ -1,0 +1,4 @@
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+[Exposed=(Window,Worker)]
+interface WebGLObject {
+};

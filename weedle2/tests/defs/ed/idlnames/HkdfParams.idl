@@ -1,0 +1,6 @@
+// Source: Web Cryptography API (https://www.w3.org/TR/WebCryptoAPI/)
+dictionary HkdfParams : Algorithm {
+  required HashAlgorithmIdentifier hash;
+  required BufferSource salt;
+  required BufferSource info;
+};

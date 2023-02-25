@@ -1,0 +1,6 @@
+// Source: Picture-in-Picture (https://www.w3.org/TR/picture-in-picture/)
+[Exposed=Window]
+interface PictureInPictureEvent : Event {
+    constructor(DOMString type, PictureInPictureEventInit eventInitDict);
+    [SameObject] readonly attribute PictureInPictureWindow pictureInPictureWindow;
+};

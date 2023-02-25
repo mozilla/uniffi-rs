@@ -1,0 +1,69 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+[Global=(Worker,ServiceWorker), Exposed=ServiceWorker]
+interface ServiceWorkerGlobalScope : WorkerGlobalScope {
+  [SameObject] readonly attribute Clients clients;
+  [SameObject] readonly attribute ServiceWorkerRegistration registration;
+  [SameObject] readonly attribute ServiceWorker serviceWorker;
+
+  [NewObject] Promise<undefined> skipWaiting();
+
+  attribute EventHandler oninstall;
+  attribute EventHandler onactivate;
+  attribute EventHandler onfetch;
+
+  attribute EventHandler onmessage;
+  attribute EventHandler onmessageerror;
+};
+
+// Source: Notifications API Standard (https://notifications.spec.whatwg.org/)
+partial interface ServiceWorkerGlobalScope {
+  attribute EventHandler onnotificationclick;
+  attribute EventHandler onnotificationclose;
+};
+
+// Source: Background Fetch (https://wicg.github.io/background-fetch/)
+partial interface ServiceWorkerGlobalScope {
+  attribute EventHandler onbackgroundfetchsuccess;
+  attribute EventHandler onbackgroundfetchfail;
+  attribute EventHandler onbackgroundfetchabort;
+  attribute EventHandler onbackgroundfetchclick;
+};
+
+// Source: Web Background Synchronization (https://wicg.github.io/background-sync/spec/)
+partial interface ServiceWorkerGlobalScope {
+  attribute EventHandler onsync;
+};
+
+// Source: Content Index (https://wicg.github.io/content-index/spec/)
+partial interface ServiceWorkerGlobalScope {
+  attribute EventHandler oncontentdelete;
+};
+
+// Source: Cookie Store API (https://wicg.github.io/cookie-store/)
+partial interface ServiceWorkerGlobalScope {
+  [SameObject] readonly attribute CookieStore cookieStore;
+
+  attribute EventHandler oncookiechange;
+};
+
+// Source: Web Periodic Background Synchronization (https://wicg.github.io/periodic-background-sync/)
+partial interface ServiceWorkerGlobalScope {
+    attribute EventHandler onperiodicsync;
+};
+
+// Source: Payment Handler API (https://www.w3.org/TR/payment-handler/)
+partial interface ServiceWorkerGlobalScope {
+  attribute EventHandler oncanmakepayment;
+};
+
+// Source: Payment Handler API (https://www.w3.org/TR/payment-handler/)
+partial interface ServiceWorkerGlobalScope {
+  attribute EventHandler onpaymentrequest;
+};
+
+// Source: Push API (https://www.w3.org/TR/push-api/)
+[Exposed=ServiceWorker, SecureContext]
+partial interface ServiceWorkerGlobalScope {
+  attribute EventHandler onpush;
+  attribute EventHandler onpushsubscriptionchange;
+};

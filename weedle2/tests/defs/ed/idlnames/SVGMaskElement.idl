@@ -1,0 +1,10 @@
+// Source: CSS Masking Module Level 1 (https://www.w3.org/TR/css-masking-1/)
+[Exposed=Window]
+interface SVGMaskElement : SVGElement {
+  readonly attribute SVGAnimatedEnumeration maskUnits;
+  readonly attribute SVGAnimatedEnumeration maskContentUnits;
+  readonly attribute SVGAnimatedLength x;
+  readonly attribute SVGAnimatedLength y;
+  readonly attribute SVGAnimatedLength width;
+  readonly attribute SVGAnimatedLength height;
+};

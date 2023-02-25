@@ -1,0 +1,5 @@
+// Source: Web Serial API (https://wicg.github.io/serial/)
+enum FlowControlType {
+  "none",
+  "hardware"
+};

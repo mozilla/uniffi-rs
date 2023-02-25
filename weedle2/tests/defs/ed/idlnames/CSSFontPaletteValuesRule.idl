@@ -1,0 +1,7 @@
+// Source: CSS Fonts Module Level 4 (https://www.w3.org/TR/css-fonts-4/)
+[Exposed=Window]interface CSSFontPaletteValuesRule : CSSRule {
+  readonly attribute CSSOMString name;
+  readonly attribute CSSOMString fontFamily;
+  readonly attribute CSSOMString basePalette;
+  readonly attribute CSSOMString overrideColors;
+};

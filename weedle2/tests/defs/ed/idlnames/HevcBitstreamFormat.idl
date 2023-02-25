@@ -1,0 +1,5 @@
+// Source: HEVC (H.265) WebCodecs Registration (https://www.w3.org/TR/webcodecs-hevc-codec-registration/)
+enum HevcBitstreamFormat {
+  "annexb",
+  "hevc",
+};

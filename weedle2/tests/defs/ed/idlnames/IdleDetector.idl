@@ -1,0 +1,12 @@
+// Source: Idle Detection API (https://wicg.github.io/idle-detection/)
+[
+  SecureContext,
+  Exposed=(Window,DedicatedWorker)
+] interface IdleDetector : EventTarget {
+  constructor();
+  readonly attribute UserIdleState? userState;
+  readonly attribute ScreenIdleState? screenState;
+  attribute EventHandler onchange;
+  [Exposed=Window] static Promise<PermissionState> requestPermission();
+  Promise<undefined> start(optional IdleOptions options = {});
+};

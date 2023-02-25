@@ -1,0 +1,9 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+dictionary AudioBufferSourceOptions {
+    AudioBuffer? buffer;
+    float detune = 0;
+    boolean loop = false;
+    double loopEnd = 0;
+    double loopStart = 0;
+    float playbackRate = 1;
+};

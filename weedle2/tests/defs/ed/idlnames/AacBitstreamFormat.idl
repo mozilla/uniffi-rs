@@ -1,0 +1,5 @@
+// Source: AAC WebCodecs Registration (https://www.w3.org/TR/webcodecs-aac-codec-registration/)
+enum AacBitstreamFormat {
+  "aac",
+  "adts",
+};

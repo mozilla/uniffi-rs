@@ -1,0 +1,14 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+dictionary RTCDataChannelInit {
+  boolean ordered = true;
+  [EnforceRange] unsigned short maxPacketLifeTime;
+  [EnforceRange] unsigned short maxRetransmits;
+  USVString protocol = "";
+  boolean negotiated = false;
+  [EnforceRange] unsigned short id;
+};
+
+// Source: WebRTC Priority Control API (https://www.w3.org/TR/webrtc-priority/)
+partial dictionary RTCDataChannelInit {
+  RTCPriorityType priority = "low";
+};

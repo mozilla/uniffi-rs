@@ -1,0 +1,11 @@
+// Source: Web NFC (https://w3c.github.io/web-nfc/)
+dictionary NDEFRecordInit {
+  required USVString recordType;
+  USVString mediaType;
+  USVString id;
+
+  USVString encoding;
+  USVString lang;
+
+  any data; // DOMString or BufferSource or NDEFMessageInit
+};

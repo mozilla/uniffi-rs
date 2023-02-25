@@ -1,0 +1,15 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+[Exposed=Window]
+interface SpeechSynthesis : EventTarget {
+    readonly attribute boolean pending;
+    readonly attribute boolean speaking;
+    readonly attribute boolean paused;
+
+    attribute EventHandler onvoiceschanged;
+
+    undefined speak(SpeechSynthesisUtterance utterance);
+    undefined cancel();
+    undefined pause();
+    undefined resume();
+    sequence<SpeechSynthesisVoice> getVoices();
+};

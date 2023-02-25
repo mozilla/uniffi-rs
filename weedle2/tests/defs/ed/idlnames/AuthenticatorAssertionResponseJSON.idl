@@ -1,0 +1,7 @@
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+dictionary AuthenticatorAssertionResponseJSON {
+    Base64URLString clientDataJSON;
+    Base64URLString authenticatorData;
+    Base64URLString signature;
+    Base64URLString? userHandle;
+};

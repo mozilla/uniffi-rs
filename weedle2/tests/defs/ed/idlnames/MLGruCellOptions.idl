@@ -1,0 +1,8 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLGruCellOptions {
+  MLOperand bias;
+  MLOperand recurrentBias;
+  boolean resetAfter = true;
+  MLGruWeightLayout layout = "zrn";
+  sequence<MLActivation> activations;
+};

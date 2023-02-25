@@ -1,0 +1,7 @@
+// Source: Media Capture Automation (https://w3c.github.io/mediacapture-automation/)
+dictionary MockMicrophoneConfiguration : MockCaptureDeviceConfiguration {
+  unsigned long defaultSampleRate = 44100;
+  // TODO: Add more capabilities parameters like:
+  // ULongRange sampleRate;
+  // sequence echoCancellation;
+};

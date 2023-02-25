@@ -1,0 +1,5 @@
+// Source: Touch Events - Level 2 (https://www.w3.org/TR/touch-events/)
+enum TouchType {
+    "direct",
+    "stylus"
+};

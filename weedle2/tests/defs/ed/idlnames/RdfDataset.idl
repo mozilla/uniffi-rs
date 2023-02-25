@@ -1,0 +1,8 @@
+// Source: JSON-LD 1.1 Processing Algorithms and API (https://www.w3.org/TR/json-ld11-api/)
+[Exposed=JsonLd]
+interface RdfDataset {
+  constructor();
+  readonly attribute RdfGraph defaultGraph;
+  undefined add(USVString graphName, RdfGraph graph);
+  iterable<USVString?, RdfGraph>;
+};

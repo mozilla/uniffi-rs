@@ -1,0 +1,24 @@
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+[Exposed=Window]
+interface Screen {
+  readonly attribute long availWidth;
+  readonly attribute long availHeight;
+  readonly attribute long width;
+  readonly attribute long height;
+  readonly attribute unsigned long colorDepth;
+  readonly attribute unsigned long pixelDepth;
+};
+
+// Source: Screen Orientation (https://www.w3.org/TR/screen-orientation/)
+partial interface Screen {
+  [SameObject] readonly attribute ScreenOrientation orientation;
+};
+
+// Source: Multi-Screen Window Placement (https://www.w3.org/TR/window-placement/)
+partial interface Screen /* : EventTarget */ {
+  [SecureContext]
+  readonly attribute boolean isExtended;
+
+  [SecureContext]
+  attribute EventHandler onchange;
+};

@@ -1,0 +1,11 @@
+// Source: File API (https://www.w3.org/TR/FileAPI/)
+[Exposed=(DedicatedWorker,SharedWorker)]
+interface FileReaderSync {
+  constructor();
+  // Synchronously return strings
+
+  ArrayBuffer readAsArrayBuffer(Blob blob);
+  DOMString readAsBinaryString(Blob blob);
+  DOMString readAsText(Blob blob, optional DOMString encoding);
+  DOMString readAsDataURL(Blob blob);
+};

@@ -1,0 +1,16 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLOListElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute boolean reversed;
+  [CEReactions] attribute long start;
+  [CEReactions] attribute DOMString type;
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLOListElement {
+  [CEReactions] attribute boolean compact;
+};

@@ -1,0 +1,28 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPUQueue {
+    undefined submit(sequence<GPUCommandBuffer> commandBuffers);
+
+    Promise<undefined> onSubmittedWorkDone();
+
+    undefined writeBuffer(
+        GPUBuffer buffer,
+        GPUSize64 bufferOffset,
+        [AllowShared] BufferSource data,
+        optional GPUSize64 dataOffset = 0,
+        optional GPUSize64 size);
+
+    undefined writeTexture(
+        GPUImageCopyTexture destination,
+        [AllowShared] BufferSource data,
+        GPUImageDataLayout dataLayout,
+        GPUExtent3D size);
+
+    undefined copyExternalImageToTexture(
+        GPUImageCopyExternalImage source,
+        GPUImageCopyTextureTagged destination,
+        GPUExtent3D copySize);
+};
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPUQueue includes GPUObjectBase;

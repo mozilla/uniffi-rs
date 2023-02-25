@@ -1,0 +1,4 @@
+// Source: Network Information API (https://wicg.github.io/netinfo/)
+interface mixin NavigatorNetworkInformation {
+  [SameObject] readonly attribute NetworkInformation connection;
+};

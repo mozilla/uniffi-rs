@@ -1,0 +1,5 @@
+// Source: Accelerometer (https://www.w3.org/TR/accelerometer/)
+[SecureContext, Exposed=Window]
+interface GravitySensor : Accelerometer {
+  constructor(optional AccelerometerSensorOptions options = {});
+};

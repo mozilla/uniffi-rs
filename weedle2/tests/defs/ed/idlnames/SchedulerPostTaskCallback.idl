@@ -1,0 +1,2 @@
+// Source: Prioritized Task Scheduling (https://wicg.github.io/scheduling-apis/)
+callback SchedulerPostTaskCallback = any ();

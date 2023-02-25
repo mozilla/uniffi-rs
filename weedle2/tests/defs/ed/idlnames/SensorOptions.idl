@@ -1,0 +1,4 @@
+// Source: Generic Sensor API (https://www.w3.org/TR/generic-sensor/)
+dictionary SensorOptions {
+  double frequency;
+};

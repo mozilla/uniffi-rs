@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin CanvasDrawImage {
+  // drawing images
+  undefined drawImage(CanvasImageSource image, unrestricted double dx, unrestricted double dy);
+  undefined drawImage(CanvasImageSource image, unrestricted double dx, unrestricted double dy, unrestricted double dw, unrestricted double dh);
+  undefined drawImage(CanvasImageSource image, unrestricted double sx, unrestricted double sy, unrestricted double sw, unrestricted double sh, unrestricted double dx, unrestricted double dy, unrestricted double dw, unrestricted double dh);
+};

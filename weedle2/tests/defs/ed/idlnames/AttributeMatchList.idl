@@ -1,0 +1,2 @@
+// Source: HTML Sanitizer API (https://wicg.github.io/sanitizer-api/)
+typedef record<DOMString, sequence<DOMString>> AttributeMatchList;

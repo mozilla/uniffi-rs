@@ -1,0 +1,10 @@
+// Source: WebXR Layers API Level 1 (https://www.w3.org/TR/webxrlayers-1/)
+[Exposed=Window] interface XRProjectionLayer : XRCompositionLayer {
+  readonly attribute unsigned long textureWidth;
+  readonly attribute unsigned long textureHeight;
+  readonly attribute unsigned long textureArrayLength;
+
+  readonly attribute boolean ignoreDepthValues;
+  attribute float? fixedFoveation;
+  attribute XRRigidTransform? deltaPose;
+};

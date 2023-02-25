@@ -1,0 +1,5 @@
+// Source: WebXR Layers API Level 1 (https://www.w3.org/TR/webxrlayers-1/)
+[SecureContext, Exposed=Window] interface XRLayerEvent : Event {
+  constructor(DOMString type, XRLayerEventInit eventInitDict);
+  [SameObject] readonly attribute XRLayer layer;
+};

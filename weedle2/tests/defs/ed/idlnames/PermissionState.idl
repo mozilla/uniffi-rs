@@ -1,0 +1,6 @@
+// Source: Permissions (https://www.w3.org/TR/permissions/)
+enum PermissionState {
+  "granted",
+  "denied",
+  "prompt",
+};

@@ -1,0 +1,2 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+callback MutationCallback = undefined (sequence<MutationRecord> mutations, MutationObserver observer);

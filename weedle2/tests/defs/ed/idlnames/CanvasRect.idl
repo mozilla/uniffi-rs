@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin CanvasRect {
+  // rects
+  undefined clearRect(unrestricted double x, unrestricted double y, unrestricted double w, unrestricted double h);
+  undefined fillRect(unrestricted double x, unrestricted double y, unrestricted double w, unrestricted double h);
+  undefined strokeRect(unrestricted double x, unrestricted double y, unrestricted double w, unrestricted double h);
+};

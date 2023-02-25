@@ -1,0 +1,9 @@
+// Source: Cookie Store API (https://wicg.github.io/cookie-store/)
+dictionary CookieInit {
+  required USVString name;
+  required USVString value;
+  EpochTimeStamp? expires = null;
+  USVString? domain = null;
+  USVString path = "/";
+  CookieSameSite sameSite = "strict";
+};

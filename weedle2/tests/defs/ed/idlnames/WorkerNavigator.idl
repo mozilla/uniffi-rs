@@ -1,0 +1,77 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Worker]
+interface WorkerNavigator {};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+WorkerNavigator includes NavigatorID;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+WorkerNavigator includes NavigatorLanguage;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+WorkerNavigator includes NavigatorOnLine;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+WorkerNavigator includes NavigatorConcurrentHardware;
+
+// Source: Global Privacy Control (GPC) (https://privacycg.github.io/gpc-spec/)
+WorkerNavigator includes GlobalPrivacyControl;
+
+// Source: Storage Standard (https://storage.spec.whatwg.org/)
+WorkerNavigator includes NavigatorStorage;
+
+// Source: Badging API (https://w3c.github.io/badging/)
+WorkerNavigator includes NavigatorBadge;
+
+// Source: Network Information API (https://wicg.github.io/netinfo/)
+WorkerNavigator includes NavigatorNetworkInformation;
+
+// Source: Web Serial API (https://wicg.github.io/serial/)
+[Exposed=DedicatedWorker, SecureContext]
+partial interface WorkerNavigator {
+  [SameObject] readonly attribute Serial serial;
+};
+
+// Source: User-Agent Client Hints (https://wicg.github.io/ua-client-hints/)
+WorkerNavigator includes NavigatorUA;
+
+// Source: WebHID API (https://wicg.github.io/webhid/)
+[Exposed=ServiceWorker, SecureContext]
+partial interface WorkerNavigator {
+    [SameObject] readonly attribute HID hid;
+};
+
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+[Exposed=Worker, SecureContext]
+partial interface WorkerNavigator {
+  [SameObject] readonly attribute USB usb;
+};
+
+// Source: Device Memory (https://www.w3.org/TR/device-memory-1/)
+WorkerNavigator includes NavigatorDeviceMemory;
+
+// Source: Media Capabilities (https://www.w3.org/TR/media-capabilities/)
+[Exposed=Worker]
+partial interface WorkerNavigator {
+  [SameObject] readonly attribute MediaCapabilities mediaCapabilities;
+};
+
+// Source: Permissions (https://www.w3.org/TR/permissions/)
+[Exposed=(Worker)]
+partial interface WorkerNavigator {
+  [SameObject] readonly attribute Permissions permissions;
+};
+
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+partial interface WorkerNavigator {
+  [SecureContext, SameObject] readonly attribute ServiceWorkerContainer serviceWorker;
+};
+
+// Source: Web Locks API (https://www.w3.org/TR/web-locks/)
+WorkerNavigator includes NavigatorLocks;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+WorkerNavigator includes NavigatorGPU;
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+WorkerNavigator includes NavigatorML;

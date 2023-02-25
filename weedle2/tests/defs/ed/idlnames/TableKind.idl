@@ -1,0 +1,7 @@
+// Source: WebAssembly JavaScript Interface (https://www.w3.org/TR/wasm-js-api-2/)
+enum TableKind {
+  "externref",
+  "anyfunc",
+  // Note: More values may be added in future iterations,
+  // e.g., typed function references, typed GC references
+};

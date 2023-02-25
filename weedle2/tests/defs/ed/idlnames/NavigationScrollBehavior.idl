@@ -1,0 +1,5 @@
+// Source: Navigation API (https://wicg.github.io/navigation-api/)
+enum NavigationScrollBehavior {
+  "after-transition",
+  "manual"
+};

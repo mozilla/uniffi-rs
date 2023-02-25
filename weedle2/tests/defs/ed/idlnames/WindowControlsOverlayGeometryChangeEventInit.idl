@@ -1,0 +1,5 @@
+// Source: Window Controls Overlay (https://wicg.github.io/window-controls-overlay/)
+dictionary WindowControlsOverlayGeometryChangeEventInit : EventInit {
+  required DOMRect titlebarAreaRect;
+  boolean visible = false;
+};

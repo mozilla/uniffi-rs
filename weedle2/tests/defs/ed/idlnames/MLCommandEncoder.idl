@@ -1,0 +1,18 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+[SecureContext, Exposed=(Window, DedicatedWorker)]
+interface MLCommandEncoder {};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLCommandEncoder {
+  undefined initializeGraph(MLGraph graph);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLCommandEncoder {
+  undefined dispatch(MLGraph graph, MLNamedGPUResources inputs, MLNamedGPUResources outputs);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLCommandEncoder {
+  GPUCommandBuffer finish(optional GPUCommandBufferDescriptor descriptor = {});
+};

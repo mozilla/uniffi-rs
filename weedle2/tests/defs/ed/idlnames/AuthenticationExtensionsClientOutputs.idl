@@ -1,0 +1,48 @@
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+dictionary AuthenticationExtensionsClientOutputs {
+};
+
+// Source: Client to Authenticator Protocol (CTAP) (https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html)
+partial dictionary AuthenticationExtensionsClientOutputs {
+  boolean hmacCreateSecret;
+};
+
+// Source: Client to Authenticator Protocol (CTAP) (https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html)
+partial dictionary AuthenticationExtensionsClientOutputs {
+  HMACGetSecretOutput hmacGetSecret;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientOutputs {
+  boolean appid;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientOutputs {
+  boolean appidExclude;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientOutputs {
+    CredentialPropertiesOutput credProps;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientOutputs {
+    AuthenticationExtensionsPRFOutputs prf;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientOutputs {
+    AuthenticationExtensionsLargeBlobOutputs largeBlob;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientOutputs {
+  UvmEntries uvm;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientOutputs {
+    AuthenticationExtensionsDevicePublicKeyOutputs devicePubKey;
+};

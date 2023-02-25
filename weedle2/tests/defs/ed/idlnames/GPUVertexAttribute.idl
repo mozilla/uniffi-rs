@@ -1,0 +1,7 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUVertexAttribute {
+    required GPUVertexFormat format;
+    required GPUSize64 offset;
+
+    required GPUIndex32 shaderLocation;
+};

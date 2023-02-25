@@ -1,0 +1,5 @@
+// Source: MediaStream Image Capture (https://www.w3.org/TR/image-capture/)
+dictionary ConstrainPoint2DParameters {
+  sequence<Point2D> exact;
+  sequence<Point2D> ideal;
+};

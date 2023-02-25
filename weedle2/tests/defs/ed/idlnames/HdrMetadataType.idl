@@ -1,0 +1,6 @@
+// Source: Media Capabilities (https://www.w3.org/TR/media-capabilities/)
+enum HdrMetadataType {
+  "smpteSt2086",
+  "smpteSt2094-10",
+  "smpteSt2094-40"
+};

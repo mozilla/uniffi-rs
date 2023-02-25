@@ -1,0 +1,6 @@
+// Source: Custom State Pseudo Class (https://wicg.github.io/custom-state-pseudo-class/)
+[Exposed=Window]
+interface CustomStateSet {
+  setlike<DOMString>;
+  undefined add(DOMString value);
+};

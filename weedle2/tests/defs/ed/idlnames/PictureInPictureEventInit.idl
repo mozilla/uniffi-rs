@@ -1,0 +1,4 @@
+// Source: Picture-in-Picture (https://www.w3.org/TR/picture-in-picture/)
+dictionary PictureInPictureEventInit : EventInit {
+    required PictureInPictureWindow pictureInPictureWindow;
+};

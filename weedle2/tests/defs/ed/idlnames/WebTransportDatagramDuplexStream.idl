@@ -1,0 +1,12 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+[Exposed=(Window,Worker), SecureContext]
+interface WebTransportDatagramDuplexStream {
+  readonly attribute ReadableStream readable;
+  readonly attribute WritableStream writable;
+
+  readonly attribute unsigned long maxDatagramSize;
+  attribute unrestricted double incomingMaxAge;
+  attribute unrestricted double outgoingMaxAge;
+  attribute unrestricted double incomingHighWaterMark;
+  attribute unrestricted double outgoingHighWaterMark;
+};

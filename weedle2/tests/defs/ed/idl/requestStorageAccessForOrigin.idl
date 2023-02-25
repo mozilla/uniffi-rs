@@ -1,0 +1,12 @@
+// GENERATED CONTENT - DO NOT EDIT
+// Content was automatically extracted by Reffy into webref
+// (https://github.com/w3c/webref)
+// Source: requestStorageAccessForOrigin API (https://privacycg.github.io/requestStorageAccessForOrigin/)
+
+partial interface Document {
+  Promise<undefined> requestStorageAccessForOrigin(USVString requestedOrigin);
+};
+
+dictionary TopLevelStorageAccessPermissionDescriptor : PermissionDescriptor {
+    USVString requestedOrigin = "";
+};

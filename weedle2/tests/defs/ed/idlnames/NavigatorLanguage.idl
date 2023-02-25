@@ -1,0 +1,5 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin NavigatorLanguage {
+  readonly attribute DOMString language;
+  readonly attribute FrozenArray<DOMString> languages;
+};

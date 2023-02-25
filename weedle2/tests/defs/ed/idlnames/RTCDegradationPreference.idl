@@ -1,0 +1,6 @@
+// Source: MediaStreamTrack Content Hints (https://www.w3.org/TR/mst-content-hint/)
+enum RTCDegradationPreference {
+  "maintain-framerate",
+  "maintain-resolution",
+  "balanced"
+};

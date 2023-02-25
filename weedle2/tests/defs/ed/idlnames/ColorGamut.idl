@@ -1,0 +1,6 @@
+// Source: Media Capabilities (https://www.w3.org/TR/media-capabilities/)
+enum ColorGamut {
+  "srgb",
+  "p3",
+  "rec2020"
+};

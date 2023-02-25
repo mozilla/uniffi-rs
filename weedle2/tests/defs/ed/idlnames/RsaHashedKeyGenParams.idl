@@ -1,0 +1,4 @@
+// Source: Web Cryptography API (https://www.w3.org/TR/WebCryptoAPI/)
+dictionary RsaHashedKeyGenParams : RsaKeyGenParams {
+  required HashAlgorithmIdentifier hash;
+};

@@ -1,0 +1,14 @@
+// Source: File API (https://www.w3.org/TR/FileAPI/)
+[Exposed=(Window,Worker), Serializable]
+interface File : Blob {
+  constructor(sequence<BlobPart> fileBits,
+              USVString fileName,
+              optional FilePropertyBag options = {});
+  readonly attribute DOMString name;
+  readonly attribute long long lastModified;
+};
+
+// Source: File and Directory Entries API (https://wicg.github.io/entries-api/)
+partial interface File {
+    readonly attribute USVString webkitRelativePath;
+};

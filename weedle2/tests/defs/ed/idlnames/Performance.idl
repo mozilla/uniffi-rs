@@ -1,0 +1,50 @@
+// Source: High Resolution Time (https://www.w3.org/TR/hr-time-3/)
+[Exposed=(Window,Worker)]
+interface Performance : EventTarget {
+    DOMHighResTimeStamp now();
+    readonly attribute DOMHighResTimeStamp timeOrigin;
+    [Default] object toJSON();
+};
+
+// Source: Measure Memory API (https://wicg.github.io/performance-measure-memory/)
+partial interface Performance {
+  [Exposed=(Window,ServiceWorker,SharedWorker), CrossOriginIsolated] Promise<MemoryMeasurement> measureUserAgentSpecificMemory();
+};
+
+// Source: Event Timing API (https://www.w3.org/TR/event-timing/)
+[Exposed=Window]
+partial interface Performance {
+    [SameObject] readonly attribute EventCounts eventCounts;
+    readonly attribute unsigned long long interactionCount;
+};
+
+// Source: Navigation Timing Level 2 (https://www.w3.org/TR/navigation-timing-2/)
+[Exposed=Window]
+partial interface Performance {
+  [SameObject]
+  readonly attribute PerformanceTiming timing;
+  [SameObject]
+  readonly attribute PerformanceNavigation navigation;
+};
+
+// Source: Performance Timeline (https://www.w3.org/TR/performance-timeline/)
+partial interface Performance {
+  PerformanceEntryList getEntries ();
+  PerformanceEntryList getEntriesByType (DOMString type);
+  PerformanceEntryList getEntriesByName (DOMString name, optional DOMString type);
+};
+
+// Source: Resource Timing (https://www.w3.org/TR/resource-timing/)
+partial interface Performance {
+  undefined clearResourceTimings ();
+  undefined setResourceTimingBufferSize (unsigned long maxSize);
+  attribute EventHandler onresourcetimingbufferfull;
+};
+
+// Source: User Timing Level 3 (https://www.w3.org/TR/user-timing/)
+partial interface Performance {
+    PerformanceMark mark(DOMString markName, optional PerformanceMarkOptions markOptions = {});
+    undefined clearMarks(optional DOMString markName);
+    PerformanceMeasure measure(DOMString measureName, optional (DOMString or PerformanceMeasureOptions) startOrMeasureOptions = {}, optional DOMString endMark);
+    undefined clearMeasures(optional DOMString measureName);
+};

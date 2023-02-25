@@ -1,0 +1,39 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLAnchorElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute DOMString target;
+  [CEReactions] attribute DOMString download;
+  [CEReactions] attribute USVString ping;
+  [CEReactions] attribute DOMString rel;
+  [SameObject, PutForwards=value] readonly attribute DOMTokenList relList;
+  [CEReactions] attribute DOMString hreflang;
+  [CEReactions] attribute DOMString type;
+
+  [CEReactions] attribute DOMString text;
+
+  [CEReactions] attribute DOMString referrerPolicy;
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+HTMLAnchorElement includes HTMLHyperlinkElementUtils;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLAnchorElement {
+  [CEReactions] attribute DOMString coords;
+  [CEReactions] attribute DOMString charset;
+  [CEReactions] attribute DOMString name;
+  [CEReactions] attribute DOMString rev;
+  [CEReactions] attribute DOMString shape;
+};
+
+// Source: Private Click Measurement (https://privacycg.github.io/private-click-measurement/)
+partial interface HTMLAnchorElement {
+    [CEReactions] attribute unsigned long attributionSourceId;
+};
+
+// Source: Attribution Reporting (https://wicg.github.io/attribution-reporting-api/)
+HTMLAnchorElement includes HTMLAttributionSrcElementUtils;

@@ -1,0 +1,51 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=(Window,Worker)]
+interface OffscreenCanvasRenderingContext2D {
+  undefined commit();
+  readonly attribute OffscreenCanvas canvas;
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasState;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasTransform;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasCompositing;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasImageSmoothing;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasFillStrokeStyles;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasShadowStyles;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasFilters;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasRect;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasDrawPath;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasText;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasDrawImage;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasImageData;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasPathDrawingStyles;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasTextDrawingStyles;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+OffscreenCanvasRenderingContext2D includes CanvasPath;

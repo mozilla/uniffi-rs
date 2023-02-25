@@ -1,0 +1,6 @@
+// Source: WebXR Raw Camera Access Module (https://immersive-web.github.io/raw-camera-access/)
+[SecureContext, Exposed=Window]
+interface XRCamera {
+  readonly attribute unsigned long width;
+  readonly attribute unsigned long height;
+};

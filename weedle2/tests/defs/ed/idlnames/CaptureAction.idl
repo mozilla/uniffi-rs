@@ -1,0 +1,7 @@
+// Source: The Capture-Handle Actions Mechanism (https://w3c.github.io/mediacapture-handle/actions/)
+enum CaptureAction {
+  "next",
+  "previous",
+  "first",
+  "last"
+};

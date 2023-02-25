@@ -1,0 +1,7 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+dictionary OscillatorOptions : AudioNodeOptions {
+    OscillatorType type = "sine";
+    float frequency = 440;
+    float detune = 0;
+    PeriodicWave periodicWave;
+};

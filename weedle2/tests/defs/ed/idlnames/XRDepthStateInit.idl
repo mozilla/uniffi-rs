@@ -1,0 +1,5 @@
+// Source: WebXR Depth Sensing Module (https://www.w3.org/TR/webxr-depth-sensing-1/)
+dictionary XRDepthStateInit {
+  required sequence<XRDepthUsage> usagePreference;
+  required sequence<XRDepthDataFormat> dataFormatPreference;
+};

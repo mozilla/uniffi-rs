@@ -1,0 +1,11 @@
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+dictionary CSSNumericType {
+    long length;
+    long angle;
+    long time;
+    long frequency;
+    long resolution;
+    long flex;
+    long percent;
+    CSSNumericBaseType percentHint;
+};

@@ -1,0 +1,12 @@
+// Source: Secure Payment Confirmation (https://www.w3.org/TR/secure-payment-confirmation/)
+dictionary AuthenticationExtensionsPaymentInputs {
+  boolean isPayment;
+
+  // Only used for authentication.
+  USVString rpId;
+  USVString topOrigin;
+  USVString payeeName;
+  USVString payeeOrigin;
+  PaymentCurrencyAmount total;
+  PaymentCredentialInstrument instrument;
+};

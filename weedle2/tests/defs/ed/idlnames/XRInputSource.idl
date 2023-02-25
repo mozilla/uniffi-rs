@@ -1,0 +1,19 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window]
+interface XRInputSource {
+  readonly attribute XRHandedness handedness;
+  readonly attribute XRTargetRayMode targetRayMode;
+  [SameObject] readonly attribute XRSpace targetRaySpace;
+  [SameObject] readonly attribute XRSpace? gripSpace;
+  [SameObject] readonly attribute FrozenArray<DOMString> profiles;
+};
+
+// Source: WebXR Gamepads Module - Level 1 (https://www.w3.org/TR/webxr-gamepads-module-1/)
+partial interface XRInputSource {
+  [SameObject] readonly attribute Gamepad? gamepad;
+};
+
+// Source: WebXR Hand Input Module - Level 1 (https://www.w3.org/TR/webxr-hand-input-1/)
+partial interface XRInputSource {
+   [SameObject] readonly attribute XRHand? hand;
+};

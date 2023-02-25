@@ -1,0 +1,9 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+dictionary ImageBitmapOptions {
+  ImageOrientation imageOrientation = "from-image";
+  PremultiplyAlpha premultiplyAlpha = "default";
+  ColorSpaceConversion colorSpaceConversion = "default";
+  [EnforceRange] unsigned long resizeWidth;
+  [EnforceRange] unsigned long resizeHeight;
+  ResizeQuality resizeQuality = "low";
+};

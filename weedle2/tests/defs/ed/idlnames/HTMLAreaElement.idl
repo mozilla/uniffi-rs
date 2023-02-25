@@ -1,0 +1,25 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLAreaElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute DOMString alt;
+  [CEReactions] attribute DOMString coords;
+  [CEReactions] attribute DOMString shape;
+  [CEReactions] attribute DOMString target;
+  [CEReactions] attribute DOMString download;
+  [CEReactions] attribute USVString ping;
+  [CEReactions] attribute DOMString rel;
+  [SameObject, PutForwards=value] readonly attribute DOMTokenList relList;
+  [CEReactions] attribute DOMString referrerPolicy;
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+HTMLAreaElement includes HTMLHyperlinkElementUtils;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLAreaElement {
+  [CEReactions] attribute boolean noHref;
+};

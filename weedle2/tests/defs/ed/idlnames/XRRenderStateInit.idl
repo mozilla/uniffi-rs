@@ -1,0 +1,8 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+dictionary XRRenderStateInit {
+  double depthNear;
+  double depthFar;
+  double inlineVerticalFieldOfView;
+  XRWebGLLayer? baseLayer;
+  sequence<XRLayer>? layers;
+};

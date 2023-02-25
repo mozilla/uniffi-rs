@@ -1,0 +1,6 @@
+// Source: DOM Parsing and Serialization (https://www.w3.org/TR/DOM-Parsing/)
+[Exposed=Window]
+interface XMLSerializer {
+  constructor();
+  DOMString serializeToString(Node root);
+};

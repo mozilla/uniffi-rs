@@ -1,0 +1,7 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface ConvolverNode : AudioNode {
+    constructor (BaseAudioContext context, optional ConvolverOptions options = {});
+    attribute AudioBuffer? buffer;
+    attribute boolean normalize;
+};

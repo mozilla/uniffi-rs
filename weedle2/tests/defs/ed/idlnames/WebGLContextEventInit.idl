@@ -1,0 +1,5 @@
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+// EventInit is defined in the DOM4 specification.
+dictionary WebGLContextEventInit : EventInit {
+    DOMString statusMessage = "";
+};

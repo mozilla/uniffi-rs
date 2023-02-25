@@ -1,0 +1,7 @@
+// Source: CSS Spatial Navigation Level 1 (https://www.w3.org/TR/css-nav-1/)
+enum SpatialNavigationDirection {
+    "up",
+    "down",
+    "left",
+    "right",
+};

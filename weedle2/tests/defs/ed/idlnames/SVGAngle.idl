@@ -1,0 +1,19 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGAngle {
+
+  // Angle Unit Types
+  const unsigned short SVG_ANGLETYPE_UNKNOWN = 0;
+  const unsigned short SVG_ANGLETYPE_UNSPECIFIED = 1;
+  const unsigned short SVG_ANGLETYPE_DEG = 2;
+  const unsigned short SVG_ANGLETYPE_RAD = 3;
+  const unsigned short SVG_ANGLETYPE_GRAD = 4;
+
+  readonly attribute unsigned short unitType;
+           attribute float value;
+           attribute float valueInSpecifiedUnits;
+           attribute DOMString valueAsString;
+
+  undefined newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits);
+  undefined convertToSpecifiedUnits(unsigned short unitType);
+};

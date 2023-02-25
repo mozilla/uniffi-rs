@@ -1,0 +1,4 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+typedef (CanvasImageSource or
+         Blob or
+         ImageData) ImageBitmapSource;

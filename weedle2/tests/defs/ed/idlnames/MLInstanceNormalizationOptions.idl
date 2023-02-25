@@ -1,0 +1,7 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLInstanceNormalizationOptions {
+  MLOperand scale;
+  MLOperand bias;
+  float epsilon = 1e-5;
+  MLInputOperandLayout layout = "nchw";
+};

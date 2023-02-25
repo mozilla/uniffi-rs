@@ -1,0 +1,15 @@
+// Source: Permissions (https://www.w3.org/TR/permissions/)
+[Exposed=(Window,Worker)]
+interface Permissions {
+  Promise<PermissionStatus> query(object permissionDesc);
+};
+
+// Source: Requesting Permissions (https://wicg.github.io/permissions-request/)
+partial interface Permissions {
+  Promise<PermissionStatus> request(object permissionDesc);
+};
+
+// Source: Relinquishing Permissions (https://wicg.github.io/permissions-revoke/)
+partial interface Permissions {
+  Promise<PermissionStatus> revoke(object permissionDesc);
+};

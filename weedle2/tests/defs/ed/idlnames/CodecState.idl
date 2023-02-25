@@ -1,0 +1,6 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+enum CodecState {
+  "unconfigured",
+  "configured",
+  "closed"
+};

@@ -1,0 +1,13 @@
+// Source: CSS Layout API Level 1 (https://www.w3.org/TR/css-layout-api-1/)
+[Exposed=LayoutWorklet]
+interface LayoutEdges {
+  readonly attribute double inlineStart;
+  readonly attribute double inlineEnd;
+
+  readonly attribute double blockStart;
+  readonly attribute double blockEnd;
+
+  // Convenience attributes for the sum in one direction.
+  readonly attribute double inline;
+  readonly attribute double block;
+};

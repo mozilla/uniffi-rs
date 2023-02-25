@@ -1,0 +1,6 @@
+// Source: Web Animations Level 2 (https://drafts.csswg.org/web-animations-2/)
+[Exposed=Window]
+interface AnimationNodeList {
+    readonly attribute unsigned long length;
+    getter AnimationEffect? item (unsigned long index);
+};

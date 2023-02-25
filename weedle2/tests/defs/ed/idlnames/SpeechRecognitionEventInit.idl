@@ -1,0 +1,5 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+dictionary SpeechRecognitionEventInit : EventInit {
+    unsigned long resultIndex = 0;
+    required SpeechRecognitionResultList results;
+};

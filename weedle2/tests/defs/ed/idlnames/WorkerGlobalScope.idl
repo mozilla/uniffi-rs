@@ -1,0 +1,21 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Worker]
+interface WorkerGlobalScope : EventTarget {
+  readonly attribute WorkerGlobalScope self;
+  readonly attribute WorkerLocation location;
+  readonly attribute WorkerNavigator navigator;
+  undefined importScripts(USVString... urls);
+
+  attribute OnErrorEventHandler onerror;
+  attribute EventHandler onlanguagechange;
+  attribute EventHandler onoffline;
+  attribute EventHandler ononline;
+  attribute EventHandler onrejectionhandled;
+  attribute EventHandler onunhandledrejection;
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+WorkerGlobalScope includes WindowOrWorkerGlobalScope;
+
+// Source: CSS Font Loading Module Level 3 (https://www.w3.org/TR/css-font-loading-3/)
+WorkerGlobalScope includes FontFaceSource;

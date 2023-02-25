@@ -1,0 +1,4 @@
+// Source: EyeDropper API (https://wicg.github.io/eyedropper-api/)
+dictionary ColorSelectionOptions {
+  AbortSignal signal;
+};

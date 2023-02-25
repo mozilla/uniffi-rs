@@ -1,0 +1,12 @@
+// Source: File and Directory Entries API (https://wicg.github.io/entries-api/)
+[Exposed=Window]
+interface FileSystemEntry {
+    readonly attribute boolean isFile;
+    readonly attribute boolean isDirectory;
+    readonly attribute USVString name;
+    readonly attribute USVString fullPath;
+    readonly attribute FileSystem filesystem;
+
+    undefined getParent(optional FileSystemEntryCallback successCallback,
+                   optional ErrorCallback errorCallback);
+};

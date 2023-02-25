@@ -1,0 +1,7 @@
+// Source: Encrypted Media Extensions (https://www.w3.org/TR/encrypted-media/)
+[Exposed=Window, SecureContext] interface MediaKeyStatusMap {
+    iterable<BufferSource,MediaKeyStatus>;
+    readonly        attribute unsigned long size;
+    boolean has (BufferSource keyId);
+    (MediaKeyStatus or undefined)     get (BufferSource keyId);
+};

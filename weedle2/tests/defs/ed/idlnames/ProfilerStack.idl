@@ -1,0 +1,5 @@
+// Source: JS Self-Profiling API (https://wicg.github.io/js-self-profiling/)
+dictionary ProfilerStack {
+  unsigned long long parentId;
+  required unsigned long long frameId;
+};

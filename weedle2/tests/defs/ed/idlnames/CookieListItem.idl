@@ -1,0 +1,10 @@
+// Source: Cookie Store API (https://wicg.github.io/cookie-store/)
+dictionary CookieListItem {
+  USVString name;
+  USVString value;
+  USVString? domain;
+  USVString path;
+  EpochTimeStamp? expires;
+  boolean secure;
+  CookieSameSite sameSite;
+};

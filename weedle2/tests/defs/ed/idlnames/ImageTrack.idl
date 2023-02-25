@@ -1,0 +1,8 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+[Exposed=(Window,DedicatedWorker)]
+interface ImageTrack {
+  readonly attribute boolean animated;
+  readonly attribute unsigned long frameCount;
+  readonly attribute unrestricted float repetitionCount;
+  attribute boolean selected;
+};

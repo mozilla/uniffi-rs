@@ -1,0 +1,7 @@
+// Source: WebGL WEBGL_debug_shaders Khronos Ratified Extension Specification (https://registry.khronos.org/webgl/extensions/WEBGL_debug_shaders/)
+[Exposed=(Window,Worker), LegacyNoInterfaceObject]
+interface WEBGL_debug_shaders {
+
+      DOMString getTranslatedShaderSource(WebGLShader shader);
+
+};

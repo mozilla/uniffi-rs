@@ -1,0 +1,19 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window] interface XRView {
+  readonly attribute XREye eye;
+  readonly attribute Float32Array projectionMatrix;
+  [SameObject] readonly attribute XRRigidTransform transform;
+  readonly attribute double? recommendedViewportScale;
+
+  undefined requestViewportScale(double? scale);
+};
+
+// Source: WebXR Raw Camera Access Module (https://immersive-web.github.io/raw-camera-access/)
+partial interface XRView {
+  [SameObject] readonly attribute XRCamera? camera;
+};
+
+// Source: WebXR Augmented Reality Module - Level 1 (https://www.w3.org/TR/webxr-ar-module-1/)
+partial interface XRView {
+  readonly attribute boolean isFirstPersonObserver;
+};

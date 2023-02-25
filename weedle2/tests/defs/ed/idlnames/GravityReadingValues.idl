@@ -1,0 +1,3 @@
+// Source: Accelerometer (https://www.w3.org/TR/accelerometer/)
+dictionary GravityReadingValues : AccelerometerReadingValues {
+};

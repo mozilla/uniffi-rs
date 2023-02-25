@@ -1,0 +1,20 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary VideoFrameBufferInit {
+  required VideoPixelFormat format;
+  required [EnforceRange] unsigned long codedWidth;
+  required [EnforceRange] unsigned long codedHeight;
+  required [EnforceRange] long long timestamp;  // microseconds
+  [EnforceRange] unsigned long long duration;  // microseconds
+
+  // Default layout is tightly-packed.
+  sequence<PlaneLayout> layout;
+
+  // Default visible rect is coded size positioned at (0,0)
+  DOMRectInit visibleRect;
+
+  // Default display dimensions match visibleRect.
+  [EnforceRange] unsigned long displayWidth;
+  [EnforceRange] unsigned long displayHeight;
+
+  VideoColorSpaceInit colorSpace;
+};

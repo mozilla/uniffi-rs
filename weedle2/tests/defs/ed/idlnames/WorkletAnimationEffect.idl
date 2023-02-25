@@ -1,0 +1,7 @@
+// Source: CSS Animation Worklet API (https://www.w3.org/TR/css-animation-worklet-1/)
+[ Exposed=AnimationWorklet ]
+interface WorkletAnimationEffect {
+    EffectTiming         getTiming();
+    ComputedEffectTiming getComputedTiming();
+    attribute double? localTime;
+};

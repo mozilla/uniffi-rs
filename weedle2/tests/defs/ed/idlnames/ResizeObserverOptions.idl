@@ -1,0 +1,4 @@
+// Source: Resize Observer (https://www.w3.org/TR/resize-observer-1/)
+dictionary ResizeObserverOptions {
+    ResizeObserverBoxOptions box = "content-box";
+};

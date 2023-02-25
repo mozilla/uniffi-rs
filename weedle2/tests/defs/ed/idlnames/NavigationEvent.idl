@@ -1,0 +1,8 @@
+// Source: CSS Spatial Navigation Level 1 (https://www.w3.org/TR/css-nav-1/)
+[Exposed=Window]
+interface NavigationEvent : UIEvent {
+    constructor(DOMString type,
+                optional NavigationEventInit eventInitDict = {});
+    readonly attribute SpatialNavigationDirection dir;
+    readonly attribute EventTarget? relatedTarget;
+};

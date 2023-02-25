@@ -1,0 +1,13 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGImageElement : SVGGraphicsElement {
+  [SameObject] readonly attribute SVGAnimatedLength x;
+  [SameObject] readonly attribute SVGAnimatedLength y;
+  [SameObject] readonly attribute SVGAnimatedLength width;
+  [SameObject] readonly attribute SVGAnimatedLength height;
+  [SameObject] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
+  attribute DOMString? crossOrigin;
+};
+
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+SVGImageElement includes SVGURIReference;

@@ -1,0 +1,8 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLGemmOptions {
+  MLOperand c;
+  float alpha = 1.0;
+  float beta = 1.0;
+  boolean aTranspose = false;
+  boolean bTranspose = false;
+};

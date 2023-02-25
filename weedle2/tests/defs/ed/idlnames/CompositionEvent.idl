@@ -1,0 +1,16 @@
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+[Exposed=Window]
+interface CompositionEvent : UIEvent {
+  constructor(DOMString type, optional CompositionEventInit eventInitDict = {});
+  readonly attribute DOMString data;
+};
+
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+partial interface CompositionEvent {
+  // Originally introduced (and deprecated) in this specification
+  undefined initCompositionEvent(DOMString typeArg,
+    optional boolean bubblesArg = false,
+    optional boolean cancelableArg = false,
+    optional WindowProxy? viewArg = null,
+    optional DOMString dataArg = "");
+};

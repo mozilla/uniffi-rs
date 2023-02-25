@@ -1,0 +1,11 @@
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+[Exposed=(Window,Worker)]
+interface WebGLRenderingContext
+{
+};
+
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+WebGLRenderingContext includes WebGLRenderingContextBase;
+
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+WebGLRenderingContext includes WebGLRenderingContextOverloads;

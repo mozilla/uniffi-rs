@@ -1,0 +1,5 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+dictionary NavigationPreloadState {
+  boolean enabled = false;
+  ByteString headerValue;
+};

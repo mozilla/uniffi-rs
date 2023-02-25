@@ -1,0 +1,4 @@
+// Source: Navigation API (https://wicg.github.io/navigation-api/)
+dictionary NavigationReloadOptions : NavigationOptions {
+  any state;
+};

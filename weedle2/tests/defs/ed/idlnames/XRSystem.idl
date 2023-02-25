@@ -1,0 +1,9 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window] interface XRSystem : EventTarget {
+  // Methods
+  Promise<boolean> isSessionSupported(XRSessionMode mode);
+  [NewObject] Promise<XRSession> requestSession(XRSessionMode mode, optional XRSessionInit options = {});
+
+  // Events
+  attribute EventHandler ondevicechange;
+};

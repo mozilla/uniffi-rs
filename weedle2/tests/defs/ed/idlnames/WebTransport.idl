@@ -1,0 +1,28 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+[Exposed=(Window,Worker), SecureContext]
+interface WebTransport : EventTarget {
+  constructor(USVString url, optional WebTransportOptions options = {});
+
+  Promise<WebTransportStats> getStats();
+  readonly attribute Promise<undefined> ready;
+  readonly attribute WebTransportReliabilityMode reliability;
+  readonly attribute WebTransportCongestionControl congestionControl;
+  readonly attribute Promise<WebTransportCloseInfo> closed;
+  undefined close(optional WebTransportCloseInfo closeInfo = {});
+
+  readonly attribute WebTransportDatagramDuplexStream datagrams;
+
+  Promise<WebTransportBidirectionalStream> createBidirectionalStream(
+      optional WebTransportSendStreamOptions options = {});
+  /* a ReadableStream of WebTransportBidirectionalStream objects */
+  readonly attribute ReadableStream incomingBidirectionalStreams;
+
+  Promise<WebTransportSendStream> createUnidirectionalStream(
+      optional WebTransportSendStreamOptions options = {});
+  /* a ReadableStream of WebTransportReceiveStream objects */
+  readonly attribute ReadableStream incomingUnidirectionalStreams;
+
+  attribute unsigned long rateControlFeedbackMinInterval;
+  attribute EventHandler onratecontrolfeedback;
+  [SameObject] readonly attribute WebTransportRateControlFeedback rateControlFeedback;
+};

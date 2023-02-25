@@ -1,0 +1,5 @@
+// Source: Indexed Database API 3.0 (https://www.w3.org/TR/IndexedDB-3/)
+dictionary IDBObjectStoreParameters {
+  (DOMString or sequence<DOMString>)? keyPath = null;
+  boolean autoIncrement = false;
+};

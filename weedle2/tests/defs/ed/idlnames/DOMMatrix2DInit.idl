@@ -1,0 +1,15 @@
+// Source: Geometry Interfaces Module Level 1 (https://www.w3.org/TR/geometry-1/)
+dictionary DOMMatrix2DInit {
+    unrestricted double a;
+    unrestricted double b;
+    unrestricted double c;
+    unrestricted double d;
+    unrestricted double e;
+    unrestricted double f;
+    unrestricted double m11;
+    unrestricted double m12;
+    unrestricted double m21;
+    unrestricted double m22;
+    unrestricted double m41;
+    unrestricted double m42;
+};

@@ -1,0 +1,10 @@
+// Source: Geolocation Sensor (https://www.w3.org/TR/geolocation-sensor/)
+dictionary GeolocationReadingValues {
+  required double? latitude;
+  required double? longitude;
+  required double? altitude;
+  required double? accuracy;
+  required double? altitudeAccuracy;
+  required double? heading;
+  required double? speed;
+};

@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUProgrammableStage {
+    required GPUShaderModule module;
+    required USVString entryPoint;
+    record<USVString, GPUPipelineConstantValue> constants;
+};

@@ -1,0 +1,5 @@
+// Source: Storage Standard (https://storage.spec.whatwg.org/)
+dictionary StorageEstimate {
+  unsigned long long usage;
+  unsigned long long quota;
+};

@@ -1,0 +1,10 @@
+// Source: Event Timing API (https://www.w3.org/TR/event-timing/)
+[Exposed=Window]
+interface PerformanceEventTiming : PerformanceEntry {
+    readonly attribute DOMHighResTimeStamp processingStart;
+    readonly attribute DOMHighResTimeStamp processingEnd;
+    readonly attribute boolean cancelable;
+    readonly attribute Node? target;
+    readonly attribute unsigned long long interactionId;
+    [Default] object toJSON();
+};

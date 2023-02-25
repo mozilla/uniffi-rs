@@ -1,0 +1,8 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+[Exposed=(Window,Worker), Serializable, SecureContext]
+interface WebTransportError : DOMException {
+  constructor(optional DOMString message = "", optional WebTransportErrorOptions options = {});
+
+  readonly attribute WebTransportErrorSource source;
+  readonly attribute octet? streamErrorCode;
+};

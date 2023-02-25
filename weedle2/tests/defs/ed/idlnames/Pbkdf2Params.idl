@@ -1,0 +1,6 @@
+// Source: Web Cryptography API (https://www.w3.org/TR/WebCryptoAPI/)
+dictionary Pbkdf2Params : Algorithm {
+  required BufferSource salt;
+  required [EnforceRange] unsigned long iterations;
+  required HashAlgorithmIdentifier hash;
+};

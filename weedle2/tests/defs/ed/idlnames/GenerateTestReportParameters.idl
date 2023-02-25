@@ -1,0 +1,5 @@
+// Source: Reporting API (https://www.w3.org/TR/reporting-1/)
+dictionary GenerateTestReportParameters {
+  required DOMString message;
+  DOMString group = "default";
+};

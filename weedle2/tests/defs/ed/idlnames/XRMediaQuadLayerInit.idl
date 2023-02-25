@@ -1,0 +1,6 @@
+// Source: WebXR Layers API Level 1 (https://www.w3.org/TR/webxrlayers-1/)
+dictionary XRMediaQuadLayerInit : XRMediaLayerInit {
+  XRRigidTransform? transform;
+  float? width;
+  float? height;
+};

@@ -1,0 +1,8 @@
+// Source: Web Animations Level 2 (https://drafts.csswg.org/web-animations-2/)
+[Exposed=Window]
+interface AnimationPlaybackEvent : Event {
+    constructor(DOMString type, optional AnimationPlaybackEventInit
+    eventInitDict = {});
+    readonly attribute CSSNumberish? currentTime;
+    readonly attribute CSSNumberish? timelineTime;
+};

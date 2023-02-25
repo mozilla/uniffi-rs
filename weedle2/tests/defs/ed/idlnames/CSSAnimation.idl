@@ -1,0 +1,5 @@
+// Source: CSS Animations Level 2 (https://drafts.csswg.org/css-animations-2/)
+[Exposed=Window]
+interface CSSAnimation : Animation {
+  readonly attribute CSSOMString animationName;
+};

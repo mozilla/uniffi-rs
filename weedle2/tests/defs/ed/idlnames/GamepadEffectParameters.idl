@@ -1,0 +1,7 @@
+// Source: Gamepad Extensions (https://w3c.github.io/gamepad/extensions.html)
+dictionary GamepadEffectParameters {
+    double duration = 0.0;
+    double startDelay = 0.0;
+    double strongMagnitude = 0.0;
+    double weakMagnitude = 0.0;
+};

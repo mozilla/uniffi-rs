@@ -1,0 +1,9 @@
+// Source: WebRTC Encoded Transform (https://www.w3.org/TR/webrtc-encoded-transform/)
+[Exposed=DedicatedWorker]
+interface RTCRtpScriptTransformer {
+    readonly attribute ReadableStream readable;
+    readonly attribute WritableStream writable;
+    readonly attribute any options;
+    Promise<unsigned long long> generateKeyFrame(optional DOMString rid);
+    Promise<undefined> sendKeyFrameRequest();
+};

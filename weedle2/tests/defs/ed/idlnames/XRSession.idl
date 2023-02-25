@@ -1,0 +1,73 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window] interface XRSession : EventTarget {
+  // Attributes
+  readonly attribute XRVisibilityState visibilityState;
+  readonly attribute float? frameRate;
+  readonly attribute Float32Array? supportedFrameRates;
+  [SameObject] readonly attribute XRRenderState renderState;
+  [SameObject] readonly attribute XRInputSourceArray inputSources;
+  readonly attribute FrozenArray<DOMString> enabledFeatures;
+
+  // Methods
+  undefined updateRenderState(optional XRRenderStateInit state = {});
+  Promise<undefined> updateTargetFrameRate(float rate);
+  [NewObject] Promise<XRReferenceSpace> requestReferenceSpace(XRReferenceSpaceType type);
+
+  unsigned long requestAnimationFrame(XRFrameRequestCallback callback);
+  undefined cancelAnimationFrame(unsigned long handle);
+
+  Promise<undefined> end();
+
+  // Events
+  attribute EventHandler onend;
+  attribute EventHandler oninputsourceschange;
+  attribute EventHandler onselect;
+  attribute EventHandler onselectstart;
+  attribute EventHandler onselectend;
+  attribute EventHandler onsqueeze;
+  attribute EventHandler onsqueezestart;
+  attribute EventHandler onsqueezeend;
+  attribute EventHandler onvisibilitychange;
+  attribute EventHandler onframeratechange;
+};
+
+// Source: WebXR Anchors Module (https://immersive-web.github.io/anchors/)
+partial interface XRSession {
+  Promise<XRAnchor> restorePersistentAnchor(DOMString uuid);
+  Promise<undefined> deletePersistentAnchor(DOMString uuid);
+};
+
+// Source: WebXR Augmented Reality Module - Level 1 (https://www.w3.org/TR/webxr-ar-module-1/)
+partial interface XRSession {
+  // Attributes
+  readonly attribute XREnvironmentBlendMode environmentBlendMode;
+};
+
+// Source: WebXR Augmented Reality Module - Level 1 (https://www.w3.org/TR/webxr-ar-module-1/)
+partial interface XRSession {
+  // Attributes
+  readonly attribute XRInteractionMode interactionMode;
+};
+
+// Source: WebXR Depth Sensing Module (https://www.w3.org/TR/webxr-depth-sensing-1/)
+partial interface XRSession {
+  readonly attribute XRDepthUsage depthUsage;
+  readonly attribute XRDepthDataFormat depthDataFormat;
+};
+
+// Source: WebXR DOM Overlays Module (https://www.w3.org/TR/webxr-dom-overlays-1/)
+partial interface XRSession {
+  readonly attribute XRDOMOverlayState? domOverlayState;
+};
+
+// Source: WebXR Hit Test Module (https://www.w3.org/TR/webxr-hit-test-1/)
+partial interface XRSession {
+  Promise<XRHitTestSource> requestHitTestSource(XRHitTestOptionsInit options);
+  Promise<XRTransientInputHitTestSource> requestHitTestSourceForTransientInput(XRTransientInputHitTestOptionsInit options);
+};
+
+// Source: WebXR Lighting Estimation API Level 1 (https://www.w3.org/TR/webxr-lighting-estimation-1/)
+partial interface XRSession {
+  Promise<XRLightProbe> requestLightProbe(optional XRLightProbeInit options = {});
+  readonly attribute XRReflectionFormat preferredReflectionFormat;
+};

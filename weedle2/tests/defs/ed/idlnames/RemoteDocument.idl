@@ -1,0 +1,10 @@
+// Source: JSON-LD 1.1 Processing Algorithms and API (https://www.w3.org/TR/json-ld11-api/)
+[Exposed=JsonLd]
+interface RemoteDocument {
+  constructor();
+  readonly attribute USVString contentType;
+  readonly attribute USVString contextUrl;
+  attribute any document;
+  readonly attribute USVString documentUrl;
+  readonly attribute USVString profile;
+};

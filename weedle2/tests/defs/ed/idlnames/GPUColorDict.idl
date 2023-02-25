@@ -1,0 +1,7 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUColorDict {
+    required double r;
+    required double g;
+    required double b;
+    required double a;
+};

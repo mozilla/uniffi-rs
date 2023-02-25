@@ -1,0 +1,17 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary VideoFrameInit {
+  unsigned long long duration;  // microseconds
+  long long timestamp;          // microseconds
+  AlphaOption alpha = "keep";
+
+  // Default matches image. May be used to efficiently crop. Will trigger
+  // new computation of displayWidth and displayHeight using image’s pixel
+  // aspect ratio unless an explicit displayWidth and displayHeight are given.
+  DOMRectInit visibleRect;
+
+  // Default matches image unless visibleRect is provided.
+  [EnforceRange] unsigned long displayWidth;
+  [EnforceRange] unsigned long displayHeight;
+
+  VideoFrameMetadata metadata;
+};

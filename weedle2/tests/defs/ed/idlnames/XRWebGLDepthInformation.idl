@@ -1,0 +1,5 @@
+// Source: WebXR Depth Sensing Module (https://www.w3.org/TR/webxr-depth-sensing-1/)
+[Exposed=Window]
+interface XRWebGLDepthInformation : XRDepthInformation {
+  [SameObject] readonly attribute WebGLTexture texture;
+};

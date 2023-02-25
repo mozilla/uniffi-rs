@@ -1,0 +1,3 @@
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+/* 'octet' should be an unsigned 8 bit type. */
+typedef unsigned short GLushort;

@@ -1,0 +1,2 @@
+// Source: WebGL 2.0 Specification (https://registry.khronos.org/webgl/specs/latest/2.0/)
+typedef ([AllowShared] Uint32Array or sequence<GLuint>) Uint32List;

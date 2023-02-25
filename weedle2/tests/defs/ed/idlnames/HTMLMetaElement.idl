@@ -1,0 +1,17 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLMetaElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute DOMString name;
+  [CEReactions] attribute DOMString httpEquiv;
+  [CEReactions] attribute DOMString content;
+  [CEReactions] attribute DOMString media;
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLMetaElement {
+  [CEReactions] attribute DOMString scheme;
+};

@@ -1,0 +1,6 @@
+// Source: Web Animations (https://www.w3.org/TR/web-animations-1/)
+dictionary BasePropertyIndexedKeyframe {
+    (double? or sequence<double?>)                         offset = [];
+    (DOMString or sequence<DOMString>)                     easing = [];
+    (CompositeOperationOrAuto or sequence<CompositeOperationOrAuto>) composite = [];
+};

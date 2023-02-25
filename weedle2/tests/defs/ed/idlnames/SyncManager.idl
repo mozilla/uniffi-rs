@@ -1,0 +1,6 @@
+// Source: Web Background Synchronization (https://wicg.github.io/background-sync/spec/)
+[Exposed=(Window,Worker)]
+interface SyncManager {
+  Promise<undefined> register(DOMString tag);
+  Promise<sequence<DOMString>> getTags();
+};

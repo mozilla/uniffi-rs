@@ -1,0 +1,6 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=(Window,Worker)]
+interface ImageBitmapRenderingContext {
+  readonly attribute (HTMLCanvasElement or OffscreenCanvas) canvas;
+  undefined transferFromImageBitmap(ImageBitmap? bitmap);
+};

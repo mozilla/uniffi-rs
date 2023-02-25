@@ -1,0 +1,6 @@
+// Source: Background Fetch (https://wicg.github.io/background-fetch/)
+[Exposed=(Window,Worker)]
+interface BackgroundFetchRecord {
+  readonly attribute Request request;
+  readonly attribute Promise<Response> responseReady;
+};

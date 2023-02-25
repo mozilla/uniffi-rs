@@ -1,0 +1,5 @@
+// Source: File System Access (https://wicg.github.io/file-system-access/)
+enum FileSystemPermissionMode {
+  "read",
+  "readwrite"
+};

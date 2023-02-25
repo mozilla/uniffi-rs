@@ -1,0 +1,7 @@
+// Source: MediaStream Image Capture (https://www.w3.org/TR/image-capture/)
+dictionary PhotoCapabilities {
+  RedEyeReduction         redEyeReduction;
+  MediaSettingsRange      imageHeight;
+  MediaSettingsRange      imageWidth;
+  sequence<FillLightMode> fillLightMode;
+};

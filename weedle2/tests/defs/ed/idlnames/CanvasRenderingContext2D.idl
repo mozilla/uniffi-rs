@@ -1,0 +1,56 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface CanvasRenderingContext2D {
+  // back-reference to the canvas
+  readonly attribute HTMLCanvasElement canvas;
+
+  CanvasRenderingContext2DSettings getContextAttributes();
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasState;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasTransform;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasCompositing;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasImageSmoothing;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasFillStrokeStyles;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasShadowStyles;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasFilters;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasRect;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasDrawPath;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasUserInterface;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasText;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasDrawImage;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasImageData;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasPathDrawingStyles;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasTextDrawingStyles;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+CanvasRenderingContext2D includes CanvasPath;

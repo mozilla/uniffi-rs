@@ -1,0 +1,4 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+dictionary ValueEventInit : EventInit {
+  any value = null;
+};

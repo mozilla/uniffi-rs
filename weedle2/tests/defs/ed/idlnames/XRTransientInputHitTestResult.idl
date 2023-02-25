@@ -1,0 +1,6 @@
+// Source: WebXR Hit Test Module (https://www.w3.org/TR/webxr-hit-test-1/)
+[SecureContext, Exposed=Window]
+interface XRTransientInputHitTestResult {
+  [SameObject] readonly attribute XRInputSource inputSource;
+  readonly attribute FrozenArray<XRHitTestResult> results;
+};

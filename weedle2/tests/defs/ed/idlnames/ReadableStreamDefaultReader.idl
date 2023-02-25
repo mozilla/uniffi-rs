@@ -1,0 +1,11 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+[Exposed=*]
+interface ReadableStreamDefaultReader {
+  constructor(ReadableStream stream);
+
+  Promise<ReadableStreamReadResult> read();
+  undefined releaseLock();
+};
+
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+ReadableStreamDefaultReader includes ReadableStreamGenericReader;

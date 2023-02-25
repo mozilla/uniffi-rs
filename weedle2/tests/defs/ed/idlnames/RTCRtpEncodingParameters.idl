@@ -1,0 +1,18 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+dictionary RTCRtpEncodingParameters : RTCRtpCodingParameters {
+  boolean active = true;
+  unsigned long maxBitrate;
+  double maxFramerate;
+  double scaleResolutionDownBy;
+};
+
+// Source: WebRTC Priority Control API (https://www.w3.org/TR/webrtc-priority/)
+partial dictionary RTCRtpEncodingParameters {
+  RTCPriorityType priority = "low";
+  RTCPriorityType networkPriority;
+};
+
+// Source: Scalable Video Coding (SVC) Extension for WebRTC (https://www.w3.org/TR/webrtc-svc/)
+partial dictionary RTCRtpEncodingParameters {
+             DOMString scalabilityMode;
+};

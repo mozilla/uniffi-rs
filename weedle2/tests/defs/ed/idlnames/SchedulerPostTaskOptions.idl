@@ -1,0 +1,6 @@
+// Source: Prioritized Task Scheduling (https://wicg.github.io/scheduling-apis/)
+dictionary SchedulerPostTaskOptions {
+  AbortSignal signal;
+  TaskPriority priority;
+  [EnforceRange] unsigned long long delay = 0;
+};

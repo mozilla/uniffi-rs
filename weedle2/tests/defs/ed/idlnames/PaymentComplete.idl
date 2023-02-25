@@ -1,0 +1,6 @@
+// Source: Payment Request API 1.1 (https://www.w3.org/TR/payment-request-1.1/)
+enum PaymentComplete {
+  "fail",
+  "success",
+  "unknown"
+};

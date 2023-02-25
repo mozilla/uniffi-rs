@@ -1,0 +1,2 @@
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+enum ScrollLogicalPosition { "start", "center", "end", "nearest" };

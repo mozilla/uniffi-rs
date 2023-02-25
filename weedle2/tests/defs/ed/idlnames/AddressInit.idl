@@ -1,0 +1,13 @@
+// Source: Payment Handler API (https://www.w3.org/TR/payment-handler/)
+dictionary AddressInit {
+  DOMString country = "";
+  sequence<DOMString> addressLine = [];
+  DOMString region = "";
+  DOMString city = "";
+  DOMString dependentLocality = "";
+  DOMString postalCode = "";
+  DOMString sortingCode = "";
+  DOMString organization = "";
+  DOMString recipient = "";
+  DOMString phone = "";
+};

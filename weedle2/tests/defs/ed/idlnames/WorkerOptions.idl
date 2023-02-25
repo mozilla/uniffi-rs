@@ -1,0 +1,6 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+dictionary WorkerOptions {
+  WorkerType type = "classic";
+  RequestCredentials credentials = "same-origin"; // credentials is only used if type is "module"
+  DOMString name = "";
+};

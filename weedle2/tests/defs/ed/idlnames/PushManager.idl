@@ -1,0 +1,9 @@
+// Source: Push API (https://www.w3.org/TR/push-api/)
+[Exposed=(Window,Worker), SecureContext]
+interface PushManager {
+  [SameObject] static readonly attribute FrozenArray<DOMString> supportedContentEncodings;
+
+  Promise<PushSubscription> subscribe(optional PushSubscriptionOptionsInit options = {});
+  Promise<PushSubscription?> getSubscription();
+  Promise<PermissionState> permissionState(optional PushSubscriptionOptionsInit options = {});
+};

@@ -1,0 +1,22 @@
+// Source: SVG Animations (https://svgwg.org/specs/animations/)
+[Exposed=Window]
+interface SVGAnimationElement : SVGElement {
+
+  readonly attribute SVGElement? targetElement;
+
+  attribute EventHandler onbegin;
+  attribute EventHandler onend;
+  attribute EventHandler onrepeat;
+
+  float getStartTime();
+  float getCurrentTime();
+  float getSimpleDuration();
+
+  undefined beginElement();
+  undefined beginElementAt(float offset);
+  undefined endElement();
+  undefined endElementAt(float offset);
+};
+
+// Source: SVG Animations (https://svgwg.org/specs/animations/)
+SVGAnimationElement includes SVGTests;

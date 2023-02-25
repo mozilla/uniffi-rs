@@ -1,0 +1,5 @@
+// Source: IceTransport Extensions for WebRTC (https://w3c.github.io/webrtc-ice/)
+dictionary RTCIceGatherOptions {
+             RTCIceTransportPolicy     gatherPolicy = "all";
+             sequence<RTCIceServer> iceServers;
+};

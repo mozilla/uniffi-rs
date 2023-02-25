@@ -1,0 +1,21 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGElement : Element {
+
+  [SameObject] readonly attribute SVGAnimatedString className;
+
+  readonly attribute SVGSVGElement? ownerSVGElement;
+  readonly attribute SVGElement? viewportElement;
+};
+
+// Source: CSS Object Model (CSSOM) (https://www.w3.org/TR/cssom-1/)
+SVGElement includes ElementCSSInlineStyle;
+
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+SVGElement includes GlobalEventHandlers;
+
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+SVGElement includes SVGElementInstance;
+
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+SVGElement includes HTMLOrSVGElement;

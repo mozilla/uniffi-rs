@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPUDeviceLostInfo {
+    readonly attribute (GPUDeviceLostReason or undefined) reason;
+    readonly attribute DOMString message;
+};

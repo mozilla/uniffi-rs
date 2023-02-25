@@ -1,0 +1,7 @@
+// Source: Get Installed Related Apps API (https://wicg.github.io/get-installed-related-apps/spec/)
+dictionary RelatedApplication {
+    required USVString platform;
+    USVString url;
+    DOMString id;
+    USVString version;
+};

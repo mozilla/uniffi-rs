@@ -1,0 +1,8 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+dictionary AllowedBluetoothDevice {
+  required DOMString deviceId;
+  required boolean mayUseGATT;
+  // An allowedServices of "all" means all services are allowed.
+  required (DOMString or sequence<UUID>) allowedServices;
+  required sequence<unsigned short> allowedManufacturerData;
+};

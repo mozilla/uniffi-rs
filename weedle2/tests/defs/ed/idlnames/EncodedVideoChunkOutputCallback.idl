@@ -1,0 +1,4 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+callback EncodedVideoChunkOutputCallback =
+    undefined (EncodedVideoChunk chunk,
+               optional EncodedVideoChunkMetadata metadata = {});

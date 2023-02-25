@@ -1,0 +1,4 @@
+// Source: The Capture-Handle Actions Mechanism (https://w3c.github.io/mediacapture-handle/actions/)
+dictionary CaptureActionEventInit : EventInit {
+  DOMString action;
+};

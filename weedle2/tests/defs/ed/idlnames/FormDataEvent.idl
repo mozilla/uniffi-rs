@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface FormDataEvent : Event {
+  constructor(DOMString type, FormDataEventInit eventInitDict);
+
+  readonly attribute FormData formData;
+};

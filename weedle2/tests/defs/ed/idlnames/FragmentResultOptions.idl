@@ -1,0 +1,10 @@
+// Source: CSS Layout API Level 1 (https://www.w3.org/TR/css-layout-api-1/)
+// This is the final return value from the author defined layout() method.
+dictionary FragmentResultOptions {
+    double inlineSize = 0;
+    double blockSize = 0;
+    double autoBlockSize = 0;
+    sequence<LayoutFragment> childFragments = [];
+    any data = null;
+    BreakTokenOptions breakToken = null;
+};

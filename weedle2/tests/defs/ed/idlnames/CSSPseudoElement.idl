@@ -1,0 +1,11 @@
+// Source: CSS Pseudo-Elements Module Level 4 (https://www.w3.org/TR/css-pseudo-4/)
+[Exposed=Window]
+interface CSSPseudoElement : EventTarget {
+    readonly attribute CSSOMString type;
+    readonly attribute Element element;
+    readonly attribute (Element or CSSPseudoElement) parent;
+    CSSPseudoElement? pseudo(CSSOMString type);
+};
+
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+CSSPseudoElement includes GeometryUtils;

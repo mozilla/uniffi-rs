@@ -1,0 +1,8 @@
+// Source: Cookie Store API (https://wicg.github.io/cookie-store/)
+[Exposed=(ServiceWorker,Window),
+ SecureContext]
+interface CookieStoreManager {
+  Promise<undefined> subscribe(sequence<CookieStoreGetOptions> subscriptions);
+  Promise<sequence<CookieStoreGetOptions>> getSubscriptions();
+  Promise<undefined> unsubscribe(sequence<CookieStoreGetOptions> subscriptions);
+};

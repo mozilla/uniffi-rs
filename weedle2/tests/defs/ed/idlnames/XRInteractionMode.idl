@@ -1,0 +1,5 @@
+// Source: WebXR Augmented Reality Module - Level 1 (https://www.w3.org/TR/webxr-ar-module-1/)
+enum XRInteractionMode {
+    "screen-space",
+    "world-space",
+};

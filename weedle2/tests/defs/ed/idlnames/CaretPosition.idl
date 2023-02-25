@@ -1,0 +1,7 @@
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+[Exposed=Window]
+interface CaretPosition {
+  readonly attribute Node offsetNode;
+  readonly attribute unsigned long offset;
+  [NewObject] DOMRect? getClientRect();
+};

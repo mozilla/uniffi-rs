@@ -1,0 +1,7 @@
+// Source: Scroll-driven Animations (https://www.w3.org/TR/scroll-animations-1/)
+[Exposed=Window]
+interface ScrollTimeline : AnimationTimeline {
+  constructor(optional ScrollTimelineOptions options = {});
+  readonly attribute Element? source;
+  readonly attribute ScrollAxis axis;
+};

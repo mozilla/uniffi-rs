@@ -1,0 +1,9 @@
+// Source: VirtualKeyboard API (https://www.w3.org/TR/virtual-keyboard/)
+[Exposed=Window, SecureContext]
+interface VirtualKeyboard : EventTarget {
+    undefined show();
+    undefined hide();
+    readonly attribute DOMRect boundingRect;
+    attribute boolean overlaysContent;
+    attribute EventHandler ongeometrychange;
+};

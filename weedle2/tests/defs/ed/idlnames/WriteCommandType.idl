@@ -1,0 +1,6 @@
+// Source: File System Standard (https://fs.spec.whatwg.org/)
+enum WriteCommandType {
+  "write",
+  "seek",
+  "truncate",
+};

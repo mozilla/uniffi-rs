@@ -1,0 +1,8 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGEllipseElement : SVGGeometryElement {
+  [SameObject] readonly attribute SVGAnimatedLength cx;
+  [SameObject] readonly attribute SVGAnimatedLength cy;
+  [SameObject] readonly attribute SVGAnimatedLength rx;
+  [SameObject] readonly attribute SVGAnimatedLength ry;
+};

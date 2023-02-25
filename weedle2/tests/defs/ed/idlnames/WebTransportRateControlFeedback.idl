@@ -1,0 +1,5 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+[Exposed=(Window,Worker), SecureContext]
+interface WebTransportRateControlFeedback {
+  readonly attribute unsigned long long? sendRate;
+};

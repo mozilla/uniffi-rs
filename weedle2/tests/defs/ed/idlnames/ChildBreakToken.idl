@@ -1,0 +1,6 @@
+// Source: CSS Layout API Level 1 (https://www.w3.org/TR/css-layout-api-1/)
+[Exposed=LayoutWorklet]
+interface ChildBreakToken {
+    readonly attribute BreakType breakType;
+    readonly attribute LayoutChild child;
+};

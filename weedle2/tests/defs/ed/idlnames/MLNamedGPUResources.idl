@@ -1,0 +1,2 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+typedef record<DOMString, MLGPUResource> MLNamedGPUResources;

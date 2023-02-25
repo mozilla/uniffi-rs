@@ -1,0 +1,7 @@
+// Source: Scripting Policy (https://wicg.github.io/csp-next/scripting-policy.html)
+enum ScriptingPolicyViolationType {
+  "externalScript",
+  "inlineScript",
+  "inlineEventHandler",
+  "eval"
+};

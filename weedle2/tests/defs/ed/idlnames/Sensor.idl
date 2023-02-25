@@ -1,0 +1,12 @@
+// Source: Generic Sensor API (https://www.w3.org/TR/generic-sensor/)
+[SecureContext, Exposed=(DedicatedWorker, Window)]
+interface Sensor : EventTarget {
+  readonly attribute boolean activated;
+  readonly attribute boolean hasReading;
+  readonly attribute DOMHighResTimeStamp? timestamp;
+  undefined start();
+  undefined stop();
+  attribute EventHandler onreading;
+  attribute EventHandler onactivate;
+  attribute EventHandler onerror;
+};

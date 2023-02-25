@@ -1,0 +1,5 @@
+// Source: Viewport Capture (https://www.w3.org/TR/mediacapture-viewport/)
+dictionary ViewportMediaStreamConstraints {
+  (boolean or MediaTrackConstraints) video = true;
+  (boolean or MediaTrackConstraints) audio = false;
+};

@@ -1,0 +1,7 @@
+// Source: Indexed Database API 3.0 (https://www.w3.org/TR/IndexedDB-3/)
+[Exposed=(Window,Worker)]
+interface IDBOpenDBRequest : IDBRequest {
+  // Event handlers:
+  attribute EventHandler onblocked;
+  attribute EventHandler onupgradeneeded;
+};

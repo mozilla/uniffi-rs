@@ -1,0 +1,5 @@
+// Source: Reporting API (https://www.w3.org/TR/reporting-1/)
+dictionary ReportingObserverOptions {
+  sequence<DOMString> types;
+  boolean buffered = false;
+};

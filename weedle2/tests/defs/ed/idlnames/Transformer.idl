@@ -1,0 +1,8 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+dictionary Transformer {
+  TransformerStartCallback start;
+  TransformerTransformCallback transform;
+  TransformerFlushCallback flush;
+  any readableType;
+  any writableType;
+};

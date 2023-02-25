@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUShaderModuleDescriptor : GPUObjectDescriptorBase {
+    required USVString code;
+    object sourceMap;
+    record<USVString, GPUShaderModuleCompilationHint> hints;
+};

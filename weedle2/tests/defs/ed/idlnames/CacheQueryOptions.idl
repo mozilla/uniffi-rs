@@ -1,0 +1,6 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+dictionary CacheQueryOptions {
+  boolean ignoreSearch = false;
+  boolean ignoreMethod = false;
+  boolean ignoreVary = false;
+};

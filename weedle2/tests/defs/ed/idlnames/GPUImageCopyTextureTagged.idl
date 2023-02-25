@@ -1,0 +1,5 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUImageCopyTextureTagged : GPUImageCopyTexture {
+    PredefinedColorSpace colorSpace = "srgb";
+    boolean premultipliedAlpha = false;
+};

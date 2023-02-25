@@ -1,0 +1,5 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+[Exposed=Window, SecureContext]
+interface BluetoothManufacturerDataMap {
+  readonly maplike<unsigned short, DataView>;
+};

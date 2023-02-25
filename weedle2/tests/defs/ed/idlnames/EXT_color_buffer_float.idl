@@ -1,0 +1,4 @@
+// Source: WebGL EXT_color_buffer_float Extension Specification (https://registry.khronos.org/webgl/extensions/EXT_color_buffer_float/)
+[Exposed=(Window,Worker), LegacyNoInterfaceObject]
+interface EXT_color_buffer_float {
+};

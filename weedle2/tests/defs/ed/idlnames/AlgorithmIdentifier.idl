@@ -1,0 +1,2 @@
+// Source: Web Cryptography API (https://www.w3.org/TR/WebCryptoAPI/)
+typedef (object or DOMString) AlgorithmIdentifier;

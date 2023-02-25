@@ -1,0 +1,6 @@
+// Source: CSS Containment Module Level 2 (https://www.w3.org/TR/css-contain-2/)
+[Exposed=Window]
+interface ContentVisibilityAutoStateChangeEvent : Event {
+  constructor(DOMString type, optional ContentVisibilityAutoStateChangeEventInit eventInitDict = {});
+  readonly attribute boolean skipped;
+};

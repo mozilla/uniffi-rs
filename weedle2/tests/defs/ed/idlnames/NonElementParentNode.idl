@@ -1,0 +1,4 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+interface mixin NonElementParentNode {
+  Element? getElementById(DOMString elementId);
+};

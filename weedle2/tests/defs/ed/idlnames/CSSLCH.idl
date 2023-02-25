@@ -1,0 +1,9 @@
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+[Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
+interface CSSLCH : CSSColorValue {
+    constructor(CSSColorPercent l, CSSColorPercent c, CSSColorAngle h, optional CSSColorPercent alpha = 1);
+    attribute CSSColorPercent l;
+    attribute CSSColorPercent c;
+    attribute CSSColorAngle h;
+    attribute CSSColorPercent alpha;
+};

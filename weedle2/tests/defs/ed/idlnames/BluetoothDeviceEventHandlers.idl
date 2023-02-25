@@ -1,0 +1,6 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+[SecureContext]
+interface mixin BluetoothDeviceEventHandlers {
+  attribute EventHandler onadvertisementreceived;
+  attribute EventHandler ongattserverdisconnected;
+};

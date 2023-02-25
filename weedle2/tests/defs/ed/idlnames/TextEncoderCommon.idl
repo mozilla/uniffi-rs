@@ -1,0 +1,4 @@
+// Source: Encoding Standard (https://encoding.spec.whatwg.org/)
+interface mixin TextEncoderCommon {
+  readonly attribute DOMString encoding;
+};

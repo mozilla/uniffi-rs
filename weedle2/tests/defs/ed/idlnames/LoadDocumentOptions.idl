@@ -1,0 +1,6 @@
+// Source: JSON-LD 1.1 Processing Algorithms and API (https://www.w3.org/TR/json-ld11-api/)
+dictionary LoadDocumentOptions {
+  boolean  extractAllScripts = false;
+  USVString profile = null;
+  (USVString or sequence<USVString>) requestProfile = null;
+};

@@ -1,0 +1,7 @@
+// Source: User Timing Level 3 (https://www.w3.org/TR/user-timing/)
+dictionary PerformanceMeasureOptions {
+    any detail;
+    (DOMString or DOMHighResTimeStamp) start;
+    DOMHighResTimeStamp duration;
+    (DOMString or DOMHighResTimeStamp) end;
+};

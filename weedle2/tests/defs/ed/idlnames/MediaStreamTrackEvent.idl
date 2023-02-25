@@ -1,0 +1,6 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+[Exposed=Window]
+interface MediaStreamTrackEvent : Event {
+  constructor(DOMString type, MediaStreamTrackEventInit eventInitDict);
+  [SameObject] readonly attribute MediaStreamTrack track;
+};

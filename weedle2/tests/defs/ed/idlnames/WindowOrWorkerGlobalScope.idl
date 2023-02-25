@@ -1,0 +1,63 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin WindowOrWorkerGlobalScope {
+  [Replaceable] readonly attribute USVString origin;
+  readonly attribute boolean isSecureContext;
+  readonly attribute boolean crossOriginIsolated;
+
+  undefined reportError(any e);
+
+  // base64 utility methods
+  DOMString btoa(DOMString data);
+  ByteString atob(DOMString data);
+
+  // timers
+  long setTimeout(TimerHandler handler, optional long timeout = 0, any... arguments);
+  undefined clearTimeout(optional long id = 0);
+  long setInterval(TimerHandler handler, optional long timeout = 0, any... arguments);
+  undefined clearInterval(optional long id = 0);
+
+  // microtask queuing
+  undefined queueMicrotask(VoidFunction callback);
+
+  // ImageBitmap
+  Promise<ImageBitmap> createImageBitmap(ImageBitmapSource image, optional ImageBitmapOptions options = {});
+  Promise<ImageBitmap> createImageBitmap(ImageBitmapSource image, long sx, long sy, long sw, long sh, optional ImageBitmapOptions options = {});
+
+  // structured cloning
+  any structuredClone(any value, optional StructuredSerializeOptions options = {});
+};
+
+// Source: Fetch Standard (https://fetch.spec.whatwg.org/)
+partial interface mixin WindowOrWorkerGlobalScope {
+  [NewObject] Promise<Response> fetch(RequestInfo input, optional RequestInit init = {});
+};
+
+// Source: Prioritized Task Scheduling (https://wicg.github.io/scheduling-apis/)
+partial interface mixin WindowOrWorkerGlobalScope {
+  [Replaceable] readonly attribute Scheduler scheduler;
+};
+
+// Source: High Resolution Time (https://www.w3.org/TR/hr-time-3/)
+partial interface mixin WindowOrWorkerGlobalScope {
+  [Replaceable] readonly attribute Performance performance;
+};
+
+// Source: Indexed Database API 3.0 (https://www.w3.org/TR/IndexedDB-3/)
+partial interface mixin WindowOrWorkerGlobalScope {
+  [SameObject] readonly attribute IDBFactory indexedDB;
+};
+
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+partial interface mixin WindowOrWorkerGlobalScope {
+  [SecureContext, SameObject] readonly attribute CacheStorage caches;
+};
+
+// Source: Trusted Types (https://www.w3.org/TR/trusted-types/)
+partial interface mixin WindowOrWorkerGlobalScope {
+  readonly attribute TrustedTypePolicyFactory trustedTypes;
+};
+
+// Source: Web Cryptography API (https://www.w3.org/TR/WebCryptoAPI/)
+partial interface mixin WindowOrWorkerGlobalScope {
+  [SameObject] readonly attribute Crypto crypto;
+};

@@ -1,0 +1,12 @@
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+dictionary InputEventInit : UIEventInit {
+  DOMString? data = null;
+  boolean isComposing = false;
+  DOMString inputType = "";
+};
+
+// Source: Input Events Level 2 (https://www.w3.org/TR/input-events-2/)
+partial dictionary InputEventInit {
+   DataTransfer? dataTransfer = null;
+   sequence<StaticRange> targetRanges = [];
+};

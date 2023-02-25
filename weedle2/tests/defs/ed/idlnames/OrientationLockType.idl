@@ -1,0 +1,11 @@
+// Source: Screen Orientation (https://www.w3.org/TR/screen-orientation/)
+enum OrientationLockType {
+  "any",
+  "natural",
+  "landscape",
+  "portrait",
+  "portrait-primary",
+  "portrait-secondary",
+  "landscape-primary",
+  "landscape-secondary"
+};

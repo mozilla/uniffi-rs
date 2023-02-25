@@ -1,0 +1,12 @@
+// Source: EditContext API (https://www.w3.org/TR/edit-context/)
+[Exposed=Window]
+interface TextFormat {
+    constructor(optional TextFormatInit options = {});
+    attribute unsigned long rangeStart;
+    attribute unsigned long rangeEnd;
+    attribute DOMString textColor;
+    attribute DOMString backgroundColor;
+    attribute DOMString underlineStyle;
+    attribute DOMString underlineThickness;
+    attribute DOMString underlineColor;
+};

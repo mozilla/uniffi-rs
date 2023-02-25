@@ -1,0 +1,15 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+dictionary MediaStreamConstraints {
+  (boolean or MediaTrackConstraints) video = false;
+  (boolean or MediaTrackConstraints) audio = false;
+};
+
+// Source: preferCurrentTab (https://wicg.github.io/prefer-current-tab/)
+partial dictionary MediaStreamConstraints {
+  boolean preferCurrentTab = false;
+};
+
+// Source: Identity for WebRTC 1.0 (https://www.w3.org/TR/webrtc-identity/)
+partial dictionary MediaStreamConstraints {
+             DOMString peerIdentity;
+};

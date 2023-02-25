@@ -1,0 +1,30 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin WindowEventHandlers {
+  attribute EventHandler onafterprint;
+  attribute EventHandler onbeforeprint;
+  attribute OnBeforeUnloadEventHandler onbeforeunload;
+  attribute EventHandler onhashchange;
+  attribute EventHandler onlanguagechange;
+  attribute EventHandler onmessage;
+  attribute EventHandler onmessageerror;
+  attribute EventHandler onoffline;
+  attribute EventHandler ononline;
+  attribute EventHandler onpagehide;
+  attribute EventHandler onpageshow;
+  attribute EventHandler onpopstate;
+  attribute EventHandler onrejectionhandled;
+  attribute EventHandler onstorage;
+  attribute EventHandler onunhandledrejection;
+  attribute EventHandler onunload;
+};
+
+// Source: Portals (https://wicg.github.io/portals/)
+partial interface mixin WindowEventHandlers {
+    attribute EventHandler onportalactivate;
+};
+
+// Source: Gamepad (https://www.w3.org/TR/gamepad/)
+partial interface mixin WindowEventHandlers {
+  attribute EventHandler ongamepadconnected;
+  attribute EventHandler ongamepaddisconnected;
+};

@@ -1,0 +1,8 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+[Exposed=Window]
+interface XPathEvaluator {
+  constructor();
+};
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+XPathEvaluator includes XPathEvaluatorBase;

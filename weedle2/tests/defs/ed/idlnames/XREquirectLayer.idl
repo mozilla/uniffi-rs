@@ -1,0 +1,13 @@
+// Source: WebXR Layers API Level 1 (https://www.w3.org/TR/webxrlayers-1/)
+[Exposed=Window] interface XREquirectLayer : XRCompositionLayer {
+  attribute XRSpace space;
+  attribute XRRigidTransform transform;
+
+  attribute float radius;
+  attribute float centralHorizontalAngle;
+  attribute float upperVerticalAngle;
+  attribute float lowerVerticalAngle;
+
+  // Events
+  attribute EventHandler onredraw;
+};

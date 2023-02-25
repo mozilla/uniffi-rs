@@ -1,0 +1,7 @@
+// Source: MediaStream Recording (https://www.w3.org/TR/mediastream-recording/)
+[Exposed=Window]
+interface BlobEvent : Event {
+  constructor(DOMString type, BlobEventInit eventInitDict);
+  [SameObject] readonly attribute Blob data;
+  readonly attribute DOMHighResTimeStamp timecode;
+};

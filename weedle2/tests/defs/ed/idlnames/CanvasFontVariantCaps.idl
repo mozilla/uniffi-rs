@@ -1,0 +1,2 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+enum CanvasFontVariantCaps { "normal", "small-caps", "all-small-caps", "petite-caps", "all-petite-caps", "unicase", "titling-caps" };

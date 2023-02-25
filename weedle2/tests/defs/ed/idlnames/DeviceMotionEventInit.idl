@@ -1,0 +1,7 @@
+// Source: DeviceOrientation Event Specification (https://www.w3.org/TR/orientation-event/)
+dictionary DeviceMotionEventInit : EventInit {
+    DeviceMotionEventAccelerationInit acceleration;
+    DeviceMotionEventAccelerationInit accelerationIncludingGravity;
+    DeviceMotionEventRotationRateInit rotationRate;
+    double interval = 0;
+};

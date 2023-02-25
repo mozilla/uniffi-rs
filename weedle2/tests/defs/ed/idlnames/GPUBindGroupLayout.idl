@@ -1,0 +1,7 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPUBindGroupLayout {
+};
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPUBindGroupLayout includes GPUObjectBase;

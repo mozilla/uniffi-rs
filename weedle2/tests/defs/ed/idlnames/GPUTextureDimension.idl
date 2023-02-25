@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+enum GPUTextureDimension {
+    "1d",
+    "2d",
+    "3d"
+};

@@ -1,0 +1,12 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface DynamicsCompressorNode : AudioNode {
+    constructor (BaseAudioContext context,
+                 optional DynamicsCompressorOptions options = {});
+    readonly attribute AudioParam threshold;
+    readonly attribute AudioParam knee;
+    readonly attribute AudioParam ratio;
+    readonly attribute float reduction;
+    readonly attribute AudioParam attack;
+    readonly attribute AudioParam release;
+};

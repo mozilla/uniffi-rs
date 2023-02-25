@@ -1,0 +1,12 @@
+// Source: Intersection Observer (https://www.w3.org/TR/intersection-observer/)
+[Exposed=Window]
+interface IntersectionObserver {
+  constructor(IntersectionObserverCallback callback, optional IntersectionObserverInit options = {});
+  readonly attribute (Element or Document)? root;
+  readonly attribute DOMString rootMargin;
+  readonly attribute FrozenArray<double> thresholds;
+  undefined observe(Element target);
+  undefined unobserve(Element target);
+  undefined disconnect();
+  sequence<IntersectionObserverEntry> takeRecords();
+};

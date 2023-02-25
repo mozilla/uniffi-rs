@@ -1,0 +1,8 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+dictionary MessageEventInit : EventInit {
+  any data = null;
+  USVString origin = "";
+  DOMString lastEventId = "";
+  MessageEventSource? source = null;
+  sequence<MessagePort> ports = [];
+};

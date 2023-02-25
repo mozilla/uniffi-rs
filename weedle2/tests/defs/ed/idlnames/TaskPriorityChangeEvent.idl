@@ -1,0 +1,7 @@
+// Source: Prioritized Task Scheduling (https://wicg.github.io/scheduling-apis/)
+[Exposed=(Window, Worker)]
+interface TaskPriorityChangeEvent : Event {
+  constructor(DOMString type, TaskPriorityChangeEventInit priorityChangeEventInitDict);
+
+  readonly attribute TaskPriority previousPriority;
+};

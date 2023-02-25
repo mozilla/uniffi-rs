@@ -1,0 +1,8 @@
+// Source: Gyroscope (https://www.w3.org/TR/gyroscope/)
+[SecureContext, Exposed=Window]
+interface Gyroscope : Sensor {
+  constructor(optional GyroscopeSensorOptions sensorOptions = {});
+  readonly attribute double? x;
+  readonly attribute double? y;
+  readonly attribute double? z;
+};

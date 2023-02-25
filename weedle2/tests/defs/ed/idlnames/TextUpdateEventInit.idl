@@ -1,0 +1,10 @@
+// Source: EditContext API (https://www.w3.org/TR/edit-context/)
+dictionary TextUpdateEventInit {
+    unsigned long updateRangeStart;
+    unsigned long updateRangeEnd;
+    DOMString text;
+    unsigned long selectionStart;
+    unsigned long selectionEnd;
+    unsigned long compositionStart;
+    unsigned long compositionEnd;
+};

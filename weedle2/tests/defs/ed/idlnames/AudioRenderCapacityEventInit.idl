@@ -1,0 +1,7 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+dictionary AudioRenderCapacityEventInit : EventInit {
+    double timestamp = 0;
+    double averageLoad = 0;
+    double peakLoad = 0;
+    double underrunRatio = 0;
+};

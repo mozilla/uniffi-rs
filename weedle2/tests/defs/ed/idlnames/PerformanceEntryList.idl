@@ -1,0 +1,2 @@
+// Source: Performance Timeline (https://www.w3.org/TR/performance-timeline/)
+typedef sequence<PerformanceEntry> PerformanceEntryList;

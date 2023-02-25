@@ -1,0 +1,7 @@
+// Source: WebAssembly JavaScript Interface (https://www.w3.org/TR/wasm-js-api-2/)
+enum ImportExportKind {
+  "function",
+  "table",
+  "memory",
+  "global"
+};

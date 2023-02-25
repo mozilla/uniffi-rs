@@ -1,0 +1,8 @@
+// Source: Compression Streams (https://wicg.github.io/compression/)
+[Exposed=*]
+interface DecompressionStream {
+  constructor(DOMString format);
+};
+
+// Source: Compression Streams (https://wicg.github.io/compression/)
+DecompressionStream includes GenericTransformStream;

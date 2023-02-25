@@ -1,0 +1,2 @@
+// Source: URLPattern API (https://wicg.github.io/urlpattern/)
+typedef (USVString or URLPatternInit) URLPatternInput;

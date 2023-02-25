@@ -1,0 +1,11 @@
+// Source: CSS Fonts Module Level 4 (https://www.w3.org/TR/css-fonts-4/)
+[Exposed=Window]
+interface CSSFontFeatureValuesRule : CSSRule {
+  attribute CSSOMString fontFamily;
+  readonly attribute CSSFontFeatureValuesMap annotation;
+  readonly attribute CSSFontFeatureValuesMap ornaments;
+  readonly attribute CSSFontFeatureValuesMap stylistic;
+  readonly attribute CSSFontFeatureValuesMap swash;
+  readonly attribute CSSFontFeatureValuesMap characterVariant;
+  readonly attribute CSSFontFeatureValuesMap styleset;
+};

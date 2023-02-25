@@ -1,0 +1,5 @@
+// Source: CSS Layout API Level 1 (https://www.w3.org/TR/css-layout-api-1/)
+dictionary BreakTokenOptions {
+    sequence<ChildBreakToken> childBreakTokens;
+    any data = null;
+};

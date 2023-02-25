@@ -1,0 +1,5 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+dictionary WebTransportErrorOptions {
+  WebTransportErrorSource source = "stream";
+  [Clamp] octet? streamErrorCode = null;
+};

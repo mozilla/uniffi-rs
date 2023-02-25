@@ -1,0 +1,6 @@
+// Source: Proximity Sensor (https://www.w3.org/TR/proximity/)
+dictionary ProximityReadingValues {
+  required double? distance;
+  required double? max;
+  required boolean? near;
+};

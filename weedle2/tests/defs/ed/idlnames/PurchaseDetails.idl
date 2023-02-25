@@ -1,0 +1,5 @@
+// Source: Digital Goods API (https://wicg.github.io/digital-goods/)
+dictionary PurchaseDetails {
+  required DOMString itemId;
+  required DOMString purchaseToken;
+};

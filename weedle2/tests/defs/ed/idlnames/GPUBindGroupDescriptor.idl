@@ -1,0 +1,5 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUBindGroupDescriptor : GPUObjectDescriptorBase {
+    required GPUBindGroupLayout layout;
+    required sequence<GPUBindGroupEntry> entries;
+};

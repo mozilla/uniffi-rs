@@ -1,0 +1,4 @@
+// Source: Gamepad (https://www.w3.org/TR/gamepad/)
+dictionary GamepadEventInit : EventInit {
+  required Gamepad gamepad;
+};

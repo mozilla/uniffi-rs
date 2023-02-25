@@ -1,0 +1,6 @@
+// Source: CSS Transitions (https://www.w3.org/TR/css-transitions-1/)
+dictionary TransitionEventInit : EventInit {
+  CSSOMString propertyName = "";
+  double elapsedTime = 0.0;
+  CSSOMString pseudoElement = "";
+};

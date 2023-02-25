@@ -1,0 +1,2 @@
+// Source: Fetch Standard (https://fetch.spec.whatwg.org/)
+enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredirect" };

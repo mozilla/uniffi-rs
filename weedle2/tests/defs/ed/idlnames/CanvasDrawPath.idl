@@ -1,0 +1,15 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin CanvasDrawPath {
+  // path API (see also CanvasPath)
+  undefined beginPath();
+  undefined fill(optional CanvasFillRule fillRule = "nonzero");
+  undefined fill(Path2D path, optional CanvasFillRule fillRule = "nonzero");
+  undefined stroke();
+  undefined stroke(Path2D path);
+  undefined clip(optional CanvasFillRule fillRule = "nonzero");
+  undefined clip(Path2D path, optional CanvasFillRule fillRule = "nonzero");
+  boolean isPointInPath(unrestricted double x, unrestricted double y, optional CanvasFillRule fillRule = "nonzero");
+  boolean isPointInPath(Path2D path, unrestricted double x, unrestricted double y, optional CanvasFillRule fillRule = "nonzero");
+  boolean isPointInStroke(unrestricted double x, unrestricted double y);
+  boolean isPointInStroke(Path2D path, unrestricted double x, unrestricted double y);
+};

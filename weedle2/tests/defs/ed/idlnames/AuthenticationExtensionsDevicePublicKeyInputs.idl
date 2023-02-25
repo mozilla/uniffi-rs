@@ -1,0 +1,5 @@
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+dictionary AuthenticationExtensionsDevicePublicKeyInputs {
+    DOMString attestation = "none";
+    sequence<DOMString> attestationFormats = [];
+};

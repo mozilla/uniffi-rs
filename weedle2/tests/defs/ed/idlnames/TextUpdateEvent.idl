@@ -1,0 +1,12 @@
+// Source: EditContext API (https://www.w3.org/TR/edit-context/)
+[Exposed=Window]
+interface TextUpdateEvent : Event {
+    constructor(optional TextUpdateEventInit options = {});
+    readonly attribute unsigned long updateRangeStart;
+    readonly attribute unsigned long updateRangeEnd;
+    readonly attribute DOMString text;
+    readonly attribute unsigned long selectionStart;
+    readonly attribute unsigned long selectionEnd;
+    readonly attribute unsigned long compositionStart;
+    readonly attribute unsigned long compositionEnd;
+};

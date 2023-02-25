@@ -1,0 +1,39 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+[Exposed=Window, SecureContext]
+interface MediaDevices : EventTarget {
+  attribute EventHandler ondevicechange;
+  Promise<sequence<MediaDeviceInfo>> enumerateDevices();
+};
+
+// Source: The Capture-Handle Actions Mechanism (https://w3c.github.io/mediacapture-handle/actions/)
+partial interface MediaDevices {
+  undefined setSupportedCaptureActions(sequence<DOMString> actions);
+  attribute EventHandler oncaptureaction;
+};
+
+// Source: Audio Output Devices API (https://www.w3.org/TR/audio-output/)
+partial interface MediaDevices {
+  Promise<MediaDeviceInfo> selectAudioOutput(optional AudioOutputOptions options = {});
+};
+
+// Source: Capture Handle - Bootstrapping Collaboration when Screensharing (https://www.w3.org/TR/capture-handle-identity/)
+partial interface MediaDevices {
+  undefined setCaptureHandleConfig(optional CaptureHandleConfig config = {});
+};
+
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+partial interface MediaDevices {
+  MediaTrackSupportedConstraints getSupportedConstraints();
+  Promise<MediaStream> getUserMedia(optional MediaStreamConstraints constraints = {});
+};
+
+// Source: Viewport Capture (https://www.w3.org/TR/mediacapture-viewport/)
+partial interface MediaDevices {
+  Promise<MediaStream> getViewportMedia(
+      optional ViewportMediaStreamConstraints constraints = {});
+};
+
+// Source: Screen Capture (https://www.w3.org/TR/screen-capture/)
+partial interface MediaDevices {
+  Promise<MediaStream> getDisplayMedia(optional DisplayMediaStreamOptions options = {});
+};

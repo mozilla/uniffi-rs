@@ -1,0 +1,8 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface MimeType {
+  readonly attribute DOMString type;
+  readonly attribute DOMString description;
+  readonly attribute DOMString suffixes;
+  readonly attribute Plugin enabledPlugin;
+};

@@ -1,0 +1,28 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+[Exposed=Window]
+interface RTCIceTransport : EventTarget {
+  readonly attribute RTCIceRole role;
+  readonly attribute RTCIceComponent component;
+  readonly attribute RTCIceTransportState state;
+  readonly attribute RTCIceGathererState gatheringState;
+  sequence<RTCIceCandidate> getLocalCandidates();
+  sequence<RTCIceCandidate> getRemoteCandidates();
+  RTCIceCandidatePair? getSelectedCandidatePair();
+  RTCIceParameters? getLocalParameters();
+  RTCIceParameters? getRemoteParameters();
+  attribute EventHandler onstatechange;
+  attribute EventHandler ongatheringstatechange;
+  attribute EventHandler onselectedcandidatepairchange;
+};
+
+// Source: IceTransport Extensions for WebRTC (https://w3c.github.io/webrtc-ice/)
+[Exposed=Window]
+partial interface RTCIceTransport {
+    constructor();
+    undefined                      gather (optional RTCIceGatherOptions options = {});
+    undefined                      start (optional RTCIceParameters remoteParameters = {}, optional RTCIceRole role = "controlled");
+    undefined                      stop ();
+    undefined                      addRemoteCandidate (optional RTCIceCandidateInit remoteCandidate = {});
+                    attribute EventHandler        onerror;
+                    attribute EventHandler        onicecandidate;
+};

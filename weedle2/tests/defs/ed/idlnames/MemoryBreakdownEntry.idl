@@ -1,0 +1,6 @@
+// Source: Measure Memory API (https://wicg.github.io/performance-measure-memory/)
+dictionary MemoryBreakdownEntry {
+  unsigned long long bytes;
+  sequence<MemoryAttribution> attribution;
+  sequence<DOMString> types;
+};

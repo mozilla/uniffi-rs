@@ -1,0 +1,34 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+interface mixin DocumentOrShadowRoot {
+};
+
+// Source: Fullscreen API Standard (https://fullscreen.spec.whatwg.org/)
+partial interface mixin DocumentOrShadowRoot {
+  [LegacyLenientSetter] readonly attribute Element? fullscreenElement;
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface mixin DocumentOrShadowRoot {
+  readonly attribute Element? activeElement;
+};
+
+// Source: CSS Object Model (CSSOM) (https://www.w3.org/TR/cssom-1/)
+partial interface mixin DocumentOrShadowRoot {
+  [SameObject] readonly attribute StyleSheetList styleSheets;
+  attribute ObservableArray<CSSStyleSheet> adoptedStyleSheets;
+};
+
+// Source: Picture-in-Picture (https://www.w3.org/TR/picture-in-picture/)
+partial interface mixin DocumentOrShadowRoot {
+  readonly attribute Element? pictureInPictureElement;
+};
+
+// Source: Pointer Lock 2.0 (https://www.w3.org/TR/pointerlock-2/)
+partial interface mixin DocumentOrShadowRoot {
+  readonly attribute Element ? pointerLockElement;
+};
+
+// Source: Web Animations (https://www.w3.org/TR/web-animations-1/)
+partial interface mixin DocumentOrShadowRoot {
+    sequence<Animation> getAnimations();
+};

@@ -1,0 +1,46 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+[Exposed=Window]
+interface MediaStreamTrack : EventTarget {
+  readonly attribute DOMString kind;
+  readonly attribute DOMString id;
+  readonly attribute DOMString label;
+  attribute boolean enabled;
+  readonly attribute boolean muted;
+  attribute EventHandler onmute;
+  attribute EventHandler onunmute;
+  readonly attribute MediaStreamTrackState readyState;
+  attribute EventHandler onended;
+  MediaStreamTrack clone();
+  undefined stop();
+  MediaTrackCapabilities getCapabilities();
+  MediaTrackConstraints getConstraints();
+  MediaTrackSettings getSettings();
+  Promise<undefined> applyConstraints(optional MediaTrackConstraints constraints = {});
+};
+
+// Source: The Capture-Handle Actions Mechanism (https://w3c.github.io/mediacapture-handle/actions/)
+partial interface MediaStreamTrack {
+  sequence<DOMString> getSupportedCaptureActions();
+  Promise<undefined> sendCaptureAction(CaptureAction action);
+};
+
+// Source: Capture Handle - Bootstrapping Collaboration when Screensharing (https://www.w3.org/TR/capture-handle-identity/)
+partial interface MediaStreamTrack {
+  CaptureHandle? getCaptureHandle();
+};
+
+// Source: Capture Handle - Bootstrapping Collaboration when Screensharing (https://www.w3.org/TR/capture-handle-identity/)
+partial interface MediaStreamTrack {
+  attribute EventHandler oncapturehandlechange;
+};
+
+// Source: MediaStreamTrack Content Hints (https://www.w3.org/TR/mst-content-hint/)
+partial interface MediaStreamTrack {
+  attribute DOMString contentHint;
+};
+
+// Source: Identity for WebRTC 1.0 (https://www.w3.org/TR/webrtc-identity/)
+partial interface MediaStreamTrack {
+    readonly        attribute boolean      isolated;
+                    attribute EventHandler onisolationchange;
+};

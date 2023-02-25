@@ -1,0 +1,10 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+dictionary RTCOfferOptions : RTCOfferAnswerOptions {
+  boolean iceRestart = false;
+};
+
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+partial dictionary RTCOfferOptions {
+  boolean offerToReceiveAudio;
+  boolean offerToReceiveVideo;
+};

@@ -1,0 +1,9 @@
+// Source: Accelerated Shape Detection in Images (https://wicg.github.io/shape-detection-api/)
+[Exposed=(Window,Worker),
+ SecureContext]
+interface BarcodeDetector {
+  constructor(optional BarcodeDetectorOptions barcodeDetectorOptions = {});
+  static Promise<sequence<BarcodeFormat>> getSupportedFormats();
+
+  Promise<sequence<DetectedBarcode>> detect(ImageBitmapSource image);
+};

@@ -1,0 +1,11 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUBindGroupLayoutEntry {
+    required GPUIndex32 binding;
+    required GPUShaderStageFlags visibility;
+
+    GPUBufferBindingLayout buffer;
+    GPUSamplerBindingLayout sampler;
+    GPUTextureBindingLayout texture;
+    GPUStorageTextureBindingLayout storageTexture;
+    GPUExternalTextureBindingLayout externalTexture;
+};

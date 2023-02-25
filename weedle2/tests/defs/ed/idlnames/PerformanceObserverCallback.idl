@@ -1,0 +1,4 @@
+// Source: Performance Timeline (https://www.w3.org/TR/performance-timeline/)
+callback PerformanceObserverCallback = undefined (PerformanceObserverEntryList entries,
+                                             PerformanceObserver observer,
+                                             optional PerformanceObserverCallbackOptions options = {});

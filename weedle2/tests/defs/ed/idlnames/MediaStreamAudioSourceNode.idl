@@ -1,0 +1,6 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface MediaStreamAudioSourceNode : AudioNode {
+    constructor (AudioContext context, MediaStreamAudioSourceOptions options);
+    [SameObject] readonly attribute MediaStream mediaStream;
+};

@@ -1,0 +1,6 @@
+// Source: Device Posture API (https://www.w3.org/TR/device-posture/)
+enum DevicePostureType {
+  "continuous",
+  "folded",
+  "folded-over"
+};

@@ -1,0 +1,14 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+[Exposed=Window]
+interface Text : CharacterData {
+  constructor(optional DOMString data = "");
+
+  [NewObject] Text splitText(unsigned long offset);
+  readonly attribute DOMString wholeText;
+};
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+Text includes Slottable;
+
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+Text includes GeometryUtils;

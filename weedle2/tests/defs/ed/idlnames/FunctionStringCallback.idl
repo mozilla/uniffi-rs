@@ -1,0 +1,2 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+callback FunctionStringCallback = undefined (DOMString data);

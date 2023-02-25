@@ -1,0 +1,2 @@
+// Source: XMLHttpRequest Standard (https://xhr.spec.whatwg.org/)
+typedef (File or USVString) FormDataEntryValue;

@@ -1,0 +1,10 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Global=(Worklet, AudioWorklet), Exposed=AudioWorklet]
+interface AudioWorkletGlobalScope : WorkletGlobalScope {
+    undefined registerProcessor (DOMString name,
+                                               AudioWorkletProcessorConstructor processorCtor);
+    readonly attribute unsigned long long currentFrame;
+    readonly attribute double currentTime;
+    readonly attribute float sampleRate;
+    readonly attribute MessagePort port;
+};

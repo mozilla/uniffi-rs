@@ -1,0 +1,5 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+dictionary WebTransportCloseInfo {
+  unsigned long closeCode = 0;
+  USVString reason = "";
+};

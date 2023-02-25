@@ -1,0 +1,8 @@
+// Source: DataCue API (https://wicg.github.io/datacue/)
+[Exposed=Window]
+interface DataCue : TextTrackCue {
+  constructor(double startTime, unrestricted double endTime,
+              any value, optional DOMString type);
+  attribute any value;
+  readonly attribute DOMString type;
+};

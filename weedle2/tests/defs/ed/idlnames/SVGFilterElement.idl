@@ -1,0 +1,13 @@
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+[Exposed=Window]
+interface SVGFilterElement : SVGElement {
+  readonly attribute SVGAnimatedEnumeration filterUnits;
+  readonly attribute SVGAnimatedEnumeration primitiveUnits;
+  readonly attribute SVGAnimatedLength x;
+  readonly attribute SVGAnimatedLength y;
+  readonly attribute SVGAnimatedLength width;
+  readonly attribute SVGAnimatedLength height;
+};
+
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+SVGFilterElement includes SVGURIReference;

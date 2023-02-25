@@ -1,0 +1,5 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+enum WebTransportErrorSource {
+  "stream",
+  "session",
+};

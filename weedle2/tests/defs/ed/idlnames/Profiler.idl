@@ -1,0 +1,9 @@
+// Source: JS Self-Profiling API (https://wicg.github.io/js-self-profiling/)
+[Exposed=Window]
+interface Profiler : EventTarget {
+  readonly attribute DOMHighResTimeStamp sampleInterval;
+  readonly attribute boolean stopped;
+
+  constructor(ProfilerInitOptions options);
+  Promise<ProfilerTrace> stop();
+};

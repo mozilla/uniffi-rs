@@ -1,0 +1,4 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+dictionary MultiCacheQueryOptions : CacheQueryOptions {
+  DOMString cacheName;
+};

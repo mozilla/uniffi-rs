@@ -1,0 +1,21 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+[Exposed=Window, SecureContext]
+interface BluetoothRemoteGATTCharacteristic : EventTarget {
+  [SameObject]
+  readonly attribute BluetoothRemoteGATTService service;
+  readonly attribute UUID uuid;
+  readonly attribute BluetoothCharacteristicProperties properties;
+  readonly attribute DataView? value;
+  Promise<BluetoothRemoteGATTDescriptor> getDescriptor(BluetoothDescriptorUUID descriptor);
+  Promise<sequence<BluetoothRemoteGATTDescriptor>>
+    getDescriptors(optional BluetoothDescriptorUUID descriptor);
+  Promise<DataView> readValue();
+  Promise<undefined> writeValue(BufferSource value);
+  Promise<undefined> writeValueWithResponse(BufferSource value);
+  Promise<undefined> writeValueWithoutResponse(BufferSource value);
+  Promise<BluetoothRemoteGATTCharacteristic> startNotifications();
+  Promise<BluetoothRemoteGATTCharacteristic> stopNotifications();
+};
+
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+BluetoothRemoteGATTCharacteristic includes CharacteristicEventHandlers;

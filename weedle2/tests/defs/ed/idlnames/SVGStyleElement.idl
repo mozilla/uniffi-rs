@@ -1,0 +1,10 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGStyleElement : SVGElement {
+  attribute DOMString type;
+  attribute DOMString media;
+  attribute DOMString title;
+};
+
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+SVGStyleElement includes LinkStyle;

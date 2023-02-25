@@ -1,0 +1,11 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+[SecureContext, Exposed=(Window, DedicatedWorker)]
+interface ML {
+  Promise<MLContext> createContext(optional MLContextOptions options = {});
+  Promise<MLContext> createContext(GPUDevice gpuDevice);
+
+  [Exposed=(DedicatedWorker)]
+  MLContext createContextSync(optional MLContextOptions options = {});
+  [Exposed=(DedicatedWorker)]
+  MLContext createContextSync(GPUDevice gpuDevice);
+};

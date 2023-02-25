@@ -1,0 +1,9 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window, SecureContext]
+interface AudioWorkletNode : AudioNode {
+    constructor (BaseAudioContext context, DOMString name,
+               optional AudioWorkletNodeOptions options = {});
+    readonly attribute AudioParamMap parameters;
+    readonly attribute MessagePort port;
+    attribute EventHandler onprocessorerror;
+};

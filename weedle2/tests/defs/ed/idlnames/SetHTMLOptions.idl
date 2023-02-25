@@ -1,0 +1,4 @@
+// Source: HTML Sanitizer API (https://wicg.github.io/sanitizer-api/)
+dictionary SetHTMLOptions {
+  Sanitizer sanitizer;
+};

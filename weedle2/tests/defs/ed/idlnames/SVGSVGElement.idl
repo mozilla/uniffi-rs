@@ -1,0 +1,52 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGSVGElement : SVGGraphicsElement {
+
+  [SameObject] readonly attribute SVGAnimatedLength x;
+  [SameObject] readonly attribute SVGAnimatedLength y;
+  [SameObject] readonly attribute SVGAnimatedLength width;
+  [SameObject] readonly attribute SVGAnimatedLength height;
+
+  attribute float currentScale;
+  [SameObject] readonly attribute DOMPointReadOnly currentTranslate;
+
+  NodeList getIntersectionList(DOMRectReadOnly rect, SVGElement? referenceElement);
+  NodeList getEnclosureList(DOMRectReadOnly rect, SVGElement? referenceElement);
+  boolean checkIntersection(SVGElement element, DOMRectReadOnly rect);
+  boolean checkEnclosure(SVGElement element, DOMRectReadOnly rect);
+
+  undefined deselectAll();
+
+  SVGNumber createSVGNumber();
+  SVGLength createSVGLength();
+  SVGAngle createSVGAngle();
+  DOMPoint createSVGPoint();
+  DOMMatrix createSVGMatrix();
+  DOMRect createSVGRect();
+  SVGTransform createSVGTransform();
+  SVGTransform createSVGTransformFromMatrix(optional DOMMatrix2DInit matrix = {});
+
+  Element getElementById(DOMString elementId);
+
+  // Deprecated methods that have no effect when called,
+  // but which are kept for compatibility reasons.
+  unsigned long suspendRedraw(unsigned long maxWaitMilliseconds);
+  undefined unsuspendRedraw(unsigned long suspendHandleID);
+  undefined unsuspendRedrawAll();
+  undefined forceRedraw();
+};
+
+// Source: SVG Animations (https://svgwg.org/specs/animations/)
+partial interface SVGSVGElement {
+  undefined pauseAnimations();
+  undefined unpauseAnimations();
+  boolean animationsPaused();
+  float getCurrentTime();
+  undefined setCurrentTime(float seconds);
+};
+
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+SVGSVGElement includes SVGFitToViewBox;
+
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+SVGSVGElement includes WindowEventHandlers;

@@ -1,0 +1,9 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window]
+interface XRRigidTransform {
+  constructor(optional DOMPointInit position = {}, optional DOMPointInit orientation = {});
+  [SameObject] readonly attribute DOMPointReadOnly position;
+  [SameObject] readonly attribute DOMPointReadOnly orientation;
+  readonly attribute Float32Array matrix;
+  [SameObject] readonly attribute XRRigidTransform inverse;
+};

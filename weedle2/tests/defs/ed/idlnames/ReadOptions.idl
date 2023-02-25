@@ -1,0 +1,4 @@
+// Source: Geolocation Sensor (https://www.w3.org/TR/geolocation-sensor/)
+dictionary ReadOptions : GeolocationSensorOptions {
+  AbortSignal? signal;
+};

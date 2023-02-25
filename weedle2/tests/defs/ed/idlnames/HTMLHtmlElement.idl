@@ -1,0 +1,12 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLHtmlElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLHtmlElement {
+  [CEReactions] attribute DOMString version;
+};

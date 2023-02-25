@@ -1,0 +1,12 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLTableCaptionElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLTableCaptionElement {
+  [CEReactions] attribute DOMString align;
+};

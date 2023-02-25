@@ -1,0 +1,37 @@
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+[Exposed=PaintWorklet]
+interface PaintRenderingContext2D {
+};
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasState;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasTransform;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasCompositing;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasImageSmoothing;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasFillStrokeStyles;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasShadowStyles;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasRect;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasDrawPath;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasDrawImage;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasPathDrawingStyles;
+
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+PaintRenderingContext2D includes CanvasPath;

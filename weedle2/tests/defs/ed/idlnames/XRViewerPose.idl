@@ -1,0 +1,4 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window] interface XRViewerPose : XRPose {
+  [SameObject] readonly attribute FrozenArray<XRView> views;
+};

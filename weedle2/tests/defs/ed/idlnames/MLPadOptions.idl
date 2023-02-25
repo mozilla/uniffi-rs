@@ -1,0 +1,5 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLPadOptions {
+  MLPaddingMode mode = "constant";
+  float value = 0;
+};

@@ -1,0 +1,10 @@
+// Source: Scripting Policy (https://wicg.github.io/csp-next/scripting-policy.html)
+[Exposed=(Window,Worker), SecureContext]
+interface ScriptingPolicyReportBody : ReportBody {
+  [Default] object toJSON();
+  readonly attribute DOMString     violationType;
+  readonly attribute USVString?    violationURL;
+  readonly attribute USVString?    violationSample;
+  readonly attribute unsigned long lineno;
+  readonly attribute unsigned long colno;
+};

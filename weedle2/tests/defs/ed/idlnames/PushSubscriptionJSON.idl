@@ -1,0 +1,6 @@
+// Source: Push API (https://www.w3.org/TR/push-api/)
+dictionary PushSubscriptionJSON {
+  USVString endpoint;
+  EpochTimeStamp? expirationTime = null;
+  record<DOMString, USVString> keys;
+};

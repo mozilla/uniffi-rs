@@ -1,0 +1,2 @@
+// Source: Web Cryptography API (https://www.w3.org/TR/WebCryptoAPI/)
+enum KeyUsage { "encrypt", "decrypt", "sign", "verify", "deriveKey", "deriveBits", "wrapKey", "unwrapKey" };

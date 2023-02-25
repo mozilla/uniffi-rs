@@ -1,0 +1,19 @@
+// Source: Cookie Store API (https://wicg.github.io/cookie-store/)
+[Exposed=(ServiceWorker,Window),
+ SecureContext]
+interface CookieStore : EventTarget {
+  Promise<CookieListItem?> get(USVString name);
+  Promise<CookieListItem?> get(optional CookieStoreGetOptions options = {});
+
+  Promise<CookieList> getAll(USVString name);
+  Promise<CookieList> getAll(optional CookieStoreGetOptions options = {});
+
+  Promise<undefined> set(USVString name, USVString value);
+  Promise<undefined> set(CookieInit options);
+
+  Promise<undefined> delete(USVString name);
+  Promise<undefined> delete(CookieStoreDeleteOptions options);
+
+  [Exposed=Window]
+  attribute EventHandler onchange;
+};

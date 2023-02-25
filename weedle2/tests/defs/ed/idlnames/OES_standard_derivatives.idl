@@ -1,0 +1,5 @@
+// Source: WebGL OES_standard_derivatives Khronos Ratified Extension Specification (https://registry.khronos.org/webgl/extensions/OES_standard_derivatives/)
+[Exposed=(Window,Worker), LegacyNoInterfaceObject]
+interface OES_standard_derivatives {
+    const GLenum FRAGMENT_SHADER_DERIVATIVE_HINT_OES = 0x8B8B;
+};

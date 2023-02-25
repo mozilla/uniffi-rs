@@ -1,0 +1,5 @@
+// Source: Accelerated Shape Detection in Images (https://wicg.github.io/shape-detection-api/)
+dictionary DetectedFace {
+  required DOMRectReadOnly boundingBox;
+  required FrozenArray<Landmark>? landmarks;
+};

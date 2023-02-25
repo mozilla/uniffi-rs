@@ -1,0 +1,18 @@
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+[Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
+interface CSSNumericValue : CSSStyleValue {
+    CSSNumericValue add(CSSNumberish... values);
+    CSSNumericValue sub(CSSNumberish... values);
+    CSSNumericValue mul(CSSNumberish... values);
+    CSSNumericValue div(CSSNumberish... values);
+    CSSNumericValue min(CSSNumberish... values);
+    CSSNumericValue max(CSSNumberish... values);
+
+    boolean equals(CSSNumberish... value);
+
+    CSSUnitValue to(USVString unit);
+    CSSMathSum toSum(USVString... units);
+    CSSNumericType type();
+
+    [Exposed=Window] static CSSNumericValue parse(USVString cssText);
+};

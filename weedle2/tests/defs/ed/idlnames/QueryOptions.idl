@@ -1,0 +1,4 @@
+// Source: Local Font Access API (https://wicg.github.io/local-font-access/)
+dictionary QueryOptions {
+  sequence<DOMString> postscriptNames;
+};

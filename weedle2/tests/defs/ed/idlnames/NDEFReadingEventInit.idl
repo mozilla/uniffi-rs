@@ -1,0 +1,5 @@
+// Source: Web NFC (https://w3c.github.io/web-nfc/)
+dictionary NDEFReadingEventInit : EventInit {
+  DOMString? serialNumber = "";
+  required NDEFMessageInit message;
+};

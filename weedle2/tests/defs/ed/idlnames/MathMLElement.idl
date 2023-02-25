@@ -1,0 +1,12 @@
+// Source: MathML Core (https://www.w3.org/TR/mathml-core/)
+[Exposed=Window]
+interface MathMLElement : Element { };
+
+// Source: CSS Object Model (CSSOM) (https://www.w3.org/TR/cssom-1/)
+MathMLElement includes ElementCSSInlineStyle;
+
+// Source: MathML Core (https://www.w3.org/TR/mathml-core/)
+MathMLElement includes GlobalEventHandlers;
+
+// Source: MathML Core (https://www.w3.org/TR/mathml-core/)
+MathMLElement includes HTMLOrSVGElement;

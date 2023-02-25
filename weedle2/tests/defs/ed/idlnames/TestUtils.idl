@@ -1,0 +1,5 @@
+// Source: Test Utils Standard (https://testutils.spec.whatwg.org/)
+[Exposed=(Window,Worker)]
+namespace TestUtils {
+  [NewObject] Promise<undefined> gc();
+};

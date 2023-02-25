@@ -1,0 +1,17 @@
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+dictionary WebGLContextAttributes {
+    boolean alpha = true;
+    boolean depth = true;
+    boolean stencil = false;
+    boolean antialias = true;
+    boolean premultipliedAlpha = true;
+    boolean preserveDrawingBuffer = false;
+    WebGLPowerPreference powerPreference = "default";
+    boolean failIfMajorPerformanceCaveat = false;
+    boolean desynchronized = false;
+};
+
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+partial dictionary WebGLContextAttributes {
+    boolean xrCompatible = false;
+};

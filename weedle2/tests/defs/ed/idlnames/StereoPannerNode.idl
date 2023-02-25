@@ -1,0 +1,6 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface StereoPannerNode : AudioNode {
+    constructor (BaseAudioContext context, optional StereoPannerOptions options = {});
+    readonly attribute AudioParam pan;
+};

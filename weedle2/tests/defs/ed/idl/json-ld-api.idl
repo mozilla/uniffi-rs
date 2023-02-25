@@ -1,0 +1,163 @@
+// GENERATED CONTENT - DO NOT EDIT
+// Content was automatically extracted by Reffy into webref
+// (https://github.com/w3c/webref)
+// Source: JSON-LD 1.1 Processing Algorithms and API (https://w3c.github.io/json-ld-api/)
+
+/*
+ * The JsonLd interface is created to expose the JsonLdProcessor interface.
+ */
+[Global=JsonLd, Exposed=JsonLd]
+interface JsonLd {};
+
+[Exposed=JsonLd]
+interface JsonLdProcessor {
+  constructor();
+  static Promise<JsonLdRecord> compact(
+    JsonLdInput input,
+    optional JsonLdContext context = null,
+    optional JsonLdOptions options = {});
+  static Promise<sequence<JsonLdRecord>> expand(
+    JsonLdInput input,
+    optional JsonLdOptions options = {});
+  static Promise<JsonLdRecord> flatten(
+    JsonLdInput input,
+    optional JsonLdContext context = null,
+    optional JsonLdOptions options = {});
+  static Promise<sequence<JsonLdRecord>> fromRdf(
+    RdfDataset input,
+    optional JsonLdOptions options = {});
+  static Promise<RdfDataset> toRdf(
+    JsonLdInput input,
+    optional JsonLdOptions options = {});
+};
+
+typedef record<USVString, any> JsonLdRecord;
+
+typedef (JsonLdRecord or sequence<JsonLdRecord> or USVString or RemoteDocument) JsonLdInput;
+
+typedef (JsonLdRecord or sequence<(JsonLdRecord or USVString)> or USVString) JsonLdContext;
+
+[Exposed=JsonLd]
+interface RdfDataset {
+  constructor();
+  readonly attribute RdfGraph defaultGraph;
+  undefined add(USVString graphName, RdfGraph graph);
+  iterable<USVString?, RdfGraph>;
+};
+
+[Exposed=JsonLd]
+interface RdfGraph {
+  constructor();
+  undefined add(RdfTriple triple);
+  iterable<RdfTriple>;
+};
+
+[Exposed=JsonLd]
+interface RdfTriple {
+  constructor();
+  readonly attribute USVString subject;
+  readonly attribute USVString predicate;
+  readonly attribute (USVString or RdfLiteral) _object;
+};
+
+[Exposed=JsonLd]
+interface RdfLiteral {
+  constructor();
+  readonly attribute USVString value;
+  readonly attribute USVString datatype;
+  readonly attribute USVString? language;
+};
+
+dictionary JsonLdOptions {
+  USVString?             base = null;
+  boolean                compactArrays = true;
+  boolean                compactToRelative = true;
+  LoadDocumentCallback?  documentLoader = null;
+  (JsonLdRecord? or USVString) expandContext = null;
+  boolean                extractAllScripts = false;
+  boolean                frameExpansion = false;
+  boolean                ordered = false;
+  USVString              processingMode = "json-ld-1.1";
+  boolean                produceGeneralizedRdf = true;
+  USVString?             rdfDirection = null;
+  boolean                useNativeTypes = false;
+  boolean                useRdfType = false;
+};
+
+callback LoadDocumentCallback = Promise<RemoteDocument> (
+  USVString url,
+  optional LoadDocumentOptions? options
+);
+
+dictionary LoadDocumentOptions {
+  boolean  extractAllScripts = false;
+  USVString profile = null;
+  (USVString or sequence<USVString>) requestProfile = null;
+};
+
+[Exposed=JsonLd]
+interface RemoteDocument {
+  constructor();
+  readonly attribute USVString contentType;
+  readonly attribute USVString contextUrl;
+  attribute any document;
+  readonly attribute USVString documentUrl;
+  readonly attribute USVString profile;
+};
+
+dictionary JsonLdError {
+  JsonLdErrorCode code;
+  USVString?      message = null;
+};
+
+enum JsonLdErrorCode {
+    "colliding keywords",
+    "conflicting indexes",
+    "context overflow",
+    "cyclic IRI mapping",
+    "invalid @id value",
+    "invalid @import value",
+    "invalid @included value",
+    "invalid @index value",
+    "invalid @nest value",
+    "invalid @prefix value",
+    "invalid @propagate value",
+    "invalid @protected value",
+    "invalid @reverse value",
+    "invalid @version value",
+    "invalid base direction",
+    "invalid base IRI",
+    "invalid container mapping",
+    "invalid context entry",
+    "invalid context nullification",
+    "invalid default language",
+    "invalid IRI mapping",
+    "invalid JSON literal",
+    "invalid keyword alias",
+    "invalid language map value",
+    "invalid language mapping",
+    "invalid language-tagged string",
+    "invalid language-tagged value",
+    "invalid local context",
+    "invalid remote context",
+    "invalid reverse property map",
+    "invalid reverse property value",
+    "invalid reverse property",
+    "invalid scoped context",
+    "invalid script element",
+    "invalid set or list object",
+    "invalid term definition",
+    "invalid type mapping",
+    "invalid type value",
+    "invalid typed value",
+    "invalid value object value",
+    "invalid value object",
+    "invalid vocab mapping",
+    "IRI confused with prefix",
+    "keyword redefinition",
+    "loading document failed",
+    "loading remote context failed",
+    "multiple context link headers",
+    "processing mode conflict",
+    "protected term redefinition"
+};

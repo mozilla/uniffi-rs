@@ -1,0 +1,5 @@
+// Source: Federated Credential Management API (https://fedidcg.github.io/FedCM/)
+dictionary IdentityProviderClientMetadata {
+  USVString privacy_policy_url;
+  USVString terms_of_service_url;
+};

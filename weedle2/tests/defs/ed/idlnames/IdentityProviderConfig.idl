@@ -1,0 +1,6 @@
+// Source: Federated Credential Management API (https://fedidcg.github.io/FedCM/)
+dictionary IdentityProviderConfig {
+  required USVString configURL;
+  required USVString clientId;
+  USVString nonce;
+};

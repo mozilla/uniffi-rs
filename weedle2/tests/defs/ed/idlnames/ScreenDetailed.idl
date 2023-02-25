@@ -1,0 +1,12 @@
+// Source: Multi-Screen Window Placement (https://www.w3.org/TR/window-placement/)
+[Exposed=Window, SecureContext]
+interface ScreenDetailed : Screen {
+  readonly attribute long availLeft;
+  readonly attribute long availTop;
+  readonly attribute long left;
+  readonly attribute long top;
+  readonly attribute boolean isPrimary;
+  readonly attribute boolean isInternal;
+  readonly attribute float devicePixelRatio;
+  readonly attribute DOMString label;
+};

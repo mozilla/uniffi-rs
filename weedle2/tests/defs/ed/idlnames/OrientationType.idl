@@ -1,0 +1,7 @@
+// Source: Screen Orientation (https://www.w3.org/TR/screen-orientation/)
+enum OrientationType {
+  "portrait-primary",
+  "portrait-secondary",
+  "landscape-primary",
+  "landscape-secondary"
+};

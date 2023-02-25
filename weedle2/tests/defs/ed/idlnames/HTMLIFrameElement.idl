@@ -1,0 +1,42 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLIFrameElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute USVString src;
+  [CEReactions] attribute DOMString srcdoc;
+  [CEReactions] attribute DOMString name;
+  [SameObject, PutForwards=value] readonly attribute DOMTokenList sandbox;
+  [CEReactions] attribute DOMString allow;
+  [CEReactions] attribute boolean allowFullscreen;
+  [CEReactions] attribute DOMString width;
+  [CEReactions] attribute DOMString height;
+  [CEReactions] attribute DOMString referrerPolicy;
+  [CEReactions] attribute DOMString loading;
+  readonly attribute Document? contentDocument;
+  readonly attribute WindowProxy? contentWindow;
+  Document? getSVGDocument();
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLIFrameElement {
+  [CEReactions] attribute DOMString align;
+  [CEReactions] attribute DOMString scrolling;
+  [CEReactions] attribute DOMString frameBorder;
+  [CEReactions] attribute USVString longDesc;
+
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString marginHeight;
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString marginWidth;
+};
+
+// Source: Content Security Policy: Embedded Enforcement (https://www.w3.org/TR/csp-embedded-enforcement/)
+partial interface HTMLIFrameElement {
+  [CEReactions] attribute DOMString csp;
+};
+
+// Source: Permissions Policy (https://www.w3.org/TR/permissions-policy-1/)
+partial interface HTMLIFrameElement {
+    [SameObject] readonly attribute PermissionsPolicy permissionsPolicy;
+};

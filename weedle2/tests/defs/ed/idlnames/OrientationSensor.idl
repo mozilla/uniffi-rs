@@ -1,0 +1,6 @@
+// Source: Orientation Sensor (https://www.w3.org/TR/orientation-sensor/)
+[SecureContext, Exposed=Window]
+interface OrientationSensor : Sensor {
+  readonly attribute FrozenArray<double>? quaternion;
+  undefined populateMatrix(RotationMatrixType targetMatrix);
+};

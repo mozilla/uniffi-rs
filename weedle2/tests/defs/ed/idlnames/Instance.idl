@@ -1,0 +1,6 @@
+// Source: WebAssembly JavaScript Interface (https://www.w3.org/TR/wasm-js-api-2/)
+[LegacyNamespace=WebAssembly, Exposed=*]
+interface Instance {
+  constructor(Module module, optional object importObject);
+  readonly attribute object exports;
+};

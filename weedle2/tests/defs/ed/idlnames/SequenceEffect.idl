@@ -1,0 +1,8 @@
+// Source: Web Animations Level 2 (https://drafts.csswg.org/web-animations-2/)
+[Exposed=Window]
+interface SequenceEffect : GroupEffect {
+  constructor(sequence<AnimationEffect>? children,
+              optional (unrestricted double or EffectTiming) timing = {});
+
+  SequenceEffect clone ();
+};

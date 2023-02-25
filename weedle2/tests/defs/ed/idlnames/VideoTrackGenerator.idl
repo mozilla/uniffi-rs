@@ -1,0 +1,8 @@
+// Source: MediaStreamTrack Insertable Media Processing using Streams (https://www.w3.org/TR/mediacapture-transform/)
+[Exposed=DedicatedWorker]
+interface VideoTrackGenerator {
+  constructor();
+  readonly attribute WritableStream writable;
+  attribute boolean muted;
+  readonly attribute MediaStreamTrack track;
+};

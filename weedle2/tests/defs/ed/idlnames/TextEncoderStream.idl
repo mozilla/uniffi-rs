@@ -1,0 +1,11 @@
+// Source: Encoding Standard (https://encoding.spec.whatwg.org/)
+[Exposed=*]
+interface TextEncoderStream {
+  constructor();
+};
+
+// Source: Encoding Standard (https://encoding.spec.whatwg.org/)
+TextEncoderStream includes TextEncoderCommon;
+
+// Source: Encoding Standard (https://encoding.spec.whatwg.org/)
+TextEncoderStream includes GenericTransformStream;

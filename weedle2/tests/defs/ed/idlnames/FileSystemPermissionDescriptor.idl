@@ -1,0 +1,5 @@
+// Source: File System Access (https://wicg.github.io/file-system-access/)
+dictionary FileSystemPermissionDescriptor : PermissionDescriptor {
+  required FileSystemHandle handle;
+  FileSystemPermissionMode mode = "read";
+};

@@ -1,0 +1,5 @@
+// Source: EPUB Reading Systems 3.3 (https://www.w3.org/TR/epub-rs-33/)
+[Exposed=(Window)]
+interface EpubReadingSystem {
+    boolean hasFeature(DOMString feature, optional DOMString version);
+};

@@ -1,0 +1,4 @@
+// Source: Gamepad Extensions (https://w3c.github.io/gamepad/extensions.html)
+enum GamepadHapticEffectType {
+  "dual-rumble"
+};

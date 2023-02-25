@@ -1,0 +1,2 @@
+// Source: High Resolution Time (https://www.w3.org/TR/hr-time-3/)
+typedef double DOMHighResTimeStamp;

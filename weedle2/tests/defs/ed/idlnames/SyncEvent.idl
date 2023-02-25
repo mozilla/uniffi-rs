@@ -1,0 +1,7 @@
+// Source: Web Background Synchronization (https://wicg.github.io/background-sync/spec/)
+[Exposed=ServiceWorker]
+interface SyncEvent : ExtendableEvent {
+  constructor(DOMString type, SyncEventInit init);
+  readonly attribute DOMString tag;
+  readonly attribute boolean lastChance;
+};

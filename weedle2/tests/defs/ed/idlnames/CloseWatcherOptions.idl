@@ -1,0 +1,4 @@
+// Source: Close Watcher API (https://wicg.github.io/close-watcher/)
+dictionary CloseWatcherOptions {
+  AbortSignal signal;
+};

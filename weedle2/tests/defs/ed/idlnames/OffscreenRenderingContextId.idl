@@ -1,0 +1,2 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+enum OffscreenRenderingContextId { "2d", "bitmaprenderer", "webgl", "webgl2", "webgpu" };

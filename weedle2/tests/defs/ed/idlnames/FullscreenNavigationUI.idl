@@ -1,0 +1,6 @@
+// Source: Fullscreen API Standard (https://fullscreen.spec.whatwg.org/)
+enum FullscreenNavigationUI {
+  "auto",
+  "show",
+  "hide"
+};

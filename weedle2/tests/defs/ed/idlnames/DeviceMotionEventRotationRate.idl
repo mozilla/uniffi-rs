@@ -1,0 +1,7 @@
+// Source: DeviceOrientation Event Specification (https://www.w3.org/TR/orientation-event/)
+[Exposed=Window, SecureContext]
+interface DeviceMotionEventRotationRate {
+    readonly attribute double? alpha;
+    readonly attribute double? beta;
+    readonly attribute double? gamma;
+};

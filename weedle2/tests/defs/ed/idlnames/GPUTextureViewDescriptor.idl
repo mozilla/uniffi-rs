@@ -1,0 +1,10 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUTextureViewDescriptor : GPUObjectDescriptorBase {
+    GPUTextureFormat format;
+    GPUTextureViewDimension dimension;
+    GPUTextureAspect aspect = "all";
+    GPUIntegerCoordinate baseMipLevel = 0;
+    GPUIntegerCoordinate mipLevelCount;
+    GPUIntegerCoordinate baseArrayLayer = 0;
+    GPUIntegerCoordinate arrayLayerCount;
+};

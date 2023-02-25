@@ -1,0 +1,4 @@
+// Source: AVC (H.264) WebCodecs Registration (https://www.w3.org/TR/webcodecs-avc-codec-registration/)
+dictionary AvcEncoderConfig {
+  AvcBitstreamFormat format = "avc";
+};

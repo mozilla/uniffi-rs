@@ -1,0 +1,7 @@
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+enum USBRecipient {
+  "device",
+  "interface",
+  "endpoint",
+  "other"
+};

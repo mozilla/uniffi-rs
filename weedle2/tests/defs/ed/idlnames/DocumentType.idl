@@ -1,0 +1,10 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+[Exposed=Window]
+interface DocumentType : Node {
+  readonly attribute DOMString name;
+  readonly attribute DOMString publicId;
+  readonly attribute DOMString systemId;
+};
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+DocumentType includes ChildNode;

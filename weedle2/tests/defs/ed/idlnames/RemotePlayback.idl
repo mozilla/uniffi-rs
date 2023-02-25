@@ -1,0 +1,14 @@
+// Source: Remote Playback API (https://www.w3.org/TR/remote-playback/)
+[Exposed=Window]
+interface RemotePlayback : EventTarget {
+  Promise<long> watchAvailability(RemotePlaybackAvailabilityCallback callback);
+  Promise<undefined> cancelWatchAvailability(optional long id);
+
+  readonly attribute RemotePlaybackState state;
+
+  attribute EventHandler onconnecting;
+  attribute EventHandler onconnect;
+  attribute EventHandler ondisconnect;
+
+  Promise<undefined> prompt();
+};

@@ -1,0 +1,4 @@
+// Source: Attribution Reporting (https://wicg.github.io/attribution-reporting-api/)
+interface mixin HTMLAttributionSrcElementUtils {
+    [CEReactions] attribute USVString attributionSrc;
+};

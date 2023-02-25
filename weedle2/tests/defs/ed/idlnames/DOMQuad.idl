@@ -1,0 +1,18 @@
+// Source: Geometry Interfaces Module Level 1 (https://www.w3.org/TR/geometry-1/)
+[Exposed=(Window,Worker),
+ Serializable]
+interface DOMQuad {
+    constructor(optional DOMPointInit p1 = {}, optional DOMPointInit p2 = {},
+            optional DOMPointInit p3 = {}, optional DOMPointInit p4 = {});
+
+    [NewObject] static DOMQuad fromRect(optional DOMRectInit other = {});
+    [NewObject] static DOMQuad fromQuad(optional DOMQuadInit other = {});
+
+    [SameObject] readonly attribute DOMPoint p1;
+    [SameObject] readonly attribute DOMPoint p2;
+    [SameObject] readonly attribute DOMPoint p3;
+    [SameObject] readonly attribute DOMPoint p4;
+    [NewObject] DOMRect getBounds();
+
+    [Default] object toJSON();
+};

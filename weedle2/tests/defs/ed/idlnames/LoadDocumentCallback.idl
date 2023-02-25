@@ -1,0 +1,5 @@
+// Source: JSON-LD 1.1 Processing Algorithms and API (https://www.w3.org/TR/json-ld11-api/)
+callback LoadDocumentCallback = Promise<RemoteDocument> (
+  USVString url,
+  optional LoadDocumentOptions? options
+);

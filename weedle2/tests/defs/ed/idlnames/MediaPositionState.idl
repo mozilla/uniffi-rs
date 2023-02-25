@@ -1,0 +1,6 @@
+// Source: Media Session Standard (https://www.w3.org/TR/mediasession/)
+dictionary MediaPositionState {
+  double duration;
+  double playbackRate;
+  double position;
+};

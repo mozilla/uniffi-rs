@@ -1,0 +1,13 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface BiquadFilterNode : AudioNode {
+    constructor (BaseAudioContext context, optional BiquadFilterOptions options = {});
+    attribute BiquadFilterType type;
+    readonly attribute AudioParam frequency;
+    readonly attribute AudioParam detune;
+    readonly attribute AudioParam Q;
+    readonly attribute AudioParam gain;
+    undefined getFrequencyResponse (Float32Array frequencyHz,
+                                    Float32Array magResponse,
+                                    Float32Array phaseResponse);
+};

@@ -1,0 +1,6 @@
+// Source: Screen Capture (https://www.w3.org/TR/screen-capture/)
+enum DisplayCaptureSurfaceType {
+  "monitor",
+  "window",
+  "browser"
+};

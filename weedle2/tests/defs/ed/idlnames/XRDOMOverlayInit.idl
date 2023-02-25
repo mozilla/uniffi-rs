@@ -1,0 +1,4 @@
+// Source: WebXR DOM Overlays Module (https://www.w3.org/TR/webxr-dom-overlays-1/)
+dictionary XRDOMOverlayInit {
+  required Element root;
+};

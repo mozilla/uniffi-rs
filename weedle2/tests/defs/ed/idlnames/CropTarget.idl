@@ -1,0 +1,5 @@
+// Source: Region Capture (https://www.w3.org/TR/mediacapture-region/)
+[Exposed=(Window,Worker), Serializable]
+interface CropTarget {
+  [Exposed=Window, SecureContext] static Promise<CropTarget> fromElement(Element element);
+};

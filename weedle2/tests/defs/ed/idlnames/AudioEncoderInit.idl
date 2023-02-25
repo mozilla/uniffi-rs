@@ -1,0 +1,5 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary AudioEncoderInit {
+  required EncodedAudioChunkOutputCallback output;
+  required WebCodecsErrorCallback error;
+};

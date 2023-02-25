@@ -1,0 +1,5 @@
+// Source: Idle Detection API (https://wicg.github.io/idle-detection/)
+enum ScreenIdleState {
+    "locked",
+    "unlocked"
+};

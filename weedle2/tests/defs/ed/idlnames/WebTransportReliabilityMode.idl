@@ -1,0 +1,6 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+enum WebTransportReliabilityMode {
+  "pending",
+  "reliable-only",
+  "supports-unreliable",
+};

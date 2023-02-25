@@ -1,0 +1,2 @@
+// Source: WebRTC Encoded Transform (https://www.w3.org/TR/webrtc-encoded-transform/)
+typedef [EnforceRange] unsigned long long SmallCryptoKeyID;

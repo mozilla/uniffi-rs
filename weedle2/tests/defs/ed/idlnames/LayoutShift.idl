@@ -1,0 +1,9 @@
+// Source: Layout Instability API (https://wicg.github.io/layout-instability/)
+[Exposed=Window]
+interface LayoutShift : PerformanceEntry {
+  readonly attribute double value;
+  readonly attribute boolean hadRecentInput;
+  readonly attribute DOMHighResTimeStamp lastInputTime;
+  readonly attribute FrozenArray<LayoutShiftAttribution> sources;
+  [Default] object toJSON();
+};

@@ -1,0 +1,7 @@
+// Source: WebXR Lighting Estimation API Level 1 (https://www.w3.org/TR/webxr-lighting-estimation-1/)
+[SecureContext, Exposed=Window]
+interface XRLightEstimate {
+  readonly attribute Float32Array sphericalHarmonicsCoefficients;
+  readonly attribute DOMPointReadOnly primaryLightDirection;
+  readonly attribute DOMPointReadOnly primaryLightIntensity;
+};

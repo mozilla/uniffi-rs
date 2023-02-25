@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin CanvasUserInterface {
+  undefined drawFocusIfNeeded(Element element);
+  undefined drawFocusIfNeeded(Path2D path, Element element);
+  undefined scrollPathIntoView();
+  undefined scrollPathIntoView(Path2D path);
+};

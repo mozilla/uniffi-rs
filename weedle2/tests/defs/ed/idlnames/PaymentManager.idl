@@ -1,0 +1,6 @@
+// Source: Payment Handler API (https://www.w3.org/TR/payment-handler/)
+[SecureContext, Exposed=(Window)]
+interface PaymentManager {
+  attribute DOMString userHint;
+  Promise<undefined> enableDelegations(sequence<PaymentDelegation> delegations);
+};

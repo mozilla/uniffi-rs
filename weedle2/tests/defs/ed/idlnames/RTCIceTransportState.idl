@@ -1,0 +1,10 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+enum RTCIceTransportState {
+  "new",
+  "checking",
+  "connected",
+  "completed",
+  "disconnected",
+  "failed",
+  "closed"
+};

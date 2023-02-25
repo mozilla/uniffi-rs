@@ -1,0 +1,10 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+enum RTCErrorDetailType {
+  "data-channel-failure",
+  "dtls-failure",
+  "fingerprint-failure",
+  "sctp-failure",
+  "sdp-syntax-error",
+  "hardware-encoder-not-available",
+  "hardware-encoder-error"
+};

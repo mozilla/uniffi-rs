@@ -1,0 +1,2 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+enum ScrollRestoration { "auto", "manual" };

@@ -1,0 +1,6 @@
+// Source: Payment Request API 1.1 (https://www.w3.org/TR/payment-request-1.1/)
+[SecureContext, Exposed=Window]
+interface PaymentRequestUpdateEvent : Event {
+  constructor(DOMString type, optional PaymentRequestUpdateEventInit eventInitDict = {});
+  undefined updateWith(Promise<PaymentDetailsUpdate> detailsPromise);
+};

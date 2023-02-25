@@ -1,0 +1,6 @@
+// Source: Gamepad (https://www.w3.org/TR/gamepad/)
+enum GamepadMappingType {
+  "",
+  "standard",
+  "xr-standard",
+};

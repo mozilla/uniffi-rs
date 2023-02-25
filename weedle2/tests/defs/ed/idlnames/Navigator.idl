@@ -1,0 +1,261 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface Navigator {
+  // objects implementing this interface also implement the interfaces given below
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface Navigator {
+  [SameObject] readonly attribute UserActivation userActivation;
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Navigator includes NavigatorID;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Navigator includes NavigatorLanguage;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Navigator includes NavigatorOnLine;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Navigator includes NavigatorContentUtils;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Navigator includes NavigatorCookies;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Navigator includes NavigatorPlugins;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Navigator includes NavigatorConcurrentHardware;
+
+// Source: Global Privacy Control (GPC) (https://privacycg.github.io/gpc-spec/)
+Navigator includes GlobalPrivacyControl;
+
+// Source: Storage Standard (https://storage.spec.whatwg.org/)
+Navigator includes NavigatorStorage;
+
+// Source: Badging API (https://w3c.github.io/badging/)
+[SecureContext]
+partial interface Navigator {
+  Promise<undefined> setClientBadge(optional [EnforceRange] unsigned long long contents);
+  Promise<undefined> clearClientBadge();
+};
+
+// Source: Badging API (https://w3c.github.io/badging/)
+Navigator includes NavigatorBadge;
+
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+[SecureContext]
+partial interface Navigator {
+  [SameObject]
+  readonly attribute Bluetooth bluetooth;
+};
+
+// Source: Get Installed Related Apps API (https://wicg.github.io/get-installed-related-apps/spec/)
+[Exposed=Window]
+partial interface Navigator {
+  [SecureContext] Promise<sequence<RelatedApplication>> getInstalledRelatedApps();
+};
+
+// Source: Ink API (https://wicg.github.io/ink-enhancement/)
+[Exposed=Window]
+partial interface Navigator {
+    [SameObject] readonly attribute Ink ink;
+};
+
+// Source: Early detection of input events (https://wicg.github.io/is-input-pending/)
+partial interface Navigator {
+  readonly attribute Scheduling scheduling;
+};
+
+// Source: Keyboard Lock (https://wicg.github.io/keyboard-lock/)
+partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute Keyboard keyboard;
+};
+
+// Source: Network Information API (https://wicg.github.io/netinfo/)
+Navigator includes NavigatorNetworkInformation;
+
+// Source: Web Serial API (https://wicg.github.io/serial/)
+[Exposed=Window, SecureContext]
+partial interface Navigator {
+  [SameObject] readonly attribute Serial serial;
+};
+
+// Source: User-Agent Client Hints (https://wicg.github.io/ua-client-hints/)
+Navigator includes NavigatorUA;
+
+// Source: WebHID API (https://wicg.github.io/webhid/)
+[SecureContext] partial interface Navigator {
+    [SameObject] readonly attribute HID hid;
+};
+
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+[Exposed=Window, SecureContext]
+partial interface Navigator {
+  [SameObject] readonly attribute USB usb;
+};
+
+// Source: Window Controls Overlay (https://wicg.github.io/window-controls-overlay/)
+[SecureContext, Exposed=(Window)]
+partial interface Navigator {
+  [SameObject] readonly attribute WindowControlsOverlay windowControlsOverlay;
+};
+
+// Source: Autoplay Policy Detection (https://www.w3.org/TR/autoplay-detection/)
+[Exposed=Window]
+partial interface Navigator {
+  AutoplayPolicy getAutoplayPolicy(AutoplayPolicyMediaType type);
+  AutoplayPolicy getAutoplayPolicy(HTMLMediaElement element);
+  AutoplayPolicy getAutoplayPolicy(AudioContext context);
+};
+
+// Source: Battery Status API (https://www.w3.org/TR/battery-status/)
+[SecureContext]
+partial interface Navigator {
+  Promise<BatteryManager> getBattery();
+};
+
+// Source: Beacon (https://www.w3.org/TR/beacon/)
+partial interface Navigator {
+    boolean sendBeacon(USVString url, optional BodyInit? data = null);
+};
+
+// Source: Clipboard API and events (https://www.w3.org/TR/clipboard-apis/)
+partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute Clipboard clipboard;
+};
+
+// Source: Contact Picker API (https://www.w3.org/TR/contact-picker/)
+[Exposed=Window]
+partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute ContactsManager contacts;
+};
+
+// Source: Credential Management Level 1 (https://www.w3.org/TR/credential-management-1/)
+partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute CredentialsContainer credentials;
+};
+
+// Source: Device Memory (https://www.w3.org/TR/device-memory-1/)
+Navigator includes NavigatorDeviceMemory;
+
+// Source: Device Posture API (https://www.w3.org/TR/device-posture/)
+[SecureContext, Exposed=(Window)]
+partial interface Navigator {
+  [SameObject] readonly attribute DevicePosture devicePosture;
+};
+
+// Source: Encrypted Media Extensions (https://www.w3.org/TR/encrypted-media/)
+[Exposed=Window]
+partial interface Navigator {
+    [SecureContext] Promise<MediaKeySystemAccess> requestMediaKeySystemAccess (DOMString keySystem, sequence<MediaKeySystemConfiguration> supportedConfigurations);
+};
+
+// Source: EPUB Reading Systems 3.3 (https://www.w3.org/TR/epub-rs-33/)
+partial interface Navigator {
+    [LegacyUnforgeable, SameObject] readonly attribute EpubReadingSystem epubReadingSystem;
+};
+
+// Source: Gamepad (https://www.w3.org/TR/gamepad/)
+[Exposed=Window]
+partial interface Navigator {
+  sequence<Gamepad?> getGamepads();
+};
+
+// Source: Geolocation API (https://www.w3.org/TR/geolocation/)
+partial interface Navigator {
+  [SameObject] readonly attribute Geolocation geolocation;
+};
+
+// Source: Media Capabilities (https://www.w3.org/TR/media-capabilities/)
+[Exposed=Window]
+partial interface Navigator {
+  [SameObject] readonly attribute MediaCapabilities mediaCapabilities;
+};
+
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+partial interface Navigator {
+  [SameObject, SecureContext] readonly attribute MediaDevices mediaDevices;
+};
+
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+partial interface Navigator {
+  [SecureContext] undefined getUserMedia(MediaStreamConstraints constraints,
+                                    NavigatorUserMediaSuccessCallback successCallback,
+                                    NavigatorUserMediaErrorCallback errorCallback);
+};
+
+// Source: Media Session Standard (https://www.w3.org/TR/mediasession/)
+[Exposed=Window]
+partial interface Navigator {
+  [SameObject] readonly attribute MediaSession mediaSession;
+};
+
+// Source: Permissions (https://www.w3.org/TR/permissions/)
+[Exposed=(Window)]
+partial interface Navigator {
+  [SameObject] readonly attribute Permissions permissions;
+};
+
+// Source: Pointer Events (https://www.w3.org/TR/pointerevents3/)
+partial interface Navigator {
+    readonly  attribute long maxTouchPoints;
+};
+
+// Source: Presentation API (https://www.w3.org/TR/presentation-api/)
+partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute Presentation presentation;
+};
+
+// Source: Screen Wake Lock API (https://www.w3.org/TR/screen-wake-lock/)
+[SecureContext]
+partial interface Navigator {
+  [SameObject] readonly attribute WakeLock wakeLock;
+};
+
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute ServiceWorkerContainer serviceWorker;
+};
+
+// Source: Vibration API (Second Edition) (https://www.w3.org/TR/vibration/)
+partial interface Navigator {
+    boolean vibrate (VibratePattern pattern);
+};
+
+// Source: VirtualKeyboard API (https://www.w3.org/TR/virtual-keyboard/)
+partial interface Navigator {
+    [SecureContext, SameObject] readonly attribute VirtualKeyboard virtualKeyboard;
+};
+
+// Source: Web Locks API (https://www.w3.org/TR/web-locks/)
+Navigator includes NavigatorLocks;
+
+// Source: Web Share API (https://www.w3.org/TR/web-share/)
+partial interface Navigator {
+  [SecureContext] Promise<undefined> share(optional ShareData data = {});
+  [SecureContext] boolean canShare(optional ShareData data = {});
+};
+
+// Source: WebDriver (https://www.w3.org/TR/webdriver2/)
+Navigator includes NavigatorAutomationInformation;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+Navigator includes NavigatorGPU;
+
+// Source: Web MIDI API (https://www.w3.org/TR/webmidi/)
+partial interface Navigator {
+  [SecureContext]
+  Promise <MIDIAccess> requestMIDIAccess(optional MIDIOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+Navigator includes NavigatorML;
+
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+partial interface Navigator {
+  [SecureContext, SameObject] readonly attribute XRSystem xr;
+};

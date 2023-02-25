@@ -1,0 +1,9 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+[
+  Exposed=Window,
+  SecureContext
+]
+interface ValueEvent : Event {
+  constructor(DOMString type, optional ValueEventInit initDict = {});
+  readonly attribute any value;
+};

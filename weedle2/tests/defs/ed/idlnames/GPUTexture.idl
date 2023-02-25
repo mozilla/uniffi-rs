@@ -1,0 +1,19 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPUTexture {
+    GPUTextureView createView(optional GPUTextureViewDescriptor descriptor = {});
+
+    undefined destroy();
+
+    readonly attribute GPUIntegerCoordinate width;
+    readonly attribute GPUIntegerCoordinate height;
+    readonly attribute GPUIntegerCoordinate depthOrArrayLayers;
+    readonly attribute GPUIntegerCoordinate mipLevelCount;
+    readonly attribute GPUSize32 sampleCount;
+    readonly attribute GPUTextureDimension dimension;
+    readonly attribute GPUTextureFormat format;
+    readonly attribute GPUTextureUsageFlags usage;
+};
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPUTexture includes GPUObjectBase;

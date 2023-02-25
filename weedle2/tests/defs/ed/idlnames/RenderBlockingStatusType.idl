@@ -1,0 +1,5 @@
+// Source: Resource Timing (https://www.w3.org/TR/resource-timing/)
+enum RenderBlockingStatusType {
+    "blocking",
+    "non-blocking"
+};

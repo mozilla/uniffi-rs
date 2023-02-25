@@ -1,0 +1,5 @@
+// Source: CSS Fonts Module Level 4 (https://www.w3.org/TR/css-fonts-4/)
+[Exposed=Window]
+interface CSSFontFaceRule : CSSRule {
+    readonly attribute CSSStyleDeclaration style;
+};

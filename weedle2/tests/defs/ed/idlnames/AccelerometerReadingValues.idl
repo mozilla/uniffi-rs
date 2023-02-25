@@ -1,0 +1,6 @@
+// Source: Accelerometer (https://www.w3.org/TR/accelerometer/)
+dictionary AccelerometerReadingValues {
+  required double? x;
+  required double? y;
+  required double? z;
+};

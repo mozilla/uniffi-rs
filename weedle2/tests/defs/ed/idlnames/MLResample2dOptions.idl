@@ -1,0 +1,7 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLResample2dOptions {
+  MLInterpolationMode mode = "nearest-neighbor";
+  sequence<float> scales;
+  sequence<unsigned long> sizes;
+  sequence<long> axes;
+};

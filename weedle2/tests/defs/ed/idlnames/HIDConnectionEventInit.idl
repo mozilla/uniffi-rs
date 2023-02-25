@@ -1,0 +1,4 @@
+// Source: WebHID API (https://wicg.github.io/webhid/)
+dictionary HIDConnectionEventInit : EventInit {
+    required HIDDevice device;
+};

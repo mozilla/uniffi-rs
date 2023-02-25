@@ -1,0 +1,8 @@
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+dictionary USBControlTransferParameters {
+  required USBRequestType requestType;
+  required USBRecipient recipient;
+  required octet request;
+  required unsigned short value;
+  required unsigned short index;
+};

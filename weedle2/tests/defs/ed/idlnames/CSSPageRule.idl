@@ -1,0 +1,6 @@
+// Source: CSS Object Model (CSSOM) (https://www.w3.org/TR/cssom-1/)
+[Exposed=Window]
+interface CSSPageRule : CSSGroupingRule {
+           attribute CSSOMString selectorText;
+  [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
+};

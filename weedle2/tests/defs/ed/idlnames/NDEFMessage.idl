@@ -1,0 +1,6 @@
+// Source: Web NFC (https://w3c.github.io/web-nfc/)
+[SecureContext, Exposed=Window]
+interface NDEFMessage {
+  constructor(NDEFMessageInit messageInit);
+  readonly attribute FrozenArray<NDEFRecord> records;
+};

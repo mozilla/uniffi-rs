@@ -1,0 +1,7 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+dictionary RTCRtpCodecCapability {
+  required DOMString mimeType;
+  required unsigned long clockRate;
+  unsigned short channels;
+  DOMString sdpFmtpLine;
+};

@@ -1,0 +1,5 @@
+// Source: Web Animations Level 2 (https://drafts.csswg.org/web-animations-2/)
+dictionary AnimationPlaybackEventInit : EventInit {
+    CSSNumberish? currentTime = null;
+    CSSNumberish? timelineTime = null;
+};

@@ -1,0 +1,8 @@
+// Source: Trusted Types (https://www.w3.org/TR/trusted-types/)
+[Exposed=(Window,Worker)]
+interface TrustedTypePolicy {
+  readonly attribute DOMString name;
+  TrustedHTML createHTML(DOMString input, any... arguments);
+  TrustedScript createScript(DOMString input, any... arguments);
+  TrustedScriptURL createScriptURL(DOMString input, any... arguments);
+};

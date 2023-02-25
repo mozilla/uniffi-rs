@@ -1,0 +1,4 @@
+// Source: Save Data API (https://wicg.github.io/savedata/)
+interface mixin NetworkInformationSaveData {
+  [SameObject] readonly attribute boolean saveData;
+};

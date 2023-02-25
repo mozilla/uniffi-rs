@@ -1,0 +1,2 @@
+// Source: Background Fetch (https://wicg.github.io/background-fetch/)
+enum BackgroundFetchResult { "", "success", "failure" };

@@ -1,0 +1,10 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPURenderPipeline {
+};
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderPipeline includes GPUObjectBase;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderPipeline includes GPUPipelineBase;

@@ -1,0 +1,5 @@
+// Source: File and Directory Entries API (https://wicg.github.io/entries-api/)
+dictionary FileSystemFlags {
+    boolean create = false;
+    boolean exclusive = false;
+};

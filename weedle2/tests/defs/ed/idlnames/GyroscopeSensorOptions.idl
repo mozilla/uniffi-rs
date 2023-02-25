@@ -1,0 +1,4 @@
+// Source: Gyroscope (https://www.w3.org/TR/gyroscope/)
+dictionary GyroscopeSensorOptions : SensorOptions {
+  GyroscopeLocalCoordinateSystem referenceFrame = "device";
+};

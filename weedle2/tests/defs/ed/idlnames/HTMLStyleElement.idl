@@ -1,0 +1,19 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLStyleElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  attribute boolean disabled;
+  [CEReactions] attribute DOMString media;
+  [SameObject, PutForwards=value] readonly attribute DOMTokenList blocking;
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+HTMLStyleElement includes LinkStyle;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLStyleElement {
+  [CEReactions] attribute DOMString type;
+};

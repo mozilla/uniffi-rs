@@ -1,0 +1,5 @@
+// Source: Encrypted Media Extensions (https://www.w3.org/TR/encrypted-media/)
+dictionary MediaEncryptedEventInit : EventInit {
+             DOMString    initDataType = "";
+             ArrayBuffer? initData = null;
+};

@@ -1,0 +1,5 @@
+// Source: Screen Capture (https://www.w3.org/TR/screen-capture/)
+enum SelfCapturePreferenceEnum {
+  "include",
+  "exclude"
+};

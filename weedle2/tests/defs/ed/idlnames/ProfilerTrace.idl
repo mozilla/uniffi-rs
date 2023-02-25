@@ -1,0 +1,7 @@
+// Source: JS Self-Profiling API (https://wicg.github.io/js-self-profiling/)
+dictionary ProfilerTrace {
+  required sequence<ProfilerResource> resources;
+  required sequence<ProfilerFrame> frames;
+  required sequence<ProfilerStack> stacks;
+  required sequence<ProfilerSample> samples;
+};

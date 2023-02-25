@@ -1,0 +1,4 @@
+// Source: Orientation Sensor (https://www.w3.org/TR/orientation-sensor/)
+dictionary OrientationSensorOptions : SensorOptions {
+  OrientationSensorLocalCoordinateSystem referenceFrame = "device";
+};

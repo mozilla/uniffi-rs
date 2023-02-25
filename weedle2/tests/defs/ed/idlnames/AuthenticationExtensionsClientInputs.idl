@@ -1,0 +1,74 @@
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+dictionary AuthenticationExtensionsClientInputs {
+};
+
+// Source: Client to Authenticator Protocol (CTAP) (https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html)
+partial dictionary AuthenticationExtensionsClientInputs {
+  USVString credentialProtectionPolicy;
+  boolean enforceCredentialProtectionPolicy = false;
+};
+
+// Source: Client to Authenticator Protocol (CTAP) (https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html)
+partial dictionary AuthenticationExtensionsClientInputs {
+  ArrayBuffer credBlob;
+};
+
+// Source: Client to Authenticator Protocol (CTAP) (https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html)
+partial dictionary AuthenticationExtensionsClientInputs {
+  boolean getCredBlob;
+};
+
+// Source: Client to Authenticator Protocol (CTAP) (https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html)
+partial dictionary AuthenticationExtensionsClientInputs {
+  boolean minPinLength;
+};
+
+// Source: Client to Authenticator Protocol (CTAP) (https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html)
+partial dictionary AuthenticationExtensionsClientInputs {
+  boolean hmacCreateSecret;
+};
+
+// Source: Client to Authenticator Protocol (CTAP) (https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html)
+partial dictionary AuthenticationExtensionsClientInputs {
+  HMACGetSecretInput hmacGetSecret;
+};
+
+// Source: Secure Payment Confirmation (https://www.w3.org/TR/secure-payment-confirmation/)
+partial dictionary AuthenticationExtensionsClientInputs {
+  AuthenticationExtensionsPaymentInputs payment;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientInputs {
+  USVString appid;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientInputs {
+  USVString appidExclude;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientInputs {
+    boolean credProps;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientInputs {
+    AuthenticationExtensionsPRFInputs prf;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientInputs {
+    AuthenticationExtensionsLargeBlobInputs largeBlob;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientInputs {
+  boolean uvm;
+};
+
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+partial dictionary AuthenticationExtensionsClientInputs {
+    AuthenticationExtensionsDevicePublicKeyInputs devicePubKey;
+};

@@ -1,0 +1,15 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+dictionary XRSessionInit {
+  sequence<DOMString> requiredFeatures;
+  sequence<DOMString> optionalFeatures;
+};
+
+// Source: WebXR Depth Sensing Module (https://www.w3.org/TR/webxr-depth-sensing-1/)
+partial dictionary XRSessionInit {
+  XRDepthStateInit depthSensing;
+};
+
+// Source: WebXR DOM Overlays Module (https://www.w3.org/TR/webxr-dom-overlays-1/)
+partial dictionary XRSessionInit {
+  XRDOMOverlayInit? domOverlay;
+};

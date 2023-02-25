@@ -1,0 +1,8 @@
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+[Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
+interface CSSColor : CSSColorValue {
+    constructor(CSSKeywordish colorSpace, sequence<CSSColorPercent> channels, optional CSSNumberish alpha = 1);
+    attribute CSSKeywordish colorSpace;
+    attribute ObservableArray<CSSColorPercent> channels;
+    attribute CSSNumberish alpha;
+};

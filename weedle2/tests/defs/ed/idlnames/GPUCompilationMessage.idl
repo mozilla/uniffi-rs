@@ -1,0 +1,10 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), Serializable, SecureContext]
+interface GPUCompilationMessage {
+    readonly attribute DOMString message;
+    readonly attribute GPUCompilationMessageType type;
+    readonly attribute unsigned long long lineNum;
+    readonly attribute unsigned long long linePos;
+    readonly attribute unsigned long long offset;
+    readonly attribute unsigned long long length;
+};

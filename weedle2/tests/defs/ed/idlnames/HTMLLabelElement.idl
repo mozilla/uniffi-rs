@@ -1,0 +1,9 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLLabelElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  readonly attribute HTMLFormElement? form;
+  [CEReactions] attribute DOMString htmlFor;
+  readonly attribute HTMLElement? control;
+};

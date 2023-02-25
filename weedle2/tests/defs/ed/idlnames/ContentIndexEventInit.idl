@@ -1,0 +1,4 @@
+// Source: Content Index (https://wicg.github.io/content-index/spec/)
+dictionary ContentIndexEventInit : ExtendableEventInit {
+  required DOMString id;
+};

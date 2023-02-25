@@ -1,0 +1,6 @@
+// Source: Trusted Types (https://www.w3.org/TR/trusted-types/)
+dictionary TrustedTypePolicyOptions {
+   CreateHTMLCallback? createHTML;
+   CreateScriptCallback? createScript;
+   CreateScriptURLCallback? createScriptURL;
+};

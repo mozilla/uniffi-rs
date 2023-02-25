@@ -1,0 +1,2 @@
+// Source: Web App Launch Handler API (https://wicg.github.io/web-app-launch/)
+callback LaunchConsumer = any (LaunchParams params);

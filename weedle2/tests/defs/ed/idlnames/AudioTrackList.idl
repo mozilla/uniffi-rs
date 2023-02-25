@@ -1,0 +1,11 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface AudioTrackList : EventTarget {
+  readonly attribute unsigned long length;
+  getter AudioTrack (unsigned long index);
+  AudioTrack? getTrackById(DOMString id);
+
+  attribute EventHandler onchange;
+  attribute EventHandler onaddtrack;
+  attribute EventHandler onremovetrack;
+};

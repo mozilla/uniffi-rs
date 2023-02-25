@@ -1,0 +1,5 @@
+// Source: WebHID API (https://wicg.github.io/webhid/)
+dictionary HIDReportInfo {
+    octet reportId;
+    sequence<HIDReportItem> items;
+};

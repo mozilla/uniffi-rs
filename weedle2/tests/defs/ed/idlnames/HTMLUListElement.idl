@@ -1,0 +1,13 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLUListElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLUListElement {
+  [CEReactions] attribute boolean compact;
+  [CEReactions] attribute DOMString type;
+};

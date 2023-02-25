@@ -1,0 +1,6 @@
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+[Exposed=(Window,Worker)]
+interface WebGLContextEvent : Event {
+    constructor(DOMString type, optional WebGLContextEventInit eventInit = {});
+    readonly attribute DOMString statusMessage;
+};

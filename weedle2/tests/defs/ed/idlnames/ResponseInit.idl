@@ -1,0 +1,6 @@
+// Source: Fetch Standard (https://fetch.spec.whatwg.org/)
+dictionary ResponseInit {
+  unsigned short status = 200;
+  ByteString statusText = "";
+  HeadersInit headers;
+};

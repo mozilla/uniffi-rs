@@ -1,0 +1,2 @@
+// Source: Clipboard API and events (https://www.w3.org/TR/clipboard-apis/)
+enum PresentationStyle { "unspecified", "inline", "attachment" };

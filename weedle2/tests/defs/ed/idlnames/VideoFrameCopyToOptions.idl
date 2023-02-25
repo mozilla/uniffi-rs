@@ -1,0 +1,5 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary VideoFrameCopyToOptions {
+  DOMRectInit rect;
+  sequence<PlaneLayout> layout;
+};

@@ -1,0 +1,8 @@
+// Source: Web NFC (https://w3c.github.io/web-nfc/)
+[SecureContext, Exposed=Window]
+interface NDEFReadingEvent : Event {
+  constructor(DOMString type, NDEFReadingEventInit readingEventInitDict);
+
+  readonly attribute DOMString serialNumber;
+  [SameObject] readonly attribute NDEFMessage message;
+};

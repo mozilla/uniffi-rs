@@ -1,0 +1,5 @@
+// Source: User-Agent Client Hints (https://wicg.github.io/ua-client-hints/)
+dictionary NavigatorUABrandVersion {
+  DOMString brand;
+  DOMString version;
+};

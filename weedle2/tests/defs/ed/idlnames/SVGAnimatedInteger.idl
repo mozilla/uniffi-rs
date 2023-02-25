@@ -1,0 +1,6 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGAnimatedInteger {
+           attribute long baseVal;
+  readonly attribute long animVal;
+};

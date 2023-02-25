@@ -1,0 +1,7 @@
+// Source: Navigation API (https://wicg.github.io/navigation-api/)
+[Exposed=Window]
+interface NavigationTransition {
+  readonly attribute NavigationType navigationType;
+  readonly attribute NavigationHistoryEntry from;
+  readonly attribute Promise<undefined> finished;
+};

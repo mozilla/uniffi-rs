@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface PopStateEvent : Event {
+  constructor(DOMString type, optional PopStateEventInit eventInitDict = {});
+
+  readonly attribute any state;
+};

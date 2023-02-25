@@ -1,0 +1,7 @@
+// Source: CSS Fonts Module Level 4 (https://www.w3.org/TR/css-fonts-4/)
+[Exposed=Window]
+interface CSSFontFeatureValuesMap {
+  maplike<CSSOMString, sequence<unsigned long>>;
+  undefined set(CSSOMString featureValueName,
+           (unsigned long or sequence<unsigned long>) values);
+};

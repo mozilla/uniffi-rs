@@ -1,0 +1,2 @@
+// Source: WebSockets Standard (https://websockets.spec.whatwg.org/)
+enum BinaryType { "blob", "arraybuffer" };

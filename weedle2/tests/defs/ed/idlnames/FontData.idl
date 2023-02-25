@@ -1,0 +1,11 @@
+// Source: Local Font Access API (https://wicg.github.io/local-font-access/)
+[Exposed=Window]
+interface FontData {
+  Promise<Blob> blob();
+
+  // Names
+  readonly attribute USVString postscriptName;
+  readonly attribute USVString fullName;
+  readonly attribute USVString family;
+  readonly attribute USVString style;
+};

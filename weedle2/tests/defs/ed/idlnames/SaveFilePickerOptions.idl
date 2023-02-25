@@ -1,0 +1,4 @@
+// Source: File System Access (https://wicg.github.io/file-system-access/)
+dictionary SaveFilePickerOptions : FilePickerOptions {
+    USVString? suggestedName;
+};

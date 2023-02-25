@@ -1,0 +1,5 @@
+// Source: Web Authentication: An API for accessing Public Key Credentials - Level (https://www.w3.org/TR/webauthn-3/)
+enum AuthenticatorAttachment {
+    "platform",
+    "cross-platform"
+};

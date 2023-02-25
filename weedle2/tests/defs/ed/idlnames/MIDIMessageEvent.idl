@@ -1,0 +1,6 @@
+// Source: Web MIDI API (https://www.w3.org/TR/webmidi/)
+[SecureContext, Exposed=Window]
+interface MIDIMessageEvent : Event {
+  constructor(DOMString type, optional MIDIMessageEventInit eventInitDict = {});
+  readonly attribute Uint8Array data;
+};

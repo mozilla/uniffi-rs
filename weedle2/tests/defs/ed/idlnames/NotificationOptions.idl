@@ -1,0 +1,17 @@
+// Source: Notifications API Standard (https://notifications.spec.whatwg.org/)
+dictionary NotificationOptions {
+  NotificationDirection dir = "auto";
+  DOMString lang = "";
+  DOMString body = "";
+  DOMString tag = "";
+  USVString image;
+  USVString icon;
+  USVString badge;
+  VibratePattern vibrate;
+  EpochTimeStamp timestamp;
+  boolean renotify = false;
+  boolean silent = false;
+  boolean requireInteraction = false;
+  any data = null;
+  sequence<NotificationAction> actions = [];
+};

@@ -1,0 +1,8 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+dictionary BiquadFilterOptions : AudioNodeOptions {
+    BiquadFilterType type = "lowpass";
+    float Q = 1;
+    float detune = 0;
+    float frequency = 350;
+    float gain = 0;
+};

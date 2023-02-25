@@ -1,0 +1,12 @@
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+[Exposed=Window]
+interface SVGFEDiffuseLightingElement : SVGElement {
+  readonly attribute SVGAnimatedString in1;
+  readonly attribute SVGAnimatedNumber surfaceScale;
+  readonly attribute SVGAnimatedNumber diffuseConstant;
+  readonly attribute SVGAnimatedNumber kernelUnitLengthX;
+  readonly attribute SVGAnimatedNumber kernelUnitLengthY;
+};
+
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+SVGFEDiffuseLightingElement includes SVGFilterPrimitiveStandardAttributes;

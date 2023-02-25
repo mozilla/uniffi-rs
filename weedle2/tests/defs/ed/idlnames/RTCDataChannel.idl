@@ -1,0 +1,31 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+[Exposed=Window]
+interface RTCDataChannel : EventTarget {
+  readonly attribute USVString label;
+  readonly attribute boolean ordered;
+  readonly attribute unsigned short? maxPacketLifeTime;
+  readonly attribute unsigned short? maxRetransmits;
+  readonly attribute USVString protocol;
+  readonly attribute boolean negotiated;
+  readonly attribute unsigned short? id;
+  readonly attribute RTCDataChannelState readyState;
+  readonly attribute unsigned long bufferedAmount;
+  [EnforceRange] attribute unsigned long bufferedAmountLowThreshold;
+  attribute EventHandler onopen;
+  attribute EventHandler onbufferedamountlow;
+  attribute EventHandler onerror;
+  attribute EventHandler onclosing;
+  attribute EventHandler onclose;
+  undefined close();
+  attribute EventHandler onmessage;
+  attribute BinaryType binaryType;
+  undefined send(USVString data);
+  undefined send(Blob data);
+  undefined send(ArrayBuffer data);
+  undefined send(ArrayBufferView data);
+};
+
+// Source: WebRTC Priority Control API (https://www.w3.org/TR/webrtc-priority/)
+partial interface RTCDataChannel {
+  readonly attribute RTCPriorityType priority;
+};

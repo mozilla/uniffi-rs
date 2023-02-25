@@ -1,0 +1,10 @@
+// Source: Intervention Reporting (https://wicg.github.io/intervention-reporting/)
+[Exposed=(Window,Worker)]
+interface InterventionReportBody : ReportBody {
+  [Default] object toJSON();
+  readonly attribute DOMString id;
+  readonly attribute DOMString message;
+  readonly attribute DOMString? sourceFile;
+  readonly attribute unsigned long? lineNumber;
+  readonly attribute unsigned long? columnNumber;
+};

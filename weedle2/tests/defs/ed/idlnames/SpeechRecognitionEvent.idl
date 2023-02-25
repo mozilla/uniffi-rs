@@ -1,0 +1,8 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+// A full response, which could be interim or final, part of a continuous response or not
+[Exposed=Window]
+interface SpeechRecognitionEvent : Event {
+    constructor(DOMString type, SpeechRecognitionEventInit eventInitDict);
+    readonly attribute unsigned long resultIndex;
+    readonly attribute SpeechRecognitionResultList results;
+};

@@ -1,0 +1,4 @@
+// Source: requestIdleCallback() (https://www.w3.org/TR/requestidlecallback/)
+dictionary IdleRequestOptions {
+  unsigned long timeout;
+};

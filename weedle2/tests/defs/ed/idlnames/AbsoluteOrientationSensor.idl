@@ -1,0 +1,5 @@
+// Source: Orientation Sensor (https://www.w3.org/TR/orientation-sensor/)
+[SecureContext, Exposed=Window]
+interface AbsoluteOrientationSensor : OrientationSensor {
+  constructor(optional OrientationSensorOptions sensorOptions = {});
+};

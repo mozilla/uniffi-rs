@@ -1,0 +1,10 @@
+// Source: WebAssembly JavaScript Interface (https://www.w3.org/TR/wasm-js-api-2/)
+enum ValueType {
+  "i32",
+  "i64",
+  "f32",
+  "f64",
+  "v128",
+  "externref",
+  "anyfunc",
+};

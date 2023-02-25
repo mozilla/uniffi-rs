@@ -1,0 +1,11 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+[Exposed=Window]
+interface DocumentFragment : Node {
+  constructor();
+};
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+DocumentFragment includes NonElementParentNode;
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+DocumentFragment includes ParentNode;

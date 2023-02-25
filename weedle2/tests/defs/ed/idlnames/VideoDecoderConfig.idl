@@ -1,0 +1,12 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary VideoDecoderConfig {
+  required DOMString codec;
+  [AllowShared] BufferSource description;
+  [EnforceRange] unsigned long codedWidth;
+  [EnforceRange] unsigned long codedHeight;
+  [EnforceRange] unsigned long displayAspectWidth;
+  [EnforceRange] unsigned long displayAspectHeight;
+  VideoColorSpaceInit colorSpace;
+  HardwareAcceleration hardwareAcceleration = "no-preference";
+  boolean optimizeForLatency;
+};

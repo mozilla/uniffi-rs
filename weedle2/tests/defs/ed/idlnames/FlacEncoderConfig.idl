@@ -1,0 +1,5 @@
+// Source: FLAC WebCodecs Registration (https://www.w3.org/TR/webcodecs-flac-codec-registration/)
+dictionary FlacEncoderConfig {
+  [EnforceRange] unsigned long blockSize = 0;
+  [EnforceRange] unsigned long compressLevel = 5;
+};

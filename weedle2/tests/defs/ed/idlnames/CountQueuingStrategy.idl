@@ -1,0 +1,8 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+[Exposed=*]
+interface CountQueuingStrategy {
+  constructor(QueuingStrategyInit init);
+
+  readonly attribute unrestricted double highWaterMark;
+  readonly attribute Function size;
+};

@@ -1,0 +1,2 @@
+// Source: JS Self-Profiling API (https://wicg.github.io/js-self-profiling/)
+typedef DOMString ProfilerResource;

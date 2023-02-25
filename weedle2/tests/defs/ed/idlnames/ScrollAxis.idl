@@ -1,0 +1,7 @@
+// Source: Scroll-driven Animations (https://www.w3.org/TR/scroll-animations-1/)
+enum ScrollAxis {
+  "block",
+  "inline",
+  "horizontal",
+  "vertical"
+};

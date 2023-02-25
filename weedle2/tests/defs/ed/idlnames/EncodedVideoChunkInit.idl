@@ -1,0 +1,7 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary EncodedVideoChunkInit {
+  required EncodedVideoChunkType type;
+  [EnforceRange] required long long timestamp;        // microseconds
+  [EnforceRange] unsigned long long duration;         // microseconds
+  required [AllowShared] BufferSource data;
+};

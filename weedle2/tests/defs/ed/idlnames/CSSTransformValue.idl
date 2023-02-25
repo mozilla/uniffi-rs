@@ -1,0 +1,12 @@
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+[Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
+interface CSSTransformValue : CSSStyleValue {
+    constructor(sequence<CSSTransformComponent> transforms);
+    iterable<CSSTransformComponent>;
+    readonly attribute unsigned long length;
+    getter CSSTransformComponent (unsigned long index);
+    setter CSSTransformComponent (unsigned long index, CSSTransformComponent val);
+
+    readonly attribute boolean is2D;
+    DOMMatrix toMatrix();
+};

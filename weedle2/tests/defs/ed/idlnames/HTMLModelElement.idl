@@ -1,0 +1,5 @@
+// Source: The <model> element (https://immersive-web.github.io/model-element/)
+[Exposed=Window]
+interface HTMLModelElement : HTMLElement {
+
+};

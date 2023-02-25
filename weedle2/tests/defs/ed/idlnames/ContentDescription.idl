@@ -1,0 +1,9 @@
+// Source: Content Index (https://wicg.github.io/content-index/spec/)
+dictionary ContentDescription {
+  required DOMString id;
+  required DOMString title;
+  required DOMString description;
+  ContentCategory category = "";
+  sequence<ImageResource> icons = [];
+  required USVString url;
+};

@@ -1,0 +1,7 @@
+// Source: Performance Timeline (https://www.w3.org/TR/performance-timeline/)
+[Exposed=(Window,Worker)]
+interface PerformanceObserverEntryList {
+  PerformanceEntryList getEntries();
+  PerformanceEntryList getEntriesByType (DOMString type);
+  PerformanceEntryList getEntriesByName (DOMString name, optional DOMString type);
+};

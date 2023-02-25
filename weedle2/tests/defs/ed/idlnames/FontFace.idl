@@ -1,0 +1,30 @@
+// Source: CSS Font Loading Module Level 3 (https://www.w3.org/TR/css-font-loading-3/)
+[Exposed=(Window,Worker)]
+interface FontFace {
+  constructor(CSSOMString family, (CSSOMString or BinaryData) source,
+                optional FontFaceDescriptors descriptors = {});
+  attribute CSSOMString family;
+  attribute CSSOMString style;
+  attribute CSSOMString weight;
+  attribute CSSOMString stretch;
+  attribute CSSOMString unicodeRange;
+  attribute CSSOMString variant;
+  attribute CSSOMString featureSettings;
+  attribute CSSOMString variationSettings;
+  attribute CSSOMString display;
+  attribute CSSOMString ascentOverride;
+  attribute CSSOMString descentOverride;
+  attribute CSSOMString lineGapOverride;
+
+  readonly attribute FontFaceLoadStatus status;
+
+  Promise<FontFace> load();
+  readonly attribute Promise<FontFace> loaded;
+};
+
+// Source: CSS Font Loading Module Level 3 (https://www.w3.org/TR/css-font-loading-3/)
+partial interface FontFace {
+  readonly attribute FontFaceFeatures features;
+  readonly attribute FontFaceVariations variations;
+  readonly attribute FontFacePalettes palettes;
+};

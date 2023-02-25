@@ -1,0 +1,9 @@
+// Source: Resize Observer (https://www.w3.org/TR/resize-observer-1/)
+[Exposed=Window]
+interface ResizeObserverEntry {
+    readonly attribute Element target;
+    readonly attribute DOMRectReadOnly contentRect;
+    readonly attribute FrozenArray<ResizeObserverSize> borderBoxSize;
+    readonly attribute FrozenArray<ResizeObserverSize> contentBoxSize;
+    readonly attribute FrozenArray<ResizeObserverSize> devicePixelContentBoxSize;
+};

@@ -1,0 +1,49 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+dictionary MediaTrackCapabilities {
+  ULongRange width;
+  ULongRange height;
+  DoubleRange aspectRatio;
+  DoubleRange frameRate;
+  sequence<DOMString> facingMode;
+  sequence<DOMString> resizeMode;
+  ULongRange sampleRate;
+  ULongRange sampleSize;
+  sequence<boolean> echoCancellation;
+  sequence<boolean> autoGainControl;
+  sequence<boolean> noiseSuppression;
+  DoubleRange latency;
+  ULongRange channelCount;
+  DOMString deviceId;
+  DOMString groupId;
+};
+
+// Source: MediaStream Image Capture (https://www.w3.org/TR/image-capture/)
+partial dictionary MediaTrackCapabilities {
+  sequence<DOMString>  whiteBalanceMode;
+  sequence<DOMString>  exposureMode;
+  sequence<DOMString>  focusMode;
+
+  MediaSettingsRange   exposureCompensation;
+  MediaSettingsRange   exposureTime;
+  MediaSettingsRange   colorTemperature;
+  MediaSettingsRange   iso;
+
+  MediaSettingsRange   brightness;
+  MediaSettingsRange   contrast;
+  MediaSettingsRange   saturation;
+  MediaSettingsRange   sharpness;
+
+  MediaSettingsRange   focusDistance;
+  MediaSettingsRange   pan;
+  MediaSettingsRange   tilt;
+  MediaSettingsRange   zoom;
+
+  boolean              torch;
+};
+
+// Source: Screen Capture (https://www.w3.org/TR/screen-capture/)
+partial dictionary MediaTrackCapabilities {
+  DOMString displaySurface;
+  boolean logicalSurface;
+  sequence<DOMString> cursor;
+};

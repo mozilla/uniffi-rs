@@ -1,0 +1,6 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+enum WebTransportCongestionControl {
+  "default",
+  "throughput",
+  "low-latency",
+};

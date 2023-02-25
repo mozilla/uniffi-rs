@@ -1,0 +1,14 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLLIElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute long value;
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLLIElement {
+  [CEReactions] attribute DOMString type;
+};

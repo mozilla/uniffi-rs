@@ -1,0 +1,13 @@
+// Source: URLPattern API (https://wicg.github.io/urlpattern/)
+dictionary URLPatternResult {
+  sequence<URLPatternInput> inputs;
+
+  URLPatternComponentResult protocol;
+  URLPatternComponentResult username;
+  URLPatternComponentResult password;
+  URLPatternComponentResult hostname;
+  URLPatternComponentResult port;
+  URLPatternComponentResult pathname;
+  URLPatternComponentResult search;
+  URLPatternComponentResult hash;
+};

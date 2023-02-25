@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLDetailsElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute boolean open;
+};

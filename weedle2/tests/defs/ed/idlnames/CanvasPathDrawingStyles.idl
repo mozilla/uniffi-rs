@@ -1,0 +1,13 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin CanvasPathDrawingStyles {
+  // line caps/joins
+  attribute unrestricted double lineWidth; // (default 1)
+  attribute CanvasLineCap lineCap; // (default "butt")
+  attribute CanvasLineJoin lineJoin; // (default "miter")
+  attribute unrestricted double miterLimit; // (default 10)
+
+  // dashed lines
+  undefined setLineDash(sequence<unrestricted double> segments); // default empty
+  sequence<unrestricted double> getLineDash();
+  attribute unrestricted double lineDashOffset;
+};

@@ -1,0 +1,2 @@
+// Source: CSS Animation Worklet API (https://www.w3.org/TR/css-animation-worklet-1/)
+callback AnimatorInstanceConstructor = any (any options, optional any state);

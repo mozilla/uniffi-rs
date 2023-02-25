@@ -1,0 +1,8 @@
+// Source: Portals (https://wicg.github.io/portals/)
+[Exposed=Window]
+interface PortalActivateEvent : Event {
+    constructor(DOMString type, optional PortalActivateEventInit eventInitDict = {});
+
+    readonly attribute any data;
+    HTMLPortalElement adoptPredecessor();
+};

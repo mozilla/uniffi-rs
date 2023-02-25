@@ -1,0 +1,5 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+interface mixin GenericTransformStream {
+  readonly attribute ReadableStream readable;
+  readonly attribute WritableStream writable;
+};

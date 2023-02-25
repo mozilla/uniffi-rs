@@ -1,0 +1,4 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+dictionary ElementDefinitionOptions {
+  DOMString extends;
+};

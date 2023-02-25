@@ -1,0 +1,8 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+enum RTCDtlsTransportState {
+  "new",
+  "connecting",
+  "connected",
+  "closed",
+  "failed"
+};

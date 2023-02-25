@@ -1,0 +1,10 @@
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+[Exposed=Window]
+interface SVGFEOffsetElement : SVGElement {
+  readonly attribute SVGAnimatedString in1;
+  readonly attribute SVGAnimatedNumber dx;
+  readonly attribute SVGAnimatedNumber dy;
+};
+
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+SVGFEOffsetElement includes SVGFilterPrimitiveStandardAttributes;

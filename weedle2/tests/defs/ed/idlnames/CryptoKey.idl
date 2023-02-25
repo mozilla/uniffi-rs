@@ -1,0 +1,8 @@
+// Source: Web Cryptography API (https://www.w3.org/TR/WebCryptoAPI/)
+[SecureContext,Exposed=(Window,Worker),Serializable]
+interface CryptoKey {
+  readonly attribute KeyType type;
+  readonly attribute boolean extractable;
+  readonly attribute object algorithm;
+  readonly attribute object usages;
+};

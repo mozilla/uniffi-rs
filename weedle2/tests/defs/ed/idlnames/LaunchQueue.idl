@@ -1,0 +1,4 @@
+// Source: Web App Launch Handler API (https://wicg.github.io/web-app-launch/)
+[Exposed=Window] interface LaunchQueue {
+  undefined setConsumer(LaunchConsumer consumer);
+};

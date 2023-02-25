@@ -1,0 +1,14 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLConvTranspose2dOptions {
+  sequence<unsigned long> padding;
+  sequence<unsigned long> strides;
+  sequence<unsigned long> dilations;
+  sequence<unsigned long> outputPadding;
+  sequence<unsigned long> outputSizes;
+  MLAutoPad autoPad = "explicit";
+  unsigned long groups = 1;
+  MLInputOperandLayout inputLayout = "nchw";
+  MLConvTranspose2dFilterOperandLayout filterLayout = "iohw";
+  MLOperand bias;
+  MLActivation activation;
+};

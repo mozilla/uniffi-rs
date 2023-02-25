@@ -1,0 +1,9 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary AudioDataInit {
+  required AudioSampleFormat format;
+  required float sampleRate;
+  [EnforceRange] required unsigned long numberOfFrames;
+  [EnforceRange] required unsigned long numberOfChannels;
+  [EnforceRange] required long long timestamp;  // microseconds
+  required BufferSource data;
+};

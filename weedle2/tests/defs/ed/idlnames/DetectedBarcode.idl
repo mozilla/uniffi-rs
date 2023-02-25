@@ -1,0 +1,7 @@
+// Source: Accelerated Shape Detection in Images (https://wicg.github.io/shape-detection-api/)
+dictionary DetectedBarcode {
+  required DOMRectReadOnly boundingBox;
+  required DOMString rawValue;
+  required BarcodeFormat format;
+  required FrozenArray<Point2D> cornerPoints;
+};

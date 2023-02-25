@@ -1,0 +1,6 @@
+// Source: Accelerated Text Detection in Images (https://wicg.github.io/shape-detection-api/text.html)
+dictionary DetectedText {
+  required DOMRectReadOnly boundingBox;
+  required DOMString rawValue;
+  required FrozenArray<Point2D> cornerPoints;
+};

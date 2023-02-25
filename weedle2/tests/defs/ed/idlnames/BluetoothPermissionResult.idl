@@ -1,0 +1,5 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+[Exposed=Window]
+interface BluetoothPermissionResult : PermissionStatus {
+  attribute FrozenArray<BluetoothDevice> devices;
+};

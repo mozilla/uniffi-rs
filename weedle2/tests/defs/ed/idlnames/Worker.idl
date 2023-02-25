@@ -1,0 +1,15 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=(Window,DedicatedWorker,SharedWorker)]
+interface Worker : EventTarget {
+  constructor(USVString scriptURL, optional WorkerOptions options = {});
+
+  undefined terminate();
+
+  undefined postMessage(any message, sequence<object> transfer);
+  undefined postMessage(any message, optional StructuredSerializeOptions options = {});
+  attribute EventHandler onmessage;
+  attribute EventHandler onmessageerror;
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Worker includes AbstractWorker;

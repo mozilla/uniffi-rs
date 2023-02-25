@@ -1,0 +1,12 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLLstmOptions {
+  MLOperand bias;
+  MLOperand recurrentBias;
+  MLOperand peepholeWeight;
+  MLOperand initialHiddenState;
+  MLOperand initialCellState;
+  boolean returnSequence = false;
+  MLRecurrentNetworkDirection direction = "forward";
+  MLLstmWeightLayout layout = "iofg";
+  sequence<MLActivation> activations;
+};

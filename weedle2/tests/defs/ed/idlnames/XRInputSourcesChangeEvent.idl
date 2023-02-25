@@ -1,0 +1,8 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window]
+interface XRInputSourcesChangeEvent : Event {
+  constructor(DOMString type, XRInputSourcesChangeEventInit eventInitDict);
+  [SameObject] readonly attribute XRSession session;
+  [SameObject] readonly attribute FrozenArray<XRInputSource> added;
+  [SameObject] readonly attribute FrozenArray<XRInputSource> removed;
+};

@@ -1,0 +1,6 @@
+// Source: Web Animations (https://www.w3.org/TR/web-animations-1/)
+dictionary BaseKeyframe {
+    double?                  offset = null;
+    DOMString                easing = "linear";
+    CompositeOperationOrAuto composite = "auto";
+};

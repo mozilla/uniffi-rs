@@ -1,0 +1,8 @@
+// Source: Cookie Store API (https://wicg.github.io/cookie-store/)
+[Exposed=Window,
+ SecureContext]
+interface CookieChangeEvent : Event {
+  constructor(DOMString type, optional CookieChangeEventInit eventInitDict = {});
+  [SameObject] readonly attribute FrozenArray<CookieListItem> changed;
+  [SameObject] readonly attribute FrozenArray<CookieListItem> deleted;
+};

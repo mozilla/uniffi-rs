@@ -1,0 +1,9 @@
+// Source: WebXR Hit Test Module (https://www.w3.org/TR/webxr-hit-test-1/)
+[SecureContext, Exposed=Window]
+interface XRRay {
+  constructor(optional DOMPointInit origin = {}, optional XRRayDirectionInit direction = {});
+  constructor(XRRigidTransform transform);
+  [SameObject] readonly attribute DOMPointReadOnly origin;
+  [SameObject] readonly attribute DOMPointReadOnly direction;
+  [SameObject] readonly attribute Float32Array matrix;
+};

@@ -1,0 +1,7 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface AudioScheduledSourceNode : AudioNode {
+    attribute EventHandler onended;
+    undefined start(optional double when = 0);
+    undefined stop(optional double when = 0);
+};

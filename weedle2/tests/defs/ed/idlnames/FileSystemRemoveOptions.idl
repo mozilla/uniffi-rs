@@ -1,0 +1,4 @@
+// Source: File System Standard (https://fs.spec.whatwg.org/)
+dictionary FileSystemRemoveOptions {
+  boolean recursive = false;
+};

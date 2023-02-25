@@ -1,0 +1,5 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary ImageDecodeResult {
+  required VideoFrame image;
+  required boolean complete;
+};

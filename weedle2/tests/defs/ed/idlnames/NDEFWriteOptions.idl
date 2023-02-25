@@ -1,0 +1,5 @@
+// Source: Web NFC (https://w3c.github.io/web-nfc/)
+dictionary NDEFWriteOptions {
+  boolean overwrite = true;
+  AbortSignal? signal;
+};

@@ -1,0 +1,11 @@
+// Source: Gamepad Extensions (https://w3c.github.io/gamepad/extensions.html)
+[Exposed=Window]
+interface GamepadHapticActuator {
+  readonly attribute GamepadHapticActuatorType type;
+  boolean canPlayEffectType(GamepadHapticEffectType type);
+  Promise<GamepadHapticsResult> playEffect(
+      GamepadHapticEffectType type,
+      optional GamepadEffectParameters params = {});
+  Promise<boolean> pulse(double value, double duration);
+  Promise<GamepadHapticsResult> reset();
+};

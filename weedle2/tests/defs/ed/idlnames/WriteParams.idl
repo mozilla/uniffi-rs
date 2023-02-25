@@ -1,0 +1,7 @@
+// Source: File System Standard (https://fs.spec.whatwg.org/)
+dictionary WriteParams {
+  required WriteCommandType type;
+  unsigned long long? size;
+  unsigned long long? position;
+  (BufferSource or Blob or USVString)? data;
+};

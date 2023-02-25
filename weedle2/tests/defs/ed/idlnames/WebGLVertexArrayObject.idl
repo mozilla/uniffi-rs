@@ -1,0 +1,4 @@
+// Source: WebGL 2.0 Specification (https://registry.khronos.org/webgl/specs/latest/2.0/)
+[Exposed=(Window,Worker)]
+interface WebGLVertexArrayObject : WebGLObject {
+};

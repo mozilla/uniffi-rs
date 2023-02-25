@@ -1,0 +1,7 @@
+// Source: File System Access (https://wicg.github.io/file-system-access/)
+dictionary FilePickerOptions {
+    sequence<FilePickerAcceptType> types;
+    boolean excludeAcceptAllOption = false;
+    DOMString id;
+    StartInDirectory startIn;
+};

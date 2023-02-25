@@ -1,0 +1,4 @@
+// Source: Magnetometer (https://www.w3.org/TR/magnetometer/)
+dictionary MagnetometerSensorOptions : SensorOptions {
+  MagnetometerLocalCoordinateSystem referenceFrame = "device";
+};

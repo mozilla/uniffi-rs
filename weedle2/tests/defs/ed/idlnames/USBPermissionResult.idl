@@ -1,0 +1,5 @@
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+[Exposed=(DedicatedWorker,SharedWorker,Window)]
+interface USBPermissionResult : PermissionStatus {
+  attribute FrozenArray<USBDevice> devices;
+};

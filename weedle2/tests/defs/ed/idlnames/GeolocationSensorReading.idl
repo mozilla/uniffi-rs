@@ -1,0 +1,11 @@
+// Source: Geolocation Sensor (https://www.w3.org/TR/geolocation-sensor/)
+dictionary GeolocationSensorReading {
+  DOMHighResTimeStamp? timestamp;
+  double? latitude;
+  double? longitude;
+  double? altitude;
+  double? accuracy;
+  double? altitudeAccuracy;
+  double? heading;
+  double? speed;
+};

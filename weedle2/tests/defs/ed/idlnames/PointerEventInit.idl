@@ -1,0 +1,17 @@
+// Source: Pointer Events (https://www.w3.org/TR/pointerevents3/)
+dictionary PointerEventInit : MouseEventInit {
+    long        pointerId = 0;
+    double      width = 1;
+    double      height = 1;
+    float       pressure = 0;
+    float       tangentialPressure = 0;
+    long        tiltX;
+    long        tiltY;
+    long        twist = 0;
+    double      altitudeAngle;
+    double      azimuthAngle;
+    DOMString   pointerType = "";
+    boolean     isPrimary = false;
+    sequence<PointerEvent> coalescedEvents = [];
+    sequence<PointerEvent> predictedEvents = [];
+};

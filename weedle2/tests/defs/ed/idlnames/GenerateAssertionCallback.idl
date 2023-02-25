@@ -1,0 +1,3 @@
+// Source: Identity for WebRTC 1.0 (https://www.w3.org/TR/webrtc-identity/)
+callback GenerateAssertionCallback = Promise<RTCIdentityAssertionResult>
+(DOMString contents, DOMString origin, RTCIdentityProviderOptions options);

@@ -1,0 +1,25 @@
+// Source: Identifiers for WebRTC's Statistics API (https://www.w3.org/TR/webrtc-stats/)
+dictionary RTCIceCandidatePairStats : RTCStats {
+             required DOMString            transportId;
+             required DOMString            localCandidateId;
+             required DOMString            remoteCandidateId;
+             required RTCStatsIceCandidatePairState state;
+             boolean                       nominated;
+             unsigned long long            packetsSent;
+             unsigned long long            packetsReceived;
+             unsigned long long            bytesSent;
+             unsigned long long            bytesReceived;
+             DOMHighResTimeStamp           lastPacketSentTimestamp;
+             DOMHighResTimeStamp           lastPacketReceivedTimestamp;
+             double                        totalRoundTripTime;
+             double                        currentRoundTripTime;
+             double                        availableOutgoingBitrate;
+             double                        availableIncomingBitrate;
+             unsigned long long            requestsReceived;
+             unsigned long long            requestsSent;
+             unsigned long long            responsesReceived;
+             unsigned long long            responsesSent;
+             unsigned long long            consentRequestsSent;
+             unsigned long                 packetsDiscardedOnSend;
+             unsigned long long            bytesDiscardedOnSend;
+};

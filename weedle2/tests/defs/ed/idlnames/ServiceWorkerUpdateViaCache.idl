@@ -1,0 +1,6 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+enum ServiceWorkerUpdateViaCache {
+  "imports",
+  "all",
+  "none"
+};

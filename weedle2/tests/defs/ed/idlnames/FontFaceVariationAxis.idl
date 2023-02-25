@@ -1,0 +1,9 @@
+// Source: CSS Font Loading Module Level 3 (https://www.w3.org/TR/css-font-loading-3/)
+[Exposed=(Window,Worker)]
+interface FontFaceVariationAxis {
+  readonly attribute DOMString name;
+  readonly attribute DOMString axisTag;
+  readonly attribute double minimumValue;
+  readonly attribute double maximumValue;
+  readonly attribute double defaultValue;
+};

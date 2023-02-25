@@ -1,0 +1,34 @@
+// Source: Web Animations (https://www.w3.org/TR/web-animations-1/)
+[Exposed=Window]
+interface Animation : EventTarget {
+    constructor(optional AnimationEffect? effect = null,
+                optional AnimationTimeline? timeline);
+             attribute DOMString                id;
+             attribute AnimationEffect?         effect;
+             attribute AnimationTimeline?       timeline;
+             attribute double                   playbackRate;
+    readonly attribute AnimationPlayState       playState;
+    readonly attribute AnimationReplaceState    replaceState;
+    readonly attribute boolean                  pending;
+    readonly attribute Promise<Animation>       ready;
+    readonly attribute Promise<Animation>       finished;
+             attribute EventHandler             onfinish;
+             attribute EventHandler             oncancel;
+             attribute EventHandler             onremove;
+    undefined cancel();
+    undefined finish();
+    undefined play();
+    undefined pause();
+    undefined updatePlaybackRate(double playbackRate);
+    undefined reverse();
+    undefined persist();
+    [CEReactions]
+    undefined commitStyles();
+};
+
+// Source: Web Animations Level 2 (https://drafts.csswg.org/web-animations-2/)
+[Exposed=Window]
+partial interface Animation {
+    attribute CSSNumberish?       startTime;
+    attribute CSSNumberish?       currentTime;
+};

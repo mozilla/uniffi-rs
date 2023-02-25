@@ -1,0 +1,8 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLOptGroupElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute boolean disabled;
+  [CEReactions] attribute DOMString label;
+};

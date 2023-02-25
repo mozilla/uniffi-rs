@@ -1,0 +1,17 @@
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+dictionary MouseEventInit : EventModifierInit {
+  long screenX = 0;
+  long screenY = 0;
+  long clientX = 0;
+  long clientY = 0;
+
+  short button = 0;
+  unsigned short buttons = 0;
+  EventTarget? relatedTarget = null;
+};
+
+// Source: Pointer Lock 2.0 (https://www.w3.org/TR/pointerlock-2/)
+partial dictionary MouseEventInit {
+  double movementX = 0;
+  double movementY = 0;
+};

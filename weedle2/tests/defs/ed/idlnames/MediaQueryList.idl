@@ -1,0 +1,9 @@
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+[Exposed=Window]
+interface MediaQueryList : EventTarget {
+  readonly attribute CSSOMString media;
+  readonly attribute boolean matches;
+  undefined addListener(EventListener? callback);
+  undefined removeListener(EventListener? callback);
+           attribute EventHandler onchange;
+};

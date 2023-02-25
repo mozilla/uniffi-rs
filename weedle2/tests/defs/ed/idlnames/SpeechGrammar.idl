@@ -1,0 +1,7 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+// The object representing a speech grammar
+[Exposed=Window]
+interface SpeechGrammar {
+    attribute DOMString src;
+    attribute float weight;
+};

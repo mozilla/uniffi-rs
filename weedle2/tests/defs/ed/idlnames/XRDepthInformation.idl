@@ -1,0 +1,9 @@
+// Source: WebXR Depth Sensing Module (https://www.w3.org/TR/webxr-depth-sensing-1/)
+[SecureContext, Exposed=Window]
+interface XRDepthInformation {
+  readonly attribute unsigned long width;
+  readonly attribute unsigned long height;
+
+  [SameObject] readonly attribute XRRigidTransform normDepthBufferFromNormView;
+  readonly attribute float rawValueToMeters;
+};

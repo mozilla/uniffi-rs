@@ -1,0 +1,22 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGTextContentElement : SVGGraphicsElement {
+
+  // lengthAdjust Types
+  const unsigned short LENGTHADJUST_UNKNOWN = 0;
+  const unsigned short LENGTHADJUST_SPACING = 1;
+  const unsigned short LENGTHADJUST_SPACINGANDGLYPHS = 2;
+
+  [SameObject] readonly attribute SVGAnimatedLength textLength;
+  [SameObject] readonly attribute SVGAnimatedEnumeration lengthAdjust;
+
+  long getNumberOfChars();
+  float getComputedTextLength();
+  float getSubStringLength(unsigned long charnum, unsigned long nchars);
+  DOMPoint getStartPositionOfChar(unsigned long charnum);
+  DOMPoint getEndPositionOfChar(unsigned long charnum);
+  DOMRect getExtentOfChar(unsigned long charnum);
+  float getRotationOfChar(unsigned long charnum);
+  long getCharNumAtPosition(optional DOMPointInit point = {});
+  undefined selectSubString(unsigned long charnum, unsigned long nchars);
+};

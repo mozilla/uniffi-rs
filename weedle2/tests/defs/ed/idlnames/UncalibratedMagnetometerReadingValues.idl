@@ -1,0 +1,9 @@
+// Source: Magnetometer (https://www.w3.org/TR/magnetometer/)
+dictionary UncalibratedMagnetometerReadingValues {
+  required double? x;
+  required double? y;
+  required double? z;
+  required double? xBias;
+  required double? yBias;
+  required double? zBias;
+};

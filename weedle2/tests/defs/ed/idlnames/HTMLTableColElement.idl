@@ -1,0 +1,18 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLTableColElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute unsigned long span;
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLTableColElement {
+  [CEReactions] attribute DOMString align;
+  [CEReactions] attribute DOMString ch;
+  [CEReactions] attribute DOMString chOff;
+  [CEReactions] attribute DOMString vAlign;
+  [CEReactions] attribute DOMString width;
+};

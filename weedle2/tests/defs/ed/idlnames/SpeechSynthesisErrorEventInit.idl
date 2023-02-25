@@ -1,0 +1,4 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+dictionary SpeechSynthesisErrorEventInit : SpeechSynthesisEventInit {
+    required SpeechSynthesisErrorCode error;
+};

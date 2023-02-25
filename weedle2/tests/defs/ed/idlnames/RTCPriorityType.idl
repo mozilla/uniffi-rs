@@ -1,0 +1,7 @@
+// Source: WebRTC Priority Control API (https://www.w3.org/TR/webrtc-priority/)
+enum RTCPriorityType {
+  "very-low",
+  "low",
+  "medium",
+  "high"
+};

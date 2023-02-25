@@ -1,0 +1,7 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+dictionary RequestDeviceOptions {
+  sequence<BluetoothLEScanFilterInit> filters;
+  sequence<BluetoothServiceUUID> optionalServices = [];
+  sequence<unsigned short> optionalManufacturerData = [];
+  boolean acceptAllDevices = false;
+};

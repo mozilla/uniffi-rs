@@ -1,0 +1,9 @@
+// Source: Multi-Screen Window Placement (https://www.w3.org/TR/window-placement/)
+[Exposed=Window, SecureContext]
+interface ScreenDetails : EventTarget {
+  readonly attribute FrozenArray<ScreenDetailed> screens;
+  readonly attribute ScreenDetailed currentScreen;
+
+  attribute EventHandler onscreenschange;
+  attribute EventHandler oncurrentscreenchange;
+};

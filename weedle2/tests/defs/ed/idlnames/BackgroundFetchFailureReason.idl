@@ -1,0 +1,16 @@
+// Source: Background Fetch (https://wicg.github.io/background-fetch/)
+enum BackgroundFetchFailureReason {
+  // The background fetch has not completed yet, or was successful.
+  "",
+  // The operation was aborted by the user, or abort() was called.
+  "aborted",
+  // A response had a not-ok-status.
+  "bad-status",
+  // A fetch failed for other reasons, e.g. CORS, MIX, an invalid partial response,
+  // or a general network failure for a fetch that cannot be retried.
+  "fetch-error",
+  // Storage quota was reached during the operation.
+  "quota-exceeded",
+  // The provided downloadTotal was exceeded.
+  "download-total-exceeded"
+};

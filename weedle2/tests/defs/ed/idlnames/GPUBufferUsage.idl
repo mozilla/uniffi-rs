@@ -1,0 +1,14 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker)]
+namespace GPUBufferUsage {
+    const GPUFlagsConstant MAP_READ      = 0x0001;
+    const GPUFlagsConstant MAP_WRITE     = 0x0002;
+    const GPUFlagsConstant COPY_SRC      = 0x0004;
+    const GPUFlagsConstant COPY_DST      = 0x0008;
+    const GPUFlagsConstant INDEX         = 0x0010;
+    const GPUFlagsConstant VERTEX        = 0x0020;
+    const GPUFlagsConstant UNIFORM       = 0x0040;
+    const GPUFlagsConstant STORAGE       = 0x0080;
+    const GPUFlagsConstant INDIRECT      = 0x0100;
+    const GPUFlagsConstant QUERY_RESOLVE = 0x0200;
+};

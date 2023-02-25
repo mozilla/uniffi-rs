@@ -1,0 +1,7 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary VideoColorSpaceInit {
+  VideoColorPrimaries? primaries = null;
+  VideoTransferCharacteristics? transfer = null;
+  VideoMatrixCoefficients? matrix = null;
+  boolean? fullRange = null;
+};

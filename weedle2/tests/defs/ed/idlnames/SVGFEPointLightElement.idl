@@ -1,0 +1,7 @@
+// Source: Filter Effects Module Level 1 (https://www.w3.org/TR/filter-effects-1/)
+[Exposed=Window]
+interface SVGFEPointLightElement : SVGElement {
+  readonly attribute SVGAnimatedNumber x;
+  readonly attribute SVGAnimatedNumber y;
+  readonly attribute SVGAnimatedNumber z;
+};

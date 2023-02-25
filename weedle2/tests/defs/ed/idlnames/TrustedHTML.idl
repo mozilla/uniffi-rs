@@ -1,0 +1,7 @@
+// Source: Trusted Types (https://www.w3.org/TR/trusted-types/)
+[Exposed=(Window,Worker)]
+interface TrustedHTML {
+  stringifier;
+  DOMString toJSON();
+  static TrustedHTML fromLiteral(object templateStringsArray);
+};

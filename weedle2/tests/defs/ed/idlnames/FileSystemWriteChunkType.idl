@@ -1,0 +1,2 @@
+// Source: File System Standard (https://fs.spec.whatwg.org/)
+typedef (BufferSource or Blob or USVString or WriteParams) FileSystemWriteChunkType;

@@ -1,0 +1,2 @@
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+typedef unrestricted float GLfloat;

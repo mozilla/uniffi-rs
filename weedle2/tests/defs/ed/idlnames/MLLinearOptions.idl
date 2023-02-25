@@ -1,0 +1,5 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLLinearOptions {
+  float alpha = 1;
+  float beta = 0;
+};

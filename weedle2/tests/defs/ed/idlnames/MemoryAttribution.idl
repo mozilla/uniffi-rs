@@ -1,0 +1,6 @@
+// Source: Measure Memory API (https://wicg.github.io/performance-measure-memory/)
+dictionary MemoryAttribution {
+  USVString url;
+  MemoryAttributionContainer container;
+  DOMString scope;
+};

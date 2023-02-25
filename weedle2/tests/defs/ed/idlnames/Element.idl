@@ -1,0 +1,162 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+[Exposed=Window]
+interface Element : Node {
+  readonly attribute DOMString? namespaceURI;
+  readonly attribute DOMString? prefix;
+  readonly attribute DOMString localName;
+  readonly attribute DOMString tagName;
+
+  [CEReactions] attribute DOMString id;
+  [CEReactions] attribute DOMString className;
+  [SameObject, PutForwards=value] readonly attribute DOMTokenList classList;
+  [CEReactions, Unscopable] attribute DOMString slot;
+
+  boolean hasAttributes();
+  [SameObject] readonly attribute NamedNodeMap attributes;
+  sequence<DOMString> getAttributeNames();
+  DOMString? getAttribute(DOMString qualifiedName);
+  DOMString? getAttributeNS(DOMString? namespace, DOMString localName);
+  [CEReactions] undefined setAttribute(DOMString qualifiedName, DOMString value);
+  [CEReactions] undefined setAttributeNS(DOMString? namespace, DOMString qualifiedName, DOMString value);
+  [CEReactions] undefined removeAttribute(DOMString qualifiedName);
+  [CEReactions] undefined removeAttributeNS(DOMString? namespace, DOMString localName);
+  [CEReactions] boolean toggleAttribute(DOMString qualifiedName, optional boolean force);
+  boolean hasAttribute(DOMString qualifiedName);
+  boolean hasAttributeNS(DOMString? namespace, DOMString localName);
+
+  Attr? getAttributeNode(DOMString qualifiedName);
+  Attr? getAttributeNodeNS(DOMString? namespace, DOMString localName);
+  [CEReactions] Attr? setAttributeNode(Attr attr);
+  [CEReactions] Attr? setAttributeNodeNS(Attr attr);
+  [CEReactions] Attr removeAttributeNode(Attr attr);
+
+  ShadowRoot attachShadow(ShadowRootInit init);
+  readonly attribute ShadowRoot? shadowRoot;
+
+  Element? closest(DOMString selectors);
+  boolean matches(DOMString selectors);
+  boolean webkitMatchesSelector(DOMString selectors); // legacy alias of .matches
+
+  HTMLCollection getElementsByTagName(DOMString qualifiedName);
+  HTMLCollection getElementsByTagNameNS(DOMString? namespace, DOMString localName);
+  HTMLCollection getElementsByClassName(DOMString classNames);
+
+  [CEReactions] Element? insertAdjacentElement(DOMString where, Element element); // legacy
+  undefined insertAdjacentText(DOMString where, DOMString data); // legacy
+};
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+Element includes ParentNode;
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+Element includes NonDocumentTypeChildNode;
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+Element includes ChildNode;
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+Element includes Slottable;
+
+// Source: Fullscreen API Standard (https://fullscreen.spec.whatwg.org/)
+partial interface Element {
+  Promise<undefined> requestFullscreen(optional FullscreenOptions options = {});
+
+  attribute EventHandler onfullscreenchange;
+  attribute EventHandler onfullscreenerror;
+};
+
+// Source: Element Timing API (https://wicg.github.io/element-timing/)
+partial interface Element {
+    [CEReactions] attribute DOMString elementTiming;
+};
+
+// Source: HTML Sanitizer API (https://wicg.github.io/sanitizer-api/)
+[SecureContext]
+partial interface Element {
+  undefined setHTML(DOMString input, optional SetHTMLOptions options = {});
+};
+
+// Source: CSS Spatial Navigation Level 1 (https://www.w3.org/TR/css-nav-1/)
+partial interface Element {
+    Node getSpatialNavigationContainer();
+    sequence<Node> focusableAreas(optional FocusableAreasOption option = {});
+    Node? spatialNavigationSearch(SpatialNavigationDirection dir, optional SpatialNavigationSearchOptions options = {});
+};
+
+// Source: CSS Pseudo-Elements Module Level 4 (https://www.w3.org/TR/css-pseudo-4/)
+partial interface Element {
+  CSSPseudoElement? pseudo(CSSOMString type);
+};
+
+// Source: CSS Regions Module Level 1 (https://www.w3.org/TR/css-regions-1/)
+Element includes Region;
+
+// Source: CSS Shadow Parts (https://www.w3.org/TR/css-shadow-parts-1/)
+partial interface Element {
+  [SameObject, PutForwards=value] readonly attribute DOMTokenList part;
+};
+
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+partial interface Element {
+    [SameObject] StylePropertyMapReadOnly computedStyleMap();
+};
+
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+partial interface Element {
+  DOMRectList getClientRects();
+  [NewObject] DOMRect getBoundingClientRect();
+
+  boolean checkVisibility(optional CheckVisibilityOptions options = {});
+
+  undefined scrollIntoView(optional (boolean or ScrollIntoViewOptions) arg = {});
+  undefined scroll(optional ScrollToOptions options = {});
+  undefined scroll(unrestricted double x, unrestricted double y);
+  undefined scrollTo(optional ScrollToOptions options = {});
+  undefined scrollTo(unrestricted double x, unrestricted double y);
+  undefined scrollBy(optional ScrollToOptions options = {});
+  undefined scrollBy(unrestricted double x, unrestricted double y);
+  attribute unrestricted double scrollTop;
+  attribute unrestricted double scrollLeft;
+  readonly attribute long scrollWidth;
+  readonly attribute long scrollHeight;
+  readonly attribute long clientTop;
+  readonly attribute long clientLeft;
+  readonly attribute long clientWidth;
+  readonly attribute long clientHeight;
+};
+
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+// like Range
+Element includes GeometryUtils;
+
+// Source: DOM Parsing and Serialization (https://www.w3.org/TR/DOM-Parsing/)
+Element includes InnerHTML;
+
+// Source: DOM Parsing and Serialization (https://www.w3.org/TR/DOM-Parsing/)
+partial interface Element {
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString outerHTML;
+  [CEReactions] undefined insertAdjacentHTML(DOMString position, DOMString text);
+};
+
+// Source: EditContext API (https://www.w3.org/TR/edit-context/)
+partial interface Element {
+     attribute EditContext? editContext;
+};
+
+// Source: Pointer Events (https://www.w3.org/TR/pointerevents3/)
+partial interface Element {
+  undefined setPointerCapture (long pointerId);
+  undefined releasePointerCapture (long pointerId);
+  boolean hasPointerCapture (long pointerId);
+};
+
+// Source: Pointer Lock 2.0 (https://www.w3.org/TR/pointerlock-2/)
+partial interface Element {
+  undefined requestPointerLock();
+};
+
+// Source: Accessible Rich Internet Applications (WAI-ARIA) 1.3 (https://www.w3.org/TR/wai-aria-1.2/)
+Element includes ARIAMixin;
+
+// Source: Web Animations (https://www.w3.org/TR/web-animations-1/)
+Element includes Animatable;

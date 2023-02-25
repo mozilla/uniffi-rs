@@ -1,0 +1,8 @@
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+[Exposed=(Worker,Window), SecureContext]
+interface USB : EventTarget {
+  attribute EventHandler onconnect;
+  attribute EventHandler ondisconnect;
+  Promise<sequence<USBDevice>> getDevices();
+  [Exposed=Window] Promise<USBDevice> requestDevice(USBDeviceRequestOptions options);
+};

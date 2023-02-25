@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUStorageTextureBindingLayout {
+    GPUStorageTextureAccess access = "write-only";
+    required GPUTextureFormat format;
+    GPUTextureViewDimension viewDimension = "2d";
+};

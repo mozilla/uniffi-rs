@@ -1,0 +1,3 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+interface mixin GPUCommandsMixin {
+};

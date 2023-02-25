@@ -1,0 +1,13 @@
+// Source: Gamepad Extensions (https://w3c.github.io/gamepad/extensions.html)
+[Exposed=Window]
+interface GamepadPose {
+  readonly attribute boolean hasOrientation;
+  readonly attribute boolean hasPosition;
+
+  readonly attribute Float32Array? position;
+  readonly attribute Float32Array? linearVelocity;
+  readonly attribute Float32Array? linearAcceleration;
+  readonly attribute Float32Array? orientation;
+  readonly attribute Float32Array? angularVelocity;
+  readonly attribute Float32Array? angularAcceleration;
+};

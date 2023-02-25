@@ -1,0 +1,5 @@
+// Source: WebRTC Encoded Transform (https://www.w3.org/TR/webrtc-encoded-transform/)
+[Exposed=Window]
+interface RTCRtpScriptTransform {
+    constructor(Worker worker, optional any options, optional sequence<object> transfer);
+};

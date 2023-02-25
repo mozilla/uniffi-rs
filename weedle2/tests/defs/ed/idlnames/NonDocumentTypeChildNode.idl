@@ -1,0 +1,5 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+interface mixin NonDocumentTypeChildNode {
+  readonly attribute Element? previousElementSibling;
+  readonly attribute Element? nextElementSibling;
+};

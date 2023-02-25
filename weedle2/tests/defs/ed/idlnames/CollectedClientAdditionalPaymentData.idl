@@ -1,0 +1,9 @@
+// Source: Secure Payment Confirmation (https://www.w3.org/TR/secure-payment-confirmation/)
+dictionary CollectedClientAdditionalPaymentData {
+    required USVString rpId;
+    required USVString topOrigin;
+    USVString payeeName;
+    USVString payeeOrigin;
+    required PaymentCurrencyAmount total;
+    required PaymentCredentialInstrument instrument;
+};

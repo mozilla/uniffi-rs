@@ -1,0 +1,15 @@
+// Source: Content Security Policy Level 3 (https://www.w3.org/TR/CSP3/)
+dictionary SecurityPolicyViolationEventInit : EventInit {
+    required USVString      documentURI;
+             USVString      referrer = "";
+             USVString      blockedURI = "";
+    required DOMString      violatedDirective;
+    required DOMString      effectiveDirective;
+    required DOMString      originalPolicy;
+             USVString      sourceFile = "";
+             DOMString      sample = "";
+    required SecurityPolicyViolationEventDisposition disposition;
+    required unsigned short statusCode;
+             unsigned long  lineNumber = 0;
+             unsigned long  columnNumber = 0;
+};

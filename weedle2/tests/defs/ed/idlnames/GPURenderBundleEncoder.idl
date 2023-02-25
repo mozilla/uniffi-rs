@@ -1,0 +1,20 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPURenderBundleEncoder {
+    GPURenderBundle finish(optional GPURenderBundleDescriptor descriptor = {});
+};
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderBundleEncoder includes GPUObjectBase;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderBundleEncoder includes GPUCommandsMixin;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderBundleEncoder includes GPUDebugCommandsMixin;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderBundleEncoder includes GPUBindingCommandsMixin;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderBundleEncoder includes GPURenderCommandsMixin;

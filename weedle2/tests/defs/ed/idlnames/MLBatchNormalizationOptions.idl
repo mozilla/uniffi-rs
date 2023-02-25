@@ -1,0 +1,8 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLBatchNormalizationOptions {
+  MLOperand scale;
+  MLOperand bias;
+  long axis = 1;
+  float epsilon = 1e-5;
+  MLActivation activation;
+};

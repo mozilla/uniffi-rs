@@ -1,0 +1,16 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLHRElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLHRElement {
+  [CEReactions] attribute DOMString align;
+  [CEReactions] attribute DOMString color;
+  [CEReactions] attribute boolean noShade;
+  [CEReactions] attribute DOMString size;
+  [CEReactions] attribute DOMString width;
+};

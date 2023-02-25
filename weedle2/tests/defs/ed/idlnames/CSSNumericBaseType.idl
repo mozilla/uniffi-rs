@@ -1,0 +1,10 @@
+// Source: CSS Typed OM Level 1 (https://www.w3.org/TR/css-typed-om-1/)
+enum CSSNumericBaseType {
+    "length",
+    "angle",
+    "time",
+    "frequency",
+    "resolution",
+    "flex",
+    "percent",
+};

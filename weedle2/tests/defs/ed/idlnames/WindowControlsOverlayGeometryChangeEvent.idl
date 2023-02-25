@@ -1,0 +1,7 @@
+// Source: Window Controls Overlay (https://wicg.github.io/window-controls-overlay/)
+[Exposed=Window]
+interface WindowControlsOverlayGeometryChangeEvent : Event {
+  constructor(DOMString type, WindowControlsOverlayGeometryChangeEventInit eventInitDict);
+  [SameObject] readonly attribute DOMRect titlebarAreaRect;
+  readonly attribute boolean visible;
+};

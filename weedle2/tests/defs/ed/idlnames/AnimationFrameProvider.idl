@@ -1,0 +1,5 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+interface mixin AnimationFrameProvider {
+  unsigned long requestAnimationFrame(FrameRequestCallback callback);
+  undefined cancelAnimationFrame(unsigned long handle);
+};

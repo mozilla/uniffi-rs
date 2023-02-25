@@ -1,0 +1,7 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface WaveShaperNode : AudioNode {
+    constructor (BaseAudioContext context, optional WaveShaperOptions options = {});
+    attribute Float32Array? curve;
+    attribute OverSampleType oversample;
+};

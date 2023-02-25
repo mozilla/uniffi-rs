@@ -1,0 +1,34 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPURenderPassEncoder {
+    undefined setViewport(float x, float y,
+        float width, float height,
+        float minDepth, float maxDepth);
+
+    undefined setScissorRect(GPUIntegerCoordinate x, GPUIntegerCoordinate y,
+                        GPUIntegerCoordinate width, GPUIntegerCoordinate height);
+
+    undefined setBlendConstant(GPUColor color);
+    undefined setStencilReference(GPUStencilValue reference);
+
+    undefined beginOcclusionQuery(GPUSize32 queryIndex);
+    undefined endOcclusionQuery();
+
+    undefined executeBundles(sequence<GPURenderBundle> bundles);
+    undefined end();
+};
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderPassEncoder includes GPUObjectBase;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderPassEncoder includes GPUCommandsMixin;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderPassEncoder includes GPUDebugCommandsMixin;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderPassEncoder includes GPUBindingCommandsMixin;
+
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+GPURenderPassEncoder includes GPURenderCommandsMixin;

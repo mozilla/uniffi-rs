@@ -1,0 +1,4 @@
+// Source: Web Animations Level 2 (https://drafts.csswg.org/web-animations-2/)
+callback EffectCallback = undefined (double? progress,
+                                (Element or CSSPseudoElement) currentTarget,
+                                Animation animation);

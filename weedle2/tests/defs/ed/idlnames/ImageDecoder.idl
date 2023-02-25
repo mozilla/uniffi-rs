@@ -1,0 +1,16 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+[Exposed=(Window,DedicatedWorker), SecureContext]
+interface ImageDecoder {
+  constructor(ImageDecoderInit init);
+
+  readonly attribute DOMString type;
+  readonly attribute boolean complete;
+  readonly attribute Promise<undefined> completed;
+  readonly attribute ImageTrackList tracks;
+
+  Promise<ImageDecodeResult> decode(optional ImageDecodeOptions options = {});
+  undefined reset();
+  undefined close();
+
+  static Promise<boolean> isTypeSupported(DOMString type);
+};

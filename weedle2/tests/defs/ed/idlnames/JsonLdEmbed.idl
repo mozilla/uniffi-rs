@@ -1,0 +1,6 @@
+// Source: JSON-LD 1.1 Framing (https://www.w3.org/TR/json-ld11-framing/)
+enum JsonLdEmbed {
+  "@always",
+  "@once",
+  "@never"
+};

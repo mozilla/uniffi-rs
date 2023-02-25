@@ -1,0 +1,5 @@
+// Source: Manifest Incubations (https://wicg.github.io/manifest-incubations/)
+enum AppBannerPromptOutcome {
+  "accepted",
+  "dismissed"
+};

@@ -1,0 +1,5 @@
+// Source: Measure Memory API (https://wicg.github.io/performance-measure-memory/)
+dictionary MemoryMeasurement {
+  unsigned long long bytes;
+  sequence<MemoryBreakdownEntry> breakdown;
+};

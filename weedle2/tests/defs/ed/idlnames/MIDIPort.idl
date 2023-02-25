@@ -1,0 +1,13 @@
+// Source: Web MIDI API (https://www.w3.org/TR/webmidi/)
+[SecureContext, Exposed=Window] interface MIDIPort: EventTarget {
+  readonly attribute DOMString id;
+  readonly attribute DOMString? manufacturer;
+  readonly attribute DOMString? name;
+  readonly attribute MIDIPortType type;
+  readonly attribute DOMString? version;
+  readonly attribute MIDIPortDeviceState state;
+  readonly attribute MIDIPortConnectionState connection;
+  attribute EventHandler onstatechange;
+  Promise <MIDIPort> open();
+  Promise <MIDIPort> close();
+};

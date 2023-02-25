@@ -1,0 +1,25 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+dictionary VideoEncoderConfig {
+  required DOMString codec;
+  [EnforceRange] required unsigned long width;
+  [EnforceRange] required unsigned long height;
+  [EnforceRange] unsigned long displayWidth;
+  [EnforceRange] unsigned long displayHeight;
+  [EnforceRange] unsigned long long bitrate;
+  double framerate;
+  HardwareAcceleration hardwareAcceleration = "no-preference";
+  AlphaOption alpha = "discard";
+  DOMString scalabilityMode;
+  BitrateMode bitrateMode = "variable";
+  LatencyMode latencyMode = "quality";
+};
+
+// Source: AVC (H.264) WebCodecs Registration (https://www.w3.org/TR/webcodecs-avc-codec-registration/)
+partial dictionary VideoEncoderConfig {
+  AvcEncoderConfig avc;
+};
+
+// Source: HEVC (H.265) WebCodecs Registration (https://www.w3.org/TR/webcodecs-hevc-codec-registration/)
+partial dictionary VideoEncoderConfig {
+  HevcEncoderConfig hevc;
+};

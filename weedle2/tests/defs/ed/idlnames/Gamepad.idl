@@ -1,0 +1,20 @@
+// Source: Gamepad (https://www.w3.org/TR/gamepad/)
+[Exposed=Window, SecureContext]
+interface Gamepad {
+  readonly attribute DOMString id;
+  readonly attribute long index;
+  readonly attribute boolean connected;
+  readonly attribute DOMHighResTimeStamp timestamp;
+  readonly attribute GamepadMappingType mapping;
+  readonly attribute FrozenArray<double> axes;
+  readonly attribute FrozenArray<GamepadButton> buttons;
+};
+
+// Source: Gamepad Extensions (https://w3c.github.io/gamepad/extensions.html)
+partial interface Gamepad {
+  readonly attribute GamepadHand hand;
+  readonly attribute FrozenArray<GamepadHapticActuator> hapticActuators;
+  readonly attribute GamepadPose? pose;
+  readonly attribute FrozenArray<GamepadTouch>? touchEvents;
+  [SameObject] readonly attribute GamepadHapticActuator? vibrationActuator;
+};

@@ -1,0 +1,2 @@
+// Source: Presentation API (https://www.w3.org/TR/presentation-api/)
+enum PresentationConnectionCloseReason { "error", "closed", "wentaway" };

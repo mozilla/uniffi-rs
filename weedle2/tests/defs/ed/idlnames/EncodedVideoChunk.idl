@@ -1,0 +1,11 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+[Exposed=(Window,DedicatedWorker), Serializable]
+interface EncodedVideoChunk {
+  constructor(EncodedVideoChunkInit init);
+  readonly attribute EncodedVideoChunkType type;
+  readonly attribute long long timestamp;             // microseconds
+  readonly attribute unsigned long long? duration;    // microseconds
+  readonly attribute unsigned long byteLength;
+
+  undefined copyTo([AllowShared] BufferSource destination);
+};

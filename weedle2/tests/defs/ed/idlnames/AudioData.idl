@@ -1,0 +1,17 @@
+// Source: WebCodecs (https://www.w3.org/TR/webcodecs/)
+[Exposed=(Window,DedicatedWorker), Serializable, Transferable]
+interface AudioData {
+  constructor(AudioDataInit init);
+
+  readonly attribute AudioSampleFormat? format;
+  readonly attribute float sampleRate;
+  readonly attribute unsigned long numberOfFrames;
+  readonly attribute unsigned long numberOfChannels;
+  readonly attribute unsigned long long duration;  // microseconds
+  readonly attribute long long timestamp;          // microseconds
+
+  unsigned long allocationSize(AudioDataCopyToOptions options);
+  undefined copyTo([AllowShared] BufferSource destination, AudioDataCopyToOptions options);
+  AudioData clone();
+  undefined close();
+};

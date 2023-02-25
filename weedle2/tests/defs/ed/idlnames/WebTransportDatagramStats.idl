@@ -1,0 +1,7 @@
+// Source: WebTransport (https://www.w3.org/TR/webtransport/)
+dictionary WebTransportDatagramStats {
+  DOMHighResTimeStamp timestamp;
+  unsigned long long expiredOutgoing;
+  unsigned long long droppedIncoming;
+  unsigned long long lostOutgoing;
+};

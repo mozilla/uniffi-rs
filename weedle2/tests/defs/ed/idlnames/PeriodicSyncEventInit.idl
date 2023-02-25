@@ -1,0 +1,4 @@
+// Source: Web Periodic Background Synchronization (https://wicg.github.io/periodic-background-sync/)
+dictionary PeriodicSyncEventInit : ExtendableEventInit {
+    required DOMString tag;
+};

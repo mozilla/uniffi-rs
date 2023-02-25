@@ -1,0 +1,8 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLOperandDescriptor {
+  // The operand type.
+  required MLOperandType type;
+
+  // The dimensions field is only required for tensor operands.
+  sequence<unsigned long> dimensions;
+};

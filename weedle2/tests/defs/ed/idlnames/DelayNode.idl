@@ -1,0 +1,6 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+[Exposed=Window]
+interface DelayNode : AudioNode {
+    constructor (BaseAudioContext context, optional DelayOptions options = {});
+    readonly attribute AudioParam delayTime;
+};

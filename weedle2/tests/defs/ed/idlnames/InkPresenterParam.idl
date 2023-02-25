@@ -1,0 +1,4 @@
+// Source: Ink API (https://wicg.github.io/ink-enhancement/)
+dictionary InkPresenterParam {
+    Element? presentationArea = null;
+};

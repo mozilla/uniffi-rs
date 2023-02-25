@@ -1,0 +1,6 @@
+// Source: WebUSB API (https://wicg.github.io/webusb/)
+dictionary AllowedUSBDevice {
+  required octet vendorId;
+  required octet productId;
+  DOMString serialNumber;
+};

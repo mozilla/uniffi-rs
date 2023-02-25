@@ -1,0 +1,10 @@
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+dictionary MutationObserverInit {
+  boolean childList = false;
+  boolean attributes;
+  boolean characterData;
+  boolean subtree = false;
+  boolean attributeOldValue;
+  boolean characterDataOldValue;
+  sequence<DOMString> attributeFilter;
+};

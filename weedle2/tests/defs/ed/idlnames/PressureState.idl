@@ -1,0 +1,2 @@
+// Source: Compute Pressure Level 1 (https://www.w3.org/TR/compute-pressure/)
+enum PressureState { "nominal", "fair", "serious", "critical" };

@@ -1,0 +1,6 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPURenderPassTimestampWrite {
+    required GPUQuerySet querySet;
+    required GPUSize32 queryIndex;
+    required GPURenderPassTimestampLocation location;
+};

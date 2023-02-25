@@ -1,0 +1,17 @@
+// Source: Media Session Standard (https://www.w3.org/TR/mediasession/)
+enum MediaSessionAction {
+  "play",
+  "pause",
+  "seekbackward",
+  "seekforward",
+  "previoustrack",
+  "nexttrack",
+  "skipad",
+  "stop",
+  "seekto",
+  "togglemicrophone",
+  "togglecamera",
+  "hangup",
+  "previousslide",
+  "nextslide"
+};

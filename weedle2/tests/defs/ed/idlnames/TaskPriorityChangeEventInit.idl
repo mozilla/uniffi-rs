@@ -1,0 +1,4 @@
+// Source: Prioritized Task Scheduling (https://wicg.github.io/scheduling-apis/)
+dictionary TaskPriorityChangeEventInit : EventInit {
+  required TaskPriority previousPriority;
+};

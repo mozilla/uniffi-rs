@@ -1,0 +1,3 @@
+// Source: Paint Timing 1 (https://www.w3.org/TR/paint-timing/)
+[Exposed=Window]
+interface PerformancePaintTiming : PerformanceEntry {};

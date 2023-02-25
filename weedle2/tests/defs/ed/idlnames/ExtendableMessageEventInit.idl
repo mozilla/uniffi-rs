@@ -1,0 +1,8 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+dictionary ExtendableMessageEventInit : ExtendableEventInit {
+  any data = null;
+  USVString origin = "";
+  DOMString lastEventId = "";
+  (Client or ServiceWorker or MessagePort)? source = null;
+  sequence<MessagePort> ports = [];
+};

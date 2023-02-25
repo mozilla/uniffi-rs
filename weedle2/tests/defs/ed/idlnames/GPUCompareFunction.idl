@@ -1,0 +1,11 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+enum GPUCompareFunction {
+    "never",
+    "less",
+    "equal",
+    "less-equal",
+    "greater",
+    "not-equal",
+    "greater-equal",
+    "always"
+};

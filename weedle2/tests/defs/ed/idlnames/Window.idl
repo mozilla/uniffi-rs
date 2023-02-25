@@ -1,0 +1,230 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Global=Window,
+ Exposed=Window,
+ LegacyUnenumerableNamedProperties]
+interface Window : EventTarget {
+  // the current browsing context
+  [LegacyUnforgeable] readonly attribute WindowProxy window;
+  [Replaceable] readonly attribute WindowProxy self;
+  [LegacyUnforgeable] readonly attribute Document document;
+  attribute DOMString name;
+  [PutForwards=href, LegacyUnforgeable] readonly attribute Location location;
+  readonly attribute History history;
+  readonly attribute CustomElementRegistry customElements;
+  [Replaceable] readonly attribute BarProp locationbar;
+  [Replaceable] readonly attribute BarProp menubar;
+  [Replaceable] readonly attribute BarProp personalbar;
+  [Replaceable] readonly attribute BarProp scrollbars;
+  [Replaceable] readonly attribute BarProp statusbar;
+  [Replaceable] readonly attribute BarProp toolbar;
+  attribute DOMString status;
+  undefined close();
+  readonly attribute boolean closed;
+  undefined stop();
+  undefined focus();
+  undefined blur();
+
+  // other browsing contexts
+  [Replaceable] readonly attribute WindowProxy frames;
+  [Replaceable] readonly attribute unsigned long length;
+  [LegacyUnforgeable] readonly attribute WindowProxy? top;
+  attribute any opener;
+  [Replaceable] readonly attribute WindowProxy? parent;
+  readonly attribute Element? frameElement;
+  WindowProxy? open(optional USVString url = "", optional DOMString target = "_blank", optional [LegacyNullToEmptyString] DOMString features = "");
+  getter object (DOMString name);
+  // Since this is the global object, the IDL named getter adds a NamedPropertiesObject exotic
+  // object on the prototype chain. Indeed, this does not make the global object an exotic object.
+  // Indexed access is taken care of by the WindowProxy exotic object.
+
+  // the user agent
+  readonly attribute Navigator navigator;
+  readonly attribute Navigator clientInformation; // legacy alias of .navigator
+  readonly attribute boolean originAgentCluster;
+
+  // user prompts
+  undefined alert();
+  undefined alert(DOMString message);
+  boolean confirm(optional DOMString message = "");
+  DOMString? prompt(optional DOMString message = "", optional DOMString default = "");
+  undefined print();
+
+  undefined postMessage(any message, USVString targetOrigin, optional sequence<object> transfer = []);
+  undefined postMessage(any message, optional WindowPostMessageOptions options = {});
+
+  // also has obsolete members
+};
+
+// Source: Compatibility Standard (https://compat.spec.whatwg.org/)
+partial interface Window {
+    readonly attribute short orientation;
+    attribute EventHandler onorientationchange;
+};
+
+// Source: DOM Standard (https://dom.spec.whatwg.org/)
+partial interface Window {
+  [Replaceable] readonly attribute (Event or undefined) event; // legacy
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Window includes GlobalEventHandlers;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Window includes WindowEventHandlers;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Window includes WindowOrWorkerGlobalScope;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Window includes AnimationFrameProvider;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Window includes WindowSessionStorage;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+Window includes WindowLocalStorage;
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface Window {
+  undefined captureEvents();
+  undefined releaseEvents();
+
+  [Replaceable, SameObject] readonly attribute External external;
+};
+
+// Source: Cookie Store API (https://wicg.github.io/cookie-store/)
+[SecureContext]
+partial interface Window {
+  [SameObject] readonly attribute CookieStore cookieStore;
+};
+
+// Source: Digital Goods API (https://wicg.github.io/digital-goods/)
+partial interface Window {
+  [SecureContext] Promise<DigitalGoodsService> getDigitalGoodsService(
+      DOMString serviceProvider);
+};
+
+// Source: File System Access (https://wicg.github.io/file-system-access/)
+[SecureContext]
+partial interface Window {
+    Promise<sequence<FileSystemFileHandle>> showOpenFilePicker(optional OpenFilePickerOptions options = {});
+    Promise<FileSystemFileHandle> showSaveFilePicker(optional SaveFilePickerOptions options = {});
+    Promise<FileSystemDirectoryHandle> showDirectoryPicker(optional DirectoryPickerOptions options = {});
+};
+
+// Source: Local Font Access API (https://wicg.github.io/local-font-access/)
+[SecureContext]
+partial interface Window {
+  Promise<sequence<FontData>> queryLocalFonts(optional QueryOptions options = {});
+};
+
+// Source: Manifest Incubations (https://wicg.github.io/manifest-incubations/)
+partial interface Window {
+  attribute EventHandler onappinstalled;
+  attribute EventHandler onbeforeinstallprompt;
+};
+
+// Source: Navigation API (https://wicg.github.io/navigation-api/)
+partial interface Window {
+  [Replaceable] readonly attribute Navigation navigation;
+};
+
+// Source: Portals (https://wicg.github.io/portals/)
+partial interface Window {
+    readonly attribute PortalHost? portalHost;
+};
+
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+partial interface Window {
+    [SameObject] readonly attribute SpeechSynthesis speechSynthesis;
+};
+
+// Source: Web App Launch Handler API (https://wicg.github.io/web-app-launch/)
+partial interface Window {
+  readonly attribute LaunchQueue launchQueue;
+};
+
+// Source: CSS Spatial Navigation Level 1 (https://www.w3.org/TR/css-nav-1/)
+partial interface Window {
+    undefined navigate(SpatialNavigationDirection dir);
+};
+
+// Source: CSS Object Model (CSSOM) (https://www.w3.org/TR/cssom-1/)
+partial interface Window {
+  [NewObject] CSSStyleDeclaration getComputedStyle(Element elt, optional CSSOMString? pseudoElt);
+};
+
+// Source: CSSOM View Module (https://www.w3.org/TR/cssom-view-1/)
+partial interface Window {
+    [NewObject] MediaQueryList matchMedia(CSSOMString query);
+    [SameObject, Replaceable] readonly attribute Screen screen;
+    [SameObject, Replaceable] readonly attribute VisualViewport? visualViewport;
+
+    // browsing context
+    undefined moveTo(long x, long y);
+    undefined moveBy(long x, long y);
+    undefined resizeTo(long width, long height);
+    undefined resizeBy(long x, long y);
+
+    // viewport
+    [Replaceable] readonly attribute long innerWidth;
+    [Replaceable] readonly attribute long innerHeight;
+
+    // viewport scrolling
+    [Replaceable] readonly attribute double scrollX;
+    [Replaceable] readonly attribute double pageXOffset;
+    [Replaceable] readonly attribute double scrollY;
+    [Replaceable] readonly attribute double pageYOffset;
+    undefined scroll(optional ScrollToOptions options = {});
+    undefined scroll(unrestricted double x, unrestricted double y);
+    undefined scrollTo(optional ScrollToOptions options = {});
+    undefined scrollTo(unrestricted double x, unrestricted double y);
+    undefined scrollBy(optional ScrollToOptions options = {});
+    undefined scrollBy(unrestricted double x, unrestricted double y);
+
+    // client
+    [Replaceable] readonly attribute long screenX;
+    [Replaceable] readonly attribute long screenLeft;
+    [Replaceable] readonly attribute long screenY;
+    [Replaceable] readonly attribute long screenTop;
+    [Replaceable] readonly attribute long outerWidth;
+    [Replaceable] readonly attribute long outerHeight;
+    [Replaceable] readonly attribute double devicePixelRatio;
+};
+
+// Source: DeviceOrientation Event Specification (https://www.w3.org/TR/orientation-event/)
+partial interface Window {
+    [SecureContext] attribute EventHandler ondeviceorientation;
+};
+
+// Source: DeviceOrientation Event Specification (https://www.w3.org/TR/orientation-event/)
+partial interface Window {
+    [SecureContext] attribute EventHandler ondeviceorientationabsolute;
+};
+
+// Source: DeviceOrientation Event Specification (https://www.w3.org/TR/orientation-event/)
+partial interface Window {
+    attribute EventHandler oncompassneedscalibration;
+};
+
+// Source: DeviceOrientation Event Specification (https://www.w3.org/TR/orientation-event/)
+partial interface Window {
+    [SecureContext] attribute EventHandler ondevicemotion;
+};
+
+// Source: requestIdleCallback() (https://www.w3.org/TR/requestidlecallback/)
+partial interface Window {
+  unsigned long requestIdleCallback(IdleRequestCallback callback, optional IdleRequestOptions options = {});
+  undefined cancelIdleCallback(unsigned long handle);
+};
+
+// Source: Selection API (https://www.w3.org/TR/selection-api/)
+partial interface Window {
+  Selection? getSelection();
+};
+
+// Source: Multi-Screen Window Placement (https://www.w3.org/TR/window-placement/)
+partial interface Window {
+  [SecureContext]
+  Promise<ScreenDetails> getScreenDetails();
+};

@@ -1,0 +1,2 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+typedef (OffscreenCanvasRenderingContext2D or ImageBitmapRenderingContext or WebGLRenderingContext or WebGL2RenderingContext or GPUCanvasContext) OffscreenRenderingContext;

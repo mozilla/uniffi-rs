@@ -1,0 +1,52 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+dictionary MediaTrackSettings {
+  long width;
+  long height;
+  double aspectRatio;
+  double frameRate;
+  DOMString facingMode;
+  DOMString resizeMode;
+  long sampleRate;
+  long sampleSize;
+  boolean echoCancellation;
+  boolean autoGainControl;
+  boolean noiseSuppression;
+  double latency;
+  long channelCount;
+  DOMString deviceId;
+  DOMString groupId;
+};
+
+// Source: MediaStream Image Capture (https://www.w3.org/TR/image-capture/)
+partial dictionary MediaTrackSettings {
+  DOMString         whiteBalanceMode;
+  DOMString         exposureMode;
+  DOMString         focusMode;
+  sequence<Point2D> pointsOfInterest;
+
+  double            exposureCompensation;
+  double            exposureTime;
+  double            colorTemperature;
+  double            iso;
+
+  double            brightness;
+  double            contrast;
+  double            saturation;
+  double            sharpness;
+
+  double            focusDistance;
+  double            pan;
+  double            tilt;
+  double            zoom;
+
+  boolean           torch;
+};
+
+// Source: Screen Capture (https://www.w3.org/TR/screen-capture/)
+partial dictionary MediaTrackSettings {
+  DOMString displaySurface;
+  boolean logicalSurface;
+  DOMString cursor;
+  boolean restrictOwnAudio;
+  boolean suppressLocalAudioPlayback;
+};

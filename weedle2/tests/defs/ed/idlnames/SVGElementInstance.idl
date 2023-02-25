@@ -1,0 +1,5 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+interface mixin SVGElementInstance {
+  [SameObject] readonly attribute SVGElement? correspondingElement;
+  [SameObject] readonly attribute SVGUseElement? correspondingUseElement;
+};

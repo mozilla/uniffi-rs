@@ -1,0 +1,8 @@
+// Source: WebAssembly JavaScript Interface (https://www.w3.org/TR/wasm-js-api-2/)
+[LegacyNamespace=WebAssembly, Exposed=*]
+interface Module {
+  constructor(BufferSource bytes);
+  static sequence<ModuleExportDescriptor> exports(Module moduleObject);
+  static sequence<ModuleImportDescriptor> imports(Module moduleObject);
+  static sequence<ArrayBuffer> customSections(Module moduleObject, DOMString sectionName);
+};

@@ -1,0 +1,3 @@
+// Source: WebGL Specification (https://registry.khronos.org/webgl/specs/latest/1.0/)
+// Ideally the typedef below would use 'unsigned byte', but that doesn't currently exist in Web IDL.
+typedef octet          GLubyte;

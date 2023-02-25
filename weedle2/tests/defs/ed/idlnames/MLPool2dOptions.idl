@@ -1,0 +1,11 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+dictionary MLPool2dOptions {
+  sequence<unsigned long> windowDimensions;
+  sequence<unsigned long> padding;
+  sequence<unsigned long> strides;
+  sequence<unsigned long> dilations;
+  MLAutoPad autoPad = "explicit";
+  MLInputOperandLayout layout = "nchw";
+  MLRoundingType roundingType = "floor";
+  sequence<unsigned long> outputSizes;
+};

@@ -1,0 +1,2 @@
+// Source: Accelerometer (https://www.w3.org/TR/accelerometer/)
+enum AccelerometerLocalCoordinateSystem { "device", "screen" };

@@ -1,0 +1,9 @@
+// Source: XMLHttpRequest Standard (https://xhr.spec.whatwg.org/)
+enum XMLHttpRequestResponseType {
+  "",
+  "arraybuffer",
+  "blob",
+  "document",
+  "json",
+  "text"
+};

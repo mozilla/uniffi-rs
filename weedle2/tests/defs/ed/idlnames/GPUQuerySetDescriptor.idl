@@ -1,0 +1,5 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPUQuerySetDescriptor : GPUObjectDescriptorBase {
+    required GPUQueryType type;
+    required GPUSize32 count;
+};

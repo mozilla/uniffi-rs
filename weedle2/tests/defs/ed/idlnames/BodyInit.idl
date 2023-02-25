@@ -1,0 +1,2 @@
+// Source: Fetch Standard (https://fetch.spec.whatwg.org/)
+typedef (ReadableStream or XMLHttpRequestBodyInit) BodyInit;

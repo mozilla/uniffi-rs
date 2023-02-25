@@ -1,0 +1,10 @@
+// Source: Web Animations (https://www.w3.org/TR/web-animations-1/)
+dictionary KeyframeEffectOptions : EffectTiming {
+    CompositeOperation composite = "replace";
+    CSSOMString?       pseudoElement = null;
+};
+
+// Source: Web Animations Level 2 (https://drafts.csswg.org/web-animations-2/)
+partial dictionary KeyframeEffectOptions {
+    IterationCompositeOperation iterationComposite = "replace";
+};

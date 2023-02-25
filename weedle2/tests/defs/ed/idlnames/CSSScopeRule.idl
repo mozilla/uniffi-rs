@@ -1,0 +1,6 @@
+// Source: CSS Cascading and Inheritance Level 6 (https://www.w3.org/TR/css-cascade-6/)
+[Exposed=Window]
+interface CSSScopeRule : CSSGroupingRule {
+  readonly attribute CSSOMString start;
+  readonly attribute CSSOMString end;
+};

@@ -1,0 +1,4 @@
+// Source: WebGL EXT_frag_depth Khronos Ratified Extension Specification (https://registry.khronos.org/webgl/extensions/EXT_frag_depth/)
+[Exposed=(Window,Worker), LegacyNoInterfaceObject]
+interface EXT_frag_depth {
+};

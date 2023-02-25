@@ -1,0 +1,14 @@
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+[Exposed=Window]
+interface InputEvent : UIEvent {
+  constructor(DOMString type, optional InputEventInit eventInitDict = {});
+  readonly attribute DOMString? data;
+  readonly attribute boolean isComposing;
+  readonly attribute DOMString inputType;
+};
+
+// Source: Input Events Level 2 (https://www.w3.org/TR/input-events-2/)
+partial interface InputEvent {
+   readonly attribute DataTransfer? dataTransfer;
+   sequence<StaticRange> getTargetRanges();
+};

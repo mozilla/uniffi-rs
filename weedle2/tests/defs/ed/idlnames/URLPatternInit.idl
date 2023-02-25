@@ -1,0 +1,12 @@
+// Source: URLPattern API (https://wicg.github.io/urlpattern/)
+dictionary URLPatternInit {
+  USVString protocol;
+  USVString username;
+  USVString password;
+  USVString hostname;
+  USVString port;
+  USVString pathname;
+  USVString search;
+  USVString hash;
+  USVString baseURL;
+};

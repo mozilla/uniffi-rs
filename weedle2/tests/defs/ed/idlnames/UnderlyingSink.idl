@@ -1,0 +1,8 @@
+// Source: Streams Standard (https://streams.spec.whatwg.org/)
+dictionary UnderlyingSink {
+  UnderlyingSinkStartCallback start;
+  UnderlyingSinkWriteCallback write;
+  UnderlyingSinkCloseCallback close;
+  UnderlyingSinkAbortCallback abort;
+  any type;
+};

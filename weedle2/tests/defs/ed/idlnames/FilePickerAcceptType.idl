@@ -1,0 +1,5 @@
+// Source: File System Access (https://wicg.github.io/file-system-access/)
+dictionary FilePickerAcceptType {
+    USVString description;
+    record<USVString, (USVString or sequence<USVString>)> accept;
+};

@@ -1,0 +1,30 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface HTMLTableCellElement : HTMLElement {
+  [HTMLConstructor] constructor();
+
+  [CEReactions] attribute unsigned long colSpan;
+  [CEReactions] attribute unsigned long rowSpan;
+  [CEReactions] attribute DOMString headers;
+  readonly attribute long cellIndex;
+
+  [CEReactions] attribute DOMString scope; // only conforming for th elements
+  [CEReactions] attribute DOMString abbr;  // only conforming for th elements
+
+  // also has obsolete members
+};
+
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+partial interface HTMLTableCellElement {
+  [CEReactions] attribute DOMString align;
+  [CEReactions] attribute DOMString axis;
+  [CEReactions] attribute DOMString height;
+  [CEReactions] attribute DOMString width;
+
+  [CEReactions] attribute DOMString ch;
+  [CEReactions] attribute DOMString chOff;
+  [CEReactions] attribute boolean noWrap;
+  [CEReactions] attribute DOMString vAlign;
+
+  [CEReactions] attribute [LegacyNullToEmptyString] DOMString bgColor;
+};

@@ -1,0 +1,5 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+dictionary ConstrainDoubleRange : DoubleRange {
+  double exact;
+  double ideal;
+};

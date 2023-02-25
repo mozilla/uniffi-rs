@@ -1,0 +1,9 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+dictionary GPURenderPassColorAttachment {
+    required GPUTextureView view;
+    GPUTextureView resolveTarget;
+
+    GPUColor clearValue;
+    required GPULoadOp loadOp;
+    required GPUStoreOp storeOp;
+};

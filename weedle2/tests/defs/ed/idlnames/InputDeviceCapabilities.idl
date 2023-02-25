@@ -1,0 +1,7 @@
+// Source: Input Device Capabilities (https://wicg.github.io/input-device-capabilities/)
+[Exposed=Window]
+interface InputDeviceCapabilities {
+  constructor(optional InputDeviceCapabilitiesInit deviceInitDict = {});
+  readonly attribute boolean firesTouchEvents;
+  readonly attribute boolean pointerMovementScrolls;
+};

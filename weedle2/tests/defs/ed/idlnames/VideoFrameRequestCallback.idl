@@ -1,0 +1,2 @@
+// Source: HTMLVideoElement.requestVideoFrameCallback() (https://wicg.github.io/video-rvfc/)
+callback VideoFrameRequestCallback = undefined(DOMHighResTimeStamp now, VideoFrameCallbackMetadata metadata);

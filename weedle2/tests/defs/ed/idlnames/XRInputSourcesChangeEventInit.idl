@@ -1,0 +1,7 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+dictionary XRInputSourcesChangeEventInit : EventInit {
+  required XRSession session;
+  required FrozenArray<XRInputSource> added;
+  required FrozenArray<XRInputSource> removed;
+
+};

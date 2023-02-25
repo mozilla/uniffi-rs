@@ -1,0 +1,5 @@
+// Source: Media Capture and Streams (https://www.w3.org/TR/mediacapture-streams/)
+dictionary ConstrainULongRange : ULongRange {
+  [Clamp] unsigned long exact;
+  [Clamp] unsigned long ideal;
+};

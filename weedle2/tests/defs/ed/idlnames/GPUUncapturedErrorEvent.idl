@@ -1,0 +1,9 @@
+// Source: WebGPU (https://www.w3.org/TR/webgpu/)
+[Exposed=(Window, DedicatedWorker), SecureContext]
+interface GPUUncapturedErrorEvent : Event {
+    constructor(
+        DOMString type,
+        GPUUncapturedErrorEventInit gpuUncapturedErrorEventInitDict
+    );
+    [SameObject] readonly attribute GPUError error;
+};

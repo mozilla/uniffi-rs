@@ -1,0 +1,4 @@
+// Source: CSS Painting API Level 1 (https://www.w3.org/TR/css-paint-api-1/)
+dictionary PaintRenderingContext2DSettings {
+    boolean alpha = true;
+};

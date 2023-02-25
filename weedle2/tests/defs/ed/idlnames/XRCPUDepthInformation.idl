@@ -1,0 +1,7 @@
+// Source: WebXR Depth Sensing Module (https://www.w3.org/TR/webxr-depth-sensing-1/)
+[Exposed=Window]
+interface XRCPUDepthInformation : XRDepthInformation {
+  [SameObject] readonly attribute ArrayBuffer data;
+
+  float getDepthInMeters(float x, float y);
+};

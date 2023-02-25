@@ -1,0 +1,5 @@
+// Source: CSS Conditional Rules Module Level 3 (https://www.w3.org/TR/css-conditional-3/)
+[Exposed=Window]
+interface CSSMediaRule : CSSConditionRule {
+    [SameObject, PutForwards=mediaText] readonly attribute MediaList media;
+};

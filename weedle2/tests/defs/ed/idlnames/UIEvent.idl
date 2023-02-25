@@ -1,0 +1,28 @@
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+[Exposed=Window]
+interface UIEvent : Event {
+  constructor(DOMString type, optional UIEventInit eventInitDict = {});
+  readonly attribute Window? view;
+  readonly attribute long detail;
+};
+
+// Source: Input Device Capabilities (https://wicg.github.io/input-device-capabilities/)
+partial interface UIEvent {
+  readonly attribute InputDeviceCapabilities? sourceCapabilities;
+};
+
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+partial interface UIEvent {
+  // Deprecated in this specification
+  undefined initUIEvent(DOMString typeArg,
+    optional boolean bubblesArg = false,
+    optional boolean cancelableArg = false,
+    optional Window? viewArg = null,
+    optional long detailArg = 0);
+};
+
+// Source: UI Events (https://www.w3.org/TR/uievents/)
+partial interface UIEvent {
+  // The following support legacy user agents
+  readonly attribute unsigned long which;
+};

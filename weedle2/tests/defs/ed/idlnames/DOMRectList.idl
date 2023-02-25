@@ -1,0 +1,6 @@
+// Source: Geometry Interfaces Module Level 1 (https://www.w3.org/TR/geometry-1/)
+[Exposed=Window]
+interface DOMRectList {
+    readonly attribute unsigned long length;
+    getter DOMRect? item(unsigned long index);
+};

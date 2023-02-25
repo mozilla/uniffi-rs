@@ -1,0 +1,11 @@
+// Source: Indexed Database API 3.0 (https://www.w3.org/TR/IndexedDB-3/)
+[Exposed=(Window,Worker)]
+interface IDBFactory {
+  [NewObject] IDBOpenDBRequest open(DOMString name,
+                                    optional [EnforceRange] unsigned long long version);
+  [NewObject] IDBOpenDBRequest deleteDatabase(DOMString name);
+
+  Promise<sequence<IDBDatabaseInfo>> databases();
+
+  short cmp(any first, any second);
+};

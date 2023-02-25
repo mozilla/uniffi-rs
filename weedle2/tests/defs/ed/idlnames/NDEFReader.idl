@@ -1,0 +1,13 @@
+// Source: Web NFC (https://w3c.github.io/web-nfc/)
+[SecureContext, Exposed=Window]
+interface NDEFReader : EventTarget {
+  constructor();
+
+  attribute EventHandler onreading;
+  attribute EventHandler onreadingerror;
+
+  Promise<undefined> scan(optional NDEFScanOptions options={});
+  Promise<undefined> write(NDEFMessageSource message,
+                                 optional NDEFWriteOptions options={});
+  Promise<undefined> makeReadOnly(optional NDEFMakeReadOnlyOptions options={});
+};

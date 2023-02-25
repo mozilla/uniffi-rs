@@ -1,0 +1,2 @@
+// Source: Web Animations (https://www.w3.org/TR/web-animations-1/)
+enum AnimationReplaceState { "active", "removed", "persisted" };

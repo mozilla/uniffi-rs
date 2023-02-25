@@ -1,0 +1,5 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+callback AudioWorkletProcessCallback =
+  boolean (FrozenArray<FrozenArray<Float32Array>> inputs,
+           FrozenArray<FrozenArray<Float32Array>> outputs,
+           object parameters);

@@ -1,0 +1,5 @@
+// Source: Media Capture from DOM Elements (https://www.w3.org/TR/mediacapture-fromelement/)
+[Exposed=Window] interface CanvasCaptureMediaStreamTrack : MediaStreamTrack {
+    readonly        attribute HTMLCanvasElement canvas;
+    undefined requestFrame ();
+};

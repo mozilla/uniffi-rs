@@ -1,0 +1,31 @@
+// Source: JSON-LD 1.1 Processing Algorithms and API (https://www.w3.org/TR/json-ld11-api/)
+[Exposed=JsonLd]
+interface JsonLdProcessor {
+  constructor();
+  static Promise<JsonLdRecord> compact(
+    JsonLdInput input,
+    optional JsonLdContext context = null,
+    optional JsonLdOptions options = {});
+  static Promise<sequence<JsonLdRecord>> expand(
+    JsonLdInput input,
+    optional JsonLdOptions options = {});
+  static Promise<JsonLdRecord> flatten(
+    JsonLdInput input,
+    optional JsonLdContext context = null,
+    optional JsonLdOptions options = {});
+  static Promise<sequence<JsonLdRecord>> fromRdf(
+    RdfDataset input,
+    optional JsonLdOptions options = {});
+  static Promise<RdfDataset> toRdf(
+    JsonLdInput input,
+    optional JsonLdOptions options = {});
+};
+
+// Source: JSON-LD 1.1 Framing (https://www.w3.org/TR/json-ld11-framing/)
+[Exposed=JsonLd]
+partial interface JsonLdProcessor {
+  static Promise<JsonLdRecord> frame(
+    JsonLdInput input,
+    JsonLdInput frame,
+    optional JsonLdOptions options = {});
+};

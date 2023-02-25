@@ -1,0 +1,7 @@
+// Source: WebXR Layers API Level 1 (https://www.w3.org/TR/webxrlayers-1/)
+dictionary XRMediaCylinderLayerInit : XRMediaLayerInit {
+  XRRigidTransform? transform;
+  float radius = 2.0;
+  float centralAngle = 0.78539;
+  float? aspectRatio;
+};

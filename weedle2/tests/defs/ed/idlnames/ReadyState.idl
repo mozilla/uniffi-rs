@@ -1,0 +1,6 @@
+// Source: Media Source Extensions™ (https://www.w3.org/TR/media-source-2/)
+enum ReadyState {
+    "closed",
+    "open",
+    "ended"
+};

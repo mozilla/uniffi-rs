@@ -1,0 +1,6 @@
+// Source: Web Speech API (https://wicg.github.io/speech-api/)
+[Exposed=Window]
+interface SpeechSynthesisErrorEvent : SpeechSynthesisEvent {
+    constructor(DOMString type, SpeechSynthesisErrorEventInit eventInitDict);
+    readonly attribute SpeechSynthesisErrorCode error;
+};

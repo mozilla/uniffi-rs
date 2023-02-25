@@ -1,0 +1,21 @@
+// Source: WebXR Device API (https://www.w3.org/TR/webxr/)
+[SecureContext, Exposed=Window]
+interface XRWebGLLayer: XRLayer {
+  constructor(XRSession session,
+             XRWebGLRenderingContext context,
+             optional XRWebGLLayerInit layerInit = {});
+  // Attributes
+  readonly attribute boolean antialias;
+  readonly attribute boolean ignoreDepthValues;
+  attribute float? fixedFoveation;
+
+  [SameObject] readonly attribute WebGLFramebuffer? framebuffer;
+  readonly attribute unsigned long framebufferWidth;
+  readonly attribute unsigned long framebufferHeight;
+
+  // Methods
+  XRViewport? getViewport(XRView view);
+
+  // Static Methods
+  static double getNativeFramebufferScaleFactor(XRSession session);
+};

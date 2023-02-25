@@ -1,0 +1,9 @@
+// Source: Scalable Vector Graphics (SVG) 2 (https://www.w3.org/TR/SVG2/)
+[Exposed=Window]
+interface SVGTextPositioningElement : SVGTextContentElement {
+  [SameObject] readonly attribute SVGAnimatedLengthList x;
+  [SameObject] readonly attribute SVGAnimatedLengthList y;
+  [SameObject] readonly attribute SVGAnimatedLengthList dx;
+  [SameObject] readonly attribute SVGAnimatedLengthList dy;
+  [SameObject] readonly attribute SVGAnimatedNumberList rotate;
+};

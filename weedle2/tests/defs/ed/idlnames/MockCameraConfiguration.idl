@@ -1,0 +1,9 @@
+// Source: Media Capture Automation (https://w3c.github.io/mediacapture-automation/)
+dictionary MockCameraConfiguration : MockCaptureDeviceConfiguration {
+  double defaultFrameRate = 30;
+  DOMString facingMode = "user";
+  // TODO: Add more capabilities parameters like:
+  // ULongRange width;
+  // ULongRange height;
+  // DoubleRange frameRate;
+};

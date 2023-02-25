@@ -1,0 +1,9 @@
+// Source: Service Workers Nightly (https://www.w3.org/TR/service-workers/)
+[Exposed=ServiceWorker]
+interface WindowClient : Client {
+  readonly attribute DocumentVisibilityState visibilityState;
+  readonly attribute boolean focused;
+  [SameObject] readonly attribute FrozenArray<USVString> ancestorOrigins;
+  [NewObject] Promise<WindowClient> focus();
+  [NewObject] Promise<WindowClient?> navigate(USVString url);
+};

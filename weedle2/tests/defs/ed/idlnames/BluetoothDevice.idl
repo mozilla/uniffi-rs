@@ -1,0 +1,21 @@
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+[Exposed=Window, SecureContext]
+interface BluetoothDevice : EventTarget {
+  readonly attribute DOMString id;
+  readonly attribute DOMString? name;
+  readonly attribute BluetoothRemoteGATTServer? gatt;
+
+  Promise<undefined> forget();
+  Promise<undefined> watchAdvertisements(
+      optional WatchAdvertisementsOptions options = {});
+  readonly attribute boolean watchingAdvertisements;
+};
+
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+BluetoothDevice includes BluetoothDeviceEventHandlers;
+
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+BluetoothDevice includes CharacteristicEventHandlers;
+
+// Source: Web Bluetooth (https://webbluetoothcg.github.io/web-bluetooth/)
+BluetoothDevice includes ServiceEventHandlers;

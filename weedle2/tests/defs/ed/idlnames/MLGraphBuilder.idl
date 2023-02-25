@@ -1,0 +1,243 @@
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+[SecureContext, Exposed=(Window, DedicatedWorker)]
+interface MLGraphBuilder {
+  // Construct the graph builder from the context.
+  constructor(MLContext context);
+
+  // Create an operand for a graph input.
+  MLOperand input(DOMString name, MLOperandDescriptor desc);
+
+  // Create an operand for a graph constant.
+  MLOperand constant(MLOperandDescriptor desc, MLBufferView bufferView);
+
+  // Create a single-value operand from the specified number of the specified type.
+  MLOperand constant(double value, optional MLOperandType type = "float32");
+
+  // Compile the graph up to the specified output operands asynchronously.
+  Promise<MLGraph> build(MLNamedOperands outputs);
+
+  // Compile the graph up to the specified output operands synchronously.
+  [Exposed=(DedicatedWorker)]
+  MLGraph buildSync(MLNamedOperands outputs);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand batchNormalization(MLOperand input, MLOperand mean, MLOperand variance,
+                             optional MLBatchNormalizationOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand clamp(MLOperand x, optional MLClampOptions options = {});
+  MLActivation clamp(optional MLClampOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand concat(sequence<MLOperand> inputs, long axis);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand conv2d(MLOperand input, MLOperand filter, optional MLConv2dOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand convTranspose2d(MLOperand input, MLOperand filter,
+                            optional MLConvTranspose2dOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand add(MLOperand a, MLOperand b);
+  MLOperand sub(MLOperand a, MLOperand b);
+  MLOperand mul(MLOperand a, MLOperand b);
+  MLOperand div(MLOperand a, MLOperand b);
+  MLOperand max(MLOperand a, MLOperand b);
+  MLOperand min(MLOperand a, MLOperand b);
+  MLOperand pow(MLOperand a, MLOperand b);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand abs(MLOperand x);
+  MLOperand ceil(MLOperand x);
+  MLOperand cos(MLOperand x);
+  MLOperand exp(MLOperand x);
+  MLOperand floor(MLOperand x);
+  MLOperand log(MLOperand x);
+  MLOperand neg(MLOperand x);
+  MLOperand sin(MLOperand x);
+  MLOperand tan(MLOperand x);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand elu(MLOperand x, optional MLEluOptions options = {});
+  MLActivation elu(optional MLEluOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand gemm(MLOperand a, MLOperand b, optional MLGemmOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  sequence<MLOperand> gru(MLOperand input, MLOperand weight, MLOperand recurrentWeight,
+                          unsigned long steps, unsigned long hiddenSize,
+                          optional MLGruOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand gruCell(MLOperand input, MLOperand weight, MLOperand recurrentWeight,
+                    MLOperand hiddenState, unsigned long hiddenSize,
+                    optional MLGruCellOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand hardSigmoid(MLOperand x, optional MLHardSigmoidOptions options = {});
+  MLActivation hardSigmoid(optional MLHardSigmoidOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand hardSwish(MLOperand x);
+  MLActivation hardSwish();
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand instanceNormalization(MLOperand input,
+                                optional MLInstanceNormalizationOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand leakyRelu(MLOperand x, optional MLLeakyReluOptions options = {});
+  MLActivation leakyRelu(optional MLLeakyReluOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand linear(MLOperand x, optional MLLinearOptions options = {});
+  MLActivation linear(optional MLLinearOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  sequence<MLOperand> lstm(MLOperand input, MLOperand weight, MLOperand recurrentWeight,
+                           unsigned long steps, unsigned long hiddenSize,
+                           optional MLLstmOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  sequence<MLOperand> lstmCell(MLOperand input, MLOperand weight, MLOperand recurrentWeight,
+                               MLOperand hiddenState, MLOperand cellState, unsigned long hiddenSize,
+                               optional MLLstmCellOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand matmul(MLOperand a, MLOperand b);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand pad(MLOperand input, MLOperand padding, optional MLPadOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand averagePool2d(MLOperand input, optional MLPool2dOptions options = {});
+  MLOperand l2Pool2d(MLOperand input, optional MLPool2dOptions options = {});
+  MLOperand maxPool2d(MLOperand input, optional MLPool2dOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand reduceL1(MLOperand input, optional MLReduceOptions options = {});
+  MLOperand reduceL2(MLOperand input, optional MLReduceOptions options = {});
+  MLOperand reduceLogSum(MLOperand input, optional MLReduceOptions options = {});
+  MLOperand reduceLogSumExp(MLOperand input, optional MLReduceOptions options = {});
+  MLOperand reduceMax(MLOperand input, optional MLReduceOptions options = {});
+  MLOperand reduceMean(MLOperand input, optional MLReduceOptions options = {});
+  MLOperand reduceMin(MLOperand input, optional MLReduceOptions options = {});
+  MLOperand reduceProduct(MLOperand input, optional MLReduceOptions options = {});
+  MLOperand reduceSum(MLOperand input, optional MLReduceOptions options = {});
+  MLOperand reduceSumSquare(MLOperand input, optional MLReduceOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand relu(MLOperand x);
+  MLActivation relu();
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand resample2d(MLOperand input, optional MLResample2dOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand reshape(MLOperand input, sequence<unsigned long?> newShape);
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand sigmoid(MLOperand x);
+  MLActivation sigmoid();
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand slice(MLOperand input, sequence<long> starts, sequence<long> sizes,
+                optional MLSliceOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand softmax(MLOperand x);
+  MLActivation softmax();
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand softplus(MLOperand x, optional MLSoftplusOptions options = {});
+  MLActivation softplus(optional MLSoftplusOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand softsign(MLOperand x);
+  MLActivation softsign();
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  sequence<MLOperand> split(MLOperand input,
+                          (unsigned long or sequence<unsigned long>) splits,
+                          optional MLSplitOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand squeeze(MLOperand input, optional MLSqueezeOptions options = {});
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand tanh(MLOperand x);
+  MLActivation tanh();
+};
+
+// Source: Web Neural Network API (https://www.w3.org/TR/webnn/)
+partial interface MLGraphBuilder {
+  MLOperand transpose(MLOperand input, optional MLTransposeOptions options = {});
+};

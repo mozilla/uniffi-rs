@@ -1,0 +1,5 @@
+// Source: JS Self-Profiling API (https://wicg.github.io/js-self-profiling/)
+dictionary ProfilerSample {
+  required DOMHighResTimeStamp timestamp;
+  unsigned long long stackId;
+};

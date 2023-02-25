@@ -1,0 +1,15 @@
+// Source: WebRTC: Real-Time Communication in Browsers (https://www.w3.org/TR/webrtc/)
+[Exposed=Window]
+interface RTCError : DOMException {
+  constructor(RTCErrorInit init, optional DOMString message = "");
+  readonly attribute RTCErrorDetailType errorDetail;
+  readonly attribute long? sdpLineNumber;
+  readonly attribute long? sctpCauseCode;
+  readonly attribute unsigned long? receivedAlert;
+  readonly attribute unsigned long? sentAlert;
+};
+
+// Source: Identity for WebRTC 1.0 (https://www.w3.org/TR/webrtc-identity/)
+partial interface RTCError {
+  readonly attribute long? httpRequestStatusCode;
+};

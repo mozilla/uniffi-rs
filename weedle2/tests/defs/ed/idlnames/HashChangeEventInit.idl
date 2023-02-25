@@ -1,0 +1,5 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+dictionary HashChangeEventInit : EventInit {
+  USVString oldURL = "";
+  USVString newURL = "";
+};

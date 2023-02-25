@@ -1,0 +1,14 @@
+// Source: WebXR Layers API Level 1 (https://www.w3.org/TR/webxrlayers-1/)
+[Exposed=Window] interface XRWebGLSubImage : XRSubImage {
+  [SameObject] readonly attribute WebGLTexture colorTexture;
+  [SameObject] readonly attribute WebGLTexture? depthStencilTexture;
+  [SameObject] readonly attribute WebGLTexture? motionVectorTexture;
+
+  readonly attribute unsigned long? imageIndex;
+  readonly attribute unsigned long colorTextureWidth;
+  readonly attribute unsigned long colorTextureHeight;
+  readonly attribute unsigned long? depthStencilTextureWidth;
+  readonly attribute unsigned long? depthStencilTextureHeight;
+  readonly attribute unsigned long? motionVectorTextureWidth;
+  readonly attribute unsigned long? motionVectorTextureHeight;
+};

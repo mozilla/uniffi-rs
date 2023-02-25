@@ -1,0 +1,7 @@
+// Source: HTML Standard (https://html.spec.whatwg.org/multipage/)
+[Exposed=Window]
+interface SubmitEvent : Event {
+  constructor(DOMString type, optional SubmitEventInit eventInitDict = {});
+
+  readonly attribute HTMLElement? submitter;
+};

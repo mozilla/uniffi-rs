@@ -1,0 +1,5 @@
+// Source: Web Audio API (https://www.w3.org/TR/webaudio/)
+dictionary IIRFilterOptions : AudioNodeOptions {
+    required sequence<double> feedforward;
+    required sequence<double> feedback;
+};

@@ -1,0 +1,6 @@
+// Source: CSS Animations Level 1 (https://www.w3.org/TR/css-animations-1/)
+dictionary AnimationEventInit : EventInit {
+  CSSOMString animationName = "";
+  double elapsedTime = 0.0;
+  CSSOMString pseudoElement = "";
+};
