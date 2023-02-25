@@ -1,7 +1,8 @@
 use crate::argument::ArgumentList;
 use crate::attribute::ExtendedAttributeList;
 use crate::common::{Identifier, Parenthesized};
-use crate::types::{AttributedType, ReturnType};
+use crate::literal::ConstValue;
+use crate::types::{AttributedType, ConstType, ReturnType};
 
 /// Parses namespace members declaration
 pub type NamespaceMembers<'a> = Vec<NamespaceMember<'a>>;
@@ -28,6 +29,16 @@ ast_types! {
             identifier: Identifier<'a>,
             semi_colon: term!(;),
         }),
+        /// Parses a const namespace member `[attributes]? const type identifier = value;`
+        Const(struct ConstNamespaceMember<'a> {
+            attributes: Option<ExtendedAttributeList<'a>>,
+            const_: term!(const),
+            const_type: ConstType<'a>,
+            identifier: Identifier<'a>,
+            assign: term!(=),
+            const_value: ConstValue<'a>,
+            semi_colon: term!(;),
+        }),
     }
 }
 
@@ -48,5 +59,12 @@ mod test {
         OperationNamespaceMember;
         attributes.is_none();
         identifier.is_none();
+    });
+
+    test!(should_parse_const_namespace_member { "const short name = 5;" =>
+        "";
+        ConstNamespaceMember;
+        attributes.is_none();
+        identifier.0 == "name";
     });
 }
