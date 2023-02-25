@@ -36,6 +36,12 @@ ast_types! {
             assign: term!(=),
             list: Parenthesized<IdentifierList<'a>>,
         }),
+        /// Parses a wildcard. Ex: `[Exposed=*]`
+        WildCard(struct ExtendedAttributeWildcard<'a> {
+            identifier: Identifier<'a>,
+            assign: term!(=),
+            list: term!(*),
+        }),
         /// Parses an attribute with an identifier. Ex: `PutForwards=name`
         #[derive(Copy)]
         Ident(struct ExtendedAttributeIdent<'a> {
@@ -87,6 +93,12 @@ mod test {
         ExtendedAttributeIdentList;
         identifier.0 == "Exposed";
         list.body.list.len() == 2;
+    });
+
+    test!(should_parse_wildcard { "Exposed=*" =>
+        "";
+        ExtendedAttributeWildcard;
+        identifier.0 == "Exposed";
     });
 
     test!(should_parse_named_arg_list { "NamedConstructor=Image(DOMString src)" =>
