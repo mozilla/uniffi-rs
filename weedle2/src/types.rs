@@ -46,6 +46,7 @@ ast_types! {
         ArrayBufferView(MayBeNull<term!(ArrayBufferView)>),
         BufferSource(MayBeNull<term!(BufferSource)>),
         FrozenArrayType(MayBeNull<FrozenArrayType<'a>>),
+        ObservableArrayType(MayBeNull<ObservableArrayType<'a>>),
         RecordType(MayBeNull<RecordType<'a>>),
         Identifier(MayBeNull<Identifier<'a>>),
     }
@@ -59,6 +60,12 @@ ast_types! {
     /// Parses `FrozenArray<Type>`
     struct FrozenArrayType<'a> {
         frozen_array: term!(FrozenArray),
+        generics: Generics<Box<Type<'a>>>,
+    }
+
+    /// Parses `ObservableArray<Type>`
+    struct ObservableArrayType<'a> {
+        observable_array: term!(ObservableArray),
         generics: Generics<Box<Type<'a>>>,
     }
 
@@ -229,6 +236,7 @@ mod test {
             ArrayBufferView == "ArrayBufferView",
             BufferSource == "BufferSource",
             FrozenArrayType == "FrozenArray<short>",
+            ObservableArrayType == "ObservableArray<short>",
             RecordType == "record<DOMString, short>",
             Identifier == "mango"
         }
@@ -307,6 +315,11 @@ mod test {
     test!(should_parse_frozen_array_type { "FrozenArray<short>" =>
         "";
         FrozenArrayType;
+    });
+
+    test!(should_parse_observable_array_type { "ObservableArray<short>" =>
+        "";
+        ObservableArrayType;
     });
 
     test!(should_parse_sequence_type { "sequence<short>" =>

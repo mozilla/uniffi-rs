@@ -195,6 +195,9 @@ generate_terms_for_names! {
     /// Represents the terminal symbol `FrozenArray`
     FrozenArray => "FrozenArray",
 
+    /// Represents the terminal symbol `ObservableArray`
+    ObservableArray => "ObservableArray",
+
     /// Represents the terminal symbol `Infinity`
     Infinity => "Infinity",
 
@@ -453,6 +456,9 @@ macro_rules! term {
     (FrozenArray) => {
         $crate::term::FrozenArray
     };
+    (ObservableArray) => {
+        $crate::term::ObservableArray
+    };
     (Infinity) => {
         $crate::term::Infinity
     };
@@ -667,6 +673,7 @@ mod test {
         bytestring, ByteString, "ByteString";
         domstring, DOMString, "DOMString";
         frozenarray, FrozenArray, "FrozenArray";
+        observablearray, ObservableArray, "ObservableArray";
         infinity, Infinity, "Infinity";
         nan, NaN, "NaN";
         usvstring, USVString, "USVString";
