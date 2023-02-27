@@ -6,15 +6,20 @@
 public interface {{ type_name }}Interface {
     {% for meth in obj.methods() -%}
     {%- match meth.throws_type() -%}
-    {%- when Some with (throwable) %}
+    {%- when Some with (throwable) -%}
     @Throws({{ throwable|type_name }}::class)
-    {%- else -%}
+    {%- when None -%}
     {%- endmatch %}
+    {% if meth.is_async() -%}
+    suspend fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %})
+    {%- else -%}
     fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %})
+    {%- endif %}
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) %}: {{ return_type|type_name -}}
-    {%- else -%}
-    {%- endmatch %}
+    {%- when None -%}
+    {%- endmatch -%}
+
     {% endfor %}
 }
 
@@ -46,11 +51,13 @@ class {{ type_name }}(
     {% for meth in obj.methods() -%}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) %}
-    @Throws({{ throwable|type_name }}::class)
+        @Throws({{ throwable|type_name }}::class)
     {%- else -%}
-    {%- endmatch %}
+    {%- endmatch -%}
+    {%- if meth.is_async() -%}
+        {%- call kt::async_meth(meth) -%}
+    {%- else -%}
     {%- match meth.return_type() -%}
-
     {%- when Some with (return_type) -%}
     override fun {{ meth.name()|fn_name }}({% call kt::arg_list_protocol(meth) %}): {{ return_type|type_name }} =
         callWithPointer {
@@ -65,6 +72,7 @@ class {{ type_name }}(
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }
     {% endmatch %}
+    {% endif %}
     {% endfor %}
 
     {% if !obj.alternate_constructors().is_empty() -%}

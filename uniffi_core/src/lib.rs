@@ -140,7 +140,6 @@ macro_rules! assert_compatible_version {
 ///
 /// In general, you should not need to implement this trait by hand, and should instead rely on
 /// implementations generated from your component UDL via the `uniffi-bindgen scaffolding` command.
-
 pub unsafe trait FfiConverter<UT>: Sized {
     /// The low-level type used for passing values of this type over the FFI.
     ///

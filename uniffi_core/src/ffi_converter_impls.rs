@@ -30,7 +30,7 @@ use bytes::buf::{Buf, BufMut};
 use paste::paste;
 use std::{
     collections::HashMap,
-    convert::TryFrom,
+    convert::{Infallible, TryFrom},
     time::{Duration, SystemTime},
 };
 
@@ -115,6 +115,26 @@ unsafe impl<UT> FfiConverter<UT> for () {
 
     fn try_read(_: &mut &[u8]) -> Result<()> {
         Ok(())
+    }
+}
+
+unsafe impl<UT> FfiConverter<UT> for Infallible {
+    type FfiType = RustBuffer;
+
+    fn try_lift(_: Self::FfiType) -> Result<Infallible> {
+        unreachable!()
+    }
+
+    fn lower(_: Infallible) -> Self::FfiType {
+        unreachable!()
+    }
+
+    fn write(_: Infallible, _: &mut Vec<u8>) {
+        unreachable!()
+    }
+
+    fn try_read(_: &mut &[u8]) -> Result<Infallible> {
+        unreachable!()
     }
 }
 

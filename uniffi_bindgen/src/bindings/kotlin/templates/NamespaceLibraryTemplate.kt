@@ -29,12 +29,37 @@ internal interface _UniFFILib : Library {
             }
             {% endif %}
         }
+
+        {%- if ci.has_async_fns() %}
+        internal val FUTURE_WAKER_ENVIRONMENTS: ConcurrentHashMap<Int, RustFutureWakerEnvironment<out Any>> by lazy {
+            ConcurrentHashMap(8)
+        }
+        {%- endif %}
     }
 
     {% for func in ci.iter_ffi_function_definitions() -%}
+    {%- if func.is_async() %}
     fun {{ func.name() }}(
         {%- call kt::arg_list_ffi_decl(func) %}
-    ){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_.borrow()|ffi_type_name }}{% when None %}: Unit{% endmatch %}
+    ): RustFuture
+
+    fun {{ func.name() }}_poll(
+        rustFuture: RustFuture,
+        waker: RustFutureWaker,
+        wakerEnv: RustFutureWakerEnvironmentCStructure?,
+        polledResult: {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type|type_ffi_lowered }}{% when None %}Pointer{% endmatch %}ByReference,
+        _uniffi_out_err: RustCallStatus
+    ): Boolean
+
+    fun {{ func.name() }}_drop(
+        `rust_future`: RustFuture,
+        _uniffi_out_err: RustCallStatus
+    )
+    {%- else %}
+    fun {{ func.name() }}(
+        {%- call kt::arg_list_ffi_decl(func) %}
+    ): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name }}{% when None %}Unit{% endmatch %}
+    {%- endif -%}
 
     {% endfor %}
 }

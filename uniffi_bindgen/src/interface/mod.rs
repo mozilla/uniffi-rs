@@ -86,7 +86,6 @@ const UNIFFI_CONTRACT_VERSION: &str = "0.22";
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
-///
 #[derive(Debug, Default, Checksum)]
 pub struct ComponentInterface {
     /// This always points to `UNIFFI_CONTRACT_VERSION`.  By including it in the checksum, we
@@ -360,6 +359,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_alloc(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_alloc", self.ffi_namespace()),
+            is_async: false,
             arguments: vec![FfiArgument {
                 name: "size".to_string(),
                 type_: FfiType::Int32,
@@ -374,6 +374,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_from_bytes(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_from_bytes", self.ffi_namespace()),
+            is_async: false,
             arguments: vec![FfiArgument {
                 name: "bytes".to_string(),
                 type_: FfiType::ForeignBytes,
@@ -388,6 +389,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_free(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_free", self.ffi_namespace()),
+            is_async: false,
             arguments: vec![FfiArgument {
                 name: "buf".to_string(),
                 type_: FfiType::RustBuffer(None),
@@ -402,6 +404,7 @@ impl ComponentInterface {
     pub fn ffi_rustbuffer_reserve(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_reserve", self.ffi_namespace()),
+            is_async: false,
             arguments: vec![
                 FfiArgument {
                     name: "buf".to_string(),
@@ -414,6 +417,11 @@ impl ComponentInterface {
             ],
             return_type: Some(FfiType::RustBuffer(None)),
         }
+    }
+
+    /// Does this interface contain async functions?
+    pub fn has_async_fns(&self) -> bool {
+        self.iter_ffi_function_definitions().any(|f| f.is_async())
     }
 
     /// List the definitions of all FFI functions in the interface.
@@ -447,7 +455,7 @@ impl ComponentInterface {
             .chain(self.functions.iter().map(|f| &f.ffi_func))
     }
 
-    /// List all FFI functions definitions for RustBuffer functionality
+    /// List all FFI functions definitions for RustBuffer functionality.
     pub fn iter_rust_buffer_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> {
         [
             self.ffi_rustbuffer_alloc(),
@@ -458,7 +466,6 @@ impl ComponentInterface {
         .into_iter()
     }
 
-    //
     // Private methods for building a ComponentInterface.
     //
 

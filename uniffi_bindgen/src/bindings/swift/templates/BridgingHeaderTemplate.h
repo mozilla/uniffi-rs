@@ -36,6 +36,12 @@ typedef struct ForeignBytes
     const uint8_t *_Nullable data;
 } ForeignBytes;
 
+// `RustFuture` is an opaque type.
+typedef struct RustFuture RustFuture;
+
+typedef void rust_future_waker_environment_t;
+typedef void (*rust_future_waker_t)(rust_future_waker_environment_t*_Nullable);
+
 // Error definitions
 typedef struct RustCallStatus {
     int8_t code;
@@ -46,10 +52,26 @@ typedef struct RustCallStatus {
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V4 in this file.           ⚠️
 #endif // def UNIFFI_SHARED_H
 
-{% for func in ci.iter_ffi_function_definitions() -%}
-    {%- match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
-      {% call swift::arg_list_ffi_decl(func) %}
-    );
-{% endfor -%}
+{%- for func in ci.iter_ffi_function_definitions() -%}
+{%- if func.is_async() %}
+
+RustFuture*_Nonnull {{ func.name() }}({% call swift::arg_list_ffi_decl(func) %});
+
+bool {{ func.name() }}_poll(
+    RustFuture*_Nonnull const,
+    rust_future_waker_t _Nonnull,
+    rust_future_waker_environment_t*_Nullable const,
+    {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}void{% endmatch %}*_Nullable,
+    RustCallStatus*_Nonnull
+);
+
+void {{ func.name() }}_drop(RustFuture*_Nonnull, RustCallStatus*_Nonnull);
+{%- else %}
+
+{% match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
+    {% call swift::arg_list_ffi_decl(func) %}
+);
+{%- endif -%}
+{%- endfor -%}
 
 {% import "macros.swift" as swift %}

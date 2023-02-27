@@ -25,6 +25,7 @@ fn fn_metadata(sig: &Signature, mod_path: &[String]) -> syn::Result<FnMetadata> 
     Ok(FnMetadata {
         module_path: mod_path.to_owned(),
         name: sig.ident.to_string(),
+        is_async: sig.is_async,
         inputs: fn_param_metadata(&sig.inputs)?,
         return_type,
         throws,

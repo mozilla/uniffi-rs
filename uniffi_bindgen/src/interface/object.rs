@@ -88,7 +88,7 @@ pub struct Object {
     pub(super) name: String,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
-    // We don't include the FFIFunc in the hash calculation, because:
+    // We don't include the FfiFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
@@ -331,6 +331,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 pub struct Method {
     pub(super) name: String,
     pub(super) object_name: String,
+    pub(super) is_async: bool,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
@@ -347,6 +348,10 @@ pub struct Method {
 impl Method {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn is_async(&self) -> bool {
+        self.is_async
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -421,18 +426,20 @@ impl Method {
 impl From<uniffi_meta::MethodMetadata> for Method {
     fn from(meta: uniffi_meta::MethodMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
-
+        let is_async = meta.is_async;
         let return_type = meta.return_type.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         let ffi_func = FfiFunction {
             name: ffi_name,
+            is_async,
             ..FfiFunction::default()
         };
 
         Self {
             name: meta.name,
             object_name: meta.self_name,
+            is_async,
             arguments,
             return_type,
             ffi_func,
@@ -463,6 +470,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             },
             // We don't know the name of the containing `Object` at this point, fill it in later.
             object_name: Default::default(),
+            is_async: false,
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),

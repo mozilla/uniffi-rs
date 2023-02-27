@@ -99,6 +99,7 @@ impl Checksum for &str {
 pub struct FnMetadata {
     pub module_path: Vec<String>,
     pub name: String,
+    pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<String>,
@@ -115,6 +116,7 @@ pub struct MethodMetadata {
     pub module_path: Vec<String>,
     pub self_name: String,
     pub name: String,
+    pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<String>,

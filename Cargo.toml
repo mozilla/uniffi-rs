@@ -48,6 +48,7 @@ members = [
   "fixtures/simple-fns",
   "fixtures/simple-iface",
   "fixtures/swift-omit-labels",
+  "fixtures/futures",
 ]
 
 resolver = "2"

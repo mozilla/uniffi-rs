@@ -1,0 +1,9 @@
+[bindings.kotlin]
+package_name = "uniffi.fixture.futures"
+cdylib_name = "uniffi_futures"
+
+[bindings.python]
+cdylib_name = "uniffi_futures"
+
+[bindings.swift]
+cdylib_name = "uniffi_futures"

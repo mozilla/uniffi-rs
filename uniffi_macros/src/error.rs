@@ -1,9 +1,8 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
-    parse::{Parse, ParseStream},
-    punctuated::Punctuated,
-    AttributeArgs, Data, DataEnum, DeriveInput, Index, Token, Variant,
+    parse::ParseStream, punctuated::Punctuated, AttributeArgs, Data, DataEnum, DeriveInput, Index,
+    Token, Variant,
 };
 use uniffi_meta::{ErrorMetadata, VariantMetadata};
 
@@ -206,8 +205,8 @@ struct ErrorAttr {
     with_try_read: Option<kw::with_try_read>,
 }
 
-impl Parse for ErrorAttr {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+impl UniffiAttribute for ErrorAttr {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::flat_error) {
             Ok(Self {
@@ -223,9 +222,7 @@ impl Parse for ErrorAttr {
             Err(lookahead.error())
         }
     }
-}
 
-impl UniffiAttribute for ErrorAttr {
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
             flat: either_attribute_arg(self.flat, other.flat)?,

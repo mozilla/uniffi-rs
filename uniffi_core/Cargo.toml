@@ -13,6 +13,7 @@ keywords = ["ffi", "bindgen"]
 [dependencies]
 # Re-exported dependencies used in generated Rust scaffolding files.
 anyhow = "1"
+async-compat = { version = "0.2.1", optional = true }
 bytes = "1.0"
 camino = "1.0.8"
 log = "0.4"
@@ -24,3 +25,7 @@ static_assertions = "1.1.0"
 
 [features]
 default = []
+
+# Enable support for Tokio's futures.
+# This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
+tokio = ["dep:async-compat"]
