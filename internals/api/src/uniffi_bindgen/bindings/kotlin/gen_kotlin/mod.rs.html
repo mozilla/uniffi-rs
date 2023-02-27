@@ -415,6 +415,32 @@
 <span id="415">415</span>
 <span id="416">416</span>
 <span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -795,6 +821,32 @@
     <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FfiType`.
     </span><span class="kw">pub fn </span>ffi_type_name(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(oracle().ffi_type_label(type_))
+    }
+
+    <span class="doccomment">/// Get the type that a type is lowered into.  This is subtly different than `type_ffi`.
+    ///
+    /// For example, if we need to pre-allocate a Kotlin value that will store
+    /// an FFI lowered value, this method is your friend.
+    </span><span class="kw">pub fn </span>type_ffi_lowered(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>ffi_type {
+            FfiType::Int8 =&gt; <span class="string">&quot;Byte&quot;</span>.into(),
+            FfiType::UInt8 =&gt; <span class="string">&quot;Byte&quot;</span>.into(),
+            FfiType::Int16 =&gt; <span class="string">&quot;Short&quot;</span>.into(),
+            FfiType::UInt16 =&gt; <span class="string">&quot;Short&quot;</span>.into(),
+            FfiType::Int32 =&gt; <span class="string">&quot;Int&quot;</span>.into(),
+            FfiType::UInt32 =&gt; <span class="string">&quot;Int&quot;</span>.into(),
+            FfiType::Int64 =&gt; <span class="string">&quot;Long&quot;</span>.into(),
+            FfiType::UInt64 =&gt; <span class="string">&quot;Long&quot;</span>.into(),
+            FfiType::Float32 =&gt; <span class="string">&quot;Float&quot;</span>.into(),
+            FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.into(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer&quot;</span>.into(),
+            FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
+                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{suffix}&quot;</span>),
+                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
+            },
+            FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
+            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.into(),
+        })
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).

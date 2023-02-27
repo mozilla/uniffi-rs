@@ -299,11 +299,8 @@
 <span class="kw">use </span>quote::{format_ident, quote, quote_spanned, ToTokens};
 <span class="kw">use </span>std::convert::TryFrom;
 <span class="kw">use </span>syn::{
-    parse::{Parse, ParseStream},
-    punctuated::Punctuated,
-    spanned::Spanned,
-    visit_mut::VisitMut,
-    Attribute, AttributeArgs, Item, Meta, NestedMeta, Path, Token, Type,
+    parse::ParseStream, spanned::Spanned, visit_mut::VisitMut, Attribute, AttributeArgs, Item,
+    Meta, NestedMeta, Path, Token, Type,
 };
 <span class="kw">use </span>uniffi_meta::Metadata;
 
@@ -460,23 +457,27 @@
     a.into_iter().chain(b)
 }
 
-<span class="kw">pub trait </span>UniffiAttribute: Default + Parse {
+<span class="kw">pub trait </span>UniffiAttribute: Default {
+    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt;;
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt;;
+}
+
+<span class="kw">pub fn </span>parse_comma_separated&lt;T: UniffiAttribute&gt;(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;T&gt; {
+    <span class="kw">let </span>punctuated = input.parse_terminated::&lt;T, <span class="macro">Token!</span>[,]&gt;(T::parse_one)<span class="question-mark">?</span>;
+    punctuated.into_iter().try_fold(T::default(), T::merge)
 }
 
 <span class="attribute">#[derive(Default)]
 </span><span class="kw">struct </span>AttributeNotAllowedHere;
 
-<span class="kw">impl </span>Parse <span class="kw">for </span>AttributeNotAllowedHere {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>AttributeNotAllowedHere {
+    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Err</span>(syn::Error::new(
             input.span(),
             <span class="string">&quot;UniFFI attributes are not currently recognized in this position&quot;</span>,
         ))
     }
-}
 
-<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>AttributeNotAllowedHere {
     <span class="kw">fn </span>merge(<span class="self">self</span>, _other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>)
     }
@@ -492,9 +493,8 @@
         <span class="self">self</span>.iter()
             .filter(|attr| attr.path.is_ident(<span class="string">&quot;uniffi&quot;</span>))
             .try_fold(T::default(), |res, attr| {
-                <span class="kw">let </span>list: Punctuated&lt;T, <span class="macro">Token!</span>[,]&gt; =
-                    attr.parse_args_with(Punctuated::parse_terminated)<span class="question-mark">?</span>;
-                list.into_iter().try_fold(res, T::merge)
+                <span class="kw">let </span>parsed = attr.parse_args_with(parse_comma_separated)<span class="question-mark">?</span>;
+                res.merge(parsed)
             })
     }
 
@@ -504,13 +504,13 @@
     }
 }
 
-<span class="kw">pub fn </span>either_attribute_arg&lt;T: ToTokens&gt;(a: <span class="prelude-ty">Option</span>&lt;T&gt;, b: <span class="prelude-ty">Option</span>&lt;T&gt;) -&gt; syn::Result&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt; {
+<span class="kw">pub fn </span>either_attribute_arg&lt;T: Spanned&gt;(a: <span class="prelude-ty">Option</span>&lt;T&gt;, b: <span class="prelude-ty">Option</span>&lt;T&gt;) -&gt; syn::Result&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt; {
     <span class="kw">match </span>(a, b) {
         (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         (<span class="prelude-val">Some</span>(val), <span class="prelude-val">None</span>) | (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(val)) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(val)),
         (<span class="prelude-val">Some</span>(a), <span class="prelude-val">Some</span>(b)) =&gt; {
-            <span class="kw">let </span><span class="kw-2">mut </span>error = syn::Error::new_spanned(a, <span class="string">&quot;redundant attribute argument&quot;</span>);
-            error.combine(syn::Error::new_spanned(b, <span class="string">&quot;note: first one here&quot;</span>));
+            <span class="kw">let </span><span class="kw-2">mut </span>error = syn::Error::new(a.span(), <span class="string">&quot;redundant attribute argument&quot;</span>);
+            error.combine(syn::Error::new(b.span(), <span class="string">&quot;note: first one here&quot;</span>));
             <span class="prelude-val">Err</span>(error)
         }
     }

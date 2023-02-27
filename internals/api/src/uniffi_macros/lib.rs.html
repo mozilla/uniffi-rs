@@ -233,6 +233,7 @@
 <span id="233">233</span>
 <span id="234">234</span>
 <span id="235">235</span>
+<span id="236">236</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -282,11 +283,12 @@
 }
 
 <span class="attribute">#[proc_macro_attribute]
-</span><span class="kw">pub fn </span>export(_attr: TokenStream, input: TokenStream) -&gt; TokenStream {
+</span><span class="kw">pub fn </span>export(attr_args: TokenStream, input: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>input2 = proc_macro2::TokenStream::from(input.clone());
 
     <span class="kw">let </span>gen_output = || {
         <span class="kw">let </span>mod_path = util::mod_path()<span class="question-mark">?</span>;
+        <span class="kw">let </span>args = syn::parse(attr_args)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>item = syn::parse(input)<span class="question-mark">?</span>;
 
         <span class="comment">// If the input is an `impl` block, rewrite any uses of the `Self` type
@@ -296,7 +298,7 @@
         </span>rewrite_self_type(<span class="kw-2">&amp;mut </span>item);
 
         <span class="kw">let </span>metadata = export::gen_metadata(item, <span class="kw-2">&amp;</span>mod_path)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(expand_export(metadata, <span class="kw-2">&amp;</span>mod_path))
+        <span class="prelude-val">Ok</span>(expand_export(metadata, args, <span class="kw-2">&amp;</span>mod_path))
     };
     <span class="kw">let </span>output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 

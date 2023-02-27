@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"uniffi_macros":[["impl <a class=\"trait\" href=\"https://docs.rs/syn/1.0.109/syn/spanned/trait.Spanned.html\" title=\"trait syn::spanned::Spanned\">Spanned</a> for <a class=\"enum\" href=\"uniffi_macros/export/enum.AsyncRuntime.html\" title=\"enum uniffi_macros::export::AsyncRuntime\">AsyncRuntime</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

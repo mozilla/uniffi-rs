@@ -100,6 +100,13 @@
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -163,6 +170,7 @@
 </span><span class="attribute">#[derive(Debug, Default, Clone)]
 </span><span class="kw">pub struct </span>FfiFunction {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) is_async: bool,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;FfiArgument&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;,
 }
@@ -171,9 +179,15 @@
     <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
+
+    <span class="kw">pub fn </span>is_async(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.is_async
+    }
+
     <span class="kw">pub fn </span>arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>FfiArgument&gt; {
         <span class="self">self</span>.arguments.iter().collect()
     }
+
     <span class="kw">pub fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>FfiType&gt; {
         <span class="self">self</span>.return_type.as_ref()
     }

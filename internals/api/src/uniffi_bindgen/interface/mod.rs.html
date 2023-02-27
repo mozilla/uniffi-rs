@@ -1220,6 +1220,13 @@
 <span id="1220">1220</span>
 <span id="1221">1221</span>
 <span id="1222">1222</span>
+<span id="1223">1223</span>
+<span id="1224">1224</span>
+<span id="1225">1225</span>
+<span id="1226">1226</span>
+<span id="1227">1227</span>
+<span id="1228">1228</span>
+<span id="1229">1229</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1308,7 +1315,6 @@
 
 <span class="doccomment">/// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
-///
 </span><span class="attribute">#[derive(Debug, Default, Checksum)]
 </span><span class="kw">pub struct </span>ComponentInterface {
     <span class="doccomment">/// This always points to `UNIFFI_CONTRACT_VERSION`.  By including it in the checksum, we
@@ -1582,6 +1588,7 @@
     </span><span class="kw">pub fn </span>ffi_rustbuffer_alloc(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
         FfiFunction {
             name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_rustbuffer_alloc&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
                 name: <span class="string">&quot;size&quot;</span>.to_string(),
                 type_: FfiType::Int32,
@@ -1596,6 +1603,7 @@
     </span><span class="kw">pub fn </span>ffi_rustbuffer_from_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
         FfiFunction {
             name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_rustbuffer_from_bytes&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
                 name: <span class="string">&quot;bytes&quot;</span>.to_string(),
                 type_: FfiType::ForeignBytes,
@@ -1610,6 +1618,7 @@
     </span><span class="kw">pub fn </span>ffi_rustbuffer_free(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
         FfiFunction {
             name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_rustbuffer_free&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
                 name: <span class="string">&quot;buf&quot;</span>.to_string(),
                 type_: FfiType::RustBuffer(<span class="prelude-val">None</span>),
@@ -1624,6 +1633,7 @@
     </span><span class="kw">pub fn </span>ffi_rustbuffer_reserve(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
         FfiFunction {
             name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_rustbuffer_reserve&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[
                 FfiArgument {
                     name: <span class="string">&quot;buf&quot;</span>.to_string(),
@@ -1636,6 +1646,11 @@
             ],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
         }
+    }
+
+    <span class="doccomment">/// Does this interface contain async functions?
+    </span><span class="kw">pub fn </span>has_async_fns(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.iter_ffi_function_definitions().any(|f| f.is_async())
     }
 
     <span class="doccomment">/// List the definitions of all FFI functions in the interface.
@@ -1669,7 +1684,7 @@
             .chain(<span class="self">self</span>.functions.iter().map(|f| <span class="kw-2">&amp;</span>f.ffi_func))
     }
 
-    <span class="doccomment">/// List all FFI functions definitions for RustBuffer functionality
+    <span class="doccomment">/// List all FFI functions definitions for RustBuffer functionality.
     </span><span class="kw">pub fn </span>iter_rust_buffer_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; {
         [
             <span class="self">self</span>.ffi_rustbuffer_alloc(),
@@ -1680,8 +1695,7 @@
         .into_iter()
     }
 
-    <span class="comment">//
-    // Private methods for building a ComponentInterface.
+    <span class="comment">// Private methods for building a ComponentInterface.
     //
 
     </span><span class="doccomment">/// Resolve a weedle type expression into a `Type`.

@@ -91,6 +91,7 @@
 <span id="91">91</span>
 <span id="92">92</span>
 <span id="93">93</span>
+<span id="94">94</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -178,6 +179,7 @@
     <span class="prelude-val">Ok</span>(MethodMetadata {
         module_path: mod_path.to_owned(),
         self_name: self_name.to_owned(),
+        is_async: sig.is_async,
         name: sig.ident.to_string(),
         inputs: fn_param_metadata(<span class="kw-2">&amp;</span>sig.inputs)<span class="question-mark">?</span>,
         return_type,

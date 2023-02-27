@@ -230,15 +230,11 @@
 <span id="230">230</span>
 <span id="231">231</span>
 <span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
-    parse::{Parse, ParseStream},
-    punctuated::Punctuated,
-    AttributeArgs, Data, DataEnum, DeriveInput, Index, Token, Variant,
+    parse::ParseStream, punctuated::Punctuated, AttributeArgs, Data, DataEnum, DeriveInput, Index,
+    Token, Variant,
 };
 <span class="kw">use </span>uniffi_meta::{ErrorMetadata, VariantMetadata};
 
@@ -441,8 +437,8 @@
     with_try_read: <span class="prelude-ty">Option</span>&lt;kw::with_try_read&gt;,
 }
 
-<span class="kw">impl </span>Parse <span class="kw">for </span>ErrorAttr {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>ErrorAttr {
+    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>lookahead = input.lookahead1();
         <span class="kw">if </span>lookahead.peek(kw::flat_error) {
             <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
@@ -458,9 +454,7 @@
             <span class="prelude-val">Err</span>(lookahead.error())
         }
     }
-}
 
-<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>ErrorAttr {
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             flat: either_attribute_arg(<span class="self">self</span>.flat, other.flat)<span class="question-mark">?</span>,

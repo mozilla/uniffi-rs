@@ -30,6 +30,7 @@
 <span id="30">30</span>
 <span id="31">31</span>
 <span id="32">32</span>
+<span id="33">33</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -57,6 +58,7 @@
     <span class="prelude-val">Ok</span>(FnMetadata {
         module_path: mod_path.to_owned(),
         name: sig.ident.to_string(),
+        is_async: sig.is_async,
         inputs: fn_param_metadata(<span class="kw-2">&amp;</span>sig.inputs)<span class="question-mark">?</span>,
         return_type,
         throws,

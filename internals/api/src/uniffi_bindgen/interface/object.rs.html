@@ -597,6 +597,14 @@
 <span id="597">597</span>
 <span id="598">598</span>
 <span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -687,7 +695,7 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) constructors: Vec&lt;Constructor&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) methods: Vec&lt;Method&gt;,
-    <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
+    <span class="comment">// We don&#39;t include the FfiFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
@@ -930,6 +938,7 @@
 </span><span class="kw">pub struct </span>Method {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) object_name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) is_async: bool,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;Argument&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;Type&gt;,
     <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
@@ -946,6 +955,10 @@
 <span class="kw">impl </span>Method {
     <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="kw-2">&amp;</span><span class="self">self</span>.name
+    }
+
+    <span class="kw">pub fn </span>is_async(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.is_async
     }
 
     <span class="kw">pub fn </span>arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Argument&gt; {
@@ -1020,18 +1033,20 @@
 <span class="kw">impl </span>From&lt;uniffi_meta::MethodMetadata&gt; <span class="kw">for </span>Method {
     <span class="kw">fn </span>from(meta: uniffi_meta::MethodMetadata) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ffi_name = meta.ffi_symbol_name();
-
+        <span class="kw">let </span>is_async = meta.is_async;
         <span class="kw">let </span>return_type = meta.return_type.map(|out| convert_type(<span class="kw-2">&amp;</span>out));
         <span class="kw">let </span>arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         <span class="kw">let </span>ffi_func = FfiFunction {
             name: ffi_name,
+            is_async,
             ..FfiFunction::default()
         };
 
         <span class="self">Self </span>{
             name: meta.name,
             object_name: meta.self_name,
+            is_async,
             arguments,
             return_type,
             ffi_func,
@@ -1062,6 +1077,7 @@
             },
             <span class="comment">// We don&#39;t know the name of the containing `Object` at this point, fill it in later.
             </span>object_name: Default::default(),
+            is_async: <span class="bool-val">false</span>,
             arguments: <span class="self">self</span>.args.body.list.convert(ci)<span class="question-mark">?</span>,
             return_type,
             ffi_func: Default::default(),

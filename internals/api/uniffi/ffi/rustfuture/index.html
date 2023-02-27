@@ -1,0 +1,270 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="[`RustFuture`] represents a `Future` that can be sent over FFI safely-ish."><meta name="keywords" content="rust, rustlang, rust-lang, rustfuture"><title>uniffi::ffi::rustfuture - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"><a href="#">Module rustfuture</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Module <a href="../../index.html">uniffi</a>::<wbr><a href="../index.html">ffi</a>::<wbr><a class="mod" href="#">rustfuture</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p><a href="../../struct.RustFuture.html" title="RustFuture"><code>RustFuture</code></a> represents a <a href="https://doc.rust-lang.org/std/future/trait.Future.html"><code>Future</code></a> that can be sent over FFI safely-ish.</p>
+<p>The <a href="../../struct.RustFuture.html" title="RustFuture"><code>RustFuture</code></a> type holds an inner <code>Future&lt;Output = Result&lt;E, T&gt;&gt;</code>, and
+thus is parameterized by <code>T</code> and <code>E</code>. On the <code>RustFuture</code> type itself, there
+is no constraint over those generic types (constraints are present in the
+<a href="../../fn.uniffi_rustfuture_poll.html" title="uniffi_rustfuture_poll"><code>uniffi_rustfuture_poll</code></a> function, where <code>T: FfiReturn</code>, see later
+to learn more). Every function or method that returns a <code>Future</code> must
+transform the result into a <code>Result</code>. This is done by the procedural
+macros automatically: <code>Future&lt;Output = T&gt;</code> is transformed into <code>RustFuture&lt;T, Infallible&gt;</code>, and <code>Future&lt;Output = Result&lt;T, E&gt;&gt;</code> is transformed into
+<code>RustFuture&lt;T, E&gt;</code>.</p>
+<p>This type may not be instantiated directly, but <em>via</em> the procedural macros,
+such as <code>#[uniffi::export]</code>. A <code>RustFuture</code> is created, boxed, and then
+manipulated by (hidden) helper functions, resp. <a href="../../fn.uniffi_rustfuture_poll.html" title="uniffi_rustfuture_poll"><code>uniffi_rustfuture_poll</code></a>
+and <a href="../../fn.uniffi_rustfuture_drop.html" title="uniffi_rustfuture_drop"><code>uniffi_rustfuture_drop</code></a>. Because the <code>RustFuture</code> type contains a
+generic parameters <code>T</code> and <code>E</code>, the procedural macros will do a
+monomorphisation phase so that all the API has all their types statically
+known.</p>
+<h2 id="the-big-picture"><a href="#the-big-picture">The big picture</a></h2>
+<p>This section will explain how the entire workflow works.</p>
+<p>Let’s consider the following Rust function:</p>
+
+<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code><span class="attribute">#[uniffi::export]
+</span><span class="kw">async fn </span>hello() -&gt; bool {
+    <span class="bool-val">true
+</span>}</code></pre></div>
+<p>In Rust, this <code>async fn</code> syntax is strictly equivalent to:</p>
+
+<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code><span class="attribute">#[uniffi::export]
+</span><span class="kw">fn </span>hello() -&gt; <span class="kw">impl </span>Future&lt;Output = bool&gt; { <span class="comment">/* … */ </span>}</code></pre></div>
+<p>Once this is understood, it becomes obvious that an <code>async</code> function
+returns a <code>Future</code>.</p>
+<p>This function will not be modified, but new functions with a C ABI will be
+created, as such:</p>
+
+<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code><span class="doccomment">/// The `hello` function, as seen from the outside. It returns a `Future`, or
+/// more precisely, a `RustFuture` that wraps the returned future.
+</span><span class="attribute">#[no_mangle]
+</span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>_uniffi_hello(
+    call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus
+) -&gt; <span class="prelude-ty">Option</span>&lt;Box&lt;::uniffi::RustFuture&lt;bool, ::std::convert::Infallible&gt;&gt;&gt; {
+    ::uniffi::call_with_output(call_status, || {
+        <span class="prelude-val">Some</span>(Box::new(::uniffi::RustFuture::new(<span class="kw">async move </span>{
+            <span class="prelude-val">Ok</span>(hello().<span class="kw">await</span>)
+        })))
+    })
+}</code></pre></div>
+<p>This function returns an <code>Option&lt;Box&lt;RustFuture&lt;T, E&gt;&gt;</code>:</p>
+<ul>
+<li>
+<p>Why an <code>Option</code>? Because in case of an error, it must return a default
+value, in this case <code>None</code>, otherwise <code>Some</code>. If we were returning <code>Box</code>
+directly, it would leak a pointer.</p>
+</li>
+<li>
+<p>Why <code>Box</code>? Because Rust doesn’t own the future, it’s passed to the
+foreign language, and the foreign language is responsible to manage it.</p>
+</li>
+<li>
+<p>Finally, this function calls the real Rust <code>hello</code> function. It
+transforms its result into a <code>Result</code> if it’s needed.</p>
+</li>
+</ul>
+<p>The second generated function is the <em>poll function</em>:</p>
+
+<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code><span class="doccomment">/// The function to poll the `RustFuture` returned by `_uniffi_hello`.
+</span><span class="attribute">#[no_mangle]
+</span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>_uniffi_hello_poll(
+    future: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>::uniffi::RustFuture&lt;bool, ::std::convert::Infallible&gt;&gt;,
+    waker: <span class="prelude-ty">Option</span>&lt;NonNull&lt;::uniffi::RustFutureForeignWakerFunction&gt;&gt;,
+    waker_environment: <span class="kw-2">*const </span>::uniffi::RustFutureForeignWakerEnvironment,
+    polled_result: <span class="kw-2">&amp;mut </span>&lt;bool <span class="kw">as </span>::uniffi::FfiReturn&gt;::FfiType,
+    call_status:: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
+) -&gt; bool {
+    ::uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
+}</code></pre></div>
+<p>Let’s analyse this function because it’s an important one:</p>
+<ul>
+<li>
+<p>First off, this <em>poll FFI function</em> forwards everything to
+<a href="../../fn.uniffi_rustfuture_poll.html" title="uniffi_rustfuture_poll"><code>uniffi_rustfuture_poll</code></a>. The latter is generic, while the former has been
+monomorphised by the procedural macro.</p>
+</li>
+<li>
+<p>Second, it receives the <code>RustFuture</code> from <code>_uniffi_hello</code> as an
+<code>Option&lt;&amp;mut RustFuture&lt;_&gt;&gt;</code>. It doesn’t take ownership of the <code>RustFuture</code>!
+It borrows it (mutably). It’s wrapped inside an <code>Option</code> to check whether
+it’s a null pointer or not; it’s defensive programming here, <code>null</code> will
+make the Rust code to panic gracefully.</p>
+</li>
+<li>
+<p>Third, it receives a <em>waker</em> as a pair of a <em>function pointer</em> plus its
+<em>environment</em>, if any; a null pointer is purposely allowed for the environment.
+This waker function lives on the foreign language side. We will come back
+to it in a second.</p>
+</li>
+<li>
+<p>Fourth, it receives an in-out <code>polled_result</code> argument, that is filled with the
+polled result if the future is ready.</p>
+</li>
+<li>
+<p>Firth, the classical <code>call_status</code>, which is part of the calling API of <code>uniffi</code>.</p>
+</li>
+<li>
+<p>Finally, the function returns <code>true</code> if the future is ready, <code>false</code> if pending.</p>
+</li>
+</ul>
+<p>Please don’t forget to read <a href="../../fn.uniffi_rustfuture_poll.html" title="uniffi_rustfuture_poll"><code>uniffi_rustfuture_poll</code></a> to learn how
+<code>polled_result</code> + <code>call_status</code> + the returned bool type are used to indicate
+in which state the future is.</p>
+<p>So, everytime this function is called, it polls the <code>RustFuture</code> after
+having reconstituted a valid <a href="https://doc.rust-lang.org/std/task/struct.Waker.html"><code>Waker</code></a> for it. As said earlier, we will come
+back to it.</p>
+<p>The last generated function is the <em>drop function</em>:</p>
+
+<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code><span class="attribute">#[no_mangle]
+</span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>_uniffi_hello_drop(
+    future: <span class="prelude-ty">Option</span>&lt;Box&lt;::uniffi::RustFuture&lt;bool, ::std::convert::Infallible&gt;&gt;&gt;,
+    call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus
+) {
+    ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
+}</code></pre></div>
+<p>First off, this <em>drop function</em> is responsible to drop the <code>RustFuture</code>. It’s
+clear by looking at its signature: It receives an <code>Option&lt;Box&lt;RustFuture&lt;_&gt;&gt;&gt;</code>,
+i.e. it takes ownership of the <code>RustFuture</code> <em>via</em> <code>Box</code>!</p>
+<p>Similarly to the <em>poll function</em>, it forwards everything to
+<a href="../../fn.uniffi_rustfuture_drop.html" title="uniffi_rustfuture_drop"><code>uniffi_rustfuture_drop</code></a>, which is the generic version of the monomorphised <em>drop
+function</em>.</p>
+<h3 id="how-does-future-work-exactly"><a href="#how-does-future-work-exactly">How does <code>Future</code> work exactly?</a></h3>
+<p>A <a href="https://doc.rust-lang.org/std/future/trait.Future.html"><code>Future</code></a> in Rust does nothing. When calling an async function, it just
+returns a <code>Future</code> but nothing has happened yet. To start the computation,
+the future must be polled. It returns <a href="../../deps/static_assertions/_core/task/enum.Poll.html#variant.Ready" title="Poll::Ready"><code>Poll::Ready(r)</code></a> if
+the result is ready, <a href="https://doc.rust-lang.org/std/task/enum.Poll.html#variant.Pending"><code>Poll::Pending</code></a> otherwise. <code>Poll::Pending</code> basically
+means:</p>
+<blockquote>
+<p>Please, try to poll me later, maybe the result will be ready!</p>
+</blockquote>
+<p>This model is very different than what other languages do, but it can actually
+be translated quite easily, fortunately for us!</p>
+<p>But… wait a minute… who is responsible to poll the <code>Future</code> if a <code>Future</code> does
+nothing? Well, it’s <em>the executor</em>. The executor is responsible <em>to drive</em> the
+<code>Future</code>: that’s where they are polled.</p>
+<p>But… wait another minute… how does the executor know when to poll a <a href="https://doc.rust-lang.org/std/future/trait.Future.html"><code>Future</code></a>?
+Does it poll them randomly in an endless loop? Well, no, actually it depends
+on the executor! A well-designed <code>Future</code> and executor work as follows.
+Normally, when <a href="https://doc.rust-lang.org/std/future/trait.Future.html#tymethod.poll"><code>Future::poll</code></a> is called, a <a href="https://doc.rust-lang.org/std/task/struct.Context.html"><code>Context</code></a> argument is
+passed to it. It contains a <a href="https://doc.rust-lang.org/std/task/struct.Waker.html"><code>Waker</code></a>. The <a href="https://doc.rust-lang.org/std/task/struct.Waker.html"><code>Waker</code></a> is built on top of a
+<a href="https://doc.rust-lang.org/std/task/struct.RawWaker.html"><code>RawWaker</code></a> which implements whatever is necessary. Usually, a waker will
+signal the executor to poll a particular <code>Future</code>. A <code>Future</code> will clone
+or pass-by-ref the waker to somewhere, as a callback, a completion, a
+function, or anything, to the system that is responsible to notify when a
+task is completed. So, to recap, the waker is <em>not</em> responsible for waking the
+<code>Future</code>, it <em>is</em> responsible for <em>signaling</em> the executor that a particular
+<code>Future</code> should be polled again. That’s why the documentation of
+<a href="https://doc.rust-lang.org/std/task/enum.Poll.html#variant.Pending"><code>Poll::Pending</code></a> specifies:</p>
+<blockquote>
+<p>When a function returns <code>Pending</code>, the function must also ensure that the
+current task is scheduled to be awoken when progress can be made.</p>
+</blockquote>
+<p>“awakening” is done by using the <code>Waker</code>.</p>
+<h3 id="awaken-from-the-foreign-language-land"><a href="#awaken-from-the-foreign-language-land">Awaken from the foreign language land</a></h3>
+<p>Our <em>poll function</em> receives a waker function pointer, along with a waker
+environment. We said that the waker function lives on the foreign language
+side. That’s really important. It cannot live inside Rust because Rust
+isn’t aware of which foreign language it is run from, and thus doesn’t know
+which executor is used. It is UniFFI’s job to write a proper foreign waker
+function that will use the native foreign language’s executor provided
+by the foreign language itself (e.g. <code>Task</code> in Swift) or by some common
+libraries (e.g. <code>asyncio</code> in Python), to ask to poll the future again.</p>
+<p>We expect the waker to be the same per future. This property is not
+checked, but the current foreign language implementations provided by UniFFI
+guarantee that the waker is the same per future everytime. Changing the
+waker for the same future leads to undefined behaviours, and may panic at some
+point or leak data.</p>
+<p>The waker must live longer than the <code>RustFuture</code>, so its lifetime’s range
+must include <code>_uniffi_hello()</code> to <code>_uniffi_hello_drop()</code>, otherwise it leads to
+undefined behaviours.</p>
+<h3 id="the-workflow"><a href="#the-workflow">The workflow</a></h3>
+<ol>
+<li>
+<p>The foreign language starts by calling the regular FFI function
+<code>_uniffi_hello</code>. It gets an <code>Option&lt;Box&lt;RustFuture&lt;_&gt;&gt;&gt;</code>.</p>
+</li>
+<li>
+<p>The foreign language immediately polls the future by using the <code>_uniffi_hello_poll</code>
+function. It passes a function pointer to the waker function, implemented
+inside the foreign language, along with its environment if any.</p>
+<ul>
+<li>
+<p>Either the future is ready and computes a value, in this case the <em>poll
+function</em> will lift the value and will drop the future with the <em>drop function</em>
+(<code>_uniffi_hello_drop</code>),</p>
+</li>
+<li>
+<p>or the future is pending (not ready), and is responsible to register
+the waker (as explained above).</p>
+</li>
+</ul>
+</li>
+<li>
+<p>When the waker is called, it calls the <em>poll function</em>, so we basically jump
+to point 2 of this list.</p>
+</li>
+</ol>
+<p>There is an important subtlety though. Imagine the following Rust code:</p>
+
+<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code><span class="kw">let </span><span class="kw-2">mut </span>shared_state: MutexGuard&lt;<span class="kw">_</span>&gt; = a_shared_state.lock().unwrap();
+
+<span class="kw">if let </span><span class="prelude-val">Some</span>(waker) = shared_state.waker.take() {
+    waker.wake();
+}</code></pre></div>
+<p>This code will call the waker. That’s nice and all. However, when the waker
+function is called by <code>waker.wake()</code>, this code above has not returned yet.
+And the waker function, as designed so far, will call the <em>poll function</em>
+of the Rust <code>Future</code>  which… may use the same lock (<code>a_shared_state</code>),
+which is not released yet: there is a dead-lock! Rust is not responsible of
+that, kind of. Rust <strong>must ignore how the executor works</strong>, all <code>Future</code>s
+are executor-agnostic by design. To avoid creating problems, the waker
+must “cut” the flow, so that Rust code can continue to run as expected, and
+after that, the <em>poll function</em> must be called.</p>
+<p>Put differently, the waker function must call the <em>poll function</em> <em>as
+soon as possible</em>, not <em>immediately</em>. It actually makes sense: The waker
+must signal the executor to schedule a poll for a specific <code>Future</code> when
+possible; it’s not an inline operation. The implementation of the waker
+must be very careful of that.</p>
+<p>With a diagram (because this comment would look so much clever with a diagram),
+it looks like this:</p>
+<div class="example-wrap"><pre class="language-text"><code>          ┌────────────────────┐
+          │                    │
+          │   Calling hello    │
+          │                    │
+          └─────────┬──────────┘
+                    │
+                    ▼       fn waker ◄──┐
+    ┌────────────────────────────────┐  │
+    │                                │  │
+    │  Ask the executor to schedule  │  │
+    │  this as soon as possible      │  │
+    │                                │  │
+    │  ┌──────────────────────────┐  │  │
+    │  │                          │  │  │
+    │  │  Polling the RustFuture  │  │  │
+    │  │  Pass pointer to waker ──┼──┼──┘
+    │  │                          │  │
+    │  └────────────┬─────────────┘  │
+    │               │                │
+    └───────────────┼────────────────┘
+                    │
+                    ▼
+        ┌──── The future is ─────┐
+        │                        │
+      Ready                   Pending
+        │                        │
+        ▼                        ▼
+┌───────────────┐     ┌──────────────────────┐
+│  Lift result  │     │       Nothing        │
+│   Have fun    │     │  Let&#39;s wait for the  │
+└───────────────┘     │  waker to be called  │
+                      └──────────────────────┘
+</code></pre></div>
+<p>That’s all folks!</p>
+</div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.RustFuture.html" title="uniffi::ffi::rustfuture::RustFuture struct">RustFuture</a></div><div class="item-right docblock-short"><code>RustFuture</code> represents a <a href="../../deps/static_assertions/_core/future/trait.Future.html" title="Future"><code>Future</code></a> that can be sent over FFI safely-ish.</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.RustFuturePoll.html" title="uniffi::ffi::rustfuture::RustFuturePoll enum">RustFuturePoll</a></div><div class="item-right docblock-short"><code>RustFuturePoll</code> is the equivalent of <a href="https://doc.rust-lang.org/std/task/enum.Poll.html"><code>Poll</code></a>, except that it has one
+more variant: <code>Throwing</code>, which is the ”FFI default” variant.</div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.uniffi_rustfuture_drop.html" title="uniffi::ffi::rustfuture::uniffi_rustfuture_drop fn">uniffi_rustfuture_drop</a></div><div class="item-right docblock-short">Drop a <a href="../../struct.RustFuture.html" title="RustFuture"><code>RustFuture</code></a>.</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.uniffi_rustfuture_poll.html" title="uniffi::ffi::rustfuture::uniffi_rustfuture_poll fn">uniffi_rustfuture_poll</a></div><div class="item-right docblock-short">Poll a <a href="../../struct.RustFuture.html" title="RustFuture"><code>RustFuture</code></a>. If the <code>RustFuture</code> is ready, the function returns
+<code>true</code> and puts the result inside <code>polled_result</code>, otherwise it returns
+<code>false</code> and <em>doesn’t modify</em> the value inside <code>polled_result</code>. A third
+case exists: if the <code>RustFuture</code> is throwing an error, the function returns
+<code>true</code> but doesn’t modify <code>polled_result</code> either, however the value
+of  <code>call_status</code> is changed appropriately. It is summarized inside the
+following table:</div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.RustFutureForeignWakerFunction.html" title="uniffi::ffi::rustfuture::RustFutureForeignWakerFunction type">RustFutureForeignWakerFunction</a></div><div class="item-right docblock-short">Type alias to a function with a C ABI. It defines the shape of the foreign
+language’s waker which is called by the <a href="../../struct.RustFuture.html" title="RustFuture"><code>RustFuture</code></a> to signal the
+foreign language that something has happened. See the module documentation
+to learn more.</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

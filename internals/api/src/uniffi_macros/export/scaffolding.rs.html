@@ -197,20 +197,142 @@
 <span id="197">197</span>
 <span id="198">198</span>
 <span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{format_ident, quote, ToTokens};
-<span class="kw">use </span>syn::{parse_quote, FnArg, Pat};
+<span class="kw">use </span>syn::{spanned::Spanned, FnArg, Pat};
 
-<span class="kw">use super</span>::{FunctionReturn, Signature};
+<span class="kw">use super</span>::{AsyncRuntime, ExportAttributeArguments, FunctionReturn, Signature};
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_scaffolding(
     sig: <span class="kw-2">&amp;</span>Signature,
     mod_path: <span class="kw-2">&amp;</span>[String],
     checksum: u16,
+    arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
 ) -&gt; TokenStream {
     <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.ident;
     <span class="kw">let </span>name_s = name.to_string();
@@ -228,7 +350,7 @@
         #name(#(#args),<span class="kw-2">*</span>)
     };
 
-    gen_ffi_function(sig, ffi_ident, <span class="kw-2">&amp;</span>params, fn_call)
+    gen_ffi_function(sig, ffi_ident, <span class="kw-2">&amp;</span>params, fn_call, arguments)
 }
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_method_scaffolding(
@@ -236,6 +358,7 @@
     mod_path: <span class="kw-2">&amp;</span>[String],
     checksum: u16,
     self_ident: <span class="kw-2">&amp;</span>Ident,
+    arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
 ) -&gt; TokenStream {
     <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.ident;
     <span class="kw">let </span>name_s = name.to_string();
@@ -287,7 +410,7 @@
         #fn_call_prefix #name(#(#args),<span class="kw-2">*</span>)
     };
 
-    gen_ffi_function(sig, ffi_ident, <span class="kw-2">&amp;</span>params, fn_call)
+    gen_ffi_function(sig, ffi_ident, <span class="kw-2">&amp;</span>params, fn_call, arguments)
 }
 
 <span class="kw">fn </span>is_receiver(fn_arg: <span class="kw-2">&amp;</span>FnArg) -&gt; bool {
@@ -352,36 +475,151 @@
     ffi_ident: Ident,
     params: <span class="kw-2">&amp;</span>[TokenStream],
     rust_fn_call: TokenStream,
+    arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
 ) -&gt; TokenStream {
-    <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.ident;
-    <span class="kw">let </span>name_s = name.to_string();
+    <span class="kw">let </span>name = sig.ident.to_string();
+    <span class="kw">let </span><span class="kw-2">mut </span>extra_functions = Vec::new();
+    <span class="kw">let </span>is_async = sig.is_async;
 
-    <span class="kw">let </span>unit_slot;
-    <span class="kw">let </span>(ty, throws) = <span class="kw">match </span><span class="kw-2">&amp;</span>sig.output {
-        <span class="prelude-val">Some</span>(FunctionReturn { ty, throws }) =&gt; (ty, throws),
-        <span class="prelude-val">None </span>=&gt; {
-            unit_slot = <span class="macro">parse_quote! </span>{ () };
-            (<span class="kw-2">&amp;</span>unit_slot, <span class="kw-2">&amp;</span><span class="prelude-val">None</span>)
+    <span class="kw">let </span>(return_ty, throw_ty, return_expr, throws) = <span class="kw">match </span><span class="kw-2">&amp;</span>sig.output {
+        <span class="prelude-val">Some</span>(FunctionReturn { ty, throws: <span class="prelude-val">None </span>}) <span class="kw">if </span>is_async =&gt; {
+            <span class="kw">let </span>return_ty = <span class="macro">quote! </span>{ #ty };
+            <span class="kw">let </span>throw_ty = <span class="prelude-val">Some</span>(<span class="macro">quote! </span>{ ::std::convert::Infallible });
+
+            (
+                return_ty.clone(),
+                throw_ty.clone(),
+                <span class="macro">quote! </span>{ <span class="prelude-ty">Option</span>&lt;Box&lt;::uniffi::RustFuture&lt;#return_ty, #throw_ty&gt;&gt;&gt; },
+                <span class="kw-2">&amp;</span><span class="prelude-val">None</span>,
+            )
         }
+
+        <span class="prelude-val">Some</span>(FunctionReturn { ty, throws }) <span class="kw">if </span>is_async =&gt; {
+            <span class="kw">let </span>return_ty = <span class="macro">quote! </span>{ #ty };
+            <span class="kw">let </span>throw_ty = <span class="prelude-val">Some</span>(<span class="macro">quote! </span>{ #throws });
+
+            (
+                return_ty.clone(),
+                throw_ty.clone(),
+                <span class="macro">quote! </span>{ <span class="prelude-ty">Option</span>&lt;Box&lt;::uniffi::RustFuture&lt;#return_ty, #throw_ty&gt;&gt;&gt; },
+                throws,
+            )
+        }
+
+        <span class="prelude-val">None </span><span class="kw">if </span>is_async =&gt; {
+            <span class="kw">let </span>return_ty = <span class="macro">quote! </span>{ () };
+            <span class="kw">let </span>throw_ty = <span class="prelude-val">Some</span>(<span class="macro">quote! </span>{ ::std::convert::Infallible });
+
+            (
+                return_ty.clone(),
+                throw_ty.clone(),
+                <span class="macro">quote! </span>{ <span class="prelude-ty">Option</span>&lt;Box&lt;::uniffi::RustFuture&lt;#return_ty, #throw_ty&gt;&gt;&gt; },
+                <span class="kw-2">&amp;</span><span class="prelude-val">None</span>,
+            )
+        }
+
+        <span class="prelude-val">Some</span>(FunctionReturn { ty, throws }) =&gt; (
+            <span class="macro">quote! </span>{ #ty },
+            <span class="prelude-val">None</span>,
+            <span class="macro">quote! </span>{ &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType },
+            throws,
+        ),
+
+        <span class="prelude-val">None </span>=&gt; (
+            <span class="macro">quote! </span>{ () },
+            <span class="prelude-val">None</span>,
+            <span class="macro">quote! </span>{ &lt;() <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType },
+            <span class="kw-2">&amp;</span><span class="prelude-val">None</span>,
+        ),
     };
 
-    <span class="kw">let </span>return_expr = <span class="kw">if let </span><span class="prelude-val">Some</span>(error_ident) = throws {
+    <span class="kw">let </span>body_expr = <span class="kw">if </span>is_async {
+        <span class="kw">let </span>rust_future_ctor = <span class="kw">match </span><span class="kw-2">&amp;</span>arguments.async_runtime {
+            <span class="prelude-val">Some</span>(AsyncRuntime::Tokio(<span class="kw">_</span>)) =&gt; <span class="macro">quote! </span>{ new_tokio },
+            <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ new },
+        };
+
+        <span class="kw">let </span>body = <span class="kw">match </span>throws {
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">quote! </span>{ #rust_fn_call.<span class="kw">await </span>},
+            <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Ok</span>(#rust_fn_call.<span class="kw">await</span>) },
+        };
+
         <span class="macro">quote! </span>{
-            ::uniffi::call_with_result(call_status, || {
-                <span class="kw">let </span>val = #rust_fn_call.map_err(|e| {
-                    &lt;#error_ident <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(
-                        ::std::convert::Into::into(e),
-                    )
-                })<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(&lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(val))
+            ::uniffi::call_with_output(call_status, || {
+                <span class="prelude-val">Some</span>(Box::new(::uniffi::RustFuture::#rust_future_ctor(
+                    <span class="kw">async move </span>{
+                        #body
+                    }
+                )))
             })
         }
     } <span class="kw">else </span>{
-        <span class="macro">quote! </span>{
-            ::uniffi::call_with_output(call_status, || {
-                &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(#rust_fn_call)
-            })
+        <span class="kw">match </span>throws {
+            <span class="prelude-val">Some</span>(error_ident) =&gt; {
+                <span class="macro">quote! </span>{
+                    ::uniffi::call_with_result(call_status, || {
+                        <span class="kw">let </span>val = #rust_fn_call.map_err(|e| {
+                            &lt;#error_ident <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(
+                                ::std::convert::Into::into(e),
+                            )
+                        })<span class="question-mark">?</span>;
+
+                        <span class="prelude-val">Ok</span>(&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(val))
+                    })
+                }
+            }
+
+            <span class="prelude-val">None </span>=&gt; {
+                <span class="macro">quote! </span>{
+                    ::uniffi::call_with_output(call_status, || {
+                        &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(#rust_fn_call)
+                    })
+                }
+            }
         }
+    };
+
+    <span class="kw">if </span>is_async {
+        <span class="kw">let </span>ffi_poll_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{}_poll&quot;</span>, ffi_ident);
+        <span class="kw">let </span>ffi_drop_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{}_drop&quot;</span>, ffi_ident);
+
+        <span class="comment">// Monomorphised poll function.
+        </span>extra_functions.push(<span class="macro">quote! </span>{
+            <span class="attribute">#[doc(hidden)]
+            #[no_mangle]
+            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_poll_ident(
+                future: ::std::option::Option&lt;<span class="kw-2">&amp;mut </span>::uniffi::RustFuture&lt;#return_ty, #throw_ty&gt;&gt;,
+                waker: ::std::option::Option&lt;::uniffi::RustFutureForeignWakerFunction&gt;,
+                waker_environment: <span class="kw-2">*const </span>::std::ffi::c_void,
+                polled_result: <span class="kw-2">&amp;mut </span>&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType,
+                call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
+            ) -&gt; bool {
+                ::uniffi::ffi::uniffi_rustfuture_poll::&lt;<span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">crate</span>::UniFfiTag&gt;(future, waker, waker_environment, polled_result, call_status)
+            }
+        });
+
+        <span class="comment">// Monomorphised drop function.
+        </span>extra_functions.push(<span class="macro">quote! </span>{
+            <span class="attribute">#[doc(hidden)]
+            #[no_mangle]
+            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_drop_ident(
+                future: ::std::option::Option&lt;::std::boxed::Box&lt;::uniffi::RustFuture&lt;#return_ty, #throw_ty&gt;&gt;&gt;,
+                call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
+            ) {
+                ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
+            }
+        });
+    }
+
+    <span class="kw">let </span>argument_error = <span class="kw">match </span><span class="kw-2">&amp;</span>arguments.async_runtime {
+        <span class="prelude-val">Some</span>(async_runtime) <span class="kw">if </span>!is_async =&gt; <span class="prelude-val">Some</span>(
+            syn::Error::new(
+                async_runtime.span(),
+                <span class="string">&quot;this attribute is only allowed on async functions&quot;</span>,
+            )
+            .into_compile_error(),
+        ),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     };
 
     <span class="macro">quote! </span>{
@@ -390,10 +628,14 @@
         </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
             #(#params,)*
             call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
-        ) -&gt; &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType {
-            <span class="macro">::uniffi::deps::log::debug!</span>(#name_s);
-            #return_expr
+        ) -&gt; #return_expr {
+            <span class="macro">::uniffi::deps::log::debug!</span>(#name);
+            #body_expr
         }
+
+        #( #extra_functions )*
+
+        #argument_error
     }
 }
 </code></pre></div>
