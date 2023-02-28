@@ -1,6 +1,6 @@
 {%- let rec = ci|get_record_definition(name) %}
 
-{% let struct = rec %}{% include "StructureDocsTemplate.kt" %}
+{% let struct = rec %}{% include "RecordDocsTemplate.kt" %}
 data class {{ type_name }} (
     {%- for field in rec.fields() %}
     var {{ field.name()|var_name }}: {{ field|type_name -}}

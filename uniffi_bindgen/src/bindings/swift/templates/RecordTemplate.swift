@@ -1,6 +1,6 @@
 
 {%- let rec = ci.get_record_definition(name).unwrap() %}
-{% let struct = rec %}{% include "StructureDocsTemplate.swift" %}
+{% let struct = rec %}{% include "RecordDocsTemplate.swift" %}
 public struct {{ type_name }} {
     {%- for field in rec.fields() %}
     public var {{ field.name()|var_name }}: {{ field|type_name }}
