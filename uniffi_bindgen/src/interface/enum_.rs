@@ -203,15 +203,29 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 /// Represents an individual variant in an Enum.
 ///
 /// Each variant has a name and zero or more fields.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Checksum)]
+#[derive(Debug, Clone, Default, Checksum)]
 pub struct Variant {
     pub(super) name: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<String>,
     pub(super) fields: Vec<Field>,
 }
+
+impl PartialEq for Variant {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.fields == other.fields
+    }
+}
+
+impl Eq for Variant {}
 
 impl Variant {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn documentation(&self) -> Option<&String> {
+        self.documentation.as_ref()
     }
 
     pub fn fields(&self) -> &[Field] {
@@ -231,6 +245,7 @@ impl From<uniffi_meta::VariantMetadata> for Variant {
     fn from(meta: uniffi_meta::VariantMetadata) -> Self {
         Self {
             name: meta.name,
+            documentation: None,
             fields: meta.fields.into_iter().map(Into::into).collect(),
         }
     }
@@ -262,6 +277,7 @@ impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
         };
         Ok(Variant {
             name,
+            documentation: None,
             fields: self
                 .args
                 .body
@@ -298,6 +314,7 @@ impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
         // rather than appropriating record::Field..?
         Ok(Field {
             name: self.identifier.0.to_string(),
+            documentation: None,
             type_,
             default: None,
         })
