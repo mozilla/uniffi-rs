@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
-    punctuated::Punctuated, AttributeArgs, Data, DataEnum, DeriveInput, Field, Index, Path, Token,
+    punctuated::Punctuated, AttributeArgs, Data, DataEnum, DeriveInput, Field, Index, Token,
     Variant,
 };
 use uniffi_meta::{EnumMetadata, FieldMetadata, VariantMetadata};
@@ -61,12 +61,12 @@ pub(crate) fn enum_ffi_converter_impl(
     enum_: &DataEnum,
     tag_handler: FfiConverterTagHandler,
 ) -> TokenStream {
-    let (impl_spec, tag) = tag_handler.into_impl_and_tag_path("FfiConverter", ident);
+    let impl_spec = tag_handler.into_impl("FfiConverter", ident);
     let write_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         let v_ident = &v.ident;
         let fields = v.fields.iter().map(|f| &f.ident);
         let idx = Index::from(i + 1);
-        let write_fields = v.fields.iter().map(|f| write_field(f, &tag));
+        let write_fields = v.fields.iter().map(write_field);
 
         quote! {
             Self::#v_ident { #(#fields),* } => {
@@ -82,7 +82,7 @@ pub(crate) fn enum_ffi_converter_impl(
     let try_read_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         let idx = Index::from(i + 1);
         let v_ident = &v.ident;
-        let try_read_fields = v.fields.iter().map(|f| try_read_field(f, &tag));
+        let try_read_fields = v.fields.iter().map(try_read_field);
 
         quote! {
             #idx => Self::#v_ident { #(#try_read_fields)* },
@@ -101,7 +101,7 @@ pub(crate) fn enum_ffi_converter_impl(
     quote! {
         #[automatically_derived]
         unsafe #impl_spec {
-            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(#tag);
+            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl
@@ -161,11 +161,11 @@ fn field_metadata(f: &Field, v: &Variant) -> syn::Result<FieldMetadata> {
     })
 }
 
-fn write_field(f: &Field, uniffi_tag: &Path) -> TokenStream {
+fn write_field(f: &Field) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 
     quote! {
-        <#ty as ::uniffi::FfiConverter<#uniffi_tag>>::write(#ident, buf);
+        <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(#ident, buf);
     }
 }

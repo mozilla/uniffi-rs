@@ -45,7 +45,7 @@ pub fn expand_ffi_converter_interface(attrs: AttributeArgs, input: DeriveInput) 
 }
 
 pub(crate) fn interface_impl(ident: &Ident, tag_handler: FfiConverterTagHandler) -> TokenStream {
-    let (impl_spec, _) = tag_handler.into_impl_and_tag_path("Interface", ident);
+    let impl_spec = tag_handler.into_impl("Interface", ident);
     quote! {
         #[doc(hidden)]
         #[automatically_derived]

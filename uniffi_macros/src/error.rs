@@ -107,7 +107,7 @@ pub(crate) fn flat_error_ffi_converter_impl(
     tag_handler: FfiConverterTagHandler,
     implement_try_read: bool,
 ) -> TokenStream {
-    let (impl_spec, tag) = tag_handler.into_impl_and_tag_path("FfiConverter", ident);
+    let impl_spec = tag_handler.into_impl("FfiConverter", ident);
 
     let write_impl = {
         let match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
@@ -117,7 +117,7 @@ pub(crate) fn flat_error_ffi_converter_impl(
             quote! {
                 Self::#v_ident { .. } => {
                     ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                    <::std::string::String as ::uniffi::FfiConverter<#tag>>::write(error_msg, buf);
+                    <::std::string::String as ::uniffi::FfiConverter<()>>::write(error_msg, buf);
                 }
             }
         });
@@ -150,7 +150,7 @@ pub(crate) fn flat_error_ffi_converter_impl(
     quote! {
         #[automatically_derived]
         unsafe #impl_spec {
-            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(#tag);
+            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl

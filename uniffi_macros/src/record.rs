@@ -1,6 +1,6 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{AttributeArgs, Data, DataStruct, DeriveInput, Field, Fields, Path};
+use syn::{AttributeArgs, Data, DataStruct, DeriveInput, Field, Fields};
 use uniffi_meta::{FieldMetadata, RecordMetadata};
 
 use crate::{
@@ -56,18 +56,14 @@ pub(crate) fn record_ffi_converter_impl(
     record: &DataStruct,
     tag_handler: FfiConverterTagHandler,
 ) -> TokenStream {
-    let (impl_spec, tag) = tag_handler.into_impl_and_tag_path("FfiConverter", ident);
-    let write_impl: TokenStream = record.fields.iter().map(|f| write_field(f, &tag)).collect();
-    let try_read_fields: TokenStream = record
-        .fields
-        .iter()
-        .map(|f| try_read_field(f, &tag))
-        .collect();
+    let impl_spec = tag_handler.into_impl("FfiConverter", ident);
+    let write_impl: TokenStream = record.fields.iter().map(write_field).collect();
+    let try_read_fields: TokenStream = record.fields.iter().map(try_read_field).collect();
 
     quote! {
         #[automatically_derived]
         unsafe #impl_spec {
-            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(#tag);
+            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl
@@ -117,11 +113,11 @@ fn field_metadata(f: &Field) -> syn::Result<FieldMetadata> {
     })
 }
 
-fn write_field(f: &Field, tag: &Path) -> TokenStream {
+fn write_field(f: &Field) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 
     quote! {
-        <#ty as ::uniffi::FfiConverter<#tag>>::write(obj.#ident, buf);
+        <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(obj.#ident, buf);
     }
 }
