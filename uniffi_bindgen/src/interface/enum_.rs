@@ -290,15 +290,29 @@ impl AsType for Enum {
 /// Represents an individual variant in an Enum.
 ///
 /// Each variant has a name and zero or more fields.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Checksum)]
+#[derive(Debug, Clone, Default, Checksum)]
 pub struct Variant {
     pub(super) name: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<String>,
     pub(super) fields: Vec<Field>,
 }
+
+impl PartialEq for Variant {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.fields == other.fields
+    }
+}
+
+impl Eq for Variant {}
 
 impl Variant {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn documentation(&self) -> Option<&String> {
+        self.documentation.as_ref()
     }
 
     pub fn fields(&self) -> &[Field] {
@@ -325,6 +339,78 @@ impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
                 .into_iter()
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
+            documentation: None,
+            fields: meta.fields.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Variant> {
+        if self.special.is_some() {
+            bail!("special operations not supported");
+        }
+        if let Some(weedle::interface::StringifierOrStatic::Stringifier(_)) = self.modifier {
+            bail!("stringifiers are not supported");
+        }
+        // OK, so this is a little weird.
+        // The syntax we use for enum interface members is `Name(type arg, ...);`, which parses
+        // as an anonymous operation where `Name` is the return type. We re-interpret it to
+        // use `Name` as the name of the variant.
+        if self.identifier.is_some() {
+            bail!("enum interface members must not have a method name");
+        }
+        let name: String = {
+            use weedle::types::{
+                NonAnyType::Identifier, ReturnType, SingleType::NonAny, Type::Single,
+            };
+            match &self.return_type {
+                ReturnType::Type(Single(NonAny(Identifier(id)))) => id.type_.0.to_owned(),
+                _ => bail!("enum interface members must have plain identifiers as names"),
+            }
+        };
+        Ok(Variant {
+            name,
+            documentation: None,
+            fields: self
+                .args
+                .body
+                .list
+                .iter()
+                .map(|arg| arg.convert(ci))
+                .collect::<Result<Vec<_>>>()?,
+        })
+    }
+}
+
+impl APIConverter<Field> for weedle::argument::Argument<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
+        match self {
+            weedle::argument::Argument::Single(t) => t.convert(ci),
+            weedle::argument::Argument::Variadic(_) => bail!("variadic arguments not supported"),
+        }
+    }
+}
+
+impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
+        let type_ = ci.resolve_type_expression(&self.type_)?;
+        if let Type::Object(_) = type_ {
+            bail!("Objects cannot currently be used in enum variant data");
+        }
+        if self.default.is_some() {
+            bail!("enum interface variant fields must not have default values");
+        }
+        if self.attributes.is_some() {
+            bail!("enum interface variant fields must not have attributes");
+        }
+        // TODO: maybe we should use our own `Field` type here with just name and type,
+        // rather than appropriating record::Field..?
+        Ok(Field {
+            name: self.identifier.0.to_string(),
+            documentation: None,
+            type_,
+            default: None,
         })
     }
 }

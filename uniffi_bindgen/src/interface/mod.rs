@@ -795,13 +795,29 @@ impl ComponentInterface {
 
         for (_, record) in self.records.iter_mut() {
             if let Some(doc) = documentation.structures.remove(record.name()) {
+                let mut members = doc.members.clone();
+
                 record.documentation = Some(doc);
+
+                for field in record.fields.iter_mut() {
+                    if let Some(member) = members.remove(field.name()) {
+                        field.documentation = Some(member);
+                    }
+                }
             }
         }
 
         for (_, enum_) in self.enums.iter_mut() {
             if let Some(doc) = documentation.structures.remove(enum_.name()) {
+                let mut members = doc.members.clone();
+
                 enum_.documentation = Some(doc);
+
+                for variant in enum_.variants.iter_mut() {
+                    if let Some(member) = members.remove(variant.name()) {
+                        variant.documentation = Some(member);
+                    }
+                }
             }
         }
 

@@ -89,6 +89,12 @@ impl Record {
         self.documentation.as_ref()
     }
 
+    pub fn has_fields_documentation(&self) -> bool {
+        self.fields
+            .iter()
+            .any(|field| field.documentation.is_some())
+    }
+
     pub fn type_(&self) -> Type {
         // *sigh* at the clone here, the relationship between a ComponentInterface
         // and its contained types could use a bit of a cleanup.
@@ -139,11 +145,41 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
 }
 
 // Represents an individual field on a Record.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Checksum)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Field {
     pub(super) name: String,
+    #[checksum_ignore]
+    pub(super) documentation: Option<String>,
     pub(super) type_: Type,
     pub(super) default: Option<Literal>,
+}
+
+impl PartialEq for Field {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.type_ == other.type_ && self.default == other.default
+    }
+}
+
+impl Eq for Field {}
+
+impl PartialOrd for Field {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match self.name.partial_cmp(&other.name) {
+            Some(core::cmp::Ordering::Equal) => {}
+            ord => return ord,
+        }
+        match self.type_.partial_cmp(&other.type_) {
+            Some(core::cmp::Ordering::Equal) => {}
+            ord => return ord,
+        }
+        self.default.partial_cmp(&other.default)
+    }
+}
+
+impl Ord for Field {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (&self.name, &self.type_, &self.default).cmp(&(&other.name, &other.type_, &other.default))
+    }
 }
 
 impl Field {
@@ -151,6 +187,17 @@ impl Field {
         &self.name
     }
 
+<<<<<<< HEAD
+=======
+    pub fn documentation(&self) -> Option<&String> {
+        self.documentation.as_ref()
+    }
+
+    pub fn type_(&self) -> &Type {
+        &self.type_
+    }
+
+>>>>>>> dd5fb2661 (Implement attaching documentation to struct fields/enum variants.)
     pub fn default_value(&self) -> Option<&Literal> {
         self.default.as_ref()
     }
@@ -160,6 +207,7 @@ impl Field {
     }
 }
 
+<<<<<<< HEAD
 impl AsType for Field {
     fn as_type(&self) -> Type {
         self.type_.clone()
@@ -175,6 +223,32 @@ impl TryFrom<uniffi_meta::FieldMetadata> for Field {
         let default = meta.default;
         Ok(Self {
             name,
+=======
+impl From<uniffi_meta::FieldMetadata> for Field {
+    fn from(meta: uniffi_meta::FieldMetadata) -> Self {
+        Self {
+            name: meta.name,
+            documentation: None,
+            type_: convert_type(&meta.ty),
+            default: None,
+        }
+    }
+}
+
+impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
+        if self.attributes.is_some() {
+            bail!("dictionary member attributes are not supported yet");
+        }
+        let type_ = ci.resolve_type_expression(&self.type_)?;
+        let default = match self.default {
+            None => None,
+            Some(v) => Some(convert_default_value(&v.value, &type_)?),
+        };
+        Ok(Field {
+            name: self.identifier.0.to_string(),
+            documentation: None,
+>>>>>>> dd5fb2661 (Implement attaching documentation to struct fields/enum variants.)
             type_,
             default,
         })
