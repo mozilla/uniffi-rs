@@ -3,6 +3,7 @@
 {% include "EnumDocsTemplate.rb" -%}
 class {{ e.name()|class_name_rb }}
   {% for variant in e.variants() -%}
+  {% include "EnumVariantDocsTemplate.rb" -%}
   {{ variant.name()|enum_name_rb }} = {{ loop.index }}
   {% endfor %}
 end

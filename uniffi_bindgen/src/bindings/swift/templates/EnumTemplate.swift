@@ -4,6 +4,7 @@
 {% let struct = e %}{% include "StructureDocsTemplate.swift" %}
 public enum {{ type_name }} {
     {% for variant in e.variants() %}
+    {% include "EnumVariantDocsTemplate.swift" %}
     case {{ variant.name()|enum_variant_swift }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
     {% endfor %}
 }

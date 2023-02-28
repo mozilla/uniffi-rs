@@ -11,6 +11,7 @@
 {% let struct = e %}{% include "StructureDocsTemplate.kt" %}
 enum class {{ type_name }} {
     {% for variant in e.variants() -%}
+    {% include "EnumVariantDocsTemplate.kt" %}
     {{ variant.name()|enum_variant }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
 }

@@ -10,6 +10,7 @@
 class {{ type_name }}(enum.Enum): {% let struct = e %}{% include "StructureDocsTemplate.py" %}
     {% for variant in e.variants() -%}
     {{ variant.name()|enum_variant_py }} = {{ loop.index }}
+    {% include "EnumVariantDocsTemplate.py" %}
     {% endfor %}
 {% else %}
 

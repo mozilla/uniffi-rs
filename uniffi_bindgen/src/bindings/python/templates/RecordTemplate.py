@@ -1,5 +1,5 @@
 {%- let rec = ci.get_record_definition(name).unwrap() %}
-class {{ type_name }}: {% let struct = rec %}{% include "StructureDocsTemplate.py" %}
+class {{ type_name }}: {% let struct = rec %}{% include "RecordDocsTemplate.py" %}
 
     def __init__(self, {% for field in rec.fields() %}
     {{- field.name()|var_name }}
