@@ -24,7 +24,7 @@
 fn uniffi_note_threadsafe_deprecation_{{ obj.name() }}() {}
 {% endif %}
 
-#[::uniffi::ffi_converter_interface(crate::UniFfiTag)]
+#[::uniffi::ffi_converter_interface(tag = crate::UniFfiTag)]
 struct r#{{ obj.name() }} { }
 
 // All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile

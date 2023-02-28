@@ -1,51 +1,38 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
-    parse::ParseStream, punctuated::Punctuated, AttributeArgs, Data, DataEnum, DeriveInput, Index,
-    Token, Variant,
+    parse::{Parse, ParseStream},
+    punctuated::Punctuated,
+    Data, DataEnum, DeriveInput, Index, Path, Token, Variant,
 };
 use uniffi_meta::{ErrorMetadata, VariantMetadata};
 
 use crate::{
     enum_::{enum_ffi_converter_impl, variant_metadata},
     util::{
-        assert_type_eq, chain, create_metadata_static_var, either_attribute_arg, AttributeSliceExt,
-        FfiConverterTagHandler, UniffiAttribute,
+        assert_type_eq, chain, create_metadata_static_var, either_attribute_arg,
+        parse_comma_separated, tagged_impl_header, AttributeSliceExt, UniffiAttribute,
     },
 };
 
-pub fn expand_error(input: DeriveInput, module_path: Vec<String>) -> TokenStream {
+pub fn expand_error(input: DeriveInput, module_path: Vec<String>) -> syn::Result<TokenStream> {
     let enum_ = match input.data {
         Data::Enum(e) => e,
         _ => {
-            return syn::Error::new(
+            return Err(syn::Error::new(
                 Span::call_site(),
                 "This derive currently only supports enums",
-            )
-            .into_compile_error()
+            ));
         }
     };
 
     let ident = &input.ident;
-    let attr = input.attrs.parse_uniffi_attributes::<ErrorAttr>();
-    let ffi_converter_impl = match &attr {
-        Ok(a) if a.flat.is_some() => flat_error_ffi_converter_impl(
-            ident,
-            &enum_,
-            FfiConverterTagHandler::generic_impl(),
-            a.with_try_read.is_some(),
-        ),
-        _ => enum_ffi_converter_impl(ident, &enum_, FfiConverterTagHandler::generic_impl()),
-    };
+    let attr = input.attrs.parse_uniffi_attributes::<ErrorAttr>()?;
+    let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr);
 
-    let meta_static_var = match &attr {
-        Ok(a) => Some(
-            match error_metadata(ident, &enum_.variants, module_path, a) {
-                Ok(metadata) => create_metadata_static_var(ident, metadata.into()),
-                Err(e) => e.into_compile_error(),
-            },
-        ),
-        _ => None,
+    let meta_static_var = match error_metadata(ident, &enum_.variants, module_path, &attr) {
+        Ok(metadata) => create_metadata_static_var(ident, metadata.into()),
+        Err(e) => e.into_compile_error(),
     };
 
     let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
@@ -63,22 +50,16 @@ pub fn expand_error(input: DeriveInput, module_path: Vec<String>) -> TokenStream
         })
         .map(syn::Error::into_compile_error)
         .collect();
-    let attr_error = attr.err().map(syn::Error::into_compile_error);
 
-    quote! {
+    Ok(quote! {
         #ffi_converter_impl
         #meta_static_var
         #type_assertion
         #variant_errors
-        #attr_error
-    }
+    })
 }
 
-pub fn expand_ffi_converter_error(attrs: AttributeArgs, input: DeriveInput) -> TokenStream {
-    let tag_handler = match FfiConverterTagHandler::try_from(attrs) {
-        Ok(tag_handler) => tag_handler,
-        Err(e) => return e.into_compile_error(),
-    };
+pub(crate) fn expand_ffi_converter_error(attr: ErrorAttr, input: DeriveInput) -> TokenStream {
     let enum_ = match input.data {
         Data::Enum(e) => e,
         _ => {
@@ -86,28 +67,33 @@ pub fn expand_ffi_converter_error(attrs: AttributeArgs, input: DeriveInput) -> T
                 proc_macro2::Span::call_site(),
                 "This attribute must only be used on enums",
             )
-            .into_compile_error()
+            .into_compile_error();
         }
     };
 
-    match input.attrs.parse_uniffi_attributes::<ErrorAttr>() {
-        Ok(a) if a.flat.is_some() => flat_error_ffi_converter_impl(
-            &input.ident,
-            &enum_,
-            tag_handler,
-            a.with_try_read.is_some(),
-        ),
-        _ => enum_ffi_converter_impl(&input.ident, &enum_, tag_handler),
+    error_ffi_converter_impl(&input.ident, &enum_, &attr)
+}
+
+fn error_ffi_converter_impl(ident: &Ident, enum_: &DataEnum, attr: &ErrorAttr) -> TokenStream {
+    if attr.flat.is_some() {
+        flat_error_ffi_converter_impl(
+            ident,
+            enum_,
+            attr.tag.as_ref(),
+            attr.with_try_read.is_some(),
+        )
+    } else {
+        enum_ffi_converter_impl(ident, enum_, attr.tag.as_ref())
     }
 }
 
-pub(crate) fn flat_error_ffi_converter_impl(
+fn flat_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
-    tag_handler: FfiConverterTagHandler,
+    tag: Option<&Path>,
     implement_try_read: bool,
 ) -> TokenStream {
-    let impl_spec = tag_handler.into_impl("FfiConverter", ident);
+    let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
 
     let write_impl = {
         let match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
@@ -195,12 +181,14 @@ fn error_metadata(
 }
 
 mod kw {
+    syn::custom_keyword!(tag);
     syn::custom_keyword!(flat_error);
     syn::custom_keyword!(with_try_read);
 }
 
 #[derive(Default)]
-struct ErrorAttr {
+pub(crate) struct ErrorAttr {
+    tag: Option<Path>,
     flat: Option<kw::flat_error>,
     with_try_read: Option<kw::with_try_read>,
 }
@@ -208,7 +196,14 @@ struct ErrorAttr {
 impl UniffiAttribute for ErrorAttr {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
-        if lookahead.peek(kw::flat_error) {
+        if lookahead.peek(kw::tag) {
+            let _: kw::tag = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            Ok(Self {
+                tag: Some(input.parse()?),
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::flat_error) {
             Ok(Self {
                 flat: input.parse()?,
                 ..Self::default()
@@ -225,8 +220,16 @@ impl UniffiAttribute for ErrorAttr {
 
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
+            tag: either_attribute_arg(self.tag, other.tag)?,
             flat: either_attribute_arg(self.flat, other.flat)?,
             with_try_read: either_attribute_arg(self.with_try_read, other.with_try_read)?,
         })
+    }
+}
+
+// So ErrorAttr can be used with `parse_macro_input!`
+impl Parse for ErrorAttr {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
     }
 }

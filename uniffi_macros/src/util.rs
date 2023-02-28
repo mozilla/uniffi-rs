@@ -4,10 +4,11 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
-use std::convert::TryFrom;
 use syn::{
-    parse::ParseStream, spanned::Spanned, visit_mut::VisitMut, Attribute, AttributeArgs, Item,
-    Meta, NestedMeta, Path, Token, Type,
+    parse::{Parse, ParseStream},
+    spanned::Spanned,
+    visit_mut::VisitMut,
+    Attribute, Item, Path, Token, Type,
 };
 use uniffi_meta::Metadata;
 
@@ -223,64 +224,51 @@ pub fn either_attribute_arg<T: Spanned>(a: Option<T>, b: Option<T>) -> syn::Resu
     }
 }
 
-pub(crate) struct FfiConverterTagHandler {
-    tag: Option<Path>,
-}
-
-impl FfiConverterTagHandler {
-    pub(crate) fn generic_impl() -> Self {
-        Self { tag: None }
-    }
-
-    pub(crate) fn into_impl(self, trait_name: &str, ident: &Ident) -> TokenStream {
-        let trait_name = Ident::new(trait_name, Span::call_site());
-        match self.tag {
-            Some(tag) => quote! { impl ::uniffi::#trait_name<#tag> for #ident },
-            None => quote! { impl<T> ::uniffi::#trait_name<T> for #ident },
-        }
+pub(crate) fn tagged_impl_header(
+    trait_name: &str,
+    ident: &Ident,
+    tag: Option<&Path>,
+) -> TokenStream {
+    let trait_name = Ident::new(trait_name, Span::call_site());
+    match tag {
+        Some(tag) => quote! { impl ::uniffi::#trait_name<#tag> for #ident },
+        None => quote! { impl<T> ::uniffi::#trait_name<T> for #ident },
     }
 }
 
-impl TryFrom<AttributeArgs> for FfiConverterTagHandler {
-    type Error = syn::Error;
+mod kw {
+    syn::custom_keyword!(tag);
+}
 
-    fn try_from(args: AttributeArgs) -> syn::Result<Self> {
-        let mut result = Self { tag: None };
-        for arg in args {
-            match arg {
-                NestedMeta::Meta(meta) => match meta {
-                    Meta::Path(path) => match result.tag {
-                        None => {
-                            result.tag = Some(path);
-                        }
-                        Some(_) => {
-                            return Err(syn::Error::new(
-                                Span::call_site(),
-                                "multiple tags specified",
-                            ));
-                        }
-                    },
-                    Meta::List(_) => {
-                        return Err(syn::Error::new(
-                            Span::call_site(),
-                            "List args not supported",
-                        ));
-                    }
-                    Meta::NameValue(_) => {
-                        return Err(syn::Error::new(
-                            Span::call_site(),
-                            "name/value pairs not supported",
-                        ));
-                    }
-                },
-                NestedMeta::Lit(_) => {
-                    return Err(syn::Error::new(
-                        Span::call_site(),
-                        "Literal args not supported",
-                    ));
-                }
-            }
+#[derive(Default)]
+pub(crate) struct CommonAttr {
+    pub tag: Option<Path>,
+}
+
+impl UniffiAttribute for CommonAttr {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::tag) {
+            let _: kw::tag = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            Ok(Self {
+                tag: Some(input.parse()?),
+            })
+        } else {
+            Err(lookahead.error())
         }
-        Ok(result)
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            tag: either_attribute_arg(self.tag, other.tag)?,
+        })
+    }
+}
+
+// So CommonAttr can be used with `parse_macro_input!`
+impl Parse for CommonAttr {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
     }
 }

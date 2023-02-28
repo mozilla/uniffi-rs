@@ -1,20 +1,23 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{AttributeArgs, DeriveInput};
+use syn::{DeriveInput, Path};
 use uniffi_meta::ObjectMetadata;
 
-use crate::util::{assert_type_eq, create_metadata_static_var, FfiConverterTagHandler};
+use crate::util::{
+    assert_type_eq, create_metadata_static_var, tagged_impl_header, AttributeSliceExt, CommonAttr,
+};
 
-pub fn expand_object(input: DeriveInput, module_path: Vec<String>) -> TokenStream {
+pub fn expand_object(input: DeriveInput, module_path: Vec<String>) -> syn::Result<TokenStream> {
     let ident = &input.ident;
+    let attr = input.attrs.parse_uniffi_attributes::<CommonAttr>()?;
     let name = ident.to_string();
     let metadata = ObjectMetadata { module_path, name };
     let free_fn_ident = Ident::new(&metadata.free_ffi_symbol_name(), Span::call_site());
     let meta_static_var = create_metadata_static_var(ident, metadata.into());
     let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
-    let interface_impl = interface_impl(ident, FfiConverterTagHandler::generic_impl());
+    let interface_impl = interface_impl(ident, attr.tag.as_ref());
 
-    quote! {
+    Ok(quote! {
         #[doc(hidden)]
         #[no_mangle]
         pub extern "C" fn #free_fn_ident(
@@ -33,19 +36,15 @@ pub fn expand_object(input: DeriveInput, module_path: Vec<String>) -> TokenStrea
         #interface_impl
         #meta_static_var
         #type_assertion
-    }
+    })
 }
 
-pub fn expand_ffi_converter_interface(attrs: AttributeArgs, input: DeriveInput) -> TokenStream {
-    let tag_handler = match FfiConverterTagHandler::try_from(attrs) {
-        Ok(tag_handler) => tag_handler,
-        Err(e) => return e.into_compile_error(),
-    };
-    interface_impl(&input.ident, tag_handler)
+pub(crate) fn expand_ffi_converter_interface(attr: CommonAttr, input: DeriveInput) -> TokenStream {
+    interface_impl(&input.ident, attr.tag.as_ref())
 }
 
-pub(crate) fn interface_impl(ident: &Ident, tag_handler: FfiConverterTagHandler) -> TokenStream {
-    let impl_spec = tag_handler.into_impl("Interface", ident);
+pub(crate) fn interface_impl(ident: &Ident, tag: Option<&Path>) -> TokenStream {
+    let impl_spec = tagged_impl_header("Interface", ident, tag);
     quote! {
         #[doc(hidden)]
         #[automatically_derived]

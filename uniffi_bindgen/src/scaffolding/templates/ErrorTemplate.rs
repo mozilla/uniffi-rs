@@ -7,10 +7,15 @@
 // public so other crates can refer to it via an `[External='crate'] typedef`
 #}
 
-#[::uniffi::ffi_converter_error(crate::UniFfiTag)]
-{%- if e.is_flat() %}
-#[uniffi(flat_error{% if ci.should_generate_error_read(e) %},with_try_read{% endif %})]
-{%- endif %}
+#[::uniffi::ffi_converter_error(
+    tag = crate::UniFfiTag,
+    {% if e.is_flat() -%}
+    flat_error,
+    {% if ci.should_generate_error_read(e) -%}
+    with_try_read,
+    {%- endif %}
+    {%- endif %}
+)]
 enum r#{{ e.name() }} {
     {%- for variant in e.variants() %}
     r#{{ variant.name() }} {

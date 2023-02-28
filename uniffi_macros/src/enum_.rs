@@ -1,29 +1,32 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
-    punctuated::Punctuated, AttributeArgs, Data, DataEnum, DeriveInput, Field, Index, Token,
-    Variant,
+    punctuated::Punctuated, Data, DataEnum, DeriveInput, Field, Index, Path, Token, Variant,
 };
 use uniffi_meta::{EnumMetadata, FieldMetadata, VariantMetadata};
 
 use crate::{
     export::metadata::convert::convert_type,
-    util::{assert_type_eq, create_metadata_static_var, try_read_field, FfiConverterTagHandler},
+    util::{
+        assert_type_eq, create_metadata_static_var, tagged_impl_header, try_read_field,
+        AttributeSliceExt, CommonAttr,
+    },
 };
 
-pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream {
+pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> syn::Result<TokenStream> {
     let enum_ = match input.data {
         Data::Enum(e) => e,
         _ => {
-            return syn::Error::new(Span::call_site(), "This derive must only be used on enums")
-                .into_compile_error()
+            return Err(syn::Error::new(
+                Span::call_site(),
+                "This derive must only be used on enums",
+            ));
         }
     };
 
     let ident = &input.ident;
-
-    let ffi_converter_impl =
-        enum_ffi_converter_impl(ident, &enum_, FfiConverterTagHandler::generic_impl());
+    let attr = input.attrs.parse_uniffi_attributes::<CommonAttr>()?;
+    let ffi_converter_impl = enum_ffi_converter_impl(ident, &enum_, attr.tag.as_ref());
 
     let meta_static_var = {
         match enum_metadata(ident, enum_.variants, module_path) {
@@ -34,20 +37,16 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
 
     let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
 
-    quote! {
+    Ok(quote! {
         #ffi_converter_impl
         #meta_static_var
         #type_assertion
-    }
+    })
 }
 
-pub fn expand_enum_ffi_converter(attrs: AttributeArgs, input: DeriveInput) -> TokenStream {
-    let tag_handler = match FfiConverterTagHandler::try_from(attrs) {
-        Ok(tag_handler) => tag_handler,
-        Err(e) => return e.into_compile_error(),
-    };
+pub(crate) fn expand_enum_ffi_converter(attr: CommonAttr, input: DeriveInput) -> TokenStream {
     match input.data {
-        Data::Enum(e) => enum_ffi_converter_impl(&input.ident, &e, tag_handler),
+        Data::Enum(e) => enum_ffi_converter_impl(&input.ident, &e, attr.tag.as_ref()),
         _ => syn::Error::new(
             proc_macro2::Span::call_site(),
             "This attribute must only be used on enums",
@@ -59,9 +58,9 @@ pub fn expand_enum_ffi_converter(attrs: AttributeArgs, input: DeriveInput) -> To
 pub(crate) fn enum_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
-    tag_handler: FfiConverterTagHandler,
+    tag: Option<&Path>,
 ) -> TokenStream {
-    let impl_spec = tag_handler.into_impl("FfiConverter", ident);
+    let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
     let write_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         let v_ident = &v.ident;
         let fields = v.fields.iter().map(|f| &f.ident);
