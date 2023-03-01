@@ -40,7 +40,7 @@ pub use gen_swift::{generate_bindings, Config};
 mod test;
 
 use super::super::interface::ComponentInterface;
-pub use test::run_test;
+pub use test::{run_script, run_test};
 
 /// The Swift bindings generated from a [`ComponentInterface`].
 ///

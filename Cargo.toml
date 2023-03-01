@@ -17,6 +17,7 @@ members = [
   "examples/todolist",
   "examples/custom-types",
 
+  "fixtures/benchmarks",
   "fixtures/coverall",
   "fixtures/callbacks",
 

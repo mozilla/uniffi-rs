@@ -258,7 +258,6 @@ fn get_cargo_build_messages() -> Vec<Message> {
     let mut child = Command::new(env!("CARGO"))
         .arg("build")
         .arg("--message-format=json")
-        .arg("--tests")
         .stdout(Stdio::piped())
         .spawn()
         .expect("Error running cargo build");

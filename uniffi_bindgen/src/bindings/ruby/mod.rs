@@ -11,7 +11,7 @@ use fs_err::File;
 pub mod gen_ruby;
 mod test;
 pub use gen_ruby::{Config, RubyWrapper};
-pub use test::run_test;
+pub use test::{run_test, test_script_command};
 
 use super::super::interface::ComponentInterface;
 
