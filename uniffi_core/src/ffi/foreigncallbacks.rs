@@ -113,7 +113,7 @@
 //! type and then returns to client code.
 //!
 
-use super::RustBuffer;
+use crate::{FfiConverter, RustBuffer};
 use std::fmt;
 use std::os::raw::c_int;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -195,9 +195,144 @@ impl ForeignCallbackInternals {
         };
     }
 
-    pub fn get_callback(&self) -> Option<ForeignCallback> {
+    pub fn call_callback(&self, handle: u64, method: u32, args: RustBuffer, ret_rbuf: &mut RustBuffer) -> c_int {
         let ptr_value = self.callback_ptr.load(Ordering::SeqCst);
-        unsafe { std::mem::transmute::<usize, Option<ForeignCallback>>(ptr_value) }
+        unsafe { 
+            let callback = std::mem::transmute::<usize, Option<ForeignCallback>>(ptr_value)
+                .expect("Callback interface handler not set");
+            callback(handle, method, args, ret_rbuf)
+        }
+    }
+
+    /// Invoke a callback interface method that can't throw on the foreign side and returns
+    /// non-Result value on the Rust side
+    pub fn invoke_callback<R, UniFfiTag>(&self, handle: u64, method: u32, args: RustBuffer) -> R
+        where R: FfiConverter<UniFfiTag>
+    {
+        let mut ret_rbuf = RustBuffer::new();
+        let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);
+        match callback_result {
+            1 => {
+                // 1 indicates success with the return value written to the RustBuffer for
+                //   non-void calls.
+                let vec = ret_rbuf.destroy_into_vec();
+                let mut ret_buf = vec.as_slice();
+                R::try_read(&mut ret_buf).unwrap()
+            }
+            -2 => {
+                panic!("Callback return -2, but no Error was expected")
+            }
+            // 0 is a deprecated method to indicates success for void returns
+            0 => {
+                log::error!("UniFFI: Callback interface returned 0. Please update the bindings code to return 1 for all successful calls");
+                panic!("Callback returned 0 when we were expecting a return value");
+            }
+            // -1 indicates an unexpected error
+            -1 => {
+                let reason = if !ret_rbuf.is_empty() {
+                    match <String as FfiConverter<UniFfiTag>>::try_lift(ret_rbuf) {
+                        Ok(s) => s,
+                        Err(e) => {
+                            log::error!("{{ trait_name }} Error reading ret_buf: {e}");
+                            String::from("[Error reading reason]")
+                        }
+                    }
+                } else {
+                    RustBuffer::destroy(ret_rbuf);
+                    String::from("[Unknown Reason]")
+                };
+                panic!("callback failed. Reason: {reason}");
+            }
+            // Other values should never be returned
+            _ => panic!("Callback failed with unexpected return code"),
+        }
+    }
+
+    /// Invoke a callback interface method that can throw on the foreign side / returnns a Result<>
+    /// on the Rust side
+    pub fn invoke_callback_with_error<R, E, UniFfiTag>(&self, handle: u64, method: u32, args: RustBuffer) -> Result<R, E>
+        where R: FfiConverter<UniFfiTag>,
+              E: FfiConverter<UniFfiTag, FfiType = RustBuffer>,
+              E: From<UnexpectedUniFFICallbackError>
+    {
+        let mut ret_rbuf = RustBuffer::new();
+        let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);
+        match callback_result {
+            1 => {
+                // 1 indicates success with the return value written to the RustBuffer for
+                //   non-void calls.
+                let vec = ret_rbuf.destroy_into_vec();
+                let mut ret_buf = vec.as_slice();
+                Ok(R::try_read(&mut ret_buf).unwrap())
+            }
+            -2 => {
+                // -2 indicates an error written to the RustBuffer
+                let vec = ret_rbuf.destroy_into_vec();
+                let mut ret_buf = vec.as_slice();
+                Err(E::try_read(&mut ret_buf).unwrap())
+            }
+            // 0 is a deprecated method to indicates success for void returns
+            0 => {
+                log::error!("UniFFI: Callback interface returned 0. Please update the bindings code to return 1 for all successful calls");
+                panic!("Callback returned 0 when we were expecting a return value");
+            }
+            // -1 indicates an unexpected error
+            -1 => {
+                let reason = if !ret_rbuf.is_empty() {
+                    match <String as FfiConverter<UniFfiTag>>::try_lift(ret_rbuf) {
+                        Ok(s) => s,
+                        Err(e) => {
+                            log::error!("{{ trait_name }} Error reading ret_buf: {e}");
+                            String::from("[Error reading reason]")
+                        }
+                    }
+                } else {
+                    RustBuffer::destroy(ret_rbuf);
+                    String::from("[Unknown Reason]")
+                };
+                Err(UnexpectedUniFFICallbackError::from_reason(reason).into())
+            }
+            // Other values should never be returned
+            _ => panic!("Callback failed with unexpected return code"),
+        }
+    }
+
+    /// Invoke a callback interface method that returns void and doesn't throw
+    pub fn invoke_callback_void_return(&self, handle: u64, method: u32, args: RustBuffer) {
+        let mut ret_rbuf = RustBuffer::new();
+        let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);
+        match callback_result {
+            1 => {
+                // 1 indicates success
+                ()
+            }
+            -2 => {
+                panic!("Callback return -2, but no Error was expected")
+            }
+            // 0 is a deprecated method to indicates success for void returns
+            0 => {
+                log::error!("UniFFI: Callback interface returned 0. Please update the bindings code to return 1 for all successful calls");
+                ()
+            }
+            // -1 indicates an unexpected error
+            -1 => {
+                let reason = if !ret_rbuf.is_empty() {
+                    match <String as FfiConverter<crate::UniFfiTag>>::try_lift(ret_rbuf) {
+                        Ok(s) => s,
+                        Err(e) => {
+                            log::error!("{{ trait_name }} Error reading ret_buf: {e}");
+                            String::from("[Error reading reason]")
+                        }
+                    }
+                } else {
+                    RustBuffer::destroy(ret_rbuf);
+                    String::from("[Unknown Reason]")
+                };
+                panic!("callback failed. Reason: {reason}");
+            }
+            // Other values should never be returned
+            _ => panic!("Callback failed with unexpected return code"),
+        }
     }
 }
 
