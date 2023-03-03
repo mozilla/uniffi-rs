@@ -9,7 +9,7 @@ use pulldown_cmark::{Event, HeadingLevel::H1, Parser, Tag};
 use syn::Attribute;
 
 /// Function documentation.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Function {
     pub description: String,
     pub arguments_descriptions: HashMap<String, String>,
@@ -102,7 +102,7 @@ enum ParseStage {
 }
 
 /// Record or enum or object documentation.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Structure {
     pub description: String,
 
@@ -114,12 +114,12 @@ pub struct Structure {
 }
 
 /// Impl documentation.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 struct Impl {
     methods: HashMap<String, Function>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Documentation {
     pub functions: HashMap<String, Function>,
     pub structures: HashMap<String, Structure>,

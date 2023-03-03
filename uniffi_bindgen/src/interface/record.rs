@@ -55,7 +55,7 @@ use super::{AsType, Type, TypeIterator};
 /// In the FFI these are represented as a byte buffer, which one side explicitly
 /// serializes the data into and the other serializes it out of. So I guess they're
 /// kind of like "pass by clone" values.
-#[derive(Debug, Clone, Checksum)]
+#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Record {
     pub(super) name: String,
     pub(super) module_path: String,
@@ -63,14 +63,6 @@ pub struct Record {
     pub(super) documentation: Option<uniffi_docs::Structure>,
     pub(super) fields: Vec<Field>,
 }
-
-impl PartialEq for Record {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && self.fields == other.fields
-    }
-}
-
-impl Eq for Record {}
 
 impl Record {
     pub fn name(&self) -> &str {
@@ -145,41 +137,13 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
 }
 
 // Represents an individual field on a Record.
-#[derive(Debug, Clone, Checksum)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Checksum)]
 pub struct Field {
     pub(super) name: String,
     #[checksum_ignore]
     pub(super) documentation: Option<String>,
     pub(super) type_: Type,
     pub(super) default: Option<Literal>,
-}
-
-impl PartialEq for Field {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && self.type_ == other.type_ && self.default == other.default
-    }
-}
-
-impl Eq for Field {}
-
-impl PartialOrd for Field {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        match self.name.partial_cmp(&other.name) {
-            Some(core::cmp::Ordering::Equal) => {}
-            ord => return ord,
-        }
-        match self.type_.partial_cmp(&other.type_) {
-            Some(core::cmp::Ordering::Equal) => {}
-            ord => return ord,
-        }
-        self.default.partial_cmp(&other.default)
-    }
-}
-
-impl Ord for Field {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        (&self.name, &self.type_, &self.default).cmp(&(&other.name, &other.type_, &other.default))
-    }
 }
 
 impl Field {
