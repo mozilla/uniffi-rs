@@ -169,19 +169,18 @@ pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
     for item in file.items.into_iter() {
         match item {
             syn::Item::Enum(item) => {
-                let name = item.ident.to_string();
-                let description = extract_doc_comment(&item.attrs);
+                if let Some(description) = extract_doc_comment(&item.attrs) {
+                    let name = item.ident.to_string();
 
-                let members = item
-                    .variants
-                    .iter()
-                    .filter_map(|variant| {
-                        extract_doc_comment(&variant.attrs)
-                            .map(|doc_comment| (variant.ident.to_string(), doc_comment))
-                    })
-                    .collect();
+                    let members = item
+                        .variants
+                        .iter()
+                        .filter_map(|variant| {
+                            extract_doc_comment(&variant.attrs)
+                                .map(|doc_comment| (variant.ident.to_string(), doc_comment))
+                        })
+                        .collect();
 
-                if let Some(description) = description {
                     structures.insert(
                         name,
                         Structure {
@@ -193,23 +192,22 @@ pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
                 }
             }
             syn::Item::Struct(item) => {
-                let name = item.ident.to_string();
-                let description = extract_doc_comment(&item.attrs);
+                if let Some(description) = extract_doc_comment(&item.attrs) {
+                    let name = item.ident.to_string();
 
-                let members = item
-                    .fields
-                    .iter()
-                    .filter_map(|field| {
-                        if let Some(ident) = &field.ident {
-                            extract_doc_comment(&field.attrs)
-                                .map(|doc_comment| (ident.to_string(), doc_comment))
-                        } else {
-                            None
-                        }
-                    })
-                    .collect();
+                    let members = item
+                        .fields
+                        .iter()
+                        .filter_map(|field| {
+                            if let Some(ident) = &field.ident {
+                                extract_doc_comment(&field.attrs)
+                                    .map(|doc_comment| (ident.to_string(), doc_comment))
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
 
-                if let Some(description) = description {
                     structures.insert(
                         name,
                         Structure {
@@ -246,9 +244,8 @@ pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
                 }
             }
             syn::Item::Fn(item) => {
-                let name = item.sig.ident.to_string();
-                let description = extract_doc_comment(&item.attrs);
-                if let Some(description) = description {
+                if let Some(description) = extract_doc_comment(&item.attrs) {
+                    let name = item.sig.ident.to_string();
                     functions.insert(name, Function::from_str(&description).unwrap());
                 }
             }
