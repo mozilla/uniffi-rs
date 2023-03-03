@@ -16,17 +16,16 @@ public protocol {{ type_name }} : AnyObject {
 
 // The ForeignCallback that is passed to Rust.
 fileprivate let {{ foreign_callback }} : ForeignCallback =
-    { (handle: UniFFICallbackHandle, method: Int32, args: RustBuffer, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
+    { (handle: UniFFICallbackHandle, method: Int32, args: UnsafePointer<RustBuffer>, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
         {% for meth in cbi.methods() -%}
     {%- let method_name = format!("invoke_{}", meth.name())|fn_name -%}
 
-    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: RustBuffer) throws -> RustBuffer {
-        defer { args.deallocate() }
+    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: UnsafePointer<RustBuffer>) throws -> RustBuffer {
         {#- Unpacking args from the RustBuffer #}
             {%- if meth.arguments().len() != 0 -%}
             {#- Calling the concrete callback object #}
 
-            var reader = createReader(data: Data(rustBuffer: args))
+            var reader = createReader(data: Data(rustBuffer: args.pointee))
             {% if meth.return_type().is_some() %}let result = {% endif -%}
             {% if meth.throws() %}try {% endif -%}
             swiftCallbackInterface.{{ meth.name()|fn_name }}(

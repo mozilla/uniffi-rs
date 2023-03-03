@@ -49,10 +49,21 @@ class RustBuffer(ctypes.Structure):
             s = RustBufferStream(self)
             yield s
             if s.remaining() != 0:
-                raise RuntimeError("junk data left in buffer after consuming")
+                raise RuntimeError("junk data left in buffer at end of consumeWithStream")
         finally:
             self.free()
 
+    @contextlib.contextmanager
+    def readWithStream(self):
+        """Context-manager to read a buffer using a RustBufferStream.
+
+        This is like consumeWithStream, but doesn't free the buffer afterwards.
+        It should only be used with borrowed `RustBuffer` data.
+        """
+        s = RustBufferStream(self)
+        yield s
+        if s.remaining() != 0:
+            raise RuntimeError("junk data left in buffer at end of readWithStream")
 
 class ForeignBytes(ctypes.Structure):
     _fields_ = [

@@ -19,7 +19,7 @@ def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
         {#- Unpacking args from the RustBuffer #}
         {%- if meth.arguments().len() != 0 -%}
         {#- Calling the concrete callback object #}
-        with args.consumeWithStream() as buf:
+        with args.contents.readWithStream() as buf:
             rval = python_callback.{{ meth.name()|fn_name }}(
                 {% for arg in meth.arguments() -%}
                 {{ arg|read_fn }}(buf)
@@ -98,7 +98,7 @@ def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
 # that is in freed memory.
 # That would be...uh...bad. Yeah, that's the word. Bad.
 {{ foreign_callback }} = FOREIGN_CALLBACK_T(py_{{ foreign_callback }})
+rust_call(lambda err: _UniFFILib.{{ cbi.ffi_init_callback().name() }}({{ foreign_callback }}, err))
 
 # The FfiConverter which transforms the Callbacks in to Handles to pass to Rust.
-rust_call(lambda err: _UniFFILib.{{ cbi.ffi_init_callback().name() }}({{ foreign_callback }}, err))
 {{ ffi_converter_name }} = FfiConverterCallbackInterface({{ foreign_callback }})

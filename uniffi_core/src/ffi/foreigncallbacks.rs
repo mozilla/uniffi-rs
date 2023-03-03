@@ -142,7 +142,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 pub type ForeignCallback = unsafe extern "C" fn(
     handle: u64,
     method: u32,
-    args: RustBuffer,
+    args: &RustBuffer,
     buf_ptr: *mut RustBuffer,
 ) -> c_int;
 
@@ -195,19 +195,26 @@ impl ForeignCallbackInternals {
         };
     }
 
-    pub fn call_callback(&self, handle: u64, method: u32, args: RustBuffer, ret_rbuf: &mut RustBuffer) -> c_int {
+    fn call_callback(
+        &self,
+        handle: u64,
+        method: u32,
+        args: RustBuffer,
+        ret_rbuf: &mut RustBuffer,
+    ) -> c_int {
         let ptr_value = self.callback_ptr.load(Ordering::SeqCst);
-        unsafe { 
+        unsafe {
             let callback = std::mem::transmute::<usize, Option<ForeignCallback>>(ptr_value)
                 .expect("Callback interface handler not set");
-            callback(handle, method, args, ret_rbuf)
+            callback(handle, method, &args, ret_rbuf)
         }
     }
 
     /// Invoke a callback interface method that can't throw on the foreign side and returns
     /// non-Result value on the Rust side
     pub fn invoke_callback<R, UniFfiTag>(&self, handle: u64, method: u32, args: RustBuffer) -> R
-        where R: FfiConverter<UniFfiTag>
+    where
+        R: FfiConverter<UniFfiTag>,
     {
         let mut ret_rbuf = RustBuffer::new();
         let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);
@@ -250,10 +257,16 @@ impl ForeignCallbackInternals {
 
     /// Invoke a callback interface method that can throw on the foreign side / returnns a Result<>
     /// on the Rust side
-    pub fn invoke_callback_with_error<R, E, UniFfiTag>(&self, handle: u64, method: u32, args: RustBuffer) -> Result<R, E>
-        where R: FfiConverter<UniFfiTag>,
-              E: FfiConverter<UniFfiTag, FfiType = RustBuffer>,
-              E: From<UnexpectedUniFFICallbackError>
+    pub fn invoke_callback_with_error<R, E, UniFfiTag>(
+        &self,
+        handle: u64,
+        method: u32,
+        args: RustBuffer,
+    ) -> Result<R, E>
+    where
+        R: FfiConverter<UniFfiTag>,
+        E: FfiConverter<UniFfiTag, FfiType = RustBuffer>,
+        E: From<UnexpectedUniFFICallbackError>,
     {
         let mut ret_rbuf = RustBuffer::new();
         let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);
