@@ -25,6 +25,13 @@ pub extern "C" fn {{ cbi.ffi_init_callback().name() }}(callback: uniffi::Foreign
     // The call status should be initialized to CALL_SUCCESS, so no need to modify it.
 }
 
+#[doc(hidden)]
+#[no_mangle]
+pub extern "C" fn {{ cbi.ffi_init_callback2().name() }}(callback: uniffi::ForeignCallback2, _: &mut uniffi::RustCallStatus) {
+    {{ foreign_callback_internals }}.set_callback2(callback);
+    // The call status should be initialized to CALL_SUCCESS, so no need to modify it.
+}
+
 // Make an implementation which will shell out to the foreign language.
 #[doc(hidden)]
 #[derive(Debug)]

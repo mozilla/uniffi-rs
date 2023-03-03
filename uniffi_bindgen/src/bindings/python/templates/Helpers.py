@@ -64,4 +64,8 @@ def rust_call_with_error(error_ffi_converter, fn, *args):
 
 # A function pointer for a callback as defined by UniFFI.
 # Rust definition `fn(handle: u64, method: u32, args: RustBuffer, buf_ptr: *mut RustBuffer) -> int`
+{%- if new_callback_interface_abi %}
+FOREIGN_CALLBACK_T = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_ulonglong, ctypes.c_ulong, ctypes.POINTER(RustBuffer), ctypes.POINTER(RustBuffer))
+{%- else %}
 FOREIGN_CALLBACK_T = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_ulonglong, ctypes.c_ulong, RustBuffer, ctypes.POINTER(RustBuffer))
+{%- endif %}

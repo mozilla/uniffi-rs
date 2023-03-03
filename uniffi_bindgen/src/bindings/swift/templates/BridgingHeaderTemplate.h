@@ -28,7 +28,11 @@ typedef struct RustBuffer
     uint8_t *_Nullable data;
 } RustBuffer;
 
+{%- if new_callback_interface_abi %}
+typedef int32_t (*ForeignCallback)(uint64_t, int32_t, const RustBuffer *_Nonnull, RustBuffer *_Nonnull);
+{%- else %}
 typedef int32_t (*ForeignCallback)(uint64_t, int32_t, RustBuffer, RustBuffer *_Nonnull);
+{%- endif %}
 
 typedef struct ForeignBytes
 {

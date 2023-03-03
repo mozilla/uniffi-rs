@@ -34,9 +34,15 @@ internal class ConcurrentHandleMap<T>(
         }
 }
 
+{%- if new_callback_interface_abi %}
+interface ForeignCallback : com.sun.jna.Callback {
+    public fun invoke(handle: Handle, method: Int, args: RustBuffer.ByReference, outBuf: RustBufferByReference): Int
+}
+{%- else %}
 interface ForeignCallback : com.sun.jna.Callback {
     public fun invoke(handle: Handle, method: Int, args: RustBuffer.ByValue, outBuf: RustBufferByReference): Int
 }
+{%- endif %}
 
 // Magic number for the Rust proxy to call using the same mechanism as every other method,
 // to free the callback once it's dropped by Rust.

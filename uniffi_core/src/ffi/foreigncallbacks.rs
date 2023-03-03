@@ -116,7 +116,7 @@
 use crate::{FfiConverter, RustBuffer};
 use std::fmt;
 use std::os::raw::c_int;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 /// ForeignCallback is the Rust representation of a foreign language function.
 /// It is the basis for all callbacks interfaces. It is registered exactly once per callback interface,
@@ -146,6 +146,21 @@ pub type ForeignCallback = unsafe extern "C" fn(
     buf_ptr: *mut RustBuffer,
 ) -> c_int;
 
+// ForeignCallback with the new ABI
+//
+// This is what we will start using in version `0.24.0` and also what users can opt-in to with
+// the `new_callback_interface_abi` feature.
+//
+// The differences are:
+//
+// * `args` is passed by reference
+pub type ForeignCallback2 = unsafe extern "C" fn(
+    handle: u64,
+    method: u32,
+    args: &RustBuffer,
+    buf_ptr: *mut RustBuffer,
+) -> c_int;
+
 /// The method index used by the Drop trait to communicate to the foreign language side that Rust has finished with it,
 /// and it can be deleted from the handle map.
 pub const IDX_CALLBACK_FREE: u32 = 0;
@@ -157,12 +172,13 @@ pub const IDX_CALLBACK_FREE: u32 = 0;
 // Note that these are guaranteed by
 // https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html
 // and thus this is a little paranoid.
-static_assertions::assert_eq_size!(usize, ForeignCallback);
-static_assertions::assert_eq_size!(usize, Option<ForeignCallback>);
+static_assertions::assert_eq_size!(usize, ForeignCallback2);
+static_assertions::assert_eq_size!(usize, Option<ForeignCallback2>);
 
 /// Struct to hold a foreign callback.
 pub struct ForeignCallbackInternals {
     callback_ptr: AtomicUsize,
+    legacy_mode: AtomicBool,
 }
 
 const EMPTY_PTR: usize = 0;
@@ -171,6 +187,7 @@ impl ForeignCallbackInternals {
     pub const fn new() -> Self {
         ForeignCallbackInternals {
             callback_ptr: AtomicUsize::new(EMPTY_PTR),
+            legacy_mode: AtomicBool::new(true),
         }
     }
 
@@ -193,21 +210,59 @@ impl ForeignCallbackInternals {
                 panic!("Bug: call set_callback multiple times. This is likely a uniffi bug")
             }
         };
+        self.legacy_mode.store(true, Ordering::SeqCst);
     }
 
-    pub fn call_callback(&self, handle: u64, method: u32, args: RustBuffer, ret_rbuf: &mut RustBuffer) -> c_int {
+    pub fn set_callback2(&self, callback: ForeignCallback2) {
+        let as_usize = callback as usize;
+        let old_ptr = self.callback_ptr.compare_exchange(
+            EMPTY_PTR,
+            as_usize,
+            Ordering::SeqCst,
+            Ordering::SeqCst,
+        );
+        match old_ptr {
+            // We get the previous value back. If this is anything except EMPTY_PTR,
+            // then this has been set before we get here.
+            Ok(EMPTY_PTR) => (),
+            _ =>
+            // This is an internal bug, the other side of the FFI should ensure
+            // it sets this only once.
+            {
+                panic!("Bug: call set_callback multiple times. This is likely a uniffi bug")
+            }
+        };
+        self.legacy_mode.store(false, Ordering::SeqCst);
+    }
+
+    fn call_callback(
+        &self,
+        handle: u64,
+        method: u32,
+        args: RustBuffer,
+        ret_rbuf: &mut RustBuffer,
+    ) -> c_int {
         let ptr_value = self.callback_ptr.load(Ordering::SeqCst);
-        unsafe { 
-            let callback = std::mem::transmute::<usize, Option<ForeignCallback>>(ptr_value)
-                .expect("Callback interface handler not set");
-            callback(handle, method, args, ret_rbuf)
+        if self.legacy_mode.load(Ordering::SeqCst) {
+            unsafe {
+                let callback = std::mem::transmute::<usize, Option<ForeignCallback>>(ptr_value)
+                    .expect("Callback not set");
+                callback(handle, method, args, ret_rbuf)
+            }
+        } else {
+            unsafe {
+                let callback = std::mem::transmute::<usize, Option<ForeignCallback2>>(ptr_value)
+                    .expect("Callback not set");
+                callback(handle, method, &args, ret_rbuf)
+            }
         }
     }
 
     /// Invoke a callback interface method that can't throw on the foreign side and returns
     /// non-Result value on the Rust side
     pub fn invoke_callback<R, UniFfiTag>(&self, handle: u64, method: u32, args: RustBuffer) -> R
-        where R: FfiConverter<UniFfiTag>
+    where
+        R: FfiConverter<UniFfiTag>,
     {
         let mut ret_rbuf = RustBuffer::new();
         let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);
@@ -250,10 +305,16 @@ impl ForeignCallbackInternals {
 
     /// Invoke a callback interface method that can throw on the foreign side / returnns a Result<>
     /// on the Rust side
-    pub fn invoke_callback_with_error<R, E, UniFfiTag>(&self, handle: u64, method: u32, args: RustBuffer) -> Result<R, E>
-        where R: FfiConverter<UniFfiTag>,
-              E: FfiConverter<UniFfiTag, FfiType = RustBuffer>,
-              E: From<UnexpectedUniFFICallbackError>
+    pub fn invoke_callback_with_error<R, E, UniFfiTag>(
+        &self,
+        handle: u64,
+        method: u32,
+        args: RustBuffer,
+    ) -> Result<R, E>
+    where
+        R: FfiConverter<UniFfiTag>,
+        E: FfiConverter<UniFfiTag, FfiType = RustBuffer>,
+        E: From<UnexpectedUniFFICallbackError>,
     {
         let mut ret_rbuf = RustBuffer::new();
         let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);

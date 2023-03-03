@@ -42,3 +42,5 @@ bindgen-tests = [ "dep:uniffi_bindgen" ]
 # Enable support for Tokio's futures.
 # This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
 tokio = ["uniffi_core/tokio"]
+# Make the generated bindings opt-in to the new callback interface ABI
+new_callback_interface_abi = ["dep:uniffi_bindgen", "uniffi_bindgen?/new_callback_interface_abi" ]

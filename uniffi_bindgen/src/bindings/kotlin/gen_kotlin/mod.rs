@@ -126,6 +126,7 @@ pub struct TypeRenderer<'a> {
     include_once_names: RefCell<HashSet<String>>,
     // Track imports added with the `add_import()` macro
     imports: RefCell<BTreeSet<ImportRequirement>>,
+    new_callback_interface_abi: bool,
 }
 
 impl<'a> TypeRenderer<'a> {
@@ -135,6 +136,7 @@ impl<'a> TypeRenderer<'a> {
             ci,
             include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
+            new_callback_interface_abi: crate::bindings::NEW_CALLBACK_INTERFACE_ABI,
         }
     }
 
@@ -321,7 +323,11 @@ impl CodeOracle for KotlinCodeOracle {
                 None => "RustBuffer.ByValue".to_string(),
             },
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+            // The scaffolding code supports 2 versions of the ForeignCallback function type.
+            // However, the bindings code will use one or the other depending on the
+            // `new_callback_interface_abi` feature.  So map both variants map to the same name.
             FfiType::ForeignCallback => "ForeignCallback".to_string(),
+            FfiType::ForeignCallback2 => "ForeignCallback".to_string(),
         }
     }
 }
@@ -402,7 +408,11 @@ pub mod filters {
                 None => "RustBuffer".into(),
             },
             FfiType::ForeignBytes => "ForeignBytes".into(),
+            // The scaffolding code supports 2 versions of the ForeignCallback function type.
+            // However, the bindings code will use one or the other depending on the
+            // `new_callback_interface_abi` feature.  So map both variants map to the same name.
             FfiType::ForeignCallback => "ForeignCallback".into(),
+            FfiType::ForeignCallback2 => "ForeignCallback".into(),
         })
     }
 

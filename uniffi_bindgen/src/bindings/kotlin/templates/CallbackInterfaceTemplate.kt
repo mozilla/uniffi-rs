@@ -20,9 +20,15 @@ public interface {{ type_name }} {
 }
 
 // The ForeignCallback that is passed to Rust.
+{%- if new_callback_interface_abi %}
+internal class {{ foreign_callback }} : ForeignCallback {
+    @Suppress("TooGenericExceptionCaught")
+    override fun invoke(handle: Handle, method: Int, args: RustBuffer.ByReference, outBuf: RustBufferByReference): Int {
+{%- else %}
 internal class {{ foreign_callback }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
     override fun invoke(handle: Handle, method: Int, args: RustBuffer.ByValue, outBuf: RustBufferByReference): Int {
+{%- endif %}
         val cb = {{ ffi_converter_name }}.lift(handle)
         return when (method) {
             IDX_CALLBACK_FREE -> {
@@ -84,7 +90,11 @@ internal class {{ foreign_callback }} : ForeignCallback {
 
     {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
+    {%- if new_callback_interface_abi %}
+    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, @Suppress("UNUSED_PARAMETER")args: RustBuffer.ByReference): RustBuffer.ByValue =
+    {%- else %}
     private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue): RustBuffer.ByValue =
+    {%- endif %}
         try {
         {#- Unpacking args from the RustBuffer #}
             {%- if meth.arguments().len() != 0 -%}
@@ -112,7 +122,9 @@ internal class {{ foreign_callback }} : ForeignCallback {
                 // TODO catch errors and report them back to Rust.
                 // https://github.com/mozilla/uniffi-rs/issues/351
         } finally {
+            {%- if !new_callback_interface_abi %}
             RustBuffer.free(args)
+            {%- endif %}
         }
 
     {% endfor %}
@@ -124,7 +136,11 @@ public object {{ ffi_converter_name }}: FfiConverterCallbackInterface<{{ type_na
 ) {
     override fun register(lib: _UniFFILib) {
         rustCall() { status ->
+            {%- if new_callback_interface_abi %}
+            lib.{{ cbi.ffi_init_callback2().name() }}(this.foreignCallback, status)
+            {%- else %}
             lib.{{ cbi.ffi_init_callback().name() }}(this.foreignCallback, status)
+            {%- endif %}
         }
     }
 }

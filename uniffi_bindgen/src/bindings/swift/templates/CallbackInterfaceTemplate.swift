@@ -15,18 +15,33 @@ public protocol {{ type_name }} : AnyObject {
 }
 
 // The ForeignCallback that is passed to Rust.
+{%- if new_callback_interface_abi %}
+fileprivate let {{ foreign_callback }} : ForeignCallback =
+    { (handle: UniFFICallbackHandle, method: Int32, args: UnsafePointer<RustBuffer>, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
+{%- else %}
 fileprivate let {{ foreign_callback }} : ForeignCallback =
     { (handle: UniFFICallbackHandle, method: Int32, args: RustBuffer, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
+{%- endif %}
         {% for meth in cbi.methods() -%}
     {%- let method_name = format!("invoke_{}", meth.name())|fn_name -%}
 
+    {%- if new_callback_interface_abi %}
+    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: UnsafePointer<RustBuffer>) throws -> RustBuffer {
+    {%- else %}
     func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: RustBuffer) throws -> RustBuffer {
+    {%- endif %}
+        {%- if !new_callback_interface_abi %}
         defer { args.deallocate() }
+        {%- endif %}
         {#- Unpacking args from the RustBuffer #}
             {%- if meth.arguments().len() != 0 -%}
             {#- Calling the concrete callback object #}
 
+            {%- if new_callback_interface_abi %}
+            var reader = createReader(data: Data(rustBuffer: args.pointee))
+            {%- else %}
             var reader = createReader(data: Data(rustBuffer: args))
+            {%- endif %}
             {% if meth.return_type().is_some() %}let result = {% endif -%}
             {% if meth.throws() %}try {% endif -%}
             swiftCallbackInterface.{{ meth.name()|fn_name }}(
@@ -106,7 +121,11 @@ fileprivate struct {{ ffi_converter_name }} {
     private static var callbackInitialized = false
     private static func initCallback() {
         try! rustCall { (err: UnsafeMutablePointer<RustCallStatus>) in
+                {%- if new_callback_interface_abi %}
+                {{ cbi.ffi_init_callback2().name() }}({{ foreign_callback }}, err)
+                {%- else %}
                 {{ cbi.ffi_init_callback().name() }}({{ foreign_callback }}, err)
+                {%- endif %}
         }
     }
     private static func ensureCallbackinitialized() {

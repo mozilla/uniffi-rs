@@ -15,7 +15,10 @@ uniffi = {path = "../../uniffi"}
 thiserror = "1.0"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", features = ["build"] }
+# Enable the `new_callback_interface_abi` so that we get some test coverage of
+# it.  examples/callbacks doesn't enable this, so we also keep coverage of the
+# older ABI.
+uniffi = {path = "../../uniffi", features = ["build", "new_callback_interface_abi"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }
+uniffi = {path = "../../uniffi", features = ["bindgen-tests", "new_callback_interface_abi"] }

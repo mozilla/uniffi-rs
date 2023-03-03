@@ -53,6 +53,9 @@ pub struct CallbackInterface {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_init_callback: FfiFunction,
+
+    #[checksum_ignore]
+    pub(super) ffi_init_callback2: FfiFunction,
 }
 
 impl CallbackInterface {
@@ -61,6 +64,7 @@ impl CallbackInterface {
             name,
             methods: Default::default(),
             ffi_init_callback: Default::default(),
+            ffi_init_callback2: Default::default(),
         }
     }
 
@@ -80,13 +84,28 @@ impl CallbackInterface {
         &self.ffi_init_callback
     }
 
+    pub fn ffi_init_callback2(&self) -> &FfiFunction {
+        &self.ffi_init_callback2
+    }
+
     pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) {
+        // Default callback registration function
         self.ffi_init_callback.name = format!("ffi_{ci_prefix}_{}_init_callback", self.name);
         self.ffi_init_callback.arguments = vec![FfiArgument {
             name: "callback_stub".to_string(),
             type_: FfiType::ForeignCallback,
         }];
         self.ffi_init_callback.return_type = None;
+
+        // New-style callback registration function, bindings will use this when the
+        // `new_callback_interface_abi` feature is enabled and it will become the default in
+        // version `0.24.0`.
+        self.ffi_init_callback2.name = format!("ffi_{ci_prefix}_{}_init_callback2", self.name);
+        self.ffi_init_callback2.arguments = vec![FfiArgument {
+            name: "callback_stub".to_string(),
+            type_: FfiType::ForeignCallback2,
+        }];
+        self.ffi_init_callback2.return_type = None;
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {

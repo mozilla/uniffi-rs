@@ -27,3 +27,7 @@ toml = "0.5"
 weedle2 = { version = "4.0.0", path = "../weedle2" }
 uniffi_meta = { path = "../uniffi_meta", version = "=0.23.0" }
 uniffi_testing = { path = "../uniffi_testing", version = "=0.23.0" }
+
+[features]
+# Make the generated bindings opt-in to the new callback interface ABI
+new_callback_interface_abi = []

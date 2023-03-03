@@ -170,6 +170,7 @@ pub struct TypeRenderer<'a> {
     include_once_names: RefCell<HashSet<String>>,
     // Track imports added with the `add_import()` macro
     imports: RefCell<BTreeSet<ImportRequirement>>,
+    new_callback_interface_abi: bool,
 }
 
 impl<'a> TypeRenderer<'a> {
@@ -179,6 +180,7 @@ impl<'a> TypeRenderer<'a> {
             ci,
             include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
+            new_callback_interface_abi: crate::bindings::NEW_CALLBACK_INTERFACE_ABI,
         }
     }
 
@@ -236,6 +238,7 @@ pub struct PythonWrapper<'a> {
     config: Config,
     type_helper_code: String,
     type_imports: BTreeSet<ImportRequirement>,
+    new_callback_interface_abi: bool,
 }
 impl<'a> PythonWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
@@ -247,6 +250,7 @@ impl<'a> PythonWrapper<'a> {
             ci,
             type_helper_code,
             type_imports,
+            new_callback_interface_abi: crate::bindings::NEW_CALLBACK_INTERFACE_ABI,
         }
     }
 
@@ -365,7 +369,11 @@ impl CodeOracle for PythonCodeOracle {
                 None => "RustBuffer".to_string(),
             },
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
+            // The scaffolding code supports 2 versions of the ForeignCallback function type.
+            // However, the bindings code will use one or the other depending on the
+            // `new_callback_interface_abi` feature.  So map both variants map to the same name.
             FfiType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
+            FfiType::ForeignCallback2 => "FOREIGN_CALLBACK_T".to_string(),
         }
     }
 }

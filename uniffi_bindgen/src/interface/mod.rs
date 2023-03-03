@@ -452,6 +452,11 @@ impl ComponentInterface {
                     .iter()
                     .map(|cb| cb.ffi_init_callback()),
             )
+            .chain(
+                self.callback_interfaces
+                    .iter()
+                    .map(|cb| cb.ffi_init_callback2()),
+            )
             .chain(self.functions.iter().map(|f| &f.ffi_func))
     }
 

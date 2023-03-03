@@ -174,6 +174,7 @@ pub struct TypeRenderer<'a> {
     include_once_names: RefCell<HashSet<String>>,
     // Track imports added with the `add_import()` macro
     imports: RefCell<BTreeSet<String>>,
+    new_callback_interface_abi: bool,
 }
 
 impl<'a> TypeRenderer<'a> {
@@ -183,6 +184,7 @@ impl<'a> TypeRenderer<'a> {
             ci,
             include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
+            new_callback_interface_abi: crate::bindings::NEW_CALLBACK_INTERFACE_ABI,
         }
     }
 
@@ -220,6 +222,7 @@ impl<'a> TypeRenderer<'a> {
 pub struct BridgingHeader<'config, 'ci> {
     _config: &'config Config,
     ci: &'ci ComponentInterface,
+    new_callback_interface_abi: bool,
 }
 
 impl<'config, 'ci> BridgingHeader<'config, 'ci> {
@@ -227,6 +230,7 @@ impl<'config, 'ci> BridgingHeader<'config, 'ci> {
         Self {
             _config: config,
             ci,
+            new_callback_interface_abi: crate::bindings::NEW_CALLBACK_INTERFACE_ABI,
         }
     }
 }
@@ -378,7 +382,11 @@ impl CodeOracle for SwiftCodeOracle {
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
+            // The scaffolding code supports 2 versions of the ForeignCallback function type.
+            // However, the bindings code will use one or the other depending on the
+            // `new_callback_interface_abi` feature.  So map both variants map to the same name.
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".to_string(),
+            FfiType::ForeignCallback2 => "ForeignCallback _Nonnull".to_string(),
         }
     }
 }
@@ -450,7 +458,11 @@ pub mod filters {
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
+            // The scaffolding code supports 2 versions of the ForeignCallback function type.
+            // However, the bindings code will use one or the other depending on the
+            // `new_callback_interface_abi` feature.  So map both variants map to the same name.
             FfiType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
+            FfiType::ForeignCallback2 => "ForeignCallback  _Nonnull".to_string(),
         })
     }
 

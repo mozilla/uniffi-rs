@@ -76,6 +76,7 @@ mod filters {
             FfiType::RustBuffer(_) => "uniffi::RustBuffer".into(),
             FfiType::ForeignBytes => "uniffi::ForeignBytes".into(),
             FfiType::ForeignCallback => "uniffi::ForeignCallback".into(),
+            FfiType::ForeignCallback2 => "uniffi::ForeignCallback2".into(),
         })
     }
 

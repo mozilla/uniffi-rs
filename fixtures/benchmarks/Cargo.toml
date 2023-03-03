@@ -25,3 +25,6 @@ uniffi_bindgen = {path = "../../uniffi_bindgen"}
 [[bench]]
 name = "benchmarks"
 harness = false
+
+[features]
+new_callback_interface_abi = ["uniffi_bindgen/new_callback_interface_abi", "uniffi/new_callback_interface_abi" ]

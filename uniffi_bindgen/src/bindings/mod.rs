@@ -19,6 +19,13 @@ pub mod python;
 pub mod ruby;
 pub mod swift;
 
+// Express this feature as a static value so that we can use it in the template code
+#[cfg(feature = "new_callback_interface_abi")]
+static NEW_CALLBACK_INTERFACE_ABI: bool = true;
+
+#[cfg(not(feature = "new_callback_interface_abi"))]
+static NEW_CALLBACK_INTERFACE_ABI: bool = false;
+
 /// Enumeration of all foreign language targets currently supported by this crate.
 ///
 /// The functions in this module will delegate to a language-specific backend based
