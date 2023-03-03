@@ -98,7 +98,6 @@ use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err::{self as fs, File};
 use serde::{Deserialize, Serialize};
-use std::fs::read_to_string;
 use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::{collections::HashMap, env, process::Command, str::FromStr};
@@ -305,8 +304,7 @@ pub fn generate_bindings(
     let config = get_config(&component, crate_root, config_file_override)?;
     if config.bindings.doc_comments.unwrap_or_default() {
         let path = udl_file.with_file_name("lib.rs");
-        let source_code = read_to_string(path)?;
-        let documentation = uniffi_docs::extract_documentation(&source_code)?;
+        let documentation = uniffi_docs::extract_documentation_from_path(path)?;
         component.attach_documentation(documentation);
     }
 

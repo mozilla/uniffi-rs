@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, fs::read_to_string, path::Path, str::FromStr};
 
 use anyhow::Result;
 use pulldown_cmark::{Event, HeadingLevel::H1, Parser, Tag};
@@ -158,9 +158,38 @@ fn extract_doc_comment(attrs: &[Attribute]) -> Option<String> {
     }
 }
 
-/// Extract code documentation comments from Rust `lib.rs` file.
+fn traverse_module_tree<P: AsRef<Path>>(path: P) -> Result<String> {
+    let mut source_code_buff = String::new();
+
+    let source_code = read_to_string(path.as_ref())?;
+    let file = syn::parse_file(&source_code)?;
+
+    source_code_buff.push_str(&source_code);
+
+    for item in file.items.into_iter() {
+        match item {
+            syn::Item::Mod(module) => {
+                let name = module.ident.to_string();
+
+                let file_module = path.as_ref().with_file_name(format!("{name}.rs"));
+                let to_traverse_further = if file_module.exists() {
+                    file_module
+                } else {
+                    path.as_ref().with_file_name(format!("{name}/mod.rs"))
+                };
+
+                source_code_buff.push_str(&traverse_module_tree(to_traverse_further)?)
+            }
+            _ => (), // ignore - only care about module declarations
+        }
+    }
+
+    Ok(source_code_buff)
+}
+
+/// Extract code documentation comments from `lib.rs` file contents.
 pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
-    let file = syn::parse_file(source_code)?;
+    let file = syn::parse_file(&source_code)?;
 
     let mut functions = HashMap::new();
     let mut structures = HashMap::new();
@@ -264,6 +293,13 @@ pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
         structures,
     })
 }
+
+/// Extract code documentation comments from Rust `lib.rs` file.
+pub fn extract_documentation_from_path<P: AsRef<Path>>(path: P) -> Result<Documentation> {
+    let source_code = traverse_module_tree(path)?;
+    extract_documentation(&source_code)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
