@@ -88,7 +88,7 @@ use super::{APIConverter, ComponentInterface};
 ///
 /// Enums are passed across the FFI by serializing to a bytebuffer, with a
 /// i32 indicating the variant followed by the serialization of each field.
-#[derive(Debug, Clone, Checksum)]
+#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Enum {
     pub(super) name: String,
     #[checksum_ignore]
@@ -97,14 +97,6 @@ pub struct Enum {
     // "Flat" enums do not have variants with associated data.
     pub(super) flat: bool,
 }
-
-impl PartialEq for Enum {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && self.variants == other.variants && self.flat == other.flat
-    }
-}
-
-impl Eq for Enum {}
 
 impl Enum {
     pub fn name(&self) -> &str {
@@ -203,21 +195,13 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 /// Represents an individual variant in an Enum.
 ///
 /// Each variant has a name and zero or more fields.
-#[derive(Debug, Clone, Default, Checksum)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Checksum)]
 pub struct Variant {
     pub(super) name: String,
     #[checksum_ignore]
     pub(super) documentation: Option<String>,
     pub(super) fields: Vec<Field>,
 }
-
-impl PartialEq for Variant {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && self.fields == other.fields
-    }
-}
-
-impl Eq for Variant {}
 
 impl Variant {
     pub fn name(&self) -> &str {
