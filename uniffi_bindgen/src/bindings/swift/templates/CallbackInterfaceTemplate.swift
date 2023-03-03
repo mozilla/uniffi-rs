@@ -22,98 +22,99 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
 fileprivate let {{ foreign_callback }} : ForeignCallback =
     { (handle: UniFFICallbackHandle, method: Int32, args: RustBuffer, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
 {%- endif %}
-        {% for meth in cbi.methods() -%}
+    {% for meth in cbi.methods() -%}
     {%- let method_name = format!("invoke_{}", meth.name())|fn_name -%}
 
     {%- if new_callback_interface_abi %}
-    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: UnsafePointer<RustBuffer>) throws -> RustBuffer {
+    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: UnsafePointer<RustBuffer>, _ out_buf: UnsafeMutablePointer<RustBuffer>) throws -> Int32 {
     {%- else %}
-    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: RustBuffer) throws -> RustBuffer {
+    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: RustBuffer, _ out_buf: UnsafeMutablePointer<RustBuffer>) throws -> Int32 {
     {%- endif %}
         {%- if !new_callback_interface_abi %}
         defer { args.deallocate() }
         {%- endif %}
-        {#- Unpacking args from the RustBuffer #}
-            {%- if meth.arguments().len() != 0 -%}
-            {#- Calling the concrete callback object #}
 
-            {%- if new_callback_interface_abi %}
-            var reader = createReader(data: Data(rustBuffer: args.pointee))
-            {%- else %}
-            var reader = createReader(data: Data(rustBuffer: args))
-            {%- endif %}
-            {% if meth.return_type().is_some() %}let result = {% endif -%}
-            {% if meth.throws() %}try {% endif -%}
-            swiftCallbackInterface.{{ meth.name()|fn_name }}(
+        {%- if meth.arguments().len() > 0 %}
+        {%- if new_callback_interface_abi %}
+        var reader = createReader(data: Data(rustBuffer: args.pointee))
+        {%- else %}
+        var reader = createReader(data: Data(rustBuffer: args))
+        {%- endif %}
+        {%- endif %}
+
+        {%- match meth.return_type() %}
+        {%- when Some(return_type) %}
+        func makeCall() throws -> Int32 {
+            let result = try swiftCallbackInterface.{{ meth.name()|fn_name }}(
                     {% for arg in meth.arguments() -%}
                     {% if !config.omit_argument_labels() %}{{ arg.name()|var_name }}: {% endif %} try {{ arg|read_fn }}(from: &reader)
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
-            {% else %}
-            {% if meth.return_type().is_some() %}let result = {% endif -%}
-            {% if meth.throws() %}try {% endif -%}
-            swiftCallbackInterface.{{ meth.name()|fn_name }}()
-            {% endif -%}
-
-        {#- Packing up the return value into a RustBuffer #}
-                {%- match meth.return_type() -%}
-                {%- when Some with (return_type) -%}
-                var writer = [UInt8]()
-                {{ return_type|write_fn }}(result, into: &writer)
-                return RustBuffer(bytes: writer)
-                {%- else -%}
-                return RustBuffer()
-                {% endmatch -%}
-                // TODO catch errors and report them back to Rust.
-                // https://github.com/mozilla/uniffi-rs/issues/351
-
+            var writer = [UInt8]()
+            {{ return_type|write_fn }}(result, into: &writer)
+            out_buf.pointee = RustBuffer(bytes: writer)
+            return 1
         }
-        {% endfor %}
+        {%- when None %}
+        func makeCall() throws -> Int32 {
+            try swiftCallbackInterface.{{ meth.name()|fn_name }}(
+                    {% for arg in meth.arguments() -%}
+                    {% if !config.omit_argument_labels() %}{{ arg.name()|var_name }}: {% endif %} try {{ arg|read_fn }}(from: &reader)
+                    {%- if !loop.last %}, {% endif %}
+                    {% endfor -%}
+                )
+            return 1
+        }
+        {%- endmatch %}
 
-        let cb: {{ cbi|type_name }}
+        {%- match meth.throws_type() %}
+        {%- when None %}
+        return try makeCall()
+        {%- when Some(error_type) %}
         do {
-            cb = try {{ ffi_converter_name }}.lift(handle)
-        } catch {
-            out_buf.pointee = {{ Type::String.borrow()|lower_fn }}("{{ cbi.name() }}: Invalid handle")
-            return -1
+            return try makeCall()
+        } catch let error as {{ error_type|type_name }} {
+            out_buf.pointee = {{ error_type|lower_fn }}(error)
+            return -2
         }
-
-        switch method {
-            case IDX_CALLBACK_FREE:
-                {{ ffi_converter_name }}.drop(handle: handle)
-                // No return value.
-                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-                return 0
-            {% for meth in cbi.methods() -%}
-            {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
-            case {{ loop.index }}:
-                do {
-                    out_buf.pointee = try {{ method_name }}(cb, args)
-                    // Value written to out buffer.
-                    // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-                    return 1
-                {%- match meth.throws_type() %}
-                {%- when Some(error_type) %}
-                } catch let error as {{ error_type|type_name }} {
-                    out_buf.pointee = {{ error_type|lower_fn }}(error)
-                    return -2
-                {%- else %}
-                {%- endmatch %}
-                } catch let error {
-                    out_buf.pointee = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
-                    return -1
-                }
-            {% endfor %}
-            // This should never happen, because an out of bounds method index won't
-            // ever be used. Once we can catch errors, we should return an InternalError.
-            // https://github.com/mozilla/uniffi-rs/issues/351
-            default:
-                // An unexpected error happened.
-                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-                return -1
-        }
+        {%- endmatch %}
     }
+    {%- endfor %}
+
+
+    switch method {
+        case IDX_CALLBACK_FREE:
+            {{ ffi_converter_name }}.drop(handle: handle)
+            // No return value.
+            // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+            return 0
+        {% for meth in cbi.methods() -%}
+        {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
+        case {{ loop.index }}:
+            let cb: {{ cbi|type_name }}
+            do {
+                cb = try {{ ffi_converter_name }}.lift(handle)
+            } catch {
+                out_buf.pointee = {{ Type::String.borrow()|lower_fn }}("{{ cbi.name() }}: Invalid handle")
+                return -1
+            }
+            do {
+                return try {{ method_name }}(cb, args, out_buf)
+            } catch let error {
+                out_buf.pointee = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
+                return -1
+            }
+        {% endfor %}
+        // This should never happen, because an out of bounds method index won't
+        // ever be used. Once we can catch errors, we should return an InternalError.
+        // https://github.com/mozilla/uniffi-rs/issues/351
+        default:
+            // An unexpected error happened.
+            // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+            return -1
+    }
+}
 
 // FfiConverter protocol for callback interfaces
 fileprivate struct {{ ffi_converter_name }} {

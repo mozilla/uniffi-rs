@@ -43,25 +43,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
                 // Call the method, write to outBuf and return a status code
                 // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs` for info
                 try {
-                    {%- match meth.throws_type() %}
-                    {%- when Some(error_type) %}
-                    try {
-                        val buffer = this.{{ method_name }}(cb, args)
-                        // Success
-                        outBuf.setValue(buffer)
-                        1
-                    } catch (e: {{ error_type|type_name }}) {
-                        // Expected error
-                        val buffer = {{ error_type|ffi_converter_name }}.lowerIntoRustBuffer(e)
-                        outBuf.setValue(buffer)
-                        -2
-                    }
-                    {%- else %}
-                    val buffer = this.{{ method_name }}(cb, args)
-                    // Success
-                    outBuf.setValue(buffer)
-                    1
-                    {%- endmatch %}
+                    this.{{ method_name }}(cb, args, outBuf)
                 } catch (e: Throwable) {
                     // Unexpected error
                     try {
@@ -91,42 +73,63 @@ internal class {{ foreign_callback }} : ForeignCallback {
     {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
     {%- if new_callback_interface_abi %}
-    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, @Suppress("UNUSED_PARAMETER")args: RustBuffer.ByReference): RustBuffer.ByValue =
+    @Suppress("UNUSED_PARAMETER")
+    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByReference, outBuf: RustBufferByReference): Int {
     {%- else %}
-    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue): RustBuffer.ByValue =
+    @Suppress("UNUSED_PARAMETER")
+    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue, outBuf: RustBufferByReference): Int {
     {%- endif %}
-        try {
-        {#- Unpacking args from the RustBuffer #}
-            {%- if meth.arguments().len() != 0 -%}
-            {#- Calling the concrete callback object #}
-            val buf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
-            kotlinCallbackInterface.{{ meth.name()|fn_name }}(
-                    {% for arg in meth.arguments() -%}
-                    {{ arg|read_fn }}(buf)
-                    {%- if !loop.last %}, {% endif %}
-                    {% endfor -%}
-                )
-            {% else %}
-            kotlinCallbackInterface.{{ meth.name()|fn_name }}()
-            {% endif -%}
+        {%- if meth.arguments().len() > 0 %}
+        val argsBuf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
+        {%- endif %}
 
-        {#- Packing up the return value into a RustBuffer #}
-                {%- match meth.return_type() -%}
-                {%- when Some with (return_type) -%}
-                .let {
-                    {{ return_type|ffi_converter_name }}.lowerIntoRustBuffer(it)
-                }
-                {%- else -%}
-                .let { RustBuffer.ByValue() }
-                {% endmatch -%}
-                // TODO catch errors and report them back to Rust.
-                // https://github.com/mozilla/uniffi-rs/issues/351
-        } finally {
-            {%- if !new_callback_interface_abi %}
-            RustBuffer.free(args)
-            {%- endif %}
+        {%- match meth.return_type() %}
+        {%- when Some with (return_type) %}
+        fun makeCall() : Int {
+            val returnValue = kotlinCallbackInterface.{{ meth.name()|fn_name }}(
+                {%- for arg in meth.arguments() %}
+                {{ arg|read_fn }}(argsBuf)
+                {% if !loop.last %}, {% endif %}
+                {%- endfor %}
+            )
+            outBuf.setValue({{ return_type|ffi_converter_name }}.lowerIntoRustBuffer(returnValue))
+            return 1
         }
+        {%- when None %}
+        fun makeCall() : Int {
+            kotlinCallbackInterface.{{ meth.name()|fn_name }}(
+                {%- for arg in meth.arguments() %}
+                {{ arg|read_fn }}(argsBuf)
+                {%- if !loop.last %}, {% endif %}
+                {%- endfor %}
+            )
+            return 1
+        }
+        {%- endmatch %}
 
+        {%- match meth.throws_type() %}
+        {%- when None %}
+        fun makeCallAndHandleError() : Int = makeCall()
+        {%- when Some(error_type) %}
+        fun makeCallAndHandleError()  : Int = try {
+            makeCall()
+        } catch (e: {{ error_type|type_name }}) {
+            // Expected error, serialize it into outBuf
+            outBuf.setValue({{ error_type|ffi_converter_name }}.lowerIntoRustBuffer(e))
+            -2
+        }
+        {%- endmatch %}
+
+        {%- if new_callback_interface_abi %}
+        return makeCallAndHandleError()
+        {%- else %}
+        try {
+            return makeCallAndHandleError()
+        } finally {
+            RustBuffer.free(args)
+        }
+        {%- endif %}
+    }
     {% endfor %}
 }
 

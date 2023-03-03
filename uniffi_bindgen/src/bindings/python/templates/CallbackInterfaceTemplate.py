@@ -15,34 +15,52 @@ class {{ type_name }}:
 def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
     {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
-    def {{ method_name }}(python_callback, args):
+    def {{ method_name }}(python_callback, args, buf_ptr):
         {#- Unpacking args from the RustBuffer #}
-        {%- if meth.arguments().len() != 0 -%}
-        {#- Calling the concrete callback object #}
-        {%- if new_callback_interface_abi %}
-        with args.contents.readWithStream() as buf:
-        {%- else %}
-        with args.consumeWithStream() as buf:
-        {%- endif %}
-            rval = python_callback.{{ meth.name()|fn_name }}(
-                {% for arg in meth.arguments() -%}
-                {{ arg|read_fn }}(buf)
-                {%- if !loop.last %}, {% endif %}
-                {% endfor -%}
-            )
-        {% else %}
-        rval = python_callback.{{ meth.name()|fn_name }}()
-        {% endif -%}
+        def makeCall():
+            {%- if meth.arguments().len() != 0 -%}
+            {#- Calling the concrete callback object #}
+            {%- if new_callback_interface_abi %}
+            with args.contents.readWithStream() as buf:
+            {%- else %}
+            with args.consumeWithStream() as buf:
+            {%- endif %}
+                return python_callback.{{ meth.name()|fn_name }}(
+                    {% for arg in meth.arguments() -%}
+                    {{ arg|read_fn }}(buf)
+                    {%- if !loop.last %}, {% endif %}
+                    {% endfor -%}
+                )
+            {%- else %}
+            return python_callback.{{ meth.name()|fn_name }}()
+            {%- endif %}
 
-        {#- Packing up the return value into a RustBuffer #}
-        {%- match meth.return_type() -%}
-        {%- when Some with (return_type) -%}
-        with RustBuffer.allocWithBuilder() as builder:
-            {{ return_type|write_fn }}(rval, builder)
-            return builder.finalize()
-        {%- else -%}
-        return RustBuffer.alloc(0)
-        {% endmatch -%}
+        def makeCallAndHandleReturn():
+            {%- match meth.return_type() %}
+            {%- when Some(return_type) %}
+            rval = makeCall()
+            with RustBuffer.allocWithBuilder() as builder:
+                {{ return_type|write_fn }}(rval, builder)
+                buf_ptr[0] = builder.finalize()
+            {%- when None %}
+            makeCall()
+            {%- endmatch %}
+            return 1
+
+        {%- match meth.throws_type() %}
+        {%- when None %}
+        return makeCallAndHandleReturn()
+        {%- when Some(err) %}
+        try:
+            return makeCallAndHandleReturn()
+        except {{ err|type_name }} as e:
+            # Catch errors declared in the UDL file
+            with RustBuffer.allocWithBuilder() as builder:
+                {{ err|write_fn }}(e, builder)
+                buf_ptr[0] = builder.finalize()
+            return -2
+        {%- endmatch %}
+
     {% endfor %}
 
     cb = {{ ffi_converter_name }}.lift(handle)
@@ -61,23 +79,7 @@ def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
         # Call the method and handle any errors
         # See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs` for details
         try:
-            {%- match meth.throws_type() %}
-            {%- when Some(err) %}
-            try:
-                # Successful return
-                buf_ptr[0] = {{ method_name }}(cb, args)
-                return 1
-            except {{ err|type_name }} as e:
-                # Catch errors declared in the UDL file
-                with RustBuffer.allocWithBuilder() as builder:
-                    {{ err|write_fn }}(e, builder)
-                    buf_ptr[0] = builder.finalize()
-                return -2
-            {%- else %}
-            # Successful return
-            buf_ptr[0] = {{ method_name }}(cb, args)
-            return 1
-            {%- endmatch %}
+            return {{ method_name }}(cb, args, buf_ptr)
         except BaseException as e:
             # Catch unexpected errors
             try:
