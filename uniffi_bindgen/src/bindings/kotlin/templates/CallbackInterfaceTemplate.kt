@@ -23,7 +23,7 @@ public interface {{ type_name }} {
 {%- if new_callback_interface_abi %}
 internal class {{ foreign_callback }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
-    override fun invoke(handle: Handle, method: Int, args: RustBuffer.ByReference, outBuf: RustBufferByReference): Int {
+    override fun invoke(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
 {%- else %}
 internal class {{ foreign_callback }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
@@ -43,7 +43,11 @@ internal class {{ foreign_callback }} : ForeignCallback {
                 // Call the method, write to outBuf and return a status code
                 // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs` for info
                 try {
+                    {%- if new_callback_interface_abi %}
+                    this.{{ method_name }}(cb, argsData, argsLen, outBuf)
+                    {%- else %}
                     this.{{ method_name }}(cb, args, outBuf)
+                    {%- endif %}
                 } catch (e: Throwable) {
                     // Unexpected error
                     try {
@@ -74,13 +78,19 @@ internal class {{ foreign_callback }} : ForeignCallback {
     {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
     {%- if new_callback_interface_abi %}
     @Suppress("UNUSED_PARAMETER")
-    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByReference, outBuf: RustBufferByReference): Int {
+    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
     {%- else %}
     @Suppress("UNUSED_PARAMETER")
     private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByValue, outBuf: RustBufferByReference): Int {
     {%- endif %}
         {%- if meth.arguments().len() > 0 %}
+        {%- if new_callback_interface_abi %}
+        val argsBuf = argsData.getByteBuffer(0, argsLen.toLong()).also {
+            it.order(ByteOrder.BIG_ENDIAN)
+        }
+        {%- else %}
         val argsBuf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
+        {%- endif %}
         {%- endif %}
 
         {%- match meth.return_type() %}

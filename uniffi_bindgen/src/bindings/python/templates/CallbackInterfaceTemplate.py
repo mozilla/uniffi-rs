@@ -12,25 +12,24 @@ class {{ type_name }}:
 
     {% endfor %}
 
+{%- if new_callback_interface_abi %}
+def py_{{ foreign_callback }}(handle, method, args_data, args_len, buf_ptr):
+{%- else %}
 def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
+{%- endif %}
     {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
-    def {{ method_name }}(python_callback, args, buf_ptr):
+    def {{ method_name }}(python_callback, args_stream, buf_ptr):
         {#- Unpacking args from the RustBuffer #}
         def makeCall():
-            {%- if meth.arguments().len() != 0 -%}
             {#- Calling the concrete callback object #}
-            {%- if new_callback_interface_abi %}
-            with args.contents.readWithStream() as buf:
-            {%- else %}
-            with args.consumeWithStream() as buf:
-            {%- endif %}
-                return python_callback.{{ meth.name()|fn_name }}(
-                    {% for arg in meth.arguments() -%}
-                    {{ arg|read_fn }}(buf)
-                    {%- if !loop.last %}, {% endif %}
-                    {% endfor -%}
-                )
+            {%- if meth.arguments().len() != 0 -%}
+            return python_callback.{{ meth.name()|fn_name }}(
+                {% for arg in meth.arguments() -%}
+                {{ arg|read_fn }}(args_stream)
+                {%- if !loop.last %}, {% endif %}
+                {% endfor -%}
+            )
             {%- else %}
             return python_callback.{{ meth.name()|fn_name }}()
             {%- endif %}
@@ -79,7 +78,12 @@ def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
         # Call the method and handle any errors
         # See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs` for details
         try:
-            return {{ method_name }}(cb, args, buf_ptr)
+            {%- if new_callback_interface_abi %}
+            return {{ method_name }}(cb, RustBufferStream(args_data, args_len), buf_ptr)
+            {%- else %}
+            with args.consumeWithStream() as args_stream:
+                return {{ method_name }}(cb, args_stream, buf_ptr)
+            {%- endif %}
         except BaseException as e:
             # Catch unexpected errors
             try:

@@ -157,7 +157,8 @@ pub type ForeignCallback = unsafe extern "C" fn(
 pub type ForeignCallback2 = unsafe extern "C" fn(
     handle: u64,
     method: u32,
-    args: &RustBuffer,
+    args_data: *const u8,
+    args_len: i32,
     buf_ptr: *mut RustBuffer,
 ) -> c_int;
 
@@ -253,7 +254,13 @@ impl ForeignCallbackInternals {
             unsafe {
                 let callback = std::mem::transmute::<usize, Option<ForeignCallback2>>(ptr_value)
                     .expect("Callback not set");
-                callback(handle, method, &args, ret_rbuf)
+                callback(
+                    handle,
+                    method,
+                    args.data_pointer(),
+                    args.len() as i32,
+                    ret_rbuf,
+                )
             }
         }
     }

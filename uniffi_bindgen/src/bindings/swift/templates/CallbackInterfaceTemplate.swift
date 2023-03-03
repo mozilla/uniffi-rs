@@ -17,7 +17,7 @@ public protocol {{ type_name }} : AnyObject {
 // The ForeignCallback that is passed to Rust.
 {%- if new_callback_interface_abi %}
 fileprivate let {{ foreign_callback }} : ForeignCallback =
-    { (handle: UniFFICallbackHandle, method: Int32, args: UnsafePointer<RustBuffer>, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
+    { (handle: UniFFICallbackHandle, method: Int32, argsData: UnsafePointer<UInt8>, argsLen: Int32, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
 {%- else %}
 fileprivate let {{ foreign_callback }} : ForeignCallback =
     { (handle: UniFFICallbackHandle, method: Int32, args: RustBuffer, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
@@ -26,7 +26,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
     {%- let method_name = format!("invoke_{}", meth.name())|fn_name -%}
 
     {%- if new_callback_interface_abi %}
-    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: UnsafePointer<RustBuffer>, _ out_buf: UnsafeMutablePointer<RustBuffer>) throws -> Int32 {
+    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ argsData: UnsafePointer<UInt8>, _ argsLen: Int32, _ out_buf: UnsafeMutablePointer<RustBuffer>) throws -> Int32 {
     {%- else %}
     func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: RustBuffer, _ out_buf: UnsafeMutablePointer<RustBuffer>) throws -> Int32 {
     {%- endif %}
@@ -36,7 +36,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
 
         {%- if meth.arguments().len() > 0 %}
         {%- if new_callback_interface_abi %}
-        var reader = createReader(data: Data(rustBuffer: args.pointee))
+        var reader = createReader(data: Data(bytes: argsData, count: Int(argsLen)))
         {%- else %}
         var reader = createReader(data: Data(rustBuffer: args))
         {%- endif %}
@@ -100,7 +100,11 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
                 return -1
             }
             do {
+                {%- if new_callback_interface_abi %}
+                return try {{ method_name }}(cb, argsData, argsLen, out_buf)
+                {%- else %}
                 return try {{ method_name }}(cb, args, out_buf)
+                {%- endif %}
             } catch let error {
                 out_buf.pointee = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
                 return -1

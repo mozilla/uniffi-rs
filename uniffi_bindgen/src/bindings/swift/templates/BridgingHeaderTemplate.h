@@ -29,7 +29,7 @@ typedef struct RustBuffer
 } RustBuffer;
 
 {%- if new_callback_interface_abi %}
-typedef int32_t (*ForeignCallback)(uint64_t, int32_t, const RustBuffer *_Nonnull, RustBuffer *_Nonnull);
+typedef int32_t (*ForeignCallback)(uint64_t, int32_t, const uint8_t *_Nonnull, int32_t, RustBuffer *_Nonnull);
 {%- else %}
 typedef int32_t (*ForeignCallback)(uint64_t, int32_t, RustBuffer, RustBuffer *_Nonnull);
 {%- endif %}

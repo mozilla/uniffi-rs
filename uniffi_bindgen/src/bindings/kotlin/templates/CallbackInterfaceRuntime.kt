@@ -36,7 +36,7 @@ internal class ConcurrentHandleMap<T>(
 
 {%- if new_callback_interface_abi %}
 interface ForeignCallback : com.sun.jna.Callback {
-    public fun invoke(handle: Handle, method: Int, args: RustBuffer.ByReference, outBuf: RustBufferByReference): Int
+    public fun invoke(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int
 }
 {%- else %}
 interface ForeignCallback : com.sun.jna.Callback {
