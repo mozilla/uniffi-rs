@@ -101,6 +101,11 @@ impl RustBuffer {
             .expect("buffer length negative or overflowed")
     }
 
+    /// Get a pointer to the data
+    pub fn data_pointer(&self) -> *const u8 {
+        self.data
+    }
+
     /// Returns true if the length of the buffer is 0.
     pub fn is_empty(&self) -> bool {
         self.len == 0

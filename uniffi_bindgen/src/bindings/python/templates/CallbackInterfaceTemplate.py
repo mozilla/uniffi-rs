@@ -12,21 +12,20 @@ class {{ type_name }}:
 
     {% endfor %}
 
-def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
+def py_{{ foreign_callback }}(handle, method, args_data, args_len, buf_ptr):
     {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
-    def {{ method_name }}(python_callback, args, buf_ptr):
+    def {{ method_name }}(python_callback, args_stream, buf_ptr):
         {#- Unpacking args from the RustBuffer #}
         def makeCall():
-            {%- if meth.arguments().len() != 0 -%}
             {#- Calling the concrete callback object #}
-            with args.contents.readWithStream() as buf:
-                return python_callback.{{ meth.name()|fn_name }}(
-                    {% for arg in meth.arguments() -%}
-                    {{ arg|read_fn }}(buf)
-                    {%- if !loop.last %}, {% endif %}
-                    {% endfor -%}
-                )
+            {%- if meth.arguments().len() != 0 -%}
+            return python_callback.{{ meth.name()|fn_name }}(
+                {% for arg in meth.arguments() -%}
+                {{ arg|read_fn }}(args_stream)
+                {%- if !loop.last %}, {% endif %}
+                {% endfor -%}
+            )
             {%- else %}
             return python_callback.{{ meth.name()|fn_name }}()
             {%- endif %}
@@ -75,7 +74,7 @@ def py_{{ foreign_callback }}(handle, method, args, buf_ptr):
         # Call the method and handle any errors
         # See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs` for details
         try:
-            return {{ method_name }}(cb, args, buf_ptr)
+            return {{ method_name }}(cb, RustBufferStream(args_data, args_len), buf_ptr)
         except BaseException as e:
             # Catch unexpected errors
             try:

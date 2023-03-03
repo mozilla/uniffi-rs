@@ -22,7 +22,7 @@ public interface {{ type_name }} {
 // The ForeignCallback that is passed to Rust.
 internal class {{ foreign_callback }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
-    override fun invoke(handle: Handle, method: Int, args: RustBuffer.ByReference, outBuf: RustBufferByReference): Int {
+    override fun invoke(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
         val cb = {{ ffi_converter_name }}.lift(handle)
         return when (method) {
             IDX_CALLBACK_FREE -> {
@@ -37,7 +37,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
                 // Call the method, write to outBuf and return a status code
                 // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs` for info
                 try {
-                    this.{{ method_name }}(cb, args, outBuf)
+                    this.{{ method_name }}(cb, argsData, argsLen, outBuf)
                 } catch (e: Throwable) {
                     // Unexpected error
                     try {
@@ -67,9 +67,11 @@ internal class {{ foreign_callback }} : ForeignCallback {
     {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
     @Suppress("UNUSED_PARAMETER")
-    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, args: RustBuffer.ByReference, outBuf: RustBufferByReference): Int {
+    private fun {{ method_name }}(kotlinCallbackInterface: {{ type_name }}, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
         {%- if meth.arguments().len() > 0 %}
-        val argsBuf = args.asByteBuffer() ?: throw InternalException("No ByteBuffer in RustBuffer; this is a Uniffi bug")
+        val argsBuf = argsData.getByteBuffer(0, argsLen.toLong()).also {
+            it.order(ByteOrder.BIG_ENDIAN)
+        }
         {%- endif %}
 
         {%- match meth.return_type() %}

@@ -16,13 +16,13 @@ public protocol {{ type_name }} : AnyObject {
 
 // The ForeignCallback that is passed to Rust.
 fileprivate let {{ foreign_callback }} : ForeignCallback =
-    { (handle: UniFFICallbackHandle, method: Int32, args: UnsafePointer<RustBuffer>, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
+    { (handle: UniFFICallbackHandle, method: Int32, argsData: UnsafePointer<UInt8>, argsLen: Int32, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
     {% for meth in cbi.methods() -%}
     {%- let method_name = format!("invoke_{}", meth.name())|fn_name %}
 
-    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ args: UnsafePointer<RustBuffer>, _ out_buf: UnsafeMutablePointer<RustBuffer>) throws -> Int32 {
+    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ argsData: UnsafePointer<UInt8>, _ argsLen: Int32, _ out_buf: UnsafeMutablePointer<RustBuffer>) throws -> Int32 {
         {%- if meth.arguments().len() > 0 %}
-        var reader = createReader(data: Data(rustBuffer: args.pointee))
+        var reader = createReader(data: Data(bytes: argsData, count: Int(argsLen)))
         {%- endif %}
 
         {%- match meth.return_type() %}
@@ -83,7 +83,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
                 return -1
             }
             do {
-                return try {{ method_name }}(cb, args, out_buf)
+                return try {{ method_name }}(cb, argsData, argsLen, out_buf)
             } catch let error {
                 out_buf.pointee = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
                 return -1
