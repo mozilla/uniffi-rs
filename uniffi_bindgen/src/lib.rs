@@ -337,8 +337,7 @@ pub fn generate_bindings(
 
     if config.bindings.doc_comments.unwrap_or_default() {
         let path = udl_file.with_file_name("lib.rs");
-        let source_code = read_to_string(path)?;
-        let documentation = uniffi_docs::extract_documentation(&source_code)?;
+        let documentation = uniffi_docs::extract_documentation_from_path(path)?;
         component.attach_documentation(documentation);
     }
 
