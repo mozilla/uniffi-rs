@@ -14,6 +14,9 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.23.0...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+- Implemented a new callback-interface ABI that signifacantly improves performance on Python and Kotlin.
+
 ### What's changed
 
 - The `include_scaffolding!()` macro must now either be called from your crate root or you must have `use the_mod_that_calls_include_scaffolding::*` in your crate root.  This was always the expectation, but wasn't required before.  This will now start failing with errors that say `crate::UniFfiTag` does not exist.
