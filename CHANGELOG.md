@@ -17,6 +17,7 @@
 ### What's changed
 
 - The `include_scaffolding!()` macro must now either be called from your crate root or you must have `use the_mod_that_calls_include_scaffolding::*` in your crate root.  This was always the expectation, but wasn't required before.  This will now start failing with errors that say `crate::UniFfiTag` does not exist.
+- Implemented a new callback-interface ABI that signifacantly improves performance on Python and Kotlin.  This will be the default in version `0.24.0`, but can be enabled early using the `new_callback_interface_abi` feature.
 
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
 
