@@ -40,7 +40,7 @@ fn main() {
             std::env!("CARGO_TARGET_TMPDIR"),
             "uniffi-fixture-benchmarks",
             "benches/bindings/run_benchmarks.swift",
-            script_args.clone(),
+            script_args,
             RunScriptMode::PerformanceTest,
         )
         .unwrap()
