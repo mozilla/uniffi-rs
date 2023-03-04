@@ -322,17 +322,14 @@ impl ForeignCallbackInternals {
         let mut ret_rbuf = RustBuffer::new();
         let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);
         match callback_result {
-            1 => {
-                // 1 indicates success
-                ()
-            }
+            // 1 indicates success
+            1 => {}
             -2 => {
                 panic!("Callback return -2, but no Error was expected")
             }
             // 0 is a deprecated method to indicates success for void returns
             0 => {
                 log::error!("UniFFI: Callback interface returned 0. Please update the bindings code to return 1 for all successful calls");
-                ()
             }
             // -1 indicates an unexpected error
             -1 => {
