@@ -7,7 +7,7 @@
 // public so other crates can refer to it via an `[External='crate'] typedef`
 #}
 
-#[::uniffi::ffi_converter_enum(crate::UniFfiTag)]
+#[::uniffi::ffi_converter_enum(tag = crate::UniFfiTag)]
 enum r#{{ e.name() }} {
     {%- for variant in e.variants() %}
     r#{{ variant.name() }} {

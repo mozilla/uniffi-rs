@@ -1,8 +1,8 @@
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
   |
-  | #[::uniffi::ffi_converter_interface(crate::UniFfiTag)]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
+  | #[::uniffi::ffi_converter_interface(tag = crate::UniFfiTag)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
   |
   = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
 note: required because it appears within the type `Counter`

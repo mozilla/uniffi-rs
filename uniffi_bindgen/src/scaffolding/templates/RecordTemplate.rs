@@ -8,7 +8,7 @@
 // public so other crates can refer to it via an `[External='crate'] typedef`
 #}
 
-#[::uniffi::ffi_converter_record(crate::UniFfiTag)]
+#[::uniffi::ffi_converter_record(tag = crate::UniFfiTag)]
 struct r#{{ rec.name() }} {
     {%- for field in rec.fields() %}
     r#{{ field.name() }}: {{ field.type_()|type_rs }},

@@ -1,8 +1,8 @@
 error[E0308]: mismatched types
-   --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
-    |
-    |             Ok(ref val) => val,
-    |                            ^^^ types differ in mutability
-    |
-    = note: expected mutable reference `&mut Counter`
-                       found reference `&Arc<Counter>`
+ --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
+  |
+  |             Ok(ref val) => val,
+  |                            ^^^ types differ in mutability
+  |
+  = note: expected mutable reference `&mut Counter`
+                     found reference `&Arc<Counter>`

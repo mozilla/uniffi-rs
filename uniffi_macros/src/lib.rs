@@ -81,7 +81,9 @@ pub fn derive_record(input: TokenStream) -> TokenStream {
     };
     let input = parse_macro_input!(input);
 
-    expand_record(input, mod_path).into()
+    expand_record(input, mod_path)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 #[proc_macro_derive(Enum)]
@@ -92,7 +94,9 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
     };
     let input = parse_macro_input!(input);
 
-    expand_enum(input, mod_path).into()
+    expand_enum(input, mod_path)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 #[proc_macro_derive(Object)]
@@ -103,7 +107,9 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
     };
     let input = parse_macro_input!(input);
 
-    expand_object(input, mod_path).into()
+    expand_object(input, mod_path)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 #[proc_macro_derive(Error, attributes(uniffi))]
@@ -114,7 +120,9 @@ pub fn derive_error(input: TokenStream) -> TokenStream {
     };
     let input = parse_macro_input!(input);
 
-    expand_error(input, mod_path).into()
+    expand_error(input, mod_path)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 /// Generate the FfiConverter implementation for a Record

@@ -1,29 +1,32 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
-    punctuated::Punctuated, AttributeArgs, Data, DataEnum, DeriveInput, Field, Index, Path, Token,
-    Variant,
+    punctuated::Punctuated, Data, DataEnum, DeriveInput, Field, Index, Path, Token, Variant,
 };
 use uniffi_meta::{EnumMetadata, FieldMetadata, VariantMetadata};
 
 use crate::{
     export::metadata::convert::convert_type,
-    util::{assert_type_eq, create_metadata_static_var, try_read_field, FfiConverterTagHandler},
+    util::{
+        assert_type_eq, create_metadata_static_var, tagged_impl_header, try_read_field,
+        AttributeSliceExt, CommonAttr,
+    },
 };
 
-pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream {
+pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> syn::Result<TokenStream> {
     let enum_ = match input.data {
         Data::Enum(e) => e,
         _ => {
-            return syn::Error::new(Span::call_site(), "This derive must only be used on enums")
-                .into_compile_error()
+            return Err(syn::Error::new(
+                Span::call_site(),
+                "This derive must only be used on enums",
+            ));
         }
     };
 
     let ident = &input.ident;
-
-    let ffi_converter_impl =
-        enum_ffi_converter_impl(ident, &enum_, FfiConverterTagHandler::generic_impl());
+    let attr = input.attrs.parse_uniffi_attributes::<CommonAttr>()?;
+    let ffi_converter_impl = enum_ffi_converter_impl(ident, &enum_, attr.tag.as_ref());
 
     let meta_static_var = {
         match enum_metadata(ident, enum_.variants, module_path) {
@@ -34,20 +37,16 @@ pub fn expand_enum(input: DeriveInput, module_path: Vec<String>) -> TokenStream 
 
     let type_assertion = assert_type_eq(ident, quote! { crate::uniffi_types::#ident });
 
-    quote! {
+    Ok(quote! {
         #ffi_converter_impl
         #meta_static_var
         #type_assertion
-    }
+    })
 }
 
-pub fn expand_enum_ffi_converter(attrs: AttributeArgs, input: DeriveInput) -> TokenStream {
-    let tag_handler = match FfiConverterTagHandler::try_from(attrs) {
-        Ok(tag_handler) => tag_handler,
-        Err(e) => return e.into_compile_error(),
-    };
+pub(crate) fn expand_enum_ffi_converter(attr: CommonAttr, input: DeriveInput) -> TokenStream {
     match input.data {
-        Data::Enum(e) => enum_ffi_converter_impl(&input.ident, &e, tag_handler),
+        Data::Enum(e) => enum_ffi_converter_impl(&input.ident, &e, attr.tag.as_ref()),
         _ => syn::Error::new(
             proc_macro2::Span::call_site(),
             "This attribute must only be used on enums",
@@ -59,14 +58,14 @@ pub fn expand_enum_ffi_converter(attrs: AttributeArgs, input: DeriveInput) -> To
 pub(crate) fn enum_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
-    tag_handler: FfiConverterTagHandler,
+    tag: Option<&Path>,
 ) -> TokenStream {
-    let (impl_spec, tag) = tag_handler.into_impl_and_tag_path("FfiConverter", ident);
+    let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
     let write_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         let v_ident = &v.ident;
         let fields = v.fields.iter().map(|f| &f.ident);
         let idx = Index::from(i + 1);
-        let write_fields = v.fields.iter().map(|f| write_field(f, &tag));
+        let write_fields = v.fields.iter().map(write_field);
 
         quote! {
             Self::#v_ident { #(#fields),* } => {
@@ -82,7 +81,7 @@ pub(crate) fn enum_ffi_converter_impl(
     let try_read_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         let idx = Index::from(i + 1);
         let v_ident = &v.ident;
-        let try_read_fields = v.fields.iter().map(|f| try_read_field(f, &tag));
+        let try_read_fields = v.fields.iter().map(try_read_field);
 
         quote! {
             #idx => Self::#v_ident { #(#try_read_fields)* },
@@ -101,7 +100,7 @@ pub(crate) fn enum_ffi_converter_impl(
     quote! {
         #[automatically_derived]
         unsafe #impl_spec {
-            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(#tag);
+            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl
@@ -161,11 +160,11 @@ fn field_metadata(f: &Field, v: &Variant) -> syn::Result<FieldMetadata> {
     })
 }
 
-fn write_field(f: &Field, uniffi_tag: &Path) -> TokenStream {
+fn write_field(f: &Field) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 
     quote! {
-        <#ty as ::uniffi::FfiConverter<#uniffi_tag>>::write(#ident, buf);
+        <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(#ident, buf);
     }
 }
