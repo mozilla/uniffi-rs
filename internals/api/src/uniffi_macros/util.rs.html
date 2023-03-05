@@ -272,35 +272,17 @@
 <span id="272">272</span>
 <span id="273">273</span>
 <span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{format_ident, quote, quote_spanned, ToTokens};
-<span class="kw">use </span>std::convert::TryFrom;
 <span class="kw">use </span>syn::{
-    parse::ParseStream, spanned::Spanned, visit_mut::VisitMut, Attribute, AttributeArgs, Item,
-    Meta, NestedMeta, Path, Token, Type,
+    parse::{Parse, ParseStream},
+    spanned::Spanned,
+    visit_mut::VisitMut,
+    Attribute, Item, Path, Token, Type,
 };
 <span class="kw">use </span>uniffi_meta::Metadata;
 
@@ -420,12 +402,12 @@
     }
 }
 
-<span class="kw">pub fn </span>try_read_field(f: <span class="kw-2">&amp;</span>syn::Field, tag: <span class="kw-2">&amp;</span>Path) -&gt; TokenStream {
+<span class="kw">pub fn </span>try_read_field(f: <span class="kw-2">&amp;</span>syn::Field) -&gt; TokenStream {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>f.ident;
     <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
 
     <span class="macro">quote! </span>{
-        #ident: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;#tag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
+        #ident: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
     }
 }
 
@@ -516,72 +498,52 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>FfiConverterTagHandler {
-    tag: <span class="prelude-ty">Option</span>&lt;Path&gt;,
-}
-
-<span class="kw">impl </span>FfiConverterTagHandler {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>generic_impl() -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{ tag: <span class="prelude-val">None </span>}
-    }
-
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>into_impl_and_tag_path(
-        <span class="self">self</span>,
-        trait_name: <span class="kw-2">&amp;</span>str,
-        ident: <span class="kw-2">&amp;</span>Ident,
-    ) -&gt; (TokenStream, Path) {
-        <span class="kw">let </span>trait_name = Ident::new(trait_name, Span::call_site());
-        <span class="kw">match </span><span class="self">self</span>.tag {
-            <span class="prelude-val">Some</span>(tag) =&gt; (<span class="macro">quote! </span>{ <span class="kw">impl </span>::uniffi::#trait_name&lt;#tag&gt; <span class="kw">for </span>#ident }, tag),
-            <span class="prelude-val">None </span>=&gt; (
-                <span class="macro">quote! </span>{ <span class="kw">impl</span>&lt;T&gt; ::uniffi::#trait_name&lt;T&gt; <span class="kw">for </span>#ident },
-                Ident::new(<span class="string">&quot;T&quot;</span>, Span::call_site()).into(),
-            ),
-        }
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>tagged_impl_header(
+    trait_name: <span class="kw-2">&amp;</span>str,
+    ident: <span class="kw-2">&amp;</span>Ident,
+    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+) -&gt; TokenStream {
+    <span class="kw">let </span>trait_name = Ident::new(trait_name, Span::call_site());
+    <span class="kw">match </span>tag {
+        <span class="prelude-val">Some</span>(tag) =&gt; <span class="macro">quote! </span>{ <span class="kw">impl </span>::uniffi::#trait_name&lt;#tag&gt; <span class="kw">for </span>#ident },
+        <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ <span class="kw">impl</span>&lt;T&gt; ::uniffi::#trait_name&lt;T&gt; <span class="kw">for </span>#ident },
     }
 }
 
-<span class="kw">impl </span>TryFrom&lt;AttributeArgs&gt; <span class="kw">for </span>FfiConverterTagHandler {
-    <span class="kw">type </span>Error = syn::Error;
+<span class="kw">mod </span>kw {
+    <span class="macro">syn::custom_keyword!</span>(tag);
+}
 
-    <span class="kw">fn </span>try_from(args: AttributeArgs) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>result = <span class="self">Self </span>{ tag: <span class="prelude-val">None </span>};
-        <span class="kw">for </span>arg <span class="kw">in </span>args {
-            <span class="kw">match </span>arg {
-                NestedMeta::Meta(meta) =&gt; <span class="kw">match </span>meta {
-                    Meta::Path(path) =&gt; <span class="kw">match </span>result.tag {
-                        <span class="prelude-val">None </span>=&gt; {
-                            result.tag = <span class="prelude-val">Some</span>(path);
-                        }
-                        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; {
-                            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                                Span::call_site(),
-                                <span class="string">&quot;multiple tags specified&quot;</span>,
-                            ));
-                        }
-                    },
-                    Meta::List(<span class="kw">_</span>) =&gt; {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                            Span::call_site(),
-                            <span class="string">&quot;List args not supported&quot;</span>,
-                        ));
-                    }
-                    Meta::NameValue(<span class="kw">_</span>) =&gt; {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                            Span::call_site(),
-                            <span class="string">&quot;name/value pairs not supported&quot;</span>,
-                        ));
-                    }
-                },
-                NestedMeta::Lit(<span class="kw">_</span>) =&gt; {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                        Span::call_site(),
-                        <span class="string">&quot;Literal args not supported&quot;</span>,
-                    ));
-                }
-            }
+<span class="attribute">#[derive(Default)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>CommonAttr {
+    <span class="kw">pub </span>tag: <span class="prelude-ty">Option</span>&lt;Path&gt;,
+}
+
+<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>CommonAttr {
+    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>lookahead = input.lookahead1();
+        <span class="kw">if </span>lookahead.peek(kw::tag) {
+            <span class="kw">let _</span>: kw::tag = input.parse()<span class="question-mark">?</span>;
+            <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                tag: <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>),
+            })
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(lookahead.error())
         }
-        <span class="prelude-val">Ok</span>(result)
+    }
+
+    <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            tag: either_attribute_arg(<span class="self">self</span>.tag, other.tag)<span class="question-mark">?</span>,
+        })
+    }
+}
+
+<span class="comment">// So CommonAttr can be used with `parse_macro_input!`
+</span><span class="kw">impl </span>Parse <span class="kw">for </span>CommonAttr {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        parse_comma_separated(input)
     }
 }
 </code></pre></div>

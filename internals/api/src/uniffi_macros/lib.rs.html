@@ -234,6 +234,14 @@
 <span id="234">234</span>
 <span id="235">235</span>
 <span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -317,7 +325,9 @@
     };
     <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
-    expand_record(input, mod_path).into()
+    expand_record(input, mod_path)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 <span class="attribute">#[proc_macro_derive(Enum)]
@@ -328,7 +338,9 @@
     };
     <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
-    expand_enum(input, mod_path).into()
+    expand_enum(input, mod_path)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 <span class="attribute">#[proc_macro_derive(Object)]
@@ -339,7 +351,9 @@
     };
     <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
-    expand_object(input, mod_path).into()
+    expand_object(input, mod_path)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 <span class="attribute">#[proc_macro_derive(Error, attributes(uniffi))]
@@ -350,7 +364,9 @@
     };
     <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
-    expand_error(input, mod_path).into()
+    expand_error(input, mod_path)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 <span class="doccomment">/// Generate the FfiConverter implementation for a Record

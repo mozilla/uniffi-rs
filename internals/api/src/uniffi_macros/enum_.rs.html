@@ -168,33 +168,35 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
-<span id="171">171</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
-    punctuated::Punctuated, AttributeArgs, Data, DataEnum, DeriveInput, Field, Index, Path, Token,
-    Variant,
+    punctuated::Punctuated, Data, DataEnum, DeriveInput, Field, Index, Path, Token, Variant,
 };
 <span class="kw">use </span>uniffi_meta::{EnumMetadata, FieldMetadata, VariantMetadata};
 
 <span class="kw">use crate</span>::{
     export::metadata::convert::convert_type,
-    util::{assert_type_eq, create_metadata_static_var, try_read_field, FfiConverterTagHandler},
+    util::{
+        assert_type_eq, create_metadata_static_var, tagged_impl_header, try_read_field,
+        AttributeSliceExt, CommonAttr,
+    },
 };
 
-<span class="kw">pub fn </span>expand_enum(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; TokenStream {
+<span class="kw">pub fn </span>expand_enum(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
         Data::Enum(e) =&gt; e,
         <span class="kw">_ </span>=&gt; {
-            <span class="kw">return </span>syn::Error::new(Span::call_site(), <span class="string">&quot;This derive must only be used on enums&quot;</span>)
-                .into_compile_error()
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
+                Span::call_site(),
+                <span class="string">&quot;This derive must only be used on enums&quot;</span>,
+            ));
         }
     };
 
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-
-    <span class="kw">let </span>ffi_converter_impl =
-        enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, FfiConverterTagHandler::generic_impl());
+    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
+    <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, attr.tag.as_ref());
 
     <span class="kw">let </span>meta_static_var = {
         <span class="kw">match </span>enum_metadata(ident, enum_.variants, module_path) {
@@ -205,20 +207,16 @@
 
     <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
 
-    <span class="macro">quote! </span>{
+    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter_impl
         #meta_static_var
         #type_assertion
-    }
+    })
 }
 
-<span class="kw">pub fn </span>expand_enum_ffi_converter(attrs: AttributeArgs, input: DeriveInput) -&gt; TokenStream {
-    <span class="kw">let </span>tag_handler = <span class="kw">match </span>FfiConverterTagHandler::try_from(attrs) {
-        <span class="prelude-val">Ok</span>(tag_handler) =&gt; tag_handler,
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
-    };
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_enum_ffi_converter(attr: CommonAttr, input: DeriveInput) -&gt; TokenStream {
     <span class="kw">match </span>input.data {
-        Data::Enum(e) =&gt; enum_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>e, tag_handler),
+        Data::Enum(e) =&gt; enum_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>e, attr.tag.as_ref()),
         <span class="kw">_ </span>=&gt; syn::Error::new(
             proc_macro2::Span::call_site(),
             <span class="string">&quot;This attribute must only be used on enums&quot;</span>,
@@ -230,14 +228,14 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_ffi_converter_impl(
     ident: <span class="kw-2">&amp;</span>Ident,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
-    tag_handler: FfiConverterTagHandler,
+    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
 ) -&gt; TokenStream {
-    <span class="kw">let </span>(impl_spec, tag) = tag_handler.into_impl_and_tag_path(<span class="string">&quot;FfiConverter&quot;</span>, ident);
+    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
     <span class="kw">let </span>write_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
         <span class="kw">let </span>fields = v.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ident);
         <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
-        <span class="kw">let </span>write_fields = v.fields.iter().map(|f| write_field(f, <span class="kw-2">&amp;</span>tag));
+        <span class="kw">let </span>write_fields = v.fields.iter().map(write_field);
 
         <span class="macro">quote! </span>{
             <span class="self">Self</span>::#v_ident { #(#fields),* } =&gt; {
@@ -253,7 +251,7 @@
     <span class="kw">let </span>try_read_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
         <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
-        <span class="kw">let </span>try_read_fields = v.fields.iter().map(|f| try_read_field(f, <span class="kw-2">&amp;</span>tag));
+        <span class="kw">let </span>try_read_fields = v.fields.iter().map(try_read_field);
 
         <span class="macro">quote! </span>{
             #idx =&gt; <span class="self">Self</span>::#v_ident { #(#try_read_fields)* },
@@ -272,7 +270,7 @@
     <span class="macro">quote! </span>{
         <span class="attribute">#[automatically_derived]
         </span><span class="kw">unsafe </span>#impl_spec {
-            <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(#tag);
+            <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(<span class="kw">crate</span>::UniFfiTag);
 
             <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
                 #write_impl
@@ -332,12 +330,12 @@
     })
 }
 
-<span class="kw">fn </span>write_field(f: <span class="kw-2">&amp;</span>Field, uniffi_tag: <span class="kw-2">&amp;</span>Path) -&gt; TokenStream {
+<span class="kw">fn </span>write_field(f: <span class="kw-2">&amp;</span>Field) -&gt; TokenStream {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>f.ident;
     <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
 
     <span class="macro">quote! </span>{
-        &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;#uniffi_tag&gt;&gt;::write(#ident, buf);
+        &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(#ident, buf);
     }
 }
 </code></pre></div>

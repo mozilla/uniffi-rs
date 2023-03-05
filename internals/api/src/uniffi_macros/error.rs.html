@@ -230,54 +230,44 @@
 <span id="230">230</span>
 <span id="231">231</span>
 <span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
-    parse::ParseStream, punctuated::Punctuated, AttributeArgs, Data, DataEnum, DeriveInput, Index,
-    Token, Variant,
+    parse::{Parse, ParseStream},
+    punctuated::Punctuated,
+    Data, DataEnum, DeriveInput, Index, Path, Token, Variant,
 };
 <span class="kw">use </span>uniffi_meta::{ErrorMetadata, VariantMetadata};
 
 <span class="kw">use crate</span>::{
     enum_::{enum_ffi_converter_impl, variant_metadata},
     util::{
-        assert_type_eq, chain, create_metadata_static_var, either_attribute_arg, AttributeSliceExt,
-        FfiConverterTagHandler, UniffiAttribute,
+        assert_type_eq, chain, create_metadata_static_var, either_attribute_arg,
+        parse_comma_separated, tagged_impl_header, AttributeSliceExt, UniffiAttribute,
     },
 };
 
-<span class="kw">pub fn </span>expand_error(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; TokenStream {
+<span class="kw">pub fn </span>expand_error(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
         Data::Enum(e) =&gt; e,
         <span class="kw">_ </span>=&gt; {
-            <span class="kw">return </span>syn::Error::new(
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
                 Span::call_site(),
                 <span class="string">&quot;This derive currently only supports enums&quot;</span>,
-            )
-            .into_compile_error()
+            ));
         }
     };
 
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;ErrorAttr&gt;();
-    <span class="kw">let </span>ffi_converter_impl = <span class="kw">match </span><span class="kw-2">&amp;</span>attr {
-        <span class="prelude-val">Ok</span>(a) <span class="kw">if </span>a.flat.is_some() =&gt; flat_error_ffi_converter_impl(
-            ident,
-            <span class="kw-2">&amp;</span>enum_,
-            FfiConverterTagHandler::generic_impl(),
-            a.with_try_read.is_some(),
-        ),
-        <span class="kw">_ </span>=&gt; enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, FfiConverterTagHandler::generic_impl()),
-    };
+    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;ErrorAttr&gt;()<span class="question-mark">?</span>;
+    <span class="kw">let </span>ffi_converter_impl = error_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr);
 
-    <span class="kw">let </span>meta_static_var = <span class="kw">match </span><span class="kw-2">&amp;</span>attr {
-        <span class="prelude-val">Ok</span>(a) =&gt; <span class="prelude-val">Some</span>(
-            <span class="kw">match </span>error_metadata(ident, <span class="kw-2">&amp;</span>enum_.variants, module_path, a) {
-                <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
-                <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
-            },
-        ),
-        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+    <span class="kw">let </span>meta_static_var = <span class="kw">match </span>error_metadata(ident, <span class="kw-2">&amp;</span>enum_.variants, module_path, <span class="kw-2">&amp;</span>attr) {
+        <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
+        <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
     };
 
     <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
@@ -295,22 +285,16 @@
         })
         .map(syn::Error::into_compile_error)
         .collect();
-    <span class="kw">let </span>attr_error = attr.err().map(syn::Error::into_compile_error);
 
-    <span class="macro">quote! </span>{
+    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter_impl
         #meta_static_var
         #type_assertion
         #variant_errors
-        #attr_error
-    }
+    })
 }
 
-<span class="kw">pub fn </span>expand_ffi_converter_error(attrs: AttributeArgs, input: DeriveInput) -&gt; TokenStream {
-    <span class="kw">let </span>tag_handler = <span class="kw">match </span>FfiConverterTagHandler::try_from(attrs) {
-        <span class="prelude-val">Ok</span>(tag_handler) =&gt; tag_handler,
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
-    };
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_ffi_converter_error(attr: ErrorAttr, input: DeriveInput) -&gt; TokenStream {
     <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
         Data::Enum(e) =&gt; e,
         <span class="kw">_ </span>=&gt; {
@@ -318,28 +302,33 @@
                 proc_macro2::Span::call_site(),
                 <span class="string">&quot;This attribute must only be used on enums&quot;</span>,
             )
-            .into_compile_error()
+            .into_compile_error();
         }
     };
 
-    <span class="kw">match </span>input.attrs.parse_uniffi_attributes::&lt;ErrorAttr&gt;() {
-        <span class="prelude-val">Ok</span>(a) <span class="kw">if </span>a.flat.is_some() =&gt; flat_error_ffi_converter_impl(
-            <span class="kw-2">&amp;</span>input.ident,
-            <span class="kw-2">&amp;</span>enum_,
-            tag_handler,
-            a.with_try_read.is_some(),
-        ),
-        <span class="kw">_ </span>=&gt; enum_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>enum_, tag_handler),
+    error_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr)
+}
+
+<span class="kw">fn </span>error_ffi_converter_impl(ident: <span class="kw-2">&amp;</span>Ident, enum_: <span class="kw-2">&amp;</span>DataEnum, attr: <span class="kw-2">&amp;</span>ErrorAttr) -&gt; TokenStream {
+    <span class="kw">if </span>attr.flat.is_some() {
+        flat_error_ffi_converter_impl(
+            ident,
+            enum_,
+            attr.tag.as_ref(),
+            attr.with_try_read.is_some(),
+        )
+    } <span class="kw">else </span>{
+        enum_ffi_converter_impl(ident, enum_, attr.tag.as_ref())
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>flat_error_ffi_converter_impl(
+<span class="kw">fn </span>flat_error_ffi_converter_impl(
     ident: <span class="kw-2">&amp;</span>Ident,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
-    tag_handler: FfiConverterTagHandler,
+    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
     implement_try_read: bool,
 ) -&gt; TokenStream {
-    <span class="kw">let </span>(impl_spec, tag) = tag_handler.into_impl_and_tag_path(<span class="string">&quot;FfiConverter&quot;</span>, ident);
+    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
 
     <span class="kw">let </span>write_impl = {
         <span class="kw">let </span>match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
@@ -349,7 +338,7 @@
             <span class="macro">quote! </span>{
                 <span class="self">Self</span>::#v_ident { .. } =&gt; {
                     ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                    &lt;::std::string::String <span class="kw">as </span>::uniffi::FfiConverter&lt;#tag&gt;&gt;::write(error_msg, buf);
+                    &lt;::std::string::String <span class="kw">as </span>::uniffi::FfiConverter&lt;()&gt;&gt;::write(error_msg, buf);
                 }
             }
         });
@@ -382,7 +371,7 @@
     <span class="macro">quote! </span>{
         <span class="attribute">#[automatically_derived]
         </span><span class="kw">unsafe </span>#impl_spec {
-            <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(#tag);
+            <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(<span class="kw">crate</span>::UniFfiTag);
 
             <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
                 #write_impl
@@ -427,12 +416,14 @@
 }
 
 <span class="kw">mod </span>kw {
+    <span class="macro">syn::custom_keyword!</span>(tag);
     <span class="macro">syn::custom_keyword!</span>(flat_error);
     <span class="macro">syn::custom_keyword!</span>(with_try_read);
 }
 
 <span class="attribute">#[derive(Default)]
-</span><span class="kw">struct </span>ErrorAttr {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ErrorAttr {
+    tag: <span class="prelude-ty">Option</span>&lt;Path&gt;,
     flat: <span class="prelude-ty">Option</span>&lt;kw::flat_error&gt;,
     with_try_read: <span class="prelude-ty">Option</span>&lt;kw::with_try_read&gt;,
 }
@@ -440,7 +431,14 @@
 <span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>ErrorAttr {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>lookahead = input.lookahead1();
-        <span class="kw">if </span>lookahead.peek(kw::flat_error) {
+        <span class="kw">if </span>lookahead.peek(kw::tag) {
+            <span class="kw">let _</span>: kw::tag = input.parse()<span class="question-mark">?</span>;
+            <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                tag: <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>),
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else if </span>lookahead.peek(kw::flat_error) {
             <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
                 flat: input.parse()<span class="question-mark">?</span>,
                 ..<span class="self">Self</span>::default()
@@ -457,9 +455,17 @@
 
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            tag: either_attribute_arg(<span class="self">self</span>.tag, other.tag)<span class="question-mark">?</span>,
             flat: either_attribute_arg(<span class="self">self</span>.flat, other.flat)<span class="question-mark">?</span>,
             with_try_read: either_attribute_arg(<span class="self">self</span>.with_try_read, other.with_try_read)<span class="question-mark">?</span>,
         })
+    }
+}
+
+<span class="comment">// So ErrorAttr can be used with `parse_macro_input!`
+</span><span class="kw">impl </span>Parse <span class="kw">for </span>ErrorAttr {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        parse_comma_separated(input)
     }
 }
 </code></pre></div>
