@@ -18,6 +18,8 @@ Newcomers are recommended to explore them in the following order:
   code, through rust and back again.
 * [`./fxa-client`](./fxa-client/) doesn't work yet, but it contains aspirational example of what the UDL
   might look like for an actual real-world component.
+* [`./documentation`](./documentation/) demonstrates extraction of documentation comments from Rust code
+  and their attachment to the resulting foreign language bindings.
 
 Each example has the following structure:
 
@@ -31,6 +33,7 @@ Each example has the following structure:
   * Kotlin `tests/bindings/test_<namespace>.kts`
   * Swift `tests/bindings/test_<namespace>.swift`
   * Python `tests/bindings/test_<namespace>.py`
+  * Ruby `tests/bindings/test_<namespace>.rb`
 
 If you want to try them out, you will need:
 
