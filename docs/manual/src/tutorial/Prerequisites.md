@@ -6,7 +6,7 @@ In your crate's `Cargo.toml` add:
 
 ```toml
 [dependencies]
-uniffi = { version = "[latest-version]" }
+uniffi = { version = "[latest-version]", features = [ "build" ] }
 
 [build-dependencies]
 uniffi = { version = "[latest-version]", features = [ "build" ] }

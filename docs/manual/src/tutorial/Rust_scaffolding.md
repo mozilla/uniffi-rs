@@ -8,7 +8,7 @@ First, add `uniffi` to your crate as both a dependency and build-dependency.  En
 
 ```toml
 [dependencies]
-uniffi = "0.XX.0"
+uniffi = { version = "0.XX.0", features = ["build"] }
 
 [build-dependencies]
 uniffi = { version = "0.XX.0", features = ["build"] }
