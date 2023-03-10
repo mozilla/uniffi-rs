@@ -315,7 +315,7 @@ impl CodeOracle for KotlinCodeOracle {
             FfiType::Int64 | FfiType::UInt64 => "Long".to_string(),
             FfiType::Float32 => "Float".to_string(),
             FfiType::Float64 => "Double".to_string(),
-            FfiType::RustArcPtr(_) => "Pointer".to_string(),
+            FfiType::RustArcPtr(_) | FfiType::RustArcPtrUnsafe(_) => "Pointer".to_string(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
                 Some(suffix) => format!("RustBuffer{suffix}.ByValue"),
                 None => "RustBuffer.ByValue".to_string(),
@@ -396,7 +396,7 @@ pub mod filters {
             FfiType::UInt64 => "Long".into(),
             FfiType::Float32 => "Float".into(),
             FfiType::Float64 => "Double".into(),
-            FfiType::RustArcPtr(_) => "Pointer".into(),
+            FfiType::RustArcPtr(_) | FfiType::RustArcPtrUnsafe(_) => "Pointer".into(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
                 Some(suffix) => format!("RustBuffer{suffix}"),
                 None => "RustBuffer".into(),

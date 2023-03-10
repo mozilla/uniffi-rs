@@ -170,7 +170,7 @@ impl Object {
         }
         self.ffi_func_free.arguments = vec![FfiArgument {
             name: "ptr".to_string(),
-            type_: FfiType::RustArcPtr(self.name().to_string()),
+            type_: FfiType::RustArcPtrUnsafe(self.name().to_string()),
         }];
         self.ffi_func_free.return_type = None;
 
