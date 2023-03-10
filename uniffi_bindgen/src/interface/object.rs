@@ -248,6 +248,7 @@ pub struct Constructor {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    pub(super) return_type: Option<Type>,
     pub(super) attributes: ConstructorAttributes,
 }
 
@@ -266,6 +267,10 @@ impl Constructor {
 
     pub fn ffi_func(&self) -> &FfiFunction {
         &self.ffi_func
+    }
+
+    pub fn return_type(&self) -> Option<&Type> {
+        self.return_type.as_ref()
     }
 
     pub fn throws(&self) -> bool {
@@ -290,6 +295,9 @@ impl Constructor {
         self.ffi_func.name = format!("{ci_prefix}_{obj_name}_{}", self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
         self.ffi_func.return_type = Some(FfiType::RustArcPtr(obj_name.to_string()));
+
+        // this is a bit of a dirty place to put this, but there isn't another "general" pass
+        self.return_type = Some(Type::Object(obj_name.to_string()));
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -302,6 +310,7 @@ impl Default for Constructor {
         Constructor {
             name: String::from("new"),
             arguments: Vec::new(),
+            return_type: None,
             ffi_func: Default::default(),
             attributes: Default::default(),
         }
@@ -317,6 +326,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
         Ok(Constructor {
             name: String::from(attributes.get_name().unwrap_or("new")),
             arguments: self.args.body.list.convert(ci)?,
+            return_type: None,
             ffi_func: Default::default(),
             attributes,
         })
