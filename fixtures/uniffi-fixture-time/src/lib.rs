@@ -4,12 +4,34 @@
 
 use std::time::{Duration, SystemTime};
 
+use chrono::offset::Utc;
+use chrono::DateTime;
+
 #[derive(Debug, thiserror::Error)]
 pub enum ChronologicalError {
     #[error("Time overflow on an operation with {a:?} and {b:?}")]
     TimeOverflow { a: SystemTime, b: Duration },
     #[error("Time difference error {a:?} is before {b:?}")]
     TimeDiffError { a: SystemTime, b: SystemTime },
+}
+
+fn return_timestamp(a: SystemTime) -> Result<SystemTime> {
+    Ok(a)
+}
+
+fn return_duration(a: Duration) -> Result<Duration> {
+    Ok(a)
+}
+
+fn to_string_timestamp(a: SystemTime) -> String {
+    let datetime: DateTime<Utc> = a.into();
+    datetime.format("%Y-%m-%dT%H:%M:%S.%fZ").to_string()
+}
+
+fn get_pre_epoch_timestamp() -> SystemTime {
+    std::time::SystemTime::UNIX_EPOCH
+        .checked_sub(std::time::Duration::new(1, 1_000_000))
+        .unwrap()
 }
 
 fn add(a: SystemTime, b: Duration) -> Result<SystemTime> {
