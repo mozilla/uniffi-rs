@@ -39,7 +39,7 @@ pub enum FfiType {
         inner: String,
         /// Represents ownership of the Arc. For example, an object constructor returns an owned
         /// ptr, while an object method's first parameter is a non-owned ptr. This is used by C#
-        /// bindings generator, see https://github.com/mozilla/uniffi-rs/pull/1488
+        /// bindings generator, see <https://github.com/mozilla/uniffi-rs/pull/1488>
         owned: bool,
     },
     /// A byte buffer allocated by rust, and owned by whoever currently holds it.
