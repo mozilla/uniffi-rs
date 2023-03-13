@@ -34,9 +34,14 @@ pub enum FfiType {
     /// A `*const c_void` pointer to a rust-owned `Arc<T>`.
     /// If you've got one of these, you must call the appropriate rust function to free it.
     /// The templates will generate a unique `free` function for each T.
-    /// The inner string references the name of the `T` type.
-    RustArcPtr(String),
-    RustArcPtrUnsafe(String),
+    RustArcPtr {
+        /// References the name of the `T` type.
+        inner: String,
+        /// Represents ownership of the Arc. For example, an object constructor returns an owned
+        /// ptr, while an object method's first parameter is a non-owned ptr. This is used by C#
+        /// bindings generator, see https://github.com/mozilla/uniffi-rs/pull/1488
+        owned: bool,
+    },
     /// A byte buffer allocated by rust, and owned by whoever currently holds it.
     /// If you've got one of these, you must either call the appropriate rust function to free it
     /// or pass it to someone that will.

@@ -359,7 +359,7 @@ impl CodeOracle for PythonCodeOracle {
             FfiType::UInt64 => "ctypes.c_uint64".to_string(),
             FfiType::Float32 => "ctypes.c_float".to_string(),
             FfiType::Float64 => "ctypes.c_double".to_string(),
-            FfiType::RustArcPtr(_) | FfiType::RustArcPtrUnsafe(_) => "ctypes.c_void_p".to_string(),
+            FfiType::RustArcPtr { .. } => "ctypes.c_void_p".to_string(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
                 Some(suffix) => format!("RustBuffer{suffix}"),
                 None => "RustBuffer".to_string(),

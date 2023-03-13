@@ -183,7 +183,10 @@ impl From<&Type> for FfiType {
             // We might add a separate type for borrowed strings in future.
             Type::String => FfiType::RustBuffer(None),
             // Objects are pointers to an Arc<>
-            Type::Object(name) => FfiType::RustArcPtr(name.to_owned()),
+            Type::Object(name) => FfiType::RustArcPtr {
+                inner: name.to_owned(),
+                owned: false,
+            },
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface(_) => FfiType::UInt64,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
@@ -199,7 +202,10 @@ impl From<&Type> for FfiType {
                 name,
                 kind: ExternalKind::Interface,
                 ..
-            } => FfiType::RustArcPtr(name.clone()),
+            } => FfiType::RustArcPtr {
+                inner: name.clone(),
+                owned: false,
+            },
             Type::External {
                 name,
                 kind: ExternalKind::DataClass,
