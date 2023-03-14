@@ -365,6 +365,7 @@ impl ComponentInterface {
                 type_: FfiType::Int32,
             }],
             return_type: Some(FfiType::RustBuffer(None)),
+            object_free_function: false,
         }
     }
 
@@ -380,6 +381,7 @@ impl ComponentInterface {
                 type_: FfiType::ForeignBytes,
             }],
             return_type: Some(FfiType::RustBuffer(None)),
+            object_free_function: false,
         }
     }
 
@@ -395,6 +397,7 @@ impl ComponentInterface {
                 type_: FfiType::RustBuffer(None),
             }],
             return_type: None,
+            object_free_function: false,
         }
     }
 
@@ -416,6 +419,7 @@ impl ComponentInterface {
                 },
             ],
             return_type: Some(FfiType::RustBuffer(None)),
+            object_free_function: false,
         }
     }
 
