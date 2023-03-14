@@ -64,7 +64,7 @@ pub use enum_::Enum;
 mod error;
 pub use error::Error;
 mod function;
-pub use function::{Argument, Function};
+pub use function::{Argument, Callable, Function};
 mod literal;
 pub use literal::{Literal, Radix};
 mod namespace;

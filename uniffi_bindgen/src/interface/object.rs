@@ -65,7 +65,7 @@ use uniffi_meta::Checksum;
 
 use super::attributes::{Attribute, ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
-use super::function::Argument;
+use super::function::{Argument, Callable};
 use super::types::{Type, TypeIterator};
 use super::{convert_type, APIConverter, ComponentInterface};
 
@@ -333,6 +333,20 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
     }
 }
 
+impl Callable for Constructor {
+    fn arguments(&self) -> Vec<&Argument> {
+        self.arguments()
+    }
+
+    fn return_type(&self) -> Option<Type> {
+        self.return_type().cloned()
+    }
+
+    fn throws_type(&self) -> Option<Type> {
+        self.throws_type()
+    }
+}
+
 // Represents an instance method for an object type.
 //
 // The FFI will represent this as a function whose first/self argument is a
@@ -486,6 +500,20 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             ffi_func: Default::default(),
             attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
         })
+    }
+}
+
+impl Callable for Method {
+    fn arguments(&self) -> Vec<&Argument> {
+        self.arguments()
+    }
+
+    fn return_type(&self) -> Option<Type> {
+        self.return_type().cloned()
+    }
+
+    fn throws_type(&self) -> Option<Type> {
+        self.throws_type()
     }
 }
 
