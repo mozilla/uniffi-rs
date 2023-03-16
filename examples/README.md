@@ -18,6 +18,8 @@ Newcomers are recommended to explore them in the following order:
   code, through rust and back again.
 * [`./fxa-client`](./fxa-client/) doesn't work yet, but it contains aspirational example of what the UDL
   might look like for an actual real-world component.
+* [`./user-data-store`](./user-data-store/) shows how async Rust code can be driven by an executor
+  running in the foreign language.
 
 Each example has the following structure:
 

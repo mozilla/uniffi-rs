@@ -1,107 +1,55 @@
 # Callback interfaces
 
-Callback interfaces are traits specified in UDL which can be implemented by foreign languages.
+Callback interfaces are traits specified in UDL which can be implemented by
+foreign languages.  Callbacks interfaces allow the library consumer to supply
+the Rust library with additional capabilities implemented in the foreign
+language, for example:
 
-They can provide Rust code access available to the host language, but not easily replicated
-in Rust.
+ * accessing app preferences and assets
+ * network requests
+ * logging
+ * task scheduling
 
- * accessing device APIs.
- * provide glue to clip together Rust components at runtime.
- * access shared resources and assets bundled with the app.
+Both sync and async functions are supported.
+
+# Defining callback interfaces
+
+```rust,no_run
+#[uniffi::callback_interface]
+pub trait Keychain {
+  // Access a keychain exposed by the host operating system
+  fn get(&self, key: String) -> Result<Option<String>, KeyChainError>
+  fn put(&self, key: String, value: String) -> Result<(), KeyChainError>
+
+  // Async API
+  async fn get_async(&self, key: String) -> Result<Option<String>, KeyChainError>
+  async fn put_async(&self, key: String, value: String) -> Result<(), KeyChainError>
+}
+```
+
+Note: Rust doesn't support async functions in traits yet.  The proc-macro
+converts async function signatures into a sync function that returns
+`uniffi::ForeignFuture<T>`, similar to the `async-trait` crate.
+`uniffi::ForeignFuture<T>` implements `Future<Output = T>` and `Send`.
+
+## Setup error handling
+
+All methods of the Rust trait should return a Result.  This is needed because
+any callback method call can fail unexpected ways that shouldn't result in a
+panic, for example when the foreign code throws an exception we weren't
+expecting.
+
+If your method can only fail in these unexpected ways, use
+`uniffi::CallbackResult<T>` as your result type.  This is a type alias for
+`Result<T, uniffi::UnexpectedCallbackError>`.
+
+For methods that are expected to throw sometimes, use [error type defined in the UDL](./errors.md)
+and implement `From<uniffi::UnexpectedCallbackError>` for that type. See
+`example/callbacks` for an example of how to do this.
 
 # Using callback interfaces
 
-## 1. Define a Rust trait
-
-This toy example defines a way of Rust accessing a key-value store exposed
-by the host operating system (e.g. the key chain).
-
-```rust,no_run
-pub trait Keychain: Send + Sync + Debug {
-  fn get(&self, key: String) -> Result<Option<String>, KeyChainError>
-  fn put(&self, key: String, value: String) -> Result<(), KeyChainError>
-}
-```
-
-### Why Send + Sync?
-
-The concrete types that UniFFI generates for callback interfaces implement `Send`, `Sync`, and `Debug`, so it's safe to
-include these as supertraits of your callback interface trait.  This isn't strictly necessary, but it's often useful.  In
-particular, `Send + Sync` is useful when:
-  - Storing `Box<dyn CallbackInterfaceTrait>` types inside a type that needs to be `Send + Sync` (for example a UniFFI
-    interface type)
-  - Storing `Box<dyn CallbackInterfaceTrait>` inside a global `Mutex` or `RwLock`
-
-
-## 2. Setup error handling
-
-All methods of the Rust trait should return a Result.  The error half of that result must
-be an [error type defined in the UDL](./errors.md).
-
-It's currently allowed for callback interface methods to return a regular value
-rather than a `Result<>`.  However, this is means that any exception from the
-foreign bindings will lead to a panic.
-
-### Extra requirements for errors used in callback interfaces
-
-In order to support errors in callback interfaces, UniFFI must be able to
-properly [lift the error](../internals/lifting_and_lowering.md).  This means
-that the if the error is described by an `enum` rather than an `interface` in
-the UDL (see [Errors](./errors.md)) then all variants of the Rust enum must be unit variants.
-
-In addition to expected errors, a callback interface call can result in all kinds of
-unexpected errors.  Some examples are the foreign code throws an exception that's not part
-of the exception type or there was a problem marshalling the data for the call.  UniFFI
-uses `uniffi::UnexpectedUniFFICallbackError` for these cases.  Your code must include a
-`From<uniffi::UnexpectedUniFFICallbackError>` impl for your error type to handle those or
-the UniFFI scaffolding code will fail to compile.  See `example/callbacks` for an
-example of how to do this.
-
-## 3. Define a callback interface in the UDL
-
-```webidl
-callback interface Keychain {
-    [Throws=KeyChainError]
-    string? get(string key);
-
-    [Throws=KeyChainError]
-    void put(string key, string data);
-};
-```
-
-## 4. And allow it to be passed into Rust
-
-Here, we define a constructor to pass the keychain to rust, and then another method
-which may use it.
-
-In UDL:
-
-```webidl
-interface Authenticator {
-    constructor(Keychain keychain);
-    void login();
-}
-```
-
-In Rust:
-
-```rust,no_run
-struct Authenticator {
-  keychain: Box<dyn Keychain>,
-}
-
-impl Authenticator {
-  pub fn new(keychain: Box<dyn Keychain>) -> Self {
-    Self { keychain }
-  }
-  pub fn login(&self) {
-    let username = self.keychain.get("username".into());
-    let password = self.keychain.get("password".into());
-  }
-}
-```
-
-## 5. Create an foreign language implementation of the callback interface
+## Create an foreign language implementation of the callback interface
 
 In this example, here's a Kotlin implementation.
 
@@ -111,8 +59,16 @@ class KotlinKeychain: Keychain {
         // … elide the implementation.
         return value
     }
-    override fun put(key: String) {
+    override fun put(key: String, value: String) {
         // … elide the implementation.
+    }
+
+    override async fun getAsync(key: String) = withContext(coroutineContext) {
+        get(key)
+    }
+
+    override async fun putAsync(key: String, value: String) = withContext(coroutineContext) {
+        put(key, value)
     }
 }
 ```
@@ -125,36 +81,65 @@ class SwiftKeychain: Keychain {
         // … elide the implementation.
         return value
     }
-    func put(key: String) {
+    func put(key: String, value: String) {
         // … elide the implementation.
+    }
+
+    func getAsync(key: String) async -> String? {
+        // call get() in a background thread and return the value
+    }
+    func putAsync(key: String, value: String) async {
+        // call put() in a background thread
     }
 }
 ```
 
 Note: in Swift, this must be a `class`.
 
-## 6. Pass the implementation to Rust
+## Pass the callback interface into Rust
 
-Again, in Kotlin
+Here, we define a constructor to pass the keychain to rust, then methods that use it.
 
-```kt
-val authenticator = Authenticator(KotlinKeychain())
-// later on:
-authenticator.login()
+In UDL:
+
+```webidl
+interface Authenticator {
+    constructor(Keychain keychain);
+    UserInfo get_password();
+    async UserInfo get_password_async();
+}
 ```
 
-and in Swift:
+In Rust:
 
-```swift
-let authenticator = Authenticator(SwiftKeychain())
-// later on:
-authenticator.login()
+```rust,no_run
+struct Authenticator {
+  keychain: Keychain,
+}
+
+impl Authenticator {
+  pub fn new(keychain: Keychain) -> Self {
+    Self { keychain }
+  }
+  pub fn get_password(&self) -> String {
+    UserInfo {
+        username: self.keychain.get("username".into()),
+        password: self.keychain.get("password".into()),
+    }
+  }
+
+  pub async fn get_password_async(&self) -> String {
+    UserInfo {
+      username: await self.keychain.get_async("username".into())
+      password: await self.keychain.get_async("password".into())
+    }
+  }
+}
 ```
 
-Care is taken to ensure that once `Box<dyn Keychain>` is dropped in Rust, then it is cleaned up in the foreign language.
-
-Also note, that storing the `Box<dyn Keychain>` in the `Authenticator` required that all implementations
-*must* implement `Send`.
+Note how we can define async Rust methods based on async callback interface methods.  Foreign code
+can await `get_password_async()` and resume when the two `get_async()` futures complete.  This is
+all driven by the foreign executor/event loop, there's no need to start a tokio loop.
 
 ## ⚠️  Avoid callback interfaces cycles
 
@@ -168,3 +153,71 @@ Take care to avoid this by following guidelines:
    references through intermediate objects.
 3. If you need to break the first 2 guidelines, then take steps to manually break the cycles to avoid memory leaks.
    Alternatively, ensure that the number of objects that can ever be created is bounded below some acceptable level.
+
+## Scheduling tasks using the `TaskQueue` callback interface
+
+UniFFI defines the a builtin callback interface, `TaskQueue`,  which can be used to run code using
+the foreign language executor (Kotlin CoroutineScope, Python Executor, Swift DispatchQueue, etc.).
+
+You can then use the `TaskQueue::schedule()` method to run the closure in that background task queue
+and return a future for the result of the closure.
+
+```rust,no_run
+pub struct UserStore {
+    connection: DatabaseConnection,
+    background_queue: uniffi::TaskQueue,
+}
+
+impl UserStore {
+    pub fn new(background_queue: uniffi::TaskQueue) -> Self {
+        Self {
+            connection: DatabaseConnection::new(),
+            background_queue,
+        }
+    }
+
+    pub async fn add_user(&self, username: String, password: String) {
+        await self.background_queue.schedule(move || {
+            self.connection.execute(format!("INSERT INTO users(username, password) VALUES ({username}, {password})"));
+        }
+    }
+
+    pub async fn lookup_password(&self, username: String) -> String {
+        await self.background_queue.schedule(move || {
+            self.connection.execute(format!("SELECT password FROM users WHERE username = {username}"))
+        }
+    }
+
+    pub async fn delete_user(&self, username: String) -> String {
+        await self.background_queue.schedule(move || {
+            self.connection.execute(format!("DELETE FROM users WHERE username = "{username}"));
+        }
+    }
+```
+
+You can also use the `schedule_later<T>(delay: Duration, closure: FnOnce() -> T) -> T` method to run the closure after a delay.
+
+Task queues can be created on the foreign bindings side by passing in the native executer, for example:
+
+```kotlin
+val userStore = UserStore(TaskQueue(Dispatchers.IO))
+```
+
+## Async callbacks are driven by foreign executors
+
+Code that awaits an async callback interface method will be woken up by an FFI call from the UniFFI
+foreign bindings code. This allows your Rust code to be driven by the foreign async executor,
+avoiding the need to spawn threads from Rust or run a `tokio` loop.
+
+See the `user-data-store` example for how this could work in action.
+
+## Fire and forget callbacks
+
+As mentioned above, UniFFI uses the `ForeignFuture<T>` type to handle async callback interface
+returns.  `ForeignFuture` also implements the `fire()` method, which schedules the future to be run
+by the foreign executor, ignoring the result.  This is good for fire-and-forget style callbacks,
+like logging.
+
+## Combining tokio with a foreign executor
+
+... TODO, I think this should be possible but have no clue how it would work

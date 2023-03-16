@@ -1,0 +1,23 @@
+[package]
+name = "uniffi-example-user-data-store"
+edition = "2021"
+version = "0.23.0"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "uniffi_user_data_store"
+
+[dependencies]
+uniffi = {path = "../../uniffi"}
+futures = "0.3"
+async_once_cell = "0.4"
+async-lock = "2.7.0"
+thiserror = "1.0"
+
+[build-dependencies]
+uniffi = {path = "../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }

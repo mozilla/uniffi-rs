@@ -17,5 +17,6 @@ The following built-in types can be passed as arguments/returned by Rust methods
 | `HashMap<String, T>` | `record<DOMString, T>` | Only string keys are supported                                  |
 | `()`                 | `void`                 | Empty return                                                    |
 | `Result<T, E>`       | N/A                    | See [Errors](./errors.md) section                               |
+| `uniffi::TaskQueue`  | `TaskQueue`            | Task queue in the foreign language: Kotlin CoroutineScope, Python Executor, Swift DispatchQueue, etc. |
 
 And of course you can use your own types, which is covered in the following sections.
