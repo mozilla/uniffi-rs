@@ -98,9 +98,9 @@ impl Checksum for &str {
     }
 }
 
-// The namespace of a Component interface
+// The namespace of a Component interface.
 //
-// This is used to match up the macro metadata with the UDL items
+// This is used to match up the macro metadata with the UDL items.
 #[derive(Clone, Debug, Checksum, Deserialize, PartialEq, Eq, Serialize)]
 pub struct NamespaceMetadata {
     pub crate_name: String,

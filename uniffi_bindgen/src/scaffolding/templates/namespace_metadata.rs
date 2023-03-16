@@ -1,7 +1,7 @@
 
 /// Export namespace metadata.
 ///
-/// See `uniffi_bidgen::macro_metadata` for how this is used.
+/// See `uniffi_bindgen::macro_metadata` for how this is used.
 {%- let const_var = "UNIFFI_META_CONST_NAMESPACE_{}"|format(ci.namespace().to_shouty_snake_case()) %}
 {%- let static_var = "UNIFFI_META_NAMESPACE_{}"|format(ci.namespace().to_shouty_snake_case()) %}
 

@@ -51,7 +51,7 @@ pub mod codes {
 /// We implement this on &[u8] byte buffers
 pub trait MetadataReader {
     fn read_u8(&mut self) -> Result<u8>;
-    fn peak_u8(&mut self) -> Result<u8>;
+    fn peek_u8(&mut self) -> Result<u8>;
     fn read_bool(&mut self) -> Result<bool>;
     fn read_string(&mut self) -> Result<String>;
     fn read_type(&mut self) -> Result<Type>;
@@ -81,7 +81,7 @@ impl MetadataReader for &[u8] {
         }
     }
 
-    fn peak_u8(&mut self) -> Result<u8> {
+    fn peek_u8(&mut self) -> Result<u8> {
         if !self.is_empty() {
             Ok(self[0])
         } else {
@@ -153,7 +153,7 @@ impl MetadataReader for &[u8] {
     }
 
     fn read_optional_type(&mut self) -> Result<Option<Type>> {
-        Ok(match self.peak_u8()? {
+        Ok(match self.peek_u8()? {
             codes::TYPE_UNIT => {
                 _ = self.read_u8();
                 None
@@ -163,7 +163,7 @@ impl MetadataReader for &[u8] {
     }
 
     fn read_return_type(&mut self) -> Result<(Option<Type>, Option<Type>)> {
-        Ok(match self.peak_u8()? {
+        Ok(match self.peek_u8()? {
             codes::TYPE_UNIT => {
                 _ = self.read_u8();
                 (None, None)
