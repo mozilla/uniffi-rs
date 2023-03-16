@@ -5,7 +5,7 @@
 # This builds a docker image containing all the tools we need to run our
 # test suite in CI, including rust, kotlin, and swift.
 
-FROM cimg/rust:1.52.1
+FROM cimg/rust:1.66.0
 
 MAINTAINER Ryan Kelly "rfkelly@mozilla.com"
 
@@ -16,32 +16,25 @@ ENV \
 
 SHELL ["/bin/bash", "-c"]
 
+# already installed in cimg: libcurl4, python3, git, curl, unzip, g++
 RUN sudo apt-get update -qq \
     && sudo apt-get install -qy --no-install-recommends \
         clang \
-        libcurl4 \
         openjdk-11-jdk-headless \
-        python3 \
         ruby \
         ruby-dev \
-        git \
-        curl \
-        unzip \
         # Swift dependencies
         libtinfo5 \
         libncurses5 \
-        # For `cc` crates; see https://github.com/jwilm/alacritty/issues/1440.
-        # <TODO: Is this still true?>.
-        g++ \
         python3-pip \
     && sudo apt-get clean
 
 # This should automatically install the version specified in rust-toolchain.toml
 ADD rust-toolchain.toml rust-toolchain.toml
-RUN rustup self update
-RUN rustup update
-RUN rustup show
-RUN rm rust-toolchain.toml
+RUN rustup self update \
+  && rustup update \
+  && rustup show \
+  && rm rust-toolchain.toml
 
 RUN mkdir -p /tmp/setup-swift \
     && cd /tmp/setup-swift \
@@ -67,7 +60,7 @@ RUN mkdir -p /tmp/setup-kotlin \
 
 RUN mkdir -p /tmp/setup-jna \
     && cd /tmp/setup-jna \
-    && curl -o jna.jar https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.8.0/jna-5.8.0.jar \
+    && curl -o jna.jar https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar \
     # XXX TODO: should check a sha256sum or something here...
     && sudo mv jna.jar /opt \
     && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar\"" >> /home/circleci/.bashrc \
