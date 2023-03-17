@@ -98,11 +98,26 @@ const CALL_PANIC: i8 = 2;
 ///     - `out_status.error_buf` will be set to a newly allocated `RustBuffer` containing a
 ///       serialized error message.  The calling code is responsible for freeing the `RustBuffer`
 ///     - `FfiDefault::ffi_default()` is returned, although foreign code should ignore this value
-
 pub fn rust_call<F, R>(out_status: &mut RustCallStatus, callback: F) -> R
 where
     F: panic::UnwindSafe + FnOnce() -> Result<R, RustBuffer>,
     R: FfiDefault,
+{
+    rust_call_with_out_status(out_status, callback).unwrap_or_else(R::ffi_default)
+}
+
+/// Make a Rust call and update `RustCallStatus` based on the result.
+///
+/// If the call succeeds this returns Some(v) and doesn't touch out_status
+/// If the call fails (including Err results), this returns None and updates out_status
+///
+/// This contains the shared code between `rust_call` and `uniffi_rustfuture_poll`.
+pub(crate) fn rust_call_with_out_status<F, R>(
+    out_status: &mut RustCallStatus,
+    callback: F,
+) -> Option<R>
+where
+    F: panic::UnwindSafe + FnOnce() -> Result<R, RustBuffer>,
 {
     let result = panic::catch_unwind(|| {
         crate::panichook::ensure_setup();
@@ -111,7 +126,7 @@ where
     match result {
         // Happy path.  Note: no need to update out_status in this case because the calling code
         // initializes it to CALL_SUCCESS
-        Ok(Ok(v)) => v,
+        Ok(Ok(v)) => Some(v),
         // Callback returned an Err.
         Ok(Err(buf)) => {
             out_status.code = CALL_ERROR;
@@ -120,7 +135,7 @@ where
                 // invariants.
                 out_status.error_buf.as_mut_ptr().write(buf);
             }
-            R::ffi_default()
+            None
         }
         // Callback panicked
         Err(cause) => {
@@ -149,7 +164,7 @@ where
             // Ignore the error case.  We've done all that we can at this point.  In the bindings
             // code, we handle this by checking if `error_buf` still has an empty `RustBuffer` and
             // using a generic message.
-            R::ffi_default()
+            None
         }
     }
 }

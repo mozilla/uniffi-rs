@@ -289,8 +289,7 @@
 //! [`Waker`]: https://doc.rust-lang.org/std/task/struct.Waker.html
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
 
-use super::FfiDefault;
-use crate::{rust_call, FfiConverter, RustCallStatus};
+use crate::{ffi::rustcalls::rust_call_with_out_status, FfiConverter, RustCallStatus};
 use std::{
     ffi::c_void,
     future::Future,
@@ -354,33 +353,6 @@ impl<T> RustFuture<T> {
         let mut context = Context::from_waker(&waker);
 
         self.0.as_mut().poll(&mut context)
-    }
-}
-
-/// `RustFuturePoll` is the equivalent of [`Poll`], except that it has one
-/// more variant: `Throwing`, which is the ”FFI default” variant.
-///
-/// Why? The [`FfiDefault`] trait is used to compute a default value when an
-/// error must be returned. It must be reflected inside the `RustFuturePoll`
-/// type to know in which state the `RustFuture` is.
-///
-/// [`Poll`]: https://doc.rust-lang.org/std/task/enum.Poll.html
-#[derive(Debug)]
-pub enum RustFuturePoll<T> {
-    /// A value `T` is ready!
-    Ready(T),
-
-    /// Naah, please try later, maybe a value will be ready?
-    Pending,
-
-    /// The default state for `FfiDefault`, indicating that the `RustFuture` is
-    /// throwing an error.
-    Throwing,
-}
-
-impl<T> FfiDefault for RustFuturePoll<T> {
-    fn ffi_default() -> Self {
-        Self::Throwing
     }
 }
 
@@ -601,24 +573,22 @@ where
     let mut future = panic::AssertUnwindSafe(future.expect("`future` is a null pointer"));
     let waker = waker.expect("`waker` is a null pointer");
 
-    let rust_call_result = rust_call(call_status, move || {
+    match rust_call_with_out_status(call_status, move || {
         // Poll the future and convert the value into a Result<RustFuturePoll>
-        match future.poll(waker, waker_environment) {
-            Poll::Ready(v) => T::lower_return(v).map(RustFuturePoll::Ready),
-            Poll::Pending => Ok(RustFuturePoll::Pending),
-        }
-    });
-    match rust_call_result {
-        // Sucessfull return
-        RustFuturePoll::Ready(v) => {
+        Ok(match future.poll(waker, waker_environment) {
+            Poll::Ready(v) => Poll::Ready(T::lower_return(v)?),
+            Poll::Pending => Poll::Pending,
+        })
+    }) {
+        Some(Poll::Ready(v)) => {
             polled_result.write(v);
             READY
         }
-        // Future still pending
-        RustFuturePoll::Pending => PENDING,
-        // Error return or panic.  `rust_call()` has update `call_status` with the error status and
-        // set `error_buf`.
-        RustFuturePoll::Throwing => READY,
+        Some(Poll::Pending) => PENDING,
+        // Error return or panic.  `rust_call()` has updated `call_status` with the error status and
+        // set `error_buf`.  Return READY, since we don't want the foreign code polling the future
+        // anymore
+        None => READY,
     }
 }
 
