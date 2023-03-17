@@ -1040,105 +1040,121 @@ mod test {
         assert_eq!(err.to_string(), "ByRef not supported for typedefs");
     }
 
+    fn parse_doc_attribute(udl: &str) -> String {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(udl).unwrap();
+        let attrs = parse_attributes(&node, |attr| match attr {
+            Attribute::Doc(_) => Ok(()),
+            _ => panic!("{attr:?} not supported in doc test"),
+        })
+        .unwrap();
+        match &attrs[0] {
+            Attribute::Doc(docstring) => docstring.clone(),
+            _ => panic!("only doc attribute supported in test"),
+        }
+    }
+
     #[test]
     fn test_doc_attribute() {
-        let (_, node) =
-            weedle::attribute::ExtendedAttributeList::parse(r#"[Doc="informative docstring"]"#)
-                .unwrap();
-        let attrs = NamespaceAttributes::try_from(&node).unwrap();
-        assert_eq!(attrs.get_docstring().unwrap(), "informative docstring");
+        let docstring = parse_doc_attribute(r#"[Doc="informative docstring"]"#);
+
+        assert_eq!(docstring, "informative docstring");
     }
 
     #[test]
     fn test_doc_attribute_multiline() {
-        const UDL: &str = r#"[Doc="
+        let docstring = parse_doc_attribute(
+            r#"[Doc="
     informative
-    docstring"]"#;
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(UDL).unwrap();
-        let attrs = NamespaceAttributes::try_from(&node).unwrap();
+    docstring"]"#,
+        );
 
-        const EXPECTED: &str = r#"
+        assert_eq!(
+            docstring,
+            r#"
 informative
-docstring"#;
-        assert_eq!(attrs.get_docstring().unwrap(), EXPECTED);
+docstring"#
+        );
     }
 
     #[test]
     fn test_doc_attribute_multiline_prefix() {
-        const UDL: &str = r#"[Doc="
+        let docstring = parse_doc_attribute(
+            r#"[Doc="
 // informative
-// docstring"]"#;
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(UDL).unwrap();
-        let attrs = NamespaceAttributes::try_from(&node).unwrap();
+// docstring"]"#,
+        );
 
-        const EXPECTED: &str = r#"
+        assert_eq!(
+            docstring,
+            r#"
 informative
-docstring"#;
-        assert_eq!(attrs.get_docstring().unwrap(), EXPECTED);
+docstring"#
+        );
     }
 
     #[test]
     fn test_doc_attribute_multiline_prefix_empty_line() {
-        const UDL: &str = r#"[Doc="
+        let docstring = parse_doc_attribute(
+            r#"[Doc="
 // informative
 //
-// docstring"]"#;
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(UDL).unwrap();
-        let attrs = NamespaceAttributes::try_from(&node).unwrap();
+// docstring"]"#,
+        );
 
-        const EXPECTED: &str = r#"
+        assert_eq!(
+            docstring,
+            r#"
 informative
 
-docstring"#;
-        assert_eq!(attrs.get_docstring().unwrap(), EXPECTED);
+docstring"#
+        );
     }
 
     #[test]
     fn test_doc_attribute_multiline_prefix_leading_whitespace() {
-        const UDL: &str = r#"[Doc="
+        let docstring = parse_doc_attribute(
+            r#"[Doc="
   // informative
- // docstring"]"#;
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(UDL).unwrap();
-        let attrs = NamespaceAttributes::try_from(&node).unwrap();
+ // docstring"]"#,
+        );
 
-        const EXPECTED: &str = r#"
+        assert_eq!(
+            docstring,
+            r#"
 informative
-docstring"#;
-        assert_eq!(attrs.get_docstring().unwrap(), EXPECTED);
+docstring"#
+        );
     }
 
     #[test]
     fn test_doc_attribute_multiline_prefix_indent() {
-        const UDL: &str = r#"[Doc="
+        let docstring = parse_doc_attribute(
+            r#"[Doc="
 //   informative
 //    docstring
-//     signature"]"#;
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(UDL).unwrap();
-        let attrs = NamespaceAttributes::try_from(&node).unwrap();
+//     signature"]"#,
+        );
 
-        const EXPECTED: &str = r#"
+        assert_eq!(
+            docstring,
+            r#"
 informative
  docstring
-  signature"#;
-        assert_eq!(attrs.get_docstring().unwrap(), EXPECTED);
+  signature"#
+        );
     }
 
     #[test]
     fn test_doc_attribute_middle_prefix() {
-        const UDL: &str = r#"[Doc="// informative // docstring"]"#;
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(UDL).unwrap();
-        let attrs = NamespaceAttributes::try_from(&node).unwrap();
+        let docstring = parse_doc_attribute(r#"[Doc="// informative // docstring"]"#);
 
-        const EXPECTED: &str = r#"informative // docstring"#;
-        assert_eq!(attrs.get_docstring().unwrap(), EXPECTED);
+        assert_eq!(docstring, r#"informative // docstring"#);
     }
 
     #[test]
     fn test_doc_attribute_repeating_prefix() {
-        const UDL: &str = r#"[Doc="///// informative docstring"]"#;
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(UDL).unwrap();
-        let attrs = NamespaceAttributes::try_from(&node).unwrap();
+        let docstring = parse_doc_attribute(r#"[Doc="///// informative docstring"]"#);
 
-        assert_eq!(attrs.get_docstring().unwrap(), r#"informative docstring"#);
+        assert_eq!(docstring, r#"informative docstring"#);
     }
 }
