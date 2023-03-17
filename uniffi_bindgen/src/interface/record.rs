@@ -47,6 +47,7 @@
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
+use super::attributes::{DictionaryAttributes, DictionaryMemberAttributes};
 use super::types::{Type, TypeIterator};
 use super::{
     convert_type,
@@ -63,6 +64,8 @@ use super::{APIConverter, ComponentInterface};
 pub struct Record {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl Record {
@@ -80,6 +83,10 @@ impl Record {
         &self.fields
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
     }
@@ -90,21 +97,21 @@ impl From<uniffi_meta::RecordMetadata> for Record {
         Self {
             name: meta.name,
             fields: meta.fields.into_iter().map(Into::into).collect(),
+            docstring: None,
         }
     }
 }
 
 impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Record> {
-        if self.attributes.is_some() {
-            bail!("dictionary attributes are not supported yet");
-        }
+        let attrs = DictionaryAttributes::try_from(self.attributes.as_ref())?;
         if self.inheritance.is_some() {
             bail!("dictionary inheritance is not supported");
         }
         Ok(Record {
             name: self.identifier.0.to_string(),
             fields: self.members.body.convert(ci)?,
+            docstring: attrs.get_docstring().map(|v| v.to_string()),
         })
     }
 }
@@ -115,6 +122,7 @@ pub struct Field {
     pub(super) name: String,
     pub(super) type_: Type,
     pub(super) default: Option<Literal>,
+    pub(super) docstring: Option<String>,
 }
 
 impl Field {
@@ -130,6 +138,10 @@ impl Field {
         self.default.as_ref()
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
     }
@@ -141,15 +153,14 @@ impl From<uniffi_meta::FieldMetadata> for Field {
             name: meta.name,
             type_: convert_type(&meta.ty),
             default: None,
+            docstring: None,
         }
     }
 }
 
 impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
-        if self.attributes.is_some() {
-            bail!("dictionary member attributes are not supported yet");
-        }
+        let attrs = DictionaryMemberAttributes::try_from(self.attributes.as_ref())?;
         let type_ = ci.resolve_type_expression(&self.type_)?;
         let default = match self.default {
             None => None,
@@ -159,6 +170,7 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
             name: self.identifier.0.to_string(),
             type_,
             default,
+            docstring: attrs.get_docstring().map(|v| v.to_string()),
         })
     }
 }
@@ -239,5 +251,40 @@ mod test {
             .iter_types()
             .any(|t| t.canonical_name() == "Optionalstring"));
         assert!(ci.iter_types().any(|t| t.canonical_name() == "TypeTesting"));
+    }
+
+    #[test]
+    fn test_docstring_record() {
+        const UDL: &str = r#"
+            namespace test{};
+            [Doc="informative docstring"]
+            dictionary Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_record_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_record_field() {
+        const UDL: &str = r#"
+            namespace test{};
+            dictionary Testing {
+                [Doc="informative docstring"]
+                i32 testing;
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_record_definition("Testing").unwrap().fields()[0]
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

@@ -98,7 +98,7 @@ use super::{APIConverter, ComponentInterface};
 #[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Error {
     pub name: String,
-    enum_: Enum,
+    pub(super) enum_: Enum,
 }
 
 impl Error {
@@ -134,6 +134,10 @@ impl Error {
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.wrapped_enum().iter_types()
     }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.enum_.docstring()
+    }
 }
 
 impl From<uniffi_meta::ErrorMetadata> for Error {
@@ -144,6 +148,7 @@ impl From<uniffi_meta::ErrorMetadata> for Error {
                 name: meta.name,
                 variants: meta.variants.into_iter().map(Into::into).collect(),
                 flat: meta.flat,
+                docstring: None,
             },
         }
     }
@@ -226,5 +231,39 @@ mod test {
             vec!("One", "Two")
         );
         assert!(!error.is_flat());
+    }
+
+    #[test]
+    fn test_docstring_error() {
+        const UDL: &str = r#"
+            namespace test{};
+            [Error, Doc="informative docstring"]
+            enum Testing { "one" };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_error_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_associated_error() {
+        const UDL: &str = r#"
+            namespace test{};
+            [Error, Doc="informative docstring"]
+            interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_error_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

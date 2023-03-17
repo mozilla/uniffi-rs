@@ -36,6 +36,7 @@
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
+use super::attributes::CallbackInterfaceAttributes;
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::object::Method;
 use super::types::{Type, TypeIterator};
@@ -53,6 +54,8 @@ pub struct CallbackInterface {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_init_callback: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl CallbackInterface {
@@ -61,6 +64,7 @@ impl CallbackInterface {
             name,
             methods: Default::default(),
             ffi_init_callback: Default::default(),
+            docstring: None,
         }
     }
 
@@ -80,6 +84,10 @@ impl CallbackInterface {
         &self.ffi_init_callback
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) {
         self.ffi_init_callback.name = format!("ffi_{ci_prefix}_{}_init_callback", self.name);
         self.ffi_init_callback.arguments = vec![FfiArgument {
@@ -96,13 +104,12 @@ impl CallbackInterface {
 
 impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<CallbackInterface> {
-        if self.attributes.is_some() {
-            bail!("callback interface attributes are not supported yet");
-        }
         if self.inheritance.is_some() {
             bail!("callback interface inheritance is not supported");
         }
+        let attrs = CallbackInterfaceAttributes::try_from(self.attributes.as_ref())?;
         let mut object = CallbackInterface::new(self.identifier.0.to_string());
+        object.docstring = attrs.get_docstring().map(|v| v.to_string());
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Operation(t) => {
@@ -165,5 +172,22 @@ mod test {
         assert_eq!(callbacks_two.methods().len(), 2);
         assert_eq!(callbacks_two.methods()[0].name(), "two");
         assert_eq!(callbacks_two.methods()[1].name(), "too");
+    }
+
+    #[test]
+    fn test_docstring_callback_interface() {
+        const UDL: &str = r#"
+            namespace test{};
+            [Doc="informative docstring"]
+            callback interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_callback_interface_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }
