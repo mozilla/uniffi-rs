@@ -3,11 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, ToTokens};
 use syn::{
     ext::IdentExt,
     parse::{Parse, ParseStream},
-    spanned::Spanned,
     Attribute, Path, Token,
 };
 
@@ -143,7 +142,7 @@ pub trait UniffiAttributeArgs: Default {
 }
 
 pub fn parse_comma_separated<T: UniffiAttributeArgs>(input: ParseStream<'_>) -> syn::Result<T> {
-    let punctuated = input.parse_terminated::<T, Token![,]>(T::parse_one)?;
+    let punctuated = input.parse_terminated(T::parse_one, Token![,])?;
     punctuated.into_iter().try_fold(T::default(), T::merge)
 }
 
@@ -174,7 +173,7 @@ pub trait AttributeSliceExt {
 impl AttributeSliceExt for [Attribute] {
     fn parse_uniffi_attr_args<T: UniffiAttributeArgs>(&self) -> syn::Result<T> {
         self.iter()
-            .filter(|attr| attr.path.is_ident("uniffi"))
+            .filter(|attr| attr.path().is_ident("uniffi"))
             .try_fold(T::default(), |res, attr| {
                 let parsed = attr.parse_args_with(parse_comma_separated)?;
                 res.merge(parsed)
@@ -182,13 +181,13 @@ impl AttributeSliceExt for [Attribute] {
     }
 }
 
-pub fn either_attribute_arg<T: Spanned>(a: Option<T>, b: Option<T>) -> syn::Result<Option<T>> {
+pub fn either_attribute_arg<T: ToTokens>(a: Option<T>, b: Option<T>) -> syn::Result<Option<T>> {
     match (a, b) {
         (None, None) => Ok(None),
         (Some(val), None) | (None, Some(val)) => Ok(Some(val)),
         (Some(a), Some(b)) => {
-            let mut error = syn::Error::new(a.span(), "redundant attribute argument");
-            error.combine(syn::Error::new(b.span(), "note: first one here"));
+            let mut error = syn::Error::new_spanned(a, "redundant attribute argument");
+            error.combine(syn::Error::new_spanned(b, "note: first one here"));
             Err(error)
         }
     }
