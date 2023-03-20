@@ -7,12 +7,14 @@
 
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, Attribute, Data, DeriveInput, Expr, ExprLit, Fields, Index, Lit};
+use syn::{
+    parse_macro_input, Attribute, Data, DeriveInput, Expr, ExprLit, Fields, Index, Lit, Meta,
+};
 
 fn has_ignore_attribute(attrs: &[Attribute]) -> bool {
     attrs.iter().any(|attr| {
-        if attr.path.is_ident("checksum_ignore") {
-            if !attr.tokens.is_empty() {
+        if attr.path().is_ident("checksum_ignore") {
+            if let Meta::List(_) | Meta::NameValue(_) = &attr.meta {
                 panic!("#[checksum_ignore] doesn't accept extra information");
             }
             true

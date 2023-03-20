@@ -71,7 +71,7 @@ impl ExportItem {
             .into_iter()
             .map(|item| {
                 let impl_fn = match item {
-                    syn::ImplItem::Method(m) => m,
+                    syn::ImplItem::Fn(m) => m,
                     _ => {
                         return Err(syn::Error::new_spanned(
                             item,
@@ -111,7 +111,7 @@ impl ExportItem {
             .into_iter()
             .map(|item| {
                 let tim = match item {
-                    syn::TraitItem::Method(tim) => tim,
+                    syn::TraitItem::Fn(tim) => tim,
                     _ => {
                         return Err(syn::Error::new_spanned(
                             item,

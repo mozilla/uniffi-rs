@@ -1,10 +1,10 @@
 use crate::util::{either_attribute_arg, parse_comma_separated, UniffiAttributeArgs};
 
-use proc_macro2::Span;
+use proc_macro2::TokenStream;
+use quote::ToTokens;
 use syn::{
     parse::{Parse, ParseStream},
-    spanned::Spanned,
-    Attribute, LitStr, PathArguments, PathSegment, Token,
+    Attribute, LitStr, Meta, PathArguments, PathSegment, Token,
 };
 
 pub(crate) mod kw {
@@ -40,14 +40,14 @@ impl UniffiAttributeArgs for ExportAttributeArguments {
 }
 
 pub(crate) enum AsyncRuntime {
-    Tokio(Span),
+    Tokio(LitStr),
 }
 
 impl Parse for AsyncRuntime {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         let lit: LitStr = input.parse()?;
         match lit.value().as_str() {
-            "tokio" => Ok(Self::Tokio(lit.span())),
+            "tokio" => Ok(Self::Tokio(lit)),
             _ => Err(syn::Error::new_spanned(
                 lit,
                 "unknown async runtime, currently only `tokio` is supported",
@@ -56,10 +56,10 @@ impl Parse for AsyncRuntime {
     }
 }
 
-impl Spanned for AsyncRuntime {
-    fn span(&self) -> Span {
+impl ToTokens for AsyncRuntime {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            AsyncRuntime::Tokio(span) => *span,
+            AsyncRuntime::Tokio(lit) => lit.to_tokens(tokens),
         }
     }
 }
@@ -73,7 +73,7 @@ impl ExportedImplFnAttributes {
     pub fn new(attrs: &[Attribute]) -> syn::Result<Self> {
         let mut this = Self::default();
         for attr in attrs {
-            let segs = &attr.path.segments;
+            let segs = &attr.path().segments;
 
             let fst = segs
                 .first()
@@ -83,9 +83,9 @@ impl ExportedImplFnAttributes {
             }
             ensure_no_path_args(fst)?;
 
-            if !attr.tokens.is_empty() {
+            if let Meta::List(_) | Meta::NameValue(_) = &attr.meta {
                 return Err(syn::Error::new_spanned(
-                    &attr.tokens,
+                    &attr.meta,
                     "attribute arguments are not currently recognized in this position",
                 ));
             }

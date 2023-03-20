@@ -4,7 +4,7 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use syn::{spanned::Spanned, FnArg, Pat};
+use syn::{FnArg, Pat};
 
 use super::{
     attributes::{AsyncRuntime, ExportAttributeArguments},
@@ -385,8 +385,8 @@ fn gen_ffi_function(
 
     if !sig.is_async {
         if let Some(async_runtime) = &arguments.async_runtime {
-            return syn::Error::new(
-                async_runtime.span(),
+            return syn::Error::new_spanned(
+                async_runtime,
                 "this attribute is only allowed on async functions",
             )
             .into_compile_error();
