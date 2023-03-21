@@ -1,3 +1,4 @@
+{%- call kt::docstring(func, 8) %}
 {%- if func.is_async() %}
     {%- match func.throws_type() -%}
     {%- when Some with (throwable) %}

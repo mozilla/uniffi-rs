@@ -29,6 +29,7 @@ members = [
   "fixtures/external-types/crate-two",
   "fixtures/external-types/lib",
 
+  "fixtures/docstring",
   "fixtures/keywords/kotlin",
   "fixtures/keywords/rust",
   "fixtures/keywords/swift",

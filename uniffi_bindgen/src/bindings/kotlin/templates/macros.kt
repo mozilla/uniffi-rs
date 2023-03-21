@@ -84,6 +84,14 @@ fun {{ func.name()|fn_name }}(
     {%- call _async_func_or_method(func, false) -%}
 {%- endmacro -%}
 
+{%- macro docstring(defn, indent_spaces) %}
+{%- match defn.docstring() %}
+{%- when Some(docstring) %}
+{{ docstring|docstring(indent_spaces) }}
+{%- else %}
+{%- endmatch %}
+{%- endmacro %}
+
 // Asny function and method.
 {%- macro async_meth(meth) -%}
     {% call _async_func_or_method(meth, true) -%}
