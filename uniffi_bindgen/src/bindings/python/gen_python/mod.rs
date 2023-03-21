@@ -445,4 +445,17 @@ pub mod filters {
         let oracle = oracle();
         Ok(oracle.find(type_).coerce(oracle, nm))
     }
+
+    /// Get the idiomatic Kotlin rendering of docstring
+    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
+        let docstring = textwrap::dedent(docstring);
+        let wrapped = if docstring.lines().count() > 1 {
+            format!("'''\n{docstring}\n'''")
+        } else {
+            format!("'''{docstring}'''")
+        };
+
+        let spaces = usize::try_from(*spaces).unwrap_or_default();
+        Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
+    }
 }

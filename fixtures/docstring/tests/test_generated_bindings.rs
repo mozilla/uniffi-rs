@@ -78,4 +78,9 @@ mod tests {
     fn test_docstring_kotlin() {
         test_docstring("kotlin", "kt");
     }
+
+    #[test]
+    fn test_docstring_python() {
+        test_docstring("python", "py");
+    }
 }
