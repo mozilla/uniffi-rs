@@ -36,6 +36,7 @@ pub enum FfiType {
     /// The templates will generate a unique `free` function for each T.
     /// The inner string references the name of the `T` type.
     RustArcPtr(String),
+    RustArcPtrUnsafe(String),
     /// A byte buffer allocated by rust, and owned by whoever currently holds it.
     /// If you've got one of these, you must either call the appropriate rust function to free it
     /// or pass it to someone that will.
