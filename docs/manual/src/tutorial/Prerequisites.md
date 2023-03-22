@@ -23,3 +23,5 @@ crate-type = ["cdylib"]
 name = "<library name>"
 ```
 to your crate's `Cargo.toml`.
+
+**Note:** You also need to add `staticlib` crate type if you target iOS.
