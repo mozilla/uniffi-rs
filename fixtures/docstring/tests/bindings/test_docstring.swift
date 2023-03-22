@@ -4,4 +4,24 @@
 
 import uniffi_docstring
 
+test()
+
+var _ = EnumTest.one
+
+var _ = AssociatedEnumTest.test
+
+var _ = ErrorTest.One(message: "hello")
+
+var _ = AssociatedErrorTest.Test
+
+var obj1 = ObjectTest()
+var obj2 = ObjectTest.newAlternate()
+obj2.test()
+
+var rec = RecordTest(test: 123)
+var recField = rec.test
+
+class CallbackImpls: CallbackTest {
+    func test() {}
+}
 

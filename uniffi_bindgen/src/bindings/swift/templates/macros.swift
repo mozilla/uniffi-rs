@@ -99,3 +99,11 @@
 {%- macro try(func) %}
 {%- if func.throws() %}try {% else %}try! {% endif %}
 {%- endmacro -%}
+
+{%- macro docstring(defn, indent_spaces) %}
+{%- match defn.docstring() %}
+{%- when Some(docstring) %}
+{{ docstring|docstring(indent_spaces) }}
+{%- else %}
+{%- endmatch %}
+{%- endmacro %}

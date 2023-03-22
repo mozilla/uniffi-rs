@@ -83,4 +83,9 @@ mod tests {
     fn test_docstring_python() {
         test_docstring("python", "py");
     }
+
+    #[test]
+    fn test_docstring_swift() {
+        test_docstring("swift", "swift");
+    }
 }
