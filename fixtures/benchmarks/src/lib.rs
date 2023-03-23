@@ -20,9 +20,9 @@ pub enum TestCase {
 }
 
 pub trait TestCallbackInterface {
-    fn test_method(&self, a: i32, b: i32, data: TestData) -> String;
-    fn test_void_return(&self, a: i32, b: i32, data: TestData);
-    fn test_no_args_void_return(&self);
+    fn method(&self, a: i32, b: i32, data: TestData) -> String;
+    fn method_with_void_return(&self, a: i32, b: i32, data: TestData);
+    fn method_with_no_args_and_void_return(&self);
     fn run_test(&self, test_case: TestCase, count: u64) -> u64;
 }
 
@@ -61,7 +61,7 @@ pub fn run_benchmarks(language: String, cb: Box<dyn TestCallbackInterface>) {
         .noise_threshold(0.05)
         .bench_function(format!("{language}-callbacks-basic"), |b| {
             b.iter(|| {
-                cb.test_method(
+                cb.method(
                     10,
                     100,
                     TestData {
@@ -73,7 +73,7 @@ pub fn run_benchmarks(language: String, cb: Box<dyn TestCallbackInterface>) {
         })
         .bench_function(format!("{language}-callbacks-void-return"), |b| {
             b.iter(|| {
-                cb.test_void_return(
+                cb.method_with_void_return(
                     10,
                     100,
                     TestData {
@@ -84,7 +84,7 @@ pub fn run_benchmarks(language: String, cb: Box<dyn TestCallbackInterface>) {
             })
         })
         .bench_function(format!("{language}-callbacks-no-args-void-return"), |b| {
-            b.iter(|| cb.test_no_args_void_return())
+            b.iter(|| cb.method_with_no_args_and_void_return())
         });
 
     c.final_summary();

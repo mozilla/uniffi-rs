@@ -1,5 +1,10 @@
 This fixture runs a set of benchmark tests, using criterion to test the performance.
 
+- `cargo bench` to run all benchmarks.
+- `cargo bench -- -p` to run all python benchmarks (or -s for swift, -k for kotlin)
+- `cargo bench -- [glob]` to run a subset of the benchmarks
+- `cargo bench -- --help` for more details on the CLI
+
 Benchmarking UniFFI is tricky and involves a bit of ping-pong between Rust and
 the foreign language:
 

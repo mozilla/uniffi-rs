@@ -6,13 +6,13 @@ from benchmarks import *
 import time
 
 class TestCallbackObj:
-    def test_method(self, a, b, data):
+    def method(self, a, b, data):
         return data.bar
 
-    def test_void_return(self, a, b, data):
+    def method_with_void_return(self, a, b, data):
         pass
 
-    def test_no_args_void_return(self):
+    def method_with_no_args_and_void_return(self):
         pass
 
     def run_test(self, test_case, count):

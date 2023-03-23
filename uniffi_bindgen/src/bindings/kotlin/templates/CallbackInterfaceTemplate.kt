@@ -27,15 +27,15 @@ internal class {{ foreign_callback }} : ForeignCallback {
         return when (method) {
             IDX_CALLBACK_FREE -> {
                 {{ ffi_converter_name }}.drop(handle)
-                // No return value.
-                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-                0
+                // Successful return
+                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+                UNIFFI_CALLBACK_SUCCESS
             }
             {% for meth in cbi.methods() -%}
             {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
             {{ loop.index }} -> {
                 // Call the method, write to outBuf and return a status code
-                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs` for info
+                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs` for info
                 try {
                     this.{{ method_name }}(cb, argsData, argsLen, outBuf)
                 } catch (e: Throwable) {
@@ -46,20 +46,20 @@ internal class {{ foreign_callback }} : ForeignCallback {
                     } catch (e: Throwable) {
                         // If that fails, then it's time to give up and just return
                     }
-                    -1
+                    UNIFFI_CALLBACK_UNEXPECTED_ERROR
                 }
             }
             {% endfor %}
             else -> {
                 // An unexpected error happened.
-                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
                 try {
                     // Try to serialize the error into a string
                     outBuf.setValue({{ Type::String.borrow()|ffi_converter_name }}.lower("Invalid Callback index"))
                 } catch (e: Throwable) {
                     // If that fails, then it's time to give up and just return
                 }
-                -1
+                UNIFFI_CALLBACK_UNEXPECTED_ERROR
             }
         }
     }
@@ -84,7 +84,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
                 {%- endfor %}
             )
             outBuf.setValue({{ return_type|ffi_converter_name }}.lowerIntoRustBuffer(returnValue))
-            return 1
+            return UNIFFI_CALLBACK_SUCCESS
         }
         {%- when None %}
         fun makeCall() : Int {
@@ -94,7 +94,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
                 {%- if !loop.last %}, {% endif %}
                 {%- endfor %}
             )
-            return 1
+            return UNIFFI_CALLBACK_SUCCESS
         }
         {%- endmatch %}
 
@@ -107,7 +107,7 @@ internal class {{ foreign_callback }} : ForeignCallback {
         } catch (e: {{ error_type|type_name }}) {
             // Expected error, serialize it into outBuf
             outBuf.setValue({{ error_type|ffi_converter_name }}.lowerIntoRustBuffer(e))
-            -2
+            UNIFFI_CALLBACK_ERROR
         }
         {%- endmatch %}
 

@@ -31,9 +31,9 @@ callback interface TestCallbackInterface {
   // including: popping arguments from the stack, unpacking RustBuffers,
   // pushing return values back to the stack, etc.
 
-  string test_method(i32 a, i32 b, TestData data);  // Should return data.bar
-  void test_void_return(i32 a, i32 b, TestData data);
-  void test_no_args_void_return();
+  string method(i32 a, i32 b, TestData data);  // Should return data.bar
+  void method_with_void_return(i32 a, i32 b, TestData data);
+  void method_with_no_args_and_void_return();
 
   // Run a performance test N times and return the elapsed time in nanoseconds
   u64 run_test(TestCase test_case, u64 count);

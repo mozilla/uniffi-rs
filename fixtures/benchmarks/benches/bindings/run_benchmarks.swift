@@ -13,14 +13,14 @@
 #endif
 
 class TestCallbackObj: TestCallbackInterface {
-    func testMethod(a: Int32, b: Int32, data: TestData) -> String {
+    func method(a: Int32, b: Int32, data: TestData) -> String {
         return data.bar
     }
 
-    func testVoidReturn(a: Int32, b: Int32, data: TestData) {
+    func methodWithVoidReturn(a: Int32, b: Int32, data: TestData) {
     }
 
-    func testNoArgsVoidReturn() {
+    func methodWithNoArgsAndVoidReturn() {
     }
 
     func runTest(testCase: TestCase, count: UInt64) -> UInt64 {

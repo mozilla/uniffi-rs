@@ -6,14 +6,14 @@ import uniffi.benchmarks.*
 import kotlin.system.measureNanoTime
 
 class TestCallbackObj : TestCallbackInterface {
-    override fun testMethod(a: Int, b: Int, data: TestData): String {
+    override fun method(a: Int, b: Int, data: TestData): String {
         return data.bar;
     }
 
-    override fun testVoidReturn(a: Int, b: Int, data: TestData) {
+    override fun methodWithVoidReturn(a: Int, b: Int, data: TestData) {
     }
 
-    override fun testNoArgsVoidReturn() {
+    override fun methodWithNoArgsAndVoidReturn() {
     }
 
     override fun runTest(testCase: TestCase, count: ULong): ULong {

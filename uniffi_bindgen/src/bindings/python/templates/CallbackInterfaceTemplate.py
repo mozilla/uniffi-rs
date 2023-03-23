@@ -40,7 +40,7 @@ def py_{{ foreign_callback }}(handle, method, args_data, args_len, buf_ptr):
             {%- when None %}
             makeCall()
             {%- endmatch %}
-            return 1
+            return UNIFFI_CALLBACK_SUCCESS
 
         {%- match meth.throws_type() %}
         {%- when None %}
@@ -53,7 +53,7 @@ def py_{{ foreign_callback }}(handle, method, args_data, args_len, buf_ptr):
             with RustBuffer.allocWithBuilder() as builder:
                 {{ err|write_fn }}(e, builder)
                 buf_ptr[0] = builder.finalize()
-            return -2
+            return UNIFFI_CALLBACK_ERROR
         {%- endmatch %}
 
     {% endfor %}
@@ -64,15 +64,15 @@ def py_{{ foreign_callback }}(handle, method, args_data, args_len, buf_ptr):
 
     if method == IDX_CALLBACK_FREE:
         {{ ffi_converter_name }}.drop(handle)
-        # No return value.
-        # See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-        return 0
+        # Successfull return
+        # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+        return UNIFFI_CALLBACK_SUCCESS
 
     {% for meth in cbi.methods() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
     if method == {{ loop.index }}:
         # Call the method and handle any errors
-        # See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs` for details
+        # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs` for details
         try:
             return {{ method_name }}(cb, RustBufferStream(args_data, args_len), buf_ptr)
         except BaseException as e:
@@ -83,7 +83,7 @@ def py_{{ foreign_callback }}(handle, method, args_data, args_len, buf_ptr):
             except:
                 # If that fails, just give up
                 pass
-            return -1
+            return UNIFFI_CALLBACK_UNEXPECTED_ERROR
     {% endfor %}
 
     # This should never happen, because an out of bounds method index won't
@@ -91,8 +91,8 @@ def py_{{ foreign_callback }}(handle, method, args_data, args_len, buf_ptr):
     # https://github.com/mozilla/uniffi-rs/issues/351
 
     # An unexpected error happened.
-    # See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-    return -1
+    # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+    return UNIFFI_CALLBACK_UNEXPECTED_ERROR
 
 # We need to keep this function reference alive:
 # if they get GC'd while in use then UniFFI internals could attempt to call a function

@@ -15,7 +15,9 @@
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.23.0...HEAD).
 
 ### ⚠️ Breaking Changes ⚠️
-- ABI: Implemented a new callback-interface ABI that significantly improves performance on Python and Kotlin.  UniFFI users will automatically get the benefits of this without any code changes.  This is a breaking change because the new generated code is not compatible with code generated with UniFFI 0.23.x.
+- ABI: Implemented a new callback-interface ABI that significantly improves performance on Python and Kotlin.
+  - UniFFI users will automatically get the benefits of this without any code changes.
+  - External bindings authors will need to update their bindings code.  See PR #1494 for details.
 
 ### What's changed
 

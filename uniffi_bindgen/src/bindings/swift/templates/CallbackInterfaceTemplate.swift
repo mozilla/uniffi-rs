@@ -37,7 +37,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
             var writer = [UInt8]()
             {{ return_type|write_fn }}(result, into: &writer)
             out_buf.pointee = RustBuffer(bytes: writer)
-            return 1
+            return UNIFFI_CALLBACK_SUCCESS
         }
         {%- when None %}
         func makeCall() throws -> Int32 {
@@ -47,7 +47,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
                     {%- if !loop.last %}, {% endif %}
                     {% endfor -%}
                 )
-            return 1
+            return UNIFFI_CALLBACK_SUCCESS
         }
         {%- endmatch %}
 
@@ -59,7 +59,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
             return try makeCall()
         } catch let error as {{ error_type|type_name }} {
             out_buf.pointee = {{ error_type|lower_fn }}(error)
-            return -2
+            return UNIFFI_CALLBACK_ERROR
         }
         {%- endmatch %}
     }
@@ -69,9 +69,9 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
     switch method {
         case IDX_CALLBACK_FREE:
             {{ ffi_converter_name }}.drop(handle: handle)
-            // No return value.
-            // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-            return 0
+            // Sucessful return
+            // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+            return UNIFFI_CALLBACK_SUCCESS
         {% for meth in cbi.methods() -%}
         {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
         case {{ loop.index }}:
@@ -80,13 +80,13 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
                 cb = try {{ ffi_converter_name }}.lift(handle)
             } catch {
                 out_buf.pointee = {{ Type::String.borrow()|lower_fn }}("{{ cbi.name() }}: Invalid handle")
-                return -1
+                return UNIFFI_CALLBACK_UNEXPECTED_ERROR
             }
             do {
                 return try {{ method_name }}(cb, argsData, argsLen, out_buf)
             } catch let error {
                 out_buf.pointee = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
-                return -1
+                return UNIFFI_CALLBACK_UNEXPECTED_ERROR
             }
         {% endfor %}
         // This should never happen, because an out of bounds method index won't
@@ -94,8 +94,8 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
         // https://github.com/mozilla/uniffi-rs/issues/351
         default:
             // An unexpected error happened.
-            // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
-            return -1
+            // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+            return UNIFFI_CALLBACK_UNEXPECTED_ERROR
     }
 }
 
