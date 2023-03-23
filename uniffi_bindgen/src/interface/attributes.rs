@@ -194,6 +194,48 @@ impl<T: TryInto<EnumAttributes, Error = anyhow::Error>> TryFrom<Option<T>> for E
     }
 }
 
+/// Attributes that can be attached to an `enum` variant definition in the UDL.
+#[derive(Debug, Clone, Checksum, Default)]
+pub(super) struct EnumVariantAttributes(Vec<Attribute>);
+
+impl EnumVariantAttributes {
+    pub fn contains_error_attr(&self) -> bool {
+        self.0.iter().any(|attr| attr.is_error())
+    }
+
+    pub fn get_docstring(&self) -> Option<&str> {
+        self.0.iter().find_map(|attr| match attr {
+            Attribute::Doc(docstring) => Some(docstring.as_ref()),
+            _ => None,
+        })
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumVariantAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::Doc(_) => Ok(()),
+            _ => bail!(format!("{attr:?} not supported for enum variants")),
+        })?;
+        Ok(Self(attrs))
+    }
+}
+
+impl<T: TryInto<EnumVariantAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
+    for EnumVariantAttributes
+{
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
+    }
+}
+
 /// Represents UDL attributes that might appear on a function.
 ///
 /// This supports the `[Throws=ErrorName]` attribute for functions that

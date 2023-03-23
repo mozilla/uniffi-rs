@@ -79,7 +79,7 @@
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
-use super::attributes::EnumInterfaceMemberAttributes;
+use super::attributes::{EnumInterfaceMemberAttributes, EnumVariantAttributes};
 use super::record::Field;
 use super::types::{Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
@@ -152,8 +152,11 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
                 .iter()
                 .map::<Result<_>, _>(|v| {
                     Ok(Variant {
-                        name: v.0.to_string(),
-                        ..Default::default() // TODO: WebIDL and weedle don't not support attributes for enum variants :(
+                        name: v.value.0.to_string(),
+                        docstring: EnumVariantAttributes::try_from(v.attributes.as_ref())?
+                            .get_docstring()
+                            .map(|v| v.to_string()),
+                        ..Default::default()
                     })
                 })
                 .collect::<Result<Vec<_>>>()?,
@@ -468,6 +471,24 @@ mod test {
         assert_eq!(
             ci.get_enum_definition("Testing")
                 .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_enum_variant() {
+        const UDL: &str = r#"
+            namespace test{};
+            enum Testing {
+                [Doc="informative docstring"]
+                "foo"
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_enum_definition("Testing").unwrap().variants()[0]
                 .docstring()
                 .unwrap(),
             "informative docstring"
