@@ -1,16 +1,16 @@
 namespace benchmarks {
-    // Run all benchmarks and print the results to stdout
-    void run_benchmarks(string language_name, TestCallbackInterface cb);
+  // Run all benchmarks and print the results to stdout
+  void run_benchmarks(string language_name, TestCallbackInterface cb);
 
-    // Test functions
+  // Test functions
   //
   // These are intented to test the overhead of Rust function calls including:
   // popping arguments from the stack, unpacking RustBuffers, pushing return
   // values back to the stack, etc.
 
-    string test_function(i32 a, i32 b, TestData data); // Should return data.bar
-    void test_void_return(i32 a, i32 b, TestData data);
-    void test_no_args_void_return();
+  string test_function(i32 a, i32 b, TestData data); // Should return data.bar
+  void test_void_return(i32 a, i32 b, TestData data);
+  void test_no_args_void_return();
 };
 
 dictionary TestData {
