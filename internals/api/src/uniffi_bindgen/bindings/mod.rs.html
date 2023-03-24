@@ -119,6 +119,13 @@
 <span id="119">119</span>
 <span id="120">120</span>
 <span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -152,6 +159,13 @@
     Swift,
     Python,
     Ruby,
+}
+
+<span class="doccomment">/// Mode for the `run_script` function defined for each language
+</span><span class="attribute">#[derive(Copy, Clone, Debug)]
+</span><span class="kw">pub enum </span>RunScriptMode {
+    Test,
+    PerformanceTest,
 }
 
 <span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>str&gt; <span class="kw">for </span>TargetLanguage {

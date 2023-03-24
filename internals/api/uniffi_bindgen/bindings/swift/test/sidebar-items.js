@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["calc_library_args",""],["calc_module_name",""],["compile_swift_module",""],["glob",""],["run_test","Run Swift tests for a UniFFI test fixture"]],"struct":[["GeneratedSources",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["calc_library_args",""],["calc_module_name",""],["compile_swift_module",""],["create_command",""],["glob",""],["run_script","Run a Swift script"],["run_test","Run Swift tests for a UniFFI test fixture"]],"struct":[["GeneratedSources",""]]};

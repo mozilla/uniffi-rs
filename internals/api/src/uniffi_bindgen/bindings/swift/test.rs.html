@@ -219,33 +219,77 @@
 <span id="219">219</span>
 <span id="220">220</span>
 <span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span><span class="kw">crate</span>::bindings::RunScriptMode;
+<span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
 <span class="kw">use </span>heck::ToSnakeCase;
 <span class="kw">use </span>std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
 <span class="kw">use </span>std::ffi::OsStr;
 <span class="kw">use </span>std::fs::{read_to_string, File};
 <span class="kw">use </span>std::io::Write;
-<span class="kw">use </span>std::process::Command;
+<span class="kw">use </span>std::process::{Command, Stdio};
 <span class="kw">use </span>uniffi_testing::{CompileSource, UniFFITestHelper};
 
 <span class="doccomment">/// Run Swift tests for a UniFFI test fixture
 </span><span class="kw">pub fn </span>run_test(tmp_dir: <span class="kw-2">&amp;</span>str, fixture_name: <span class="kw-2">&amp;</span>str, script_file: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    run_script(
+        tmp_dir,
+        fixture_name,
+        script_file,
+        <span class="macro">vec!</span>[],
+        RunScriptMode::Test,
+    )
+}
+
+<span class="doccomment">/// Run a Swift script
+///
+/// This function will set things up so that the script can import the UniFFI bindings for a crate
+</span><span class="kw">pub fn </span>run_script(
+    tmp_dir: <span class="kw-2">&amp;</span>str,
+    crate_name: <span class="kw-2">&amp;</span>str,
+    script_file: <span class="kw-2">&amp;</span>str,
+    args: Vec&lt;String&gt;,
+    mode: RunScriptMode,
+) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>script_path = Utf8Path::new(<span class="string">&quot;.&quot;</span>).join(script_file).canonicalize_utf8()<span class="question-mark">?</span>;
-    <span class="kw">let </span>test_helper = UniFFITestHelper::new(fixture_name).context(<span class="string">&quot;UniFFITestHelper::new&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let </span>out_dir = test_helper
-        .create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)
-        .context(<span class="string">&quot;create_out_dir()&quot;</span>)<span class="question-mark">?</span>;
-    test_helper
-        .copy_cdylibs_to_out_dir(<span class="kw-2">&amp;</span>out_dir)
-        .context(<span class="string">&quot;copy_fixture_library_to_out_dir()&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>test_helper = UniFFITestHelper::new(crate_name)<span class="question-mark">?</span>;
+    <span class="kw">let </span>out_dir = test_helper.create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)<span class="question-mark">?</span>;
+    test_helper.copy_cdylibs_to_out_dir(<span class="kw-2">&amp;</span>out_dir)<span class="question-mark">?</span>;
     <span class="kw">let </span>generated_sources =
-        GeneratedSources::new(<span class="kw-2">&amp;</span>test_helper.cdylib_path()<span class="question-mark">?</span>, <span class="kw-2">&amp;</span>out_dir, <span class="kw-2">&amp;</span>test_helper)
-            .context(<span class="string">&quot;generate_sources()&quot;</span>)<span class="question-mark">?</span>;
+        GeneratedSources::new(<span class="kw-2">&amp;</span>test_helper.cdylib_path()<span class="question-mark">?</span>, <span class="kw-2">&amp;</span>out_dir, <span class="kw-2">&amp;</span>test_helper)<span class="question-mark">?</span>;
 
     <span class="comment">// Compile the generated sources together to create a single swift module
     </span>compile_swift_module(
@@ -253,11 +297,11 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
         <span class="kw-2">&amp;</span>calc_module_name(<span class="kw-2">&amp;</span>generated_sources.main_source_filename),
         <span class="kw-2">&amp;</span>generated_sources.generated_swift_files,
         <span class="kw-2">&amp;</span>generated_sources.module_map,
+        mode,
     )<span class="question-mark">?</span>;
 
     <span class="comment">// Run the test script against compiled bindings
-
-    </span><span class="kw">let </span><span class="kw-2">mut </span>command = Command::new(<span class="string">&quot;swift&quot;</span>);
+    </span><span class="kw">let </span><span class="kw-2">mut </span>command = create_command(<span class="string">&quot;swift&quot;</span>, mode);
     command
         .current_dir(<span class="kw-2">&amp;</span>out_dir)
         .arg(<span class="string">&quot;-I&quot;</span>)
@@ -270,7 +314,8 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
             <span class="string">&quot;-fmodule-map-file={}&quot;</span>,
             generated_sources.module_map
         ))
-        .arg(<span class="kw-2">&amp;</span>script_path);
+        .arg(<span class="kw-2">&amp;</span>script_path)
+        .args(args);
     <span class="kw">let </span>status = command
         .spawn()
         .context(<span class="string">&quot;Failed to spawn `swiftc` when running test script&quot;</span>)<span class="question-mark">?
@@ -291,9 +336,10 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
     module_name: <span class="kw-2">&amp;</span>str,
     sources: <span class="kw">impl </span>IntoIterator&lt;Item = T&gt;,
     module_map: <span class="kw-2">&amp;</span>Utf8Path,
+    mode: RunScriptMode,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>output_filename = <span class="macro">format!</span>(<span class="string">&quot;{DLL_PREFIX}testmod_{module_name}{DLL_SUFFIX}&quot;</span>);
-    <span class="kw">let </span><span class="kw-2">mut </span>command = Command::new(<span class="string">&quot;swiftc&quot;</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>command = create_command(<span class="string">&quot;swiftc&quot;</span>, mode);
     command
         .current_dir(out_dir)
         .arg(<span class="string">&quot;-emit-module&quot;</span>)
@@ -414,6 +460,18 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
             <span class="bool-val">false</span>,
         )
     }
+}
+
+<span class="kw">fn </span>create_command(program: <span class="kw-2">&amp;</span>str, mode: RunScriptMode) -&gt; Command {
+    <span class="kw">let </span><span class="kw-2">mut </span>command = Command::new(program);
+    <span class="kw">if let </span>RunScriptMode::PerformanceTest = mode {
+        <span class="comment">// This prevents most compiler messages, but not remarks
+        </span>command.arg(<span class="string">&quot;-suppress-warnings&quot;</span>);
+        <span class="comment">// This gets the remorks.  Note: swift will eventually get a `-supress-remarks` argument,
+        // maybe we can eventually move to that
+        </span>command.stderr(Stdio::null());
+    }
+    command
 }
 
 <span class="comment">// Wraps glob to use Utf8Paths and flattens errors

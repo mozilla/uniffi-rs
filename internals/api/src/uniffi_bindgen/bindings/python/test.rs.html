@@ -60,41 +60,73 @@
 <span id="60">60</span>
 <span id="61">61</span>
 <span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span><span class="kw">crate</span>::bindings::RunScriptMode;
+<span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>std::env;
 <span class="kw">use </span>std::ffi::OsString;
-<span class="kw">use </span>std::process::{Command, Stdio};
+<span class="kw">use </span>std::process::Command;
 <span class="kw">use </span>uniffi_testing::UniFFITestHelper;
 
 <span class="doccomment">/// Run Python tests for a UniFFI test fixture
 </span><span class="kw">pub fn </span>run_test(tmp_dir: <span class="kw-2">&amp;</span>str, fixture_name: <span class="kw-2">&amp;</span>str, script_file: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    run_script(
+        tmp_dir,
+        fixture_name,
+        script_file,
+        <span class="macro">vec!</span>[],
+        RunScriptMode::Test,
+    )
+}
+
+<span class="doccomment">/// Run a Python script
+///
+/// This function will set things up so that the script can import the UniFFI bindings for a crate
+</span><span class="kw">pub fn </span>run_script(
+    tmp_dir: <span class="kw-2">&amp;</span>str,
+    crate_name: <span class="kw-2">&amp;</span>str,
+    script_file: <span class="kw-2">&amp;</span>str,
+    args: Vec&lt;String&gt;,
+    _mode: RunScriptMode,
+) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>script_path = Utf8Path::new(<span class="string">&quot;.&quot;</span>).join(script_file).canonicalize_utf8()<span class="question-mark">?</span>;
-    <span class="kw">let </span>test_helper = UniFFITestHelper::new(fixture_name).context(<span class="string">&quot;UniFFITestHelper::new&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let </span>out_dir = test_helper
-        .create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)
-        .context(<span class="string">&quot;create_out_dir&quot;</span>)<span class="question-mark">?</span>;
-    test_helper
-        .copy_cdylibs_to_out_dir(<span class="kw-2">&amp;</span>out_dir)
-        .context(<span class="string">&quot;copy_cdylibs_to_out_dir&quot;</span>)<span class="question-mark">?</span>;
-    generate_sources(<span class="kw-2">&amp;</span>test_helper.cdylib_path()<span class="question-mark">?</span>, <span class="kw-2">&amp;</span>out_dir, <span class="kw-2">&amp;</span>test_helper)
-        .context(<span class="string">&quot;generate_sources&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>test_helper = UniFFITestHelper::new(crate_name)<span class="question-mark">?</span>;
+    <span class="kw">let </span>out_dir = test_helper.create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)<span class="question-mark">?</span>;
+    test_helper.copy_cdylibs_to_out_dir(<span class="kw-2">&amp;</span>out_dir)<span class="question-mark">?</span>;
+    generate_sources(<span class="kw-2">&amp;</span>test_helper.cdylib_path()<span class="question-mark">?</span>, <span class="kw-2">&amp;</span>out_dir, <span class="kw-2">&amp;</span>test_helper)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>pythonpath = env::var_os(<span class="string">&quot;PYTHONPATH&quot;</span>).unwrap_or_else(|| OsString::from(<span class="string">&quot;&quot;</span>));
     <span class="kw">let </span>pythonpath = env::join_paths(
         env::split_paths(<span class="kw-2">&amp;</span>pythonpath).chain(<span class="macro">vec!</span>[out_dir.to_path_buf().into_std_path_buf()]),
     )<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>status = Command::new(<span class="string">&quot;python3&quot;</span>)
+    <span class="kw">let </span><span class="kw-2">mut </span>command = Command::new(<span class="string">&quot;python3&quot;</span>);
+    command
         .current_dir(out_dir)
         .env(<span class="string">&quot;PYTHONPATH&quot;</span>, pythonpath)
         .arg(script_path)
-        .stderr(Stdio::inherit())
-        .stdout(Stdio::inherit())
+        .args(args);
+    <span class="kw">let </span>status = command
         .spawn()
         .context(<span class="string">&quot;Failed to spawn `python3` when running script&quot;</span>)<span class="question-mark">?
         </span>.wait()

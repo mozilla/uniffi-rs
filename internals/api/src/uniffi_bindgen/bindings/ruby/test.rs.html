@@ -60,6 +60,12 @@
 <span id="60">60</span>
 <span id="61">61</span>
 <span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -73,29 +79,8 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 
 <span class="doccomment">/// Run Ruby tests for a UniFFI test fixture
 </span><span class="kw">pub fn </span>run_test(tmp_dir: <span class="kw-2">&amp;</span>str, fixture_name: <span class="kw-2">&amp;</span>str, script_file: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">let </span>script_path = Utf8Path::new(<span class="string">&quot;.&quot;</span>).join(script_file).canonicalize_utf8()<span class="question-mark">?</span>;
-    <span class="kw">let </span>test_helper = UniFFITestHelper::new(fixture_name).context(<span class="string">&quot;UniFFITestHelper::new&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let </span>out_dir = test_helper
-        .create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)
-        .context(<span class="string">&quot;create_out_dir&quot;</span>)<span class="question-mark">?</span>;
-    test_helper
-        .copy_cdylibs_to_out_dir(<span class="kw-2">&amp;</span>out_dir)
-        .context(<span class="string">&quot;copy_cdylibs_to_out_dir&quot;</span>)<span class="question-mark">?</span>;
-    generate_sources(<span class="kw-2">&amp;</span>test_helper.cdylib_path()<span class="question-mark">?</span>, <span class="kw-2">&amp;</span>out_dir, <span class="kw-2">&amp;</span>test_helper)
-        .context(<span class="string">&quot;generate_sources&quot;</span>)<span class="question-mark">?</span>;
-
-    <span class="kw">let </span>rubypath = env::var_os(<span class="string">&quot;RUBYLIB&quot;</span>).unwrap_or_else(|| OsString::from(<span class="string">&quot;&quot;</span>));
-    <span class="kw">let </span>rubypath = env::join_paths(
-        env::split_paths(<span class="kw-2">&amp;</span>rubypath).chain(<span class="macro">vec!</span>[out_dir.to_path_buf().into_std_path_buf()]),
-    )<span class="question-mark">?</span>;
-
-    <span class="kw">let </span>status = Command::new(<span class="string">&quot;ruby&quot;</span>)
-        .current_dir(out_dir)
-        .env(<span class="string">&quot;RUBYLIB&quot;</span>, rubypath)
-        .arg(script_path)
-        .stderr(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .spawn()
+    <span class="kw">let </span>status = test_script_command(tmp_dir, fixture_name, script_file)<span class="question-mark">?
+        </span>.spawn()
         .context(<span class="string">&quot;Failed to spawn `ruby` when running script&quot;</span>)<span class="question-mark">?
         </span>.wait()
         .context(<span class="string">&quot;Failed to wait for `ruby` when running script&quot;</span>)<span class="question-mark">?</span>;
@@ -103,6 +88,33 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
         <span class="macro">bail!</span>(<span class="string">&quot;running `ruby` failed&quot;</span>);
     }
     <span class="prelude-val">Ok</span>(())
+}
+
+<span class="doccomment">/// Create a `Command` instance that runs a test script
+</span><span class="kw">pub fn </span>test_script_command(
+    tmp_dir: <span class="kw-2">&amp;</span>str,
+    fixture_name: <span class="kw-2">&amp;</span>str,
+    script_file: <span class="kw-2">&amp;</span>str,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Command&gt; {
+    <span class="kw">let </span>script_path = Utf8Path::new(<span class="string">&quot;.&quot;</span>).join(script_file).canonicalize_utf8()<span class="question-mark">?</span>;
+    <span class="kw">let </span>test_helper = UniFFITestHelper::new(fixture_name)<span class="question-mark">?</span>;
+    <span class="kw">let </span>out_dir = test_helper.create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)<span class="question-mark">?</span>;
+    test_helper.copy_cdylibs_to_out_dir(<span class="kw-2">&amp;</span>out_dir)<span class="question-mark">?</span>;
+    generate_sources(<span class="kw-2">&amp;</span>test_helper.cdylib_path()<span class="question-mark">?</span>, <span class="kw-2">&amp;</span>out_dir, <span class="kw-2">&amp;</span>test_helper)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>rubypath = env::var_os(<span class="string">&quot;RUBYLIB&quot;</span>).unwrap_or_else(|| OsString::from(<span class="string">&quot;&quot;</span>));
+    <span class="kw">let </span>rubypath = env::join_paths(
+        env::split_paths(<span class="kw-2">&amp;</span>rubypath).chain(<span class="macro">vec!</span>[out_dir.to_path_buf().into_std_path_buf()]),
+    )<span class="question-mark">?</span>;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>command = Command::new(<span class="string">&quot;ruby&quot;</span>);
+    command
+        .current_dir(out_dir)
+        .env(<span class="string">&quot;RUBYLIB&quot;</span>, rubypath)
+        .arg(script_path)
+        .stderr(Stdio::inherit())
+        .stdout(Stdio::inherit());
+    <span class="prelude-val">Ok</span>(command)
 }
 
 <span class="kw">fn </span>generate_sources(
