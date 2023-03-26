@@ -2,7 +2,7 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::RunScriptMode;
+use crate::bindings::RunScriptOptions;
 use anyhow::{Context, Result};
 use camino::Utf8Path;
 use std::env;
@@ -17,7 +17,7 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
         fixture_name,
         script_file,
         vec![],
-        RunScriptMode::Test,
+        &RunScriptOptions::default(),
     )
 }
 
@@ -29,7 +29,7 @@ pub fn run_script(
     crate_name: &str,
     script_file: &str,
     args: Vec<String>,
-    _mode: RunScriptMode,
+    _options: &RunScriptOptions,
 ) -> Result<()> {
     let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
     let test_helper = UniFFITestHelper::new(crate_name)?;

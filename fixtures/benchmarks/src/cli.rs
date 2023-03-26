@@ -19,7 +19,7 @@ pub struct Args {
     pub swift: bool,
 
     /// Dump compiler output to the console.  Good for debugging new benchmarks.
-    #[clap(long, display_order = 1, action)]
+    #[clap(long, display_order = 1)]
     pub compiler_messages: bool,
 
     // Args for running the metrics, these are handled in `lib.rs`

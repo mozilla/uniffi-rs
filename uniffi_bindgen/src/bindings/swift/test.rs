@@ -2,7 +2,7 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::RunScriptMode;
+use crate::bindings::RunScriptOptions;
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use heck::ToSnakeCase;
@@ -20,7 +20,7 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
         fixture_name,
         script_file,
         vec![],
-        RunScriptMode::Test,
+        &RunScriptOptions::default(),
     )
 }
 
@@ -32,7 +32,7 @@ pub fn run_script(
     crate_name: &str,
     script_file: &str,
     args: Vec<String>,
-    mode: RunScriptMode,
+    options: &RunScriptOptions,
 ) -> Result<()> {
     let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
     let test_helper = UniFFITestHelper::new(crate_name)?;
@@ -47,11 +47,11 @@ pub fn run_script(
         &calc_module_name(&generated_sources.main_source_filename),
         &generated_sources.generated_swift_files,
         &generated_sources.module_map,
-        mode,
+        options,
     )?;
 
     // Run the test script against compiled bindings
-    let mut command = create_command("swift", mode);
+    let mut command = create_command("swift", options);
     command
         .current_dir(&out_dir)
         .arg("-I")
@@ -86,10 +86,10 @@ fn compile_swift_module<T: AsRef<OsStr>>(
     module_name: &str,
     sources: impl IntoIterator<Item = T>,
     module_map: &Utf8Path,
-    mode: RunScriptMode,
+    options: &RunScriptOptions,
 ) -> Result<()> {
     let output_filename = format!("{DLL_PREFIX}testmod_{module_name}{DLL_SUFFIX}");
-    let mut command = create_command("swiftc", mode);
+    let mut command = create_command("swiftc", options);
     command
         .current_dir(out_dir)
         .arg("-emit-module")
@@ -212,12 +212,12 @@ impl GeneratedSources {
     }
 }
 
-fn create_command(program: &str, mode: RunScriptMode) -> Command {
+fn create_command(program: &str, options: &RunScriptOptions) -> Command {
     let mut command = Command::new(program);
-    if let RunScriptMode::PerformanceTest = mode {
+    if !options.show_compiler_messages {
         // This prevents most compiler messages, but not remarks
         command.arg("-suppress-warnings");
-        // This gets the remorks.  Note: swift will eventually get a `-supress-remarks` argument,
+        // This gets the remarks.  Note: swift will eventually get a `-supress-remarks` argument,
         // maybe we can eventually move to that
         command.stderr(Stdio::null());
     }

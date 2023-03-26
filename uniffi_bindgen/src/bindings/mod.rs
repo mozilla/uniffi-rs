@@ -34,10 +34,17 @@ pub enum TargetLanguage {
 }
 
 /// Mode for the `run_script` function defined for each language
-#[derive(Copy, Clone, Debug)]
-pub enum RunScriptMode {
-    Test,
-    PerformanceTest,
+#[derive(Clone, Debug)]
+pub struct RunScriptOptions {
+    pub show_compiler_messages: bool,
+}
+
+impl Default for RunScriptOptions {
+    fn default() -> Self {
+        Self {
+            show_compiler_messages: true,
+        }
+    }
 }
 
 impl TryFrom<&str> for TargetLanguage {

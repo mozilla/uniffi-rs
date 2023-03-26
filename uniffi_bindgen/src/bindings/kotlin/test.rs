@@ -2,7 +2,7 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::RunScriptMode;
+use crate::bindings::RunScriptOptions;
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::env;
@@ -16,7 +16,7 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
         fixture_name,
         script_file,
         vec![],
-        RunScriptMode::Test,
+        &RunScriptOptions::default(),
     )
 }
 
@@ -28,16 +28,16 @@ pub fn run_script(
     crate_name: &str,
     script_file: &str,
     args: Vec<String>,
-    mode: RunScriptMode,
+    options: &RunScriptOptions,
 ) -> Result<()> {
     let script_path = Utf8Path::new(".").join(script_file);
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
     test_helper.copy_cdylibs_to_out_dir(&out_dir)?;
     generate_sources(&test_helper.cdylib_path()?, &out_dir, &test_helper)?;
-    let jar_file = build_jar(crate_name, &out_dir, mode)?;
+    let jar_file = build_jar(crate_name, &out_dir, options)?;
 
-    let mut command = kotlinc_command(mode);
+    let mut command = kotlinc_command(options);
     command
         .arg("-classpath")
         .arg(calc_classpath(vec![&out_dir, &jar_file]))
@@ -84,7 +84,11 @@ fn generate_sources(
 
 /// Generate kotlin bindings for the given namespace, then use the kotlin
 /// command-line tools to compile them into a .jar file.
-fn build_jar(crate_name: &str, out_dir: &Utf8Path, mode: RunScriptMode) -> Result<Utf8PathBuf> {
+fn build_jar(
+    crate_name: &str,
+    out_dir: &Utf8Path,
+    options: &RunScriptOptions,
+) -> Result<Utf8PathBuf> {
     let mut jar_file = Utf8PathBuf::from(out_dir);
     jar_file.push(format!("{crate_name}.jar"));
     let sources = glob::glob(out_dir.join("**/*.kt").as_str())?
@@ -95,7 +99,7 @@ fn build_jar(crate_name: &str, out_dir: &Utf8Path, mode: RunScriptMode) -> Resul
         bail!("No kotlin sources found in {out_dir}")
     }
 
-    let mut command = kotlinc_command(mode);
+    let mut command = kotlinc_command(options);
     command
         // Our generated bindings should not produce any warnings; fail tests if they do.
         .arg("-Werror")
@@ -116,9 +120,9 @@ fn build_jar(crate_name: &str, out_dir: &Utf8Path, mode: RunScriptMode) -> Resul
     Ok(jar_file)
 }
 
-fn kotlinc_command(mode: RunScriptMode) -> Command {
+fn kotlinc_command(options: &RunScriptOptions) -> Command {
     let mut command = Command::new("kotlinc");
-    if let RunScriptMode::PerformanceTest = mode {
+    if !options.show_compiler_messages {
         command.arg("-nowarn");
     }
     command
