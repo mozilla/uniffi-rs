@@ -3,8 +3,8 @@ use quote::quote;
 use syn::{Data, DataEnum, DeriveInput, Field, Index, Path};
 
 use crate::util::{
-    create_metadata_static_var, tagged_impl_header, try_metadata_value_from_usize, try_read_field,
-    type_name, AttributeSliceExt, CommonAttr,
+    create_metadata_items, mod_path, tagged_impl_header, try_metadata_value_from_usize,
+    try_read_field, type_name, AttributeSliceExt, CommonAttr,
 };
 
 pub fn expand_enum(input: DeriveInput) -> syn::Result<TokenStream> {
@@ -143,17 +143,19 @@ fn write_field(f: &Field) -> TokenStream {
 
 pub(crate) fn enum_meta_static_var(ident: &Ident, enum_: &DataEnum) -> syn::Result<TokenStream> {
     let name = ident.to_string();
+    let module_path = mod_path()?;
 
     let mut metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
-                .concat_str(module_path!())
+                .concat_str(#module_path)
                 .concat_str(#name)
     };
     metadata_expr.extend(variant_metadata(enum_)?);
-    Ok(create_metadata_static_var(
-        "ENUM",
+    Ok(create_metadata_items(
+        "enum",
         &ident.to_string(),
         metadata_expr,
+        None,
     ))
 }
 

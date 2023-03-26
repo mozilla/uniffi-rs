@@ -7,7 +7,7 @@ use quote::{format_ident, quote, ToTokens};
 use syn::{ext::IdentExt, spanned::Spanned, FnArg, Pat};
 
 use super::{AsyncRuntime, ExportAttributeArguments, Signature};
-use crate::util::{create_metadata_static_var, try_metadata_value_from_usize, type_name};
+use crate::util::{create_metadata_items, try_metadata_value_from_usize, type_name};
 
 pub(super) fn gen_fn_scaffolding(
     sig: &Signature,
@@ -27,7 +27,7 @@ pub(super) fn gen_fn_scaffolding(
     let mut bits = ScaffoldingBits::new();
     bits.collect_params(&sig.inputs, ERROR_MSG);
     bits.set_rust_fn_call(quote! { #name });
-    let metadata_var = bits.gen_function_meta_static_var(sig)?;
+    let metadata_var = bits.gen_function_meta_static_var(sig, mod_path)?;
     let scaffolding_func = gen_ffi_function(sig, ffi_ident, &bits, arguments);
     Ok(quote! {
         #scaffolding_func
@@ -44,9 +44,8 @@ pub(super) fn gen_method_scaffolding(
     let ident = &sig.ident;
     let name_s = ident.unraw().to_string();
 
-    let ffi_name = format!("impl_{self_ident}_{name_s}");
     let ffi_ident = Ident::new(
-        &uniffi_meta::fn_ffi_symbol_name(mod_path, &ffi_name),
+        &uniffi_meta::method_fn_symbol_name(mod_path, &self_ident.unraw().to_string(), &name_s),
         Span::call_site(),
     );
 
@@ -81,7 +80,7 @@ pub(super) fn gen_method_scaffolding(
         }
     };
 
-    let metadata_var = bits.gen_method_meta_static_var(self_ident, sig)?;
+    let metadata_var = bits.gen_method_meta_static_var(self_ident, sig, mod_path)?;
     let scaffolding_func = gen_ffi_function(sig, ffi_ident, &bits, arguments);
     Ok(quote! {
         #scaffolding_func
@@ -211,7 +210,11 @@ impl ScaffoldingBits {
         }
     }
 
-    fn gen_function_meta_static_var(&self, sig: &Signature) -> syn::Result<TokenStream> {
+    fn gen_function_meta_static_var(
+        &self,
+        sig: &Signature,
+        mod_path: &str,
+    ) -> syn::Result<TokenStream> {
         let name = type_name(&sig.ident);
         let return_ty = &sig.output;
         let is_async = sig.is_async;
@@ -222,18 +225,19 @@ impl ScaffoldingBits {
             "UniFFI limits functions to 256 arguments",
         )?;
         let arg_metadata_calls = &self.arg_metadata_calls;
-        Ok(create_metadata_static_var(
-            "FUNC",
+        Ok(create_metadata_items(
+            "func",
             &name,
             quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
-                        .concat_str(module_path!())
+                        .concat_str(#mod_path)
                         .concat_str(#name)
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
             },
+            Some(uniffi_meta::fn_checksum_symbol_name(mod_path, &name)),
         ))
     }
 
@@ -241,6 +245,7 @@ impl ScaffoldingBits {
         &self,
         self_ident: &Ident,
         sig: &Signature,
+        mod_path: &str,
     ) -> syn::Result<TokenStream> {
         let object_name = type_name(self_ident);
         let name = type_name(&sig.ident);
@@ -253,12 +258,12 @@ impl ScaffoldingBits {
             "UniFFI limits functions to 256 arguments",
         )?;
         let arg_metadata_calls = &self.arg_metadata_calls;
-        Ok(create_metadata_static_var(
-            "METHOD",
+        Ok(create_metadata_items(
+            "method",
             &format!("{}_{}", object_name, name),
             quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
-                        .concat_str(module_path!())
+                        .concat_str(#mod_path)
                         .concat_str(#object_name)
                         .concat_str(#name)
                         .concat_bool(#is_async)
@@ -266,6 +271,11 @@ impl ScaffoldingBits {
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
             },
+            Some(uniffi_meta::method_checksum_symbol_name(
+                mod_path,
+                &object_name,
+                &name,
+            )),
         ))
     }
 }

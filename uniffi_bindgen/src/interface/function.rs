@@ -57,12 +57,17 @@ pub struct Function {
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
-    //  - its `name` property includes a checksum derived from  the very
+    //  - its `name` property includes a checksum derived from the very
     //    hash value we're trying to calculate here, so excluding it
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
     pub(super) attributes: FunctionAttributes,
+    pub(super) checksum_fn_name: String,
+    // Force a checksum value.  This is used for functions from the proc-macro code, which uses a
+    // different checksum method.
+    #[checksum_ignore]
+    pub(super) checksum_override: Option<u16>,
 }
 
 impl Function {
@@ -90,6 +95,15 @@ impl Function {
         &self.ffi_func
     }
 
+    pub fn checksum_fn_name(&self) -> &str {
+        &self.checksum_fn_name
+    }
+
+    pub fn checksum(&self) -> u16 {
+        self.checksum_override
+            .unwrap_or_else(|| uniffi_meta::checksum(self))
+    }
+
     pub fn throws(&self) -> bool {
         self.attributes.get_throws_err().is_some()
     }
@@ -104,11 +118,11 @@ impl Function {
             .map(|name| Type::Error(name.to_owned()))
     }
 
-    pub fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
+    pub fn derive_ffi_func(&mut self, ci_namespace: &str) -> Result<()> {
         // The name is already set if the function is defined through a proc-macro invocation
         // rather than in UDL. Don't overwrite it in that case.
         if self.ffi_func.name.is_empty() {
-            self.ffi_func.name = format!("{ci_prefix}_{}", self.name);
+            self.ffi_func.name = uniffi_meta::fn_ffi_symbol_name(ci_namespace, &self.name);
         }
 
         self.ffi_func.arguments = self.arguments.iter().map(|arg| arg.into()).collect();
@@ -132,6 +146,7 @@ impl From<uniffi_meta::FnParamMetadata> for Argument {
 impl From<uniffi_meta::FnMetadata> for Function {
     fn from(meta: uniffi_meta::FnMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
+        let checksum_fn_name = meta.checksum_symbol_name();
         let is_async = meta.is_async;
         let return_type = meta.return_type.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
@@ -155,6 +170,8 @@ impl From<uniffi_meta::FnMetadata> for Function {
                 }
                 Some(ty) => panic!("Invalid throws type: {ty:?}"),
             },
+            checksum_fn_name,
+            checksum_override: Some(meta.checksum),
         }
     }
 }
@@ -171,16 +188,20 @@ impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {
 impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
         let return_type = ci.resolve_return_type_expression(&self.return_type)?;
+        let name = match self.identifier {
+            None => bail!("anonymous functions are not supported {:?}", self),
+            Some(id) => id.0.to_string(),
+        };
+        let checksum_fn_name = uniffi_meta::fn_checksum_symbol_name(ci.namespace(), &name);
         Ok(Function {
-            name: match self.identifier {
-                None => bail!("anonymous functions are not supported {:?}", self),
-                Some(id) => id.0.to_string(),
-            },
+            name,
             is_async: false,
             return_type,
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
             attributes: FunctionAttributes::try_from(self.attributes.as_ref())?,
+            checksum_fn_name,
+            checksum_override: None,
         })
     }
 }

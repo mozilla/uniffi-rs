@@ -1,7 +1,7 @@
 error[E0277]: the trait bound `f32: Hash` is not satisfied
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
   |
-  | / pub extern "C" fn r#uitests_a12c_get_dict(
+  | / pub extern "C" fn r#uniffi_uitests_fn_func_get_dict(
   | |
   | |     call_status: &mut uniffi::RustCallStatus
   | | )  -> <std::collections::HashMap<f32, u64> as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {
@@ -25,7 +25,7 @@ error[E0277]: the trait bound `f32: Hash` is not satisfied
 error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
   |
-  | / pub extern "C" fn r#uitests_a12c_get_dict(
+  | / pub extern "C" fn r#uniffi_uitests_fn_func_get_dict(
   | |
   | |     call_status: &mut uniffi::RustCallStatus
   | | )  -> <std::collections::HashMap<f32, u64> as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {

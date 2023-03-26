@@ -162,11 +162,11 @@ impl Object {
             .chain(self.methods.iter().map(|f| &f.ffi_func))
     }
 
-    pub fn derive_ffi_funcs(&mut self, ci_prefix: &str) -> Result<()> {
+    pub fn derive_ffi_funcs(&mut self, ci_namespace: &str) -> Result<()> {
         // The name is already set if the function is defined through a proc-macro invocation
         // rather than in UDL. Don't overwrite it in that case.
         if self.ffi_func_free.name().is_empty() {
-            self.ffi_func_free.name = format!("ffi_{ci_prefix}_{}_object_free", self.name);
+            self.ffi_func_free.name = uniffi_meta::free_fn_symbol_name(ci_namespace, &self.name);
         }
         self.ffi_func_free.arguments = vec![FfiArgument {
             name: "ptr".to_string(),
@@ -175,10 +175,10 @@ impl Object {
         self.ffi_func_free.return_type = None;
 
         for cons in self.constructors.iter_mut() {
-            cons.derive_ffi_func(ci_prefix, &self.name);
+            cons.derive_ffi_func(ci_namespace, &self.name);
         }
         for meth in self.methods.iter_mut() {
-            meth.derive_ffi_func(ci_prefix, &self.name)?;
+            meth.derive_ffi_func(ci_namespace, &self.name)?;
         }
 
         Ok(())
@@ -215,7 +215,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                     if !member_names.insert(cons.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", cons.name())
                     }
-                    cons.object_name = object.name.clone();
+                    cons.set_object_name(ci.namespace(), object.name.clone());
                     object.constructors.push(cons);
                 }
                 weedle::interface::InterfaceMember::Operation(t) => {
@@ -223,7 +223,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                     if !member_names.insert(method.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", method.name())
                     }
-                    method.object_name = object.name.clone();
+                    method.set_object_name(ci.namespace(), object.name.clone());
                     object.methods.push(method);
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
@@ -251,6 +251,11 @@ pub struct Constructor {
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
     pub(super) attributes: ConstructorAttributes,
+    pub(super) checksum_fn_name: String,
+    // Force a checksum value.  This is used for functions from the proc-macro code, which uses a
+    // different checksum method.
+    #[checksum_ignore]
+    pub(super) checksum_override: Option<u16>,
 }
 
 impl Constructor {
@@ -268,6 +273,15 @@ impl Constructor {
 
     pub fn ffi_func(&self) -> &FfiFunction {
         &self.ffi_func
+    }
+
+    pub fn checksum_fn_name(&self) -> &str {
+        &self.checksum_fn_name
+    }
+
+    pub fn checksum(&self) -> u16 {
+        self.checksum_override
+            .unwrap_or_else(|| uniffi_meta::checksum(self))
     }
 
     pub fn throws(&self) -> bool {
@@ -288,8 +302,8 @@ impl Constructor {
         self.name == "new"
     }
 
-    fn derive_ffi_func(&mut self, ci_prefix: &str, obj_name: &str) {
-        self.ffi_func.name = format!("{ci_prefix}_{obj_name}_{}", self.name);
+    fn derive_ffi_func(&mut self, ci_namespace: &str, obj_name: &str) {
+        self.ffi_func.name = uniffi_meta::method_fn_symbol_name(ci_namespace, obj_name, &self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
         self.ffi_func.return_type = Some(FfiType::RustArcPtr(obj_name.to_string()));
     }
@@ -297,18 +311,15 @@ impl Constructor {
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.arguments.iter().flat_map(Argument::iter_types))
     }
-}
 
-impl Default for Constructor {
-    fn default() -> Self {
-        Constructor {
-            name: String::from("new"),
-            // We don't know the name of the containing `Object` at this point, fill it in later.
-            object_name: Default::default(),
-            arguments: Vec::new(),
-            ffi_func: Default::default(),
-            attributes: Default::default(),
+    fn set_object_name(&mut self, ci_namespace: &str, object_name: String) {
+        // This is when we setup checksum_fn_name for objects defined in the UDL.  However, don't
+        // overwrite checksum_fn_name if we got it from the proc-macro metadata.
+        if self.checksum_fn_name.is_empty() {
+            self.checksum_fn_name =
+                uniffi_meta::method_checksum_symbol_name(ci_namespace, &object_name, &self.name);
         }
+        self.object_name = object_name;
     }
 }
 
@@ -322,9 +333,12 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             name: String::from(attributes.get_name().unwrap_or("new")),
             // We don't know the name of the containing `Object` at this point, fill it in later.
             object_name: Default::default(),
+            // Also fill in checksum_fn_name later, since it depends on object_name
+            checksum_fn_name: Default::default(),
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
             attributes,
+            checksum_override: None,
         })
     }
 }
@@ -349,6 +363,11 @@ pub struct Method {
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
     pub(super) attributes: MethodAttributes,
+    pub(super) checksum_fn_name: String,
+    // Force a checksum value.  This is used for functions from the proc-macro code, which uses a
+    // different checksum method.
+    #[checksum_ignore]
+    pub(super) checksum_override: Option<u16>,
 }
 
 impl Method {
@@ -389,6 +408,15 @@ impl Method {
         &self.ffi_func
     }
 
+    pub fn checksum_fn_name(&self) -> &str {
+        &self.checksum_fn_name
+    }
+
+    pub fn checksum(&self) -> u16 {
+        self.checksum_override
+            .unwrap_or_else(|| uniffi_meta::checksum(self))
+    }
+
     pub fn throws(&self) -> bool {
         self.attributes.get_throws_err().is_some()
     }
@@ -407,11 +435,12 @@ impl Method {
         self.attributes.get_self_by_arc()
     }
 
-    pub fn derive_ffi_func(&mut self, ci_prefix: &str, obj_prefix: &str) -> Result<()> {
+    pub fn derive_ffi_func(&mut self, ci_namespace: &str, obj_name: &str) -> Result<()> {
         // The name is already set if the function is defined through a proc-macro invocation
         // rather than in UDL. Don't overwrite it in that case.
         if self.ffi_func.name.is_empty() {
-            self.ffi_func.name = format!("{ci_prefix}_{obj_prefix}_{}", self.name);
+            self.ffi_func.name =
+                uniffi_meta::method_fn_symbol_name(ci_namespace, obj_name, &self.name);
         }
 
         self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
@@ -427,11 +456,22 @@ impl Method {
                 .chain(self.return_type.iter().flat_map(Type::iter_types)),
         )
     }
+
+    fn set_object_name(&mut self, ci_namespace: &str, object_name: String) {
+        // This is when we setup checksum_fn_name for objects defined in the UDL.  However, don't
+        // overwrite checksum_fn_name if we got it from the proc-macro metadata.
+        if self.checksum_fn_name.is_empty() {
+            self.checksum_fn_name =
+                uniffi_meta::method_checksum_symbol_name(ci_namespace, &object_name, &self.name);
+        }
+        self.object_name = object_name;
+    }
 }
 
 impl From<uniffi_meta::MethodMetadata> for Method {
     fn from(meta: uniffi_meta::MethodMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
+        let checksum_fn_name = meta.checksum_symbol_name();
         let is_async = meta.is_async;
         let return_type = meta.return_type.map(|out| convert_type(&out));
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
@@ -456,6 +496,8 @@ impl From<uniffi_meta::MethodMetadata> for Method {
                 }
                 Some(ty) => panic!("Invalid throws type: {ty:?}"),
             },
+            checksum_fn_name,
+            checksum_override: Some(meta.checksum),
         }
     }
 }
@@ -482,11 +524,14 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             },
             // We don't know the name of the containing `Object` at this point, fill it in later.
             object_name: Default::default(),
+            // Also fill in checksum_fn_name later, since it depends on the object name
+            checksum_fn_name: Default::default(),
             is_async: false,
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),
             attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
+            checksum_override: None,
         })
     }
 }

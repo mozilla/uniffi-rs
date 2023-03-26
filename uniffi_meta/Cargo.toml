@@ -14,3 +14,4 @@ bytes = "1.0"
 serde = { version = "1.0.136", features = ["derive"] }
 siphasher = "0.3"
 uniffi_checksum_derive = { version = "0.23.0", path = "../uniffi_checksum_derive" }
+uniffi_core = { path = "../uniffi_core", version = "=0.23.0" }

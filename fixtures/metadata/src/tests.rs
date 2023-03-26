@@ -99,7 +99,7 @@ mod test_type_ids {
     fn check_type_id<T: FfiConverter<UniFfiTag>>(correct_type: Type) {
         let buf = &mut T::TYPE_ID_META.as_ref();
         assert_eq!(
-            buf.read_type().unwrap(),
+            uniffi_meta::read_metadata_type(buf).unwrap(),
             correct_type,
             "Expected: {correct_type:?} data: {:?}",
             T::TYPE_ID_META.as_ref()
@@ -150,9 +150,9 @@ mod test_type_ids {
     }
 }
 
-fn check_metadata(mut encoded: &[u8], correct_metadata: impl Into<Metadata>) {
+fn check_metadata(encoded: &[u8], correct_metadata: impl Into<Metadata>) {
     assert_eq!(
-        (&mut encoded).read_metadata().unwrap(),
+        uniffi_meta::read_metadata(encoded).unwrap(),
         correct_metadata.into()
     )
 }
@@ -165,7 +165,7 @@ mod test_metadata {
         check_metadata(
             &person::UNIFFI_META_UNIFFI_FIXTURE_METADATA_RECORD_PERSON,
             RecordMetadata {
-                module_path: "uniffi_fixture_metadata::tests::person".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "Person".into(),
                 fields: vec![
                     FieldMetadata {
@@ -186,7 +186,7 @@ mod test_metadata {
         check_metadata(
             &weapon::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_WEAPON,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata::tests::weapon".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "Weapon".into(),
                 variants: vec![
                     VariantMetadata {
@@ -211,7 +211,7 @@ mod test_metadata {
         check_metadata(
             &state::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_STATE,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata::tests::state".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "State".into(),
                 variants: vec![
                     VariantMetadata {
@@ -244,7 +244,7 @@ mod test_metadata {
         check_metadata(
             &error::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_FLATERROR,
             ErrorMetadata {
-                module_path: "uniffi_fixture_metadata::tests::error".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "FlatError".into(),
                 flat: true,
                 variants: vec![
@@ -266,7 +266,7 @@ mod test_metadata {
         check_metadata(
             &error::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_COMPLEXERROR,
             ErrorMetadata {
-                module_path: "uniffi_fixture_metadata::tests::error".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "ComplexError".into(),
                 flat: false,
                 variants: vec![
@@ -300,7 +300,7 @@ mod test_metadata {
         check_metadata(
             &calc::UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_CALCULATOR,
             ObjectMetadata {
-                module_path: "uniffi_fixture_metadata::tests::calc".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "Calculator".into(),
             },
         );
@@ -360,7 +360,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "test_func".into(),
                 is_async: false,
                 inputs: vec![
@@ -379,6 +379,7 @@ mod test_function_metadata {
                 ],
                 return_type: Some(Type::String),
                 throws: None,
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC.checksum(),
             },
         );
     }
@@ -388,12 +389,14 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "test_func_no_return".into(),
                 is_async: false,
                 inputs: vec![],
                 return_type: None,
                 throws: None,
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN
+                    .checksum(),
             },
         );
     }
@@ -403,7 +406,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_THAT_THROWS,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "test_func_that_throws".into(),
                 is_async: false,
                 inputs: vec![],
@@ -413,6 +416,8 @@ mod test_function_metadata {
                 throws: Some(Type::Error {
                     name: "FlatError".into(),
                 }),
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_THAT_THROWS
+                    .checksum(),
             },
         );
     }
@@ -422,7 +427,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN_THAT_THROWS,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "test_func_no_return_that_throws".into(),
                 is_async: false,
                 inputs: vec![],
@@ -430,6 +435,9 @@ mod test_function_metadata {
                 throws: Some(Type::Error {
                     name: "FlatError".into(),
                 }),
+                checksum:
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN_THAT_THROWS
+                        .checksum(),
             },
         );
     }
@@ -439,7 +447,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD,
             MethodMetadata {
-                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
                 name: "add".into(),
                 is_async: false,
@@ -455,6 +463,8 @@ mod test_function_metadata {
                 ],
                 return_type: Some(Type::U8),
                 throws: None,
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD
+                    .checksum(),
             },
         );
     }
@@ -464,7 +474,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "test_async_func".into(),
                 is_async: true,
                 inputs: vec![
@@ -483,6 +493,7 @@ mod test_function_metadata {
                 ],
                 return_type: Some(Type::String),
                 throws: None,
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC.checksum(),
             },
         );
     }
@@ -492,7 +503,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC_THAT_THROWS,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 name: "test_async_func_that_throws".into(),
                 is_async: true,
                 inputs: vec![],
@@ -502,6 +513,9 @@ mod test_function_metadata {
                 throws: Some(Type::Error {
                     name: "FlatError".into(),
                 }),
+                checksum:
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC_THAT_THROWS
+                        .checksum(),
             },
         );
     }
@@ -511,7 +525,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB,
             MethodMetadata {
-                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
                 name: "async_sub".into(),
                 is_async: true,
@@ -527,6 +541,8 @@ mod test_function_metadata {
                 ],
                 return_type: Some(Type::U8),
                 throws: None,
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB
+                    .checksum(),
             },
         );
     }

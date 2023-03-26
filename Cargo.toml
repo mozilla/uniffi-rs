@@ -48,6 +48,7 @@ members = [
   "fixtures/regressions/swift-dictionary-nesting",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
+  "fixtures/version-mismatch",
   "fixtures/simple-fns",
   "fixtures/simple-iface",
   "fixtures/swift-omit-labels",

@@ -18,6 +18,7 @@
 - ABI: Implemented a new callback-interface ABI that significantly improves performance on Python and Kotlin.
   - UniFFI users will automatically get the benefits of this without any code changes.
   - External bindings authors will need to update their bindings code.  See PR #1494 for details.
+- ABI: Changed API checksum handling.  This affects external bindings authors who will need to update their code to work with the new system.  See PR #1469 for details.
 
 ### What's changed
 

@@ -142,21 +142,38 @@ pub fn crate_name() -> String {
     std::env::var("CARGO_CRATE_NAME").unwrap().replace('-', "_")
 }
 
-pub fn create_metadata_static_var(
+pub fn create_metadata_items(
     kind: &str,
     name: &str,
     metadata_expr: TokenStream,
+    checksum_fn_name: Option<String>,
 ) -> TokenStream {
-    let crate_name = crate_name().to_uppercase();
-    let name = name.to_uppercase();
-    let const_ident = format_ident!("UNIFFI_META_CONST_{crate_name}_{kind}_{name}");
-    let static_ident = format_ident!("UNIFFI_META_{crate_name}_{kind}_{name}");
+    let crate_name = crate_name();
+    let crate_name_upper = crate_name.to_uppercase();
+    let kind_upper = kind.to_uppercase();
+    let name_upper = name.to_uppercase();
+    let const_ident =
+        format_ident!("UNIFFI_META_CONST_{crate_name_upper}_{kind_upper}_{name_upper}");
+    let static_ident = format_ident!("UNIFFI_META_{crate_name_upper}_{kind_upper}_{name_upper}");
+
+    let checksum_fn = checksum_fn_name.map(|name| {
+        let ident = Ident::new(&name, Span::call_site());
+        quote! {
+            #[doc(hidden)]
+            #[no_mangle]
+            pub extern "C" fn #ident() -> u16 {
+                #const_ident.checksum()
+            }
+        }
+    });
 
     quote! {
         const #const_ident: ::uniffi::MetadataBuffer = #metadata_expr;
         #[no_mangle]
         #[doc(hidden)]
         pub static #static_ident: [u8; #const_ident.size] = #const_ident.into_array();
+
+        #checksum_fn
     }
 }
 

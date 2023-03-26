@@ -58,12 +58,13 @@ pub enum FfiType {
 /// from the high-level interface. Each callable thing in the component API will have a
 /// corresponding `FfiFunction` through which it can be invoked, and UniFFI also provides
 /// some built-in `FfiFunction` helpers for use in the foreign language bindings.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct FfiFunction {
     pub(super) name: String,
     pub(super) is_async: bool,
     pub(super) arguments: Vec<FfiArgument>,
     pub(super) return_type: Option<FfiType>,
+    pub(super) has_rust_call_status_arg: bool,
 }
 
 impl FfiFunction {
@@ -81,6 +82,22 @@ impl FfiFunction {
 
     pub fn return_type(&self) -> Option<&FfiType> {
         self.return_type.as_ref()
+    }
+
+    pub fn has_rust_call_status_arg(&self) -> bool {
+        self.has_rust_call_status_arg
+    }
+}
+
+impl Default for FfiFunction {
+    fn default() -> Self {
+        Self {
+            name: "".into(),
+            is_async: false,
+            arguments: Vec::new(),
+            return_type: None,
+            has_rust_call_status_arg: true,
+        }
     }
 }
 

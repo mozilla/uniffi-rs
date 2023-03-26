@@ -8,7 +8,7 @@ use syn::{
 use crate::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        chain, create_metadata_static_var, either_attribute_arg, parse_comma_separated,
+        chain, create_metadata_items, either_attribute_arg, mod_path, parse_comma_separated,
         tagged_impl_header, try_metadata_value_from_usize, type_name, AttributeSliceExt,
         UniffiAttribute,
     },
@@ -152,10 +152,11 @@ pub(crate) fn error_meta_static_var(
     flat: bool,
 ) -> syn::Result<TokenStream> {
     let name = ident.to_string();
+    let module_path = mod_path()?;
     let flat_code = u8::from(flat);
     let mut metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
-                .concat_str(module_path!())
+                .concat_str(#module_path)
                 .concat_str(#name)
                 .concat_value(#flat_code)
     };
@@ -164,7 +165,7 @@ pub(crate) fn error_meta_static_var(
     } else {
         metadata_expr.extend(variant_metadata(enum_)?);
     }
-    Ok(create_metadata_static_var("ERROR", &name, metadata_expr))
+    Ok(create_metadata_items("error", &name, metadata_expr, None))
 }
 
 pub fn flat_error_variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {

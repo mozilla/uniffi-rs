@@ -4,77 +4,58 @@
 
 use crate::*;
 use anyhow::{bail, Context, Result};
+use uniffi_core::metadata::{checksum_metadata, codes};
 
-/// Metadata constants, make sure to keep this in sync with copy in `uniffi_core::metadata`
-#[allow(dead_code)]
-pub mod codes {
-    // Top-level metadata item codes
-    pub const FUNC: u8 = 0;
-    pub const METHOD: u8 = 1;
-    pub const RECORD: u8 = 2;
-    pub const ENUM: u8 = 3;
-    pub const INTERFACE: u8 = 4;
-    pub const ERROR: u8 = 5;
-    pub const NAMESPACE: u8 = 6;
-    pub const UNKNOWN: u8 = 255;
-
-    // Type codes
-    pub const TYPE_U8: u8 = 0;
-    pub const TYPE_U16: u8 = 1;
-    pub const TYPE_U32: u8 = 2;
-    pub const TYPE_U64: u8 = 3;
-    pub const TYPE_I8: u8 = 4;
-    pub const TYPE_I16: u8 = 5;
-    pub const TYPE_I32: u8 = 6;
-    pub const TYPE_I64: u8 = 7;
-    pub const TYPE_F32: u8 = 8;
-    pub const TYPE_F64: u8 = 9;
-    pub const TYPE_BOOL: u8 = 10;
-    pub const TYPE_STRING: u8 = 11;
-    pub const TYPE_OPTION: u8 = 12;
-    pub const TYPE_RECORD: u8 = 13;
-    pub const TYPE_ENUM: u8 = 14;
-    pub const TYPE_ERROR: u8 = 15;
-    pub const TYPE_INTERFACE: u8 = 16;
-    pub const TYPE_VEC: u8 = 17;
-    pub const TYPE_HASH_MAP: u8 = 18;
-    pub const TYPE_SYSTEM_TIME: u8 = 19;
-    pub const TYPE_DURATION: u8 = 20;
-    pub const TYPE_CALLBACK_INTERFACE: u8 = 21;
-    pub const TYPE_CUSTOM: u8 = 22;
-    pub const TYPE_RESULT: u8 = 23;
-    pub const TYPE_UNIT: u8 = 255;
+pub fn read_metadata(data: &[u8]) -> Result<Metadata> {
+    MetadataReader::new(data).read_metadata()
 }
 
-/// Trait for types that can read Metadata
-///
-/// We implement this on &[u8] byte buffers
-pub trait MetadataReader {
-    fn read_u8(&mut self) -> Result<u8>;
-    fn peek_u8(&mut self) -> Result<u8>;
-    fn read_bool(&mut self) -> Result<bool>;
-    fn read_string(&mut self) -> Result<String>;
-    fn read_type(&mut self) -> Result<Type>;
-    fn read_optional_type(&mut self) -> Result<Option<Type>>;
-    fn read_return_type(&mut self) -> Result<(Option<Type>, Option<Type>)>;
-    fn read_metadata(&mut self) -> Result<Metadata>;
-    fn read_func(&mut self) -> Result<FnMetadata>;
-    fn read_method(&mut self) -> Result<MethodMetadata>;
-    fn read_record(&mut self) -> Result<RecordMetadata>;
-    fn read_enum(&mut self) -> Result<EnumMetadata>;
-    fn read_error(&mut self) -> Result<ErrorMetadata>;
-    fn read_object(&mut self) -> Result<ObjectMetadata>;
-    fn read_fields(&mut self) -> Result<Vec<FieldMetadata>>;
-    fn read_variants(&mut self) -> Result<Vec<VariantMetadata>>;
-    fn read_flat_variants(&mut self) -> Result<Vec<VariantMetadata>>;
-    fn read_inputs(&mut self) -> Result<Vec<FnParamMetadata>>;
+// Read a metadat type, this is pub so that we can test it in the metadata fixture
+pub fn read_metadata_type(data: &[u8]) -> Result<Type> {
+    MetadataReader::new(data).read_type()
 }
 
-impl MetadataReader for &[u8] {
+/// Helper struct for read_metadata()
+struct MetadataReader<'a> {
+    // This points to the initial data we were passed in
+    initial_data: &'a [u8],
+    // This points to the remaining data to be read
+    buf: &'a [u8],
+}
+
+impl<'a> MetadataReader<'a> {
+    fn new(data: &'a [u8]) -> Self {
+        Self {
+            initial_data: data,
+            buf: data,
+        }
+    }
+
+    // Read a top-level metadata item
+    //
+    // This consumes self because MetadataReader is only intented to read a single item.
+    fn read_metadata(mut self) -> Result<Metadata> {
+        let value = self.read_u8()?;
+        Ok(match value {
+            codes::NAMESPACE => NamespaceMetadata {
+                crate_name: self.read_string()?,
+                name: self.read_string()?,
+            }
+            .into(),
+            codes::FUNC => self.read_func()?.into(),
+            codes::METHOD => self.read_method()?.into(),
+            codes::RECORD => self.read_record()?.into(),
+            codes::ENUM => self.read_enum()?.into(),
+            codes::ERROR => self.read_error()?.into(),
+            codes::INTERFACE => self.read_object()?.into(),
+            _ => bail!("Unexpected metadata code: {value:?}"),
+        })
+    }
+
     fn read_u8(&mut self) -> Result<u8> {
-        if !self.is_empty() {
-            let value = self[0];
-            *self = &self[1..];
+        if !self.buf.is_empty() {
+            let value = self.buf[0];
+            self.buf = &self.buf[1..];
             Ok(value)
         } else {
             bail!("Buffer is empty")
@@ -82,8 +63,8 @@ impl MetadataReader for &[u8] {
     }
 
     fn peek_u8(&mut self) -> Result<u8> {
-        if !self.is_empty() {
-            Ok(self[0])
+        if !self.buf.is_empty() {
+            Ok(self.buf[0])
         } else {
             bail!("Buffer is empty")
         }
@@ -96,7 +77,7 @@ impl MetadataReader for &[u8] {
     fn read_string(&mut self) -> Result<String> {
         let size = self.read_u8()? as usize;
         let slice;
-        (slice, *self) = self.split_at(size);
+        (slice, self.buf) = self.buf.split_at(size);
         String::from_utf8(slice.into()).context("Invalid string data")
     }
 
@@ -176,24 +157,6 @@ impl MetadataReader for &[u8] {
         })
     }
 
-    fn read_metadata(&mut self) -> Result<Metadata> {
-        let value = self.read_u8()?;
-        Ok(match value {
-            codes::NAMESPACE => NamespaceMetadata {
-                crate_name: self.read_string()?,
-                name: self.read_string()?,
-            }
-            .into(),
-            codes::FUNC => self.read_func()?.into(),
-            codes::METHOD => self.read_method()?.into(),
-            codes::RECORD => self.read_record()?.into(),
-            codes::ENUM => self.read_enum()?.into(),
-            codes::ERROR => self.read_error()?.into(),
-            codes::INTERFACE => self.read_object()?.into(),
-            _ => bail!("Unexpected metadata code: {value:?}"),
-        })
-    }
-
     fn read_func(&mut self) -> Result<FnMetadata> {
         let module_path = self.read_string()?;
         let name = self.read_string()?;
@@ -207,6 +170,7 @@ impl MetadataReader for &[u8] {
             inputs,
             return_type,
             throws,
+            checksum: self.calc_checksum(),
         })
     }
 
@@ -225,6 +189,7 @@ impl MetadataReader for &[u8] {
             inputs,
             return_type,
             throws,
+            checksum: self.calc_checksum(),
         })
     }
 
@@ -317,5 +282,11 @@ impl MetadataReader for &[u8] {
                 })
             })
             .collect()
+    }
+
+    fn calc_checksum(&self) -> u16 {
+        let bytes_read = self.initial_data.len() - self.buf.len();
+        let metadata_buf = &self.initial_data[..bytes_read];
+        checksum_metadata(metadata_buf)
     }
 }

@@ -3,8 +3,8 @@ use quote::quote;
 use syn::{Data, DataStruct, DeriveInput, Field, Path};
 
 use crate::util::{
-    create_metadata_static_var, tagged_impl_header, try_metadata_value_from_usize, try_read_field,
-    type_name, AttributeSliceExt, CommonAttr,
+    create_metadata_items, mod_path, tagged_impl_header, try_metadata_value_from_usize,
+    try_read_field, type_name, AttributeSliceExt, CommonAttr,
 };
 
 pub fn expand_record(input: DeriveInput) -> syn::Result<TokenStream> {
@@ -84,6 +84,7 @@ pub(crate) fn record_meta_static_var(
     record: &DataStruct,
 ) -> syn::Result<TokenStream> {
     let name = type_name(ident);
+    let module_path = mod_path()?;
     let fields_len =
         try_metadata_value_from_usize(record.fields.len(), "UniFFI limits structs to 256 fields")?;
     let field_names = record
@@ -91,12 +92,12 @@ pub(crate) fn record_meta_static_var(
         .iter()
         .map(|f| f.ident.as_ref().unwrap().to_string());
     let field_types = record.fields.iter().map(|f| &f.ty);
-    Ok(create_metadata_static_var(
-        "RECORD",
+    Ok(create_metadata_items(
+        "record",
         &name,
         quote! {
                 ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
-                    .concat_str(module_path!())
+                    .concat_str(#module_path)
                     .concat_str(#name)
                     .concat_value(#fields_len)
                     #(
@@ -104,5 +105,6 @@ pub(crate) fn record_meta_static_var(
                         .concat(<#field_types as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
                     )*
         },
+        None,
     ))
 }

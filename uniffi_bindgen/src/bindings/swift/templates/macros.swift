@@ -83,9 +83,9 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.type_().borrow()|ffi_type_name }} {{ arg.name() -}},
+        {{- arg.type_().borrow()|ffi_type_name }} {{ arg.name() -}}{% if !loop.last || func.has_rust_call_status_arg() %}, {% endif %}
     {%- endfor %}
-    RustCallStatus *_Nonnull out_status
+    {%- if func.has_rust_call_status_arg() %}RustCallStatus *_Nonnull out_status{% endif %}
 {%- endmacro -%}
 
 {%- macro async(func) %}

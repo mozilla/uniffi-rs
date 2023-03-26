@@ -1,19 +1,18 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{DeriveInput, Path};
-use uniffi_meta::ObjectMetadata;
+use uniffi_meta::free_fn_symbol_name;
 
 use crate::util::{
-    create_metadata_static_var, tagged_impl_header, type_name, AttributeSliceExt, CommonAttr,
+    create_metadata_items, tagged_impl_header, type_name, AttributeSliceExt, CommonAttr,
 };
 
 pub fn expand_object(input: DeriveInput, module_path: String) -> syn::Result<TokenStream> {
     let ident = &input.ident;
     let attr = input.attrs.parse_uniffi_attributes::<CommonAttr>()?;
     let name = type_name(ident);
-    let metadata = ObjectMetadata { module_path, name };
-    let free_fn_ident = Ident::new(&metadata.free_ffi_symbol_name(), Span::call_site());
-    let meta_static_var = interface_meta_static_var(ident)?;
+    let free_fn_ident = Ident::new(&free_fn_symbol_name(&module_path, &name), Span::call_site());
+    let meta_static_var = interface_meta_static_var(ident, &module_path)?;
     let interface_impl = interface_impl(ident, attr.tag.as_ref());
 
     Ok(quote! {
@@ -54,15 +53,19 @@ pub(crate) fn interface_impl(ident: &Ident, tag: Option<&Path>) -> TokenStream {
     }
 }
 
-pub(crate) fn interface_meta_static_var(ident: &Ident) -> syn::Result<TokenStream> {
+pub(crate) fn interface_meta_static_var(
+    ident: &Ident,
+    module_path: &str,
+) -> syn::Result<TokenStream> {
     let name = type_name(ident);
-    Ok(create_metadata_static_var(
-        "INTERFACE",
+    Ok(create_metadata_items(
+        "interface",
         &name,
         quote! {
                 ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::INTERFACE)
-                    .concat_str(module_path!())
+                    .concat_str(#module_path)
                     .concat_str(#name)
         },
+        None,
     ))
 }
