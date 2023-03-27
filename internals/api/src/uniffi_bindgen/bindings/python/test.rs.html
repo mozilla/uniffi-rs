@@ -80,7 +80,7 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::bindings::RunScriptMode;
+</span><span class="kw">use </span><span class="kw">crate</span>::bindings::RunScriptOptions;
 <span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>std::env;
@@ -95,7 +95,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
         fixture_name,
         script_file,
         <span class="macro">vec!</span>[],
-        RunScriptMode::Test,
+        <span class="kw-2">&amp;</span>RunScriptOptions::default(),
     )
 }
 
@@ -107,7 +107,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
     crate_name: <span class="kw-2">&amp;</span>str,
     script_file: <span class="kw-2">&amp;</span>str,
     args: Vec&lt;String&gt;,
-    _mode: RunScriptMode,
+    _options: <span class="kw-2">&amp;</span>RunScriptOptions,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>script_path = Utf8Path::new(<span class="string">&quot;.&quot;</span>).join(script_file).canonicalize_utf8()<span class="question-mark">?</span>;
     <span class="kw">let </span>test_helper = UniFFITestHelper::new(crate_name)<span class="question-mark">?</span>;

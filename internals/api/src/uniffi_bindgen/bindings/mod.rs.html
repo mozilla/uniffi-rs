@@ -126,6 +126,13 @@
 <span id="126">126</span>
 <span id="127">127</span>
 <span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -162,10 +169,17 @@
 }
 
 <span class="doccomment">/// Mode for the `run_script` function defined for each language
-</span><span class="attribute">#[derive(Copy, Clone, Debug)]
-</span><span class="kw">pub enum </span>RunScriptMode {
-    Test,
-    PerformanceTest,
+</span><span class="attribute">#[derive(Clone, Debug)]
+</span><span class="kw">pub struct </span>RunScriptOptions {
+    <span class="kw">pub </span>show_compiler_messages: bool,
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>RunScriptOptions {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            show_compiler_messages: <span class="bool-val">true</span>,
+        }
+    }
 }
 
 <span class="kw">impl </span>TryFrom&lt;<span class="kw-2">&amp;</span>str&gt; <span class="kw">for </span>TargetLanguage {
