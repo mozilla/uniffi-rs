@@ -117,7 +117,7 @@ ast_types! {
         value: DefaultValue<'a>,
     }
 
-    /// Represents a consecutive comment lines starting with `///`, joined by `\n`.
+    /// Represents consecutive comment lines starting with `///`, joined by `\n`.
     struct Docstring(
         String = docstring,
     )
