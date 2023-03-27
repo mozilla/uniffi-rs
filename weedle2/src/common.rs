@@ -34,7 +34,7 @@ impl<'a, T: Parse<'a>, U: Parse<'a>, V: Parse<'a>> Parse<'a> for (T, U, V) {
 }
 
 pub(crate) fn docstring(input: &str) -> IResult<&str, String> {
-    nom::multi::many0(nom::sequence::preceded(
+    nom::multi::many1(nom::sequence::preceded(
         nom::character::complete::multispace0,
         nom::sequence::delimited(
             nom::bytes::complete::tag("///"),
@@ -251,5 +251,9 @@ mod test {
         "//comment1\n///world\n";
         Docstring;
         0 == "hello";
+    });
+
+    test!(err should_not_parse_not_docstring { "" =>
+        Docstring
     });
 }
