@@ -47,7 +47,6 @@
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
-use super::attributes::{DictionaryAttributes, DictionaryMemberAttributes};
 use super::types::{Type, TypeIterator};
 use super::{
     convert_type,
@@ -104,14 +103,16 @@ impl From<uniffi_meta::RecordMetadata> for Record {
 
 impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Record> {
-        let attrs = DictionaryAttributes::try_from(self.attributes.as_ref())?;
+        if self.attributes.is_some() {
+            bail!("dictionary attributes are not supported yet");
+        }
         if self.inheritance.is_some() {
             bail!("dictionary inheritance is not supported");
         }
         Ok(Record {
             name: self.identifier.0.to_string(),
             fields: self.members.body.convert(ci)?,
-            docstring: attrs.get_docstring().map(|v| v.to_string()),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -160,7 +161,9 @@ impl From<uniffi_meta::FieldMetadata> for Field {
 
 impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
-        let attrs = DictionaryMemberAttributes::try_from(self.attributes.as_ref())?;
+        if self.attributes.is_some() {
+            bail!("dictionary member attributes are not supported yet");
+        }
         let type_ = ci.resolve_type_expression(&self.type_)?;
         let default = match self.default {
             None => None,
@@ -170,7 +173,7 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
             name: self.identifier.0.to_string(),
             type_,
             default,
-            docstring: attrs.get_docstring().map(|v| v.to_string()),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -257,7 +260,7 @@ mod test {
     fn test_docstring_record() {
         const UDL: &str = r#"
             namespace test{};
-            [Doc="informative docstring"]
+            ///informative docstring
             dictionary Testing { };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
@@ -275,7 +278,7 @@ mod test {
         const UDL: &str = r#"
             namespace test{};
             dictionary Testing {
-                [Doc="informative docstring"]
+                ///informative docstring
                 i32 testing;
             };
         "#;

@@ -24,7 +24,6 @@ paste = "1.0"
 regex = "1.7"
 serde = "1"
 serde_json = "1.0.80"
-textwrap = "0.16"
 toml = "0.5"
 uniffi_meta = { path = "../uniffi_meta", version = "=0.23.0" }
 uniffi_testing = { path = "../uniffi_testing", version = "=0.23.0" }

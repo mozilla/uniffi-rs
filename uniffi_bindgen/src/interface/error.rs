@@ -237,7 +237,8 @@ mod test {
     fn test_docstring_error() {
         const UDL: &str = r#"
             namespace test{};
-            [Error, Doc="informative docstring"]
+            ///informative docstring
+            [Error]
             enum Testing { "one" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
@@ -254,7 +255,8 @@ mod test {
     fn test_docstring_associated_error() {
         const UDL: &str = r#"
             namespace test{};
-            [Error, Doc="informative docstring"]
+            ///informative docstring
+            [Error]
             interface Testing { };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();

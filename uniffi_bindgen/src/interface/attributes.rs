@@ -16,7 +16,6 @@
 
 use crate::interface::types::ExternalKind;
 use anyhow::{bail, Result};
-use regex::Regex;
 use uniffi_meta::Checksum;
 
 /// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.
@@ -40,7 +39,6 @@ pub(super) enum Attribute {
     },
     // Custom type on the scaffolding side
     Custom,
-    Doc(String),
 }
 
 impl Attribute {
@@ -49,9 +47,6 @@ impl Attribute {
     }
     pub fn is_enum(&self) -> bool {
         matches!(self, Attribute::Enum)
-    }
-    pub fn is_doc(&self) -> bool {
-        matches!(self, Attribute::Doc(_))
     }
 }
 
@@ -86,7 +81,6 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                         crate_name: name_from_id_or_string(&identity.rhs),
                         kind: ExternalKind::Interface,
                     }),
-                    "Doc" => Ok(Attribute::Doc(docstring_from_id_or_string(&identity.rhs))),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
@@ -103,23 +97,6 @@ fn name_from_id_or_string(nm: &weedle::attribute::IdentifierOrString<'_>) -> Str
         weedle::attribute::IdentifierOrString::Identifier(identifier) => identifier.0.to_string(),
         weedle::attribute::IdentifierOrString::String(str_lit) => str_lit.0.to_string(),
     }
-}
-
-fn docstring_from_id_or_string(nm: &weedle::attribute::IdentifierOrString<'_>) -> String {
-    let raw = &name_from_id_or_string(nm);
-
-    // `(?m)` enables multiline mode, allowing the engine to match across multiple lines.
-    //
-    // `[^\S\r\n]` is a double negative, matching any whitespace, except for newlines.
-    // This is important, because otherwise all empty lines before prefix are excluded.
-    // https://stackoverflow.com/questions/3469080/match-whitespace-but-not-newlines
-    //
-    let stripped = Regex::new(r"(?m)^[^\S\r\n]*//+")
-        .unwrap()
-        .replace_all(&raw, "")
-        .to_string();
-
-    textwrap::dedent(&stripped)
 }
 
 /// Parse a weedle `ExtendedAttributeList` into a list of `Attribute`s,
@@ -161,13 +138,6 @@ impl EnumAttributes {
     pub fn contains_error_attr(&self) -> bool {
         self.0.iter().any(|attr| attr.is_error())
     }
-
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
@@ -177,7 +147,6 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Error => Ok(()),
-            Attribute::Doc(_) => Ok(()),
             _ => bail!(format!("{attr:?} not supported for enums")),
         })?;
         Ok(Self(attrs))
@@ -185,48 +154,6 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
 }
 
 impl<T: TryInto<EnumAttributes, Error = anyhow::Error>> TryFrom<Option<T>> for EnumAttributes {
-    type Error = anyhow::Error;
-    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
-        match value {
-            None => Ok(Default::default()),
-            Some(v) => v.try_into(),
-        }
-    }
-}
-
-/// Attributes that can be attached to an `enum` variant definition in the UDL.
-#[derive(Debug, Clone, Checksum, Default)]
-pub(super) struct EnumVariantAttributes(Vec<Attribute>);
-
-impl EnumVariantAttributes {
-    pub fn contains_error_attr(&self) -> bool {
-        self.0.iter().any(|attr| attr.is_error())
-    }
-
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
-}
-
-impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumVariantAttributes {
-    type Error = anyhow::Error;
-    fn try_from(
-        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
-    ) -> Result<Self, Self::Error> {
-        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::Doc(_) => Ok(()),
-            _ => bail!(format!("{attr:?} not supported for enum variants")),
-        })?;
-        Ok(Self(attrs))
-    }
-}
-
-impl<T: TryInto<EnumVariantAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
-    for EnumVariantAttributes
-{
     type Error = anyhow::Error;
     fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
         match value {
@@ -252,13 +179,6 @@ impl FunctionAttributes {
             _ => None,
         })
     }
-
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
 }
 
 impl FromIterator<Attribute> for FunctionAttributes {
@@ -274,7 +194,6 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttribut
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
-            Attribute::Doc(_) => Ok(()),
             _ => bail!(format!("{attr:?} not supported for functions")),
         })?;
         Ok(Self(attrs))
@@ -349,13 +268,6 @@ impl InterfaceAttributes {
             .iter()
             .any(|attr| matches!(attr, Attribute::Threadsafe))
     }
-
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttributes {
@@ -367,16 +279,10 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
             Attribute::Enum => Ok(()),
             Attribute::Error => Ok(()),
             Attribute::Threadsafe => Ok(()),
-            Attribute::Doc(_) => Ok(()),
             _ => bail!(format!("{attr:?} not supported for interface definition")),
         })?;
-        let max_attributes = if attrs.iter().any(|attr| attr.is_doc()) {
-            2
-        } else {
-            1
-        };
         // Can't be both `[Threadsafe]` and an `[Enum]`.
-        if attrs.len() > max_attributes {
+        if attrs.len() > 1 {
             bail!("conflicting attributes on interface definition");
         }
         Ok(Self(attrs))
@@ -418,13 +324,6 @@ impl ConstructorAttributes {
             _ => None,
         })
     }
-
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttributes {
@@ -435,7 +334,6 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttri
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Throws(_) => Ok(()),
             Attribute::Name(_) => Ok(()),
-            Attribute::Doc(_) => Ok(()),
             _ => bail!(format!("{attr:?} not supported for constructors")),
         })?;
         Ok(Self(attrs))
@@ -464,13 +362,6 @@ impl MethodAttributes {
             .iter()
             .any(|attr| matches!(attr, Attribute::SelfType(SelfType::ByArc)))
     }
-
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
 }
 
 impl FromIterator<Attribute> for MethodAttributes {
@@ -487,7 +378,6 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for MethodAttributes
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::SelfType(_) => Ok(()),
             Attribute::Throws(_) => Ok(()),
-            Attribute::Doc(_) => Ok(()),
             _ => bail!(format!("{attr:?} not supported for methods")),
         })?;
         Ok(Self(attrs))
@@ -575,196 +465,6 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for TypedefAttribute
 
 impl<T: TryInto<TypedefAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
     for TypedefAttributes
-{
-    type Error = anyhow::Error;
-    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
-        match value {
-            None => Ok(Default::default()),
-            Some(v) => v.try_into(),
-        }
-    }
-}
-
-/// Attributes that can be attached to a `dictionary` definition in the UDL.
-#[derive(Debug, Clone, Checksum, Default)]
-pub(super) struct DictionaryAttributes(Vec<Attribute>);
-
-impl DictionaryAttributes {
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
-}
-
-impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for DictionaryAttributes {
-    type Error = anyhow::Error;
-    fn try_from(
-        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
-    ) -> Result<Self, Self::Error> {
-        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::Doc(_) => Ok(()),
-            _ => bail!(format!("{attr:?} not supported for dictionaries")),
-        })?;
-        Ok(Self(attrs))
-    }
-}
-
-impl<T: TryInto<DictionaryAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
-    for DictionaryAttributes
-{
-    type Error = anyhow::Error;
-    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
-        match value {
-            None => Ok(Default::default()),
-            Some(v) => v.try_into(),
-        }
-    }
-}
-
-/// Attributes that can be attached to a `dictionary` field definition in the UDL.
-#[derive(Debug, Clone, Checksum, Default)]
-pub(super) struct DictionaryMemberAttributes(Vec<Attribute>);
-
-impl DictionaryMemberAttributes {
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
-}
-
-impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for DictionaryMemberAttributes {
-    type Error = anyhow::Error;
-    fn try_from(
-        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
-    ) -> Result<Self, Self::Error> {
-        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::Doc(_) => Ok(()),
-            _ => bail!(format!("{attr:?} not supported for dictionary fields")),
-        })?;
-        Ok(Self(attrs))
-    }
-}
-
-impl<T: TryInto<DictionaryMemberAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
-    for DictionaryMemberAttributes
-{
-    type Error = anyhow::Error;
-    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
-        match value {
-            None => Ok(Default::default()),
-            Some(v) => v.try_into(),
-        }
-    }
-}
-
-/// Attributes that can be attached to interface members inside `[Enum] interface`.
-#[derive(Debug, Clone, Checksum, Default)]
-pub(super) struct EnumInterfaceMemberAttributes(Vec<Attribute>);
-
-impl EnumInterfaceMemberAttributes {
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
-}
-
-impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumInterfaceMemberAttributes {
-    type Error = anyhow::Error;
-    fn try_from(
-        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
-    ) -> Result<Self, Self::Error> {
-        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::Doc(_) => Ok(()),
-            _ => bail!(format!("{attr:?} not supported for associated enum member")),
-        })?;
-        Ok(Self(attrs))
-    }
-}
-
-impl<T: TryInto<EnumInterfaceMemberAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
-    for EnumInterfaceMemberAttributes
-{
-    type Error = anyhow::Error;
-    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
-        match value {
-            None => Ok(Default::default()),
-            Some(v) => v.try_into(),
-        }
-    }
-}
-
-/// Attributes that can be attached to interface members inside `[Enum] interface`.
-#[derive(Debug, Clone, Checksum, Default)]
-pub(super) struct CallbackInterfaceAttributes(Vec<Attribute>);
-
-impl CallbackInterfaceAttributes {
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
-}
-
-impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for CallbackInterfaceAttributes {
-    type Error = anyhow::Error;
-    fn try_from(
-        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
-    ) -> Result<Self, Self::Error> {
-        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::Doc(_) => Ok(()),
-            _ => bail!(format!("{attr:?} not supported for callback interfaces")),
-        })?;
-        Ok(Self(attrs))
-    }
-}
-
-impl<T: TryInto<CallbackInterfaceAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
-    for CallbackInterfaceAttributes
-{
-    type Error = anyhow::Error;
-    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
-        match value {
-            None => Ok(Default::default()),
-            Some(v) => v.try_into(),
-        }
-    }
-}
-
-/// Attributes that can be attached to interface members inside `[Enum] interface`.
-#[derive(Debug, Clone, Checksum, Default)]
-pub(super) struct NamespaceAttributes(Vec<Attribute>);
-
-impl NamespaceAttributes {
-    pub fn get_docstring(&self) -> Option<&str> {
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::Doc(docstring) => Some(docstring.as_ref()),
-            _ => None,
-        })
-    }
-}
-
-impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for NamespaceAttributes {
-    type Error = anyhow::Error;
-    fn try_from(
-        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
-    ) -> Result<Self, Self::Error> {
-        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::Doc(_) => Ok(()),
-            _ => bail!(format!("{attr:?} not supported for namespaces")),
-        })?;
-        Ok(Self(attrs))
-    }
-}
-
-impl<T: TryInto<NamespaceAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
-    for NamespaceAttributes
 {
     type Error = anyhow::Error;
     fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
@@ -1080,123 +780,5 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[ByRef]").unwrap();
         let err = TypedefAttributes::try_from(&node).unwrap_err();
         assert_eq!(err.to_string(), "ByRef not supported for typedefs");
-    }
-
-    fn parse_doc_attribute(udl: &str) -> String {
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse(udl).unwrap();
-        let attrs = parse_attributes(&node, |attr| match attr {
-            Attribute::Doc(_) => Ok(()),
-            _ => panic!("{attr:?} not supported in doc test"),
-        })
-        .unwrap();
-        match &attrs[0] {
-            Attribute::Doc(docstring) => docstring.clone(),
-            _ => panic!("only doc attribute supported in test"),
-        }
-    }
-
-    #[test]
-    fn test_doc_attribute() {
-        let docstring = parse_doc_attribute(r#"[Doc="informative docstring"]"#);
-
-        assert_eq!(docstring, "informative docstring");
-    }
-
-    #[test]
-    fn test_doc_attribute_multiline() {
-        let docstring = parse_doc_attribute(
-            r#"[Doc="
-    informative
-    docstring"]"#,
-        );
-
-        assert_eq!(
-            docstring,
-            r#"
-informative
-docstring"#
-        );
-    }
-
-    #[test]
-    fn test_doc_attribute_multiline_prefix() {
-        let docstring = parse_doc_attribute(
-            r#"[Doc="
-// informative
-// docstring"]"#,
-        );
-
-        assert_eq!(
-            docstring,
-            r#"
-informative
-docstring"#
-        );
-    }
-
-    #[test]
-    fn test_doc_attribute_multiline_prefix_empty_line() {
-        let docstring = parse_doc_attribute(
-            r#"[Doc="
-// informative
-//
-// docstring"]"#,
-        );
-
-        assert_eq!(
-            docstring,
-            r#"
-informative
-
-docstring"#
-        );
-    }
-
-    #[test]
-    fn test_doc_attribute_multiline_prefix_leading_whitespace() {
-        let docstring = parse_doc_attribute(
-            r#"[Doc="
-  // informative
- // docstring"]"#,
-        );
-
-        assert_eq!(
-            docstring,
-            r#"
-informative
-docstring"#
-        );
-    }
-
-    #[test]
-    fn test_doc_attribute_multiline_prefix_indent() {
-        let docstring = parse_doc_attribute(
-            r#"[Doc="
-//   informative
-//    docstring
-//     signature"]"#,
-        );
-
-        assert_eq!(
-            docstring,
-            r#"
-informative
- docstring
-  signature"#
-        );
-    }
-
-    #[test]
-    fn test_doc_attribute_middle_prefix() {
-        let docstring = parse_doc_attribute(r#"[Doc="// informative // docstring"]"#);
-
-        assert_eq!(docstring, r#"informative // docstring"#);
-    }
-
-    #[test]
-    fn test_doc_attribute_repeating_prefix() {
-        let docstring = parse_doc_attribute(r#"[Doc="///// informative docstring"]"#);
-
-        assert_eq!(docstring, r#"informative docstring"#);
     }
 }
