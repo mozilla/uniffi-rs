@@ -62,7 +62,8 @@ pub struct Function {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
-    // TODO: ignore docstring from checksum!
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) attributes: FunctionAttributes,
 }
 
@@ -106,7 +107,7 @@ impl Function {
     }
 
     pub fn docstring(&self) -> Option<&str> {
-        self.attributes.get_docstring()
+        self.docstring.as_deref()
     }
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
@@ -153,6 +154,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
             arguments,
             return_type,
             ffi_func,
+            docstring: None,
             attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
         }
     }
@@ -179,6 +181,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
             return_type,
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             attributes: FunctionAttributes::try_from(self.attributes.as_ref())?,
         })
     }
@@ -303,7 +306,7 @@ mod test {
     fn test_docstring_function() {
         const UDL: &str = r#"
             namespace test {
-                [Doc="informative docstring"]
+                ///informative docstring
                 void testing();
             };
         "#;

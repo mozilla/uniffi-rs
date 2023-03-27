@@ -213,7 +213,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
             None => Default::default(),
         };
         object.uses_deprecated_threadsafe_attribute = attributes.threadsafe();
-        object.docstring = attributes.get_docstring().map(|v| v.to_string());
+        object.docstring = self.docstring.as_ref().map(|v| v.0.clone());
         // Convert each member into a constructor or method, guarding against duplicate names.
         let mut member_names = HashSet::new();
         for member in &self.members.body {
@@ -256,7 +256,8 @@ pub struct Constructor {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
-    // TODO: ignore checksum for docstring
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) attributes: ConstructorAttributes,
 }
 
@@ -292,7 +293,7 @@ impl Constructor {
     }
 
     pub fn docstring(&self) -> Option<&str> {
-        self.attributes.get_docstring()
+        self.docstring.as_deref()
     }
 
     pub fn is_primary_constructor(&self) -> bool {
@@ -316,6 +317,7 @@ impl Default for Constructor {
             name: String::from("new"),
             arguments: Vec::new(),
             ffi_func: Default::default(),
+            docstring: None,
             attributes: Default::default(),
         }
     }
@@ -331,6 +333,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             name: String::from(attributes.get_name().unwrap_or("new")),
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             attributes,
         })
     }
@@ -355,6 +358,8 @@ pub struct Method {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) attributes: MethodAttributes,
 }
 
@@ -411,7 +416,7 @@ impl Method {
     }
 
     pub fn docstring(&self) -> Option<&str> {
-        self.attributes.get_docstring()
+        self.docstring.as_deref()
     }
 
     pub fn takes_self_by_arc(&self) -> bool {
@@ -460,6 +465,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             arguments,
             return_type,
             ffi_func,
+            docstring: None,
             attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
         }
     }
@@ -491,6 +497,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
         })
     }
@@ -626,7 +633,7 @@ mod test {
     fn test_docstring_object() {
         const UDL: &str = r#"
             namespace test{};
-            [Doc="informative docstring"]
+            ///informative docstring
             interface Testing { };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
@@ -644,7 +651,7 @@ mod test {
         const UDL: &str = r#"
             namespace test{};
             interface Testing {
-                [Doc="informative docstring"]
+                ///informative docstring
                 constructor();
             };
         "#;
@@ -665,7 +672,7 @@ mod test {
         const UDL: &str = r#"
             namespace test{};
             interface Testing {
-                [Doc="informative docstring"]
+                ///informative docstring
                 void testing();
             };
         "#;

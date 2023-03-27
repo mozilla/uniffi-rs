@@ -36,7 +36,6 @@
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
-use super::attributes::CallbackInterfaceAttributes;
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::object::Method;
 use super::types::{Type, TypeIterator};
@@ -104,12 +103,14 @@ impl CallbackInterface {
 
 impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<CallbackInterface> {
+        if self.attributes.is_some() {
+            bail!("callback interface attributes are not supported yet");
+        }
         if self.inheritance.is_some() {
             bail!("callback interface inheritance is not supported");
         }
-        let attrs = CallbackInterfaceAttributes::try_from(self.attributes.as_ref())?;
         let mut object = CallbackInterface::new(self.identifier.0.to_string());
-        object.docstring = attrs.get_docstring().map(|v| v.to_string());
+        object.docstring = self.docstring.as_ref().map(|v| v.0.clone());
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Operation(t) => {
@@ -178,7 +179,7 @@ mod test {
     fn test_docstring_callback_interface() {
         const UDL: &str = r#"
             namespace test{};
-            [Doc="informative docstring"]
+            ///informative docstring
             callback interface Testing { };
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();

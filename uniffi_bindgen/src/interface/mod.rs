@@ -934,12 +934,10 @@ impl APIBuilder for weedle::Definition<'_> {
                 // We check if the enum represents an error...
                 let attrs = attributes::EnumAttributes::try_from(d.attributes.as_ref())?;
                 if attrs.contains_error_attr() {
-                    let mut err: Error = d.convert(ci)?;
-                    err.enum_.docstring = attrs.get_docstring().map(|v| v.to_string());
+                    let err = d.convert(ci)?;
                     ci.add_error_definition(err)?;
                 } else {
-                    let mut e: Enum = d.convert(ci)?;
-                    e.docstring = attrs.get_docstring().map(|v| v.to_string());
+                    let e = d.convert(ci)?;
                     ci.add_enum_definition(e)?;
                 }
             }
@@ -950,12 +948,10 @@ impl APIBuilder for weedle::Definition<'_> {
             weedle::Definition::Interface(d) => {
                 let attrs = attributes::InterfaceAttributes::try_from(d.attributes.as_ref())?;
                 if attrs.contains_enum_attr() {
-                    let mut e: Enum = d.convert(ci)?;
-                    e.docstring = attrs.get_docstring().map(|v| v.to_string());
+                    let e = d.convert(ci)?;
                     ci.add_enum_definition(e)?;
                 } else if attrs.contains_error_attr() {
-                    let mut e: Error = d.convert(ci)?;
-                    e.enum_.docstring = attrs.get_docstring().map(|v| v.to_string());
+                    let e = d.convert(ci)?;
                     ci.add_error_definition(e)?;
                 } else {
                     let obj = d.convert(ci)?;
@@ -1237,5 +1233,19 @@ mod test {
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
         assert!(ci.item_contains_unsigned_types(&Type::Object("TestObj".into())));
+    }
+
+    #[test]
+    fn test_multiline_docstring() {
+        const UDL: &str = r#"
+            ///informative
+            ///docstring
+            namespace test{};
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.namespace_definition().unwrap().docstring().unwrap(),
+            "informative\ndocstring"
+        );
     }
 }
