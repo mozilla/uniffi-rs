@@ -34,16 +34,15 @@ impl<'a, T: Parse<'a>, U: Parse<'a>, V: Parse<'a>> Parse<'a> for (T, U, V) {
 }
 
 pub(crate) fn docstring(input: &str) -> IResult<&str, String> {
-    nom::multi::many0(
-        nom::sequence::preceded(
-            nom::character::complete::multispace0,
-            nom::sequence::delimited(
-                nom::bytes::complete::tag("///"),
-                nom::bytes::complete::take_until("\n"),
-                nom::bytes::complete::tag("\n"),
-            )
-        )
-    )(input).map(|io| (io.0, io.1.join("\n")))
+    nom::multi::many0(nom::sequence::preceded(
+        nom::character::complete::multispace0,
+        nom::sequence::delimited(
+            nom::bytes::complete::tag("///"),
+            nom::bytes::complete::take_until("\n"),
+            nom::bytes::complete::tag("\n"),
+        ),
+    ))(input)
+    .map(|io| (io.0, io.1.join("\n")))
 }
 
 ast_types! {
