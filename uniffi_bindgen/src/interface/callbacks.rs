@@ -103,6 +103,9 @@ impl CallbackInterface {
 
 impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<CallbackInterface> {
+        if self.attributes.is_some() {
+            bail!("callback interface attributes are not supported yet");
+        }
         if self.inheritance.is_some() {
             bail!("callback interface inheritance is not supported");
         }

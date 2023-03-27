@@ -117,8 +117,7 @@ ast_types! {
         value: DefaultValue<'a>,
     }
 
-    /// Represents either `true` or `false`
-    // #[derive(Copy)]
+    /// Represents a consecutive comment lines starting with `///`, joined by `\n`.
     struct Docstring(
         String = docstring,
     )

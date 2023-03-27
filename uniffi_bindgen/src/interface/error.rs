@@ -98,7 +98,7 @@ use super::{APIConverter, ComponentInterface};
 #[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Error {
     pub name: String,
-    pub(super) enum_: Enum,
+    enum_: Enum,
 }
 
 impl Error {

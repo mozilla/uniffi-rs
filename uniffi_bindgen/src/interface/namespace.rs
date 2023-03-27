@@ -61,7 +61,7 @@
 //! Yeah, it's a bit of an awkward fit syntactically, but it's enough
 //! to get us up and running for a first version of this tool.
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 use uniffi_meta::Checksum;
 
@@ -89,6 +89,9 @@ impl Namespace {
 
 impl APIBuilder for weedle::NamespaceDefinition<'_> {
     fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
+        if self.attributes.is_some() {
+            bail!("namespace attributes are not supported yet");
+        }
         ci.add_namespace_definition(Namespace {
             name: self.identifier.0.to_string(),
             docstring: self.docstring.as_ref().map(|v| v.0.clone()),
