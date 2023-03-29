@@ -62,6 +62,8 @@ pub struct Function {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) attributes: FunctionAttributes,
 }
 
@@ -102,6 +104,10 @@ impl Function {
         self.attributes
             .get_throws_err()
             .map(|name| Type::Error(name.to_owned()))
+    }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
     }
 
     pub fn derive_ffi_func(&mut self, ci_prefix: &str) -> Result<()> {
@@ -148,6 +154,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
             arguments,
             return_type,
             ffi_func,
+            docstring: None,
             attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
         }
     }
@@ -174,6 +181,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
             return_type,
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             attributes: FunctionAttributes::try_from(self.attributes.as_ref())?,
         })
     }
@@ -292,5 +300,23 @@ mod test {
             "TypeTestDict"
         );
         Ok(())
+    }
+
+    #[test]
+    fn test_docstring_function() {
+        const UDL: &str = r#"
+            namespace test {
+                ///informative docstring
+                void testing();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_function_definition("testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

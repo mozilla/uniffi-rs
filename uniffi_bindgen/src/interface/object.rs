@@ -98,6 +98,8 @@ pub struct Object {
     pub(super) ffi_func_free: FfiFunction,
     #[checksum_ignore]
     pub(super) uses_deprecated_threadsafe_attribute: bool,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl Object {
@@ -108,6 +110,7 @@ impl Object {
             methods: Default::default(),
             ffi_func_free: Default::default(),
             uses_deprecated_threadsafe_attribute: false,
+            docstring: None,
         }
     }
 
@@ -154,6 +157,10 @@ impl Object {
 
     pub fn uses_deprecated_threadsafe_attribute(&self) -> bool {
         self.uses_deprecated_threadsafe_attribute
+    }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
     }
 
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
@@ -206,6 +213,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
             None => Default::default(),
         };
         object.uses_deprecated_threadsafe_attribute = attributes.threadsafe();
+        object.docstring = self.docstring.as_ref().map(|v| v.0.clone());
         // Convert each member into a constructor or method, guarding against duplicate names.
         let mut member_names = HashSet::new();
         for member in &self.members.body {
@@ -249,6 +257,8 @@ pub struct Constructor {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) attributes: ConstructorAttributes,
 }
 
@@ -287,6 +297,10 @@ impl Constructor {
             .map(|name| Type::Error(name.to_owned()))
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn is_primary_constructor(&self) -> bool {
         self.name == "new"
     }
@@ -312,6 +326,7 @@ impl Default for Constructor {
             arguments: Vec::new(),
             return_type: None,
             ffi_func: Default::default(),
+            docstring: None,
             attributes: Default::default(),
         }
     }
@@ -328,6 +343,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             arguments: self.args.body.list.convert(ci)?,
             return_type: None,
             ffi_func: Default::default(),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             attributes,
         })
     }
@@ -352,6 +368,8 @@ pub struct Method {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) attributes: MethodAttributes,
 }
 
@@ -407,6 +425,10 @@ impl Method {
             .map(|name| Type::Error(name.to_owned()))
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn takes_self_by_arc(&self) -> bool {
         self.attributes.get_self_by_arc()
     }
@@ -453,6 +475,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             arguments,
             return_type,
             ffi_func,
+            docstring: None,
             attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
         }
     }
@@ -484,6 +507,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
         })
     }
@@ -613,5 +637,63 @@ mod test {
         "#;
         let err = ComponentInterface::from_webidl(UDL2).unwrap_err();
         assert_eq!(err.to_string(), "Duplicate interface member name: \"new\"");
+    }
+
+    #[test]
+    fn test_docstring_object() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_object_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_constructor() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                ///informative docstring
+                constructor();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_object_definition("Testing")
+                .unwrap()
+                .primary_constructor()
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_method() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                ///informative docstring
+                void testing();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_object_definition("Testing")
+                .unwrap()
+                .get_method("testing")
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

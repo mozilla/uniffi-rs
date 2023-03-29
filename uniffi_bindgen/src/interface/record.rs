@@ -63,6 +63,8 @@ use super::{APIConverter, ComponentInterface};
 pub struct Record {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl Record {
@@ -80,6 +82,10 @@ impl Record {
         &self.fields
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
     }
@@ -90,6 +96,7 @@ impl From<uniffi_meta::RecordMetadata> for Record {
         Self {
             name: meta.name,
             fields: meta.fields.into_iter().map(Into::into).collect(),
+            docstring: None,
         }
     }
 }
@@ -105,6 +112,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
         Ok(Record {
             name: self.identifier.0.to_string(),
             fields: self.members.body.convert(ci)?,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -115,6 +123,7 @@ pub struct Field {
     pub(super) name: String,
     pub(super) type_: Type,
     pub(super) default: Option<Literal>,
+    pub(super) docstring: Option<String>,
 }
 
 impl Field {
@@ -130,6 +139,10 @@ impl Field {
         self.default.as_ref()
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
     }
@@ -141,6 +154,7 @@ impl From<uniffi_meta::FieldMetadata> for Field {
             name: meta.name,
             type_: convert_type(&meta.ty),
             default: None,
+            docstring: None,
         }
     }
 }
@@ -159,6 +173,7 @@ impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
             name: self.identifier.0.to_string(),
             type_,
             default,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -239,5 +254,40 @@ mod test {
             .iter_types()
             .any(|t| t.canonical_name() == "Optionalstring"));
         assert!(ci.iter_types().any(|t| t.canonical_name() == "TypeTesting"));
+    }
+
+    #[test]
+    fn test_docstring_record() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            dictionary Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_record_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_record_field() {
+        const UDL: &str = r#"
+            namespace test{};
+            dictionary Testing {
+                ///informative docstring
+                i32 testing;
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_record_definition("Testing").unwrap().fields()[0]
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

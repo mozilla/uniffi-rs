@@ -65,6 +65,7 @@ fileprivate func _UniFFI_{{ func.name()|class_name }}_waker(raw_env: UnsafeMutab
     }
 }
 
+{%- call swift::docstring(func, 0) %}
 public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) async {% call swift::throws(func) %}{% match func.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
     let future = {% call swift::to_ffi_call(func) %}
 
@@ -84,6 +85,7 @@ public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) a
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
 
+{%- call swift::docstring(func, 0) %}
 public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) {% call swift::throws(func) %} -> {{ return_type|type_name }} {
     return {% call swift::try(func) %} {{ return_type|lift_fn }}(
         {% call swift::to_ffi_call(func) %}
@@ -92,6 +94,7 @@ public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) {
 
 {%- when None %}
 
+{%- call swift::docstring(func, 0) %}
 public func {{ func.name()|fn_name }}({% call swift::arg_list_decl(func) %}) {% call swift::throws(func) %} {
     {% call swift::to_ffi_call(func) %}
 }

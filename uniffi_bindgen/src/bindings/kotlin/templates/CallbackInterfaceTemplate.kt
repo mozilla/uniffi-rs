@@ -9,8 +9,10 @@
 
 // Declaration and FfiConverters for {{ type_name }} Callback Interface
 
+{%- call kt::docstring(cbi, 0) %}
 public interface {{ type_name }} {
     {% for meth in cbi.methods() -%}
+    {%- call kt::docstring(meth, 4) %}
     fun {{ meth.name()|fn_name }}({% call kt::arg_list_decl(meth) %})
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) %}: {{ return_type|type_name -}}

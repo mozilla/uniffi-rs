@@ -8,16 +8,19 @@
 # namespace.
 class UniFFIExceptionTmpNamespace:
     class {{ type_name }}(Exception):
+        {%- call py::docstring(e, 8) %}
         pass
     {% for variant in e.variants() %}
     {%- let variant_type_name = variant.name()|class_name %}
 
     {%- if e.is_flat() %}
     class {{ variant_type_name }}({{ type_name }}):
+        {%- call py::docstring(variant, 8) %}
         def __str__(self):
             return "{{ type_name }}.{{ variant_type_name }}({})".format(repr(super().__str__()))
     {%- else %}
     class {{ variant_type_name }}({{ type_name }}):
+        {%- call py::docstring(variant, 8) %}
         def __init__(self{% for field in variant.fields() %}, {{ field.name()|var_name }}{% endfor %}):
             {%- if variant.has_fields() %}
             {%- for field in variant.fields() %}

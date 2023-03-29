@@ -98,7 +98,7 @@ pub struct ComponentInterface {
     #[checksum_ignore]
     pub(super) types: TypeUniverse,
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
-    namespace: String,
+    namespace: Option<Namespace>,
     /// The internal unique prefix used to namespace FFI symbols
     #[checksum_ignore]
     ffi_namespace: String,
@@ -141,8 +141,8 @@ impl ComponentInterface {
         // The FFI namespace must not be computed on the fly because it could otherwise be
         // influenced by things added later from proc-macro metadata. Those have their own
         // namespacing mechanism.
-        assert!(!ci.namespace.is_empty());
-        ci.ffi_namespace = format!("{}_{:x}", ci.namespace, ci.checksum());
+        assert!(ci.namespace.is_some());
+        ci.ffi_namespace = format!("{}_{:x}", ci.namespace(), ci.checksum());
 
         // The following two methods will be called later anyways, but we call them here because
         // it's convenient for UDL-only tests.
@@ -153,12 +153,20 @@ impl ComponentInterface {
         Ok(ci)
     }
 
+    ///
+    pub fn namespace_definition(&self) -> Option<&Namespace> {
+        self.namespace.as_ref()
+    }
+
     /// The string namespace within which this API should be presented to the caller.
     ///
     /// This string would typically be used to prefix function names in the FFI, to build
     /// a package or module name for the foreign language, etc.
     pub fn namespace(&self) -> &str {
-        self.namespace.as_str()
+        match &self.namespace {
+            Some(namespace) => namespace.name(),
+            None => "",
+        }
     }
 
     /// Get the definitions for every Enum type in the interface.
@@ -504,10 +512,10 @@ impl ComponentInterface {
 
     /// Called by `APIBuilder` impls to add a newly-parsed namespace definition to the `ComponentInterface`.
     fn add_namespace_definition(&mut self, defn: Namespace) -> Result<()> {
-        if !self.namespace.is_empty() {
+        if self.namespace.is_some() {
             bail!("duplicate namespace definition");
         }
-        self.namespace = defn.name;
+        self.namespace = Some(defn);
         Ok(())
     }
 
@@ -715,7 +723,7 @@ impl ComponentInterface {
     /// as a whole, and which can only be detected after we've finished defining
     /// the entire interface.
     pub fn check_consistency(&self) -> Result<()> {
-        if self.namespace.is_empty() {
+        if self.namespace.is_none() {
             bail!("missing namespace definition");
         }
 
@@ -1225,5 +1233,19 @@ mod test {
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
         assert!(ci.item_contains_unsigned_types(&Type::Object("TestObj".into())));
+    }
+
+    #[test]
+    fn test_multiline_docstring() {
+        const UDL: &str = r#"
+            ///informative
+            ///docstring
+            namespace test{};
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.namespace_definition().unwrap().docstring().unwrap(),
+            "informative\ndocstring"
+        );
     }
 }
