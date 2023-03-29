@@ -167,20 +167,17 @@ fn traverse_module_tree<P: AsRef<Path>>(path: P) -> Result<String> {
     source_code_buff.push_str(&source_code);
 
     for item in file.items.into_iter() {
-        match item {
-            syn::Item::Mod(module) => {
-                let name = module.ident.to_string();
+        if let syn::Item::Mod(module) = item {
+            let name = module.ident.to_string();
 
-                let file_module = path.as_ref().with_file_name(format!("{name}.rs"));
-                let to_traverse_further = if file_module.exists() {
-                    file_module
-                } else {
-                    path.as_ref().with_file_name(format!("{name}/mod.rs"))
-                };
+            let file_module = path.as_ref().with_file_name(format!("{name}.rs"));
+            let to_traverse_further = if file_module.exists() {
+                file_module
+            } else {
+                path.as_ref().with_file_name(format!("{name}/mod.rs"))
+            };
 
-                source_code_buff.push_str(&traverse_module_tree(to_traverse_further)?)
-            }
-            _ => (), // ignore - only care about module declarations
+            source_code_buff.push_str(&traverse_module_tree(to_traverse_further)?)
         }
     }
 
@@ -189,7 +186,7 @@ fn traverse_module_tree<P: AsRef<Path>>(path: P) -> Result<String> {
 
 /// Extract code documentation comments from `lib.rs` file contents.
 pub fn extract_documentation(source_code: &str) -> Result<Documentation> {
-    let file = syn::parse_file(&source_code)?;
+    let file = syn::parse_file(source_code)?;
 
     let mut functions = HashMap::new();
     let mut structures = HashMap::new();
@@ -323,7 +320,7 @@ mod tests {
             Here is a second line.
         "};
 
-        let result = Function::from_str(&description).unwrap();
+        let result = Function::from_str(description).unwrap();
         assert_eq!(expected_complete_doc_function(), result);
     }
 
@@ -361,7 +358,7 @@ mod tests {
             This is return value description.
         "};
 
-        let result = Function::from_str(&description).unwrap();
+        let result = Function::from_str(description).unwrap();
 
         assert_eq!(
             Function {
