@@ -10,6 +10,15 @@ imports = ["Foundation"]
 into_custom = "URL(string: {})!"
 from_custom = "String(describing: {})"
 
+[bindings.swift.custom_types.TimeIntervalMs]
+# Name of the type in the Swift code
+type_name = "Date"
+# Modules that need to be imported
+imports = ["Foundation"]
+# Functions to convert between i64 and TimeIntervalMs
+into_custom = "Date(timeIntervalSince1970: TimeInterval({}) / 1000.0)"
+from_custom = "Int64({}.timeIntervalSince1970 * 1000.0)"
+
 [bindings.kotlin]
 cdylib_name = "custom_types"
 package_name = "customtypes"
