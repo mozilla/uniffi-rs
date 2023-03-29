@@ -170,7 +170,7 @@ impl Object {
         }
         self.ffi_func_free.arguments = vec![FfiArgument {
             name: "ptr".to_string(),
-            type_: FfiType::RustArcPtr(self.name().to_string()),
+            type_: FfiType::RustArcPtrUnsafe(self.name().to_string()),
         }];
         self.ffi_func_free.return_type = None;
 
@@ -240,6 +240,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 pub struct Constructor {
     pub(super) name: String,
     pub(super) arguments: Vec<Argument>,
+    pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
@@ -262,6 +263,10 @@ impl Constructor {
 
     pub fn full_arguments(&self) -> Vec<Argument> {
         self.arguments.to_vec()
+    }
+
+    pub fn return_type(&self) -> Option<&Type> {
+        self.return_type.as_ref()
     }
 
     pub fn ffi_func(&self) -> &FfiFunction {
@@ -290,6 +295,9 @@ impl Constructor {
         self.ffi_func.name = format!("{ci_prefix}_{obj_name}_{}", self.name);
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
         self.ffi_func.return_type = Some(FfiType::RustArcPtr(obj_name.to_string()));
+
+        // this is a bit of a dirty place to put this, but there isn't another "general" pass
+        self.return_type = Some(Type::Object(obj_name.to_string()));
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -302,6 +310,7 @@ impl Default for Constructor {
         Constructor {
             name: String::from("new"),
             arguments: Vec::new(),
+            return_type: None,
             ffi_func: Default::default(),
             attributes: Default::default(),
         }
@@ -317,6 +326,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
         Ok(Constructor {
             name: String::from(attributes.get_name().unwrap_or("new")),
             arguments: self.args.body.list.convert(ci)?,
+            return_type: None,
             ffi_func: Default::default(),
             attributes,
         })
