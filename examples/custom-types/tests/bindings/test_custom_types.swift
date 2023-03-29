@@ -12,9 +12,11 @@ do {
     var demo = getCustomTypesDemo(demo: nil)
     assert(demo.url == URL(string: "http://example.com/"))
     assert(demo.handle == 123)
+    assert(demo.timeIntervalMs == Date(timeIntervalSince1970: 456.0))
 
     // Change some data and ensure that the round-trip works
     demo.url = URL(string: "http://new.example.com/")!
     demo.handle = 456
+    demo.timeIntervalMs = Date(timeIntervalSince1970: 789.0)
     assert(demo == getCustomTypesDemo(demo: demo))
 }

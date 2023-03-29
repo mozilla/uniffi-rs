@@ -4,9 +4,13 @@ typedef string Url;
 [Custom]
 typedef i64 Handle;
 
+[Custom]
+typedef i64 TimeIntervalMs;
+
 dictionary CustomTypesDemo {
     Url url;
     Handle handle;
+    TimeIntervalMs time_interval_ms;
 };
 
 namespace custom_types {
