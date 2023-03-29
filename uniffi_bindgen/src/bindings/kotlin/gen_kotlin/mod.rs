@@ -396,7 +396,7 @@ pub mod filters {
             FfiType::UInt64 => "Long".into(),
             FfiType::Float32 => "Float".into(),
             FfiType::Float64 => "Double".into(),
-            FfiType::RustArcPtr(_) => "Pointer".into(),
+            FfiType::RustArcPtr(_) | FfiType::RustArcPtrUnsafe(_) => "Pointer".into(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
                 Some(suffix) => format!("RustBuffer{suffix}"),
                 None => "RustBuffer".into(),
