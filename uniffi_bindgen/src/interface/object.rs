@@ -370,7 +370,7 @@ impl Method {
     pub fn is_async(&self) -> bool {
         self.is_async
     }
-    
+
     pub fn documentation(&self) -> Option<&uniffi_docs::Function> {
         self.documentation.as_ref()
     }
