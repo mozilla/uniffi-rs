@@ -106,7 +106,7 @@ impl MetadataBuffer {
     // Concatenate another buffer to this one.
     //
     // This consumes self, which is convenient for the proc-macro code and also allows us to avoid
-    // allocated an extra buffer
+    // allocated an extra buffer.
     pub const fn concat(mut self, other: MetadataBuffer) -> MetadataBuffer {
         assert!(self.size + other.size <= BUF_SIZE);
         // It would be nice to use `copy_from_slice()`, but that's not allowed in const functions
@@ -123,7 +123,7 @@ impl MetadataBuffer {
     // Concatenate a `u8` value to this buffer
     //
     // This consumes self, which is convenient for the proc-macro code and also allows us to avoid
-    // allocated an extra buffer
+    // allocated an extra buffer.
     pub const fn concat_value(mut self, value: u8) -> Self {
         assert!(self.size < BUF_SIZE);
         self.bytes[self.size] = value;
@@ -134,7 +134,7 @@ impl MetadataBuffer {
     // Concatenate a `bool` value to this buffer
     //
     // This consumes self, which is convenient for the proc-macro code and also allows us to avoid
-    // allocated an extra buffer
+    // allocated an extra buffer.
     pub const fn concat_bool(self, value: bool) -> Self {
         self.concat_value(value as u8)
     }
@@ -144,7 +144,7 @@ impl MetadataBuffer {
     // Strings are encoded as a `u8` length, followed by the utf8 data.
     //
     // This consumes self, which is convenient for the proc-macro code and also allows us to avoid
-    // allocated an extra buffer
+    // allocated an extra buffer.
     pub const fn concat_str(mut self, string: &str) -> Self {
         assert!(string.len() < 256);
         assert!(self.size + string.len() < BUF_SIZE);

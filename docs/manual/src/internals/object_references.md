@@ -58,7 +58,7 @@ interface TodoList {
 
 On the Rust side of the generated bindings:
  - The instance constructor will create an instance of the corresponding `TodoList` Rust struct
- - The owned value is wrapped it in an `Arc<>`
+ - The owned value is wrapped in an `Arc<>`
  - The `Arc<>` is lowered into the foreign code using `Arc::into_raw` and returned as an object pointer.
 
 This is the "arc to pointer" dance. Note that this has "leaked" the `Arc<>`
@@ -70,9 +70,9 @@ When invoking a method on the instance:
  - The foreign-language code passes the raw pointer back to the Rust code, conceptually passing a "borrow" of the `Arc<>` to the Rust scaffolding.
  - The Rust side calls `Arc::from_raw` to convert the pointer into an an `Arc<>`
  - It wraps the `Arc` in `std::mem::ManuallyDrop<>`, which we never actually
-   drop.  This is because the Rust side is are borrowing the Arc and shouldn't
+   drop.  This is because the Rust side is borrowing the Arc and shouldn't
    run the destructor and decrement the reference count.
- - The `Arc<>` is cloned and returned to the Rust code
+ - The `Arc<>` is cloned and passed to the Rust code
 
 Finally, when the foreign-language code frees the instance, it
 passes the raw pointer a special destructor function so that the Rust code can

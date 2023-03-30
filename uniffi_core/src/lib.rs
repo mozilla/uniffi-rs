@@ -178,7 +178,7 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// serialization is simpler and safer as a starting point.
     type FfiType;
 
-    /// The type that the should be returned by scaffolding functions for this type.
+    /// The type that should be returned by scaffolding functions for this type.
     ///
     /// This is usually the same as `FfiType`, but `Result<>` has specialized handling.
     type ReturnType: FfiDefault;

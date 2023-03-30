@@ -93,7 +93,7 @@ use super::{APIConverter, ComponentInterface};
 ///
 /// Errors are represented in the UDL as enums with the special `[Error]` attribute, but
 /// they're handled in the FFI very differently.  Defining an error means that exported functions
-/// can return a `Result<R, E>` where `R` is a UniFFI type and `E` is the error type.
+/// can return a `Result<T, E>` where `T` is a UniFFI type and `E` is the error type.
 #[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Error {
     pub name: String,
