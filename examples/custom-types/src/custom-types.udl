@@ -7,10 +7,18 @@ typedef i64 Handle;
 [Custom]
 typedef i64 TimeIntervalMs;
 
+[Custom]
+typedef f64 TimeIntervalSecDbl;
+
+[Custom]
+typedef f32 TimeIntervalSecFlt;
+
 dictionary CustomTypesDemo {
     Url url;
     Handle handle;
     TimeIntervalMs time_interval_ms;
+    TimeIntervalSecDbl time_interval_sec_dbl;
+    TimeIntervalSecFlt time_interval_sec_flt;
 };
 
 namespace custom_types {
