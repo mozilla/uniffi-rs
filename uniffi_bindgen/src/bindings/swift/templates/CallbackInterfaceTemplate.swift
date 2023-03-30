@@ -102,14 +102,17 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
 // FfiConverter protocol for callback interfaces
 fileprivate struct {{ ffi_converter_name }} {
     // Initialize our callback method with the scaffolding code
-    private static var callbackInitialized = false
+    private static var callbackInitialized: AtomicBool = false
     private static func initCallback() {
         try! rustCall { (err: UnsafeMutablePointer<RustCallStatus>) in
                 {{ cbi.ffi_init_callback().name() }}({{ foreign_callback }}, err)
         }
     }
     private static func ensureCallbackinitialized() {
-        if !callbackInitialized {
+        self.callbackInitialized.mutate { callbackInitialized in
+            guard !callbackInitialized else {
+                return
+            }
             initCallback()
             callbackInitialized = true
         }
