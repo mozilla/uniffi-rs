@@ -82,25 +82,3 @@ private func makeRustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) 
             throw UniffiInternalError.unexpectedRustCallStatusCode
     }
 }
-
-private final class AtomicBool: ExpressibleByBooleanLiteral {
-    private var value: Bool
-    private let lock: UnsafeMutablePointer<os_unfair_lock>
-
-    init(booleanLiteral value: Bool) {
-        self.lock = .allocate(capacity: 1)
-        self.lock.initialize(to: os_unfair_lock())
-        self.value = value
-    }
-
-    deinit {
-        self.lock.deinitialize(count: 1)
-        self.lock.deallocate()
-    }
-
-    func mutate(_ transform: (inout Bool) -> ()) {
-        os_unfair_lock_lock(self.lock)
-        transform(&self.value)
-        os_unfair_lock_unlock(self.lock)
-    }
-}
