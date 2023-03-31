@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["AsyncRuntime",""],["ExportItem",""]],"fn":[["expand_export",""],["fn_type_assertions",""]],"mod":[["kw",""],["metadata",""],["scaffolding",""]],"struct":[["ExportAttributeArguments",""],["FunctionReturn",""],["Method",""],["Signature",""]]};
+window.SIDEBAR_ITEMS = {"enum":[["AsyncRuntime",""],["ExportItem",""]],"fn":[["expand_export",""]],"mod":[["kw",""],["metadata",""],["scaffolding",""]],"struct":[["ExportAttributeArguments",""],["Method",""],["Signature",""]]};

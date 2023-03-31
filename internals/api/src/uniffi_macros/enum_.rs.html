@@ -168,22 +168,49 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
-<span class="kw">use </span>syn::{
-    punctuated::Punctuated, Data, DataEnum, DeriveInput, Field, Index, Path, Token, Variant,
-};
-<span class="kw">use </span>uniffi_meta::{EnumMetadata, FieldMetadata, VariantMetadata};
+<span class="kw">use </span>syn::{Data, DataEnum, DeriveInput, Field, Index, Path};
 
-<span class="kw">use crate</span>::{
-    export::metadata::convert::convert_type,
-    util::{
-        assert_type_eq, create_metadata_static_var, tagged_impl_header, try_read_field,
-        AttributeSliceExt, CommonAttr,
-    },
+<span class="kw">use </span><span class="kw">crate</span>::util::{
+    create_metadata_items, mod_path, tagged_impl_header, try_metadata_value_from_usize,
+    try_read_field, type_name, AttributeSliceExt, CommonAttr,
 };
 
-<span class="kw">pub fn </span>expand_enum(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="kw">pub fn </span>expand_enum(input: DeriveInput) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
         Data::Enum(e) =&gt; e,
         <span class="kw">_ </span>=&gt; {
@@ -198,19 +225,12 @@
     <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
     <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, attr.tag.as_ref());
 
-    <span class="kw">let </span>meta_static_var = {
-        <span class="kw">match </span>enum_metadata(ident, enum_.variants, module_path) {
-            <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
-            <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
-        }
-    };
-
-    <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
+    <span class="kw">let </span>meta_static_var =
+        enum_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_).unwrap_or_else(|e| e.into_compile_error());
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter_impl
         #meta_static_var
-        #type_assertion
     })
 }
 
@@ -230,6 +250,34 @@
     enum_: <span class="kw-2">&amp;</span>DataEnum,
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
 ) -&gt; TokenStream {
+    enum_or_error_ffi_converter_impl(
+        ident,
+        enum_,
+        tag,
+        <span class="macro">quote! </span>{ ::uniffi::metadata::codes::TYPE_ENUM },
+    )
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>rich_error_ffi_converter_impl(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    enum_: <span class="kw-2">&amp;</span>DataEnum,
+    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+) -&gt; TokenStream {
+    enum_or_error_ffi_converter_impl(
+        ident,
+        enum_,
+        tag,
+        <span class="macro">quote! </span>{ ::uniffi::metadata::codes::TYPE_ERROR },
+    )
+}
+
+<span class="kw">fn </span>enum_or_error_ffi_converter_impl(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    enum_: <span class="kw-2">&amp;</span>DataEnum,
+    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+    metadata_type_code: TokenStream,
+) -&gt; TokenStream {
+    <span class="kw">let </span>name = ident.to_string();
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
     <span class="kw">let </span>write_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
@@ -271,6 +319,7 @@
         <span class="attribute">#[automatically_derived]
         </span><span class="kw">unsafe </span>#impl_spec {
             <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(<span class="kw">crate</span>::UniFfiTag);
+            <span class="macro">::uniffi::ffi_converter_default_return!</span>(<span class="kw">crate</span>::UniFfiTag);
 
             <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
                 #write_impl
@@ -279,55 +328,11 @@
             <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[::std::primitive::u8]) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
                 #try_read_impl
             }
+
+            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_type_code)
+                .concat_str(#name);
         }
     }
-}
-
-<span class="kw">fn </span>enum_metadata(
-    ident: <span class="kw-2">&amp;</span>Ident,
-    variants: Punctuated&lt;Variant, <span class="macro">Token!</span>[,]&gt;,
-    module_path: Vec&lt;String&gt;,
-) -&gt; syn::Result&lt;EnumMetadata&gt; {
-    <span class="kw">let </span>name = ident.to_string();
-    <span class="kw">let </span>variants = variants
-        .iter()
-        .map(variant_metadata)
-        .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(EnumMetadata {
-        module_path,
-        name,
-        variants,
-    })
-}
-
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>variant_metadata(v: <span class="kw-2">&amp;</span>Variant) -&gt; syn::Result&lt;VariantMetadata&gt; {
-    <span class="kw">let </span>name = v.ident.to_string();
-    <span class="kw">let </span>fields = v
-        .fields
-        .iter()
-        .map(|f| field_metadata(f, v))
-        .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(VariantMetadata { name, fields })
-}
-
-<span class="kw">fn </span>field_metadata(f: <span class="kw-2">&amp;</span>Field, v: <span class="kw-2">&amp;</span>Variant) -&gt; syn::Result&lt;FieldMetadata&gt; {
-    <span class="kw">let </span>name = f
-        .ident
-        .as_ref()
-        .ok_or_else(|| {
-            syn::Error::new_spanned(
-                v,
-                <span class="string">&quot;UniFFI only supports enum variants with named fields (or no fields at all)&quot;</span>,
-            )
-        })<span class="question-mark">?
-        </span>.to_string();
-
-    <span class="prelude-val">Ok</span>(FieldMetadata {
-        name,
-        ty: convert_type(<span class="kw-2">&amp;</span>f.ty)<span class="question-mark">?</span>,
-    })
 }
 
 <span class="kw">fn </span>write_field(f: <span class="kw-2">&amp;</span>Field) -&gt; TokenStream {
@@ -337,6 +342,67 @@
     <span class="macro">quote! </span>{
         &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(#ident, buf);
     }
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_meta_static_var(ident: <span class="kw-2">&amp;</span>Ident, enum_: <span class="kw-2">&amp;</span>DataEnum) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>name = ident.to_string();
+    <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>metadata_expr = <span class="macro">quote! </span>{
+            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
+                .concat_str(#module_path)
+                .concat_str(#name)
+    };
+    metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
+    <span class="prelude-val">Ok</span>(create_metadata_items(
+        <span class="string">&quot;enum&quot;</span>,
+        <span class="kw-2">&amp;</span>ident.to_string(),
+        metadata_expr,
+        <span class="prelude-val">None</span>,
+    ))
+}
+
+<span class="kw">pub fn </span>variant_metadata(enum_: <span class="kw-2">&amp;</span>DataEnum) -&gt; syn::Result&lt;Vec&lt;TokenStream&gt;&gt; {
+    <span class="kw">let </span>variants_len =
+        try_metadata_value_from_usize(enum_.variants.len(), <span class="string">&quot;UniFFI limits enums to 256 variants&quot;</span>)<span class="question-mark">?</span>;
+    std::iter::once(<span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{ .concat_value(#variants_len) }))
+        .chain(
+            enum_.variants
+                .iter()
+                .map(|v| {
+                    <span class="kw">let </span>fields_len = try_metadata_value_from_usize(
+                        v.fields.len(),
+                        <span class="string">&quot;UniFFI limits enum variants to 256 fields&quot;</span>,
+                    )<span class="question-mark">?</span>;
+
+                    <span class="kw">let </span>field_names = v.fields
+                        .iter()
+                        .map(|f| {
+                            f.ident
+                                .as_ref()
+                                .ok_or_else(||
+                                    syn::Error::new_spanned(
+                                        v,
+                                        <span class="string">&quot;UniFFI only supports enum variants with named fields (or no fields at all)&quot;</span>,
+                                    )
+                                )
+                                .map(|i| i.to_string())
+                        })
+                    .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
+
+                    <span class="kw">let </span>name = type_name(<span class="kw-2">&amp;</span>v.ident);
+                    <span class="kw">let </span>field_types = v.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ty);
+                    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                        .concat_str(#name)
+                        .concat_value(#fields_len)
+                            #(
+                                .concat_str(#field_names)
+                                .concat(&lt;#field_types <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                            )*
+                    })
+                })
+        )
+        .collect()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

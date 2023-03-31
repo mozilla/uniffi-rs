@@ -8,61 +8,15 @@
 <span id="8">8</span>
 <span id="9">9</span>
 <span id="10">10</span>
-<span id="11">11</span>
-<span id="12">12</span>
-<span id="13">13</span>
-<span id="14">14</span>
-<span id="15">15</span>
-<span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-<span id="19">19</span>
-<span id="20">20</span>
-<span id="21">21</span>
-<span id="22">22</span>
-<span id="23">23</span>
-<span id="24">24</span>
-<span id="25">25</span>
-<span id="26">26</span>
-<span id="27">27</span>
-<span id="28">28</span>
-<span id="29">29</span>
-<span id="30">30</span>
-<span id="31">31</span>
-<span id="32">32</span>
-<span id="33">33</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>uniffi_meta::FnMetadata;
+</span><span class="kw">use </span><span class="kw">crate</span>::export::{ExportItem, Signature};
 
-<span class="kw">use </span><span class="kw">super</span>::convert::{convert_return_type, fn_param_metadata};
-<span class="kw">use </span><span class="kw">crate</span>::export::{ExportItem, Signature};
-
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_metadata(sig: syn::Signature, mod_path: <span class="kw-2">&amp;</span>[String]) -&gt; syn::Result&lt;ExportItem&gt; {
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_metadata(sig: syn::Signature) -&gt; syn::Result&lt;ExportItem&gt; {
     <span class="kw">let </span>sig = Signature::new(sig)<span class="question-mark">?</span>;
-    <span class="kw">let </span>metadata = fn_metadata(<span class="kw-2">&amp;</span>sig, mod_path)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(ExportItem::Function { sig, metadata })
-}
-
-<span class="kw">fn </span>fn_metadata(sig: <span class="kw-2">&amp;</span>Signature, mod_path: <span class="kw-2">&amp;</span>[String]) -&gt; syn::Result&lt;FnMetadata&gt; {
-    <span class="kw">let </span>(return_type, throws) = <span class="kw">match </span><span class="kw-2">&amp;</span>sig.output {
-        <span class="prelude-val">Some</span>(ret) =&gt; (
-            convert_return_type(<span class="kw-2">&amp;</span>ret.ty)<span class="question-mark">?</span>,
-            ret.throws.as_ref().map(ToString::to_string),
-        ),
-        <span class="prelude-val">None </span>=&gt; (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
-    };
-
-    <span class="prelude-val">Ok</span>(FnMetadata {
-        module_path: mod_path.to_owned(),
-        name: sig.ident.to_string(),
-        is_async: sig.is_async,
-        inputs: fn_param_metadata(<span class="kw-2">&amp;</span>sig.inputs)<span class="question-mark">?</span>,
-        return_type,
-        throws,
-    })
+    <span class="prelude-val">Ok</span>(ExportItem::Function { sig })
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

@@ -53,58 +53,14 @@
 <span id="53">53</span>
 <span id="54">54</span>
 <span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
-<span id="65">65</span>
-<span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
-<span id="85">85</span>
-<span id="86">86</span>
-<span id="87">87</span>
-<span id="88">88</span>
-<span id="89">89</span>
-<span id="90">90</span>
-<span id="91">91</span>
-<span id="92">92</span>
-<span id="93">93</span>
-<span id="94">94</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>uniffi_meta::MethodMetadata;
-
-<span class="kw">use </span><span class="kw">super</span>::convert::{convert_return_type, fn_param_metadata, type_as_type_path};
+</span><span class="kw">use </span><span class="kw">super</span>::convert::type_as_type_path;
 <span class="kw">use </span><span class="kw">crate</span>::export::{ExportItem, Method, Signature};
 
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_impl_metadata(
-    item: syn::ItemImpl,
-    mod_path: <span class="kw-2">&amp;</span>[String],
-) -&gt; syn::Result&lt;ExportItem&gt; {
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_impl_metadata(item: syn::ItemImpl) -&gt; syn::Result&lt;ExportItem&gt; {
     <span class="kw">if </span>!item.generics.params.is_empty() || item.generics.where_clause.is_some() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
             <span class="kw-2">&amp;</span>item.generics,
@@ -131,11 +87,7 @@
         }
     };
 
-    <span class="kw">let </span>methods = item
-        .items
-        .into_iter()
-        .map(|it| gen_method_metadata(it, <span class="kw-2">&amp;</span>self_ident.to_string(), mod_path))
-        .collect();
+    <span class="kw">let </span>methods = item.items.into_iter().map(gen_method_metadata).collect();
 
     <span class="prelude-val">Ok</span>(ExportItem::Impl {
         methods,
@@ -143,11 +95,7 @@
     })
 }
 
-<span class="kw">fn </span>gen_method_metadata(
-    it: syn::ImplItem,
-    self_name: <span class="kw-2">&amp;</span>str,
-    mod_path: <span class="kw-2">&amp;</span>[String],
-) -&gt; syn::Result&lt;Method&gt; {
+<span class="kw">fn </span>gen_method_metadata(it: syn::ImplItem) -&gt; syn::Result&lt;Method&gt; {
     <span class="kw">let </span>sig = <span class="kw">match </span>it {
         syn::ImplItem::Method(m) =&gt; Signature::new(m.sig)<span class="question-mark">?</span>,
         <span class="kw">_ </span>=&gt; {
@@ -158,33 +106,7 @@
         }
     };
 
-    <span class="kw">let </span>metadata = method_metadata(self_name, <span class="kw-2">&amp;</span>sig, mod_path)<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(Method { sig, metadata })
-}
-
-<span class="kw">fn </span>method_metadata(
-    self_name: <span class="kw-2">&amp;</span>str,
-    sig: <span class="kw-2">&amp;</span>Signature,
-    mod_path: <span class="kw-2">&amp;</span>[String],
-) -&gt; syn::Result&lt;MethodMetadata&gt; {
-    <span class="kw">let </span>(return_type, throws) = <span class="kw">match </span><span class="kw-2">&amp;</span>sig.output {
-        <span class="prelude-val">Some</span>(ret) =&gt; (
-            convert_return_type(<span class="kw-2">&amp;</span>ret.ty)<span class="question-mark">?</span>,
-            ret.throws.as_ref().map(ToString::to_string),
-        ),
-        <span class="prelude-val">None </span>=&gt; (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
-    };
-
-    <span class="prelude-val">Ok</span>(MethodMetadata {
-        module_path: mod_path.to_owned(),
-        self_name: self_name.to_owned(),
-        is_async: sig.is_async,
-        name: sig.ident.to_string(),
-        inputs: fn_param_metadata(<span class="kw-2">&amp;</span>sig.inputs)<span class="question-mark">?</span>,
-        return_type,
-        throws,
-    })
+    <span class="prelude-val">Ok</span>(Method { sig })
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

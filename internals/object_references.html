@@ -204,97 +204,33 @@ or as the underlying struct <code>T</code>, as there are different use-cases for
     sequence&lt;string&gt; get_items();
 };
 </code></pre>
-<p>On the Rust side of the generated bindings, the instance constructor will create an instance of the
-corresponding <code>TodoList</code> Rust struct, wrap it in an <code>Arc&lt;&gt;</code> and return the Arc's raw pointer to the
-foreign language code:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub extern &quot;C&quot; fn todolist_12ba_TodoList_new(
-    err: &amp;mut uniffi::deps::ffi_support::ExternError,
-) -&gt; *const std::os::raw::c_void /* *const TodoList */ {
-    uniffi::deps::ffi_support::call_with_output(err, || {
-        let _new = TodoList::new();
-        let _arc = std::sync::Arc::new(_new);
-        &lt;std::sync::Arc&lt;TodoList&gt; as uniffi::FfiConverter&gt;::lower(_arc)
-    })
-}
-<span class="boring">}
-</span></code></pre></pre>
-<p>The UniFFI runtime implements lowering for object instances using <code>Arc::into_raw</code>:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>unsafe impl&lt;T: Sync + Send&gt; FfiConverter for std::sync::Arc&lt;T&gt; {
-    type FfiType = *const std::os::raw::c_void;
-    fn lower(self) -&gt; Self::FfiType {
-        std::sync::Arc::into_raw(self) as Self::FfiType
-    }
-}
-<span class="boring">}
-</span></code></pre></pre>
-<p>which does the &quot;arc to pointer&quot; dance for us. Note that this has &quot;leaked&quot; the
-<code>Arc&lt;&gt;</code> reference out of Rusts ownership system and given it to the foreign-language code.
-The foreign-language code must pass that pointer back into Rust in order to free it,
-or our instance will leak.</p>
-<p>When invoking a method on the instance, the foreign-language code passes the
-raw pointer back to the Rust code, conceptually passing a &quot;borrow&quot; of the <code>Arc&lt;&gt;</code> to
-the Rust scaffolding. The Rust side turns it back into a cloned <code>Arc&lt;&gt;</code> which
-lives for the duration of the method call:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub extern &quot;C&quot; fn todolist_12ba_TodoList_add_item(
-    ptr: *const std::os::raw::c_void,
-    todo: uniffi::RustBuffer,
-    err: &amp;mut uniffi::deps::ffi_support::ExternError,
-) -&gt; () {
-    uniffi::deps::ffi_support::call_with_result(err, || -&gt; Result&lt;_, TodoError&gt; {
-        let _retval = TodoList::add_item(
-          &amp;&lt;std::sync::Arc&lt;TodoList&gt; as uniffi::FfiConverter&gt;::try_lift(ptr).unwrap(),
-          &lt;String as uniffi::FfiConverter&gt;::try_lift(todo).unwrap())?,
-        )
-        Ok(_retval)
-    })
-}
-<span class="boring">}
-</span></code></pre></pre>
-<p>The UniFFI runtime implements lifting for object instances using <code>Arc::from_raw</code>:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>unsafe impl&lt;T: Sync + Send&gt; FfiConverter for std::sync::Arc&lt;T&gt; {
-    type FfiType = *const std::os::raw::c_void;
-    fn try_lift(v: Self::FfiType) -&gt; Result&lt;Self&gt; {
-        let v = v as *const T;
-        // We musn't drop the `Arc&lt;T&gt;` that is owned by the foreign-language code.
-        let foreign_arc = std::mem::ManuallyDrop::new(unsafe { Self::from_raw(v) });
-        // Take a clone for our own use.
-        Ok(std::sync::Arc::clone(&amp;*foreign_arc))
-    }
-<span class="boring">}
-</span></code></pre></pre>
-<p>Notice that we take care to ensure the reference that is owned by the foreign-language
-code remains alive.</p>
+<p>On the Rust side of the generated bindings:</p>
+<ul>
+<li>The instance constructor will create an instance of the corresponding <code>TodoList</code> Rust struct</li>
+<li>The owned value is wrapped in an <code>Arc&lt;&gt;</code></li>
+<li>The <code>Arc&lt;&gt;</code> is lowered into the foreign code using <code>Arc::into_raw</code> and returned as an object pointer.</li>
+</ul>
+<p>This is the &quot;arc to pointer&quot; dance. Note that this has &quot;leaked&quot; the <code>Arc&lt;&gt;</code>
+reference out of Rusts ownership system and given it to the foreign-language
+code. The foreign-language code must pass that pointer back into Rust in order
+to free it, or our instance will leak.</p>
+<p>When invoking a method on the instance:</p>
+<ul>
+<li>The foreign-language code passes the raw pointer back to the Rust code, conceptually passing a &quot;borrow&quot; of the <code>Arc&lt;&gt;</code> to the Rust scaffolding.</li>
+<li>The Rust side calls <code>Arc::from_raw</code> to convert the pointer into an an <code>Arc&lt;&gt;</code></li>
+<li>It wraps the <code>Arc</code> in <code>std::mem::ManuallyDrop&lt;&gt;</code>, which we never actually
+drop.  This is because the Rust side is borrowing the Arc and shouldn't
+run the destructor and decrement the reference count.</li>
+<li>The <code>Arc&lt;&gt;</code> is cloned and passed to the Rust code</li>
+</ul>
 <p>Finally, when the foreign-language code frees the instance, it
 passes the raw pointer a special destructor function so that the Rust code can
 drop that initial reference (and if that happens to be the final reference,
-the Rust object will be dropped.)</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub extern &quot;C&quot; fn ffi_todolist_12ba_TodoList_object_free(ptr: *const std::os::raw::c_void) {
-    if let Err(e) = std::panic::catch_unwind(|| {
-        assert!(!ptr.is_null());
-        unsafe { std::sync::Arc::from_raw(ptr as *const TodoList) };
-    }) {
-        uniffi::deps::log::error!(&quot;ffi_todolist_12ba_TodoList_object_free panicked: {:?}&quot;, e);
-    }
-}
-<span class="boring">}
-</span></code></pre></pre>
+the Rust object will be dropped.).  This simply calls <code>Arc::from_raw</code>, then
+lets the value drop.</p>
 <p>Passing instances as arguments and returning them as values works similarly, except that
 UniFFI does not automatically wrap/unwrap the containing <code>Arc</code>.</p>
+<p>To see this in action, use <code>cargo expand</code> to see the exact generated code.</p>
 
                     </main>
 

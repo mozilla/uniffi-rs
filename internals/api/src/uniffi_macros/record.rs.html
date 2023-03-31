@@ -108,31 +108,16 @@
 <span id="108">108</span>
 <span id="109">109</span>
 <span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
-<span class="kw">use </span>syn::{Data, DataStruct, DeriveInput, Field, Fields, Path};
-<span class="kw">use </span>uniffi_meta::{FieldMetadata, RecordMetadata};
+<span class="kw">use </span>syn::{Data, DataStruct, DeriveInput, Field, Path};
 
-<span class="kw">use crate</span>::{
-    export::metadata::convert::convert_type,
-    util::{
-        assert_type_eq, create_metadata_static_var, tagged_impl_header, try_read_field,
-        AttributeSliceExt, CommonAttr,
-    },
+<span class="kw">use </span><span class="kw">crate</span>::util::{
+    create_metadata_items, mod_path, tagged_impl_header, try_metadata_value_from_usize,
+    try_read_field, type_name, AttributeSliceExt, CommonAttr,
 };
 
-<span class="kw">pub fn </span>expand_record(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="kw">pub fn </span>expand_record(input: DeriveInput) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>record = <span class="kw">match </span>input.data {
         Data::Struct(s) =&gt; s,
         <span class="kw">_ </span>=&gt; {
@@ -146,16 +131,11 @@
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
     <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
     <span class="kw">let </span>ffi_converter = record_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>record, attr.tag.as_ref());
-    <span class="kw">let </span>meta_static_var = <span class="kw">match </span>record_metadata(ident, record.fields, module_path) {
-        <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
-        <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
-    };
-    <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
+    <span class="kw">let </span>meta_static_var = record_meta_static_var(ident, <span class="kw-2">&amp;</span>record)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter
         #meta_static_var
-        #type_assertion
     })
 }
 
@@ -176,6 +156,7 @@
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
 ) -&gt; TokenStream {
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
+    <span class="kw">let </span>name = type_name(ident);
     <span class="kw">let </span>write_impl: TokenStream = record.fields.iter().map(write_field).collect();
     <span class="kw">let </span>try_read_fields: TokenStream = record.fields.iter().map(try_read_field).collect();
 
@@ -183,6 +164,7 @@
         <span class="attribute">#[automatically_derived]
         </span><span class="kw">unsafe </span>#impl_spec {
             <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(<span class="kw">crate</span>::UniFfiTag);
+            <span class="macro">::uniffi::ffi_converter_default_return!</span>(<span class="kw">crate</span>::UniFfiTag);
 
             <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
                 #write_impl
@@ -191,45 +173,11 @@
             <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[::std::primitive::u8]) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
                 <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ #try_read_fields })
             }
+
+            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_RECORD)
+                .concat_str(#name);
         }
     }
-}
-
-<span class="kw">fn </span>record_metadata(
-    ident: <span class="kw-2">&amp;</span>Ident,
-    fields: Fields,
-    module_path: Vec&lt;String&gt;,
-) -&gt; syn::Result&lt;RecordMetadata&gt; {
-    <span class="kw">let </span>name = ident.to_string();
-    <span class="kw">let </span>fields = <span class="kw">match </span>fields {
-        Fields::Named(fields) =&gt; fields.named,
-        <span class="kw">_ </span>=&gt; {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                Span::call_site(),
-                <span class="string">&quot;UniFFI only supports structs with named fields&quot;</span>,
-            ));
-        }
-    };
-
-    <span class="kw">let </span>fields = fields
-        .iter()
-        .map(field_metadata)
-        .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(RecordMetadata {
-        module_path,
-        name,
-        fields,
-    })
-}
-
-<span class="kw">fn </span>field_metadata(f: <span class="kw-2">&amp;</span>Field) -&gt; syn::Result&lt;FieldMetadata&gt; {
-    <span class="kw">let </span>name = f.ident.as_ref().unwrap().to_string();
-
-    <span class="prelude-val">Ok</span>(FieldMetadata {
-        name,
-        ty: convert_type(<span class="kw-2">&amp;</span>f.ty)<span class="question-mark">?</span>,
-    })
 }
 
 <span class="kw">fn </span>write_field(f: <span class="kw-2">&amp;</span>Field) -&gt; TokenStream {
@@ -239,6 +187,36 @@
     <span class="macro">quote! </span>{
         &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(obj.#ident, buf);
     }
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>record_meta_static_var(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    record: <span class="kw-2">&amp;</span>DataStruct,
+) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>name = type_name(ident);
+    <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
+    <span class="kw">let </span>fields_len =
+        try_metadata_value_from_usize(record.fields.len(), <span class="string">&quot;UniFFI limits structs to 256 fields&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>field_names = record
+        .fields
+        .iter()
+        .map(|f| f.ident.as_ref().unwrap().to_string());
+    <span class="kw">let </span>field_types = record.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ty);
+    <span class="prelude-val">Ok</span>(create_metadata_items(
+        <span class="string">&quot;record&quot;</span>,
+        <span class="kw-2">&amp;</span>name,
+        <span class="macro">quote! </span>{
+                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
+                    .concat_str(#module_path)
+                    .concat_str(#name)
+                    .concat_value(#fields_len)
+                    #(
+                        .concat_str(#field_names)
+                        .concat(&lt;#field_types <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                    )*
+        },
+        <span class="prelude-val">None</span>,
+    ))
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

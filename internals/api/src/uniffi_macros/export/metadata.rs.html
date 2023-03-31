@@ -38,10 +38,10 @@
 
 <span class="kw">use </span><span class="self">self</span>::{function::gen_fn_metadata, impl_::gen_impl_metadata};
 
-<span class="kw">pub fn </span>gen_metadata(item: syn::Item, mod_path: <span class="kw-2">&amp;</span>[String]) -&gt; syn::Result&lt;ExportItem&gt; {
+<span class="kw">pub fn </span>gen_metadata(item: syn::Item) -&gt; syn::Result&lt;ExportItem&gt; {
     <span class="kw">match </span>item {
-        syn::Item::Fn(item) =&gt; gen_fn_metadata(item.sig, mod_path),
-        syn::Item::Impl(item) =&gt; gen_impl_metadata(item, mod_path),
+        syn::Item::Fn(item) =&gt; gen_fn_metadata(item.sig),
+        syn::Item::Impl(item) =&gt; gen_impl_metadata(item),
         <span class="comment">// FIXME: Support const / static?
         </span><span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new(
             Span::call_site(),

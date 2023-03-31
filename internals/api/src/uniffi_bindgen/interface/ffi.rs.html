@@ -107,6 +107,23 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -167,12 +184,13 @@
 /// from the high-level interface. Each callable thing in the component API will have a
 /// corresponding `FfiFunction` through which it can be invoked, and UniFFI also provides
 /// some built-in `FfiFunction` helpers for use in the foreign language bindings.
-</span><span class="attribute">#[derive(Debug, Default, Clone)]
+</span><span class="attribute">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>FfiFunction {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) is_async: bool,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;FfiArgument&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;,
+    <span class="kw">pub</span>(<span class="kw">super</span>) has_rust_call_status_arg: bool,
 }
 
 <span class="kw">impl </span>FfiFunction {
@@ -190,6 +208,22 @@
 
     <span class="kw">pub fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>FfiType&gt; {
         <span class="self">self</span>.return_type.as_ref()
+    }
+
+    <span class="kw">pub fn </span>has_rust_call_status_arg(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.has_rust_call_status_arg
+    }
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>FfiFunction {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name: <span class="string">&quot;&quot;</span>.into(),
+            is_async: <span class="bool-val">false</span>,
+            arguments: Vec::new(),
+            return_type: <span class="prelude-val">None</span>,
+            has_rust_call_status_arg: <span class="bool-val">true</span>,
+        }
     }
 }
 

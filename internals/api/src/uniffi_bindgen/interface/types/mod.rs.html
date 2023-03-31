@@ -344,27 +344,6 @@
 <span id="344">344</span>
 <span id="345">345</span>
 <span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
-<span id="354">354</span>
-<span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
-<span id="358">358</span>
-<span id="359">359</span>
-<span id="360">360</span>
-<span id="361">361</span>
-<span id="362">362</span>
-<span id="363">363</span>
-<span id="364">364</span>
-<span id="365">365</span>
-<span id="366">366</span>
-<span id="367">367</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -442,11 +421,6 @@
         name: String,
         builtin: Box&lt;Type&gt;,
     },
-    <span class="comment">// An unresolved user-defined type inside a proc-macro exported function
-    // signature. Must be replaced by another type before bindings generation.
-    </span>Unresolved {
-        name: String,
-    },
 }
 
 <span class="attribute">#[derive(Debug, Clone, Copy, Eq, PartialEq, Checksum, Ord, PartialOrd)]
@@ -505,9 +479,6 @@
             ),
             <span class="comment">// A type that exists externally.
             </span>Type::External { name, .. } | Type::Custom { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
-            Type::Unresolved { name } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before calling canonical_name&quot;</span>)
-            }
         }
     }
 
@@ -573,9 +544,6 @@
                 ..
             } =&gt; FfiType::RustBuffer(<span class="prelude-val">Some</span>(name.clone())),
             Type::Custom { builtin, .. } =&gt; FfiType::from(builtin.as_ref()),
-            Type::Unresolved { name } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before lowering to FfiType&quot;</span>)
-            }
         }
     }
 }
@@ -617,11 +585,6 @@
     ///
     /// This will fail if you try to add a name for which an existing type definition exists.
     </span><span class="kw">pub fn </span>add_type_definition(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, type_: Type) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if let </span>Type::Unresolved { name: name_ } = <span class="kw-2">&amp;</span>type_ {
-            <span class="macro">assert_eq!</span>(name, name_);
-            <span class="macro">bail!</span>(<span class="string">&quot;attempted to add type definition of Unresolved for `{name}`&quot;</span>);
-        }
-
         <span class="kw">if </span>resolve_builtin_type(name).is_some() {
             <span class="macro">bail!</span>(
                 <span class="string">&quot;please don&#39;t shadow builtin types ({name}, {})&quot;</span>,
@@ -669,11 +632,6 @@
 
     <span class="doccomment">/// Add a [Type] to the set of all types seen in the component interface.
     </span><span class="kw">pub fn </span>add_known_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="comment">// Adding potentially-unresolved types is a footgun, make sure we don&#39;t do that.
-        </span><span class="kw">if </span><span class="macro">matches!</span>(type_, Type::Unresolved { .. }) {
-            <span class="macro">bail!</span>(<span class="string">&quot;Unresolved types must be resolved before being added to known types&quot;</span>);
-        }
-
         <span class="comment">// Types are more likely to already be known than not, so avoid unnecessary cloning.
         </span><span class="kw">if </span>!<span class="self">self</span>.all_known_types.contains(type_) {
             <span class="self">self</span>.all_known_types.insert(type_.to_owned());

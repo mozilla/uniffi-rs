@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["collect_params",""],["gen_ffi_function",""],["gen_fn_scaffolding",""],["gen_method_scaffolding",""],["is_receiver",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["gen_ffi_function",""],["gen_fn_scaffolding",""],["gen_method_scaffolding",""],["is_receiver",""]],"struct":[["ScaffoldingBits",""]]};

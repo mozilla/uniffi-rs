@@ -438,9 +438,6 @@
 <span id="438">438</span>
 <span id="439">439</span>
 <span id="440">440</span>
-<span id="441">441</span>
-<span id="442">442</span>
-<span id="443">443</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -701,9 +698,6 @@
             Type::Map(key, value) =&gt; Box::new(compounds::MapCodeType::new(<span class="kw-2">*</span>key, <span class="kw-2">*</span>value)),
             Type::External { name, .. } =&gt; Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } =&gt; Box::new(custom::CustomCodeType::new(name)),
-            Type::Unresolved { name } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;Type `{name}` must be resolved before calling create_code_type&quot;</span>)
-            }
         }
     }
 }

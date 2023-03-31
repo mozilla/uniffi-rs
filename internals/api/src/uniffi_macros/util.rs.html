@@ -272,22 +272,47 @@
 <span id="272">272</span>
 <span id="273">273</span>
 <span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
-<span class="kw">use </span>quote::{format_ident, quote, quote_spanned, ToTokens};
+<span class="kw">use </span>quote::{format_ident, quote};
 <span class="kw">use </span>syn::{
+    ext::IdentExt,
     parse::{Parse, ParseStream},
     spanned::Spanned,
     visit_mut::VisitMut,
     Attribute, Item, Path, Token, Type,
 };
-<span class="kw">use </span>uniffi_meta::Metadata;
 
 <span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
-</span><span class="kw">pub fn </span>mod_path() -&gt; syn::Result&lt;Vec&lt;String&gt;&gt; {
+</span><span class="kw">pub fn </span>mod_path() -&gt; syn::Result&lt;String&gt; {
     <span class="comment">// Without the nightly feature and TokenStream::expand_expr, just return the crate name
 
     </span><span class="kw">use </span>std::path::Path;
@@ -313,7 +338,7 @@
         name: <span class="prelude-ty">Option</span>&lt;String&gt;,
     }
 
-    <span class="kw">static </span>LIB_CRATE_MOD_PATH: Lazy&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;, String&gt;&gt; = Lazy::new(|| {
+    <span class="kw">static </span>LIB_CRATE_MOD_PATH: Lazy&lt;<span class="prelude-ty">Result</span>&lt;String, String&gt;&gt; = Lazy::new(|| {
         <span class="kw">let </span>manifest_dir =
             std::env::var_os(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).ok_or(<span class="string">&quot;`CARGO_MANIFEST_DIR` is not set&quot;</span>)<span class="question-mark">?</span>;
 
@@ -327,7 +352,7 @@
             .name
             .unwrap_or_else(|| cargo_toml.package.name.replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>));
 
-        <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[lib_crate_name])
+        <span class="prelude-val">Ok</span>(lib_crate_name)
     });
 
     LIB_CRATE_MOD_PATH
@@ -336,7 +361,7 @@
 }
 
 <span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
-</span><span class="kw">pub fn </span>mod_path() -&gt; syn::Result&lt;Vec&lt;String&gt;&gt; {
+</span><span class="kw">pub fn </span>mod_path() -&gt; syn::Result&lt;String&gt; {
     <span class="kw">use </span>proc_macro::TokenStream;
 
     <span class="kw">let </span>module_path_invoc = TokenStream::from(<span class="macro">quote! </span>{ <span class="macro">::core::module_path!</span>() });
@@ -344,10 +369,7 @@
     // This is a nightly feature, tracked at https://github.com/rust-lang/rust/issues/90765
     </span><span class="kw">let </span>expanded_module_path = TokenStream::expand_expr(<span class="kw-2">&amp;</span>module_path_invoc)
         .map_err(|e| syn::Error::new(Span::call_site(), e))<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(syn::parse::&lt;syn::LitStr&gt;(expanded_module_path)<span class="question-mark">?
-        </span>.value()
-        .split(<span class="string">&quot;::&quot;</span>)
-        .collect())
+    <span class="prelude-val">Ok</span>(syn::parse::&lt;syn::LitStr&gt;(expanded_module_path)<span class="question-mark">?</span>.value())
 }
 
 <span class="doccomment">/// Rewrite Self type alias usage in an impl block to the type itself.
@@ -411,25 +433,53 @@
     }
 }
 
-<span class="kw">pub fn </span>create_metadata_static_var(name: <span class="kw-2">&amp;</span>Ident, val: Metadata) -&gt; TokenStream {
-    <span class="kw">let </span>data: Vec&lt;u8&gt; = bincode::serialize(<span class="kw-2">&amp;</span>val).expect(<span class="string">&quot;Error serializing metadata item&quot;</span>);
-    <span class="kw">let </span>count = data.len();
-    <span class="kw">let </span>var_name = <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_{}&quot;</span>, name);
+<span class="kw">pub fn </span>type_name(type_ident: <span class="kw-2">&amp;</span>Ident) -&gt; String {
+    type_ident.unraw().to_string()
+}
+
+<span class="kw">pub fn </span>crate_name() -&gt; String {
+    std::env::var(<span class="string">&quot;CARGO_CRATE_NAME&quot;</span>).unwrap().replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>)
+}
+
+<span class="kw">pub fn </span>create_metadata_items(
+    kind: <span class="kw-2">&amp;</span>str,
+    name: <span class="kw-2">&amp;</span>str,
+    metadata_expr: TokenStream,
+    checksum_fn_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+) -&gt; TokenStream {
+    <span class="kw">let </span>crate_name = crate_name();
+    <span class="kw">let </span>crate_name_upper = crate_name.to_uppercase();
+    <span class="kw">let </span>kind_upper = kind.to_uppercase();
+    <span class="kw">let </span>name_upper = name.to_uppercase();
+    <span class="kw">let </span>const_ident =
+        <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_CONST_{crate_name_upper}_{kind_upper}_{name_upper}&quot;</span>);
+    <span class="kw">let </span>static_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_{crate_name_upper}_{kind_upper}_{name_upper}&quot;</span>);
+
+    <span class="kw">let </span>checksum_fn = checksum_fn_name.map(|name| {
+        <span class="kw">let </span>ident = Ident::new(<span class="kw-2">&amp;</span>name, Span::call_site());
+        <span class="macro">quote! </span>{
+            <span class="attribute">#[doc(hidden)]
+            #[no_mangle]
+            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ident() -&gt; u16 {
+                #const_ident.checksum()
+            }
+        }
+    });
 
     <span class="macro">quote! </span>{
+        <span class="kw">const </span>#const_ident: ::uniffi::MetadataBuffer = #metadata_expr;
         <span class="attribute">#[no_mangle]
         #[doc(hidden)]
-        </span><span class="kw">pub static </span>#var_name: [u8; #count] = [#(#data),<span class="kw-2">*</span>];
+        </span><span class="kw">pub static </span>#static_ident: [u8; #const_ident.size] = #const_ident.into_array();
+
+        #checksum_fn
     }
 }
 
-<span class="kw">pub fn </span>assert_type_eq(a: <span class="kw">impl </span>ToTokens + Spanned, b: <span class="kw">impl </span>ToTokens) -&gt; TokenStream {
-    <span class="macro">quote_spanned! </span>{a.span()=&gt;
-        <span class="attribute">#[allow(unused_qualifications)]
-        </span><span class="kw">const _</span>: () = {
-            <span class="macro">::uniffi::deps::static_assertions::assert_type_eq_all!</span>(#a, #b);
-        };
-    }
+<span class="kw">pub fn </span>try_metadata_value_from_usize(value: usize, error_message: <span class="kw-2">&amp;</span>str) -&gt; syn::Result&lt;u8&gt; {
+    value
+        .try_into()
+        .map_err(|<span class="kw">_</span>| syn::Error::new(Span::call_site(), error_message))
 }
 
 <span class="kw">pub fn </span>chain&lt;T&gt;(

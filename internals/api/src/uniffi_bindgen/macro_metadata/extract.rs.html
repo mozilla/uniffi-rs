@@ -190,9 +190,6 @@
 <span id="190">190</span>
 <span id="191">191</span>
 <span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -367,13 +364,10 @@
         // always know the end position, because goblin reports the symbol size as 0 for PE and
         // MachO files.
         //
-        // This works fine, because bincode knows when the serialized data is terminated and will
-        // just ignore the trailing data.
+        // This works fine, because `MetadataReader` knows when the serialized data is terminated
+        // and will just ignore the trailing data.
         </span><span class="kw">let </span>data = <span class="kw-2">&amp;</span>file_data[offset..];
-        <span class="self">self</span>.items
-            .push(bincode::deserialize::&lt;Metadata&gt;(data).with_context(|| {
-                <span class="macro">format!</span>(<span class="string">&quot;Failed to deserialize bincode data at offset {offset:#x}&quot;</span>)
-            })<span class="question-mark">?</span>);
+        <span class="self">self</span>.items.push(Metadata::read(data)<span class="question-mark">?</span>);
         <span class="self">self</span>.names.insert(name.to_string());
         <span class="prelude-val">Ok</span>(())
     }

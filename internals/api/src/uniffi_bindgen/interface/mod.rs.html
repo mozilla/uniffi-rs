@@ -1193,40 +1193,6 @@
 <span id="1193">1193</span>
 <span id="1194">1194</span>
 <span id="1195">1195</span>
-<span id="1196">1196</span>
-<span id="1197">1197</span>
-<span id="1198">1198</span>
-<span id="1199">1199</span>
-<span id="1200">1200</span>
-<span id="1201">1201</span>
-<span id="1202">1202</span>
-<span id="1203">1203</span>
-<span id="1204">1204</span>
-<span id="1205">1205</span>
-<span id="1206">1206</span>
-<span id="1207">1207</span>
-<span id="1208">1208</span>
-<span id="1209">1209</span>
-<span id="1210">1210</span>
-<span id="1211">1211</span>
-<span id="1212">1212</span>
-<span id="1213">1213</span>
-<span id="1214">1214</span>
-<span id="1215">1215</span>
-<span id="1216">1216</span>
-<span id="1217">1217</span>
-<span id="1218">1218</span>
-<span id="1219">1219</span>
-<span id="1220">1220</span>
-<span id="1221">1221</span>
-<span id="1222">1222</span>
-<span id="1223">1223</span>
-<span id="1224">1224</span>
-<span id="1225">1225</span>
-<span id="1226">1226</span>
-<span id="1227">1227</span>
-<span id="1228">1228</span>
-<span id="1229">1229</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1293,7 +1259,7 @@
 <span class="kw">mod </span>error;
 <span class="kw">pub use </span>error::Error;
 <span class="kw">mod </span>function;
-<span class="kw">pub use </span>function::{Argument, Function};
+<span class="kw">pub use </span>function::{Argument, Callable, Function};
 <span class="kw">mod </span>literal;
 <span class="kw">pub use </span>literal::{Literal, Radix};
 <span class="kw">mod </span>namespace;
@@ -1305,32 +1271,24 @@
 
 <span class="kw">pub mod </span>ffi;
 <span class="kw">pub use </span>ffi::{FfiArgument, FfiFunction, FfiType};
-<span class="kw">use </span>uniffi_meta::{Checksum, FnMetadata, MethodMetadata, ObjectMetadata};
+<span class="kw">use </span>uniffi_meta::{FnMetadata, MethodMetadata, ObjectMetadata};
 
-<span class="doccomment">/// This needs to match the major/minor version of the `uniffi` crate.  See
-/// `docs/uniffi-versioning.md` for details.
-///
-/// Once we get to 1.0, then we should reformat this to only include the major version number.
-</span><span class="kw">const </span>UNIFFI_CONTRACT_VERSION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;0.22&quot;</span>;
+<span class="comment">// This needs to match the minor version of the `uniffi` crate.  See
+// `docs/uniffi-versioning.md` for details.
+//
+// Once we get to 1.0, then we&#39;ll need to update the scheme to something like 100 + major_version
+</span><span class="kw">const </span>UNIFFI_CONTRACT_VERSION: u32 = <span class="number">22</span>;
 
 <span class="doccomment">/// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
-</span><span class="attribute">#[derive(Debug, Default, Checksum)]
+</span><span class="attribute">#[derive(Debug, Default)]
 </span><span class="kw">pub struct </span>ComponentInterface {
-    <span class="doccomment">/// This always points to `UNIFFI_CONTRACT_VERSION`.  By including it in the checksum, we
-    /// prevent consumers from combining scaffolding and bindings that were created with different
-    /// `uniffi` versions.
-    </span>uniffi_version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
     <span class="doccomment">/// All of the types used in the interface.
     </span><span class="comment">// We can&#39;t checksum `self.types`, but its contents are implied by the other fields
     // anyway, so it&#39;s safe to ignore it.
-    </span><span class="attribute">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) types: TypeUniverse,
     <span class="doccomment">/// The unique prefix that we&#39;ll use for namespacing when exposing this component&#39;s API.
     </span>namespace: String,
-    <span class="doccomment">/// The internal unique prefix used to namespace FFI symbols
-    </span><span class="attribute">#[checksum_ignore]
-    </span>ffi_namespace: String,
     <span class="doccomment">/// The high-level API provided by the component.
     </span>enums: BTreeMap&lt;String, Enum&gt;,
     records: BTreeMap&lt;String, Record&gt;,
@@ -1343,10 +1301,7 @@
 <span class="kw">impl </span>ComponentInterface {
     <span class="doccomment">/// Parse a `ComponentInterface` from a string containing a WebIDL definition.
     </span><span class="kw">pub fn </span>from_webidl(idl: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>ci = <span class="self">Self </span>{
-            uniffi_version: UNIFFI_CONTRACT_VERSION,
-            ..Default::default()
-        };
+        <span class="kw">let </span><span class="kw-2">mut </span>ci = <span class="self">Self</span>::default();
         <span class="comment">// There&#39;s some lifetime thing with the errors returned from weedle::Definitions::parse
         // that my own lifetime is too short to worry about figuring out; unwrap and move on.
 
@@ -1367,12 +1322,6 @@
         <span class="comment">// With those names resolved, we can build a complete representation of the API.
         </span>APIBuilder::process(<span class="kw-2">&amp;</span>defns, <span class="kw-2">&amp;mut </span>ci)<span class="question-mark">?</span>;
 
-        <span class="comment">// The FFI namespace must not be computed on the fly because it could otherwise be
-        // influenced by things added later from proc-macro metadata. Those have their own
-        // namespacing mechanism.
-        </span><span class="macro">assert!</span>(!ci.namespace.is_empty());
-        ci.ffi_namespace = <span class="macro">format!</span>(<span class="string">&quot;{}_{:x}&quot;</span>, ci.namespace, ci.checksum());
-
         <span class="comment">// The following two methods will be called later anyways, but we call them here because
         // it&#39;s convenient for UDL-only tests.
         </span>ci.check_consistency()<span class="question-mark">?</span>;
@@ -1388,6 +1337,15 @@
     /// a package or module name for the foreign language, etc.
     </span><span class="kw">pub fn </span>namespace(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="self">self</span>.namespace.as_str()
+    }
+
+    <span class="kw">pub fn </span>uniffi_contract_version(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
+        <span class="comment">// This is set by the scripts in the version-mismatch fixture
+        </span><span class="kw">let </span>force_version = std::env::var(<span class="string">&quot;UNIFFI_FORCE_CONTRACT_VERSION&quot;</span>);
+        <span class="kw">match </span>force_version {
+            <span class="prelude-val">Ok</span>(v) <span class="kw">if </span>!v.is_empty() =&gt; v.parse().unwrap(),
+            <span class="kw">_ </span>=&gt; UNIFFI_CONTRACT_VERSION,
+        }
     }
 
     <span class="doccomment">/// Get the definitions for every Enum type in the interface.
@@ -1547,39 +1505,25 @@
             .any(|t| <span class="macro">matches!</span>(t, Type::Map(<span class="kw">_</span>, <span class="kw">_</span>)))
     }
 
-    <span class="doccomment">/// Calculate a numeric checksum for this ComponentInterface.
-    ///
-    /// The checksum can be used to guard against accidentally using foreign-language bindings
-    /// generated from one version of an interface with the compiled Rust code from a different
-    /// version of that interface. It offers the following properties:
-    ///
-    ///   - Two ComponentIntefaces generated from the same WebIDL file, using the same version of uniffi
-    ///     and the same version of Rust, will always have the same checksum value.
-    ///   - Two ComponentInterfaces will, with high probability, have different checksum values if:
-    ///         - They were generated from two different WebIDL files.
-    ///         - They were generated by two different versions of uniffi
-    ///
-    /// Note that this is designed to prevent accidents, not attacks, so there is no need for the
-    /// checksum to be cryptographically secure.
-    </span><span class="kw">pub fn </span>checksum(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u16 {
-        uniffi_meta::checksum(<span class="self">self</span>)
-    }
-
     <span class="doccomment">/// The namespace to use in FFI-level function definitions.
     ///
     /// The value returned by this method is used as a prefix to namespace all UDL-defined FFI
     /// functions used in this ComponentInterface.
-    ///
-    /// Since these names are an internal implementation detail that is not typically visible to
-    /// consumers, we take the opportunity to add an additional safety guard by including a 4-hex-char
-    /// checksum in each name. If foreign-language bindings attempt to load and use a version of the
-    /// Rust code compiled from a different UDL definition than the one used for the bindings themselves,
-    /// then there is a high probability of checksum mismatch and they will fail to link against the
-    /// compiled Rust code. The result will be an ugly inscrutable link-time error, but that is a lot
-    /// better than triggering potentially arbitrary memory unsafety!
     </span><span class="kw">pub fn </span>ffi_namespace(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
-        <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_namespace.is_empty());
-        <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_namespace
+        <span class="kw-2">&amp;</span><span class="self">self</span>.namespace
+    }
+
+    <span class="doccomment">/// Builtin FFI function to get the current contract version
+    /// This is needed so that the foreign language bindings can check that they are using the same
+    /// ABI as the scaffolding
+    </span><span class="kw">pub fn </span>ffi_uniffi_contract_version(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
+        FfiFunction {
+            name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_uniffi_contract_version&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            is_async: <span class="bool-val">false</span>,
+            arguments: <span class="macro">vec!</span>[],
+            return_type: <span class="prelude-val">Some</span>(FfiType::UInt32),
+            has_rust_call_status_arg: <span class="bool-val">false</span>,
+        }
     }
 
     <span class="doccomment">/// Builtin FFI function for allocating a new `RustBuffer`.
@@ -1594,6 +1538,7 @@
                 type_: FfiType::Int32,
             }],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
+            has_rust_call_status_arg: <span class="bool-val">true</span>,
         }
     }
 
@@ -1609,6 +1554,7 @@
                 type_: FfiType::ForeignBytes,
             }],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
+            has_rust_call_status_arg: <span class="bool-val">true</span>,
         }
     }
 
@@ -1624,6 +1570,7 @@
                 type_: FfiType::RustBuffer(<span class="prelude-val">None</span>),
             }],
             return_type: <span class="prelude-val">None</span>,
+            has_rust_call_status_arg: <span class="bool-val">true</span>,
         }
     }
 
@@ -1645,6 +1592,7 @@
                 },
             ],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
+            has_rust_call_status_arg: <span class="bool-val">true</span>,
         }
     }
 
@@ -1661,6 +1609,8 @@
         <span class="self">self</span>.iter_user_ffi_function_definitions()
             .cloned()
             .chain(<span class="self">self</span>.iter_rust_buffer_ffi_function_definitions())
+            .chain(iter::once(<span class="self">self</span>.ffi_uniffi_contract_version()))
+            .chain(<span class="self">self</span>.iter_checksum_ffi_functions())
     }
 
     <span class="doccomment">/// List all FFI functions definitions for user-defined interfaces
@@ -1693,6 +1643,40 @@
             <span class="self">self</span>.ffi_rustbuffer_reserve(),
         ]
         .into_iter()
+    }
+
+    <span class="doccomment">/// List all API checksums to check
+    ///
+    /// Returns a list of (export_symbol_name, checksum) items
+    </span><span class="kw">pub fn </span>iter_checksums(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (String, u16)&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="kw">let </span>func_checksums = <span class="self">self
+            </span>.functions
+            .iter()
+            .map(|f| (f.checksum_fn_name(), f.checksum()));
+        <span class="kw">let </span>method_checksums = <span class="self">self</span>.objects.iter().flat_map(|o| {
+            o.methods()
+                .into_iter()
+                .map(|m| (m.checksum_fn_name(), m.checksum()))
+        });
+        <span class="kw">let </span>constructor_checksums = <span class="self">self</span>.objects.iter().flat_map(|o| {
+            o.constructors()
+                .into_iter()
+                .map(|c| (c.checksum_fn_name(), c.checksum()))
+        });
+        func_checksums
+            .chain(method_checksums)
+            .chain(constructor_checksums)
+            .map(|(fn_name, checksum)| (fn_name.to_string(), checksum))
+    }
+
+    <span class="kw">pub fn </span>iter_checksum_ffi_functions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="self">self</span>.iter_checksums().map(|(name, <span class="kw">_</span>)| FfiFunction {
+            name,
+            is_async: <span class="bool-val">false</span>,
+            arguments: <span class="macro">vec!</span>[],
+            return_type: <span class="prelude-val">Some</span>(FfiType::UInt16),
+            has_rust_call_status_arg: <span class="bool-val">false</span>,
+        })
     }
 
     <span class="comment">// Private methods for building a ComponentInterface.
@@ -1816,8 +1800,7 @@
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_method_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: MethodMetadata) {
         <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name);
-        <span class="kw">let </span>defn: Method = meta.into();
-        object.methods.push(defn);
+        object.methods.push(meta.into())
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_object_free_fn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ObjectMetadata) {
@@ -1866,9 +1849,6 @@
             f: <span class="kw">impl </span>Fn(<span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Type&gt; + Clone,
         ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
             <span class="kw">match </span>ty {
-                Type::Unresolved { name } =&gt; {
-                    <span class="kw-2">*</span>ty = f(name)<span class="question-mark">?</span>;
-                }
                 Type::Optional(inner) =&gt; {
                     handle_unresolved_in(inner, f)<span class="question-mark">?</span>;
                 }
@@ -1918,13 +1898,7 @@
         <span class="kw">for </span>ty <span class="kw">in </span>possibly_unresolved_types {
             handle_unresolved_in(ty, |unresolved_ty_name| {
                 <span class="kw">match </span><span class="self">self</span>.types.get_type_definition(unresolved_ty_name) {
-                    <span class="prelude-val">Some</span>(def) =&gt; {
-                        <span class="macro">assert!</span>(
-                            !<span class="macro">matches!</span>(<span class="kw-2">&amp;</span>def, Type::Unresolved { .. }),
-                            <span class="string">&quot;unresolved types must not be part of TypeUniverse&quot;
-                        </span>);
-                        <span class="prelude-val">Ok</span>(def)
-                    }
+                    <span class="prelude-val">Some</span>(def) =&gt; <span class="prelude-val">Ok</span>(def),
                     <span class="prelude-val">None </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;Failed to resolve type `{unresolved_ty_name}`&quot;</span>),
                 }
             })<span class="question-mark">?</span>;
@@ -1980,9 +1954,6 @@
                         <span class="string">&quot;Enum `{name}` has no definition&quot;</span>,
                     );
                 }
-                Type::Unresolved { name } =&gt; {
-                    <span class="macro">bail!</span>(<span class="string">&quot;Type `{name}` should be resolved at this point&quot;</span>);
-                }
                 <span class="kw">_ </span>=&gt; {}
             }
         }
@@ -1995,15 +1966,15 @@
     /// This should only be called after the high-level types have been completed defined, otherwise
     /// the resulting set will be missing some entries.
     </span><span class="kw">pub fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>ci_prefix = <span class="self">self</span>.ffi_namespace().to_owned();
+        <span class="kw">let </span>ci_namespace = <span class="self">self</span>.ffi_namespace().to_owned();
         <span class="kw">for </span>func <span class="kw">in </span><span class="self">self</span>.functions.iter_mut() {
-            func.derive_ffi_func(<span class="kw-2">&amp;</span>ci_prefix)<span class="question-mark">?</span>;
+            func.derive_ffi_func(<span class="kw-2">&amp;</span>ci_namespace)<span class="question-mark">?</span>;
         }
         <span class="kw">for </span>obj <span class="kw">in </span><span class="self">self</span>.objects.iter_mut() {
-            obj.derive_ffi_funcs(<span class="kw-2">&amp;</span>ci_prefix)<span class="question-mark">?</span>;
+            obj.derive_ffi_funcs(<span class="kw-2">&amp;</span>ci_namespace)<span class="question-mark">?</span>;
         }
         <span class="kw">for </span>callback <span class="kw">in </span><span class="self">self</span>.callback_interfaces.iter_mut() {
-            callback.derive_ffi_funcs(<span class="kw-2">&amp;</span>ci_prefix);
+            callback.derive_ffi_funcs(<span class="kw-2">&amp;</span>ci_namespace);
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -2230,6 +2201,17 @@
         Ty::F64 =&gt; Type::Float64,
         Ty::Bool =&gt; Type::Boolean,
         Ty::String =&gt; Type::String,
+        Ty::SystemTime =&gt; Type::Timestamp,
+        Ty::Duration =&gt; Type::Duration,
+        Ty::Record { name } =&gt; Type::Record(name.clone()),
+        Ty::Enum { name } =&gt; Type::Enum(name.clone()),
+        Ty::ArcObject { object_name } =&gt; Type::Object(object_name.clone()),
+        Ty::Error { name } =&gt; Type::Error(name.clone()),
+        Ty::CallbackInterface { name } =&gt; Type::CallbackInterface(name.clone()),
+        Ty::Custom { name, builtin } =&gt; Type::Custom {
+            name: name.clone(),
+            builtin: convert_type(builtin).into(),
+        },
         Ty::Option { inner_type } =&gt; Type::Optional(convert_type(inner_type).into()),
         Ty::Vec { inner_type } =&gt; Type::Sequence(convert_type(inner_type).into()),
         Ty::HashMap {
@@ -2239,8 +2221,6 @@
             convert_type(key_type).into(),
             convert_type(value_type).into(),
         ),
-        Ty::ArcObject { object_name } =&gt; Type::Object(object_name.clone()),
-        Ty::Unresolved { name } =&gt; Type::Unresolved { name: name.clone() },
     }
 }
 
@@ -2251,55 +2231,7 @@
     <span class="comment">// Note that much of the functionality of `ComponentInterface` is tested via its interactions
     // with specific member types, in the sub-modules defining those member types.
 
-    </span><span class="kw">const </span>UDL1: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
-        namespace foobar{};
-        enum Test {
-            &quot;test_me&quot;,
-        };
-    &quot;#</span>;
-
-    <span class="kw">const </span>UDL2: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
-        namespace hello {
-            u64 world();
-        };
-        dictionary Test {
-            boolean me;
-        };
-    &quot;#</span>;
-
-    <span class="attribute">#[test]
-    </span><span class="kw">fn </span>test_checksum_always_matches_for_same_webidl() {
-        <span class="kw">for </span>udl <span class="kw">in </span><span class="kw-2">&amp;</span>[UDL1, UDL2] {
-            <span class="kw">let </span>ci1 = ComponentInterface::from_webidl(udl).unwrap();
-            <span class="kw">let </span>ci2 = ComponentInterface::from_webidl(udl).unwrap();
-            <span class="macro">assert_eq!</span>(ci1.checksum(), ci2.checksum());
-        }
-    }
-
-    <span class="attribute">#[test]
-    </span><span class="kw">fn </span>test_checksum_differs_for_different_webidl() {
-        <span class="comment">// There is a small probability of this test spuriously failing due to hash collision.
-        // If it happens often enough to be a problem, probably this whole &quot;checksum&quot; thing
-        // is not working out as intended.
-        </span><span class="kw">let </span>ci1 = ComponentInterface::from_webidl(UDL1).unwrap();
-        <span class="kw">let </span>ci2 = ComponentInterface::from_webidl(UDL2).unwrap();
-        <span class="macro">assert_ne!</span>(ci1.checksum(), ci2.checksum());
-    }
-
-    <span class="attribute">#[test]
-    </span><span class="kw">fn </span>test_checksum_differs_for_different_uniffi_version() {
-        <span class="comment">// There is a small probability of this test spuriously failing due to hash collision.
-        // If it happens often enough to be a problem, probably this whole &quot;checksum&quot; thing
-        // is not working out as intended.
-        </span><span class="kw">for </span>udl <span class="kw">in </span><span class="kw-2">&amp;</span>[UDL1, UDL2] {
-            <span class="kw">let </span>ci1 = ComponentInterface::from_webidl(udl).unwrap();
-            <span class="kw">let </span><span class="kw-2">mut </span>ci2 = ComponentInterface::from_webidl(udl).unwrap();
-            ci2.uniffi_version = <span class="string">&quot;99.99&quot;</span>;
-            <span class="macro">assert_ne!</span>(ci1.checksum(), ci2.checksum());
-        }
-    }
-
-    <span class="attribute">#[test]
+    </span><span class="attribute">#[test]
     </span><span class="kw">fn </span>test_duplicate_type_names_are_an_error() {
         <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
             namespace test{};

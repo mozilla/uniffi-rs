@@ -51,23 +51,39 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{DeriveInput, Path};
-<span class="kw">use </span>uniffi_meta::ObjectMetadata;
+<span class="kw">use </span>uniffi_meta::free_fn_symbol_name;
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
-    assert_type_eq, create_metadata_static_var, tagged_impl_header, AttributeSliceExt, CommonAttr,
+    create_metadata_items, tagged_impl_header, type_name, AttributeSliceExt, CommonAttr,
 };
 
-<span class="kw">pub fn </span>expand_object(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="kw">pub fn </span>expand_object(input: DeriveInput, module_path: String) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
     <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
-    <span class="kw">let </span>name = ident.to_string();
-    <span class="kw">let </span>metadata = ObjectMetadata { module_path, name };
-    <span class="kw">let </span>free_fn_ident = Ident::new(<span class="kw-2">&amp;</span>metadata.free_ffi_symbol_name(), Span::call_site());
-    <span class="kw">let </span>meta_static_var = create_metadata_static_var(ident, metadata.into());
-    <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
+    <span class="kw">let </span>name = type_name(ident);
+    <span class="kw">let </span>free_fn_ident = Ident::new(<span class="kw-2">&amp;</span>free_fn_symbol_name(<span class="kw-2">&amp;</span>module_path, <span class="kw-2">&amp;</span>name), Span::call_site());
+    <span class="kw">let </span>meta_static_var = interface_meta_static_var(ident, <span class="kw-2">&amp;</span>module_path)<span class="question-mark">?</span>;
     <span class="kw">let </span>interface_impl = interface_impl(ident, attr.tag.as_ref());
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
@@ -77,18 +93,18 @@
             ptr: <span class="kw-2">*const </span>::std::ffi::c_void,
             call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus
         ) {
-            uniffi::call_with_output(call_status, || {
+            uniffi::rust_call(call_status, || {
                 <span class="macro">assert!</span>(!ptr.is_null());
                 <span class="kw">let </span>ptr = ptr.cast::&lt;#ident&gt;();
                 <span class="kw">unsafe </span>{
                     ::std::sync::Arc::decrement_strong_count(ptr);
                 }
+                <span class="prelude-val">Ok</span>(())
             });
         }
 
         #interface_impl
         #meta_static_var
-        #type_assertion
     })
 }
 
@@ -97,12 +113,32 @@
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>interface_impl(ident: <span class="kw-2">&amp;</span>Ident, tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;) -&gt; TokenStream {
+    <span class="kw">let </span>name = type_name(ident);
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;Interface&quot;</span>, ident, tag);
     <span class="macro">quote! </span>{
         <span class="attribute">#[doc(hidden)]
         #[automatically_derived]
-        </span>#impl_spec { }
+        </span>#impl_spec {
+            <span class="kw">const </span>NAME: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = #name;
+        }
     }
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>interface_meta_static_var(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    module_path: <span class="kw-2">&amp;</span>str,
+) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>name = type_name(ident);
+    <span class="prelude-val">Ok</span>(create_metadata_items(
+        <span class="string">&quot;interface&quot;</span>,
+        <span class="kw-2">&amp;</span>name,
+        <span class="macro">quote! </span>{
+                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::INTERFACE)
+                    .concat_str(#module_path)
+                    .concat_str(#name)
+        },
+        <span class="prelude-val">None</span>,
+    ))
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

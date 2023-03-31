@@ -232,25 +232,23 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
-<span id="235">235</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
     parse::{Parse, ParseStream},
-    punctuated::Punctuated,
-    Data, DataEnum, DeriveInput, Index, Path, Token, Variant,
+    Data, DataEnum, DeriveInput, Index, Path, Token,
 };
-<span class="kw">use </span>uniffi_meta::{ErrorMetadata, VariantMetadata};
 
 <span class="kw">use crate</span>::{
-    enum_::{enum_ffi_converter_impl, variant_metadata},
+    enum_::{rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        assert_type_eq, chain, create_metadata_static_var, either_attribute_arg,
-        parse_comma_separated, tagged_impl_header, AttributeSliceExt, UniffiAttribute,
+        chain, create_metadata_items, either_attribute_arg, mod_path, parse_comma_separated,
+        tagged_impl_header, try_metadata_value_from_usize, type_name, AttributeSliceExt,
+        UniffiAttribute,
     },
 };
 
-<span class="kw">pub fn </span>expand_error(input: DeriveInput, module_path: Vec&lt;String&gt;) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="kw">pub fn </span>expand_error(input: DeriveInput) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
         Data::Enum(e) =&gt; e,
         <span class="kw">_ </span>=&gt; {
@@ -264,13 +262,8 @@
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
     <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;ErrorAttr&gt;()<span class="question-mark">?</span>;
     <span class="kw">let </span>ffi_converter_impl = error_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr);
+    <span class="kw">let </span>meta_static_var = error_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_, attr.flat.is_some())<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>meta_static_var = <span class="kw">match </span>error_metadata(ident, <span class="kw-2">&amp;</span>enum_.variants, module_path, <span class="kw-2">&amp;</span>attr) {
-        <span class="prelude-val">Ok</span>(metadata) =&gt; create_metadata_static_var(ident, metadata.into()),
-        <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
-    };
-
-    <span class="kw">let </span>type_assertion = assert_type_eq(ident, <span class="macro">quote! </span>{ <span class="kw">crate</span>::uniffi_types::#ident });
     <span class="kw">let </span>variant_errors: TokenStream = enum_
         .variants
         .iter()
@@ -289,24 +282,19 @@
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter_impl
         #meta_static_var
-        #type_assertion
         #variant_errors
     })
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_ffi_converter_error(attr: ErrorAttr, input: DeriveInput) -&gt; TokenStream {
-    <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
-        Data::Enum(e) =&gt; e,
-        <span class="kw">_ </span>=&gt; {
-            <span class="kw">return </span>syn::Error::new(
-                proc_macro2::Span::call_site(),
-                <span class="string">&quot;This attribute must only be used on enums&quot;</span>,
-            )
-            .into_compile_error();
-        }
-    };
-
-    error_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr)
+    <span class="kw">match </span>input.data {
+        Data::Enum(e) =&gt; error_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>e, <span class="kw-2">&amp;</span>attr),
+        <span class="kw">_ </span>=&gt; syn::Error::new(
+            proc_macro2::Span::call_site(),
+            <span class="string">&quot;This attribute must only be used on enums&quot;</span>,
+        )
+        .into_compile_error(),
+    }
 }
 
 <span class="kw">fn </span>error_ffi_converter_impl(ident: <span class="kw-2">&amp;</span>Ident, enum_: <span class="kw-2">&amp;</span>DataEnum, attr: <span class="kw-2">&amp;</span>ErrorAttr) -&gt; TokenStream {
@@ -318,16 +306,20 @@
             attr.with_try_read.is_some(),
         )
     } <span class="kw">else </span>{
-        enum_ffi_converter_impl(ident, enum_, attr.tag.as_ref())
+        rich_error_ffi_converter_impl(ident, enum_, attr.tag.as_ref())
     }
 }
 
-<span class="kw">fn </span>flat_error_ffi_converter_impl(
+<span class="comment">// FfiConverters for &quot;flat errors&quot;
+//
+// These are errors where we only expose the variants, not the data.
+</span><span class="kw">fn </span>flat_error_ffi_converter_impl(
     ident: <span class="kw-2">&amp;</span>Ident,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
     implement_try_read: bool,
 ) -&gt; TokenStream {
+    <span class="kw">let </span>name = ident.to_string();
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
 
     <span class="kw">let </span>write_impl = {
@@ -338,7 +330,7 @@
             <span class="macro">quote! </span>{
                 <span class="self">Self</span>::#v_ident { .. } =&gt; {
                     ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                    &lt;::std::string::String <span class="kw">as </span>::uniffi::FfiConverter&lt;()&gt;&gt;::write(error_msg, buf);
+                    &lt;::std::string::String <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(error_msg, buf);
                 }
             }
         });
@@ -372,6 +364,7 @@
         <span class="attribute">#[automatically_derived]
         </span><span class="kw">unsafe </span>#impl_spec {
             <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(<span class="kw">crate</span>::UniFfiTag);
+            <span class="macro">::uniffi::ffi_converter_default_return!</span>(<span class="kw">crate</span>::UniFfiTag);
 
             <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
                 #write_impl
@@ -380,39 +373,44 @@
             <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[::std::primitive::u8]) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
                 #try_read_impl
             }
+
+            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ERROR)
+                .concat_str(#name);
         }
     }
 }
 
-<span class="kw">fn </span>error_metadata(
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>error_meta_static_var(
     ident: <span class="kw-2">&amp;</span>Ident,
-    variants: <span class="kw-2">&amp;</span>Punctuated&lt;Variant, <span class="macro">Token!</span>[,]&gt;,
-    module_path: Vec&lt;String&gt;,
-    attr: <span class="kw-2">&amp;</span>ErrorAttr,
-) -&gt; syn::Result&lt;ErrorMetadata&gt; {
+    enum_: <span class="kw-2">&amp;</span>DataEnum,
+    flat: bool,
+) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>name = ident.to_string();
-    <span class="kw">let </span>flat = attr.flat.is_some();
-    <span class="kw">let </span>variants = <span class="kw">if </span>flat {
-        variants
-            .iter()
-            .map(|v| VariantMetadata {
-                name: v.ident.to_string(),
-                fields: <span class="macro">vec!</span>[],
-            })
-            .collect()
+    <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
+    <span class="kw">let </span>flat_code = u8::from(flat);
+    <span class="kw">let </span><span class="kw-2">mut </span>metadata_expr = <span class="macro">quote! </span>{
+            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
+                .concat_str(#module_path)
+                .concat_str(#name)
+                .concat_value(#flat_code)
+    };
+    <span class="kw">if </span>flat {
+        metadata_expr.extend(flat_error_variant_metadata(enum_)<span class="question-mark">?</span>);
     } <span class="kw">else </span>{
-        variants
-            .iter()
-            .map(variant_metadata)
-            .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?
-    </span>};
+        metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
+    }
+    <span class="prelude-val">Ok</span>(create_metadata_items(<span class="string">&quot;error&quot;</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">None</span>))
+}
 
-    <span class="prelude-val">Ok</span>(ErrorMetadata {
-        module_path,
-        name,
-        variants,
-        flat,
-    })
+<span class="kw">pub fn </span>flat_error_variant_metadata(enum_: <span class="kw-2">&amp;</span>DataEnum) -&gt; syn::Result&lt;Vec&lt;TokenStream&gt;&gt; {
+    <span class="kw">let </span>variants_len =
+        try_metadata_value_from_usize(enum_.variants.len(), <span class="string">&quot;UniFFI limits enums to 256 variants&quot;</span>)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(std::iter::once(<span class="macro">quote! </span>{ .concat_value(#variants_len) })
+        .chain(enum_.variants.iter().map(|v| {
+            <span class="kw">let </span>name = type_name(<span class="kw-2">&amp;</span>v.ident);
+            <span class="macro">quote! </span>{ .concat_str(#name) }
+        }))
+        .collect())
 }
 
 <span class="kw">mod </span>kw {

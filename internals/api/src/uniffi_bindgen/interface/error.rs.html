@@ -227,7 +227,6 @@
 <span id="227">227</span>
 <span id="228">228</span>
 <span id="229">229</span>
-<span id="230">230</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -322,9 +321,8 @@
 <span class="doccomment">/// Represents an Error that might be thrown by functions/methods in the component interface.
 ///
 /// Errors are represented in the UDL as enums with the special `[Error]` attribute, but
-/// they&#39;re handled in the FFI very differently. We create them in `uniffi::call_with_result()` if
-/// the wrapped function returns an `Err` value
-/// struct and assign an integer error code to each variant.
+/// they&#39;re handled in the FFI very differently.  Defining an error means that exported functions
+/// can return a `Result&lt;T, E&gt;` where `T` is a UniFFI type and `E` is the error type.
 </span><span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 </span><span class="kw">pub struct </span>Error {
     <span class="kw">pub </span>name: String,

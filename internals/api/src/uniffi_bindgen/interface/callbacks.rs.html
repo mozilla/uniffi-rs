@@ -167,6 +167,7 @@
 <span id="167">167</span>
 <span id="168">168</span>
 <span id="169">169</span>
+<span id="170">170</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -249,8 +250,9 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_init_callback
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_prefix: <span class="kw-2">&amp;</span>str) {
-        <span class="self">self</span>.ffi_init_callback.name = <span class="macro">format!</span>(<span class="string">&quot;ffi_{ci_prefix}_{}_init_callback&quot;</span>, <span class="self">self</span>.name);
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str) {
+        <span class="self">self</span>.ffi_init_callback.name =
+            uniffi_meta::init_callback_fn_symbol_name(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
         <span class="self">self</span>.ffi_init_callback.arguments = <span class="macro">vec!</span>[FfiArgument {
             name: <span class="string">&quot;callback_stub&quot;</span>.to_string(),
             type_: FfiType::ForeignCallback,

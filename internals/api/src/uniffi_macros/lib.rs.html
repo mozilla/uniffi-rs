@@ -224,24 +224,6 @@
 <span id="224">224</span>
 <span id="225">225</span>
 <span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -305,8 +287,8 @@
         // new functions outside of the `impl`).
         </span>rewrite_self_type(<span class="kw-2">&amp;mut </span>item);
 
-        <span class="kw">let </span>metadata = export::gen_metadata(item, <span class="kw-2">&amp;</span>mod_path)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(expand_export(metadata, args, <span class="kw-2">&amp;</span>mod_path))
+        <span class="kw">let </span>metadata = export::gen_metadata(item)<span class="question-mark">?</span>;
+        expand_export(metadata, args, <span class="kw-2">&amp;</span>mod_path)
     };
     <span class="kw">let </span>output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 
@@ -319,26 +301,14 @@
 
 <span class="attribute">#[proc_macro_derive(Record)]
 </span><span class="kw">pub fn </span>derive_record(input: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
-        <span class="prelude-val">Ok</span>(p) =&gt; p,
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error().into(),
-    };
-    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
-
-    expand_record(input, mod_path)
+    expand_record(<span class="macro">parse_macro_input!</span>(input))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
 <span class="attribute">#[proc_macro_derive(Enum)]
 </span><span class="kw">pub fn </span>derive_enum(input: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
-        <span class="prelude-val">Ok</span>(p) =&gt; p,
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error().into(),
-    };
-    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
-
-    expand_enum(input, mod_path)
+    expand_enum(<span class="macro">parse_macro_input!</span>(input))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
@@ -358,13 +328,7 @@
 
 <span class="attribute">#[proc_macro_derive(Error, attributes(uniffi))]
 </span><span class="kw">pub fn </span>derive_error(input: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
-        <span class="prelude-val">Ok</span>(p) =&gt; p,
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error().into(),
-    };
-    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
-
-    expand_error(input, mod_path)
+    expand_error(<span class="macro">parse_macro_input!</span>(input))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

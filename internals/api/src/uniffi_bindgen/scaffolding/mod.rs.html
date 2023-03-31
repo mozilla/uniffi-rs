@@ -103,6 +103,27 @@
 <span id="103">103</span>
 <span id="104">104</span>
 <span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -112,7 +133,7 @@
 <span class="kw">use </span>std::borrow::Borrow;
 
 <span class="kw">use </span><span class="kw">super</span>::interface::<span class="kw-2">*</span>;
-<span class="kw">use </span>heck::ToSnakeCase;
+<span class="kw">use </span>heck::{ToShoutySnakeCase, ToSnakeCase};
 
 <span class="attribute">#[derive(Template)]
 #[template(syntax = <span class="string">&quot;rs&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;scaffolding_template.rs&quot;</span>)]
@@ -158,10 +179,12 @@
                 type_rs(v)<span class="question-mark">?
             </span>),
             Type::Custom { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>),
+            Type::External {
+                name,
+                kind: ExternalKind::Interface,
+                ..
+            } =&gt; <span class="macro">format!</span>(<span class="string">&quot;::std::sync::Arc&lt;r#{name}&gt;&quot;</span>),
             Type::External { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>),
-            Type::Unresolved { .. } =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;UDL scaffolding code never contains unresolved types&quot;</span>)
-            }
         })
     }
 
@@ -194,12 +217,31 @@
                 kind: ExternalKind::Interface,
                 ..
             } =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;&lt;::std::sync::Arc&lt;r#{name}&gt; as uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>)
+                <span class="macro">format!</span>(<span class="string">&quot;&lt;::std::sync::Arc&lt;r#{name}&gt; as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>)
             }
             <span class="kw">_ </span>=&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;&lt;{} as uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
+                <span class="string">&quot;&lt;{} as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
                 type_rs(type_)<span class="question-mark">?
             </span>),
+        })
+    }
+
+    <span class="comment">// Map return types to their fully-qualified `FfiConverter` impl.
+    </span><span class="kw">pub fn </span>return_ffi_converter&lt;T: Callable&gt;(callable: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">let </span>result_type = <span class="kw">match </span>callable.return_type() {
+            <span class="prelude-val">Some</span>(t) =&gt; type_rs(<span class="kw-2">&amp;</span>t)<span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;()&quot;</span>.to_string(),
+        };
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>callable.throws_type() {
+            <span class="prelude-val">Some</span>(e) =&gt; <span class="macro">format!</span>(
+                <span class="string">&quot;&lt;Result&lt;{}, {}&gt; as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
+                result_type,
+                type_rs(<span class="kw-2">&amp;</span>e)<span class="question-mark">?
+            </span>),
+            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(
+                <span class="string">&quot;&lt;{} as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
+                result_type
+            ),
         })
     }
 

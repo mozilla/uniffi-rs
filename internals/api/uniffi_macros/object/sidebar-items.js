@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["expand_ffi_converter_interface",""],["expand_object",""],["interface_impl",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["expand_ffi_converter_interface",""],["expand_object",""],["interface_impl",""],["interface_meta_static_var",""]]};

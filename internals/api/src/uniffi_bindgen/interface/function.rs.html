@@ -294,6 +294,69 @@
 <span id="294">294</span>
 <span id="295">295</span>
 <span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -353,12 +416,17 @@
     <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
-    //  - its `name` property includes a checksum derived from  the very
+    //  - its `name` property includes a checksum derived from the very
     //    hash value we&#39;re trying to calculate here, so excluding it
     //    avoids a weird circular dependency in the calculation.
     </span><span class="attribute">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func: FfiFunction,
     <span class="kw">pub</span>(<span class="kw">super</span>) attributes: FunctionAttributes,
+    <span class="kw">pub</span>(<span class="kw">super</span>) checksum_fn_name: String,
+    <span class="comment">// Force a checksum value.  This is used for functions from the proc-macro code, which uses a
+    // different checksum method.
+    </span><span class="attribute">#[checksum_ignore]
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) checksum_override: <span class="prelude-ty">Option</span>&lt;u16&gt;,
 }
 
 <span class="kw">impl </span>Function {
@@ -386,6 +454,15 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func
     }
 
+    <span class="kw">pub fn </span>checksum_fn_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.checksum_fn_name
+    }
+
+    <span class="kw">pub fn </span>checksum(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u16 {
+        <span class="self">self</span>.checksum_override
+            .unwrap_or_else(|| uniffi_meta::checksum(<span class="self">self</span>))
+    }
+
     <span class="kw">pub fn </span>throws(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.attributes.get_throws_err().is_some()
     }
@@ -400,11 +477,11 @@
             .map(|name| Type::Error(name.to_owned()))
     }
 
-    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_prefix: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="comment">// The name is already set if the function is defined through a proc-macro invocation
         // rather than in UDL. Don&#39;t overwrite it in that case.
         </span><span class="kw">if </span><span class="self">self</span>.ffi_func.name.is_empty() {
-            <span class="self">self</span>.ffi_func.name = <span class="macro">format!</span>(<span class="string">&quot;{ci_prefix}_{}&quot;</span>, <span class="self">self</span>.name);
+            <span class="self">self</span>.ffi_func.name = uniffi_meta::fn_ffi_symbol_name(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
         }
 
         <span class="self">self</span>.ffi_func.arguments = <span class="self">self</span>.arguments.iter().map(|arg| arg.into()).collect();
@@ -428,6 +505,7 @@
 <span class="kw">impl </span>From&lt;uniffi_meta::FnMetadata&gt; <span class="kw">for </span>Function {
     <span class="kw">fn </span>from(meta: uniffi_meta::FnMetadata) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ffi_name = meta.ffi_symbol_name();
+        <span class="kw">let </span>checksum_fn_name = meta.checksum_symbol_name();
         <span class="kw">let </span>is_async = meta.is_async;
         <span class="kw">let </span>return_type = meta.return_type.map(|out| convert_type(<span class="kw-2">&amp;</span>out));
         <span class="kw">let </span>arguments = meta.inputs.into_iter().map(Into::into).collect();
@@ -444,7 +522,15 @@
             arguments,
             return_type,
             ffi_func,
-            attributes: meta.throws.map(Attribute::Throws).into_iter().collect(),
+            attributes: <span class="kw">match </span>meta.throws {
+                <span class="prelude-val">None </span>=&gt; FunctionAttributes::from_iter(<span class="macro">vec!</span>[]),
+                <span class="prelude-val">Some</span>(uniffi_meta::Type::Error { name }) =&gt; {
+                    FunctionAttributes::from_iter(<span class="macro">vec!</span>[Attribute::Throws(name)])
+                }
+                <span class="prelude-val">Some</span>(ty) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Invalid throws type: {ty:?}&quot;</span>),
+            },
+            checksum_fn_name,
+            checksum_override: <span class="prelude-val">Some</span>(meta.checksum),
         }
     }
 }
@@ -461,16 +547,20 @@
 <span class="kw">impl </span>APIConverter&lt;Function&gt; <span class="kw">for </span>weedle::namespace::OperationNamespaceMember&lt;<span class="lifetime">&#39;_</span>&gt; {
     <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Function&gt; {
         <span class="kw">let </span>return_type = ci.resolve_return_type_expression(<span class="kw-2">&amp;</span><span class="self">self</span>.return_type)<span class="question-mark">?</span>;
+        <span class="kw">let </span>name = <span class="kw">match </span><span class="self">self</span>.identifier {
+            <span class="prelude-val">None </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;anonymous functions are not supported {:?}&quot;</span>, <span class="self">self</span>),
+            <span class="prelude-val">Some</span>(id) =&gt; id.<span class="number">0</span>.to_string(),
+        };
+        <span class="kw">let </span>checksum_fn_name = uniffi_meta::fn_checksum_symbol_name(ci.namespace(), <span class="kw-2">&amp;</span>name);
         <span class="prelude-val">Ok</span>(Function {
-            name: <span class="kw">match </span><span class="self">self</span>.identifier {
-                <span class="prelude-val">None </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;anonymous functions are not supported {:?}&quot;</span>, <span class="self">self</span>),
-                <span class="prelude-val">Some</span>(id) =&gt; id.<span class="number">0</span>.to_string(),
-            },
+            name,
             is_async: <span class="bool-val">false</span>,
             return_type,
             arguments: <span class="self">self</span>.args.body.list.convert(ci)<span class="question-mark">?</span>,
             ffi_func: Default::default(),
             attributes: FunctionAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>,
+            checksum_fn_name,
+            checksum_override: <span class="prelude-val">None</span>,
         })
     }
 }
@@ -542,6 +632,42 @@
             optional: <span class="self">self</span>.optional.is_some(),
             default,
         })
+    }
+}
+
+<span class="doccomment">/// Implemented by function-like types (Function, Method, Constructor)
+</span><span class="kw">pub trait </span>Callable {
+    <span class="kw">fn </span>arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Argument&gt;;
+    <span class="kw">fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt;;
+    <span class="kw">fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt;;
+}
+
+<span class="kw">impl </span>Callable <span class="kw">for </span>Function {
+    <span class="kw">fn </span>arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Argument&gt; {
+        <span class="self">self</span>.arguments()
+    }
+
+    <span class="kw">fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
+        <span class="self">self</span>.return_type().cloned()
+    }
+
+    <span class="kw">fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
+        <span class="self">self</span>.throws_type()
+    }
+}
+
+<span class="comment">// Needed because Askama likes to add extra refs to variables
+</span><span class="kw">impl</span>&lt;T: Callable&gt; Callable <span class="kw">for </span><span class="kw-2">&amp;</span>T {
+    <span class="kw">fn </span>arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Argument&gt; {
+        (<span class="kw-2">*</span><span class="self">self</span>).arguments()
+    }
+
+    <span class="kw">fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
+        (<span class="kw-2">*</span><span class="self">self</span>).return_type()
+    }
+
+    <span class="kw">fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
+        (<span class="kw-2">*</span><span class="self">self</span>).throws_type()
     }
 }
 

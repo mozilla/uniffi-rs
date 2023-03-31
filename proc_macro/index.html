@@ -214,17 +214,6 @@ When a type is not supported, you will get a clear compiler error about it.</p>
 <code>dictionary</code> in UDL) and enums can be used when the corresponding derive macro is used at
 their definition. Opaque objects (<code>interface</code> in UDL) can always be used regardless of whether they
 are defined in UDL and / or via derive macro; they just need to be put inside an <code>Arc</code> as always.</p>
-<p>User-defined types also have to be (re-)exported from a module called <code>uniffi_types</code> at the crate
-root. This is required to ensure that a given type name always means the same thing across all uses
-of <code>#[uniffi::export]</code> across the whole module tree.</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>mod uniffi_types {
-    pub(crate) use path::to::MyObject;
-}
-<span class="boring">}
-</span></code></pre></pre>
 <h2><a class="header" href="#the-uniffirecord-derive" id="the-uniffirecord-derive">The <code>uniffi::Record</code> derive</a></h2>
 <p>The <code>Record</code> derive macro exposes a <code>struct</code> with named fields over FFI. All types that are
 supported as parameter and return types by <code>#[uniffi::export]</code> are also supported as field types

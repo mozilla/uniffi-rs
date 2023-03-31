@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["arg_as_type",""],["convert_bare_type_name",""],["convert_generic_type",""],["convert_generic_type1",""],["convert_generic_type2",""],["convert_return_type",""],["convert_type",""],["fn_param_metadata",""],["try_split_result",""],["type_as_type_name",""],["type_as_type_path",""],["type_not_supported",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["type_as_type_path",""],["type_not_supported",""]]};
