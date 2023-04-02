@@ -7,7 +7,7 @@
 
 class {{ type_name }}:
     {% for meth in cbi.methods() -%}
-    def {{ meth.name()|fn_name }}({% call py::arg_list_decl(meth) %}):
+    def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
         raise NotImplementedError
 
     {% endfor %}
