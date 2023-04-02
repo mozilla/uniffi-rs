@@ -17,7 +17,10 @@ impl OptionalCodeType {
 
 impl CodeType for OptionalCodeType {
     fn type_label(&self) -> String {
-        super::PythonCodeOracle.find(&self.inner).type_label()
+        format!(
+            "typing.Optional[{}]",
+            super::PythonCodeOracle.find(&self.inner).type_label()
+        )
     }
 
     fn canonical_name(&self) -> String {
@@ -48,7 +51,11 @@ impl SequenceCodeType {
 
 impl CodeType for SequenceCodeType {
     fn type_label(&self) -> String {
-        "list".to_string()
+        // Python 3.8 and below do not support `list[T]`
+        format!(
+            "typing.List[{}]",
+            super::PythonCodeOracle.find(&self.inner).type_label()
+        )
     }
 
     fn canonical_name(&self) -> String {

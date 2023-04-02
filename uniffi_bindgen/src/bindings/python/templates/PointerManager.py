@@ -63,6 +63,6 @@ class UniFfiPointerManagerGeneral:
 
 # Pick an pointer manager implementation based on the platform
 if platform.python_implementation() == 'CPython':
-    UniFfiPointerManager = UniFfiPointerManagerCPython
+    UniFfiPointerManager = UniFfiPointerManagerCPython  # type: ignore
 else:
-    UniFfiPointerManager = UniFfiPointerManagerGeneral
+    UniFfiPointerManager = UniFfiPointerManagerGeneral  # type: ignore

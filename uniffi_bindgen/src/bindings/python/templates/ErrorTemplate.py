@@ -9,7 +9,7 @@ class {{ type_name }}(Exception):
 
 UniFFITemp{{ type_name }} = {{ type_name }}
 
-class {{ type_name }}:
+class {{ type_name }}:  # type: ignore
     {%- for variant in e.variants() -%}
     {%- let variant_type_name = variant.name()|class_name -%}
     {%- if e.is_flat() %}
@@ -34,10 +34,10 @@ class {{ type_name }}:
         def __repr__(self):
             return "{{ type_name }}.{{ variant_type_name }}({})".format(str(self))
     {%- endif %}
-    UniFFITemp{{ type_name }}.{{ variant_type_name }} = {{ variant_type_name }}
+    UniFFITemp{{ type_name }}.{{ variant_type_name }} = {{ variant_type_name }}  # type: ignore
     {%- endfor %}
 
-{{ type_name }} = UniFFITemp{{ type_name }}
+{{ type_name }} = UniFFITemp{{ type_name }}  # type: ignore
 del UniFFITemp{{ type_name }}
 
 

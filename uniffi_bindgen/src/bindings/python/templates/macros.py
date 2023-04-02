@@ -46,8 +46,8 @@ rust_call(
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name }}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = DEFAULT
-        {%- else %}
+        {%- when Some with(literal) %}: "typing.Union[object, {{ arg|type_name -}}]" = DEFAULT
+        {%- else %}: "{{ arg|type_name -}}"
         {%- endmatch %}
         {%- if !loop.last %},{% endif -%}
     {%- endfor %}
@@ -114,7 +114,7 @@ rust_call(
 
 {%-         when Some with (return_type) %}
 
-    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
         {%- call setup_args_extra_indent(meth) %}
         return {{ return_type|lift_fn }}(
             {% call to_ffi_call_with_prefix("self._pointer", meth) %}

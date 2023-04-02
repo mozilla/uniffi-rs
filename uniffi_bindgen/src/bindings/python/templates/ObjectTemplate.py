@@ -1,6 +1,8 @@
 {%- let obj = ci|get_object_definition(name) %}
 
 class {{ type_name }}:
+    _pointer: ctypes.c_void_p
+
 {%- match obj.primary_constructor() %}
 {%-     when Some with (cons) %}
     def __init__(self, {% call py::arg_list_decl(cons) -%}):

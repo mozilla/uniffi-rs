@@ -34,13 +34,17 @@ fn render_literal(literal: &Literal) -> String {
 }
 
 macro_rules! impl_code_type_for_primitive {
-    ($T:ty, $class_name:literal) => {
+    ($T:ty, $python_name:literal, $canonical_name:literal) => {
         paste! {
             #[derive(Debug)]
             pub struct $T;
             impl CodeType for $T  {
                 fn type_label(&self) -> String {
-                    $class_name.into()
+                    $python_name.into()
+                }
+
+                fn canonical_name(&self) -> String {
+                    $canonical_name.into()
                 }
 
                 fn literal(&self, literal: &Literal) -> String {
@@ -51,16 +55,16 @@ macro_rules! impl_code_type_for_primitive {
     };
 }
 
-impl_code_type_for_primitive!(BooleanCodeType, "Bool");
-impl_code_type_for_primitive!(StringCodeType, "String");
-impl_code_type_for_primitive!(BytesCodeType, "Bytes");
-impl_code_type_for_primitive!(Int8CodeType, "Int8");
-impl_code_type_for_primitive!(Int16CodeType, "Int16");
-impl_code_type_for_primitive!(Int32CodeType, "Int32");
-impl_code_type_for_primitive!(Int64CodeType, "Int64");
-impl_code_type_for_primitive!(UInt8CodeType, "UInt8");
-impl_code_type_for_primitive!(UInt16CodeType, "UInt16");
-impl_code_type_for_primitive!(UInt32CodeType, "UInt32");
-impl_code_type_for_primitive!(UInt64CodeType, "UInt64");
-impl_code_type_for_primitive!(Float32CodeType, "Float");
-impl_code_type_for_primitive!(Float64CodeType, "Double");
+impl_code_type_for_primitive!(BooleanCodeType, "bool", "Bool");
+impl_code_type_for_primitive!(StringCodeType, "str", "String");
+impl_code_type_for_primitive!(BytesCodeType, "bytes", "Bytes");
+impl_code_type_for_primitive!(Int8CodeType, "int", "Int8");
+impl_code_type_for_primitive!(Int16CodeType, "int", "Int16");
+impl_code_type_for_primitive!(Int32CodeType, "int", "Int32");
+impl_code_type_for_primitive!(Int64CodeType, "int", "Int64");
+impl_code_type_for_primitive!(UInt8CodeType, "int", "UInt8");
+impl_code_type_for_primitive!(UInt16CodeType, "int", "UInt16");
+impl_code_type_for_primitive!(UInt32CodeType, "int", "UInt32");
+impl_code_type_for_primitive!(UInt64CodeType, "int", "UInt64");
+impl_code_type_for_primitive!(Float32CodeType, "float", "Float");
+impl_code_type_for_primitive!(Float64CodeType, "float", "Double");
