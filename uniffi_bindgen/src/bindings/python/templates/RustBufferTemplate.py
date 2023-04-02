@@ -25,7 +25,7 @@ class RustBuffer(ctypes.Structure):
         )
 
     @contextlib.contextmanager
-    def allocWithBuilder():
+    def allocWithBuilder(*args):
         """Context-manger to allocate a buffer using a RustBufferBuilder.
 
         The allocated buffer will be automatically freed if an error occurs, ensuring that
