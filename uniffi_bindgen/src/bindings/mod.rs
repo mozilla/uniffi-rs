@@ -33,6 +33,20 @@ pub enum TargetLanguage {
     Ruby,
 }
 
+/// Mode for the `run_script` function defined for each language
+#[derive(Clone, Debug)]
+pub struct RunScriptOptions {
+    pub show_compiler_messages: bool,
+}
+
+impl Default for RunScriptOptions {
+    fn default() -> Self {
+        Self {
+            show_compiler_messages: true,
+        }
+    }
+}
+
 impl TryFrom<&str> for TargetLanguage {
     type Error = anyhow::Error;
     fn try_from(value: &str) -> Result<Self> {

@@ -11,28 +11,7 @@ use uniffi_testing::UniFFITestHelper;
 
 /// Run Ruby tests for a UniFFI test fixture
 pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<()> {
-    let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
-    let test_helper = UniFFITestHelper::new(fixture_name).context("UniFFITestHelper::new")?;
-    let out_dir = test_helper
-        .create_out_dir(tmp_dir, &script_path)
-        .context("create_out_dir")?;
-    test_helper
-        .copy_cdylibs_to_out_dir(&out_dir)
-        .context("copy_cdylibs_to_out_dir")?;
-    generate_sources(&test_helper.cdylib_path()?, &out_dir, &test_helper)
-        .context("generate_sources")?;
-
-    let rubypath = env::var_os("RUBYLIB").unwrap_or_else(|| OsString::from(""));
-    let rubypath = env::join_paths(
-        env::split_paths(&rubypath).chain(vec![out_dir.to_path_buf().into_std_path_buf()]),
-    )?;
-
-    let status = Command::new("ruby")
-        .current_dir(out_dir)
-        .env("RUBYLIB", rubypath)
-        .arg(script_path)
-        .stderr(Stdio::inherit())
-        .stdout(Stdio::inherit())
+    let status = test_script_command(tmp_dir, fixture_name, script_file)?
         .spawn()
         .context("Failed to spawn `ruby` when running script")?
         .wait()
@@ -41,6 +20,33 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
         bail!("running `ruby` failed");
     }
     Ok(())
+}
+
+/// Create a `Command` instance that runs a test script
+pub fn test_script_command(
+    tmp_dir: &str,
+    fixture_name: &str,
+    script_file: &str,
+) -> Result<Command> {
+    let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
+    let test_helper = UniFFITestHelper::new(fixture_name)?;
+    let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
+    test_helper.copy_cdylibs_to_out_dir(&out_dir)?;
+    generate_sources(&test_helper.cdylib_path()?, &out_dir, &test_helper)?;
+
+    let rubypath = env::var_os("RUBYLIB").unwrap_or_else(|| OsString::from(""));
+    let rubypath = env::join_paths(
+        env::split_paths(&rubypath).chain(vec![out_dir.to_path_buf().into_std_path_buf()]),
+    )?;
+
+    let mut command = Command::new("ruby");
+    command
+        .current_dir(out_dir)
+        .env("RUBYLIB", rubypath)
+        .arg(script_path)
+        .stderr(Stdio::inherit())
+        .stdout(Stdio::inherit());
+    Ok(command)
 }
 
 fn generate_sources(

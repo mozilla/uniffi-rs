@@ -13,6 +13,7 @@ name = "uniffi_chronological"
 [dependencies]
 uniffi = {path = "../../uniffi"}
 thiserror = "1.0"
+chrono = { version = "0.4.23", default-features = false, features = ["alloc", "std"] }
 
 [build-dependencies]
 uniffi = {path = "../../uniffi", features = ["build"] }

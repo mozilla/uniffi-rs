@@ -61,8 +61,8 @@ pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
         // new functions outside of the `impl`).
         rewrite_self_type(&mut item);
 
-        let metadata = export::gen_metadata(item, &mod_path)?;
-        Ok(expand_export(metadata, args, &mod_path))
+        let metadata = export::gen_metadata(item)?;
+        expand_export(metadata, args, &mod_path)
     };
     let output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 
@@ -75,26 +75,14 @@ pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(Record)]
 pub fn derive_record(input: TokenStream) -> TokenStream {
-    let mod_path = match util::mod_path() {
-        Ok(p) => p,
-        Err(e) => return e.into_compile_error().into(),
-    };
-    let input = parse_macro_input!(input);
-
-    expand_record(input, mod_path)
+    expand_record(parse_macro_input!(input))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
 #[proc_macro_derive(Enum)]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
-    let mod_path = match util::mod_path() {
-        Ok(p) => p,
-        Err(e) => return e.into_compile_error().into(),
-    };
-    let input = parse_macro_input!(input);
-
-    expand_enum(input, mod_path)
+    expand_enum(parse_macro_input!(input))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
@@ -114,13 +102,7 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(Error, attributes(uniffi))]
 pub fn derive_error(input: TokenStream) -> TokenStream {
-    let mod_path = match util::mod_path() {
-        Ok(p) => p,
-        Err(e) => return e.into_compile_error().into(),
-    };
-    let input = parse_macro_input!(input);
-
-    expand_error(input, mod_path)
+    expand_error(parse_macro_input!(input))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

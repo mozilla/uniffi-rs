@@ -2,6 +2,7 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use crate::bindings::RunScriptOptions;
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use heck::ToSnakeCase;
@@ -9,22 +10,36 @@ use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
 use std::ffi::OsStr;
 use std::fs::{read_to_string, File};
 use std::io::Write;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use uniffi_testing::{CompileSource, UniFFITestHelper};
 
 /// Run Swift tests for a UniFFI test fixture
 pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<()> {
+    run_script(
+        tmp_dir,
+        fixture_name,
+        script_file,
+        vec![],
+        &RunScriptOptions::default(),
+    )
+}
+
+/// Run a Swift script
+///
+/// This function will set things up so that the script can import the UniFFI bindings for a crate
+pub fn run_script(
+    tmp_dir: &str,
+    crate_name: &str,
+    script_file: &str,
+    args: Vec<String>,
+    options: &RunScriptOptions,
+) -> Result<()> {
     let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
-    let test_helper = UniFFITestHelper::new(fixture_name).context("UniFFITestHelper::new")?;
-    let out_dir = test_helper
-        .create_out_dir(tmp_dir, &script_path)
-        .context("create_out_dir()")?;
-    test_helper
-        .copy_cdylibs_to_out_dir(&out_dir)
-        .context("copy_fixture_library_to_out_dir()")?;
+    let test_helper = UniFFITestHelper::new(crate_name)?;
+    let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
+    test_helper.copy_cdylibs_to_out_dir(&out_dir)?;
     let generated_sources =
-        GeneratedSources::new(&test_helper.cdylib_path()?, &out_dir, &test_helper)
-            .context("generate_sources()")?;
+        GeneratedSources::new(&test_helper.cdylib_path()?, &out_dir, &test_helper)?;
 
     // Compile the generated sources together to create a single swift module
     compile_swift_module(
@@ -32,11 +47,11 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
         &calc_module_name(&generated_sources.main_source_filename),
         &generated_sources.generated_swift_files,
         &generated_sources.module_map,
+        options,
     )?;
 
     // Run the test script against compiled bindings
-
-    let mut command = Command::new("swift");
+    let mut command = create_command("swift", options);
     command
         .current_dir(&out_dir)
         .arg("-I")
@@ -49,7 +64,8 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
             "-fmodule-map-file={}",
             generated_sources.module_map
         ))
-        .arg(&script_path);
+        .arg(&script_path)
+        .args(args);
     let status = command
         .spawn()
         .context("Failed to spawn `swiftc` when running test script")?
@@ -70,9 +86,10 @@ fn compile_swift_module<T: AsRef<OsStr>>(
     module_name: &str,
     sources: impl IntoIterator<Item = T>,
     module_map: &Utf8Path,
+    options: &RunScriptOptions,
 ) -> Result<()> {
     let output_filename = format!("{DLL_PREFIX}testmod_{module_name}{DLL_SUFFIX}");
-    let mut command = Command::new("swiftc");
+    let mut command = create_command("swiftc", options);
     command
         .current_dir(out_dir)
         .arg("-emit-module")
@@ -193,6 +210,18 @@ impl GeneratedSources {
             false,
         )
     }
+}
+
+fn create_command(program: &str, options: &RunScriptOptions) -> Command {
+    let mut command = Command::new(program);
+    if !options.show_compiler_messages {
+        // This prevents most compiler messages, but not remarks
+        command.arg("-suppress-warnings");
+        // This gets the remarks.  Note: swift will eventually get a `-supress-remarks` argument,
+        // maybe we can eventually move to that
+        command.stderr(Stdio::null());
+    }
+    command
 }
 
 // Wraps glob to use Utf8Paths and flattens errors

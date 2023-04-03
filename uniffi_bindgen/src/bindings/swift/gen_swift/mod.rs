@@ -326,9 +326,6 @@ impl SwiftCodeOracle {
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
             Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
-            Type::Unresolved { name } => {
-                unreachable!("Type `{name}` must be resolved before calling create_code_type")
-            }
         }
     }
 }
@@ -445,8 +442,8 @@ pub mod filters {
             FfiType::UInt32 => "UInt32".into(),
             FfiType::Int64 => "Int64".into(),
             FfiType::UInt64 => "UInt64".into(),
-            FfiType::Float32 => "float".into(),
-            FfiType::Float64 => "double".into(),
+            FfiType::Float32 => "Float".into(),
+            FfiType::Float64 => "Double".into(),
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),

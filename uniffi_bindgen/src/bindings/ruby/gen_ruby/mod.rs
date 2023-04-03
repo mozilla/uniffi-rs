@@ -190,9 +190,6 @@ mod filters {
             }
             Type::External { .. } => panic!("No support for external types, yet"),
             Type::Custom { .. } => panic!("No support for custom types, yet"),
-            Type::Unresolved { name } => {
-                unreachable!("Type `{name}` must be resolved before calling coerce_rb")
-            }
         })
     }
 
@@ -226,9 +223,6 @@ mod filters {
             ),
             Type::External { .. } => panic!("No support for lowering external types, yet"),
             Type::Custom { .. } => panic!("No support for lowering custom types, yet"),
-            Type::Unresolved { name } => {
-                unreachable!("Type `{name}` must be resolved before calling lower_rb")
-            }
         })
     }
 
@@ -261,9 +255,6 @@ mod filters {
             ),
             Type::External { .. } => panic!("No support for lifting external types, yet"),
             Type::Custom { .. } => panic!("No support for lifting custom types, yet"),
-            Type::Unresolved { name } => {
-                unreachable!("Type `{name}` must be resolved before calling lift_rb")
-            }
         })
     }
 }

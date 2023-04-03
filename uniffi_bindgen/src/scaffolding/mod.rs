@@ -7,7 +7,7 @@ use askama::Template;
 use std::borrow::Borrow;
 
 use super::interface::*;
-use heck::ToSnakeCase;
+use heck::{ToShoutySnakeCase, ToSnakeCase};
 
 #[derive(Template)]
 #[template(syntax = "rs", escape = "none", path = "scaffolding_template.rs")]
@@ -53,10 +53,12 @@ mod filters {
                 type_rs(v)?
             ),
             Type::Custom { name, .. } => format!("r#{name}"),
+            Type::External {
+                name,
+                kind: ExternalKind::Interface,
+                ..
+            } => format!("::std::sync::Arc<r#{name}>"),
             Type::External { name, .. } => format!("r#{name}"),
-            Type::Unresolved { .. } => {
-                unreachable!("UDL scaffolding code never contains unresolved types")
-            }
         })
     }
 
@@ -89,11 +91,30 @@ mod filters {
                 kind: ExternalKind::Interface,
                 ..
             } => {
-                format!("<::std::sync::Arc<r#{name}> as uniffi::FfiConverter<crate::UniFfiTag>>")
+                format!("<::std::sync::Arc<r#{name}> as ::uniffi::FfiConverter<crate::UniFfiTag>>")
             }
             _ => format!(
-                "<{} as uniffi::FfiConverter<crate::UniFfiTag>>",
+                "<{} as ::uniffi::FfiConverter<crate::UniFfiTag>>",
                 type_rs(type_)?
+            ),
+        })
+    }
+
+    // Map return types to their fully-qualified `FfiConverter` impl.
+    pub fn return_ffi_converter<T: Callable>(callable: &T) -> Result<String, askama::Error> {
+        let result_type = match callable.return_type() {
+            Some(t) => type_rs(&t)?,
+            None => "()".to_string(),
+        };
+        Ok(match callable.throws_type() {
+            Some(e) => format!(
+                "<Result<{}, {}> as ::uniffi::FfiConverter<crate::UniFfiTag>>",
+                result_type,
+                type_rs(&e)?
+            ),
+            None => format!(
+                "<{} as ::uniffi::FfiConverter<crate::UniFfiTag>>",
+                result_type
             ),
         })
     }

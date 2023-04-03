@@ -63,16 +63,6 @@ User-defined types are also supported in a limited manner: records (structs with
 their definition. Opaque objects (`interface` in UDL) can always be used regardless of whether they
 are defined in UDL and / or via derive macro; they just need to be put inside an `Arc` as always.
 
-User-defined types also have to be (re-)exported from a module called `uniffi_types` at the crate
-root. This is required to ensure that a given type name always means the same thing across all uses
-of `#[uniffi::export]` across the whole module tree.
-
-```rust
-mod uniffi_types {
-    pub(crate) use path::to::MyObject;
-}
-```
-
 ## The `uniffi::Record` derive
 
 The `Record` derive macro exposes a `struct` with named fields over FFI. All types that are

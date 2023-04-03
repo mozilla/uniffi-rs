@@ -46,13 +46,24 @@ class RustBuffer(ctypes.Structure):
         leak it even if an error occurs.
         """
         try:
-            s = RustBufferStream(self)
+            s = RustBufferStream.from_rust_buffer(self)
             yield s
             if s.remaining() != 0:
-                raise RuntimeError("junk data left in buffer after consuming")
+                raise RuntimeError("junk data left in buffer at end of consumeWithStream")
         finally:
             self.free()
 
+    @contextlib.contextmanager
+    def readWithStream(self):
+        """Context-manager to read a buffer using a RustBufferStream.
+
+        This is like consumeWithStream, but doesn't free the buffer afterwards.
+        It should only be used with borrowed `RustBuffer` data.
+        """
+        s = RustBufferStream.from_rust_buffer(self)
+        yield s
+        if s.remaining() != 0:
+            raise RuntimeError("junk data left in buffer at end of readWithStream")
 
 class ForeignBytes(ctypes.Structure):
     _fields_ = [
@@ -69,24 +80,29 @@ class RustBufferStream(object):
     Helper for structured reading of bytes from a RustBuffer
     """
 
-    def __init__(self, rbuf):
-        self.rbuf = rbuf
+    def __init__(self, data, len):
+        self.data = data
+        self.len = len
         self.offset = 0
 
+    @classmethod
+    def from_rust_buffer(cls, buf):
+        return cls(buf.data, buf.len)
+
     def remaining(self):
-        return self.rbuf.len - self.offset
+        return self.len - self.offset
 
     def _unpack_from(self, size, format):
-        if self.offset + size > self.rbuf.len:
+        if self.offset + size > self.len:
             raise InternalError("read past end of rust buffer")
-        value = struct.unpack(format, self.rbuf.data[self.offset:self.offset+size])[0]
+        value = struct.unpack(format, self.data[self.offset:self.offset+size])[0]
         self.offset += size
         return value
 
     def read(self, size):
-        if self.offset + size > self.rbuf.len:
+        if self.offset + size > self.len:
             raise InternalError("read past end of rust buffer")
-        data = self.rbuf.data[self.offset:self.offset+size]
+        data = self.data[self.offset:self.offset+size]
         self.offset += size
         return data
 

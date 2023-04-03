@@ -37,10 +37,11 @@ uniffi::deps::static_assertions::assert_impl_all!(r#{{ obj.name() }}: Sync, Send
 #[doc(hidden)]
 #[no_mangle]
 pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_status: &mut uniffi::RustCallStatus) {
-    uniffi::call_with_output(call_status, || {
+    uniffi::rust_call(call_status, || {
         assert!(!ptr.is_null());
         {#- turn it into an Arc and explicitly drop it. #}
-        drop(unsafe { std::sync::Arc::from_raw(ptr as *const r#{{ obj.name() }}) })
+        drop(unsafe { ::std::sync::Arc::from_raw(ptr as *const r#{{ obj.name() }}) });
+        Ok(())
     })
 }
 
@@ -48,7 +49,8 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_s
     #[doc(hidden)]
     #[no_mangle]
     pub extern "C" fn r#{{ cons.ffi_func().name() }}(
-        {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}) -> *const std::os::raw::c_void /* *const {{ obj.name() }} */ {
+        {%- call rs::arg_list_ffi_decl(cons.ffi_func()) %}
+    ) -> *const std::os::raw::c_void /* *const {{ obj.name() }} */ {
         uniffi::deps::log::debug!("{{ cons.ffi_func().name() }}");
         {% if obj.uses_deprecated_threadsafe_attribute() %}
         uniffi_note_threadsafe_deprecation_{{ obj.name() }}();
@@ -56,20 +58,32 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_s
 
         // If the constructor does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
-        {% call rs::to_rs_constructor_call(obj, cons) %}
+        uniffi::rust_call(call_status, || {
+            {{ cons|return_ffi_converter }}::lower_return(
+                {%- if cons.throws() %}
+                r#{{ obj.name() }}::{% call rs::to_rs_call(cons) %}.map(::std::sync::Arc::new).map_err(Into::into)
+                {%- else %}
+                ::std::sync::Arc::new(r#{{ obj.name() }}::{% call rs::to_rs_call(cons) %})
+                {%- endif %}
+            )
+        })
     }
 {%- endfor %}
 
 {%- for meth in obj.methods() %}
     #[doc(hidden)]
     #[no_mangle]
-    #[allow(clippy::let_unit_value)] // Sometimes we generate code that binds `_retval` to `()`.
+    #[allow(clippy::let_unit_value,clippy::unit_arg)] // The generated code uses the unit type like other types to keep things uniform
     pub extern "C" fn r#{{ meth.ffi_func().name() }}(
         {%- call rs::arg_list_ffi_decl(meth.ffi_func()) %}
     ) {% call rs::return_signature(meth) %} {
         uniffi::deps::log::debug!("{{ meth.ffi_func().name() }}");
         // If the method does not have the same signature as declared in the UDL, then
         // this attempt to call it will fail with a (somewhat) helpful compiler error.
-        {% call rs::to_rs_method_call(obj, meth) %}
+        uniffi::rust_call(call_status, || {
+            {{ meth|return_ffi_converter }}::lower_return(
+                r#{{ obj.name() }}::{% call rs::to_rs_call(meth) %}{% if meth.throws() %}.map_err(Into::into){% endif %}
+            )
+        })
     }
 {% endfor %}

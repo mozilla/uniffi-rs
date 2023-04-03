@@ -27,7 +27,3 @@ impl Object {
 }
 
 include!(concat!(env!("OUT_DIR"), "/simple-iface.uniffi.rs"));
-
-mod uniffi_types {
-    pub use crate::Object;
-}

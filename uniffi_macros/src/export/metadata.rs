@@ -12,10 +12,10 @@ mod impl_;
 
 use self::{function::gen_fn_metadata, impl_::gen_impl_metadata};
 
-pub fn gen_metadata(item: syn::Item, mod_path: &[String]) -> syn::Result<ExportItem> {
+pub fn gen_metadata(item: syn::Item) -> syn::Result<ExportItem> {
     match item {
-        syn::Item::Fn(item) => gen_fn_metadata(item.sig, mod_path),
-        syn::Item::Impl(item) => gen_impl_metadata(item, mod_path),
+        syn::Item::Fn(item) => gen_fn_metadata(item.sig),
+        syn::Item::Impl(item) => gen_impl_metadata(item),
         // FIXME: Support const / static?
         _ => Err(syn::Error::new(
             Span::call_site(),

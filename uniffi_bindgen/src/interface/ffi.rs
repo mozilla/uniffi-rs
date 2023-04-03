@@ -58,13 +58,16 @@ pub enum FfiType {
 /// from the high-level interface. Each callable thing in the component API will have a
 /// corresponding `FfiFunction` through which it can be invoked, and UniFFI also provides
 /// some built-in `FfiFunction` helpers for use in the foreign language bindings.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct FfiFunction {
     pub(super) name: String,
     pub(super) is_async: bool,
     pub(super) arguments: Vec<FfiArgument>,
     pub(super) return_type: Option<FfiType>,
-    pub(super) object_free_function: bool,
+    pub(super) has_rust_call_status_arg: bool,
+    /// Used by C# generator to differentiate the free function and call call it with void*
+    /// instead of C# `SafeHandle` type. See <https://github.com/mozilla/uniffi-rs/pull/1488>.
+    pub(super) is_object_free_function: bool,
 }
 
 impl FfiFunction {
@@ -84,8 +87,25 @@ impl FfiFunction {
         self.return_type.as_ref()
     }
 
+    pub fn has_rust_call_status_arg(&self) -> bool {
+        self.has_rust_call_status_arg
+    }
+
     pub fn is_object_free_function(&self) -> bool {
-        self.object_free_function
+        self.is_object_free_function
+    }
+}
+
+impl Default for FfiFunction {
+    fn default() -> Self {
+        Self {
+            name: "".into(),
+            is_async: false,
+            arguments: Vec::new(),
+            return_type: None,
+            has_rust_call_status_arg: true,
+            is_object_free_function: false,
+        }
     }
 }
 

@@ -10,6 +10,33 @@ imports = ["Foundation"]
 into_custom = "URL(string: {})!"
 from_custom = "String(describing: {})"
 
+[bindings.swift.custom_types.TimeIntervalMs]
+# Name of the type in the Swift code
+type_name = "Date"
+# Modules that need to be imported
+imports = ["Foundation"]
+# Functions to convert between i64 and TimeIntervalMs
+into_custom = "Date(timeIntervalSince1970: TimeInterval({}) / 1000.0)"
+from_custom = "Int64({}.timeIntervalSince1970 * 1000.0)"
+
+[bindings.swift.custom_types.TimeIntervalSecDbl]
+# Name of the type in the Swift code
+type_name = "Date"
+# Modules that need to be imported
+imports = ["Foundation"]
+# Functions to convert between f64 and TimeIntervalSecDbl
+into_custom = "Date(timeIntervalSince1970: {})"
+from_custom = "{}.timeIntervalSince1970"
+
+[bindings.swift.custom_types.TimeIntervalSecFlt]
+# Name of the type in the Swift code
+type_name = "Date"
+# Modules that need to be imported
+imports = ["Foundation"]
+# Functions to convert between f32 and TimeIntervalSecFlt
+into_custom = "Date(timeIntervalSince1970: TimeInterval({}))"
+from_custom = "Float({}.timeIntervalSince1970)"
+
 [bindings.kotlin]
 cdylib_name = "custom_types"
 package_name = "customtypes"

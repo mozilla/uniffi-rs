@@ -12,7 +12,7 @@ pub use gen_kotlin::{generate_bindings, Config};
 mod test;
 
 use super::super::interface::ComponentInterface;
-pub use test::run_test;
+pub use test::{run_script, run_test};
 
 pub fn write_bindings(
     config: &Config,

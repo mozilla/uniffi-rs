@@ -13,6 +13,6 @@ note: required because it appears within the type `Counter`
 note: required by a bound in `Interface`
  --> $WORKSPACE/uniffi_core/src/lib.rs
   |
-  | pub trait Interface<UT>: Send + Sync + Sized {}
+  | pub trait Interface<UT>: Send + Sync + Sized {
   |                                 ^^^^ required by this bound in `Interface`
   = note: this error originates in the attribute macro `::uniffi::ffi_converter_interface` (in Nightly builds, run with -Z macro-backtrace for more info)

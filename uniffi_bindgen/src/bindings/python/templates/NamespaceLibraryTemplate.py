@@ -23,9 +23,28 @@ def loadIndirect():
         # Anything else must be an ELF platform - Linux, *BSD, Solaris/illumos
         libname = "lib{}.so"
 
-    lib = libname.format("{{ config.cdylib_name() }}")
-    path = str(Path(__file__).parent / lib)
-    return ctypes.cdll.LoadLibrary(path)
+    libname = libname.format("{{ config.cdylib_name() }}")
+    path = str(Path(__file__).parent / libname)
+    lib = ctypes.cdll.LoadLibrary(path)
+    uniffi_check_contract_api_version(lib)
+    uniffi_check_api_checksums(lib)
+    return lib
+
+def uniffi_check_contract_api_version(lib):
+    # Get the bindings contract version from our ComponentInterface
+    bindings_contract_version = {{ ci.uniffi_contract_version() }}
+    # Get the scaffolding contract version by calling the into the dylib
+    scaffolding_contract_version = lib.{{ ci.ffi_uniffi_contract_version().name() }}()
+    if bindings_contract_version != scaffolding_contract_version:
+        raise InternalError("UniFFI contract version mismatch: try cleaning and rebuilding your project")
+
+def uniffi_check_api_checksums(lib):
+    {%- for (name, expected_checksum) in ci.iter_checksums() %}
+    if lib.{{ name }}() != {{ expected_checksum }}:
+        raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    {%- else %}
+    pass
+    {%- endfor %}
 
 # A ctypes library to expose the extern-C FFI definitions.
 # This is an implementation detail which will be called internally by the public API.
@@ -44,7 +63,7 @@ _UniFFILib.{{ func.name() }}_poll.argtypes = (
     FUTURE_WAKER_T,
     FUTURE_WAKER_ENVIRONMENT_T,
     {% match func.return_type() %}{% when Some with (type_) %}ctypes.POINTER({{ type_|ffi_type_name }}){% when None %}ctypes.c_void_p{% endmatch %},
-    ctypes.POINTER(RustCallStatus),
+    {%- if func.has_rust_call_status_arg() %}ctypes.POINTER(RustCallStatus), {% endif %}
 )
 _UniFFILib.{{ func.name() }}_poll.restype = ctypes.c_bool
 

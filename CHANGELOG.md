@@ -14,9 +14,17 @@
 
 [All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.23.0...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+- ABI: Implemented a new callback-interface ABI that significantly improves performance on Python and Kotlin.
+  - UniFFI users will automatically get the benefits of this without any code changes.
+  - External bindings authors will need to update their bindings code.  See PR #1494 for details.
+- ABI: Changed API checksum handling.  This affects external bindings authors who will need to update their code to work with the new system.  See PR #1469 for details.
+
 ### What's changed
 
 - The `include_scaffolding!()` macro must now either be called from your crate root or you must have `use the_mod_that_calls_include_scaffolding::*` in your crate root.  This was always the expectation, but wasn't required before.  This will now start failing with errors that say `crate::UniFfiTag` does not exist.
+- proc-macros now work with many more types including type aliases, type paths, etc.
+- The `uniffi_types` module is no longer needed when using proc-macros.
 
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
 

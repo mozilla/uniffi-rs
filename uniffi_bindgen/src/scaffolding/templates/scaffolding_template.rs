@@ -12,6 +12,15 @@
 #[doc(hidden)]
 pub struct UniFfiTag;
 
+#[allow(clippy::missing_safety_doc, missing_docs)]
+#[doc(hidden)]
+#[no_mangle]
+pub extern "C" fn {{ ci.ffi_uniffi_contract_version().name() }}() -> u32 {
+    {{ ci.uniffi_contract_version() }}
+}
+
+{%- include "namespace_metadata.rs" %}
+
 // Check for compatibility between `uniffi` and `uniffi_bindgen` versions.
 // Note that we have an error message on the same line as the assertion.
 // This is important, because if the assertion fails, the compiler only
@@ -61,6 +70,9 @@ uniffi::deps::static_assertions::assert_impl_all!({{ k|type_rs }}: ::std::cmp::E
 
 // External and Wrapped types
 {% include "ExternalTypesTemplate.rs" %}
+
+// Export scaffolding checksums
+{% include "Checksums.rs" %}
 
 // The `reexport_uniffi_scaffolding` macro
 {% include "ReexportUniFFIScaffolding.rs" %}
