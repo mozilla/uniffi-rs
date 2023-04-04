@@ -173,6 +173,7 @@ impl Object {
             type_: FfiType::RustArcPtr(self.name().to_string()),
         }];
         self.ffi_func_free.return_type = None;
+        self.ffi_func_free.is_object_free_function = true;
 
         for cons in self.constructors.iter_mut() {
             cons.derive_ffi_func(ci_namespace, &self.name);

@@ -65,6 +65,9 @@ pub struct FfiFunction {
     pub(super) arguments: Vec<FfiArgument>,
     pub(super) return_type: Option<FfiType>,
     pub(super) has_rust_call_status_arg: bool,
+    /// Used by C# generator to differentiate the free function and call it with void*
+    /// instead of C# `SafeHandle` type. See <https://github.com/mozilla/uniffi-rs/pull/1488>.
+    pub(super) is_object_free_function: bool,
 }
 
 impl FfiFunction {
@@ -87,6 +90,10 @@ impl FfiFunction {
     pub fn has_rust_call_status_arg(&self) -> bool {
         self.has_rust_call_status_arg
     }
+
+    pub fn is_object_free_function(&self) -> bool {
+        self.is_object_free_function
+    }
 }
 
 impl Default for FfiFunction {
@@ -97,6 +104,7 @@ impl Default for FfiFunction {
             arguments: Vec::new(),
             return_type: None,
             has_rust_call_status_arg: true,
+            is_object_free_function: false,
         }
     }
 }
