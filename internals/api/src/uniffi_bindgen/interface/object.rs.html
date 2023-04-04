@@ -690,6 +690,7 @@
 <span id="690">690</span>
 <span id="691">691</span>
 <span id="692">692</span>
+<span id="693">693</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -865,6 +866,7 @@
             type_: FfiType::RustArcPtr(<span class="self">self</span>.name().to_string()),
         }];
         <span class="self">self</span>.ffi_func_free.return_type = <span class="prelude-val">None</span>;
+        <span class="self">self</span>.ffi_func_free.is_object_free_function = <span class="bool-val">true</span>;
 
         <span class="kw">for </span>cons <span class="kw">in </span><span class="self">self</span>.constructors.iter_mut() {
             cons.derive_ffi_func(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name);

@@ -124,6 +124,14 @@
 <span id="124">124</span>
 <span id="125">125</span>
 <span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -191,6 +199,9 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;FfiArgument&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) has_rust_call_status_arg: bool,
+    <span class="doccomment">/// Used by C# generator to differentiate the free function and call it with void*
+    /// instead of C# `SafeHandle` type. See &lt;https://github.com/mozilla/uniffi-rs/pull/1488&gt;.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) is_object_free_function: bool,
 }
 
 <span class="kw">impl </span>FfiFunction {
@@ -213,6 +224,10 @@
     <span class="kw">pub fn </span>has_rust_call_status_arg(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.has_rust_call_status_arg
     }
+
+    <span class="kw">pub fn </span>is_object_free_function(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.is_object_free_function
+    }
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>FfiFunction {
@@ -223,6 +238,7 @@
             arguments: Vec::new(),
             return_type: <span class="prelude-val">None</span>,
             has_rust_call_status_arg: <span class="bool-val">true</span>,
+            is_object_free_function: <span class="bool-val">false</span>,
         }
     }
 }

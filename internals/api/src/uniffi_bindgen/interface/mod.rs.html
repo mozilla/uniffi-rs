@@ -1193,6 +1193,12 @@
 <span id="1193">1193</span>
 <span id="1194">1194</span>
 <span id="1195">1195</span>
+<span id="1196">1196</span>
+<span id="1197">1197</span>
+<span id="1198">1198</span>
+<span id="1199">1199</span>
+<span id="1200">1200</span>
+<span id="1201">1201</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1523,6 +1529,7 @@
             arguments: <span class="macro">vec!</span>[],
             return_type: <span class="prelude-val">Some</span>(FfiType::UInt32),
             has_rust_call_status_arg: <span class="bool-val">false</span>,
+            is_object_free_function: <span class="bool-val">false</span>,
         }
     }
 
@@ -1539,6 +1546,7 @@
             }],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
             has_rust_call_status_arg: <span class="bool-val">true</span>,
+            is_object_free_function: <span class="bool-val">false</span>,
         }
     }
 
@@ -1555,6 +1563,7 @@
             }],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
             has_rust_call_status_arg: <span class="bool-val">true</span>,
+            is_object_free_function: <span class="bool-val">false</span>,
         }
     }
 
@@ -1571,6 +1580,7 @@
             }],
             return_type: <span class="prelude-val">None</span>,
             has_rust_call_status_arg: <span class="bool-val">true</span>,
+            is_object_free_function: <span class="bool-val">false</span>,
         }
     }
 
@@ -1593,6 +1603,7 @@
             ],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
             has_rust_call_status_arg: <span class="bool-val">true</span>,
+            is_object_free_function: <span class="bool-val">false</span>,
         }
     }
 
@@ -1676,6 +1687,7 @@
             arguments: <span class="macro">vec!</span>[],
             return_type: <span class="prelude-val">Some</span>(FfiType::UInt16),
             has_rust_call_status_arg: <span class="bool-val">false</span>,
+            is_object_free_function: <span class="bool-val">false</span>,
         })
     }
 
