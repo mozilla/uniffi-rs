@@ -146,9 +146,9 @@ pub(crate) fn enum_meta_static_var(ident: &Ident, enum_: &DataEnum) -> syn::Resu
     let module_path = mod_path()?;
 
     let mut metadata_expr = quote! {
-            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
-                .concat_str(#module_path)
-                .concat_str(#name)
+        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
+            .concat_str(#module_path)
+            .concat_str(#name)
     };
     metadata_expr.extend(variant_metadata(enum_)?);
     Ok(create_metadata_items(

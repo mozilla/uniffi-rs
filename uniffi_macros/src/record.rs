@@ -96,14 +96,14 @@ pub(crate) fn record_meta_static_var(
         "record",
         &name,
         quote! {
-                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
-                    .concat_str(#module_path)
-                    .concat_str(#name)
-                    .concat_value(#fields_len)
-                    #(
-                        .concat_str(#field_names)
-                        .concat(<#field_types as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
-                    )*
+            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
+                .concat_str(#module_path)
+                .concat_str(#name)
+                .concat_value(#fields_len)
+                #(
+                    .concat_str(#field_names)
+                    .concat(<#field_types as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+                )*
         },
         None,
     ))
