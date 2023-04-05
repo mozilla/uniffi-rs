@@ -3,8 +3,8 @@ use quote::quote;
 use syn::{Data, DataStruct, DeriveInput, Field, Path};
 
 use crate::util::{
-    create_metadata_items, mod_path, tagged_impl_header, try_metadata_value_from_usize,
-    try_read_field, type_name, AttributeSliceExt, CommonAttr,
+    create_metadata_items, ident_to_string, mod_path, tagged_impl_header,
+    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, CommonAttr,
 };
 
 pub fn expand_record(input: DeriveInput) -> syn::Result<TokenStream> {
@@ -46,7 +46,7 @@ pub(crate) fn record_ffi_converter_impl(
     tag: Option<&Path>,
 ) -> TokenStream {
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
-    let name = type_name(ident);
+    let name = ident_to_string(ident);
     let write_impl: TokenStream = record.fields.iter().map(write_field).collect();
     let try_read_fields: TokenStream = record.fields.iter().map(try_read_field).collect();
 
@@ -83,14 +83,14 @@ pub(crate) fn record_meta_static_var(
     ident: &Ident,
     record: &DataStruct,
 ) -> syn::Result<TokenStream> {
-    let name = type_name(ident);
+    let name = ident_to_string(ident);
     let module_path = mod_path()?;
     let fields_len =
         try_metadata_value_from_usize(record.fields.len(), "UniFFI limits structs to 256 fields")?;
     let field_names = record
         .fields
         .iter()
-        .map(|f| f.ident.as_ref().unwrap().to_string());
+        .map(|f| ident_to_string(f.ident.as_ref().unwrap()));
     let field_types = record.fields.iter().map(|f| &f.ty);
     Ok(create_metadata_items(
         "record",

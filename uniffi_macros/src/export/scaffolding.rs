@@ -4,10 +4,10 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use syn::{ext::IdentExt, spanned::Spanned, FnArg, Pat};
+use syn::{spanned::Spanned, FnArg, Pat};
 
 use super::{AsyncRuntime, ExportAttributeArguments, Signature};
-use crate::util::{create_metadata_items, try_metadata_value_from_usize, type_name};
+use crate::util::{create_metadata_items, ident_to_string, try_metadata_value_from_usize};
 
 pub(super) fn gen_fn_scaffolding(
     sig: &Signature,
@@ -15,7 +15,7 @@ pub(super) fn gen_fn_scaffolding(
     arguments: &ExportAttributeArguments,
 ) -> syn::Result<TokenStream> {
     let name = &sig.ident;
-    let name_s = name.to_string();
+    let name_s = ident_to_string(name);
 
     let ffi_ident = Ident::new(
         &uniffi_meta::fn_ffi_symbol_name(mod_path, &name_s),
@@ -42,10 +42,10 @@ pub(super) fn gen_method_scaffolding(
     arguments: &ExportAttributeArguments,
 ) -> syn::Result<TokenStream> {
     let ident = &sig.ident;
-    let name_s = ident.unraw().to_string();
+    let name_s = ident_to_string(ident);
 
     let ffi_ident = Ident::new(
-        &uniffi_meta::method_fn_symbol_name(mod_path, &self_ident.unraw().to_string(), &name_s),
+        &uniffi_meta::method_fn_symbol_name(mod_path, &ident_to_string(self_ident), &name_s),
         Span::call_site(),
     );
 
@@ -159,7 +159,7 @@ impl ScaffoldingBits {
                             self.collect_param_receiver_error(i, receiver_error_msg);
                             continue;
                         }
-                        Pat::Ident(i) => Some(i.ident.to_string()),
+                        Pat::Ident(i) => Some(ident_to_string(&i.ident)),
                         _ => None,
                     };
 
@@ -215,7 +215,7 @@ impl ScaffoldingBits {
         sig: &Signature,
         mod_path: &str,
     ) -> syn::Result<TokenStream> {
-        let name = type_name(&sig.ident);
+        let name = ident_to_string(&sig.ident);
         let return_ty = &sig.output;
         let is_async = sig.is_async;
         let args_len = try_metadata_value_from_usize(
@@ -247,8 +247,8 @@ impl ScaffoldingBits {
         sig: &Signature,
         mod_path: &str,
     ) -> syn::Result<TokenStream> {
-        let object_name = type_name(self_ident);
-        let name = type_name(&sig.ident);
+        let object_name = ident_to_string(self_ident);
+        let name = ident_to_string(&sig.ident);
         let return_ty = &sig.output;
         let is_async = sig.is_async;
         let args_len = try_metadata_value_from_usize(
@@ -286,7 +286,7 @@ fn gen_ffi_function(
     bits: &ScaffoldingBits,
     arguments: &ExportAttributeArguments,
 ) -> TokenStream {
-    let name = sig.ident.to_string();
+    let name = ident_to_string(&sig.ident);
     let rust_fn_call = bits.rust_fn_call();
     let fn_params = &bits.params;
     let return_ty = &sig.output;
