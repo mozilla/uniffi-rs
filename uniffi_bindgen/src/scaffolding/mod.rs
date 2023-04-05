@@ -108,7 +108,7 @@ mod filters {
         };
         Ok(match callable.throws_type() {
             Some(e) => format!(
-                "<Result<{}, {}> as ::uniffi::FfiConverter<crate::UniFfiTag>>",
+                "<::std::result::Result<{}, {}> as ::uniffi::FfiConverter<crate::UniFfiTag>>",
                 result_type,
                 type_rs(&e)?
             ),

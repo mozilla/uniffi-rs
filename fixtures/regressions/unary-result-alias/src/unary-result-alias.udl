@@ -1,0 +1,9 @@
+[Error]
+enum MyError {
+    "AllGoneWrong",
+};
+
+namespace unary_result_alias {
+    [Throws=MyError]
+    void returns_unary_result_alias();
+};
