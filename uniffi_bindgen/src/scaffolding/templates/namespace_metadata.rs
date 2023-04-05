@@ -8,5 +8,7 @@
 const {{ const_var }}: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::NAMESPACE)
     .concat_str(env!("CARGO_CRATE_NAME"))
     .concat_str("{{ ci.namespace() }}");
+
+#[doc(hidden)]
 #[no_mangle]
 pub static {{ static_var }}: [u8; {{ const_var }}.size] = {{ const_var }}.into_array();
