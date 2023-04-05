@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #![cfg_attr(feature = "nightly", feature(proc_macro_expand))]
+#![warn(rust_2018_idioms, unused_qualifications)]
 
 //! Macros for `uniffi`.
 //!
@@ -179,7 +180,7 @@ pub fn ffi_converter_interface(attrs: TokenStream, input: TokenStream) -> TokenS
 ///
 #[proc_macro]
 pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
-    let name = syn::parse_macro_input!(component_name as syn::LitStr);
+    let name = syn::parse_macro_input!(component_name as LitStr);
     if std::env::var("OUT_DIR").is_err() {
         quote! {
             compile_error!("This macro assumes the crate has a build.rs script, but $OUT_DIR is not present");
@@ -204,7 +205,7 @@ pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
 ///
 #[proc_macro]
 pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
-    let udl_file = syn::parse_macro_input!(udl_file as syn::LitStr);
+    let udl_file = syn::parse_macro_input!(udl_file as LitStr);
     let udl_file_string = udl_file.value();
     let udl_file_path = Utf8Path::new(&udl_file_string);
     if std::env::var("OUT_DIR").is_err() {

@@ -235,7 +235,6 @@ impl<'a> MetadataReader<'a> {
     fn read_fields(&mut self) -> Result<Vec<FieldMetadata>> {
         let len = self.read_u8()?;
         (0..len)
-            .into_iter()
             .map(|_| {
                 Ok(FieldMetadata {
                     name: self.read_string()?,
@@ -248,7 +247,6 @@ impl<'a> MetadataReader<'a> {
     fn read_variants(&mut self) -> Result<Vec<VariantMetadata>> {
         let len = self.read_u8()?;
         (0..len)
-            .into_iter()
             .map(|_| {
                 Ok(VariantMetadata {
                     name: self.read_string()?,
@@ -261,7 +259,6 @@ impl<'a> MetadataReader<'a> {
     fn read_flat_variants(&mut self) -> Result<Vec<VariantMetadata>> {
         let len = self.read_u8()?;
         (0..len)
-            .into_iter()
             .map(|_| {
                 Ok(VariantMetadata {
                     name: self.read_string()?,
@@ -274,7 +271,6 @@ impl<'a> MetadataReader<'a> {
     fn read_inputs(&mut self) -> Result<Vec<FnParamMetadata>> {
         let len = self.read_u8()?;
         (0..len)
-            .into_iter()
             .map(|_| {
                 Ok(FnParamMetadata {
                     name: self.read_string()?,
