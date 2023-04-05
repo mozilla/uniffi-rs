@@ -94,7 +94,6 @@ pub fn add_to_ci(
         }
     }
 
-    iface.resolve_types().context("Failed to resolve types")?;
     iface
         .derive_ffi_funcs()
         .context("Failed to derive FFI functions")?;
