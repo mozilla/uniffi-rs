@@ -76,7 +76,7 @@ pub use record::{Field, Record};
 
 pub mod ffi;
 pub use ffi::{FfiArgument, FfiFunction, FfiType};
-use uniffi_meta::{FnMetadata, MethodMetadata, ObjectMetadata};
+use uniffi_meta::{MethodMetadata, ObjectMetadata};
 
 // This needs to match the minor version of the `uniffi` crate.  See
 // `docs/uniffi-versioning.md` for details.
@@ -579,7 +579,15 @@ impl ComponentInterface {
         Ok(())
     }
 
-    fn add_function_impl(&mut self, defn: Function) -> Result<()> {
+    /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
+    pub(super) fn add_function_definition(&mut self, defn: Function) -> Result<()> {
+        for arg in &defn.arguments {
+            self.types.add_known_type(&arg.type_)?;
+        }
+        if let Some(ty) = &defn.return_type {
+            self.types.add_known_type(ty)?;
+        }
+
         // Since functions are not a first-class type, we have to check for duplicates here
         // rather than relying on the type-finding pass to catch them.
         if self.functions.iter().any(|f| f.name == defn.name) {
@@ -593,25 +601,19 @@ impl ComponentInterface {
         Ok(())
     }
 
-    /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
-    fn add_function_definition(&mut self, defn: Function) -> Result<()> {
+    pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) -> Result<()> {
+        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
+        let defn: Method = meta.into();
+
         for arg in &defn.arguments {
             self.types.add_known_type(&arg.type_)?;
         }
         if let Some(ty) = &defn.return_type {
             self.types.add_known_type(ty)?;
         }
+        object.methods.push(defn);
 
-        self.add_function_impl(defn)
-    }
-
-    pub(super) fn add_fn_meta(&mut self, meta: FnMetadata) -> Result<()> {
-        self.add_function_impl(meta.into())
-    }
-
-    pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) {
-        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
-        object.methods.push(meta.into())
+        Ok(())
     }
 
     pub(super) fn add_object_free_fn(&mut self, meta: ObjectMetadata) {
