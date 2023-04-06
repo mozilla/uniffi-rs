@@ -76,7 +76,7 @@ pub use record::{Field, Record};
 
 pub mod ffi;
 pub use ffi::{FfiArgument, FfiFunction, FfiType};
-use uniffi_meta::{FnMetadata, MethodMetadata, ObjectMetadata};
+use uniffi_meta::{MethodMetadata, ObjectMetadata};
 
 // This needs to match the minor version of the `uniffi` crate.  See
 // `docs/uniffi-versioning.md` for details.
@@ -539,6 +539,11 @@ impl ComponentInterface {
     pub(super) fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
         match self.enums.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
+                for variant in defn.variants() {
+                    for field in variant.fields() {
+                        self.types.add_known_type(field.type_())?;
+                    }
+                }
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
@@ -561,6 +566,9 @@ impl ComponentInterface {
     pub(super) fn add_record_definition(&mut self, defn: Record) -> Result<()> {
         match self.records.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
+                for field in defn.fields() {
+                    self.types.add_known_type(field.type_())?;
+                }
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
@@ -579,7 +587,15 @@ impl ComponentInterface {
         Ok(())
     }
 
-    fn add_function_impl(&mut self, defn: Function) -> Result<()> {
+    /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
+    pub(super) fn add_function_definition(&mut self, defn: Function) -> Result<()> {
+        for arg in &defn.arguments {
+            self.types.add_known_type(&arg.type_)?;
+        }
+        if let Some(ty) = &defn.return_type {
+            self.types.add_known_type(ty)?;
+        }
+
         // Since functions are not a first-class type, we have to check for duplicates here
         // rather than relying on the type-finding pass to catch them.
         if self.functions.iter().any(|f| f.name == defn.name) {
@@ -593,25 +609,19 @@ impl ComponentInterface {
         Ok(())
     }
 
-    /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
-    fn add_function_definition(&mut self, defn: Function) -> Result<()> {
+    pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) -> Result<()> {
+        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
+        let defn: Method = meta.into();
+
         for arg in &defn.arguments {
             self.types.add_known_type(&arg.type_)?;
         }
         if let Some(ty) = &defn.return_type {
             self.types.add_known_type(ty)?;
         }
+        object.methods.push(defn);
 
-        self.add_function_impl(defn)
-    }
-
-    pub(super) fn add_fn_meta(&mut self, meta: FnMetadata) -> Result<()> {
-        self.add_function_impl(meta.into())
-    }
-
-    pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) {
-        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
-        object.methods.push(meta.into())
+        Ok(())
     }
 
     pub(super) fn add_object_free_fn(&mut self, meta: ObjectMetadata) {
@@ -648,76 +658,6 @@ impl ComponentInterface {
                     );
                 }
             }
-        }
-
-        Ok(())
-    }
-
-    /// Resolve unresolved types within proc-macro function / method signatures.
-    pub fn resolve_types(&mut self) -> Result<()> {
-        fn handle_unresolved_in(
-            ty: &mut Type,
-            f: impl Fn(&str) -> Result<Type> + Clone,
-        ) -> Result<()> {
-            match ty {
-                Type::Optional(inner) => {
-                    handle_unresolved_in(inner, f)?;
-                }
-                Type::Sequence(inner) => {
-                    handle_unresolved_in(inner, f)?;
-                }
-                Type::Map(k, v) => {
-                    handle_unresolved_in(k, f.clone())?;
-                    handle_unresolved_in(v, f)?;
-                }
-                _ => {}
-            }
-
-            Ok(())
-        }
-
-        let fn_sig_types = self.functions.iter_mut().flat_map(|fun| {
-            fun.arguments
-                .iter_mut()
-                .map(|arg| &mut arg.type_)
-                .chain(&mut fun.return_type)
-        });
-        let method_sig_types = self.objects.iter_mut().flat_map(|obj| {
-            obj.methods.iter_mut().flat_map(|m| {
-                m.arguments
-                    .iter_mut()
-                    .map(|arg| &mut arg.type_)
-                    .chain(&mut m.return_type)
-            })
-        });
-
-        let record_fields_types = self
-            .records
-            .values_mut()
-            .flat_map(|r| r.fields.iter_mut().map(|f| &mut f.type_));
-        let enum_fields_types = self.enums.values_mut().flat_map(|e| {
-            e.variants
-                .iter_mut()
-                .flat_map(|r| r.fields.iter_mut().map(|f| &mut f.type_))
-        });
-
-        let possibly_unresolved_types = fn_sig_types
-            .chain(method_sig_types)
-            .chain(record_fields_types)
-            .chain(enum_fields_types);
-
-        for ty in possibly_unresolved_types {
-            handle_unresolved_in(ty, |unresolved_ty_name| {
-                match self.types.get_type_definition(unresolved_ty_name) {
-                    Some(def) => Ok(def),
-                    None => bail!("Failed to resolve type `{unresolved_ty_name}`"),
-                }
-            })?;
-
-            // The proc-macro scanning metadata code doesn't add known types
-            // when they could contain unresolved types, so we have to do it
-            // here after replacing unresolveds.
-            self.types.add_known_type(ty)?;
         }
 
         Ok(())

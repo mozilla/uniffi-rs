@@ -59,10 +59,10 @@ pub fn add_to_ci(
         match item {
             Metadata::Namespace(_) => unreachable!(),
             Metadata::Func(meta) => {
-                iface.add_fn_meta(meta)?;
+                iface.add_function_definition(meta.into())?;
             }
             Metadata::Method(meta) => {
-                iface.add_method_meta(meta);
+                iface.add_method_meta(meta)?;
             }
             Metadata::Record(meta) => {
                 let ty = Type::Record(meta.name.clone());
@@ -94,7 +94,6 @@ pub fn add_to_ci(
         }
     }
 
-    iface.resolve_types().context("Failed to resolve types")?;
     iface
         .derive_ffi_funcs()
         .context("Failed to derive FFI functions")?;

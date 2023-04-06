@@ -4,13 +4,13 @@ use syn::{DeriveInput, Path};
 use uniffi_meta::free_fn_symbol_name;
 
 use crate::util::{
-    create_metadata_items, tagged_impl_header, type_name, AttributeSliceExt, CommonAttr,
+    create_metadata_items, ident_to_string, tagged_impl_header, AttributeSliceExt, CommonAttr,
 };
 
 pub fn expand_object(input: DeriveInput, module_path: String) -> syn::Result<TokenStream> {
     let ident = &input.ident;
     let attr = input.attrs.parse_uniffi_attributes::<CommonAttr>()?;
-    let name = type_name(ident);
+    let name = ident_to_string(ident);
     let free_fn_ident = Ident::new(&free_fn_symbol_name(&module_path, &name), Span::call_site());
     let meta_static_var = interface_meta_static_var(ident, &module_path)?;
     let interface_impl = interface_impl(ident, attr.tag.as_ref());
@@ -42,7 +42,7 @@ pub(crate) fn expand_ffi_converter_interface(attr: CommonAttr, input: DeriveInpu
 }
 
 pub(crate) fn interface_impl(ident: &Ident, tag: Option<&Path>) -> TokenStream {
-    let name = type_name(ident);
+    let name = ident_to_string(ident);
     let impl_spec = tagged_impl_header("Interface", ident, tag);
     quote! {
         #[doc(hidden)]
@@ -57,7 +57,7 @@ pub(crate) fn interface_meta_static_var(
     ident: &Ident,
     module_path: &str,
 ) -> syn::Result<TokenStream> {
-    let name = type_name(ident);
+    let name = ident_to_string(ident);
     Ok(create_metadata_items(
         "interface",
         &name,

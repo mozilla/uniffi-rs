@@ -278,7 +278,6 @@ impl<'a> SwiftWrapper<'a> {
     pub fn initialization_fns(&self) -> Vec<String> {
         self.ci
             .iter_types()
-            .into_iter()
             .filter_map(|t| t.initialization_fn(&SwiftCodeOracle))
             .collect()
     }

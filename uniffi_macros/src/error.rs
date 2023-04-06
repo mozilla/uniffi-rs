@@ -8,9 +8,9 @@ use syn::{
 use crate::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        chain, create_metadata_items, either_attribute_arg, mod_path, parse_comma_separated,
-        tagged_impl_header, try_metadata_value_from_usize, type_name, AttributeSliceExt,
-        UniffiAttribute,
+        chain, create_metadata_items, either_attribute_arg, ident_to_string, mod_path,
+        parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
+        AttributeSliceExt, UniffiAttribute,
     },
 };
 
@@ -85,7 +85,7 @@ fn flat_error_ffi_converter_impl(
     tag: Option<&Path>,
     implement_try_read: bool,
 ) -> TokenStream {
-    let name = ident.to_string();
+    let name = ident_to_string(ident);
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
 
     let write_impl = {
@@ -151,7 +151,7 @@ pub(crate) fn error_meta_static_var(
     enum_: &DataEnum,
     flat: bool,
 ) -> syn::Result<TokenStream> {
-    let name = ident.to_string();
+    let name = ident_to_string(ident);
     let module_path = mod_path()?;
     let flat_code = u8::from(flat);
     let mut metadata_expr = quote! {
@@ -173,7 +173,7 @@ pub fn flat_error_variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStr
         try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
     Ok(std::iter::once(quote! { .concat_value(#variants_len) })
         .chain(enum_.variants.iter().map(|v| {
-            let name = type_name(&v.ident);
+            let name = ident_to_string(&v.ident);
             quote! { .concat_str(#name) }
         }))
         .collect())

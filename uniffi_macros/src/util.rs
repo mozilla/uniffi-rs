@@ -134,8 +134,8 @@ pub fn try_read_field(f: &syn::Field) -> TokenStream {
     }
 }
 
-pub fn type_name(type_ident: &Ident) -> String {
-    type_ident.unraw().to_string()
+pub fn ident_to_string(ident: &Ident) -> String {
+    ident.unraw().to_string()
 }
 
 pub fn crate_name() -> String {

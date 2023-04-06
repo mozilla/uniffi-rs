@@ -3,8 +3,8 @@ use quote::quote;
 use syn::{Data, DataEnum, DeriveInput, Field, Index, Path};
 
 use crate::util::{
-    create_metadata_items, mod_path, tagged_impl_header, try_metadata_value_from_usize,
-    try_read_field, type_name, AttributeSliceExt, CommonAttr,
+    create_metadata_items, ident_to_string, mod_path, tagged_impl_header,
+    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, CommonAttr,
 };
 
 pub fn expand_enum(input: DeriveInput) -> syn::Result<TokenStream> {
@@ -74,7 +74,7 @@ fn enum_or_error_ffi_converter_impl(
     tag: Option<&Path>,
     metadata_type_code: TokenStream,
 ) -> TokenStream {
-    let name = ident.to_string();
+    let name = ident_to_string(ident);
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
     let write_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         let v_ident = &v.ident;
@@ -142,21 +142,16 @@ fn write_field(f: &Field) -> TokenStream {
 }
 
 pub(crate) fn enum_meta_static_var(ident: &Ident, enum_: &DataEnum) -> syn::Result<TokenStream> {
-    let name = ident.to_string();
+    let name = ident_to_string(ident);
     let module_path = mod_path()?;
 
     let mut metadata_expr = quote! {
-            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
-                .concat_str(#module_path)
-                .concat_str(#name)
+        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
+            .concat_str(#module_path)
+            .concat_str(#name)
     };
     metadata_expr.extend(variant_metadata(enum_)?);
-    Ok(create_metadata_items(
-        "enum",
-        &ident.to_string(),
-        metadata_expr,
-        None,
-    ))
+    Ok(create_metadata_items("enum", &name, metadata_expr, None))
 }
 
 pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
@@ -183,11 +178,11 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                                         "UniFFI only supports enum variants with named fields (or no fields at all)",
                                     )
                                 )
-                                .map(|i| i.to_string())
+                                .map(ident_to_string)
                         })
                     .collect::<syn::Result<Vec<_>>>()?;
 
-                    let name = type_name(&v.ident);
+                    let name = ident_to_string(&v.ident);
                     let field_types = v.fields.iter().map(|f| &f.ty);
                     Ok(quote! {
                         .concat_str(#name)
