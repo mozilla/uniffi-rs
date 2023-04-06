@@ -113,8 +113,8 @@
 <span class="kw">use </span>syn::{Data, DataStruct, DeriveInput, Field, Path};
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
-    create_metadata_items, mod_path, tagged_impl_header, try_metadata_value_from_usize,
-    try_read_field, type_name, AttributeSliceExt, CommonAttr,
+    create_metadata_items, ident_to_string, mod_path, tagged_impl_header,
+    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, CommonAttr,
 };
 
 <span class="kw">pub fn </span>expand_record(input: DeriveInput) -&gt; syn::Result&lt;TokenStream&gt; {
@@ -156,7 +156,7 @@
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
 ) -&gt; TokenStream {
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
-    <span class="kw">let </span>name = type_name(ident);
+    <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>write_impl: TokenStream = record.fields.iter().map(write_field).collect();
     <span class="kw">let </span>try_read_fields: TokenStream = record.fields.iter().map(try_read_field).collect();
 
@@ -193,27 +193,27 @@
     ident: <span class="kw-2">&amp;</span>Ident,
     record: <span class="kw-2">&amp;</span>DataStruct,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>name = type_name(ident);
+    <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
     <span class="kw">let </span>fields_len =
         try_metadata_value_from_usize(record.fields.len(), <span class="string">&quot;UniFFI limits structs to 256 fields&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>field_names = record
         .fields
         .iter()
-        .map(|f| f.ident.as_ref().unwrap().to_string());
+        .map(|f| ident_to_string(f.ident.as_ref().unwrap()));
     <span class="kw">let </span>field_types = record.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ty);
     <span class="prelude-val">Ok</span>(create_metadata_items(
         <span class="string">&quot;record&quot;</span>,
         <span class="kw-2">&amp;</span>name,
         <span class="macro">quote! </span>{
-                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
-                    .concat_str(#module_path)
-                    .concat_str(#name)
-                    .concat_value(#fields_len)
-                    #(
-                        .concat_str(#field_names)
-                        .concat(&lt;#field_types <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
-                    )*
+            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
+                .concat_str(#module_path)
+                .concat_str(#name)
+                .concat_value(#fields_len)
+                #(
+                    .concat_str(#field_names)
+                    .concat(&lt;#field_types <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                )*
         },
         <span class="prelude-val">None</span>,
     ))

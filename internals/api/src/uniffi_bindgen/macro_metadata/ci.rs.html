@@ -103,7 +103,6 @@
 <span id="103">103</span>
 <span id="104">104</span>
 <span id="105">105</span>
-<span id="106">106</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -165,10 +164,10 @@
         <span class="kw">match </span>item {
             Metadata::Namespace(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(),
             Metadata::Func(meta) =&gt; {
-                iface.add_fn_meta(meta)<span class="question-mark">?</span>;
+                iface.add_function_definition(meta.into())<span class="question-mark">?</span>;
             }
             Metadata::Method(meta) =&gt; {
-                iface.add_method_meta(meta);
+                iface.add_method_meta(meta)<span class="question-mark">?</span>;
             }
             Metadata::Record(meta) =&gt; {
                 <span class="kw">let </span>ty = Type::Record(meta.name.clone());
@@ -200,7 +199,6 @@
         }
     }
 
-    iface.resolve_types().context(<span class="string">&quot;Failed to resolve types&quot;</span>)<span class="question-mark">?</span>;
     iface
         .derive_ffi_funcs()
         .context(<span class="string">&quot;Failed to derive FFI functions&quot;</span>)<span class="question-mark">?</span>;

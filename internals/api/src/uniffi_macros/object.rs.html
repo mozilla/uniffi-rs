@@ -75,13 +75,13 @@
 <span class="kw">use </span>uniffi_meta::free_fn_symbol_name;
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
-    create_metadata_items, tagged_impl_header, type_name, AttributeSliceExt, CommonAttr,
+    create_metadata_items, ident_to_string, tagged_impl_header, AttributeSliceExt, CommonAttr,
 };
 
 <span class="kw">pub fn </span>expand_object(input: DeriveInput, module_path: String) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
     <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
-    <span class="kw">let </span>name = type_name(ident);
+    <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>free_fn_ident = Ident::new(<span class="kw-2">&amp;</span>free_fn_symbol_name(<span class="kw-2">&amp;</span>module_path, <span class="kw-2">&amp;</span>name), Span::call_site());
     <span class="kw">let </span>meta_static_var = interface_meta_static_var(ident, <span class="kw-2">&amp;</span>module_path)<span class="question-mark">?</span>;
     <span class="kw">let </span>interface_impl = interface_impl(ident, attr.tag.as_ref());
@@ -113,7 +113,7 @@
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>interface_impl(ident: <span class="kw-2">&amp;</span>Ident, tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;) -&gt; TokenStream {
-    <span class="kw">let </span>name = type_name(ident);
+    <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;Interface&quot;</span>, ident, tag);
     <span class="macro">quote! </span>{
         <span class="attribute">#[doc(hidden)]
@@ -128,7 +128,7 @@
     ident: <span class="kw-2">&amp;</span>Ident,
     module_path: <span class="kw-2">&amp;</span>str,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>name = type_name(ident);
+    <span class="kw">let </span>name = ident_to_string(ident);
     <span class="prelude-val">Ok</span>(create_metadata_items(
         <span class="string">&quot;interface&quot;</span>,
         <span class="kw-2">&amp;</span>name,

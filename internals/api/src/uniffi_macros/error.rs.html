@@ -242,9 +242,9 @@
 <span class="kw">use crate</span>::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        chain, create_metadata_items, either_attribute_arg, mod_path, parse_comma_separated,
-        tagged_impl_header, try_metadata_value_from_usize, type_name, AttributeSliceExt,
-        UniffiAttribute,
+        chain, create_metadata_items, either_attribute_arg, ident_to_string, mod_path,
+        parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
+        AttributeSliceExt, UniffiAttribute,
     },
 };
 
@@ -319,7 +319,7 @@
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
     implement_try_read: bool,
 ) -&gt; TokenStream {
-    <span class="kw">let </span>name = ident.to_string();
+    <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
 
     <span class="kw">let </span>write_impl = {
@@ -385,7 +385,7 @@
     enum_: <span class="kw-2">&amp;</span>DataEnum,
     flat: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>name = ident.to_string();
+    <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
     <span class="kw">let </span>flat_code = u8::from(flat);
     <span class="kw">let </span><span class="kw-2">mut </span>metadata_expr = <span class="macro">quote! </span>{
@@ -407,7 +407,7 @@
         try_metadata_value_from_usize(enum_.variants.len(), <span class="string">&quot;UniFFI limits enums to 256 variants&quot;</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(std::iter::once(<span class="macro">quote! </span>{ .concat_value(#variants_len) })
         .chain(enum_.variants.iter().map(|v| {
-            <span class="kw">let </span>name = type_name(<span class="kw-2">&amp;</span>v.ident);
+            <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>v.ident);
             <span class="macro">quote! </span>{ .concat_str(#name) }
         }))
         .collect())

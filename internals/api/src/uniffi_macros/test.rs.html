@@ -169,7 +169,7 @@
 }
 
 <span class="kw">impl </span>syn::parse::Parse <span class="kw">for </span>BuildForeignLanguageTestCaseInput {
-    <span class="kw">fn </span>parse(input: syn::parse::ParseStream) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">fn </span>parse(input: syn::parse::ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>test_scripts = Punctuated::&lt;LitStr, <span class="macro">Token!</span>[,]&gt;::parse_terminated(input)<span class="question-mark">?
             </span>.iter()
             .map(|s| s.value())

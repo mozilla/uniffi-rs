@@ -365,10 +365,10 @@
 
 </span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{format_ident, quote, ToTokens};
-<span class="kw">use </span>syn::{ext::IdentExt, spanned::Spanned, FnArg, Pat};
+<span class="kw">use </span>syn::{spanned::Spanned, FnArg, Pat};
 
 <span class="kw">use super</span>::{AsyncRuntime, ExportAttributeArguments, Signature};
-<span class="kw">use </span><span class="kw">crate</span>::util::{create_metadata_items, try_metadata_value_from_usize, type_name};
+<span class="kw">use </span><span class="kw">crate</span>::util::{create_metadata_items, ident_to_string, try_metadata_value_from_usize};
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_scaffolding(
     sig: <span class="kw-2">&amp;</span>Signature,
@@ -376,7 +376,7 @@
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.ident;
-    <span class="kw">let </span>name_s = name.to_string();
+    <span class="kw">let </span>name_s = ident_to_string(name);
 
     <span class="kw">let </span>ffi_ident = Ident::new(
         <span class="kw-2">&amp;</span>uniffi_meta::fn_ffi_symbol_name(mod_path, <span class="kw-2">&amp;</span>name_s),
@@ -403,10 +403,10 @@
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
-    <span class="kw">let </span>name_s = ident.unraw().to_string();
+    <span class="kw">let </span>name_s = ident_to_string(ident);
 
     <span class="kw">let </span>ffi_ident = Ident::new(
-        <span class="kw-2">&amp;</span>uniffi_meta::method_fn_symbol_name(mod_path, <span class="kw-2">&amp;</span>self_ident.unraw().to_string(), <span class="kw-2">&amp;</span>name_s),
+        <span class="kw-2">&amp;</span>uniffi_meta::method_fn_symbol_name(mod_path, <span class="kw-2">&amp;</span>ident_to_string(self_ident), <span class="kw-2">&amp;</span>name_s),
         Span::call_site(),
     );
 
@@ -520,7 +520,7 @@
                             <span class="self">self</span>.collect_param_receiver_error(i, receiver_error_msg);
                             <span class="kw">continue</span>;
                         }
-                        Pat::Ident(i) =&gt; <span class="prelude-val">Some</span>(i.ident.to_string()),
+                        Pat::Ident(i) =&gt; <span class="prelude-val">Some</span>(ident_to_string(<span class="kw-2">&amp;</span>i.ident)),
                         <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                     };
 
@@ -576,7 +576,7 @@
         sig: <span class="kw-2">&amp;</span>Signature,
         mod_path: <span class="kw-2">&amp;</span>str,
     ) -&gt; syn::Result&lt;TokenStream&gt; {
-        <span class="kw">let </span>name = type_name(<span class="kw-2">&amp;</span>sig.ident);
+        <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>sig.ident);
         <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.output;
         <span class="kw">let </span>is_async = sig.is_async;
         <span class="kw">let </span>args_len = try_metadata_value_from_usize(
@@ -608,8 +608,8 @@
         sig: <span class="kw-2">&amp;</span>Signature,
         mod_path: <span class="kw-2">&amp;</span>str,
     ) -&gt; syn::Result&lt;TokenStream&gt; {
-        <span class="kw">let </span>object_name = type_name(self_ident);
-        <span class="kw">let </span>name = type_name(<span class="kw-2">&amp;</span>sig.ident);
+        <span class="kw">let </span>object_name = ident_to_string(self_ident);
+        <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>sig.ident);
         <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.output;
         <span class="kw">let </span>is_async = sig.is_async;
         <span class="kw">let </span>args_len = try_metadata_value_from_usize(
@@ -647,7 +647,7 @@
     bits: <span class="kw-2">&amp;</span>ScaffoldingBits,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
 ) -&gt; TokenStream {
-    <span class="kw">let </span>name = sig.ident.to_string();
+    <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>sig.ident);
     <span class="kw">let </span>rust_fn_call = bits.rust_fn_call();
     <span class="kw">let </span>fn_params = <span class="kw-2">&amp;</span>bits.params;
     <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.output;

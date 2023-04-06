@@ -196,18 +196,13 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{Data, DataEnum, DeriveInput, Field, Index, Path};
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
-    create_metadata_items, mod_path, tagged_impl_header, try_metadata_value_from_usize,
-    try_read_field, type_name, AttributeSliceExt, CommonAttr,
+    create_metadata_items, ident_to_string, mod_path, tagged_impl_header,
+    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, CommonAttr,
 };
 
 <span class="kw">pub fn </span>expand_enum(input: DeriveInput) -&gt; syn::Result&lt;TokenStream&gt; {
@@ -277,7 +272,7 @@
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
     metadata_type_code: TokenStream,
 ) -&gt; TokenStream {
-    <span class="kw">let </span>name = ident.to_string();
+    <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
     <span class="kw">let </span>write_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
@@ -345,21 +340,16 @@
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_meta_static_var(ident: <span class="kw-2">&amp;</span>Ident, enum_: <span class="kw-2">&amp;</span>DataEnum) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>name = ident.to_string();
+    <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>metadata_expr = <span class="macro">quote! </span>{
-            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
-                .concat_str(#module_path)
-                .concat_str(#name)
+        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
+            .concat_str(#module_path)
+            .concat_str(#name)
     };
     metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
-    <span class="prelude-val">Ok</span>(create_metadata_items(
-        <span class="string">&quot;enum&quot;</span>,
-        <span class="kw-2">&amp;</span>ident.to_string(),
-        metadata_expr,
-        <span class="prelude-val">None</span>,
-    ))
+    <span class="prelude-val">Ok</span>(create_metadata_items(<span class="string">&quot;enum&quot;</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">None</span>))
 }
 
 <span class="kw">pub fn </span>variant_metadata(enum_: <span class="kw-2">&amp;</span>DataEnum) -&gt; syn::Result&lt;Vec&lt;TokenStream&gt;&gt; {
@@ -386,11 +376,11 @@
                                         <span class="string">&quot;UniFFI only supports enum variants with named fields (or no fields at all)&quot;</span>,
                                     )
                                 )
-                                .map(|i| i.to_string())
+                                .map(ident_to_string)
                         })
                     .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
 
-                    <span class="kw">let </span>name = type_name(<span class="kw-2">&amp;</span>v.ident);
+                    <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>v.ident);
                     <span class="kw">let </span>field_types = v.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ty);
                     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
                         .concat_str(#name)

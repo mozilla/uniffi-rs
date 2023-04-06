@@ -470,7 +470,6 @@
 <span id="470">470</span>
 <span id="471">471</span>
 <span id="472">472</span>
-<span id="473">473</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -751,7 +750,6 @@
     <span class="kw">pub fn </span>initialization_fns(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;String&gt; {
         <span class="self">self</span>.ci
             .iter_types()
-            .into_iter()
             .filter_map(|t| t.initialization_fn(<span class="kw-2">&amp;</span>SwiftCodeOracle))
             .collect()
     }

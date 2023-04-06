@@ -224,10 +224,12 @@
 <span id="224">224</span>
 <span id="225">225</span>
 <span id="226">226</span>
+<span id="227">227</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 </span><span class="attribute">#![cfg_attr(feature = <span class="string">&quot;nightly&quot;</span>, feature(proc_macro_expand))]
+#![warn(rust_2018_idioms, unused_qualifications)]
 
 </span><span class="doccomment">//! Macros for `uniffi`.
 //!
@@ -405,7 +407,7 @@
 ///
 </span><span class="attribute">#[proc_macro]
 </span><span class="kw">pub fn </span>include_scaffolding(component_name: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>name = <span class="macro">syn::parse_macro_input!</span>(component_name <span class="kw">as </span>syn::LitStr);
+    <span class="kw">let </span>name = <span class="macro">syn::parse_macro_input!</span>(component_name <span class="kw">as </span>LitStr);
     <span class="kw">if </span>std::env::var(<span class="string">&quot;OUT_DIR&quot;</span>).is_err() {
         <span class="macro">quote! </span>{
             <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
@@ -430,7 +432,7 @@
 ///
 </span><span class="attribute">#[proc_macro]
 </span><span class="kw">pub fn </span>generate_and_include_scaffolding(udl_file: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>udl_file = <span class="macro">syn::parse_macro_input!</span>(udl_file <span class="kw">as </span>syn::LitStr);
+    <span class="kw">let </span>udl_file = <span class="macro">syn::parse_macro_input!</span>(udl_file <span class="kw">as </span>LitStr);
     <span class="kw">let </span>udl_file_string = udl_file.value();
     <span class="kw">let </span>udl_file_path = Utf8Path::new(<span class="kw-2">&amp;</span>udl_file_string);
     <span class="kw">if </span>std::env::var(<span class="string">&quot;OUT_DIR&quot;</span>).is_err() {
