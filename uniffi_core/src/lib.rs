@@ -288,7 +288,7 @@ macro_rules! ffi_converter_default_return {
     ($uniffi_tag:ty) => {
         type ReturnType = <Self as $crate::FfiConverter<$uniffi_tag>>::FfiType;
 
-        fn lower_return(v: Self) -> Result<Self::FfiType, $crate::RustBuffer> {
+        fn lower_return(v: Self) -> ::std::result::Result<Self::FfiType, $crate::RustBuffer> {
             Ok(<Self as $crate::FfiConverter<$uniffi_tag>>::lower(v))
         }
     };
@@ -338,7 +338,9 @@ macro_rules! ffi_converter_forward {
                 <$T as $crate::FfiConverter<$existing_impl_tag>>::lower(obj)
             }
 
-            fn lower_return(v: Self) -> Result<Self::ReturnType, $crate::RustBuffer> {
+            fn lower_return(
+                v: Self,
+            ) -> ::std::result::Result<Self::ReturnType, $crate::RustBuffer> {
                 <$T as $crate::FfiConverter<$existing_impl_tag>>::lower_return(v)
             }
 

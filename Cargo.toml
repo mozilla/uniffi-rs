@@ -46,6 +46,7 @@ members = [
   "fixtures/regressions/missing-newline",
   "fixtures/regressions/swift-callbacks-omit-labels",
   "fixtures/regressions/swift-dictionary-nesting",
+  "fixtures/regressions/unary-result-alias",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
   "fixtures/version-mismatch",
