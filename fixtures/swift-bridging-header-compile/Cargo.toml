@@ -1,0 +1,21 @@
+[package]
+name = "swift-bridging-header-compile"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "uniffi_swift_bridging_header_compiler"
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+uniffi = { path = "../../uniffi" }
+
+[build-dependencies]
+uniffi = {path = "../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", features = ["bindgen-tests", "cli"] }
+uniffi_testing = { path = "../../uniffi_testing" }
+anyhow = "1"

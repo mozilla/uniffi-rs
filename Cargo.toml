@@ -54,6 +54,7 @@ members = [
   "fixtures/simple-iface",
   "fixtures/swift-omit-labels",
   "fixtures/futures",
+  "fixtures/swift-bridging-header-compile",
 ]
 
 resolver = "2"
