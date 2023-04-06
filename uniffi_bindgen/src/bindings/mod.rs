@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use crate::interface::ComponentInterface;
 use crate::MergeWith;
 
+pub mod dart;
 pub mod kotlin;
 pub mod python;
 pub mod ruby;
@@ -29,6 +30,7 @@ pub mod swift;
 pub enum TargetLanguage {
     Kotlin,
     Swift,
+    Dart,
     Python,
     Ruby,
 }
@@ -53,6 +55,7 @@ impl TryFrom<&str> for TargetLanguage {
         Ok(match value.to_ascii_lowercase().as_str() {
             "kotlin" | "kt" | "kts" => TargetLanguage::Kotlin,
             "swift" => TargetLanguage::Swift,
+            "dart" => TargetLanguage::Dart,
             "python" | "py" => TargetLanguage::Python,
             "ruby" | "rb" => TargetLanguage::Ruby,
             _ => bail!("Unknown or unsupported target language: \"{value}\""),
@@ -84,6 +87,8 @@ pub struct Config {
     #[serde(default)]
     swift: swift::Config,
     #[serde(default)]
+    dart: dart::Config,
+    #[serde(default)]
     python: python::Config,
     #[serde(default)]
     ruby: ruby::Config,
@@ -94,6 +99,7 @@ impl From<&ComponentInterface> for Config {
         Config {
             kotlin: ci.into(),
             swift: ci.into(),
+            dart: ci.into(),
             python: ci.into(),
             ruby: ci.into(),
         }
@@ -105,6 +111,7 @@ impl MergeWith for Config {
         Config {
             kotlin: self.kotlin.merge_with(&other.kotlin),
             swift: self.swift.merge_with(&other.swift),
+            dart: self.dart.merge_with(&other.dart),
             python: self.python.merge_with(&other.python),
             ruby: self.ruby.merge_with(&other.ruby),
         }
@@ -126,6 +133,7 @@ pub fn write_bindings(
         TargetLanguage::Swift => {
             swift::write_bindings(&config.swift, ci, out_dir, try_format_code)?
         }
+        TargetLanguage::Dart => dart::write_bindings(&config.dart, ci, out_dir, try_format_code)?,
         TargetLanguage::Python => {
             python::write_bindings(&config.python, ci, out_dir, try_format_code)?
         }
