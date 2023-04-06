@@ -124,7 +124,7 @@ jobs:
 
   Deploy Docker:
     docker:
-      - image: cimg/python
+      - image: cimg/python:3.11
     steps:
       - checkout
       - setup_remote_docker
