@@ -539,6 +539,11 @@ impl ComponentInterface {
     pub(super) fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
         match self.enums.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
+                for variant in defn.variants() {
+                    for field in variant.fields() {
+                        self.types.add_known_type(field.type_())?;
+                    }
+                }
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
@@ -561,6 +566,9 @@ impl ComponentInterface {
     pub(super) fn add_record_definition(&mut self, defn: Record) -> Result<()> {
         match self.records.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
+                for field in defn.fields() {
+                    self.types.add_known_type(field.type_())?;
+                }
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
