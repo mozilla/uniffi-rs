@@ -234,7 +234,7 @@
         };
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>callable.throws_type() {
             <span class="prelude-val">Some</span>(e) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;&lt;Result&lt;{}, {}&gt; as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
+                <span class="string">&quot;&lt;::std::result::Result&lt;{}, {}&gt; as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
                 result_type,
                 type_rs(<span class="kw-2">&amp;</span>e)<span class="question-mark">?
             </span>),
