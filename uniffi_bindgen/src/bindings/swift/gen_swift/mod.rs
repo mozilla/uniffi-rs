@@ -21,6 +21,7 @@ mod compounds;
 mod custom;
 mod enum_;
 mod error;
+mod executor;
 mod external;
 mod miscellany;
 mod object;
@@ -319,7 +320,7 @@ impl SwiftCodeOracle {
             Type::CallbackInterface(id) => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
-
+            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
             Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
             Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
@@ -374,7 +375,9 @@ impl CodeOracle for SwiftCodeOracle {
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
-            FfiType::ForeignCallback => "ForeignCallback _Nonnull".to_string(),
+            FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
+            FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
+            FfiType::ForeignExecutorHandle => "size_t".into(),
         }
     }
 }
@@ -446,7 +449,9 @@ pub mod filters {
             FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
-            FfiType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
+            FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
+            FfiType::ForeignExecutorHandle => "Int".into(),
+            FfiType::ForeignExecutorCallback => "ForeignExecutorCallback _Nonnull".into(),
         })
     }
 

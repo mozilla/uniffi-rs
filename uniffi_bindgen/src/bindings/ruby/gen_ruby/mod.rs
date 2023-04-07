@@ -96,6 +96,12 @@ mod filters {
             FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
             FfiType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
+            FfiType::ForeignExecutorCallback => {
+                unimplemented!("Foreign executors are not implemented")
+            }
+            FfiType::ForeignExecutorHandle => {
+                unimplemented!("Foreign executors are not implemented")
+            }
         })
     }
 
@@ -192,6 +198,7 @@ mod filters {
             }
             Type::External { .. } => panic!("No support for external types, yet"),
             Type::Custom { .. } => panic!("No support for custom types, yet"),
+            Type::ForeignExecutor => unimplemented!("Foreign executors are not implemented"),
         })
     }
 
@@ -225,6 +232,7 @@ mod filters {
             ),
             Type::External { .. } => panic!("No support for lowering external types, yet"),
             Type::Custom { .. } => panic!("No support for lowering custom types, yet"),
+            Type::ForeignExecutor => unimplemented!("Foreign executors are not implemented"),
         })
     }
 
@@ -257,6 +265,7 @@ mod filters {
             ),
             Type::External { .. } => panic!("No support for lifting external types, yet"),
             Type::Custom { .. } => panic!("No support for lifting custom types, yet"),
+            Type::ForeignExecutor => unimplemented!("Foreign executors are not implemented"),
         })
     }
 }

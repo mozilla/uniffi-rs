@@ -475,6 +475,49 @@ unsafe impl<UT, T: Interface<UT>> FfiConverter<UT> for std::sync::Arc<T> {
         .concat_bool(false);
 }
 
+/// FFI support for ForeignSchedulers
+///
+/// These are passed over the FFI as opaque pointer-sized types representing the foreign executor.
+/// The foreign bindings may use an actual pointer to the executor object, or a usized integer
+/// handle.
+unsafe impl<UT> FfiConverter<UT> for crate::ForeignExecutor {
+    type FfiType = crate::ForeignExecutorHandle;
+
+    // Passing these back to the foreign bindings is currently not supported
+    fn lower(executor: Self) -> Self::FfiType {
+        executor.handle
+    }
+
+    fn write(executor: Self, buf: &mut Vec<u8>) {
+        // Use native endian when writing these values, so they can be casted to pointer values
+        match std::mem::size_of::<usize>() {
+            // Use native endian when reading these values, so they can be casted to pointer values
+            4 => buf.put_u32_ne(executor.handle.0 as u32),
+            8 => buf.put_u64_ne(executor.handle.0 as u64),
+            n => panic!("Invalid usize width: {n}"),
+        };
+    }
+
+    fn try_lift(executor: Self::FfiType) -> Result<Self> {
+        Ok(crate::ForeignExecutor::new(executor))
+    }
+
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+        let usize_val = match std::mem::size_of::<usize>() {
+            // Use native endian when reading these values, so they can be casted to pointer values
+            4 => buf.get_u32_ne() as usize,
+            8 => buf.get_u64_ne() as usize,
+            n => panic!("Invalid usize width: {n}"),
+        };
+        <Self as FfiConverter<UT>>::try_lift(crate::ForeignExecutorHandle(usize_val as *const ()))
+    }
+
+    ffi_converter_default_return!(UT);
+
+    const TYPE_ID_META: MetadataBuffer =
+        MetadataBuffer::from_code(metadata::codes::TYPE_FOREIGN_EXECUTOR);
+}
+
 /// Support `Result<>` via the FFI.
 ///
 /// This is currently supported for function returns. Lifting/lowering Result<> arguments is not

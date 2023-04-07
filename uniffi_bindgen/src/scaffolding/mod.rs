@@ -45,6 +45,7 @@ mod filters {
             Type::Enum(name) | Type::Record(name) | Type::Error(name) => format!("r#{name}"),
             Type::Object { name, imp } => format!("std::sync::Arc<{}>", imp.rust_name_for(name)),
             Type::CallbackInterface(name) => format!("Box<dyn r#{name}>"),
+            Type::ForeignExecutor => "::uniffi::ForeignExecutor".into(),
             Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
             Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),
             Type::Map(k, v) => format!(
@@ -75,9 +76,11 @@ mod filters {
             FfiType::Float32 => "f32".into(),
             FfiType::Float64 => "f64".into(),
             FfiType::RustArcPtr(_) => "*const std::os::raw::c_void".into(),
-            FfiType::RustBuffer(_) => "uniffi::RustBuffer".into(),
-            FfiType::ForeignBytes => "uniffi::ForeignBytes".into(),
-            FfiType::ForeignCallback => "uniffi::ForeignCallback".into(),
+            FfiType::RustBuffer(_) => "::uniffi::RustBuffer".into(),
+            FfiType::ForeignBytes => "::uniffi::ForeignBytes".into(),
+            FfiType::ForeignCallback => "::uniffi::ForeignCallback".into(),
+            FfiType::ForeignExecutorHandle => "::uniffi::ForeignExecutorHandle".into(),
+            FfiType::ForeignExecutorCallback => "::uniffi::ForeignExecutorCallback".into(),
         })
     }
 

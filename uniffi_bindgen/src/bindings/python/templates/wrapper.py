@@ -29,6 +29,7 @@ import asyncio
 {%- endif %}
 import contextvars
 import enum
+import platform
 {%- for req in self.imports() %}
 {{ req.render() }}
 {%- endfor %}
@@ -38,6 +39,7 @@ DEFAULT = object()
 
 {% include "RustBufferTemplate.py" %}
 {% include "Helpers.py" %}
+{% include "PointerManager.py" %}
 {% include "RustBufferHelper.py" %}
 {%- if ci.has_async_fns() %}
 {% include "RustFutureTemplate.py" %}

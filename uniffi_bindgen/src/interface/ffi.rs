@@ -45,9 +45,13 @@ pub enum FfiType {
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
-    /// A pointer to a single function in to the foreign language.
-    /// This function contains all the machinery to make callbacks work on the foreign language side.
+    /// Pointer to a callback function that handles all callbacks on the foreign language side.
     ForeignCallback,
+    /// Pointer-sized opaque handle that represents a foreign executor.  Foreign bindings can
+    /// either use an actual pointer or a usized integer.
+    ForeignExecutorHandle,
+    /// Pointer to the callback function that's invoked to schedule calls with a ForeignExecutor
+    ForeignExecutorCallback,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
 }

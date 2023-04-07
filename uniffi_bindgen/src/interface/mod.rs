@@ -419,8 +419,9 @@ impl ComponentInterface {
         self.iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
-            .chain(iter::once(self.ffi_uniffi_contract_version()))
             .chain(self.iter_checksum_ffi_functions())
+            .chain(self.ffi_foreign_executor_callback_set())
+            .chain([self.ffi_uniffi_contract_version()])
     }
 
     /// List all FFI functions definitions for user-defined interfaces
@@ -453,6 +454,27 @@ impl ComponentInterface {
             self.ffi_rustbuffer_reserve(),
         ]
         .into_iter()
+    }
+
+    /// The ffi_foreign_executor_callback_set FFI function
+    ///
+    /// We only include this in the FFI if the `ForeignExecutor` type is actually used
+    pub fn ffi_foreign_executor_callback_set(&self) -> Option<FfiFunction> {
+        if self.types.contains(&Type::ForeignExecutor) {
+            Some(FfiFunction {
+                name: "uniffi_foreign_executor_callback_set".into(),
+                arguments: vec![FfiArgument {
+                    name: "callback".into(),
+                    type_: FfiType::ForeignExecutorCallback,
+                }],
+                return_type: None,
+                is_async: false,
+                has_rust_call_status_arg: false,
+                is_object_free_function: false,
+            })
+        } else {
+            None
+        }
     }
 
     /// List all API checksums to check
@@ -983,6 +1005,7 @@ fn convert_type(s: &uniffi_meta::Type) -> Type {
         Ty::String => Type::String,
         Ty::SystemTime => Type::Timestamp,
         Ty::Duration => Type::Duration,
+        Ty::ForeignExecutor => Type::ForeignExecutor,
         Ty::Record { name } => Type::Record(name.clone()),
         Ty::Enum { name } => Type::Enum(name.clone()),
         Ty::ArcObject {

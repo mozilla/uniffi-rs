@@ -1,0 +1,19 @@
+[package]
+name = "uniffi-fixture-foreign-executor"
+version = "0.23.0"
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "uniffi_fixture_foreign_executor"
+
+[dependencies]
+uniffi = {path = "../../uniffi"}
+
+[build-dependencies]
+uniffi = {path = "../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }

@@ -33,7 +33,7 @@ impl<'a> MetadataReader<'a> {
 
     // Read a top-level metadata item
     //
-    // This consumes self because MetadataReader is only intented to read a single item.
+    // This consumes self because MetadataReader is only intended to read a single item.
     fn read_metadata(mut self) -> Result<Metadata> {
         let value = self.read_u8()?;
         Ok(match value {
@@ -99,6 +99,7 @@ impl<'a> MetadataReader<'a> {
             codes::TYPE_STRING => Type::String,
             codes::TYPE_DURATION => Type::Duration,
             codes::TYPE_SYSTEM_TIME => Type::SystemTime,
+            codes::TYPE_FOREIGN_EXECUTOR => Type::ForeignExecutor,
             codes::TYPE_RECORD => Type::Record {
                 name: self.read_string()?,
             },

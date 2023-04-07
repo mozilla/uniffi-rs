@@ -88,6 +88,9 @@
 {%- when Type::External { name, crate_name, kind } %}
 {%- include "ExternalTemplate.py" %}
 
+{%- when Type::ForeignExecutor %}
+{%- include "ForeignExecutorTemplate.py" %}
+
 {%- else %}
 {%- endmatch %}
 {%- endfor %}

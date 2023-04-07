@@ -20,6 +20,7 @@ mod compounds;
 mod custom;
 mod enum_;
 mod error;
+mod executor;
 mod external;
 mod miscellany;
 mod object;
@@ -299,7 +300,7 @@ impl PythonCodeOracle {
             Type::CallbackInterface(id) => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
-
+            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
             Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
             Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
@@ -363,6 +364,9 @@ impl CodeOracle for PythonCodeOracle {
             },
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
             FfiType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
+            // Pointer to an `asyncio.EventLoop` instance
+            FfiType::ForeignExecutorHandle => "ctypes.c_size_t".to_string(),
+            FfiType::ForeignExecutorCallback => "UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
         }
     }
 }

@@ -77,6 +77,9 @@
 {%- when Type::CallbackInterface(name) %}
 {% include "CallbackInterfaceTemplate.kt" %}
 
+{%- when Type::ForeignExecutor %}
+{% include "ForeignExecutorTemplate.kt" %}
+
 {%- when Type::Timestamp %}
 {% include "TimestampHelper.kt" %}
 
@@ -92,3 +95,17 @@
 {%- else %}
 {%- endmatch %}
 {%- endfor %}
+
+// Add imports for async functions.  This doesn't really have anything to do with types, but
+// add_import() is only available in Types.kt.
+{%- if ci.has_async_fns() %}
+{{ self.add_import("kotlin.coroutines.Continuation") }}
+{{ self.add_import("kotlin.coroutines.resume") }}
+{{ self.add_import("kotlin.coroutines.resumeWithException") }}
+{{ self.add_import("kotlin.coroutines.suspendCoroutine") }}
+{{ self.add_import("kotlinx.coroutines.coroutineScope") }}
+{{ self.add_import("kotlinx.coroutines.CoroutineScope") }}
+{{ self.add_import("kotlinx.coroutines.launch") }}
+{{ self.add_import("kotlinx.coroutines.sync.Semaphore") }}
+{{ self.add_import("kotlinx.coroutines.sync.withPermit") }}
+{%- endif %}

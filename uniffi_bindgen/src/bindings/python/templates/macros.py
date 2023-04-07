@@ -61,7 +61,7 @@ rust_call(
     {%- for arg in func.arguments() %}
     {{ arg.type_().borrow()|ffi_type_name }},
     {%- endfor %}
-    ctypes.POINTER(RustCallStatus),
+    {%- if func.has_rust_call_status_arg() %}ctypes.POINTER(RustCallStatus),{% endif %}
 {% endmacro -%}
 
 {#

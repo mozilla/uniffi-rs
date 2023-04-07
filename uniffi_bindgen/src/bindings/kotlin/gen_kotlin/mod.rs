@@ -20,6 +20,7 @@ mod compounds;
 mod custom;
 mod enum_;
 mod error;
+mod executor;
 mod external;
 mod miscellany;
 mod object;
@@ -253,6 +254,7 @@ impl KotlinCodeOracle {
             Type::CallbackInterface(id) => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
+            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
             Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
             Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
@@ -319,6 +321,8 @@ impl CodeOracle for KotlinCodeOracle {
             },
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FfiType::ForeignCallback => "ForeignCallback".to_string(),
+            FfiType::ForeignExecutorHandle => "USize".to_string(),
+            FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback".to_string(),
         }
     }
 }
@@ -400,6 +404,7 @@ pub mod filters {
             },
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback".into(),
+            FfiType::ForeignExecutorHandle | FfiType::ForeignExecutorCallback => todo!(),
         })
     }
 

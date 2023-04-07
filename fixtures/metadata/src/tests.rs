@@ -120,6 +120,7 @@ mod test_type_ids {
         check_type_id::<f64>(Type::F64);
         check_type_id::<bool>(Type::Bool);
         check_type_id::<String>(Type::String);
+        check_type_id::<uniffi::ForeignExecutor>(Type::ForeignExecutor);
     }
 
     #[test]
