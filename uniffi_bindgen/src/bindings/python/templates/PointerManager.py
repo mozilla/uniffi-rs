@@ -22,7 +22,10 @@ class UniFfiPointerManagerCPython:
         return id(obj)
 
     def release_pointer(self, address):
-        ctypes.pythonapi.Py_DecRef(ctypes.cast(address, ctypes.py_object))
+        py_obj = ctypes.cast(address, ctypes.py_object)
+        obj = py_obj.value
+        ctypes.pythonapi.Py_DecRef(py_obj)
+        return obj
 
     def lookup(self, address):
         return ctypes.cast(address, ctypes.py_object).value
@@ -52,7 +55,7 @@ class UniFfiPointerManagerGeneral:
 
     def release_pointer(self, handle):
         with self._lock:
-            del self._map[handle]
+            return self._map.pop(handle)
 
     def lookup(self, handle):
         with self._lock:

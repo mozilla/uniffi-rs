@@ -1,7 +1,7 @@
 {#
 // Template to call into rust. Used in several places.
 // Variable names in `arg_list_decl` should match up with arg lists
-// passed to rust via `_arg_list_ffi_call`
+// passed to rust via `arg_list_lowered`
 #}
 
 {%- macro to_ffi_call(func) -%}
@@ -12,7 +12,7 @@ rust_call_with_error({{ e|ffi_converter_name }},
 rust_call(
     {%- endmatch -%}
     _UniFFILib.{{ func.ffi_func().name() }},
-    {%- call _arg_list_ffi_call(func) -%}
+    {%- call arg_list_lowered(func) -%}
 )
 {%- endmacro -%}
 
@@ -26,11 +26,11 @@ rust_call(
     {%- endmatch -%}
     _UniFFILib.{{ func.ffi_func().name() }},
     {{- prefix }},
-    {%- call _arg_list_ffi_call(func) -%}
+    {%- call arg_list_lowered(func) -%}
 )
 {%- endmacro -%}
 
-{%- macro _arg_list_ffi_call(func) %}
+{%- macro arg_list_lowered(func) %}
     {%- for arg in func.arguments() %}
         {{ arg|lower_fn }}({{ arg.name()|var_name }})
         {%- if !loop.last %},{% endif %}
@@ -61,7 +61,8 @@ rust_call(
     {%- for arg in func.arguments() %}
     {{ arg.type_().borrow()|ffi_type_name }},
     {%- endfor %}
-    {%- if func.has_rust_call_status_arg() %}ctypes.POINTER(RustCallStatus),{% endif %}
+    {%- if func.has_rust_call_status_arg() %}
+    ctypes.POINTER(RustCallStatus),{% endif %}
 {% endmacro -%}
 
 {#

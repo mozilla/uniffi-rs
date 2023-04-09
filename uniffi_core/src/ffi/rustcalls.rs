@@ -111,7 +111,7 @@ where
 /// If the call succeeds this returns Some(v) and doesn't touch out_status
 /// If the call fails (including Err results), this returns None and updates out_status
 ///
-/// This contains the shared code between `rust_call` and `uniffi_rustfuture_poll`.
+/// This contains the shared code between `rust_call` and `rustfuture::do_wake`.
 pub(crate) fn rust_call_with_out_status<F, R>(
     out_status: &mut RustCallStatus,
     callback: F,

@@ -21,6 +21,12 @@ Function pointer for a Rust task, which a callback function that takes a opaque 
 """
 UNIFFI_RUST_TASK = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
 
+def uniffi_future_callback_t(return_type):
+    """
+    Factory function to create callback function types for async functions
+    """
+    return ctypes.CFUNCTYPE(None, ctypes.c_size_t, return_type, RustCallStatus)
+
 from pathlib import Path
 
 def loadIndirect():
@@ -71,34 +77,8 @@ def uniffi_check_api_checksums(lib):
 
 _UniFFILib = loadIndirect()
 {%- for func in ci.iter_ffi_function_definitions() %}
-{%- if func.is_async() %}
-
-_UniFFILib.{{ func.name() }}.argtypes = (
-    {%- call py::arg_list_ffi_decl(func) -%}
-)
-_UniFFILib.{{ func.name() }}.restype = ctypes.POINTER(RustFuture)
-
-_UniFFILib.{{ func.name() }}_poll.argtypes = (
-    ctypes.POINTER(RustFuture),
-    FUTURE_WAKER_T,
-    FUTURE_WAKER_ENVIRONMENT_T,
-    {% match func.return_type() %}{% when Some with (type_) %}ctypes.POINTER({{ type_|ffi_type_name }}){% when None %}ctypes.c_void_p{% endmatch %},
-    {%- if func.has_rust_call_status_arg() %}ctypes.POINTER(RustCallStatus), {% endif %}
-)
-_UniFFILib.{{ func.name() }}_poll.restype = ctypes.c_bool
-
-_UniFFILib.{{ func.name() }}_drop.argtypes = (
-    ctypes.POINTER(RustFuture),
-    ctypes.POINTER(RustCallStatus),
-)
-_UniFFILib.{{ func.name() }}_drop.restype = None
-
-{%- else %}
-
 _UniFFILib.{{ func.name() }}.argtypes = (
     {%- call py::arg_list_ffi_decl(func) -%}
 )
 _UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
-
-{%- endif %}
 {%- endfor %}

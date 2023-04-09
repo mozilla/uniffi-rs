@@ -45,7 +45,7 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::{btree_map::Entry, BTreeMap, HashSet},
+    collections::{btree_map::Entry, BTreeMap, BTreeSet, HashSet},
     convert::TryFrom,
     iter,
 };
@@ -64,7 +64,7 @@ pub use enum_::Enum;
 mod error;
 pub use error::Error;
 mod function;
-pub use function::{Argument, Callable, Function};
+pub use function::{Argument, Callable, Function, ResultType};
 mod literal;
 pub use literal::{Literal, Radix};
 mod namespace;
@@ -214,6 +214,19 @@ impl ComponentInterface {
     /// Get an Error definition by name, or None if no such Error is defined.
     pub fn get_error_definition(&self, name: &str) -> Option<&Error> {
         self.errors.get(name)
+    }
+
+    /// Get the definitions for every Method type in the interface.
+    pub fn iter_callables(&self) -> impl Iterator<Item = &dyn Callable> {
+        self.function_definitions()
+            .iter()
+            .map(|f| f as &dyn Callable)
+            .chain(self.objects.iter().flat_map(|o| {
+                o.constructors()
+                    .into_iter()
+                    .map(|c| c as &dyn Callable)
+                    .chain(o.methods().into_iter().map(|m| m as &dyn Callable))
+            }))
     }
 
     /// Should we generate read (and lift) functions for errors?
@@ -409,6 +422,24 @@ impl ComponentInterface {
     /// Does this interface contain async functions?
     pub fn has_async_fns(&self) -> bool {
         self.iter_ffi_function_definitions().any(|f| f.is_async())
+    }
+
+    /// Iterate over `T` parameters of the `FutureCallback<T>` callbacks in this interface
+    pub fn iter_future_callback_params(&self) -> impl Iterator<Item = FfiType> {
+        let unique_results = self
+            .iter_callables()
+            .map(|c| c.result_type().future_callback_param())
+            .collect::<BTreeSet<_>>();
+        unique_results.into_iter()
+    }
+
+    /// Iterate over return/throws types for async functions
+    pub fn iter_async_result_types(&self) -> impl Iterator<Item = ResultType> {
+        let unique_results = self
+            .iter_callables()
+            .map(|c| c.result_type())
+            .collect::<BTreeSet<_>>();
+        unique_results.into_iter()
     }
 
     /// List the definitions of all FFI functions in the interface.
@@ -625,6 +656,10 @@ impl ComponentInterface {
         }
         if !matches!(self.types.get_type_definition(defn.name()), None) {
             bail!("Conflicting type definition for \"{}\"", defn.name());
+        }
+        if defn.is_async() {
+            // Async functions depend on the foreign executor
+            self.types.add_known_type(&Type::ForeignExecutor)?;
         }
         self.functions.push(defn);
 

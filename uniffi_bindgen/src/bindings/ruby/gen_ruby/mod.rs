@@ -102,6 +102,9 @@ mod filters {
             FfiType::ForeignExecutorHandle => {
                 unimplemented!("Foreign executors are not implemented")
             }
+            FfiType::FutureCallback { .. } | FfiType::FutureCallbackData => {
+                unimplemented!("Async functions are not implemented")
+            }
         })
     }
 

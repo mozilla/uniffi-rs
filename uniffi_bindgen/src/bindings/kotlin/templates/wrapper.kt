@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap
 {%- endfor %}
 
 {% include "RustBufferTemplate.kt" %}
-{% if ci.has_async_fns() %}{% include "RustFutureTemplate.kt" %}{% endif %}
 {% include "FfiConverterTemplate.kt" %}
 {% include "Helpers.kt" %}
 

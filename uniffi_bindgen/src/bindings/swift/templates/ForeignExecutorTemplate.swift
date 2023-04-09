@@ -7,6 +7,10 @@ public struct UniFfiForeignExecutor {
     public init(priority: TaskPriority) {
         self.priority = priority
     }
+
+    public init() {
+        self.priority = Task.currentPriority
+    }
 }
 
 fileprivate struct FfiConverterForeignExecutor: FfiConverter {

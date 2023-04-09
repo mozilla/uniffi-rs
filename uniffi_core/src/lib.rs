@@ -49,6 +49,8 @@ pub use metadata::*;
 // so the consumer doesn't have to depend on them directly.
 pub mod deps {
     pub use anyhow;
+    #[cfg(feature = "tokio")]
+    pub use async_compat;
     pub use bytes;
     pub use log;
     pub use static_assertions;
@@ -183,6 +185,12 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// This is usually the same as `FfiType`, but `Result<>` has specialized handling.
     type ReturnType: FfiDefault;
 
+    /// The `FutureCallback<T>` type used for async functions
+    ///
+    /// This is almost always `FutureCallback<Self::ReturnType>`.  The one exception is the
+    /// unit type, see that `FfiConverter` impl for details.
+    type FutureCallback: Copy;
+
     /// Lower a rust value of the target type, into an FFI value of type Self::FfiType.
     ///
     /// This trait method is used for sending data from rust to the foreign language code,
@@ -234,6 +242,14 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// because we want to be able to advance the start of the slice after reading an item
     /// from it (but will not mutate the actual contents of the slice).
     fn try_read(buf: &mut &[u8]) -> Result<Self>;
+
+    /// Invoke a `FutureCallback` to complete a async call
+    fn invoke_future_callback(
+        callback: Self::FutureCallback,
+        callback_data: *const (),
+        return_value: Self::ReturnType,
+        call_status: RustCallStatus,
+    );
 
     /// Type ID metadata, serialized into a [MetadataBuffer]
     const TYPE_ID_META: MetadataBuffer;
@@ -287,9 +303,19 @@ where
 macro_rules! ffi_converter_default_return {
     ($uniffi_tag:ty) => {
         type ReturnType = <Self as $crate::FfiConverter<$uniffi_tag>>::FfiType;
+        type FutureCallback = $crate::FutureCallback<Self::ReturnType>;
 
         fn lower_return(v: Self) -> ::std::result::Result<Self::FfiType, $crate::RustBuffer> {
             Ok(<Self as $crate::FfiConverter<$uniffi_tag>>::lower(v))
+        }
+
+        fn invoke_future_callback(
+            callback: Self::FutureCallback,
+            callback_data: *const (),
+            return_value: Self::ReturnType,
+            call_status: $crate::RustCallStatus,
+        ) {
+            callback(callback_data, return_value, call_status);
         }
     };
 }
@@ -333,6 +359,7 @@ macro_rules! ffi_converter_forward {
         unsafe impl $crate::FfiConverter<$new_impl_tag> for $T {
             type FfiType = <$T as $crate::FfiConverter<$existing_impl_tag>>::FfiType;
             type ReturnType = <$T as $crate::FfiConverter<$existing_impl_tag>>::FfiType;
+            type FutureCallback = <$T as $crate::FfiConverter<$existing_impl_tag>>::FutureCallback;
 
             fn lower(obj: $T) -> Self::FfiType {
                 <$T as $crate::FfiConverter<$existing_impl_tag>>::lower(obj)
@@ -354,6 +381,20 @@ macro_rules! ffi_converter_forward {
 
             fn try_read(buf: &mut &[u8]) -> $crate::Result<$T> {
                 <$T as $crate::FfiConverter<$existing_impl_tag>>::try_read(buf)
+            }
+
+            fn invoke_future_callback(
+                callback: Self::FutureCallback,
+                callback_data: *const (),
+                return_value: Self::ReturnType,
+                call_status: $crate::RustCallStatus,
+            ) {
+                <$T as $crate::FfiConverter<$existing_impl_tag>>::invoke_future_callback(
+                    callback,
+                    callback_data,
+                    return_value,
+                    call_status,
+                )
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer =

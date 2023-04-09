@@ -284,6 +284,10 @@ mod test {
             }
         }
 
+        pub fn handle(&self) -> Option<ForeignExecutorHandle> {
+            self.executor.as_ref().map(|e| e.handle)
+        }
+
         pub fn call_count(&self) -> usize {
             self.calls.lock().unwrap().len()
         }

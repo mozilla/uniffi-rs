@@ -3,19 +3,21 @@
 // Error runtime.
 @Structure.FieldOrder("code", "error_buf")
 internal open class RustCallStatus : Structure() {
-    @JvmField var code: Int = 0
+    @JvmField var code: Byte = 0
     @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
 
+    class ByValue: RustCallStatus(), Structure.ByValue
+
     fun isSuccess(): Boolean {
-        return code == 0
+        return code == 0.toByte()
     }
 
     fun isError(): Boolean {
-        return code == 1
+        return code == 1.toByte()
     }
 
     fun isPanic(): Boolean {
-        return code == 2
+        return code == 2.toByte()
     }
 }
 
@@ -34,8 +36,14 @@ interface CallStatusErrorHandler<E> {
 private inline fun <U, E: Exception> rustCallWithError(errorHandler: CallStatusErrorHandler<E>, callback: (RustCallStatus) -> U): U {
     var status = RustCallStatus();
     val return_value = callback(status)
+    checkCallStatus(errorHandler, status)
+    return return_value
+}
+
+// Check RustCallStatus and throw an error if the call wasn't successful
+private fun<E: Exception> checkCallStatus(errorHandler: CallStatusErrorHandler<E>, status: RustCallStatus) {
     if (status.isSuccess()) {
-        return return_value
+        return
     } else if (status.isError()) {
         throw errorHandler.lift(status.error_buf)
     } else if (status.isPanic()) {

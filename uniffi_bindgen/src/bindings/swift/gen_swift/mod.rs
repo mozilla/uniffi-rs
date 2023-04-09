@@ -378,6 +378,11 @@ impl CodeOracle for SwiftCodeOracle {
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
             FfiType::ForeignExecutorHandle => "size_t".into(),
+            FfiType::FutureCallback { return_type } => format!(
+                "UniFfiFutureCallback{} _Nonnull",
+                return_type.canonical_name()
+            ),
+            FfiType::FutureCallbackData => "void* _Nonnull".into(),
         }
     }
 }
@@ -452,6 +457,11 @@ pub mod filters {
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
             FfiType::ForeignExecutorHandle => "Int".into(),
             FfiType::ForeignExecutorCallback => "ForeignExecutorCallback _Nonnull".into(),
+            FfiType::FutureCallback { return_type } => format!(
+                "UniFfiFutureCallback{} _Nonnull",
+                return_type.canonical_name()
+            ),
+            FfiType::FutureCallbackData => "UnsafeMutableRawPointer".into(),
         })
     }
 
@@ -473,5 +483,37 @@ pub mod filters {
     /// Get the idiomatic Swift rendering of an individual enum variant.
     pub fn enum_variant_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().enum_variant_name(nm))
+    }
+
+    pub fn error_handler(result: &ResultType) -> Result<String, askama::Error> {
+        Ok(match &result.throws_type {
+            Some(t) => format!("{}.lift", ffi_converter_name(t)?),
+            None => "nil".into(),
+        })
+    }
+
+    /// Name of the callback function to handle an async result
+    pub fn future_callback(result: &ResultType) -> Result<String, askama::Error> {
+        Ok(format!(
+            "uniffiFutureCallbackHandler{}{}",
+            match &result.return_type {
+                Some(t) => t.canonical_name(),
+                None => "Void".into(),
+            },
+            match &result.throws_type {
+                Some(t) => t.canonical_name(),
+                None => "".into(),
+            }
+        ))
+    }
+
+    pub fn future_continuation_type(result: &ResultType) -> Result<String, askama::Error> {
+        Ok(format!(
+            "CheckedContinuation<{}, Error>",
+            match &result.return_type {
+                Some(return_type) => type_name(return_type)?,
+                None => "()".into(),
+            }
+        ))
     }
 }
