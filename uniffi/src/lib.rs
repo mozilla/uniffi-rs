@@ -8,6 +8,8 @@ pub use uniffi_macros::*;
 #[cfg(feature = "cli")]
 mod cli;
 #[cfg(feature = "bindgen-tests")]
+pub use uniffi_bindgen::bindings::dart::run_test as dart_run_test;
+#[cfg(feature = "bindgen-tests")]
 pub use uniffi_bindgen::bindings::kotlin::run_test as kotlin_run_test;
 #[cfg(feature = "bindgen-tests")]
 pub use uniffi_bindgen::bindings::python::run_test as python_run_test;

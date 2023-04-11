@@ -17,6 +17,9 @@ pub struct Args {
     /// Run Swift tests
     #[clap(short, long, display_order = 0)]
     pub swift: bool,
+    /// Run Dart tests
+    #[clap(short, long, display_order = 0)]
+    pub dart: bool,
 
     /// Dump compiler output to the console.  Good for debugging new benchmarks.
     #[clap(long, display_order = 1)]

@@ -83,7 +83,8 @@ pub fn write_bindings(
     }
 
     if try_format_code {
-        if let Err(e) = Command::new("dartformat")
+        if let Err(e) = Command::new("dart")
+            .arg("format")
             .arg(source_file.as_str())
             .output()
         {

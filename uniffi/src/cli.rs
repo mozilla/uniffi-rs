@@ -23,7 +23,7 @@ enum Commands {
     /// Generate foreign language bindings
     Generate {
         /// Foreign language(s) for which to build bindings.
-        #[clap(long, short, possible_values = &["kotlin", "python", "swift", "ruby"])]
+        #[clap(long, short, possible_values = &["dart", "kotlin", "python", "swift", "ruby"])]
         language: Vec<String>,
 
         /// Directory in which to write generated files. Default is same folder as .udl file.
