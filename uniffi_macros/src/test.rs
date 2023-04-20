@@ -41,6 +41,9 @@ pub(crate) fn build_foreign_language_testcases(tokens: TokenStream) -> TokenStre
                 Some("rb") => quote! {
                     uniffi::ruby_run_test
                 },
+                Some("dart") => quote! {
+                    uniffi::dart_run_test
+                },
                 _ => panic!("Unexpected extension for test script: {test_file_name}"),
             };
             let maybe_ignore = if should_skip_path(&test_file_pathbuf) {

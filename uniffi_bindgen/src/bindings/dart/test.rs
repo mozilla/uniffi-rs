@@ -8,7 +8,7 @@ use camino::{Utf8Path, Utf8PathBuf};
 use heck::ToSnakeCase;
 use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
 use std::ffi::OsStr;
-use std::fs::{read_to_string, File};
+use std::fs::{copy, create_dir_all, read_to_string, write, File};
 use std::io::Write;
 use std::process::{Command, Stdio};
 use uniffi_testing::{CompileSource, UniFFITestHelper};
@@ -37,40 +37,51 @@ pub fn run_script(
     let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
+
+    let mut pubspec = File::create(out_dir.join("pubspec.yaml"))?;
+    pubspec.write(
+        b"
+name: uniffi_test
+description: testing module for uniffi
+version: 1.0.0
+
+environment:
+  sdk: '>=2.19.6 <3.0.0'
+dev_dependencies:
+  test: ^1.21.0
+dependencies:
+  ffi: ^2.0.1
+",
+    )?;
+    pubspec.flush()?;
+    create_dir_all(out_dir.join("test"))?;
+
     test_helper.copy_cdylibs_to_out_dir(&out_dir)?;
     let generated_sources =
         GeneratedSources::new(&test_helper.cdylib_path()?, &out_dir, &test_helper)?;
 
-    // Compile the generated sources together to create a single dart module
-    compile_dart_module(
-        &out_dir,
-        &calc_module_name(&generated_sources.main_source_filename),
-        &generated_sources.generated_dart_files,
-        &generated_sources.module_map,
-        options,
-    )?;
+    copy(script_file, out_dir.join("test").join("uniffi_test.dart"))?;
 
     // Run the test script against compiled bindings
     let mut command = create_command("dart", options);
-    command
-        .current_dir(&out_dir)
-        .arg("-I")
-        .arg(&out_dir)
-        .arg("-L")
-        .arg(&out_dir)
-        .args(calc_library_args(&out_dir)?)
-        .arg("-Xcc")
-        .arg(format!(
-            "-fmodule-map-file={}",
-            generated_sources.module_map
-        ))
-        .arg(&script_path)
-        .args(args);
+    command.current_dir(&out_dir).arg("test");
+    // .arg("-I")
+    // .arg(&out_dir)
+    // .arg("-L")
+    // .arg(&out_dir)
+    // .args(calc_library_args(&out_dir)?)
+    // .arg("-Xcc")
+    // .arg(format!(
+    //     "-fmodule-map-file={}",
+    //     generated_sources.module_map
+    // ))
+    // .arg(&script_path)
+    // .args(args);
     let status = command
         .spawn()
-        .context("Failed to spawn `dartc` when running test script")?
+        .context("Failed to spawn `dart` when running test script")?
         .wait()
-        .context("Failed to wait for `dartc` when running test script")?;
+        .context("Failed to wait for `dart` when running test script")?;
     if !status.success() {
         bail!("running `dart` to run test script failed ({:?})", command)
     }
@@ -89,7 +100,7 @@ fn compile_dart_module<T: AsRef<OsStr>>(
     options: &RunScriptOptions,
 ) -> Result<()> {
     let output_filename = format!("{DLL_PREFIX}testmod_{module_name}{DLL_SUFFIX}");
-    let mut command = create_command("dartc", options);
+    let mut command = create_command("dart", options);
     command
         .current_dir(out_dir)
         .arg("-emit-module")
@@ -108,14 +119,11 @@ fn compile_dart_module<T: AsRef<OsStr>>(
         .args(sources);
     let status = command
         .spawn()
-        .context("Failed to spawn `dartc` when compiling bindings")?
+        .context("Failed to spawn `dart` when compiling bindings")?
         .wait()
-        .context("Failed to wait for `dartc` when compiling bindings")?;
+        .context("Failed to wait for `dart` when compiling bindings")?;
     if !status.success() {
-        bail!(
-            "running `dartc` to compile bindings failed ({:?})",
-            command
-        )
+        bail!("running `dart` to compile bindings failed ({:?})", command)
     };
     Ok(())
 }
@@ -214,13 +222,13 @@ impl GeneratedSources {
 
 fn create_command(program: &str, options: &RunScriptOptions) -> Command {
     let mut command = Command::new(program);
-    if !options.show_compiler_messages {
-        // This prevents most compiler messages, but not remarks
-        command.arg("-suppress-warnings");
-        // This gets the remarks.  Note: dart will eventually get a `-supress-remarks` argument,
-        // maybe we can eventually move to that
-        command.stderr(Stdio::null());
-    }
+    // if !options.show_compiler_messages {
+    //     // This prevents most compiler messages, but not remarks
+    //     command.arg("-suppress-warnings");
+    //     // This gets the remarks.  Note: dart will eventually get a `-supress-remarks` argument,
+    //     // maybe we can eventually move to that
+    //     command.stderr(Stdio::null());
+    // }
     command
 }
 
