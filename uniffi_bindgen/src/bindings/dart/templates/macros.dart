@@ -5,37 +5,88 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-    {%- call try(func) -%}
-    {%- match func.throws_type() -%}
-    {%- when Some with (e) -%}
-        rustCallWithError({{ e|ffi_converter_name }}.self) {
-    {%- else -%}
-        rustCall() {
-    {%- endmatch %}
-    {{ func.ffi_func().name() }}({% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}$0)
-}
+    rustCall(this,
+      (status) => _{{func.name()|fn_name}}(
+          {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}
+          status
+      )
+    )
 {%- endmacro -%}
 
+{%- macro gen_ffi_signatures_global(meth) -%}
+    late final _{{meth.name()|fn_name}}Ptr = _lookup<NativeFunction<{% match meth.return_type() -%}
+      {%- when Some with (return_type) -%} {{ return_type|ffi_type }} 
+      {%- when None %} Void 
+    {%- endmatch %} Function(
+      {% call _arg_types_ffi_call(meth) %},
+      Pointer<RustCallStatus>
+    )>>("{{ func.ffi_func().name() }}");
+
+    late final _{{meth.name()|fn_name}} = _{{meth.name()|fn_name}}Ptr.asFunction<{% match meth.return_type() -%}
+      {%- when Some with (return_type) -%} {{ return_type|dart_ffi_type }} 
+      {%- when None %} void 
+    {%- endmatch %} Function(
+      {% call _arg_types_ffi_lifted(meth) %},
+      Pointer<RustCallStatus>
+      )>();
+{%- endmacro %}
+
+
+{%- macro gen_ffi_signatures(meth) -%}
+    late final _{{meth.name()|fn_name}}Ptr = _api._lookup<NativeFunction<{% match meth.return_type() -%}
+      {%- when Some with (return_type) -%} {{ return_type|ffi_type }} 
+      {%- when None %} Void 
+    {%- endmatch %} Function(
+        Pointer,
+        {% call _arg_types_ffi_call(meth) %},
+        Pointer<RustCallStatus>
+      )>>("{{ func.ffi_func().name() }}");
+
+    late final _{{meth.name()|fn_name}} = _{{meth.name()|fn_name}}Ptr.asFunction<{% match meth.return_type() -%}
+      {%- when Some with (return_type) -%} {{ return_type|dart_ffi_type }} 
+      {%- when None %} void 
+    {%- endmatch %} Function(Pointer,
+      {% call _arg_types_ffi_lifted(meth) %},
+      Pointer<RustCallStatus>
+      )>();
+{%- endmacro %}
+
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
-{% call try(func) %}
-    {%- match func.throws_type() %}
-    {%- when Some with (e) %}
-    rustCallWithError({{ e|ffi_converter_name }}.self) {
-    {%- else %}
-    rustCall() {
+    {#
+      {%- match func.throws_type() %}
+      {%- when Some with (e) %}
+      rustCallWithError({{ e|ffi_converter_name }}.self) {
+      {%- else %}
+      rustCall() {
     {% endmatch %}
-    {{ func.ffi_func().name() }}(
-        {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}$0
-    )
-}
+    #}
+      _{{ func.name()|fn_name }}(
+        {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %})
 {%- endmacro %}
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{ arg|lower_fn }}({{ arg.name()|var_name }})
+        {{ arg.name()|var_name }}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro -%}
+
+{%- macro _arg_types_ffi_call(func) %}
+    {%- for arg in func.arguments() %}
+        {{ arg|lower_type }}
+        {%- if !loop.last %}, {% endif -%}
+    {%- endfor %}
+{%- endmacro -%}
+
+
+{%- macro _arg_types_ffi_lifted(func) %}
+    {%- for arg in func.arguments() %}
+        {{ arg|lift_type }}
+        {%- if !loop.last %}, {% endif -%}
+    {%- endfor %}
+{%- endmacro -%}
+
+
 
 {#-
 // Arglist as used in Dart declarations of methods, functions and constructors.
@@ -44,7 +95,7 @@
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name -}}
+        {{ arg|lift_type }} {{ arg.name()|var_name }}
         {%- match arg.default_value() %}
         {%- when Some with(literal) %} = {{ literal|literal_dart(arg) }}
         {%- else %}
@@ -99,3 +150,5 @@
 {%- macro try(func) %}
 {%- if func.throws() %}try {% else %}try! {% endif %}
 {%- endmacro -%}
+import 'dart:ffi';
+import 'Helpers.dart';

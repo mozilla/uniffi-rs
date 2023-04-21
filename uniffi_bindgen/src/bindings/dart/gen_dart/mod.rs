@@ -110,7 +110,7 @@ impl From<&ComponentInterface> for Config {
     fn from(ci: &ComponentInterface) -> Self {
         Config {
             module_name: Some(ci.namespace().into()),
-            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
+            cdylib_name: Some(ci.namespace().into()),
             ..Default::default()
         }
     }
@@ -345,22 +345,22 @@ impl CodeOracle for DartCodeOracle {
 
     /// Get the idiomatic Dart rendering of a function name.
     fn fn_name(&self, nm: &str) -> String {
-        format!("`{}`", nm.to_string().to_lower_camel_case())
+        format!("{}", nm.to_string().to_lower_camel_case())
     }
 
     /// Get the idiomatic Dart rendering of a variable name.
     fn var_name(&self, nm: &str) -> String {
-        format!("`{}`", nm.to_string().to_lower_camel_case())
+        format!("{}", nm.to_string().to_lower_camel_case())
     }
 
     /// Get the idiomatic Dart rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &str) -> String {
-        format!("`{}`", nm.to_string().to_lower_camel_case())
+        format!("{}", nm.to_string().to_lower_camel_case())
     }
 
     /// Get the idiomatic Dart rendering of an exception name.
     fn error_name(&self, nm: &str) -> String {
-        format!("`{}`", self.class_name(nm))
+        format!("{}", self.class_name(nm))
     }
 
     fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
@@ -408,6 +408,20 @@ pub mod filters {
         Ok(codetype.lower(oracle()))
     }
 
+    pub fn lower_type(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}Lowered", type_name(codetype)?))
+    }
+
+    pub fn ffi_type(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}Ffi", type_name(codetype)?))
+    }
+    pub fn dart_ffi_type(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}DartFfi", type_name(codetype)?))
+    }
+
+    pub fn lift_type(codetype: &impl CodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}Lifted", type_name(codetype)?))
+    }
     pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
         Ok(codetype.write(oracle()))
     }
@@ -438,13 +452,13 @@ pub mod filters {
     pub fn type_ffi_lowered(ffi_type: &FfiType) -> Result<String, askama::Error> {
         Ok(match ffi_type {
             FfiType::Int8 => "Int8".into(),
-            FfiType::UInt8 => "UInt8".into(),
+            FfiType::UInt8 => "Uint8".into(),
             FfiType::Int16 => "Int16".into(),
-            FfiType::UInt16 => "UInt16".into(),
+            FfiType::UInt16 => "Uint16".into(),
             FfiType::Int32 => "Int32".into(),
-            FfiType::UInt32 => "UInt32".into(),
+            FfiType::UInt32 => "Uint32".into(),
             FfiType::Int64 => "Int64".into(),
-            FfiType::UInt64 => "UInt64".into(),
+            FfiType::UInt64 => "Uint64".into(),
             FfiType::Float32 => "Float".into(),
             FfiType::Float64 => "Double".into(),
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),

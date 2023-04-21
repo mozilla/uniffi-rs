@@ -1,20 +1,16 @@
-fileprivate struct FfiConverterBool : FfiConverter {
-    typealias FfiType = Int8
-    typealias DartType = Bool
+typedef BoolFfi = Bool;
+typedef BoolDartFfi = bool;
+typedef BoolLowered = Bool;
+typedef BoolLifted = bool;
 
-    public static func lift(_ value: Int8) throws -> Bool {
-        return value != 0
-    }
+class FfiConverterbool {
+  //extends FfiConverter {
 
-    public static func lower(_ value: Bool) -> Int8 {
-        return value ? 1 : 0
-    }
+  static BoolLifted lift(Api _api, BoolDartFfi value) {
+    return value != 0;
+  }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Bool {
-        return try lift(readInt(&buf))
-    }
-
-    public static func write(_ value: Bool, into buf: inout [UInt8]) {
-        writeInt(&buf, lower(value))
-    }
+  static int lower(BoolLifted value) {
+    return value ? 1 : 0;
+  }
 }

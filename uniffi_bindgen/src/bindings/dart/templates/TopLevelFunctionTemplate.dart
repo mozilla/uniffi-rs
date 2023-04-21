@@ -81,18 +81,20 @@ public func {{ func.name()|fn_name }}({%- call dart::arg_list_decl(func) -%}) as
 
 {% else %}
 
+  {% call dart::gen_ffi_signatures_global(func) %}
+
 {%- match func.return_type() -%}
+
+
 {%- when Some with (return_type) %}
 
-public func {{ func.name()|fn_name }}({%- call dart::arg_list_decl(func) -%}) {% call dart::throws(func) %} -> {{ return_type|type_name }} {
-    return {% call dart::try(func) %} {{ return_type|lift_fn }}(
-        {% call dart::to_ffi_call(func) %}
-    )
+{{ return_type|lift_type }} {{ func.name()|fn_name }}({%- call dart::arg_list_decl(func) -%}) {
+    return {% call dart::to_ffi_call(func) %};
 }
 
 {%- when None %}
 
-public func {{ func.name()|fn_name }}({% call dart::arg_list_decl(func) %}) {% call dart::throws(func) %} {
+void {{ func.name()|fn_name }}({% call dart::arg_list_decl(func) %}) {
     {% call dart::to_ffi_call(func) %}
 }
 

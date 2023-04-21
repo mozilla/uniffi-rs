@@ -22,6 +22,11 @@
 {%- when Type::String %}
 {%- include "StringHelper.dart" %}
 
+{%- when Type::UInt64 %}
+{%- include "UInt64Helper.dart" %}
+
+{# comment
+
 {%- when Type::Int8 %}
 {%- include "Int8Helper.dart" %}
 
@@ -43,8 +48,6 @@
 {%- when Type::UInt32 %}
 {%- include "UInt32Helper.dart" %}
 
-{%- when Type::UInt64 %}
-{%- include "UInt64Helper.dart" %}
 
 {%- when Type::Float32 %}
 {%- include "Float32Helper.dart" %}
@@ -64,14 +67,18 @@
 {%- when Type::Custom { name, builtin } %}
 {%- include "CustomType.dart" %}
 
-{%- when Type::Enum(name) %}
-{%- include "EnumTemplate.dart" %}
-
 {%- when Type::Error(name) %}
 {%- include "ErrorTemplate.dart" %}
 
+#}
+
+{%- when Type::Enum(name) %}
+{%- include "EnumTemplate.dart" %}
+
 {%- when Type::Object(name) %}
 {%- include "ObjectTemplate.dart" %}
+
+{# comment
 
 {%- when Type::Record(name) %}
 {%- include "RecordTemplate.dart" %}
@@ -85,6 +92,8 @@
 {%- when Type::Map(key_type, value_type) %}
 {%- include "MapTemplate.dart" %}
 
+
+#}
 {%- else %}
 {%- endmatch %}
 {%- endfor %}
