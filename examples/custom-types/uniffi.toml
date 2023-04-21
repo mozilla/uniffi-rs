@@ -1,6 +1,3 @@
-[bindings.swift]
-cdylib_name = "custom_types"
-
 [bindings.swift.custom_types.Url]
 # Name of the type in the Swift code
 type_name = "URL"
@@ -38,7 +35,6 @@ into_custom = "Date(timeIntervalSince1970: TimeInterval({}))"
 from_custom = "Float({}.timeIntervalSince1970)"
 
 [bindings.kotlin]
-cdylib_name = "custom_types"
 package_name = "customtypes"
 
 [bindings.kotlin.custom_types.Url]
@@ -50,9 +46,6 @@ imports = [ "java.net.URL" ]
 into_custom = "URL({})"
 from_custom = "{}.toString()"
 
-[bindings.python]
-cdylib_name = "custom_types"
-
 [bindings.python.custom_types.Url]
 # We're going to be the urllib.parse.ParseResult class, which is the closest
 # thing Python has to a Url class.  No need to specify `type_name` though,
@@ -62,6 +55,3 @@ imports = ["urllib.parse"]
 # Functions to convert between strings and the ParsedUrl class
 into_custom = "urllib.parse.urlparse({})"
 from_custom = "urllib.parse.urlunparse({})"
-
-[bindings.ruby]
-cdylib_name = "custom_types"

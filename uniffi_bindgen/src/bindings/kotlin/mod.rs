@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use camino::{Utf8Path, Utf8PathBuf};
-use fs_err::{self as fs, File};
-use std::{io::Write, process::Command};
+use fs_err as fs;
+use std::process::Command;
 
 pub mod gen_kotlin;
 pub use gen_kotlin::{generate_bindings, Config};
@@ -23,9 +23,7 @@ pub fn write_bindings(
     let mut kt_file = full_bindings_path(config, out_dir);
     fs::create_dir_all(&kt_file)?;
     kt_file.push(format!("{}.kt", ci.namespace()));
-    let mut f = File::create(&kt_file)?;
-    write!(f, "{}", generate_bindings(config, ci)?)
-        .context("Failed to write generated bindings")?;
+    fs::write(&kt_file, generate_bindings(config, ci)?)?;
     if try_format_code {
         if let Err(e) = Command::new("ktlint").arg("-F").arg(&kt_file).output() {
             println!(

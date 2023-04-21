@@ -10,4 +10,4 @@ pub fn returns_unary_result_alias() -> Result<()> {
     Ok(())
 }
 
-include!(concat!(env!("OUT_DIR"), "/unary-result-alias.uniffi.rs"));
+uniffi::include_scaffolding!("unary-result-alias");

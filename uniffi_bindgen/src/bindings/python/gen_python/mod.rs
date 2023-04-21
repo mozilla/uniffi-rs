@@ -104,6 +104,11 @@ impl BindingsConfig for Config {
         self.cdylib_name
             .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
     }
+
+    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
+        self.cdylib_name
+            .get_or_insert_with(|| cdylib_name.to_string());
+    }
 }
 
 // Generate python bindings for the given ComponentInterface, as a string.

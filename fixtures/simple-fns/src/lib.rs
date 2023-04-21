@@ -47,4 +47,4 @@ fn set_contains(set: Arc<MyHashSet>, value: String) -> bool {
 #[uniffi::export]
 fn dummy(_arg: Option<i8>) {}
 
-include!(concat!(env!("OUT_DIR"), "/simple-fns.uniffi.rs"));
+uniffi::include_scaffolding!("simple-fns");

@@ -12,4 +12,4 @@ pub fn get_dict() -> HashMap<String, String> {
     HashMap::default()
 }
 
-include!(concat!(env!("OUT_DIR"), "/test.uniffi.rs"));
+uniffi::include_scaffolding!("test");

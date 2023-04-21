@@ -249,4 +249,4 @@ pub async fn broken_sleep(ms: u16, fail_after: u16) {
     .await;
 }
 
-include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
+uniffi::include_scaffolding!("uniffi_futures");

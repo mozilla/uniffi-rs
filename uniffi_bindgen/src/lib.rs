@@ -72,7 +72,7 @@
 //! included into the code of your rust crate like this:
 //!
 //! ```text
-//! include!(concat!(env!("OUT_DIR"), "/example.uniffi.rs"));
+//! include_scaffolding!("example");
 //! ```
 //!
 //! ### 4) Generate foreign language bindings for the library
@@ -100,10 +100,11 @@ use fs_err::{self as fs, File};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::io::prelude::*;
 use std::io::ErrorKind;
-use std::{env, process::Command, str::FromStr};
+use std::{collections::HashMap, env, process::Command, str::FromStr};
 
 pub mod backend;
 pub mod bindings;
+pub mod crate_mode;
 pub mod interface;
 pub mod macro_metadata;
 pub mod scaffolding;
@@ -122,6 +123,19 @@ pub trait BindingsConfig: DeserializeOwned {
     /// Update missing values using the `ComponentInterface`
     #[allow(unused)]
     fn update_from_ci(&mut self, ci: &ComponentInterface) {}
+
+    /// Update missing values using the dylib file for the main crate, when in crate mode.
+    ///
+    /// cdylib_name will be the library filename without the leading `lib` and trailing extension
+    #[allow(unused)]
+    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {}
+
+    /// Update missing values from config instances from dependent crates
+    ///
+    /// config_map maps crate names to config instances. This is mostly used to set up external
+    /// types.
+    #[allow(unused)]
+    fn update_from_dependency_configs(&mut self, config_map: HashMap<&str, &Self>) {}
 }
 
 fn load_bindings_config<BC: BindingsConfig>(
@@ -189,7 +203,7 @@ pub trait BindingGenerator: Sized {
     ///
     /// # Arguments
     /// - `ci`: A [`ComponentInterface`] representing the interface
-    /// - `config`: A instance of the BindingGeneratorConfig associated with this type
+    /// - `config`: A instance of the [`BindingsConfig`] associated with this type
     /// - `out_dir`: The path to where the binding generator should write the output bindings
     fn write_bindings(
         &self,
@@ -205,7 +219,7 @@ pub trait BindingGenerator: Sized {
 /// Implements an entry point for external binding generators.
 /// The function does the following:
 /// - It parses the `udl` in a [`ComponentInterface`]
-/// - Parses the `uniffi.toml` and loads it into the type that implements [`BindingGeneratorConfig`]
+/// - Parses the `uniffi.toml` and loads it into the type that implements [`BindingsConfig`]
 /// - Creates an instance of [`BindingGenerator`], based on type argument `B`, and run [`BindingGenerator::write_bindings`] on it
 ///
 /// # Arguments
@@ -343,7 +357,7 @@ fn format_code_with_rustfmt(path: &Utf8Path) -> Result<()> {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-struct Config {
+pub struct Config {
     #[serde(default)]
     bindings: bindings::Config,
 }
@@ -372,6 +386,40 @@ impl Config {
         self.bindings.swift.update_from_ci(ci);
         self.bindings.python.update_from_ci(ci);
         self.bindings.ruby.update_from_ci(ci);
+    }
+
+    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
+        self.bindings.kotlin.update_from_cdylib_name(cdylib_name);
+        self.bindings.swift.update_from_cdylib_name(cdylib_name);
+        self.bindings.python.update_from_cdylib_name(cdylib_name);
+        self.bindings.ruby.update_from_cdylib_name(cdylib_name);
+    }
+
+    fn update_from_dependency_configs(&mut self, config_map: HashMap<&str, &Self>) {
+        self.bindings.kotlin.update_from_dependency_configs(
+            config_map
+                .iter()
+                .map(|(key, config)| (*key, &config.bindings.kotlin))
+                .collect(),
+        );
+        self.bindings.swift.update_from_dependency_configs(
+            config_map
+                .iter()
+                .map(|(key, config)| (*key, &config.bindings.swift))
+                .collect(),
+        );
+        self.bindings.python.update_from_dependency_configs(
+            config_map
+                .iter()
+                .map(|(key, config)| (*key, &config.bindings.python))
+                .collect(),
+        );
+        self.bindings.ruby.update_from_dependency_configs(
+            config_map
+                .iter()
+                .map(|(key, config)| (*key, &config.bindings.ruby))
+                .collect(),
+        );
     }
 }
 

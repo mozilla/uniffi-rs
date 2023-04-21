@@ -170,7 +170,24 @@ pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
             compile_error!("This macro assumes the crate has a build.rs script, but $OUT_DIR is not present");
         }
     } else {
+        let udl_name = name.value();
+        let mod_path = match util::mod_path() {
+            Ok(v) => quote! { #v },
+            Err(e) => e.into_compile_error()
+        };
+        let metadata = util::create_metadata_items(
+            "UDL",
+            &udl_name.replace('-', "_").to_ascii_uppercase(),
+            quote! {
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::UDL_FILE)
+                        .concat_str(#mod_path)
+                        .concat_str(#udl_name)
+            },
+            None,
+        );
         quote! {
+            #metadata
+
             include!(concat!(env!("OUT_DIR"), "/", #name, ".uniffi.rs"));
         }
     }.into()

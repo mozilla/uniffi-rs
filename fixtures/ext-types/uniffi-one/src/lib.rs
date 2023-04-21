@@ -24,4 +24,4 @@ impl UniffiOneInterface {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/uniffi-one.uniffi.rs"));
+uniffi::include_scaffolding!("uniffi-one");

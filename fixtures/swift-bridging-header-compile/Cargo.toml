@@ -11,6 +11,7 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 uniffi = { path = "../../uniffi" }
+camino = "1.0.8"
 
 [build-dependencies]
 uniffi = {path = "../../uniffi", features = ["build"] }

@@ -1,7 +1,0 @@
-[bindings.python]
-cdylib_name = "uniffi_one"
-
-[bindings.kotlin]
-cdylib_name = "uniffi_one"
-
-

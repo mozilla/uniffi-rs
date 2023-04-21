@@ -122,4 +122,4 @@ impl RustStringifier {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/callbacks.uniffi.rs"));
+uniffi::include_scaffolding!("callbacks");

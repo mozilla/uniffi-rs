@@ -10,6 +10,9 @@ use serde::Serialize;
 mod ffi_names;
 pub use ffi_names::*;
 
+mod group;
+pub use group::{group_metadata, MetadataGroup};
+
 mod reader;
 pub use reader::{read_metadata, read_metadata_type};
 
@@ -107,6 +110,15 @@ impl Checksum for &str {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct NamespaceMetadata {
     pub crate_name: String,
+    pub name: String,
+}
+
+// UDL file included with `include_scaffolding!()`
+//
+// This is to find the UDL files in crate-mode generation
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct UdlFile {
+    pub module_path: String,
     pub name: String,
 }
 
@@ -304,6 +316,7 @@ pub fn checksum<T: Checksum>(val: &T) -> u16 {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum Metadata {
     Namespace(NamespaceMetadata),
+    UdlFile(UdlFile),
     Func(FnMetadata),
     Constructor(ConstructorMetadata),
     Method(MethodMetadata),
@@ -322,6 +335,12 @@ impl Metadata {
 impl From<NamespaceMetadata> for Metadata {
     fn from(value: NamespaceMetadata) -> Metadata {
         Self::Namespace(value)
+    }
+}
+
+impl From<UdlFile> for Metadata {
+    fn from(value: UdlFile) -> Metadata {
+        Self::UdlFile(value)
     }
 }
 

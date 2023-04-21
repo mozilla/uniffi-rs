@@ -38,24 +38,50 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
 
 Then your can run `uniffi-bindgen` from any create in your project using `cargo run -p uniffi-bindgen [args]`
 
-## Running uniffi-bindgen
+## Running uniffi-bindgen with a single UDL file
+
+Use the `generate` command to generate bindings by specifying a UDL file.
 
 ### Kotlin
 
-Run
+From the `example/arithmetic` directory, run:
 ```
-cargo run --bin uniffi-bindgen generate src/math.udl --language kotlin
+cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language kotlin
 ```
-then have a look at `src/uniffi/math/math.kt`
+then have a look at `src/uniffi/arithmetic/arithmetic.kt`
 
 ### Swift
 
 Run
 ```
-cargo run --bin uniffi-bindgen generate src/math.udl --language swift
+cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language swift
 ```
-then check out `src/math.swift`
+then check out `src/arithmetic.swift`
 
 Note that these commands could be integrated as part of your gradle/Xcode build process.
 
 This is it, you have an MVP integration of UniFFI in your project.
+
+## Running uniffi-bindgen using a crate
+
+Use `generate --crate` to foreign bindings by specifying a Rust crate.  This generation mode can be
+more convenient that specifying the UDL file -- especially if when dependent crates also use UniFFI.
+
+From the `example/arithmetic` directory, run:
+```
+cargo run --bin uniffi-bindgen generate --crate uniffi-example-arithmetic --language kotlin --out-dir out
+```
+
+The check out the `out` directory.
+
+When using crate mode:
+  - If the any dependent crates that use UniFFI, will also have bindings generated for them.
+  - The `cdylib_name` and `kotlin.external_packages` fields do not need to be specified
+    `uniffi.toml`.
+
+Crate mode adds some extra requirements:
+  - It must be run from within the cargo workspace of your project
+  - There must be exactly 1 UDL file used when compiling the Rust library.  However, crates can have
+    multiple UDL files if they have feature flag system that ensures only one is used for any
+    particular build.
+  - Rust sources must use `uniffi::include_scaffolding!` to include the scaffolding code.

@@ -96,4 +96,4 @@ impl UniffiCustomTypeConverter for Guid {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/guid.uniffi.rs"));
+uniffi::include_scaffolding!("guid");

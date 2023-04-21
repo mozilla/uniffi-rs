@@ -20,4 +20,4 @@ pub fn get_dict_4() -> HashMap<String, HashMap<String, Vec<String>>> {
     HashMap::new()
 }
 
-include!(concat!(env!("OUT_DIR"), "/test.uniffi.rs"));
+uniffi::include_scaffolding!("test");

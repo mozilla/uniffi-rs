@@ -10,6 +10,7 @@
 use anyhow::{bail, Result};
 use camino::Utf8Path;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use crate::interface::ComponentInterface;
 
@@ -30,6 +31,17 @@ pub enum TargetLanguage {
     Swift,
     Python,
     Ruby,
+}
+
+impl fmt::Display for TargetLanguage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Kotlin => write!(f, "kotlin"),
+            Self::Swift => write!(f, "swift"),
+            Self::Python => write!(f, "python"),
+            Self::Ruby => write!(f, "ruby"),
+        }
+    }
 }
 
 /// Mode for the `run_script` function defined for each language

@@ -73,6 +73,20 @@ impl BindingsConfig for Config {
         self.cdylib_name
             .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
     }
+
+    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
+        self.cdylib_name
+            .get_or_insert_with(|| cdylib_name.to_string());
+    }
+
+    fn update_from_dependency_configs(&mut self, config_map: HashMap<&str, &Self>) {
+        for (crate_name, config) in config_map {
+            if !self.external_packages.contains_key(crate_name) {
+                self.external_packages
+                    .insert(crate_name.to_string(), config.package_name());
+            }
+        }
+    }
 }
 
 // Generate kotlin bindings for the given ComponentInterface, as a string.

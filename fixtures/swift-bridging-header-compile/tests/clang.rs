@@ -1,3 +1,4 @@
+use camino::Utf8PathBuf;
 use std::process::Command;
 use uniffi_testing::UniFFITestHelper;
 
@@ -8,11 +9,10 @@ fn clang() -> Result<(), anyhow::Error> {
 
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, "clang.rs")?;
-    let main_compile_source = test_helper.get_main_compile_source()?;
 
     uniffi::generate_bindings(
-        &main_compile_source.udl_path,
-        main_compile_source.config_path.as_deref(),
+        &Utf8PathBuf::from("src/swift-bridging-header-compile.udl"),
+        None,
         vec!["swift"],
         Some(&out_dir),
         None,

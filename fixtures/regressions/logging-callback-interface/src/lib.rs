@@ -45,4 +45,4 @@ pub fn log_something() {
     log::warn!("something");
 }
 
-include!(concat!(env!("OUT_DIR"), "/test.uniffi.rs"));
+uniffi::include_scaffolding!("test");
